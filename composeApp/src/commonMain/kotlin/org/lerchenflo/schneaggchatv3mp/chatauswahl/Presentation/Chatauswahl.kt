@@ -13,17 +13,17 @@ import org.lerchenflo.schneaggchatv3mp.database.User
 
 @Preview
 @Composable
-fun addUserButton(user: User){
+fun addUserButton(user: User?){
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
             .clickable{
-                openChat(user)
+                //openChat(user?)
             }
     ){
         Text(
-            text = user.name.toString(),
+            text = user?.name.toString(),
             modifier = Modifier
                 .fillMaxWidth()
         )

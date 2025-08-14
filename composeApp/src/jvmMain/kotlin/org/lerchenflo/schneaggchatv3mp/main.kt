@@ -2,12 +2,13 @@ package org.lerchenflo.schneaggchatv3mp
 
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import org.lerchenflo.schneaggchatv3mp.database.getUserDatabase
 
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
         title = "SchneaggchatV3mp",
     ) {
-        App()
+        App(getUserDatabase().userDao())
     }
 }
