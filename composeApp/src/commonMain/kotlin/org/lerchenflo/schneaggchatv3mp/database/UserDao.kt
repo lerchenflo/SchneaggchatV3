@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 interface UserDao {
 
     @Upsert
-    suspend fun upsert(user: User) //SUspend: Async
+    suspend fun upsert(user: User) //Suspend: Async mit warten
 
     @Query("SELECT * FROM users")
     fun getallusers(): Flow<List<User>>

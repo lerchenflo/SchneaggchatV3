@@ -55,7 +55,6 @@ fun App(userDao: UserDao) {
                     text = person.name.toString(),
                     modifier = Modifier.fillMaxWidth()
                         .padding(16.dp)
-
                 )
             }
         }

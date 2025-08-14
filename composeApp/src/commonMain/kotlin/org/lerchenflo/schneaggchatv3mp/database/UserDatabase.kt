@@ -7,9 +7,10 @@ import androidx.room.RoomDatabase
     entities = [User::class],
     version = 1
 )
+
 abstract class UserDatabase: RoomDatabase() {
 
     abstract fun userDao(): UserDao
-
-
 }
+
+expect fun getUserDatabase(): UserDao
