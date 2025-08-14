@@ -1,4 +1,4 @@
-rootProject.name = "SchneaggchatV3"
+rootProject.name = "SchneaggchatV3mp"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
