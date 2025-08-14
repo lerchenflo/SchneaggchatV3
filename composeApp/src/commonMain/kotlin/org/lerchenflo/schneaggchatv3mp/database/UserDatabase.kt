@@ -10,4 +10,8 @@ import androidx.room.RoomDatabase
 
 abstract class UserDatabase: RoomDatabase() {
     abstract fun userDao(): UserDao
+
+    companion object {
+        val DB_NAME = "users.db"
+    }
 }

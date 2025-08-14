@@ -6,7 +6,7 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import platform.Foundation.NSHomeDirectory
 
 fun getUserDatabase(): UserDatabase {
-    val dbFile = NSHomeDirectory() + "/users.db"
+    val dbFile = NSHomeDirectory() + "/" + UserDatabase.DB_NAME
     return Room.databaseBuilder<UserDatabase>(
         name = dbFile,
         factory = { UserDatabase::class.instantiateImpl() }
