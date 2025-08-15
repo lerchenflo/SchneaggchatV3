@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 import java.io.File
 import java.util.Locale
 
-fun getUserDatabase(): UserDatabase {
+fun desktopUserDatabaseBuilder(): RoomDatabase.Builder<UserDatabase> {
     val os = System.getProperty("os.name").lowercase()
     val userHome = System.getProperty("user.home")
     val appDataDir = when {
@@ -20,5 +20,4 @@ fun getUserDatabase(): UserDatabase {
     }
     val dbFile = File(appDataDir, UserDatabase.DB_NAME)
     return Room.databaseBuilder<UserDatabase>(dbFile.absolutePath)
-        .build()
 }

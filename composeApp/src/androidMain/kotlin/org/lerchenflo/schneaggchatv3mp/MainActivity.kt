@@ -9,16 +9,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.database.UserDao
 import org.lerchenflo.schneaggchatv3mp.database.UserDatabase
-import org.lerchenflo.schneaggchatv3mp.database.getUserDatabase
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        val dao = getUserDatabase(applicationContext).userDao()
+
         setContent {
-            App(dao)
+            App()
         }
     }
 }
