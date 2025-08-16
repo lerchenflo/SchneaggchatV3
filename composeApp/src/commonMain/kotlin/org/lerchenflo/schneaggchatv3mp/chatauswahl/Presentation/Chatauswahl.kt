@@ -13,6 +13,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,9 +26,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.database.User
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.*
 
 @Composable
 fun Chatauswahlscreen(modifier: Modifier = Modifier) {
@@ -61,7 +68,7 @@ fun Chatauswahlscreen(modifier: Modifier = Modifier) {
         ) {
             Text(
                 fontSize = 26.sp,
-                text = "SchneaggchatV3",
+                text = stringResource(Res.string.app_name),
                 modifier = Modifier
                     .padding(16.dp)
 
@@ -84,13 +91,16 @@ fun Chatauswahlscreen(modifier: Modifier = Modifier) {
 
             //TODO: Filtersymbol
 
+            // new chat button
             Button(
 
                 onClick = {  },
                 modifier = Modifier.padding(16.dp)
             ) {
-                Text(
-                    text = "Neuer Chat"
+                Icon(
+                    painterResource(Res.drawable.new_chat),
+                    null,
+                    tint = LocalContentColor.current
                 )
             }
         }
