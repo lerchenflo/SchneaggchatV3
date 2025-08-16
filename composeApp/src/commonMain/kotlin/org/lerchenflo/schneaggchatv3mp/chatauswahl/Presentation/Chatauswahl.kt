@@ -24,9 +24,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.database.User
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.*
 
 @Composable
 fun Chatauswahlscreen(modifier: Modifier = Modifier) {
@@ -61,7 +65,7 @@ fun Chatauswahlscreen(modifier: Modifier = Modifier) {
         ) {
             Text(
                 fontSize = 26.sp,
-                text = "SchneaggchatV3",
+                text = stringResource(Res.string.app_name),
                 modifier = Modifier
                     .padding(16.dp)
 
