@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -39,6 +40,7 @@ fun Chatauswahlscreen(modifier: Modifier = Modifier) {
     LaunchedEffect(true) {
         val userlist = listOf<User>(
             User(1, 0, "Ben"),
+            User(2, 0, "David"),
             User(3, 0, "flo"),
             User(4, 0, "fabi")
         )
@@ -52,7 +54,7 @@ fun Chatauswahlscreen(modifier: Modifier = Modifier) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(4.dp)
+            .safeContentPadding()
 
     ) {
         //Obere Zeile für Buttons

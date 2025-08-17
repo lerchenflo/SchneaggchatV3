@@ -31,6 +31,9 @@ import org.lerchenflo.schneaggchatv3mp.database.UserDao
 @Preview
 fun App() {
     MaterialTheme {
+
+        //Viewmodel tutorial des nochbout worra isch: https://www.youtube.com/watch?v=hRB505G6OGo
+
         Chatauswahlscreen()
     }
 }

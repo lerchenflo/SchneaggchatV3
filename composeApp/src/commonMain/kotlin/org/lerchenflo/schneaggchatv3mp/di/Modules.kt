@@ -19,6 +19,7 @@ val sharedmodule = module{
     //Repository
     singleOf(::UserDatabaseRepository)
 
+
     //Use cases
     singleOf(::GetAllUserUseCase)
     singleOf(::UpsertUserUseCase)

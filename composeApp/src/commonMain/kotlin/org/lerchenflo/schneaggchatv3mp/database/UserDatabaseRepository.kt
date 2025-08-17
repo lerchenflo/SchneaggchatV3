@@ -15,7 +15,6 @@ class UserDatabaseRepository(
         }
     }
 
-
     fun getallusers(): Flow<List<User>>{
         return database.userDao().getallusers()
     }
