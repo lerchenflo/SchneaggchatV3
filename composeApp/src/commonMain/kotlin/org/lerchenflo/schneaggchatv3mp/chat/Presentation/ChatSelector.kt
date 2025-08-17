@@ -7,29 +7,41 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,6 +51,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.*
 import kotlin.random.Random
@@ -53,7 +66,10 @@ fun Chatauswahlscreen(
     val viewModel = koinViewModel<SharedViewModel>()
 
     val users by viewModel.getAllUsers().collectAsState(initial = emptyList())
+
     val scope = rememberCoroutineScope()
+
+
 
     LaunchedEffect(true) {
         val userlist = listOf<User>(
@@ -71,48 +87,97 @@ fun Chatauswahlscreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.systemBars)
             .padding(4.dp)
 
     ) {
         //Obere Zeile für Buttons
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+
         ) {
-            Text(
-                fontSize = 26.sp,
+            BasicText(
                 text = stringResource(Res.string.app_name),
                 modifier = Modifier
-                    .padding(16.dp)
-
-
+                    .weight(1f)
+                    .padding(start = 10.dp),
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                ),
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 20.sp,
+                    maxFontSize = 30.sp
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
 
-            //TODO: Schneaggmap button usw
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val size = 40.dp
+                Image(
+                    painterResource(Res.drawable.tools_and_games),
+                    contentDescription = stringResource(Res.string.tools_and_games),
+                    modifier = Modifier
+                        .size(size)
+                        .clickable { SnackbarManager.showMessage("Es gibt noch koa spiele und o koa tools") }
+                )
+                Spacer(Modifier.width(4.dp))
+                Image(
+                    painterResource(Res.drawable.schneaggmap),
+                    contentDescription = stringResource(Res.string.schneaggmap),
+                    modifier = Modifier
+                        .size(size)
+                        .clickable { SnackbarManager.showMessage("Es gibt noch koa schneaggmap") }
+                )
+                Spacer(Modifier.width(4.dp))
+                Image(
+                    painterResource(Res.drawable.settings_gear),
+                    contentDescription = stringResource(Res.string.settings),
+                    modifier = Modifier
+                        .size(size)
+                        .clickable { SnackbarManager.showMessage("Es gibt noch koa settings") }
+                )
+            }
         }
 
         //Zweite Zeile für Freund suchen
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedTextField(
                 value = "",
-                onValueChange = {
-                    //TODO: Suchen
-                }
+                onValueChange = { /* TODO: Suchen */ },
+                modifier = Modifier.weight(1f),
+                placeholder = { Text(stringResource(Res.string.search_friend)) }
             )
 
-            //TODO: Filtersymbol
+            Spacer(Modifier.width(8.dp))
 
-            // new chat button
+            Image(
+                painterResource(Res.drawable.filter),
+                contentDescription = stringResource(Res.string.filter),
+                modifier = Modifier
+                    .size(48.dp)
+                    .clickable { SnackbarManager.showMessage("muasch noch selber suacha") }
+            )
+
+            Spacer(Modifier.width(8.dp))
+
             Button(
-
                 onClick = { onNewChatClick() },
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.height(48.dp)
             ) {
                 Icon(
                     painterResource(Res.drawable.new_chat),
                     null,
-                    tint = LocalContentColor.current
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
@@ -126,7 +191,7 @@ fun Chatauswahlscreen(
             items(users) { user ->
                 AddUserButton(
                     user = user,
-                    onClick = {onChatSelected(user.id)}
+                    onClick = { onChatSelected(user.id) }
                 )
                 HorizontalDivider(
                     thickness = 2.dp
