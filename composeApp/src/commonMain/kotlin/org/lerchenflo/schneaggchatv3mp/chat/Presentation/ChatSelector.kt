@@ -7,11 +7,14 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -21,11 +24,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +46,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.*
 import kotlin.random.Random
@@ -53,7 +61,10 @@ fun Chatauswahlscreen(
     val viewModel = koinViewModel<SharedViewModel>()
 
     val users by viewModel.getAllUsers().collectAsState(initial = emptyList())
+
     val scope = rememberCoroutineScope()
+
+
 
     LaunchedEffect(true) {
         val userlist = listOf<User>(
@@ -71,6 +82,7 @@ fun Chatauswahlscreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.systemBars)
             .padding(4.dp)
 
     ) {
@@ -82,10 +94,34 @@ fun Chatauswahlscreen(
                 fontSize = 26.sp,
                 text = stringResource(Res.string.app_name),
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(10.dp, 0.dp, 10.dp, 0.dp)
 
 
             )
+
+            Image(
+                painterResource(Res.drawable.schneaggmap),
+                contentDescription = stringResource(Res.string.schneaggmap),
+                modifier = Modifier
+                    .size(48.dp) // Use square aspect ratio
+                    .padding(end = 8.dp) // Right padding only
+                    .clickable {
+                        // todo: open schneaggmap
+                        SnackbarManager.showMessage("Es gibt noch koa schneaggmap")
+                    }
+            )
+            Image(
+                painterResource(Res.drawable.settings_gear),
+                contentDescription = stringResource(Res.string.settings),
+                modifier = Modifier
+                    .size(48.dp) // Use square aspect ratio
+                    .padding(end = 8.dp) // Right padding only
+                    .clickable {
+                        // todo: open settings
+                        SnackbarManager.showMessage("Es gibt noch koa settings")
+                    }
+            )
+
 
             //TODO: Schneaggmap button usw
         }
@@ -126,7 +162,7 @@ fun Chatauswahlscreen(
             items(users) { user ->
                 AddUserButton(
                     user = user,
-                    onClick = {onChatSelected(user.id)}
+                    onClick = { onChatSelected(user.id) }
                 )
                 HorizontalDivider(
                     thickness = 2.dp

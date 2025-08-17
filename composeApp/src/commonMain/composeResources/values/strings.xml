@@ -2,4 +2,6 @@
 <resources>
     <string name="app_name">SchneaggchatV3</string>
     <string name="profile_picture">profile picture</string>
+    <string name="schneaggmap">schneaggmap</string>
+    <string name="settings">settings</string>
 </resources>
