@@ -14,4 +14,7 @@ sealed interface Route {
 
     @Serializable
     data class Chat(val id: Int): Route
+    @Serializable
+    data object newChat: Route
+
 }

@@ -46,6 +46,7 @@ import kotlin.random.Random
 @Composable
 fun Chatauswahlscreen(
     onChatSelected: (Int) -> Unit,  // navigation callback
+    onNewChatClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -105,7 +106,7 @@ fun Chatauswahlscreen(
             // new chat button
             Button(
 
-                onClick = {  },
+                onClick = { onNewChatClick() },
                 modifier = Modifier.padding(16.dp)
             ) {
                 Icon(

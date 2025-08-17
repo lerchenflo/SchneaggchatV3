@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.app
 
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +19,7 @@ import kotlinx.serialization.PolymorphicSerializer
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.ChatScreen
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.Chatauswahlscreen
+import org.lerchenflo.schneaggchatv3mp.chat.Presentation.NewChat
 
 
 @Composable
@@ -24,7 +27,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.Presentation.Chatauswahlscreen
 fun App() {
     MaterialTheme {
         val navController = rememberNavController()
-        println("hello world")
+        //println("hello world")
         NavHost(
             navController = navController,
             startDestination = Route.ChatGraph
@@ -32,22 +35,40 @@ fun App() {
             navigation<Route.ChatGraph>(
                 startDestination = Route.ChatSelector
             ) {
-                composable<Route.ChatSelector>{
+                // chat selector (gegnerauswahl)
+                composable<Route.ChatSelector>(
+                    enterTransition = {slideInHorizontally { fullWidth -> fullWidth }},
+                    exitTransition = {slideOutHorizontally { fullWidth -> -fullWidth }},
+                    popEnterTransition = {slideInHorizontally { fullWidth -> -fullWidth }},
+                    popExitTransition = {slideOutHorizontally { fullWidth -> fullWidth }}
+                ){
                     Chatauswahlscreen(
                         onChatSelected = { userId ->
                             // Navigate to Chat screen with user ID
                             println("opening chat with $userId")
                             navController.navigate(Route.Chat(userId))
+                        },
+                        onNewChatClick = {
+                            navController.navigate(Route.newChat)
                         }
+
                     )
                 }
 
+                // chat
                 composable<Route.Chat>{ backStackEntry ->
                     val userId = backStackEntry.toRoute<Route.Chat>().id
 
                     ChatScreen(userId)
 
                 }
+
+                // newChat (neuegegnergruppen)
+                composable<Route.newChat>{
+                    NewChat()
+                }
+
+
             }
         }
 
