@@ -7,15 +7,12 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -24,19 +21,13 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,7 +37,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.serialization.descriptors.PrimitiveKind
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -59,17 +49,15 @@ import kotlin.random.Random
 
 @Composable
 fun Chatauswahlscreen(
-    onChatSelected: (Int) -> Unit,  // navigation callback
+    onChatSelected: (User) -> Unit,  // navigation callback
     onNewChatClick: () -> Unit,
     modifier: Modifier = Modifier
+        .safeContentPadding()
 ) {
 
-    val viewModel = koinViewModel<SharedViewModel>()
+    val sharedViewModel = koinViewModel<SharedViewModel>()
 
-    val users by viewModel.getAllUsers().collectAsState(initial = emptyList())
-
-    val scope = rememberCoroutineScope()
-
+    val users by sharedViewModel.getAllUsers().collectAsState(initial = emptyList())
 
 
     LaunchedEffect(true) {
@@ -80,16 +68,13 @@ fun Chatauswahlscreen(
         )
 
         userlist.forEach {
-            viewModel.upsertUser(it)
+            sharedViewModel.upsertUser(it)
         }
     }
 
     //Hauptlayout
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.systemBars)
-            .padding(4.dp)
+        modifier = modifier
 
     ) {
         //Obere Zeile für Buttons
@@ -196,7 +181,7 @@ fun Chatauswahlscreen(
             items(users) { user ->
                 AddUserButton(
                     user = user,
-                    onClick = { onChatSelected(user.id) }
+                    onClick = { onChatSelected(user) }
                 )
                 HorizontalDivider(
                     thickness = 2.dp
