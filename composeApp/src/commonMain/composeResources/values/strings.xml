@@ -4,4 +4,7 @@
     <string name="profile_picture">profile picture</string>
     <string name="schneaggmap">schneaggmap</string>
     <string name="settings">settings</string>
+    <string name="tools_and_games">tools and games</string>
+    <string name="filter">filter</string>
+    <string name="search_friend">search Friend ...</string>
 </resources>
