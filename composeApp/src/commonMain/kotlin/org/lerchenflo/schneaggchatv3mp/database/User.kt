@@ -3,7 +3,9 @@ package org.lerchenflo.schneaggchatv3mp.database
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
 import androidx.room.Entity
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(tableName = "users")
 data class User(
     @PrimaryKey()

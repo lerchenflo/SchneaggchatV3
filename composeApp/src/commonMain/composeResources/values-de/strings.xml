@@ -2,4 +2,5 @@
 <!--default language: en-->
 <resources>
     <string name="app_name">SchneaggchatV3</string>
+    <string name="profile_picture">Profilbild</string>
 </resources>
