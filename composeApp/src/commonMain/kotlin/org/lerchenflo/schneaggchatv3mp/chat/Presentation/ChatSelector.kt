@@ -40,6 +40,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -123,7 +124,8 @@ fun Chatauswahlscreen(
                     contentDescription = stringResource(Res.string.tools_and_games),
                     modifier = Modifier
                         .size(size)
-                        .clickable { SnackbarManager.showMessage("Es gibt noch koa spiele und o koa tools") }
+                        .clickable { SnackbarManager.showMessage("Es gibt noch koa spiele und o koa tools") },
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
                 )
                 Spacer(Modifier.width(4.dp))
                 Image(
@@ -131,7 +133,8 @@ fun Chatauswahlscreen(
                     contentDescription = stringResource(Res.string.schneaggmap),
                     modifier = Modifier
                         .size(size)
-                        .clickable { SnackbarManager.showMessage("Es gibt noch koa schneaggmap") }
+                        .clickable { SnackbarManager.showMessage("Es gibt noch koa schneaggmap") },
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
                 )
                 Spacer(Modifier.width(4.dp))
                 Image(
@@ -139,7 +142,8 @@ fun Chatauswahlscreen(
                     contentDescription = stringResource(Res.string.settings),
                     modifier = Modifier
                         .size(size)
-                        .clickable { SnackbarManager.showMessage("Es gibt noch koa settings") }
+                        .clickable { SnackbarManager.showMessage("Es gibt noch koa settings") },
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
                 )
             }
         }
@@ -165,7 +169,8 @@ fun Chatauswahlscreen(
                 contentDescription = stringResource(Res.string.filter),
                 modifier = Modifier
                     .size(48.dp)
-                    .clickable { SnackbarManager.showMessage("muasch noch selber suacha") }
+                    .clickable { SnackbarManager.showMessage("muasch noch selber suacha") },
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
             )
 
             Spacer(Modifier.width(8.dp))

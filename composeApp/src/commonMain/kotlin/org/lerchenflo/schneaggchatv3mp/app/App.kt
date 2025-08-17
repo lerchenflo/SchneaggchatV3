@@ -26,13 +26,14 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.ChatScreen
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.Chatauswahlscreen
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.NewChat
+import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 
 
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
+    SchneaggchatTheme {
         val navController = rememberNavController()
         val snackbarHostState = remember { SnackbarHostState() } // for snackbar
         val scope = rememberCoroutineScope()
