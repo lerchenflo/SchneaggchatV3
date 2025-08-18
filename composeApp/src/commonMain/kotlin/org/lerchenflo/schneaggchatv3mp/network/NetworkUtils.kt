@@ -20,7 +20,7 @@ class NetworkUtils(
             httpClient.get (
                 urlString = SERVERURL
             ){
-                header("msgtype", 7) //TODO: Richtia msgtypes
+                header("msgtype", LOGINMESSAGE) //TODO: Richtia msgtypes
                 header("username", username)
                 header("password", password)
 
