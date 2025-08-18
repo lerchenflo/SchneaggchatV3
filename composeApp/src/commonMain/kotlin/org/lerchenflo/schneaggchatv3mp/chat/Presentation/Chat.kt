@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,7 +17,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -59,12 +58,13 @@ fun ChatScreen(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // todo: addUserComposable
-                    // platzhaltertext
-                    Text(
-                        text = "Chat ${sharedViewModel.selectedChat.value?.name}",
-                        modifier = Modifier
-                            .fillMaxSize()
+                    UserButton(
+                        user = sharedViewModel.selectedChat.value,
+                        showBottomText = true,
+                        onClickGes = {
+                            // todo open chatdetails
+                            SnackbarManager.showMessage("Bald chatdetails")
+                        }
                     )
                 }
             }
