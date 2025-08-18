@@ -13,7 +13,7 @@ sealed interface Route {
     data object ChatSelector: Route
 
     @Serializable
-    data class Chat(val id: Int): Route
+    data object Chat: Route
     @Serializable
     data object newChat: Route
 

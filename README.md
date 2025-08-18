@@ -1,16 +1,18 @@
-This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM).
+# Schneaggchat V3
+Dieses mol sogar für grantiger IOS user und natürlich o für android. (Desktop und so o)
+Mir hond nämlich a Kotlin Mutliplatform app mit Jetpack compose
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+## What is Schneaggchat?
+Schneaggchat is an innovative Chatting Plattform. 
+It is an alternative to the tech giants stealing our data.
 
-* [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+## Anleitung für MacBook User
+1. Ordner iosApp in XCode öffnen
+2. Build starten
 
+## Kumm ins dev Team!
+Du kannsch programmiera oder guat chatbot promten?
+Schrieb uns a uf Schneaggchat (User fabi:2 oder flo:1) und würr teil vom Team
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+## Webseite
+https://schneaggchat.lerchenflo.eu/

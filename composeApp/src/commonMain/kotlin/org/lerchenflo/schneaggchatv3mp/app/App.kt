@@ -15,7 +15,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModel
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
@@ -23,16 +25,19 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import kotlinx.serialization.PolymorphicSerializer
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.ChatScreen
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.Chatauswahlscreen
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.NewChat
+import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 
 
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
+    SchneaggchatTheme {
         val navController = rememberNavController()
         val snackbarHostState = remember { SnackbarHostState() } // for snackbar
         val scope = rememberCoroutineScope()
@@ -61,11 +66,19 @@ fun App() {
                         popEnterTransition = { slideInHorizontally { fullWidth -> -fullWidth } },
                         popExitTransition = { slideOutHorizontally { fullWidth -> fullWidth } }
                     ) {
+                        val sharedViewModel = it.sharedKoinViewModel<SharedViewModel>(navController)
+
+                        LaunchedEffect(true) {
+                            sharedViewModel.onLeaveChat() // am afang wenn ma noch nix selected hot an null
+                        }
+
                         Chatauswahlscreen(
-                            onChatSelected = { userId ->
+                            onChatSelected = { user ->
+                                sharedViewModel.onSelectChat(user)
+
                                 // Navigate to Chat screen with user ID
-                                println("opening chat with $userId")
-                                navController.navigate(Route.Chat(userId))
+                                println("opening chat with $user.id")
+                                navController.navigate(Route.Chat)
                             },
                             onNewChatClick = {
                                 navController.navigate(Route.newChat)
@@ -75,10 +88,14 @@ fun App() {
                     }
 
                     // chat
-                    composable<Route.Chat> { backStackEntry ->
-                        val userId = backStackEntry.toRoute<Route.Chat>().id
-
-                        ChatScreen(userId)
+                    composable<Route.Chat> {
+                        val sharedViewModel = it.sharedKoinViewModel<SharedViewModel>(navController)
+                        ChatScreen(
+                            sharedViewModel = sharedViewModel,
+                            onBackClick = {
+                                navController.navigateUp()
+                            }
+                        )
 
                     }
 
@@ -94,4 +111,17 @@ fun App() {
         }
 
     }
+}
+
+@Composable
+private inline fun <reified T: ViewModel> NavBackStackEntry.sharedKoinViewModel(
+    navController: NavController
+): T {
+    val navGraphRoute = destination.parent?.route ?: return koinViewModel<T>()
+    val parentEntry = remember(this) {
+        navController.getBackStackEntry(navGraphRoute)
+    }
+    return koinViewModel(
+        viewModelStoreOwner = parentEntry
+    )
 }
