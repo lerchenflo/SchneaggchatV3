@@ -77,6 +77,9 @@ kotlin {
             //Navigation
             implementation(libs.jetbrains.compose.navigation)
             implementation(libs.kotlinx.serialization.json)
+
+            //Internet
+            implementation(libs.bundles.ktor)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
