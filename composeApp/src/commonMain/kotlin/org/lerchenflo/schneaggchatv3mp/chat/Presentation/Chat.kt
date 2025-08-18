@@ -89,7 +89,6 @@ fun ChatScreen(
                 ) {
                     UserButton(
                         user = sharedViewModel.selectedChat.value,
-                        showBottomText = true,
                         onClickGes = {
                             // todo open chatdetails
                             SnackbarManager.showMessage("Bald chatdetails")
