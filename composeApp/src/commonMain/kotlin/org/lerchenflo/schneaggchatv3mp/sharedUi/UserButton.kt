@@ -35,11 +35,10 @@ import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 /**
  * Can be used everywhere where the Username as well as additional information needs to be shown
  * @param user pass User object
- * @param showBottomText if true shows the bottom Text. If override = null -> user status will get displayed
  * @param showProfilePicture if true shows the profile picture of the user on the left
  * @param unreadMessages shows an Unread Messages Icon next to the Username
  * @param lastMessage pass lastMessage (Message) Object (not done yet) to show the message as well as the time
- * @param bottomTextOverride if not null -> overrides the bottom Text, if null -> bottom Text displays status
+ * @param bottomTextOverride if null -> bottom Text displays status, if empty -> Text disappeares, if not empty -> overrides text. Default: Empty String
  * @param useOnClickGes select one OnClickListener for everything or separate listeners for text and Image
  * @param onClickGes OnClickListener for everything
  * @param onClickText OnClickListener only for the Text
@@ -50,11 +49,10 @@ import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 @Composable
 fun UserButton(
     user: User?,
-    showBottomText: Boolean = false, // Text below the name
     showProfilePicture: Boolean = true,
     unreadMessages: Boolean = false,
     lastMessage: String? = null, // todo wenn die messageklasse exisitier a Message übergeaba
-    bottomTextOverride: String? = null,
+    bottomTextOverride: String? = "",
     useOnClickGes: Boolean = true,
     onClickGes: () -> Unit = {},  // Add click for everything
     onClickText: () -> Unit = {},  // Add click for name ...
@@ -149,7 +147,8 @@ fun UserButton(
             }
 
             // Bottom Text (status ...)
-            if(showBottomText){
+            if(bottomTextOverride == null || !bottomTextOverride.isEmpty()){
+
                 Text(
                     text = bottomTextOverride ?: (user?.status ?: // override if not null
                         stringResource(Res.string.no_status)),
