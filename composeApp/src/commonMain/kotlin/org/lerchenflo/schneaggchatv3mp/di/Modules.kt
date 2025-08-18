@@ -9,8 +9,7 @@ import org.lerchenflo.schneaggchatv3mp.chatauswahl.domain.UpsertUserUseCase
 import org.lerchenflo.schneaggchatv3mp.database.CreateUserDatabase
 import org.lerchenflo.schneaggchatv3mp.database.UserDatabase
 import org.lerchenflo.schneaggchatv3mp.database.UserDatabaseRepository
-import org.lerchenflo.schneaggchatv3mp.network.Netzwerkutils
-import kotlin.math.sin
+import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 
 val sharedmodule = module{
 
@@ -22,7 +21,7 @@ val sharedmodule = module{
 
 
     //Netzwerktask
-    singleOf(::Netzwerkutils)
+    singleOf(::NetworkUtils)
 
 
     //Use cases userdatenbank

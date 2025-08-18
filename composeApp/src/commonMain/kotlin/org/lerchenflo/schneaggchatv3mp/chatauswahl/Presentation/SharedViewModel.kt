@@ -7,11 +7,25 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.chatauswahl.domain.GetAllUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chatauswahl.domain.UpsertUserUseCase
 import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
+import util.onSuccess
 
 class SharedViewModel(
     private val upsertUserUseCase: UpsertUserUseCase,
-    private val getAllUserUseCase: GetAllUserUseCase
+    private val getAllUserUseCase: GetAllUserUseCase,
+    private val networkUtils: NetworkUtils
 ):ViewModel() {
+
+    val login = fun(username: String, password: String){
+        viewModelScope.launch {
+            networkUtils.login(username, password)
+                .onSuccess{value ->
+                    println("Login:$value")
+                }
+        }
+    }
+
+
 
     val upsertUser = fun(user: User){
         viewModelScope.launch { upsertUserUseCase(user) }
