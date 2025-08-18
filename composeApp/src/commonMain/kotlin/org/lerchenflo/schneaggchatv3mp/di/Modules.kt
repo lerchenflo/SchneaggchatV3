@@ -9,7 +9,7 @@ import org.lerchenflo.schneaggchatv3mp.chatauswahl.domain.UpsertUserUseCase
 import org.lerchenflo.schneaggchatv3mp.database.CreateUserDatabase
 import org.lerchenflo.schneaggchatv3mp.database.UserDatabase
 import org.lerchenflo.schneaggchatv3mp.database.UserDatabaseRepository
-import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
+import kotlin.math.sin
 
 val sharedmodule = module{
 

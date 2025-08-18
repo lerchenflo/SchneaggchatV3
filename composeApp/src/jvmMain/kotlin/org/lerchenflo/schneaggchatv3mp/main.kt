@@ -3,7 +3,6 @@ package org.lerchenflo.schneaggchatv3mp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import org.koin.core.context.startKoin
-import org.lerchenflo.schneaggchatv3mp.di.desktopHttpModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopUserDatabaseModule
 import org.lerchenflo.schneaggchatv3mp.di.sharedmodule
 

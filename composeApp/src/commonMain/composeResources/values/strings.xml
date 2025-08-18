@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resources>
+    <string name="app_name">SchneaggchatV3</string>
+    <string name="profile_picture">profile picture</string>
+    <string name="schneaggmap">schneaggmap</string>
+    <string name="settings">settings</string>
+    <string name="tools_and_games">tools and games</string>
+    <string name="filter">filter</string>
+    <string name="search_friend">search Friend ...</string>
+    <string name="no_status">no status</string>
+    <string name="unknown_user">unknown user</string>
+    <string name="notification_bell">notification bell</string>
+    <string name="go_back">go back</string>
+    <string name="add">add</string>
+    <string name="message">message</string>
+</resources>

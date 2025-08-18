@@ -7,8 +7,6 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.chatauswahl.domain.GetAllUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chatauswahl.domain.UpsertUserUseCase
 import org.lerchenflo.schneaggchatv3mp.database.User
-import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
-import util.onSuccess
 
 class SharedViewModel(
     private val upsertUserUseCase: UpsertUserUseCase,
