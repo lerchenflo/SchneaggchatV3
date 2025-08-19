@@ -12,6 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.database.User
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccess
+import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
 
 class SharedViewModel(
     private val upsertUserUseCase: UpsertUserUseCase,
@@ -23,8 +24,8 @@ class SharedViewModel(
     val login = fun(username: String, password: String){
         viewModelScope.launch {
             networkUtils.login(username, password)
-                .onSuccess{value ->
-                    println("Login:$value")
+                .onSuccessWithBody { bool, string ->
+                    println("Login: $bool mit nachricht $string")
                 }
                 .onError {
                     println(it.toString())
