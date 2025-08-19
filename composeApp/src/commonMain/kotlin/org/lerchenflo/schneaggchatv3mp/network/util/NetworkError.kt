@@ -1,4 +1,4 @@
-package util
+package org.lerchenflo.schneaggchatv3mp.network.util
 
 enum class NetworkError : Error {
     REQUEST_TIMEOUT,

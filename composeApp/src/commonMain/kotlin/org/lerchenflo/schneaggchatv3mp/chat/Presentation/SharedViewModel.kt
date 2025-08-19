@@ -10,7 +10,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertUserUseCase
 import org.lerchenflo.schneaggchatv3mp.database.User
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
-import util.onSuccess
+import org.lerchenflo.schneaggchatv3mp.network.util.onError
+import org.lerchenflo.schneaggchatv3mp.network.util.onSuccess
 
 class SharedViewModel(
     private val upsertUserUseCase: UpsertUserUseCase,
@@ -24,6 +25,9 @@ class SharedViewModel(
             networkUtils.login(username, password)
                 .onSuccess{value ->
                     println("Login:$value")
+                }
+                .onError {
+                    println(it.toString())
                 }
         }
     }
