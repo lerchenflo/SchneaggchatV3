@@ -7,7 +7,7 @@ import org.lerchenflo.schneaggchatv3mp.database.UserDatabaseRepository
 class GetAllUserUseCase(
     private val userRepository: UserDatabaseRepository
 ) {
-    operator fun invoke(): Flow<List<User>> {
-        return userRepository.getallusers()
+    operator fun invoke(searchterm: String = ""): Flow<List<User>> {
+        return userRepository.getallusers(searchterm)
     }
 }

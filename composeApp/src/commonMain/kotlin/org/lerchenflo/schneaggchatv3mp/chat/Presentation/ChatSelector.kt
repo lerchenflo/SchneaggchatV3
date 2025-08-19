@@ -138,7 +138,7 @@ fun Chatauswahlscreen(
         ) {
             OutlinedTextField(
                 value = "",
-                onValueChange = { /* TODO: Suchen */ },
+                onValueChange = { /* TODO: Suchen */ }, //In da datenbank gits a suchfeature
                 modifier = Modifier.weight(1f),
                 placeholder = { Text(stringResource(Res.string.search_friend)) }
             )

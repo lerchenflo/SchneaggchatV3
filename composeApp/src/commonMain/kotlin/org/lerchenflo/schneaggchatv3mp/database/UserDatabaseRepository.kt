@@ -15,8 +15,8 @@ class UserDatabaseRepository(
         }
     }
 
-    fun getallusers(): Flow<List<User>>{
-        return database.userDao().getallusers()
+    fun getallusers(searchterm: String = ""): Flow<List<User>>{
+        return database.userDao().getallusers(searchterm)
     }
 
 }
