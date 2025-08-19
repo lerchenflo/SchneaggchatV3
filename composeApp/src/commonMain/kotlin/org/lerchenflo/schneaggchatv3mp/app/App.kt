@@ -2,19 +2,13 @@ package org.lerchenflo.schneaggchatv3mp.app
 
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
@@ -22,14 +16,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
-import kotlinx.serialization.PolymorphicSerializer
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.ChatScreen
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.Chatauswahlscreen
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.NewChat
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.login.Presentation.LoginScreen
+import org.lerchenflo.schneaggchatv3mp.login.Presentation.SignUpScreen
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 
@@ -56,8 +50,9 @@ fun App() {
                 navController = navController,
                 startDestination = Route.ChatGraph
             ) {
+                val startDestination = if(true){Route.ChatSelector} else {Route.Login} // todo logik ob ma ind login kummt oder ned
                 navigation<Route.ChatGraph>(
-                    startDestination = Route.ChatSelector
+                    startDestination = startDestination
                 ) {
                     // chat selector (gegnerauswahl)
                     composable<Route.ChatSelector>(
@@ -81,7 +76,7 @@ fun App() {
                                 navController.navigate(Route.Chat)
                             },
                             onNewChatClick = {
-                                navController.navigate(Route.newChat)
+                                navController.navigate(Route.NewChat)
                             }
 
                         )
@@ -100,8 +95,24 @@ fun App() {
                     }
 
                     // newChat (neuegegnergruppen)
-                    composable<Route.newChat> {
+                    composable<Route.NewChat> {
                         NewChat()
+                    }
+
+                    // Login screen
+                    composable<Route.Login>{
+                        LoginScreen(
+                            onLoginSuccess = {
+                                navController.navigate(Route.ChatSelector)
+                            },
+                            onSignUp = {
+                                navController.navigate(Route.SignUp)
+                            }
+                        )
+                    }
+
+                    composable<Route.SignUp>{
+                        SignUpScreen()
                     }
 
 
