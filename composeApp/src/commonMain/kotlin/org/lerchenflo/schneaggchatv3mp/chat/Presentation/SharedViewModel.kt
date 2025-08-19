@@ -39,8 +39,8 @@ class SharedViewModel(
         viewModelScope.launch { upsertUserUseCase(user) }
     }
 
-    fun getAllUsers(): Flow<List<User>> {
-        return getAllUserUseCase()
+    fun getAllUsers(searchterm: String = ""): Flow<List<User>> {
+        return getAllUserUseCase(searchterm)
     }
 
 

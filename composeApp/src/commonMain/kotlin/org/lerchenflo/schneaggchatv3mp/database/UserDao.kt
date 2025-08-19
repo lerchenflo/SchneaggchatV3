@@ -11,8 +11,8 @@ interface UserDao {
     @Upsert
     suspend fun upsert(user: User) //Suspend: Async mit warten
 
-    @Query("SELECT * FROM users")
-    fun getallusers(): Flow<List<User>>
+    @Query("SELECT * FROM users WHERE name LIKE '%' || :searchterm || '%'")
+    fun getallusers(searchterm: String = ""): Flow<List<User>>
 
 
 }
