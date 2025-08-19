@@ -179,7 +179,7 @@ fun Chatauswahlscreen(
                     user = user,
                     useOnClickGes = false,
                     unreadMessages = false,
-                    lastMessage = "todo", // todo messageobjekt mitgeaba
+                    lastMessage = null,
                     onClickText = { onChatSelected(user)},
                     onClickImage = {
                         SnackbarManager.showMessage("Imagepreview incoming")

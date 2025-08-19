@@ -7,9 +7,9 @@ import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertUserUseCase
-import org.lerchenflo.schneaggchatv3mp.database.CreateUserDatabase
-import org.lerchenflo.schneaggchatv3mp.database.UserDatabase
-import org.lerchenflo.schneaggchatv3mp.database.UserDatabaseRepository
+import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
+import org.lerchenflo.schneaggchatv3mp.database.AppDatabaseRepository
+import org.lerchenflo.schneaggchatv3mp.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
 import kotlin.math.sin
@@ -17,13 +17,13 @@ import kotlin.math.sin
 val sharedmodule = module{
 
     //Database
-    single < UserDatabase> { CreateUserDatabase(get()).getDatabase() }
+    single <AppDatabase> { CreateAppDatabase(get()).getDatabase() }
 
     single < HttpClient> { createHttpClient(get()) }
 
 
     //Repository
-    singleOf(::UserDatabaseRepository)
+    singleOf(::AppDatabaseRepository)
 
 
     //Netzwerktask

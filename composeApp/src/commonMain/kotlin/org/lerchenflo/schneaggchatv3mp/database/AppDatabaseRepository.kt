@@ -1,12 +1,11 @@
-package org.lerchenflo.schneaggchatv3mp.database.userdatabase
+package org.lerchenflo.schneaggchatv3mp.database
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
-import org.lerchenflo.schneaggchatv3mp.database.messagedatabase.UserDatabase
 
-class UserDatabaseRepository(
-    private val database: UserDatabase
+class AppDatabaseRepository(
+    private val database: AppDatabase
 ) {
     private val dispatcher = Dispatchers.IO
 
@@ -19,5 +18,7 @@ class UserDatabaseRepository(
     fun getallusers(searchterm: String = ""): Flow<List<User>>{
         return database.userDao().getallusers(searchterm)
     }
+
+    
 
 }

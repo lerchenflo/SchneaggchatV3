@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.lerchenflo.schneaggchatv3mp.database.Message
 import org.lerchenflo.schneaggchatv3mp.database.User
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
@@ -51,7 +52,7 @@ fun UserButton(
     user: User?,
     showProfilePicture: Boolean = true,
     unreadMessages: Boolean = false,
-    lastMessage: String? = null, // todo wenn die messageklasse exisitier a Message übergeaba
+    lastMessage: Message? = null,
     bottomTextOverride: String? = "",
     useOnClickGes: Boolean = true,
     onClickGes: () -> Unit = {},  // Add click for everything
@@ -121,7 +122,7 @@ fun UserButton(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            if (!lastMessage.isNullOrEmpty()) { // todo: check if lastmessage isch existent
+            if (lastMessage != null) { // todo: check if lastmessage isch existent
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically

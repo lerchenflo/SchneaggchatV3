@@ -4,13 +4,13 @@ import androidx.room.RoomDatabase
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.dsl.module
-import org.lerchenflo.schneaggchatv3mp.database.UserDatabase
-import org.lerchenflo.schneaggchatv3mp.database.desktopUserDatabaseBuilder
+import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
+import org.lerchenflo.schneaggchatv3mp.database.desktopAppDatabaseBuilder
 import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
 
 
-val desktopUserDatabaseModule = module {
-    single<RoomDatabase.Builder<UserDatabase>> { desktopUserDatabaseBuilder() }
+val desktopAppDatabaseModule = module {
+    single<RoomDatabase.Builder<AppDatabase>> { desktopAppDatabaseBuilder() }
 }
 
 val desktopHttpModule = module {

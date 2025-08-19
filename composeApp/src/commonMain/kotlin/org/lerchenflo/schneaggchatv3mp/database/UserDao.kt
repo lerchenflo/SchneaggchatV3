@@ -16,3 +16,8 @@ interface UserDao {
 
 
 }
+
+data class UserWithLastMessage(
+    val user: User,
+    val lastMessage: Message?
+)
