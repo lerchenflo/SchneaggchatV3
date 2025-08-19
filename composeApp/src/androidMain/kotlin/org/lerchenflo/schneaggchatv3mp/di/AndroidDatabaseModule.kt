@@ -5,12 +5,12 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.dsl.module
 import org.koin.android.ext.koin.androidContext
-import org.lerchenflo.schneaggchatv3mp.database.UserDatabase
-import org.lerchenflo.schneaggchatv3mp.database.androidUserDatabaseBuilder
+import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
+import org.lerchenflo.schneaggchatv3mp.database.androidAppDatabaseBuilder
 import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
 
 val androidUserDatabaseModule = module {
-    single<RoomDatabase.Builder<UserDatabase>> { androidUserDatabaseBuilder(androidContext()) }
+    single<RoomDatabase.Builder<AppDatabase>> { androidAppDatabaseBuilder(androidContext()) }
 }
 
 

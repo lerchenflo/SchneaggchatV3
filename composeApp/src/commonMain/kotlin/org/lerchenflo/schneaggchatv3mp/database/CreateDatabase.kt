@@ -5,9 +5,9 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
-class CreateUserDatabase(private val builder: RoomDatabase.Builder<UserDatabase>) {
+class CreateAppDatabase(private val builder: RoomDatabase.Builder<AppDatabase>) {
 
-    fun getDatabase(): UserDatabase {
+    fun getDatabase(): AppDatabase {
         return builder
             .fallbackToDestructiveMigration(dropAllTables = true)
             .setDriver(BundledSQLiteDriver())

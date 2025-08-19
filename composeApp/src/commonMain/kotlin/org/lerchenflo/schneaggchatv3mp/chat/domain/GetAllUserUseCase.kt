@@ -1,11 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 import kotlinx.coroutines.flow.Flow
+import org.lerchenflo.schneaggchatv3mp.database.AppDatabaseRepository
 import org.lerchenflo.schneaggchatv3mp.database.User
-import org.lerchenflo.schneaggchatv3mp.database.UserDatabaseRepository
 
 class GetAllUserUseCase(
-    private val userRepository: UserDatabaseRepository
+    private val userRepository: AppDatabaseRepository
 ) {
     operator fun invoke(searchterm: String = ""): Flow<List<User>> {
         return userRepository.getallusers(searchterm)

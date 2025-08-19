@@ -5,10 +5,10 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import platform.Foundation.NSHomeDirectory
 
-fun iosUserDatabaseBuilder(): RoomDatabase.Builder<UserDatabase> {
-    val dbFile = NSHomeDirectory() + "/" + UserDatabase.DB_NAME
-    return Room.databaseBuilder<UserDatabase>(
+fun iosAppDatabaseBuilder(): RoomDatabase.Builder<AppDatabase> {
+    val dbFile = NSHomeDirectory() + "/" + AppDatabase.DB_NAME
+    return Room.databaseBuilder<AppDatabase>(
         name = dbFile,
-        factory = { UserDatabase::class.instantiateImpl() }
+        factory = { AppDatabase::class.instantiateImpl() }
     )
 }
