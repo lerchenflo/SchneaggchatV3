@@ -50,7 +50,7 @@ fun App() {
                 navController = navController,
                 startDestination = Route.ChatGraph
             ) {
-                val startDestination = if(true){Route.ChatSelector} else {Route.Login} // todo logik ob ma ind login kummt oder ned
+                val startDestination = if(false){Route.ChatSelector} else {Route.Login} // todo logik ob ma ind login kummt oder ned
                 navigation<Route.ChatGraph>(
                     startDestination = startDestination
                 ) {

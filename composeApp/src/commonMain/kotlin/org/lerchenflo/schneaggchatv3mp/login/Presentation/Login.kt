@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.login.Presentation
 
+import LoginViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -8,15 +9,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -27,6 +31,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
@@ -41,12 +47,16 @@ import schneaggchatv3mp.composeapp.generated.resources.username
 @Preview()
 @Composable
 fun LoginScreen(
+    viewModel: LoginViewModel = viewModel(),
     onLoginSuccess: () -> Unit = {}, // when login has finished successful
     onSignUp: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxSize()
         .safeContentPadding()
 ){
+    //val uiState by viewModel.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+
     SchneaggchatTheme {
         Box(
             modifier = modifier,
@@ -87,6 +97,15 @@ fun LoginScreen(
                         .wrapContentSize(Alignment.Center)
                 )
 
+                // Error message
+                viewModel.errorMessage?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
+
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier
@@ -96,8 +115,8 @@ fun LoginScreen(
                 ) {
                     // username field
                     OutlinedTextField(
-                        value = "",
-                        onValueChange = { /* TODO: username verschaffa */ },
+                        value = viewModel.username,
+                        onValueChange = viewModel::updateUsername,
                         keyboardOptions = KeyboardOptions(
                             capitalization = KeyboardCapitalization.None,
                             autoCorrectEnabled = true, // enables suggestions
@@ -111,8 +130,8 @@ fun LoginScreen(
 
                     // password field
                     OutlinedTextField(
-                        value = "",
-                        onValueChange = { /* TODO: password verschaffa */ },
+                        value = viewModel.password,
+                        onValueChange = viewModel::updatePassword,
                         placeholder = { Text(stringResource(Res.string.password))},
                         keyboardOptions = KeyboardOptions(
                             capitalization = KeyboardCapitalization.Unspecified,
@@ -128,13 +147,23 @@ fun LoginScreen(
 
                 // login button
                 Button(
-                    onClick = {onLoginSuccess()}, // todo logik implementiera
-                    modifier = Modifier
-                        .wrapContentSize(Alignment.Center)
-                ){
-                    Text(
-                        text = stringResource(Res.string.login)
-                    )
+                    onClick = {
+                        coroutineScope.launch {
+                            viewModel.login(onLoginSuccess)
+                        }
+                    },
+                    enabled = !viewModel.isLoading,
+                    modifier = Modifier.wrapContentSize(Alignment.Center)
+                ) {
+                    if (viewModel.isLoading) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    } else {
+                        Text(stringResource(Res.string.login))
+                    }
                 }
 
                 // sign up button
