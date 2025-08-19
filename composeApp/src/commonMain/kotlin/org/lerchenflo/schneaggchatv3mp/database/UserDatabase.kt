@@ -4,9 +4,6 @@ import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
-import org.lerchenflo.schneaggchatv3mp.database.userdatabase.MessageDao
-import org.lerchenflo.schneaggchatv3mp.database.userdatabase.MessageReader
-import kotlin.reflect.KClass
 
 
 @Database(
@@ -26,7 +23,7 @@ abstract class AppDatabase: RoomDatabase() {
     }
 }
 
-@Suppress("NO_ACTUAL_FOR_EXPECT")
+
 expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase>{
     override fun initialize(): AppDatabase
 }
