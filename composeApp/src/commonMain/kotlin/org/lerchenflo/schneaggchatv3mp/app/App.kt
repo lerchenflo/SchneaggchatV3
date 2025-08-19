@@ -101,7 +101,9 @@ fun App() {
 
                     // Login screen
                     composable<Route.Login>{
+
                         LoginScreen(
+
                             onLoginSuccess = {
                                 navController.navigate(Route.ChatSelector)
                             },

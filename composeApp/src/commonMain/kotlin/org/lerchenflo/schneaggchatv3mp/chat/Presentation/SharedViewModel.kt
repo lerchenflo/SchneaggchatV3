@@ -21,14 +21,21 @@ class SharedViewModel(
 
 ):ViewModel() {
 
-    val login = fun(username: String, password: String){
+
+    fun login(
+        username: String,
+        password: String,
+        onResult: (Boolean, String) -> Unit
+    ) {
         viewModelScope.launch {
             networkUtils.login(username, password)
-                .onSuccessWithBody { bool, string ->
-                    println("Login: $bool mit nachricht $string")
+                .onSuccessWithBody { success, message ->
+                    println("Success: $success $message")
+                    onResult(success, message)
                 }
-                .onError {
-                    println(it.toString())
+                .onError { error ->
+                    println("Error: $error")
+                    onResult(false, error.toString())
                 }
         }
     }

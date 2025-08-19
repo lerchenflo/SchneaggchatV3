@@ -3,12 +3,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import org.koin.mp.KoinPlatform.getKoin
+import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
 import org.lerchenflo.schneaggchatv3mp.login.Domain.LoginUseCase
 
 class LoginViewModel(
-    private val loginUseCase: LoginUseCase = LoginUseCase()
 ) : ViewModel() {
     // TextField states
+    val sharedViewModel: SharedViewModel = getKoin().get()
+
+
+
     var username by mutableStateOf("")
         private set
 
@@ -34,23 +41,23 @@ class LoginViewModel(
         clearError()
     }
 
+
     // Handle login logic
-    suspend fun login(onSuccess: () -> Unit) {
+    fun login(onLoginSuccess: () -> Unit) {
         if (validateInput()) {
             try {
                 isLoading = true
-                // Simulate network call
-                delay(1000)
 
-                // todo implement login logic
-                // Actual login logic would be:
-                // val result = loginUseCase(username, password)
-
-                if (username == "valid" && password == "valid") {
-                    onSuccess()
-                } else {
-                    errorMessage = "Invalid credentials"
+                // Use the sharedViewModel's login function with a callback
+                sharedViewModel.login(username, password) { success, message ->
+                    if (success) {
+                        println("Login erfolgreich")
+                        onLoginSuccess()
+                    } else {
+                        errorMessage = message
+                    }
                 }
+
             } catch (e: Exception) {
                 errorMessage = "Connection error: ${e.message}"
             } finally {

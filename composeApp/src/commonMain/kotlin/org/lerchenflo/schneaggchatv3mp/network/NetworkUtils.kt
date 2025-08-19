@@ -117,7 +117,10 @@ class NetworkUtils(
             "password" to password
         )
 
-        return when (val res = executeNetworkOperation(headers = headers, body = "", get = true)) {
+        val res = executeNetworkOperation(headers = headers, body = "", get = true)
+
+        return when (res) {
+
             is NetworkResult.Success -> {
                 // 4. Access the body directly from the Success result
                 NetworkResult.Success(true, res.body)
