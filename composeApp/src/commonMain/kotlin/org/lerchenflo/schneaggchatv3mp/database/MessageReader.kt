@@ -1,10 +1,10 @@
-package org.lerchenflo.schneaggchatv3mp.database.userdatabase
+package org.lerchenflo.schneaggchatv3mp.database
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.database.Message
 
 @Entity(
     tableName = "message_readers",
@@ -15,7 +15,8 @@ import org.lerchenflo.schneaggchatv3mp.database.Message
             childColumns = ["messageId"],
             onDelete = ForeignKey.Companion.CASCADE
         )
-    ]
+    ],
+    indices = [Index(value = ["messageId"])]
 )
 
 @Serializable

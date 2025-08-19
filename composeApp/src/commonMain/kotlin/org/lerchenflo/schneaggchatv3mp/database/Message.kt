@@ -7,7 +7,6 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.database.userdatabase.MessageReader
 
 
 @Serializable

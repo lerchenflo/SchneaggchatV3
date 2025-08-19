@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "26bfe4a6125f028bbaea3209ab8e7653",
+    "identityHash": "f962c88a8e49121fab3fd0152a656946",
     "entities": [
       {
         "tableName": "users",
@@ -198,6 +198,17 @@
             "readerEntryId"
           ]
         },
+        "indices": [
+          {
+            "name": "index_message_readers_messageId",
+            "unique": false,
+            "columnNames": [
+              "messageId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_message_readers_messageId` ON `${TABLE_NAME}` (`messageId`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "messages",
@@ -215,7 +226,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '26bfe4a6125f028bbaea3209ab8e7653')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f962c88a8e49121fab3fd0152a656946')"
     ]
   }
 }
