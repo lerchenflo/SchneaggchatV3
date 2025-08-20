@@ -1,5 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.network
 
+import schneaggchatv3mp.composeapp.generated.resources.Res.string
+
+
+
 
 
 //A paar messagetypes
@@ -116,6 +120,9 @@ const val REMOVELOCATIONRATING = "58"
 
 const val SHARELOCATIONWITHUSER = "55"
 
+
+
+const val GETMESSAGESWITHOUTPICTURES = "99"
 
 
 const val PING = "100"

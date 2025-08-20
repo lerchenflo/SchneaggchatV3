@@ -9,8 +9,27 @@ import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.timeout
 import io.ktor.http.HttpMethod
 import io.ktor.util.network.UnresolvedAddressException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import org.lerchenflo.schneaggchatv3mp.SESSIONID
+import org.lerchenflo.schneaggchatv3mp.chat.domain.DeleteUserUseCase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdUserUseCase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertUserUseCase
+import org.lerchenflo.schneaggchatv3mp.database.IdChangeDate
+import org.lerchenflo.schneaggchatv3mp.database.IdOperation
+import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.database.UserDao
 import org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
+import org.lerchenflo.schneaggchatv3mp.network.util.onError
+import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
 import org.lerchenflo.schneaggchatv3mp.utilities.Base64Util
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -50,7 +69,11 @@ class NetworkUtils(
                 // Built-in header: handy time (milliseconds)
                 headers {
                     append("handytime", Base64Util.encode(Clock.System.now().toEpochMilliseconds().toString()))
+
+                    SESSIONID?.let { append("sessionid", Base64Util.encode(it)) }
                 }
+
+
 
                 // Additional headers (encode values)
                 headers?.forEach { (k, v) ->
@@ -92,7 +115,7 @@ class NetworkUtils(
             }
 
 
-            return NetworkResult.Success( decodedHeaders, responseBody.toString())
+            return NetworkResult.Success( decodedHeaders,responseBody.toString())
 
         } catch (e: UnresolvedAddressException) {
             return NetworkResult.Error(ResponseReason.NO_INTERNET.toString())
@@ -110,7 +133,7 @@ class NetworkUtils(
 
 
 
-    suspend fun login(username: String, password: String): NetworkResult<Boolean, String> {
+    suspend fun login(username: String, password: String): NetworkResult<Map<String, String>, String> {
         val headers = mapOf(
             "msgtype" to LOGINMESSAGE,
             "username" to username,
@@ -123,7 +146,7 @@ class NetworkUtils(
 
             is NetworkResult.Success -> {
                 // 4. Access the body directly from the Success result
-                NetworkResult.Success(true, res.body)
+                NetworkResult.Success( res.data, res.body)
             }
             is NetworkResult.Error -> NetworkResult.Error(res.error)
         }
@@ -148,6 +171,130 @@ class NetworkUtils(
             is NetworkResult.Error -> NetworkResult.Error(res.error)
         }
     }
+
+
+    suspend fun useridsync(databaseids: String): NetworkResult<Boolean, String> {
+        val headers = mapOf(
+            "msgtype" to USERIDSYNC,
+        )
+
+        val res = executeNetworkOperation(headers = headers, body = databaseids, get = false)
+
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
+            }
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
+        }
+    }
+
+    suspend fun getuserbyid(id: Long): NetworkResult<Boolean, String> {
+        val headers = mapOf(
+            "msgtype" to GETUSERBYID,
+            "userid" to id.toString()
+        )
+
+        val res = executeNetworkOperation(headers = headers, body = "", get = true)
+
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
+            }
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
+        }
+    }
+
+
+
+
+
+
+
+    suspend fun executeUserIDSync(getChangeIdUserUseCase: GetChangeIdUserUseCase, deleteUserUseCase: DeleteUserUseCase, upsertUserUseCase: UpsertUserUseCase, networkUtils: NetworkUtils) {
+
+        println("USeridsync startet!")
+
+        withContext(Dispatchers.IO){
+            try {
+
+                val json = Json { prettyPrint = false }
+
+                // 1. Get local user IDs and change dates
+                val localUsers = getChangeIdUserUseCase() ?: emptyList()
+                val serializedData = json.encodeToString(localUsers)
+
+                // 2. Execute user ID sync with server
+                val syncResult = networkUtils.useridsync(serializedData)
+
+                syncResult.onSuccessWithBody { success, body ->
+
+                    println(body)
+
+                    val operations = json.decodeFromString<List<IdOperation>>(body)
+                    val results = operations.map { operation ->
+                        async{
+                            when (operation.Status) {
+                                "deleted" -> {
+                                    try {
+
+                                        deleteUserUseCase(operation.Id)
+                                        Result.success(Unit)
+                                    } catch (e: Exception) {
+                                        Result.failure<Unit>(e)
+                                    }
+                                }
+                                "new", "modified" -> {
+                                    try {
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            val userResult = networkUtils.getuserbyid(operation.Id)
+                                            userResult.onSuccessWithBody { success, body ->
+
+                                                println(body)
+                                                val user = json.decodeFromString<List<User>>(body)
+
+                                                runBlocking {
+                                                    upsertUserUseCase(user[0])
+                                                }
+
+
+                                            }
+                                        }
+
+
+                                    } catch (e: Exception) {
+                                        Result.failure<Unit>(e)
+                                    }
+                                }
+
+                            }
+                        }
+
+                    }
+
+                }
+
+                syncResult.onError {
+                    println(it)
+                }
+
+
+
+            } catch (e: Exception) {
+                // Log error (platform-specific logging would be implemented separately)
+                println("Useridsync fail")
+                e.printStackTrace()
+            }
+        }
+
+
+    }
+
+
+
 
 
 }

@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.database
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
 import androidx.room.Entity
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -10,19 +11,25 @@ import kotlinx.serialization.Serializable
 data class User(
     @PrimaryKey()
     @ColumnInfo(name = "id")
-    var id: Int = 0,
+    var id: Long = 0,
 
-    @ColumnInfo(name = "last_change")
-    var lastChange: Long? = null,
+    @SerialName("lastchanged")
+    @ColumnInfo(name = "changedate")
+    var lastChanged: Long? = null,
 
+
+    @SerialName("username")
     @ColumnInfo(name = "name")
     var name: String? = null,
 
+    @SerialName("userdescription")
     @ColumnInfo(name = "description")
     var description: String? = null,
 
+    @SerialName("userstatus")
     @ColumnInfo(name = "status")
     var status: String? = null,
+
 
     @ColumnInfo(name = "location_lat")
     var locationLat: Double? = null,
@@ -33,24 +40,28 @@ data class User(
     @ColumnInfo(name = "location_date")
     var locationDate: Long? = null,
 
+    @SerialName("locationshared")
     @ColumnInfo(name = "locationshared")
     var locationShared: Boolean? = null,
 
+    @SerialName("wakeupenabled")
     @ColumnInfo(name = "wakeupenabled")
     var wakeupEnabled: Boolean? = null,
 
-    @ColumnInfo(name = "profile_picture")
+    @SerialName("profilepicture")
+    @ColumnInfo(name = "profilepicture")
     var profilePicture: String? = null,
 
     @ColumnInfo(name = "last_online")
     var lastOnline: Long? = null,
 
-    @ColumnInfo(name = "read_time")
-    var readTime: Long? = null,
 
+
+    @SerialName("friendaccepted")
     @ColumnInfo(name = "accepted")
     var accepted: Boolean? = null,
 
+    @SerialName("friendrequested")
     @ColumnInfo(name = "requested")
     var requested: Boolean? = null,
 
