@@ -6,12 +6,12 @@ import kotlinx.coroutines.withContext
 import org.lerchenflo.schneaggchatv3mp.database.AppDatabaseRepository
 import org.lerchenflo.schneaggchatv3mp.database.User
 
-class UpsertUserUseCase(
+class DeleteUserUseCase(
     private val userRepository: AppDatabaseRepository
 ) {
-    suspend operator fun invoke(user: User) {
+    suspend operator fun invoke(userid: Long){
         withContext(Dispatchers.IO) {
-            userRepository.upsertUser(user)
+            userRepository.deleteUser(userid)
         }
     }
 }

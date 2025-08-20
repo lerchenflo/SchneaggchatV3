@@ -15,8 +15,18 @@ class AppDatabaseRepository(
         }
     }
 
+    suspend fun deleteUser(userid: Long){
+        with(dispatcher){
+            database.userDao().delete(userid)
+        }
+    }
+
     fun getallusers(searchterm: String = ""): Flow<List<User>>{
         return database.userDao().getallusers(searchterm)
+    }
+
+    fun getchangeid(): List<IdChangeDate?>?{
+        return database.userDao().getUserIdsWithChangeDates()
     }
 
 

@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp
 
-val SESSIONID: String? = null
+var SESSIONID: String? = null
 
 
 var URL_PRIVACY = "https://schneaggchat.lerchenflo.eu/privacypolicy/index.html"
@@ -17,7 +17,7 @@ var PICTURE_FILE_NAME = "_bild.drawable"
 
 var VOICEMSG_FILE_NAME = "_voicemsg.m4a"
 
-var OWNID: Long = -1
+var OWNID: Long? = null
 
 
 var USERNAME = "" //Da eigene nutzername

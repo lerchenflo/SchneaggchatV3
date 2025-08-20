@@ -6,9 +6,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.koin.compose.getKoin
+import org.lerchenflo.schneaggchatv3mp.OWNID
+import org.lerchenflo.schneaggchatv3mp.SESSIONID
+import org.lerchenflo.schneaggchatv3mp.chat.domain.DeleteUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllUserUseCase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertUserUseCase
 import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.database.UserDao
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
@@ -17,10 +23,23 @@ import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 class SharedViewModel(
     private val upsertUserUseCase: UpsertUserUseCase,
     private val getAllUserUseCase: GetAllUserUseCase,
+    private val getChangeIdUserUseCase: GetChangeIdUserUseCase,
+    private val deleteUserUseCase: DeleteUserUseCase,
     private val networkUtils: NetworkUtils,
     private val preferencemanager: Preferencemanager
 
 ):ViewModel() {
+
+    init {
+        viewModelScope.launch {
+            networkUtils.executeUserIDSync(
+                getChangeIdUserUseCase = getChangeIdUserUseCase,
+                deleteUserUseCase = deleteUserUseCase,
+                upsertUserUseCase = upsertUserUseCase,
+                networkUtils = networkUtils
+            )
+        }
+    }
 
 
     fun login(
@@ -30,12 +49,17 @@ class SharedViewModel(
     ) {
         viewModelScope.launch {
             networkUtils.login(username, password)
-                .onSuccessWithBody { success, message ->
-                    println("Success: $success $message")
+                .onSuccessWithBody { headers, message ->
+                    //println("Success: $success $message")
                     viewModelScope.launch {
                         preferencemanager.saveAutologinCreds(username, password)
                     }
-                    onResult(success, message)
+
+                    println(headers)
+                    SESSIONID = headers["sessionid"]
+                    OWNID = headers["userid"]?.toLong()
+                    println("SESSIONID gesetzt: $SESSIONID")
+                    onResult(true, message)
                 }
                 .onError { error ->
                     println("Error: $error")

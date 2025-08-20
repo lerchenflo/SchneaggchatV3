@@ -5,7 +5,9 @@ import org.koin.core.module.dsl.*
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.chat.domain.DeleteUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllUserUseCase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertUserUseCase
 import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.database.AppDatabaseRepository
@@ -37,6 +39,8 @@ val sharedmodule = module{
     //Use cases userdatenbank
     singleOf(::GetAllUserUseCase)
     singleOf(::UpsertUserUseCase)
+    singleOf(::DeleteUserUseCase)
+    singleOf(::GetChangeIdUserUseCase)
 
     //View model
 

@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 2,
-    "identityHash": "3b5b885ada175c3ed542204bf834a671",
+    "version": 5,
+    "identityHash": "f6a6b4ec6d7e2f3ed06b29c326e19252",
     "entities": [
       {
         "tableName": "users",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `lastchanged` INTEGER, `name` TEXT, `description` TEXT, `status` TEXT, `location_lat` REAL, `location_long` REAL, `location_date` INTEGER, `locationshared` INTEGER, `wakeupenabled` INTEGER, `profile_picture` TEXT, `last_online` INTEGER, `read_time` INTEGER, `accepted` INTEGER, `requested` INTEGER, `notis_muted` INTEGER, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `changedate` INTEGER, `name` TEXT, `description` TEXT, `status` TEXT, `location_lat` REAL, `location_long` REAL, `location_date` INTEGER, `locationshared` INTEGER, `wakeupenabled` INTEGER, `profilepicture` TEXT, `last_online` INTEGER, `read_time` INTEGER, `accepted` INTEGER, `requested` INTEGER, `notis_muted` INTEGER, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -16,7 +16,7 @@
           },
           {
             "fieldPath": "lastChanged",
-            "columnName": "lastchanged",
+            "columnName": "changedate",
             "affinity": "INTEGER"
           },
           {
@@ -61,7 +61,7 @@
           },
           {
             "fieldPath": "profilePicture",
-            "columnName": "profile_picture",
+            "columnName": "profilepicture",
             "affinity": "TEXT"
           },
           {
@@ -226,7 +226,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3b5b885ada175c3ed542204bf834a671')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f6a6b4ec6d7e2f3ed06b29c326e19252')"
     ]
   }
 }
