@@ -88,6 +88,10 @@ kotlin {
             //Resizeable screens
             implementation(libs.material3.adaptive)
 
+            //Sharedprefs
+            api(libs.datastore.preferences)
+            api(libs.datastore)
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -163,6 +167,13 @@ compose.desktop {
             packageVersion = "1.0.0"
         }
     }
+}
+
+tasks.register<DefaultTask>("runDesktop") {
+    group = "application"
+    description = "Runs the Compose Desktop app"
+
+    dependsOn("run") // reuse the Compose Desktop run task
 }
 
 room{

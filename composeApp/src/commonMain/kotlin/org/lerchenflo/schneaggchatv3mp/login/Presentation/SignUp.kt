@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.login.Presentation
 
-import LoginViewModel
 import SignUpViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
-import org.lerchenflo.schneaggchatv3mp.utilities.DeviceConfiguration
+import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
 
 @Preview()
 @Composable
@@ -69,9 +67,9 @@ fun SignUpScreen(
 
 
             val windowSizeclass = currentWindowAdaptiveInfo().windowSizeClass
-            val deviceConfiguration = DeviceConfiguration.fromWindowSizeClass(windowSizeclass)
+            val deviceConfiguration = DeviceSizeConfiguration.fromWindowSizeClass(windowSizeclass)
             when (deviceConfiguration){
-                DeviceConfiguration.MOBILE_PORTRAIT -> {
+                DeviceSizeConfiguration.MOBILE_PORTRAIT -> {
                     Column(
                         modifier = rootmodifier
                             .verticalScroll(rememberScrollState())
@@ -105,7 +103,7 @@ fun SignUpScreen(
                     }
 
                 }
-                DeviceConfiguration.MOBILE_LANDSCAPE -> {
+                DeviceSizeConfiguration.MOBILE_LANDSCAPE -> {
                     Row(
                         modifier = rootmodifier
                             .windowInsetsPadding(WindowInsets.displayCutout)
@@ -142,9 +140,9 @@ fun SignUpScreen(
                         )
                     }
                 }
-                DeviceConfiguration.TABLET_PORTRAIT,
-                DeviceConfiguration.TABLET_LANDSCAPE,
-                DeviceConfiguration.DESKTOP -> {
+                DeviceSizeConfiguration.TABLET_PORTRAIT,
+                DeviceSizeConfiguration.TABLET_LANDSCAPE,
+                DeviceSizeConfiguration.DESKTOP -> {
                     Column(
                         modifier = rootmodifier
                             .verticalScroll(rememberScrollState())

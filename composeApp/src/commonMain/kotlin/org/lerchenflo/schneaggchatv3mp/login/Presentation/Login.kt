@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
-import org.lerchenflo.schneaggchatv3mp.utilities.DeviceConfiguration
+import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
 
 @Preview()
 @Composable
@@ -47,6 +47,9 @@ fun LoginScreen(
         .safeContentPadding()
 ){
     SchneaggchatTheme {
+
+        viewModel.trysavedcredslogin(onLoginSuccess)
+
         //Responsive UI mit scaffold
         Scaffold(
             modifier = Modifier
@@ -70,9 +73,9 @@ fun LoginScreen(
 
 
             val windowSizeclass = currentWindowAdaptiveInfo().windowSizeClass
-            val deviceConfiguration = DeviceConfiguration.fromWindowSizeClass(windowSizeclass)
+            val deviceConfiguration = DeviceSizeConfiguration.fromWindowSizeClass(windowSizeclass)
             when (deviceConfiguration){
-                DeviceConfiguration.MOBILE_PORTRAIT -> {
+                DeviceSizeConfiguration.MOBILE_PORTRAIT -> {
                     Column(
                         modifier = rootmodifier,
                         verticalArrangement = Arrangement.spacedBy(32.dp)
@@ -100,7 +103,7 @@ fun LoginScreen(
                     }
 
                 }
-                DeviceConfiguration.MOBILE_LANDSCAPE -> {
+                DeviceSizeConfiguration.MOBILE_LANDSCAPE -> {
                     Row(
                         modifier = rootmodifier
                             .windowInsetsPadding(WindowInsets.displayCutout)
@@ -131,9 +134,9 @@ fun LoginScreen(
                         )
                     }
                 }
-                DeviceConfiguration.TABLET_PORTRAIT,
-                DeviceConfiguration.TABLET_LANDSCAPE,
-                DeviceConfiguration.DESKTOP -> {
+                DeviceSizeConfiguration.TABLET_PORTRAIT,
+                DeviceSizeConfiguration.TABLET_LANDSCAPE,
+                DeviceSizeConfiguration.DESKTOP -> {
                     Column(
                         modifier = rootmodifier
                             .verticalScroll(rememberScrollState())

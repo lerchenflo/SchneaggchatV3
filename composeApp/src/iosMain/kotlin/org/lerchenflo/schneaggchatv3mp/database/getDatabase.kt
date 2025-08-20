@@ -1,8 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.database
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import platform.Foundation.NSHomeDirectory
 
 fun iosAppDatabaseBuilder(): RoomDatabase.Builder<AppDatabase> {

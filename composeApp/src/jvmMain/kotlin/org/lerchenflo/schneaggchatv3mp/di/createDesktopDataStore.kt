@@ -1,14 +1,10 @@
-package org.lerchenflo.schneaggchatv3mp.database
+package org.lerchenflo.schneaggchatv3mp.di
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.room.Room
-import androidx.room.RoomDatabase
 import java.io.File
-import java.lang.System
 
-
-fun desktopAppDatabaseBuilder(): RoomDatabase.Builder<AppDatabase> {
+fun desktopDatastoreBuilder(): DataStore<Preferences> {
     val os = System.getProperty("os.name").lowercase()
     val userHome = System.getProperty("user.home")
     val appDataDir = when {
@@ -20,7 +16,9 @@ fun desktopAppDatabaseBuilder(): RoomDatabase.Builder<AppDatabase> {
     if (!appDataDir.exists()){
         appDataDir.mkdirs()
     }
-    val dbFile = File(appDataDir, AppDatabase.DB_NAME)
-    return Room.databaseBuilder<AppDatabase>(dbFile.absolutePath)
-}
+    val savefile = File(appDataDir, DATA_STORE_FILE_NAME)
 
+    return createDataStore {
+        savefile.absolutePath
+    }
+}

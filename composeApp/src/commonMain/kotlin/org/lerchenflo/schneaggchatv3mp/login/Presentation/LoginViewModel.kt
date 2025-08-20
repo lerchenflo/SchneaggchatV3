@@ -17,6 +17,7 @@ import org.koin.mp.KoinPlatform.getKoin
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.network.util.toEnumOrNull
+import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.acc_locked
 import schneaggchatv3mp.composeapp.generated.resources.acc_not_exist
@@ -40,7 +41,20 @@ class LoginViewModel: ViewModel() {
     }
 
 
+    fun trysavedcredslogin(onLoginSuccess: () -> Unit){
+        viewModelScope.launch {
+            val prefmanager = getKoin().get<Preferencemanager>()
+            val (username, password) = prefmanager.getAutologinCreds()
 
+            if (username.isNotBlank() && password.isNotBlank()){
+                println("Username: $username passwort $password")
+                //Form usfülla
+                updateUsername(username)
+                updatePassword(password)
+                login(onLoginSuccess)
+            }
+        }
+    }
 
     // TextField states
     val sharedViewModel: SharedViewModel = getKoin().get()
