@@ -9,8 +9,8 @@ import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.timeout
 import io.ktor.http.HttpMethod
 import io.ktor.util.network.UnresolvedAddressException
-import org.lerchenflo.schneaggchatv3mp.network.util.NetworkError
-import org.lerchenflo.schneaggchatv3mp.network.util.Result
+import org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult
+import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.utilities.Base64Util
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -20,7 +20,7 @@ import kotlin.time.ExperimentalTime
 class NetworkUtils(
     private val httpClient: HttpClient
 ) {
-    private val SERVERURL = "https://schneaggchat.lerchenflo.eu"
+    private val SERVERURL = "https://schneaggchatv3.lerchenflo.eu"
 
     /**
      * Perform a network request (GET when `get == true`, POST otherwise).
@@ -36,7 +36,7 @@ class NetworkUtils(
         body: T? = null,
         get: Boolean = true,
         requestTimeoutMillis: Long = 5_000L
-    ): Result<Map<String, String>, NetworkError> {
+    ): NetworkResult<Map<String, String>, String> {
         try {
             val response: HttpResponse = httpClient.request {
                 url(SERVERURL)
@@ -85,40 +85,67 @@ class NetworkUtils(
                 decodedHeaders[key] = decodedValue
             }
 
-            // include body in the map (same behavior as your Java code)
-            decodedHeaders["body"] = responseBody
 
-            return Result.Success(decodedHeaders)
+            //Hot die operation gfunkt
+            if (!decodedHeaders["successful"].toBoolean()){
+                return NetworkResult.Error(responseBody)
+            }
+
+
+            return NetworkResult.Success( decodedHeaders, responseBody.toString())
+
         } catch (e: UnresolvedAddressException) {
-            return Result.Error(NetworkError.NO_INTERNET)
+            return NetworkResult.Error(ResponseReason.NO_INTERNET.toString())
         } catch (e: HttpRequestTimeoutException) {
-            return Result.Error(NetworkError.REQUEST_TIMEOUT)
+            return NetworkResult.Error(ResponseReason.TIMEOUT.toString())
         } catch (e: io.ktor.client.network.sockets.SocketTimeoutException) {
-            return Result.Error(NetworkError.REQUEST_TIMEOUT)
+            return NetworkResult.Error(ResponseReason.TIMEOUT.toString())
         } catch (e: SocketTimeoutException) {
-            return Result.Error(NetworkError.REQUEST_TIMEOUT)
+            return NetworkResult.Error(ResponseReason.TIMEOUT.toString())
         } catch (e: Exception) {
             // You can log e.message here if you have a logger
-            return Result.Error(NetworkError.UNKNOWN)
+            return NetworkResult.Error(ResponseReason.unknown_error.toString())
         }
     }
 
 
 
-    suspend fun login(username: String, password: String): Result<String, NetworkError> {
+    suspend fun login(username: String, password: String): NetworkResult<Boolean, String> {
         val headers = mapOf(
             "msgtype" to LOGINMESSAGE,
             "username" to username,
             "password" to password
         )
 
-        return when (val res = executeNetworkOperation(headers = headers, body = "", get = true)) {
-            is Result.Success -> {
-                val map = res.data
-                val body = map["body"] ?: ""
-                Result.Success(body)
+        val res = executeNetworkOperation(headers = headers, body = "", get = true)
+
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
             }
-            is Result.Error -> Result.Error(res.error)
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
+        }
+    }
+
+    suspend fun createAccount(username: String, password: String, email: String): NetworkResult<Boolean, String> {
+        val headers = mapOf(
+            "msgtype" to CREATEACCOUNTMESSAGE,
+            "username" to username,
+            "password" to password,
+            "email" to email
+        )
+
+        val res = executeNetworkOperation(headers = headers, body = "", get = true)
+
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
+            }
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
         }
     }
 

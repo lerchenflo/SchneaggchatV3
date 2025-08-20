@@ -101,18 +101,27 @@ fun App() {
 
                     // Login screen
                     composable<Route.Login>{
+
                         LoginScreen(
+
                             onLoginSuccess = {
+                                println("Login success, Chatselector")
                                 navController.navigate(Route.ChatSelector)
                             },
                             onSignUp = {
+                                println("Create acc")
                                 navController.navigate(Route.SignUp)
                             }
                         )
                     }
 
                     composable<Route.SignUp>{
-                        SignUpScreen()
+                        SignUpScreen(
+                            onSignUpSuccess = {
+                                println("Signup success, chatselector")
+                                navController.navigate(Route.ChatSelector)
+                            }
+                        )
                     }
 
 

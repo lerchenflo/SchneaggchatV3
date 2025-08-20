@@ -24,6 +24,7 @@ kotlinSerialization = "1.9.0"
 koin-core = "4.1.0"
 koin-annotations = "2.1.0"
 ktor = "3.2.3"
+adaptive = "1.1.2"
 
 
 [libraries]
@@ -43,6 +44,7 @@ room-runtime-android = { module = "androidx.room:room-runtime-android", version.
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
 
 
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin-core" }

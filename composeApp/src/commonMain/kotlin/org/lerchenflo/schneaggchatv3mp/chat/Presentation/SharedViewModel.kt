@@ -1,17 +1,29 @@
 package org.lerchenflo.schneaggchatv3mp.chat.Presentation
 
+import androidx.compose.runtime.Composable
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.CreationExtras
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.getKoin
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertUserUseCase
 import org.lerchenflo.schneaggchatv3mp.database.User
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccess
+import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
+import org.lerchenflo.schneaggchatv3mp.network.util.toEnumOrNull
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.acc_not_exist
 
 class SharedViewModel(
     private val upsertUserUseCase: UpsertUserUseCase,
@@ -20,14 +32,42 @@ class SharedViewModel(
 
 ):ViewModel() {
 
-    val login = fun(username: String, password: String){
+
+    fun login(
+        username: String,
+        password: String,
+        onResult: (Boolean, String) -> Unit
+    ) {
         viewModelScope.launch {
             networkUtils.login(username, password)
-                .onSuccess{value ->
-                    println("Login:$value")
+                .onSuccessWithBody { success, message ->
+                    println("Success: $success $message")
+                    onResult(success, message)
                 }
-                .onError {
-                    println(it.toString())
+                .onError { error ->
+                    println("Error: $error")
+
+                    onResult(false, error.toString())
+                }
+        }
+    }
+
+    fun createAccount(
+        username: String,
+        email: String,
+        password: String,
+        onResult: (Boolean, String) -> Unit
+    ) {
+        viewModelScope.launch {
+            networkUtils.createAccount(username, password, email)
+                .onSuccessWithBody { success, message ->
+                    println("Success: $success $message")
+                    onResult(success, message)
+                }
+                .onError { error ->
+                    println("Error: $error")
+
+                    onResult(false, error.toString())
                 }
         }
     }
