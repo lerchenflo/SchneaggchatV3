@@ -14,8 +14,31 @@
     <string name="add">add</string>
     <string name="message">message</string>
     <string name="login">login</string>
-    <string name="username">username</string>
-    <string name="password">password</string>
-    <string name="sign_up">sign up</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="password_again">Same password again</string>
+
+    <string name="email">Email</string>
+    <string name="invalid_email">Enter a correct email address</string>
+    <string name="sign_up">Don't have an Account?</string>
+    <string name="loginsubtitle">Die beste Chattingplatform jemals - Jetzt in da V3 mit Crossplatform für Android, IOS und Desktop!</string>
+    <string name="create_account">Create account</string>
+    <string name="create_account_subtitle">Join now</string>
+    <string name="acc_not_exist">Account does not exist</string>
+    <string name="offline">You are offline</string>
+    <string name="unknown_error">An unknown error occurred</string>
+    <string name="acc_locked">Your account is currently locked</string>
+    <string name="password_wrong">Password is incorrect</string>
+    <string name="feature_disabled">This feature is currently disabled</string>
+    <string name="cannot_be_empty">This field has to be populated</string>
+    <string name="password_needs_to_be_the_same">Passwords must match</string>
+    <string name="email_exists">An account with this email already exists</string>
+    <string name="username_exists">An account with this username already exists</string>
+    <string name="username_too_long">Your username is too long</string>
+    <string name="requirement_length">8 or more characters</string>
+    <string name="requirement_digit">At least one number</string>
+    <string name="requirement_special">At least one special character</string>
+    <string name="requirement_forbidden">Must not contain common or forbidden patterns</string>
+    <string name="password_missing_requirements">Missing: %1$s</string>
 
 </resources>
