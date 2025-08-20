@@ -105,9 +105,11 @@ fun App() {
                         LoginScreen(
 
                             onLoginSuccess = {
+                                println("Login success, Chatselector")
                                 navController.navigate(Route.ChatSelector)
                             },
                             onSignUp = {
+                                println("Create acc")
                                 navController.navigate(Route.SignUp)
                             }
                         )

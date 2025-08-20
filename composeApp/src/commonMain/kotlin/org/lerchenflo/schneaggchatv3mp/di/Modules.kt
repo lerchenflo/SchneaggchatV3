@@ -35,7 +35,6 @@ val sharedmodule = module{
     singleOf(::UpsertUserUseCase)
 
     //View model
-    single < SharedViewModel> {}
-    single { SharedViewModel() }
+
     viewModelOf(::SharedViewModel)
 }

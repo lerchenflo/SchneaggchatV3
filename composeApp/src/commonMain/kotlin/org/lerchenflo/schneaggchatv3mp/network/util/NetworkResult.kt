@@ -42,6 +42,11 @@ enum class ResponseReason {
     wrong,
     feature_disabled,
     too_big,
+    account_temp_locked,
     unknown_error,
     none
+}
+
+inline fun <reified T : Enum<T>> String.toEnumOrNull(ignoreCase: Boolean = true): T? {
+    return enumValues<T>().firstOrNull { it.name.equals(this, ignoreCase) }
 }

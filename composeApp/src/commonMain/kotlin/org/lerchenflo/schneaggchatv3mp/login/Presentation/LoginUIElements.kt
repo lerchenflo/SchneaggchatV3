@@ -66,8 +66,10 @@ fun InputTextField(
             modifier = Modifier.fillMaxWidth(),
             value = text,
             onValueChange = onValueChange,
-            visualTransformation = if (isPasswordVisible){
-                PasswordVisualTransformation(mask = '*')
+            visualTransformation = if (isInputSecret){
+                if (!isPasswordVisible){
+                    PasswordVisualTransformation(mask = '*')
+                }else VisualTransformation.None
             }else VisualTransformation.None,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
@@ -166,8 +168,11 @@ fun LoginFormSection(
     onusernameTextChange: (String) -> Unit,
     passwordText: String,
     onPasswordTextChange: (String) -> Unit,
+    onLoginButtonClick: () -> Unit,
+    onSignupButtonClick: () -> Unit,
     passwordTextError: String? = null,
     loginbuttondisabled: Boolean = false,
+    loginbuttonloading: Boolean = false,
     modifier: Modifier = Modifier
 ){
     Column(
@@ -201,8 +206,9 @@ fun LoginFormSection(
 
         NormalButton(
             text = stringResource(Res.string.login),
-            onClick = {},
+            onClick = onLoginButtonClick,
             disabled = loginbuttondisabled,
+            isLoading = loginbuttonloading,
             modifier = Modifier
                 .fillMaxWidth()
         )
@@ -213,7 +219,7 @@ fun LoginFormSection(
 
         ClickableLink(
             text = stringResource(Res.string.sign_up),
-            onClick = {},
+            onClick = onSignupButtonClick,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
         )

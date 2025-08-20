@@ -5,11 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
@@ -29,125 +31,143 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceConfiguration
 
 @Preview()
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = viewModel(),
+    viewModel: LoginViewModel = viewModel(
+        factory = LoginViewModel.Factory
+    ),
     onLoginSuccess: () -> Unit = {}, // when login has finished successful
     onSignUp: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxSize()
         .safeContentPadding()
 ){
+    SchneaggchatTheme {
+        //Responsive UI mit scaffold
+        Scaffold(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentWindowInsets = WindowInsets.statusBars
+        ){innerpadding ->
 
-    //Responsive UI mit scaffold
-    Scaffold(
-        modifier = Modifier
-            .fillMaxSize(),
-        contentWindowInsets = WindowInsets.statusBars
-    ){innerpadding ->
-
-        val rootmodifier = Modifier
-            .fillMaxSize()
-            .padding(innerpadding)
-            .clip(RoundedCornerShape(
-                topStart = 15.dp,
-                topEnd = 15.dp
-            ))
-            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-            .padding(
-                horizontal = 16.dp,
-                vertical = 24.dp
-            )
-            .consumeWindowInsets(WindowInsets.navigationBars)
+            val rootmodifier = Modifier
+                .fillMaxSize()
+                .padding(innerpadding)
+                .clip(RoundedCornerShape(
+                    topStart = 15.dp,
+                    topEnd = 15.dp
+                ))
+                .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                .padding(
+                    horizontal = 16.dp,
+                    vertical = 24.dp
+                )
+                .consumeWindowInsets(WindowInsets.navigationBars)
 
 
-        val windowSizeclass = currentWindowAdaptiveInfo().windowSizeClass
-        val deviceConfiguration = DeviceConfiguration.fromWindowSizeClass(windowSizeclass)
-        when (deviceConfiguration){
-            DeviceConfiguration.MOBILE_PORTRAIT -> {
-                Column(
-                    modifier = rootmodifier,
-                    verticalArrangement = Arrangement.spacedBy(32.dp)
-                ){
-                    LoginHeaderText(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
+            val windowSizeclass = currentWindowAdaptiveInfo().windowSizeClass
+            val deviceConfiguration = DeviceConfiguration.fromWindowSizeClass(windowSizeclass)
+            when (deviceConfiguration){
+                DeviceConfiguration.MOBILE_PORTRAIT -> {
+                    Column(
+                        modifier = rootmodifier,
+                        verticalArrangement = Arrangement.spacedBy(32.dp)
+                    ){
+                        LoginHeaderText(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
 
-                    LoginFormSection(
-                        usernameText = viewModel.username,
-                        onusernameTextChange = {viewModel.username = it},
-                        passwordText = viewModel.password,
-                        onPasswordTextChange = {viewModel.password = it},
-                        passwordTextError = viewModel.errorMessage,
-                        loginbuttondisabled = viewModel.loginButtonDisabled,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
+                        Spacer(Modifier.height(6.dp))
+
+                        LoginFormSection(
+                            usernameText = viewModel.username,
+                            onusernameTextChange = { viewModel.updateUsername(it) },
+                            passwordText = viewModel.password,
+                            onPasswordTextChange = { viewModel.updatePassword(it) },
+                            passwordTextError = viewModel.errorMessage,
+                            loginbuttondisabled = viewModel.loginButtonDisabled,
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            onLoginButtonClick = { viewModel.login(onLoginSuccess) },
+                            onSignupButtonClick = { onSignUp() },
+                            loginbuttonloading = viewModel.isLoading
+                        )
+                    }
+
                 }
+                DeviceConfiguration.MOBILE_LANDSCAPE -> {
+                    Row(
+                        modifier = rootmodifier
+                            .windowInsetsPadding(WindowInsets.displayCutout)
+                            .padding(
+                                horizontal = 32.dp
+                            )
+                            .verticalScroll(rememberScrollState()),
 
-            }
-            DeviceConfiguration.MOBILE_LANDSCAPE -> {
-                Row(
-                    modifier = rootmodifier
-                        .windowInsetsPadding(WindowInsets.displayCutout)
-                        .padding(
-                            horizontal = 32.dp
-                        ),
-                    horizontalArrangement = Arrangement.spacedBy(32.dp)
-                ){
-                    LoginHeaderText(
-                        modifier = Modifier
-                            .weight(1f)
-                    )
+                        horizontalArrangement = Arrangement.spacedBy(32.dp)
+                    ){
+                        LoginHeaderText(
+                            modifier = Modifier
+                                .weight(1f)
+                        )
 
-                    LoginFormSection(
-                        usernameText = viewModel.username,
-                        onusernameTextChange = {viewModel.username = it},
-                        passwordText = viewModel.password,
-                        onPasswordTextChange = {viewModel.password = it},
-                        passwordTextError = viewModel.errorMessage,
-                        loginbuttondisabled = viewModel.loginButtonDisabled,
-                        modifier = Modifier
-                            .weight(1f)
+                        LoginFormSection(
+                            usernameText = viewModel.username,
+                            onusernameTextChange = { viewModel.updateUsername(it) },
+                            passwordText = viewModel.password,
+                            onPasswordTextChange = { viewModel.updatePassword(it) },
+                            passwordTextError = viewModel.errorMessage,
+                            loginbuttondisabled = viewModel.loginButtonDisabled,
+                            modifier = Modifier
+                                .weight(1f),
+                            onLoginButtonClick = { viewModel.login(onLoginSuccess) },
+                            onSignupButtonClick = { onSignUp() },
+                            loginbuttonloading = viewModel.isLoading
+                        )
+                    }
+                }
+                DeviceConfiguration.TABLET_PORTRAIT,
+                DeviceConfiguration.TABLET_LANDSCAPE,
+                DeviceConfiguration.DESKTOP -> {
+                    Column(
+                        modifier = rootmodifier
                             .verticalScroll(rememberScrollState())
-                    )
-                }
-            }
-            DeviceConfiguration.TABLET_PORTRAIT,
-            DeviceConfiguration.TABLET_LANDSCAPE,
-            DeviceConfiguration.DESKTOP -> {
-                Column(
-                    modifier = rootmodifier
-                        .verticalScroll(rememberScrollState())
-                        .padding(top = 48.dp),
-                    verticalArrangement = Arrangement.spacedBy(32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ){
-                    LoginHeaderText(
-                        modifier = Modifier
-                            .widthIn(max = 540.dp),
-                        alignment = Alignment.CenterHorizontally
+                            .padding(top = 48.dp),
+                        verticalArrangement = Arrangement.spacedBy(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ){
+                        LoginHeaderText(
+                            modifier = Modifier
+                                .widthIn(max = 540.dp),
+                            alignment = Alignment.CenterHorizontally
 
-                    )
+                        )
+                        Spacer(Modifier.height(6.dp))
 
-                    LoginFormSection(
-                        usernameText = viewModel.username,
-                        onusernameTextChange = {viewModel.username = it},
-                        passwordText = viewModel.password,
-                        onPasswordTextChange = {viewModel.password = it},
-                        passwordTextError = viewModel.errorMessage,
-                        loginbuttondisabled = viewModel.loginButtonDisabled,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
+                        LoginFormSection(
+                            usernameText = viewModel.username,
+                            onusernameTextChange = { viewModel.updateUsername(it) },
+                            passwordText = viewModel.password,
+                            onPasswordTextChange = { viewModel.updatePassword(it) },
+                            passwordTextError = viewModel.errorMessage,
+                            loginbuttondisabled = viewModel.loginButtonDisabled,
+                            modifier = Modifier
+                                .weight(1f),
+                            onLoginButtonClick = { viewModel.login(onLoginSuccess) },
+                            onSignupButtonClick = { onSignUp() },
+                            loginbuttonloading = viewModel.isLoading
+                        )
+                    }
                 }
             }
         }
     }
+
 
     
     /*
