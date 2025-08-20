@@ -75,64 +75,47 @@ class LoginViewModel: ViewModel() {
 
     // Handle login logic
     fun login(onLoginSuccess: () -> Unit) {
-        if (validateInput()) {
-            try {
-                isLoading = true
+        try {
+            isLoading = true
 
-                // Use the sharedViewModel's login function with a callback
-                sharedViewModel.login(username, password) { success, message ->
-                    if (success) {
-                        println("Login erfolgreich")
-                        onLoginSuccess()
-                    } else {
+            // Use the sharedViewModel's login function with a callback
+            sharedViewModel.login(username, password) { success, message ->
+                if (success) {
+                    println("Login erfolgreich")
+                    onLoginSuccess()
+                } else {
 
-                        viewModelScope.launch {
-                            val responsereason = message.toEnumOrNull<ResponseReason>(true)
+                    viewModelScope.launch {
+                        val responsereason = message.toEnumOrNull<ResponseReason>(true)
 
-                            errorMessage = when(responsereason){
-                                ResponseReason.NO_INTERNET,
-                                ResponseReason.TIMEOUT -> getString(Res.string.offline)
-                                ResponseReason.notfound -> getString(Res.string.acc_not_exist)
-                                ResponseReason.wrong -> getString(Res.string.password_wrong)
-                                ResponseReason.feature_disabled -> getString(Res.string.feature_disabled) //Haha wenn des kut denn isch was los
-                                ResponseReason.account_temp_locked -> getString(Res.string.acc_locked)
-                                ResponseReason.unknown_error -> getString(Res.string.unknown_error)
+                        errorMessage = when(responsereason){
+                            ResponseReason.NO_INTERNET,
+                            ResponseReason.TIMEOUT -> getString(Res.string.offline)
+                            ResponseReason.notfound -> getString(Res.string.acc_not_exist)
+                            ResponseReason.wrong -> getString(Res.string.password_wrong)
+                            ResponseReason.feature_disabled -> getString(Res.string.feature_disabled) //Haha wenn des kut denn isch was los
+                            ResponseReason.account_temp_locked -> getString(Res.string.acc_locked)
+                            ResponseReason.unknown_error -> getString(Res.string.unknown_error)
 
-                                ResponseReason.too_big,
-                                ResponseReason.none,
-                                ResponseReason.exists,
-                                ResponseReason.email_exists,
-                                ResponseReason.forbidden,
-                                ResponseReason.nomember,
-                                ResponseReason.same,
-                                null -> getString(Res.string.unknown_error)
-                            }
-
+                            ResponseReason.too_big,
+                            ResponseReason.none,
+                            ResponseReason.exists,
+                            ResponseReason.email_exists,
+                            ResponseReason.forbidden,
+                            ResponseReason.nomember,
+                            ResponseReason.same,
+                            null -> getString(Res.string.unknown_error)
                         }
 
                     }
+
                 }
+            }
 
-            } catch (e: Exception) {
-                errorMessage = "Connection error: ${e.message}"
-            } finally {
-                isLoading = false
-            }
-        }
-    }
-
-    // Input validation
-    private fun validateInput(): Boolean {
-        return when {
-            username.isBlank() -> {
-                errorMessage = "Username required"
-                false
-            }
-            password.isBlank() -> {
-                errorMessage = "Password required"
-                false
-            }
-            else -> true
+        } catch (e: Exception) {
+            errorMessage = "Connection error: ${e.message}"
+        } finally {
+            isLoading = false
         }
     }
 

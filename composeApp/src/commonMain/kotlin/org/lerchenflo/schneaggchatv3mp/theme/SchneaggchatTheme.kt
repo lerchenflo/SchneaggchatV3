@@ -16,9 +16,13 @@ val DarkColorTheme = darkColorScheme(
 )
 
 val LightColorTheme = lightColorScheme(
-    background = BackgroundLight
+    primary = PrimaryPhil,
+    surface = SurfacePhil,
+    surfaceContainerLowest = SurfaceLowestPhil,
+    background = BackgroundPhil,
+    onSurface = OnSurfacePhil,
+    onSurfaceVariant = OnSurfaceVariantPhil
 )
-
 
 
 val Shapes = Shapes(

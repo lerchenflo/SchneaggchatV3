@@ -137,7 +137,7 @@ fun LoginScreen(
                     Column(
                         modifier = rootmodifier
                             .verticalScroll(rememberScrollState())
-                            .padding(top = 48.dp),
+                            .padding(top = 32.dp),
                         verticalArrangement = Arrangement.spacedBy(32.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ){
