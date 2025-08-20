@@ -81,8 +81,13 @@ kotlin {
             //Internet
             implementation(libs.bundles.ktor)
 
+
+            //DateTime
+            implementation(libs.kotlinx.datetime)
+
             //Resizeable screens
             implementation(libs.material3.adaptive)
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

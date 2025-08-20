@@ -14,6 +14,10 @@
     <string name="add">add</string>
     <string name="message">message</string>
     <string name="login">login</string>
+
+    <string name="just_now">just now</string>
+    <string name="yesterday">just now</string>
+
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="password_again">Same password again</string>
