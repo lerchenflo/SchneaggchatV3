@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import org.koin.mp.KoinPlatform.getKoin
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
-import org.lerchenflo.schneaggchatv3mp.login.Domain.LoginUseCase
 
 class LoginViewModel(
 ) : ViewModel() {
@@ -17,10 +16,10 @@ class LoginViewModel(
 
 
     var username by mutableStateOf("")
-        private set
 
     var password by mutableStateOf("")
-        private set
+
+    var loginButtonDisabled by mutableStateOf(false)
 
     // UI state
     var isLoading by mutableStateOf(false)

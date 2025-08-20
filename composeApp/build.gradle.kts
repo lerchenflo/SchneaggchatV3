@@ -80,6 +80,9 @@ kotlin {
 
             //Internet
             implementation(libs.bundles.ktor)
+
+            //Resizeable screens
+            implementation(libs.material3.adaptive)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

@@ -1,51 +1,35 @@
 package org.lerchenflo.schneaggchatv3mp.login.Presentation
 
 import LoginViewModel
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
-import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.app_name
-import schneaggchatv3mp.composeapp.generated.resources.login
-import schneaggchatv3mp.composeapp.generated.resources.password
-import schneaggchatv3mp.composeapp.generated.resources.search_friend
-import schneaggchatv3mp.composeapp.generated.resources.sign_up
-import schneaggchatv3mp.composeapp.generated.resources.username
+import org.lerchenflo.schneaggchatv3mp.utilities.DeviceConfiguration
 
 @Preview()
 @Composable
@@ -57,11 +41,116 @@ fun LoginScreen(
         .fillMaxSize()
         .safeContentPadding()
 ){
-    //val uiState by viewModel.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
+
+    //Responsive UI mit scaffold
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize(),
+        contentWindowInsets = WindowInsets.statusBars
+    ){innerpadding ->
+
+        val rootmodifier = Modifier
+            .fillMaxSize()
+            .padding(innerpadding)
+            .clip(RoundedCornerShape(
+                topStart = 15.dp,
+                topEnd = 15.dp
+            ))
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            .padding(
+                horizontal = 16.dp,
+                vertical = 24.dp
+            )
+            .consumeWindowInsets(WindowInsets.navigationBars)
 
 
+        val windowSizeclass = currentWindowAdaptiveInfo().windowSizeClass
+        val deviceConfiguration = DeviceConfiguration.fromWindowSizeClass(windowSizeclass)
+        when (deviceConfiguration){
+            DeviceConfiguration.MOBILE_PORTRAIT -> {
+                Column(
+                    modifier = rootmodifier,
+                    verticalArrangement = Arrangement.spacedBy(32.dp)
+                ){
+                    LoginHeaderText(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
 
+                    LoginFormSection(
+                        usernameText = viewModel.username,
+                        onusernameTextChange = {viewModel.username = it},
+                        passwordText = viewModel.password,
+                        onPasswordTextChange = {viewModel.password = it},
+                        passwordTextError = viewModel.errorMessage,
+                        loginbuttondisabled = viewModel.loginButtonDisabled,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                }
+
+            }
+            DeviceConfiguration.MOBILE_LANDSCAPE -> {
+                Row(
+                    modifier = rootmodifier
+                        .windowInsetsPadding(WindowInsets.displayCutout)
+                        .padding(
+                            horizontal = 32.dp
+                        ),
+                    horizontalArrangement = Arrangement.spacedBy(32.dp)
+                ){
+                    LoginHeaderText(
+                        modifier = Modifier
+                            .weight(1f)
+                    )
+
+                    LoginFormSection(
+                        usernameText = viewModel.username,
+                        onusernameTextChange = {viewModel.username = it},
+                        passwordText = viewModel.password,
+                        onPasswordTextChange = {viewModel.password = it},
+                        passwordTextError = viewModel.errorMessage,
+                        loginbuttondisabled = viewModel.loginButtonDisabled,
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState())
+                    )
+                }
+            }
+            DeviceConfiguration.TABLET_PORTRAIT,
+            DeviceConfiguration.TABLET_LANDSCAPE,
+            DeviceConfiguration.DESKTOP -> {
+                Column(
+                    modifier = rootmodifier
+                        .verticalScroll(rememberScrollState())
+                        .padding(top = 48.dp),
+                    verticalArrangement = Arrangement.spacedBy(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
+                    LoginHeaderText(
+                        modifier = Modifier
+                            .widthIn(max = 540.dp),
+                        alignment = Alignment.CenterHorizontally
+
+                    )
+
+                    LoginFormSection(
+                        usernameText = viewModel.username,
+                        onusernameTextChange = {viewModel.username = it},
+                        passwordText = viewModel.password,
+                        onPasswordTextChange = {viewModel.password = it},
+                        passwordTextError = viewModel.errorMessage,
+                        loginbuttondisabled = viewModel.loginButtonDisabled,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                }
+            }
+        }
+    }
+
+    
+    /*
     SchneaggchatTheme {
         Box(
             modifier = modifier,
@@ -153,9 +242,7 @@ fun LoginScreen(
                 // login button
                 Button(
                     onClick = {
-                        coroutineScope.launch {
-                            viewModel.login(onLoginSuccess)
-                        }
+                        viewModel.login(onLoginSuccess)
                     },
                     enabled = !viewModel.isLoading,
                     modifier = Modifier.wrapContentSize(Alignment.Center)
@@ -186,4 +273,6 @@ fun LoginScreen(
             }
         }
     }
+
+     */
 }
