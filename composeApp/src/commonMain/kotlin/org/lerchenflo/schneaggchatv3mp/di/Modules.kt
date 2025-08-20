@@ -12,6 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.database.AppDatabaseRepository
 import org.lerchenflo.schneaggchatv3mp.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
+import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import kotlin.math.sin
 
 val sharedmodule = module{
@@ -28,6 +29,9 @@ val sharedmodule = module{
 
     //Netzwerktask
     singleOf(::NetworkUtils)
+
+    //Preferences
+    singleOf(::Preferencemanager)
 
 
     //Use cases userdatenbank

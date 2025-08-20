@@ -4,7 +4,7 @@ import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 
-enum class DeviceConfiguration {
+enum class DeviceSizeConfiguration {
     MOBILE_PORTRAIT,
     MOBILE_LANDSCAPE,
     TABLET_PORTRAIT,
@@ -12,7 +12,7 @@ enum class DeviceConfiguration {
     DESKTOP;
 
     companion object {
-        fun fromWindowSizeClass(windowSizeClass: WindowSizeClass): DeviceConfiguration {
+        fun fromWindowSizeClass(windowSizeClass: WindowSizeClass): DeviceSizeConfiguration {
             val widthClass = windowSizeClass.windowWidthSizeClass
             val heightClass = windowSizeClass.windowHeightSizeClass
 
