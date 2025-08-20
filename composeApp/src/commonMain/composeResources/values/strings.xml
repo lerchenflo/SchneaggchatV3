@@ -17,5 +17,7 @@
     <string name="username">username</string>
     <string name="password">password</string>
     <string name="sign_up">sign up</string>
+    <string name="just_now">just now</string>
+    <string name="yesterday">just now</string>
 
 </resources>
