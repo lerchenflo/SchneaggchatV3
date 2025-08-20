@@ -116,7 +116,12 @@ fun App() {
                     }
 
                     composable<Route.SignUp>{
-                        SignUpScreen()
+                        SignUpScreen(
+                            onSignUpSuccess = {
+                                println("Signup success, chatselector")
+                                navController.navigate(Route.ChatSelector)
+                            }
+                        )
                     }
 
 

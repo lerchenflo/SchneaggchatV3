@@ -42,7 +42,6 @@ fun SignUpScreen(
         factory = SignUpViewModel.Factory
     ),
     onSignUpSuccess: () -> Unit = {}, // when login has finished successful
-    onLogin: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxSize()
         .safeContentPadding()
@@ -50,8 +49,7 @@ fun SignUpScreen(
     SchneaggchatTheme {
         //Responsive UI mit scaffold
         Scaffold(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = modifier,
             contentWindowInsets = WindowInsets.statusBars
         ){innerpadding ->
 
@@ -78,15 +76,8 @@ fun SignUpScreen(
                         modifier = rootmodifier
                             .verticalScroll(rememberScrollState())
                             .padding(top = 32.dp),
-                        //verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ){
-                        SignUpHeaderText(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
                         SignUpForm1(
                             usernameText = viewModel.username,
                             onusernameTextChange = { viewModel.updateUsername(it) },
@@ -126,6 +117,29 @@ fun SignUpScreen(
                         horizontalArrangement = Arrangement.spacedBy(32.dp)
                     ){
 
+
+                        SignUpForm1(
+                            usernameText = viewModel.username,
+                            onusernameTextChange = { viewModel.updateUsername(it) },
+                            usernameerrorText = viewModel.usernameerrorMessage,
+                            emailText = viewModel.email,
+                            onemailTextChange = {viewModel.updateEmail(it)},
+                            emailerrorText = viewModel.emailerrorMessage,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        SignUpForm2(
+                            passwordText = viewModel.password,
+                            onpasswordTextChange = {viewModel.updatePassword(it)},
+                            passworderrorText = viewModel.passworderrorMessage,
+                            password2Text = viewModel.password2,
+                            onpassword2TextChange = {viewModel.updatePassword2(it)},
+                            password2errorText = viewModel.password2errorMessage,
+                            onSignupButtonClick = { viewModel.signup(onSignUpSuccess) },
+                            signupbuttondisabled = viewModel.signupButtonDisabled,
+                            signupbuttonloading = viewModel.isLoading,
+                            modifier = Modifier.weight(1f)
+                        )
                     }
                 }
                 DeviceConfiguration.TABLET_PORTRAIT,
@@ -134,11 +148,34 @@ fun SignUpScreen(
                     Column(
                         modifier = rootmodifier
                             .verticalScroll(rememberScrollState())
-                            .padding(top = 48.dp),
+                            .padding(top = 32.dp),
                         verticalArrangement = Arrangement.spacedBy(32.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ){
+                        SignUpForm1(
+                            usernameText = viewModel.username,
+                            onusernameTextChange = { viewModel.updateUsername(it) },
+                            usernameerrorText = viewModel.usernameerrorMessage,
+                            emailText = viewModel.email,
+                            onemailTextChange = {viewModel.updateEmail(it)},
+                            emailerrorText = viewModel.emailerrorMessage,
+                            modifier = Modifier.weight(1f)
+                        )
 
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        SignUpForm2(
+                            passwordText = viewModel.password,
+                            onpasswordTextChange = {viewModel.updatePassword(it)},
+                            passworderrorText = viewModel.passworderrorMessage,
+                            password2Text = viewModel.password2,
+                            onpassword2TextChange = {viewModel.updatePassword2(it)},
+                            password2errorText = viewModel.password2errorMessage,
+                            onSignupButtonClick = { viewModel.signup(onSignUpSuccess) },
+                            signupbuttondisabled = viewModel.signupButtonDisabled,
+                            signupbuttonloading = viewModel.isLoading,
+                            modifier = Modifier.weight(1f)
+                        )
                     }
                 }
             }

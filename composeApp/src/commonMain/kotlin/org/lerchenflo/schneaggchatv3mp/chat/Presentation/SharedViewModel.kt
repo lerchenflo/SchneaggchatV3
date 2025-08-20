@@ -52,6 +52,26 @@ class SharedViewModel(
         }
     }
 
+    fun createAccount(
+        username: String,
+        email: String,
+        password: String,
+        onResult: (Boolean, String) -> Unit
+    ) {
+        viewModelScope.launch {
+            networkUtils.createAccount(username, password, email)
+                .onSuccessWithBody { success, message ->
+                    println("Success: $success $message")
+                    onResult(success, message)
+                }
+                .onError { error ->
+                    println("Error: $error")
+
+                    onResult(false, error.toString())
+                }
+        }
+    }
+
 
 
     // user getten und inserten

@@ -20,7 +20,7 @@ import kotlin.time.ExperimentalTime
 class NetworkUtils(
     private val httpClient: HttpClient
 ) {
-    private val SERVERURL = "https://schneaggchat.lerchenflo.eu"
+    private val SERVERURL = "https://schneaggchatv3.lerchenflo.eu"
 
     /**
      * Perform a network request (GET when `get == true`, POST otherwise).
@@ -115,6 +115,26 @@ class NetworkUtils(
             "msgtype" to LOGINMESSAGE,
             "username" to username,
             "password" to password
+        )
+
+        val res = executeNetworkOperation(headers = headers, body = "", get = true)
+
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
+            }
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
+        }
+    }
+
+    suspend fun createAccount(username: String, password: String, email: String): NetworkResult<Boolean, String> {
+        val headers = mapOf(
+            "msgtype" to CREATEACCOUNTMESSAGE,
+            "username" to username,
+            "password" to password,
+            "email" to email
         )
 
         val res = executeNetworkOperation(headers = headers, body = "", get = true)

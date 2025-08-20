@@ -34,6 +34,7 @@
     <string name="password_needs_to_be_the_same">Passwords must match</string>
     <string name="email_exists">An account with this email already exists</string>
     <string name="username_exists">An account with this username already exists</string>
+    <string name="username_too_long">Your username is too long</string>
     <string name="requirement_length">8 or more characters</string>
     <string name="requirement_digit">At least one number</string>
     <string name="requirement_special">At least one special character</string>

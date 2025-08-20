@@ -21,6 +21,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.acc_locked
 import schneaggchatv3mp.composeapp.generated.resources.acc_not_exist
 import schneaggchatv3mp.composeapp.generated.resources.cannot_be_empty
+import schneaggchatv3mp.composeapp.generated.resources.email_exists
 import schneaggchatv3mp.composeapp.generated.resources.feature_disabled
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
 import schneaggchatv3mp.composeapp.generated.resources.offline
@@ -32,6 +33,9 @@ import schneaggchatv3mp.composeapp.generated.resources.requirement_forbidden
 import schneaggchatv3mp.composeapp.generated.resources.requirement_length
 import schneaggchatv3mp.composeapp.generated.resources.requirement_special
 import schneaggchatv3mp.composeapp.generated.resources.unknown_error
+import schneaggchatv3mp.composeapp.generated.resources.username
+import schneaggchatv3mp.composeapp.generated.resources.username_exists
+import schneaggchatv3mp.composeapp.generated.resources.username_too_long
 import kotlin.reflect.KClass
 
 
@@ -102,7 +106,51 @@ class SignUpViewModel: ViewModel() {
         private set
 
 
-    fun signup(onLoginSuccess: () -> Unit) {
+    fun signup(onCreateSuccess: () -> Unit) {
+        viewModelScope.launch {
+            if (validateInput()) {
+                try {
+                    isLoading = true
+
+                    // Use the sharedViewModel's login function with a callback
+                    sharedViewModel.createAccount(username, email, password) { success, message ->
+                        if (success) {
+                            println("Account erstellen erfolgreich")
+
+                            sharedViewModel.login(username, password) { success, message ->
+                                if (success){
+                                    onCreateSuccess()
+                                }
+                            }
+
+
+                        } else {
+
+                            viewModelScope.launch {
+                                val responsereason = message.toEnumOrNull<ResponseReason>(true)
+
+                                if (responsereason == ResponseReason.exists){
+                                    usernameerrorMessage = getString(Res.string.username_exists)
+                                }else if (responsereason == ResponseReason.email_exists){
+                                    emailerrorMessage = getString(Res.string.email_exists)
+                                }else if (responsereason == ResponseReason.too_big){
+                                    usernameerrorMessage = getString(Res.string.username_too_long)
+                                }else if (responsereason == ResponseReason.unknown_error){
+                                    password2errorMessage = getString(Res.string.unknown_error)
+                                }
+
+                            }
+
+                        }
+                    }
+
+                } catch (e: Exception) {
+                    password2errorMessage = e.message
+                } finally {
+                    isLoading = false
+                }
+            }
+        }
 
     }
 
