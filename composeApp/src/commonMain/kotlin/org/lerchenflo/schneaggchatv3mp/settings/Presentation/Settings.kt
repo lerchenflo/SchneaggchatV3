@@ -43,7 +43,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.settings.Domain.DeleteAppDataUseCase
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.*
@@ -51,10 +53,7 @@ import schneaggchatv3mp.composeapp.generated.resources.*
 @Composable
 @Preview
 fun SettingsScreen(
-    viewModel: SettingsViewModel = viewModel(
-        factory = SettingsViewModel.Factory
-    ),
-    sharedViewModel: SharedViewModel,
+    viewModel: SettingsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
@@ -131,6 +130,20 @@ fun SettingsScreen(
                     )
                 }
             }
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+            //---- App Einstellungen ----
+            // App kaputt button
+            val deleteAppDataUseCase = koinInject<DeleteAppDataUseCase>()
+            Button(
+                onClick = {viewModel.deleteAllAppData(deleteAppDataUseCase)},
+                modifier = Modifier
+                    .fillMaxWidth()
+            ){
+                Text(
+                    text = stringResource(Res.string.app_broken)
+                )
+            }
+
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
             // Account section
             LogoutButton(

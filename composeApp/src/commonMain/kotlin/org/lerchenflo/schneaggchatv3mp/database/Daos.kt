@@ -63,6 +63,26 @@ interface MessageReaderDao {
     suspend fun deleteReadersForMessage(messageId: Long)
 }
 
+@Dao
+interface AllDatabaseDao {
+    @Query("DELETE FROM message_readers")
+    suspend fun clearMessageReaders()
+
+    @Query("DELETE FROM messages")
+    suspend fun clearMessages()
+
+    @Query("DELETE FROM users")
+    suspend fun clearUsers()
+
+    @Transaction
+    suspend fun clearAll() {
+        // Clear tables in proper order to respect foreign key constraints
+        clearMessageReaders()  // Child table first
+        clearMessages()        // Then parent table
+        clearUsers()           // Finally users table
+    }
+}
+
 @Serializable
 data class IdChangeDate(
     val id: Long,

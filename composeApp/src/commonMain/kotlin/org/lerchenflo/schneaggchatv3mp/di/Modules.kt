@@ -17,6 +17,8 @@ import org.lerchenflo.schneaggchatv3mp.database.AppDatabaseRepository
 import org.lerchenflo.schneaggchatv3mp.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
+import org.lerchenflo.schneaggchatv3mp.settings.Domain.DeleteAppDataUseCase
+import org.lerchenflo.schneaggchatv3mp.settings.Presentation.SettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import kotlin.math.sin
 
@@ -48,6 +50,8 @@ val sharedmodule = module{
     singleOf(::GetChangeIdMessageUseCase)
     singleOf(::UpsertMessageUseCase)
     singleOf(::GetAllMessagesWithReadersUseCase)
+
+    singleOf(::DeleteAppDataUseCase)
 
     //View model
     singleOf(::SharedViewModel)
