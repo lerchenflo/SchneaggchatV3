@@ -43,7 +43,8 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.LOGGEDIN
+import org.lerchenflo.schneaggchatv3mp.database.tables.User
 import org.lerchenflo.schneaggchatv3mp.login.Presentation.InputTextField
 import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
@@ -51,7 +52,8 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.app_name
 import schneaggchatv3mp.composeapp.generated.resources.filter
-import schneaggchatv3mp.composeapp.generated.resources.loadinginfo
+import schneaggchatv3mp.composeapp.generated.resources.loadinginfo_messages
+import schneaggchatv3mp.composeapp.generated.resources.loadinginfo_offline
 import schneaggchatv3mp.composeapp.generated.resources.new_chat
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap
 import schneaggchatv3mp.composeapp.generated.resources.search_friend
@@ -63,7 +65,7 @@ import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 @Composable
 fun Chatauswahlscreen(
     viewModel: ChatSelectorViewModel = viewModel(
-        factory = ChatSelectorViewModel .Factory
+        factory = ChatSelectorViewModel.Factory
     ),
     onChatSelected: (User) -> Unit,  // navigation callback
     onNewChatClick: () -> Unit,
@@ -94,14 +96,13 @@ fun Chatauswahlscreen(
                 text = stringResource(Res.string.app_name),
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 10.dp),
+                    .padding(start = 5.dp),
                 style = TextStyle(
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.onSurface
                 ),
                 autoSize = TextAutoSize.StepBased(
                     minFontSize = 10.sp,
-                    maxFontSize = 30.sp
+                    maxFontSize = 25.sp
                 ),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -112,11 +113,18 @@ fun Chatauswahlscreen(
 
             //Loadingbar für messages
             RoundLoadingIndicator(
-                visible = viewModel.isLoadingMessages,
+                visible = viewModel.isLoadingMessages || !LOGGEDIN,
                 onClick = {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        SnackbarManager.showMessage(getString(Res.string.loadinginfo))
+                    if (viewModel.isLoadingMessages){
+                        CoroutineScope(Dispatchers.IO).launch {
+                            SnackbarManager.showMessage(getString(Res.string.loadinginfo_messages))
+                        }
+                    }else{
+                        CoroutineScope(Dispatchers.IO).launch {
+                            SnackbarManager.showMessage(getString(Res.string.loadinginfo_offline))
+                        }
                     }
+
                 },
                 strokeWidth = 2.dp,
                 size = 18.dp
@@ -211,7 +219,6 @@ fun Chatauswahlscreen(
                 UserButton(
                     user = user,
                     useOnClickGes = false,
-                    unreadMessages = false,
                     lastMessage = user.lastmessage,
                     onClickText = { onChatSelected(user)},
                     onClickImage = {

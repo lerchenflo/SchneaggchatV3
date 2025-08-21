@@ -6,6 +6,10 @@ import androidx.room.Upsert
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
+import org.lerchenflo.schneaggchatv3mp.database.tables.Message
+import org.lerchenflo.schneaggchatv3mp.database.tables.MessageReader
+import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.database.tables.User
 
 class AppDatabaseRepository(
     private val database: AppDatabase

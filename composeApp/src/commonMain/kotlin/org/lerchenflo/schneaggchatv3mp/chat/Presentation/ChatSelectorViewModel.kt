@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,9 +19,11 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform.getKoin
+import org.lerchenflo.schneaggchatv3mp.LOGGEDIN
 import org.lerchenflo.schneaggchatv3mp.OWNID
-import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.database.tables.User
 import kotlin.reflect.KClass
 
 class ChatSelectorViewModel: ViewModel() {
@@ -37,10 +40,19 @@ class ChatSelectorViewModel: ViewModel() {
     val sharedViewModel: SharedViewModel = getKoin().get()
 
     init {
-        sharedViewModel.executeuserandmsgidsync { isLoadingMessages1 ->
-            isLoadingMessages = isLoadingMessages1
-            println("Loading messages: $isLoadingMessages")
+        viewModelScope.launch {
+            delay(1500)
+
+            if (LOGGEDIN){
+                sharedViewModel.executeuserandmsgidsync { isLoadingMessages1 ->
+                    isLoadingMessages = isLoadingMessages1
+                    println("Loading messages: $isLoadingMessages")
+                }
+            }
+
         }
+
+
     }
 
     var isLoadingMessages by mutableStateOf(false)
@@ -69,7 +81,7 @@ class ChatSelectorViewModel: ViewModel() {
         .map { list ->
             list
                 .filter { it.id != OWNID }                // remove self
-                .sortedByDescending { it.lastmessage?.sendDate } // then sort
+                .sortedByDescending { it.lastmessage?.message?.sendDate } // then sort
         }
         .flowOn(Dispatchers.Default) //Im default despatcher für mehr cores -> Mehr hoaza
 

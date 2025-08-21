@@ -4,10 +4,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import org.lerchenflo.schneaggchatv3mp.database.AppDatabaseRepository
-import org.lerchenflo.schneaggchatv3mp.database.Message
-import org.lerchenflo.schneaggchatv3mp.database.MessageReader
-import org.lerchenflo.schneaggchatv3mp.database.MessageWithReaders
-import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.database.tables.Message
+import org.lerchenflo.schneaggchatv3mp.database.tables.MessageReader
+import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.database.tables.User
 
 class UpsertMessageUseCase (
     private val repository: AppDatabaseRepository

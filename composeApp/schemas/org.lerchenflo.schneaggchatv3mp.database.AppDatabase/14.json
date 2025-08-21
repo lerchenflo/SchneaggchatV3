@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 12,
-    "identityHash": "8f35dc1ad1fb0f32f4316c158da5eeb9",
+    "version": 14,
+    "identityHash": "da162146a5b5c711e552850d4561b22d",
     "entities": [
       {
         "tableName": "users",
@@ -188,11 +188,115 @@
             "readerEntryId"
           ]
         }
+      },
+      {
+        "tableName": "groups",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`groupid` INTEGER NOT NULL, `name` TEXT NOT NULL, `profile_picture` TEXT, `description` TEXT, `create_date` TEXT, `change_date` TEXT, `creator_id` TEXT NOT NULL, `notis_muted` INTEGER NOT NULL, PRIMARY KEY(`groupid`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "groupid",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "profilePicture",
+            "columnName": "profile_picture",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createDate",
+            "columnName": "create_date",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "changeDate",
+            "columnName": "change_date",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "creatorid",
+            "columnName": "creator_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "muted",
+            "columnName": "notis_muted",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "groupid"
+          ]
+        }
+      },
+      {
+        "tableName": "group_members",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`entryid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `group_id` INTEGER NOT NULL, `user_id` TEXT NOT NULL, `color` INTEGER NOT NULL, `join_date` TEXT NOT NULL, `is_admin` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "entryid",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gid",
+            "columnName": "group_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uid",
+            "columnName": "user_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "color",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "joinDate",
+            "columnName": "join_date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isAdmin",
+            "columnName": "is_admin",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "entryid"
+          ]
+        }
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8f35dc1ad1fb0f32f4316c158da5eeb9')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'da162146a5b5c711e552850d4561b22d')"
     ]
   }
 }

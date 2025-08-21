@@ -1,30 +1,14 @@
-package org.lerchenflo.schneaggchatv3mp.database
-
+package org.lerchenflo.schneaggchatv3mp.database.tables
 
 import androidx.room.ColumnInfo
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import androidx.room.Relation
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.OWNID
 import org.lerchenflo.schneaggchatv3mp.network.GROUPPICTUREMESSAGE
 import org.lerchenflo.schneaggchatv3mp.network.SINGLEPICTUREMESSAGE
-
-
-@Serializable
-data class MessageWithReaders(
-    @Embedded val message: Message,
-    @Relation(
-        parentColumn = "id",
-        entityColumn = "messageId"
-    )
-    val readers: List<MessageReader>
-)
-
-
 
 @Serializable
 @Entity(tableName = "messages")
@@ -75,4 +59,6 @@ data class Message(
     fun isMyMessage(): Boolean {
         return sender == OWNID
     }
+
+
 }

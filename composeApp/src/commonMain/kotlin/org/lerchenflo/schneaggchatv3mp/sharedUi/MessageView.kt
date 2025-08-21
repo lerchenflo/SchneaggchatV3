@@ -25,8 +25,8 @@ import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.lerchenflo.schneaggchatv3mp.database.Message
-import org.lerchenflo.schneaggchatv3mp.database.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.database.tables.Message
+import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.network.GROUPTEXTMESSAGE
 import org.lerchenflo.schneaggchatv3mp.network.SINGLETEXTMESSAGE
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString

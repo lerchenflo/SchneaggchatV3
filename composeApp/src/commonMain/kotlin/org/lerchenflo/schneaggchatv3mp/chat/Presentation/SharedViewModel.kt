@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import org.koin.compose.getKoin
+import org.lerchenflo.schneaggchatv3mp.LOGGEDIN
 import org.lerchenflo.schneaggchatv3mp.OWNID
 import org.lerchenflo.schneaggchatv3mp.SESSIONID
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DeleteUserUseCase
@@ -21,8 +22,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdMessageUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertMessageUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertUserUseCase
-import org.lerchenflo.schneaggchatv3mp.database.MessageWithReaders
-import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.database.tables.User
 import org.lerchenflo.schneaggchatv3mp.database.UserDao
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.util.onError
@@ -48,6 +49,8 @@ class SharedViewModel(
         print("SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT")
 
         //executeuserandmsgidsync()
+
+        //TODO: Sync alle 10 sek oda so der an login macht wenn du offline bisch und location und so
     }
 
 
@@ -69,9 +72,25 @@ class SharedViewModel(
                     networkUtils = networkUtils,
                     onLoadingStateChange = {onLoadingStateChange(it)},
                 )
+
+                //TODO: GROUPIDSYNC
             }
 
         }
+    }
+
+    suspend fun areLoginCredentialsSaved(): Boolean{
+        val (username, password) = preferencemanager.getAutologinCreds()
+        if (username.isNotBlank() && password.isNotBlank()){
+            OWNID = preferencemanager.getOWNID()
+        }
+        viewModelScope.launch {
+            login(username, password, onResult = { success, body ->
+                LOGGEDIN = success
+                println("LOGGEDIN $success")
+            })
+        }
+        return username.isNotBlank() && password.isNotBlank()
     }
 
     fun login(
@@ -139,11 +158,10 @@ class SharedViewModel(
         val messagesFlow = getAllMessagesWithReadersUseCase()
 
         return combine(usersFlow, messagesFlow) { users, messagesWithReaders ->
-            val messages = messagesWithReaders.map { it.message }
 
             users.map { user ->
-                val last = messages
-                    .filter { it.sender == user.id || it.receiver == user.id }
+                val last = messagesWithReaders
+                    .filter { it.message.sender == user.id || it.message.receiver == user.id }
                     .maxByOrNull { it.getSendDateAsLong() }
 
                 // return a copy of the user with lastmessage assigned

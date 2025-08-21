@@ -27,8 +27,9 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.lerchenflo.schneaggchatv3mp.database.Message
-import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.database.tables.Message
+import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.database.tables.User
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
@@ -55,8 +56,7 @@ import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 fun UserButton(
     user: User?,
     showProfilePicture: Boolean = true,
-    unreadMessages: Boolean = false,
-    lastMessage: Message? = null,
+    lastMessage: MessageWithReaders? = null,
     bottomTextOverride: String? = "",
     useOnClickGes: Boolean = true,
     onClickGes: () -> Unit = {},  // Add click for everything
@@ -112,7 +112,7 @@ fun UserButton(
                     modifier = Modifier.weight(1f)
                 )
 
-                if(unreadMessages){
+                if(lastMessage != null && !lastMessage.isReadbyMe()){
                     Image(
                         painter = painterResource(Res.drawable.noti_bell),
                         contentDescription = stringResource(Res.string.notification_bell),
@@ -133,7 +133,7 @@ fun UserButton(
                 ) {
                     // Last message preview
                     Text(
-                        text = lastMessage.content ?: "",
+                        text = lastMessage.message.content ?: "",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -144,7 +144,7 @@ fun UserButton(
                     //println("milis to date ${lastMessage.sendDate} result ${millisToTimeDateOrYesterday(lastMessage.sendDate?.toLong() ?: 0L)}")
                     // Time indicator
                     Text(
-                        text = millisToTimeDateOrYesterday(lastMessage.sendDate?.toLong() ?: 0L),
+                        text = millisToTimeDateOrYesterday(lastMessage.message.sendDate?.toLong() ?: 0L),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.outline,
                         maxLines = 1,
@@ -181,7 +181,6 @@ fun userButtonPreview() {
         Column {
             UserButton(
                 user = null,
-                unreadMessages = true,
                 lastMessage = null,
                 bottomTextOverride = "Dine alte message",
                 useOnClickGes = false,
@@ -189,7 +188,6 @@ fun userButtonPreview() {
 
             UserButton(
                 user = null,
-                unreadMessages = true,
                 lastMessage = null,
                 bottomTextOverride = "Dine neue message",
                 useOnClickGes = false,

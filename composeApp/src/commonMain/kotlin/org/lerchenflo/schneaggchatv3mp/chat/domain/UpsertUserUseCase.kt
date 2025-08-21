@@ -4,7 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import org.lerchenflo.schneaggchatv3mp.database.AppDatabaseRepository
-import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.database.tables.User
 
 class UpsertUserUseCase(
     private val userRepository: AppDatabaseRepository

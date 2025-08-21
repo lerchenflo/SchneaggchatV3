@@ -1,9 +1,9 @@
-package org.lerchenflo.schneaggchatv3mp.database
+package org.lerchenflo.schneaggchatv3mp.database.tables
 
 import androidx.room.ColumnInfo
-import androidx.room.PrimaryKey
 import androidx.room.Entity
 import androidx.room.Ignore
+import androidx.room.PrimaryKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -70,5 +70,5 @@ data class User(
     var notisMuted: Boolean? = null,
 
     @Ignore
-    var lastmessage: Message? = null
+    var lastmessage: MessageWithReaders? = null
 )

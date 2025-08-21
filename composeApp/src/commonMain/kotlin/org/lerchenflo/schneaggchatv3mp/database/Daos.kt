@@ -7,6 +7,12 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.database.tables.Group
+import org.lerchenflo.schneaggchatv3mp.database.tables.GroupWithMembers
+import org.lerchenflo.schneaggchatv3mp.database.tables.Message
+import org.lerchenflo.schneaggchatv3mp.database.tables.MessageReader
+import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.database.tables.User
 
 @Dao
 interface UserDao {
@@ -65,6 +71,13 @@ interface MessageReaderDao {
 
     @Query("DELETE FROM message_readers WHERE messageId = :messageId")
     suspend fun deleteReadersForMessage(messageId: Long)
+}
+
+@Dao
+interface GroupDao {
+    @Upsert
+    suspend fun upsertGroup(group: Group)
+
 }
 
 @Dao

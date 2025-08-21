@@ -1,11 +1,14 @@
-package org.lerchenflo.schneaggchatv3mp.database
+package org.lerchenflo.schneaggchatv3mp.database.helperFunctions
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.database.tables.Message
+import org.lerchenflo.schneaggchatv3mp.database.tables.MessageReader
+import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
 
 //Data transaction objects die so direkt als json geparst werrand:
 
-@kotlinx.serialization.Serializable
+@Serializable
 data class ServerReaderDto(
     @SerialName("id") val id: Long = 0L,
     @SerialName("changedate") val changedate: String? = null
