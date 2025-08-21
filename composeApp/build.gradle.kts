@@ -34,6 +34,10 @@ kotlin {
     }
     
     jvm()
+
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
     
     sourceSets {
         androidMain.dependencies {

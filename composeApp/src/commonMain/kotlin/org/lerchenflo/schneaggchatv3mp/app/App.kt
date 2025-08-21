@@ -24,6 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.Presentation.NewChat
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
 import org.lerchenflo.schneaggchatv3mp.login.Presentation.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.Presentation.SignUpScreen
+import org.lerchenflo.schneaggchatv3mp.settings.Presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 
@@ -77,8 +78,8 @@ fun App() {
                             },
                             onNewChatClick = {
                                 navController.navigate(Route.NewChat)
-                            }
-
+                            },
+                            onSettingsClick = {navController.navigate(Route.Settings)}
                         )
                     }
 
@@ -115,11 +116,23 @@ fun App() {
                         )
                     }
 
+                    // Sign up page
                     composable<Route.SignUp>{
                         SignUpScreen(
                             onSignUpSuccess = {
                                 println("Signup success, chatselector")
                                 navController.navigate(Route.ChatSelector)
+                            }
+                        )
+                    }
+
+                    // Settings page
+                    composable<Route.Settings>{
+                        val sharedViewModel = it.sharedKoinViewModel<SharedViewModel>(navController)
+                        SettingsScreen(
+                            sharedViewModel = sharedViewModel,
+                            onBackClick = {
+                                navController.navigateUp()
                             }
                         )
                     }
