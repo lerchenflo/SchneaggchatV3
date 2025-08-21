@@ -139,7 +139,7 @@ class SharedViewModel(
             users.map { user ->
                 val last = messages
                     .filter { it.sender == user.id || it.receiver == user.id }
-                    .maxByOrNull { it.sendDate?.toLongOrNull() ?: 0L }
+                    .maxByOrNull { it.getSendDateAsLong() }
 
                 // return a copy of the user with lastmessage assigned
                 user.apply { lastmessage = last }

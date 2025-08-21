@@ -43,9 +43,9 @@ fun convertServerMessageDtoToMessageWithReaders(serverList: List<ServerMessageDt
         val readers: List<MessageReader> = dto.gelesenliste.map { r ->
             // NOTE: adjust mapping below according to what the server's "id" actually means
             MessageReader(
-                readerEntryId = r.id,        // if server provides a unique entry id
+                readerEntryId = 0,       // if server provides a unique entry id
                 messageId = dto.id,         // FK -> message.id
-                readerID = null,            // set if server supplies reader user id as different field
+                readerID = r.id,            // set if server supplies reader user id as different field
                 readDate = r.changedate
             )
         }

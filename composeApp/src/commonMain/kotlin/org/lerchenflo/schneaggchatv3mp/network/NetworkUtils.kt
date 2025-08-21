@@ -342,11 +342,11 @@ class NetworkUtils(
 
 
 
-    suspend fun executeMsgIDSync(getChangeIdMessageUseCase: GetChangeIdMessageUseCase, upsertMessageUseCase: UpsertMessageUseCase,networkUtils: NetworkUtils) : Boolean {
+    suspend fun executeMsgIDSync(getChangeIdMessageUseCase: GetChangeIdMessageUseCase, upsertMessageUseCase: UpsertMessageUseCase,networkUtils: NetworkUtils) {
 
         println("MSgidsync startet")
 
-        var moremessages = false
+        var moremessages = true
 
         try {
 
@@ -358,84 +358,85 @@ class NetworkUtils(
             //println("Json messagewithreader ${json.encodeToString(ServerMessageDto)}")
 
             // 1. Get local user IDs and change dates
-            val localMessages = getChangeIdMessageUseCase()
-            val serializedData = json.encodeToString(localMessages)
+            while (moremessages){
+                val localMessages = getChangeIdMessageUseCase()
+                val serializedData = json.encodeToString(localMessages)
 
-            val syncResult = networkUtils.messageidsync(serializedData)
+                val syncResult = networkUtils.messageidsync(serializedData)
 
-            syncResult.onSuccessWithBody { responseheaders, body ->
+                syncResult.onSuccessWithBody { responseheaders, body ->
 
-                val serverlist = json.decodeFromString<List<ServerMessageDto>>(body)
+                    moremessages = responseheaders["moremessages"].toBoolean()
+                    println("Messageidsync: es git $moremessages zum hola!")
 
-                val messageListwithReaders = convertServerMessageDtoToMessageWithReaders(serverlist)
+                    val serverlist = json.decodeFromString<List<ServerMessageDto>>(body)
 
-                val (normalMessages, pictureMessages) = messageListwithReaders.partition { !it.message.isPicture() }
+                    val messageListwithReaders = convertServerMessageDtoToMessageWithReaders(serverlist)
 
-                if (normalMessages.isNotEmpty()) {
+                    val (normalMessages, pictureMessages) = messageListwithReaders.partition { !it.message.isPicture() }
 
-                    //Non blocking Coroutine for Upsert message
-                    CoroutineScope(
-                        context = Dispatchers.IO
-                    ).launch {
-                        upsertMessageUseCase(normalMessages)
-                        println("Message insert: fertig")
+                    if (normalMessages.isNotEmpty()) {
 
-                        if (responseheaders["moremessages"].toBoolean()){
-                            //Es git mehr messages
-                            moremessages = true
+                        //Non blocking Coroutine for Upsert message
+                        CoroutineScope(
+                            context = Dispatchers.IO
+                        ).launch {
+                            upsertMessageUseCase(normalMessages)
+                            println("Message insert gmacht: ${normalMessages.size} messages")
+
                         }
                     }
-                }
 
 
-                /* TODO: Bilder hola
-                val deferreds = pictureMessages.map { m ->
-                    async {
-                        val messageResult = networkUtils.getmessagebyid(m.id)
-                        messageResult.onSuccessWithBody { _, body1 ->
-                            if (body1 != "[]") {
-                                val messages = json.decodeFromString<List<Message>>(body1)
-                                upsertMessageUseCase(messages[0]) // direct suspend call
-                            }
-                        }
-                    }
-                }
-
-                deferreds.awaitAll()
-
-                 */
-
-
-                //Bilder einzeln hola
-                for (m in pictureMessages){
-                    try {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            val messageResult = networkUtils.getmessagebyid(m.message.id)
-                            messageResult.onSuccessWithBody { success, body1 ->
-
-                                val messageasdto = json.decodeFromString<List<ServerMessageDto>>(body1)
-
-                                val message = convertServerMessageDtoToMessageWithReaders(messageasdto)
-
-                                CoroutineScope(
-                                    context = Dispatchers.IO
-                                ).launch {
-                                    upsertMessageUseCase(message[0])
+                    /* TODO: Bilder hola
+                    val deferreds = pictureMessages.map { m ->
+                        async {
+                            val messageResult = networkUtils.getmessagebyid(m.id)
+                            messageResult.onSuccessWithBody { _, body1 ->
+                                if (body1 != "[]") {
+                                    val messages = json.decodeFromString<List<Message>>(body1)
+                                    upsertMessageUseCase(messages[0]) // direct suspend call
                                 }
-
                             }
                         }
-
-                    } catch (e: Exception) {
-                        Result.failure<Unit>(e)
                     }
 
+                    deferreds.awaitAll()
+
+                     */
+
+
+                    //Bilder einzeln hola
+                    for (m in pictureMessages){
+                        try {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                val messageResult = networkUtils.getmessagebyid(m.message.id)
+                                messageResult.onSuccessWithBody { success, body1 ->
+
+                                    val messageasdto = json.decodeFromString<List<ServerMessageDto>>(body1)
+
+                                    val message = convertServerMessageDtoToMessageWithReaders(messageasdto)
+
+                                    CoroutineScope(
+                                        context = Dispatchers.IO
+                                    ).launch {
+                                        upsertMessageUseCase(message[0])
+                                    }
+
+                                }
+                            }
+
+                        } catch (e: Exception) {
+                            Result.failure<Unit>(e)
+                        }
+
+                    }
+
+
                 }
-
-
-            }
-            syncResult.onError {
-                println("Msgidsync error: $it")
+                syncResult.onError {
+                    println("Msgidsync error: $it")
+                }
             }
         } catch (e: Exception) {
             // Log error (platform-specific logging would be implemented separately)
