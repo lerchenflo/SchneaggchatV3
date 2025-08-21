@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.NoteAdd
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -27,8 +29,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.getKoin
+import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -40,12 +46,17 @@ import schneaggchatv3mp.composeapp.generated.resources.message
 @Preview
 @Composable
 fun ChatScreen(
-    sharedViewModel: SharedViewModel,
+    viewModel: ChatViewModel = viewModel(
+        factory = ChatViewModel.Factory
+    ),
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
         .fillMaxSize()
         .safeContentPadding()
 ){
+    val sharedViewModel = getKoin().get<SharedViewModel>()
+    val messages by viewModel.messagesState.collectAsStateWithLifecycle()
+
     SchneaggchatTheme{ // theme wida setza
         Column(
             modifier = modifier
@@ -88,10 +99,20 @@ fun ChatScreen(
                 contentPadding = PaddingValues(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-
+                    .weight(1f),
+                reverseLayout = true
             ) {
-                // todo messages Printen
+                items(
+                    messages
+                ) { message ->
+                    MessageView(
+                        messagewithreaders = message,
+                        modifier = Modifier
+                    )
+                    HorizontalDivider(
+                        thickness = 0.5.dp
+                    )
+                }
             }
 
             Row(
@@ -114,13 +135,10 @@ fun ChatScreen(
                     )
                 }
 
-                // Text field for message
-                var text by remember { mutableStateOf("") } // todo text ins viewmodel
                 OutlinedTextField(
-                    value = text,
-                    onValueChange = {
-                            newValue -> text = newValue
-                        /* TODO: Suchen */
+                    value = viewModel.sendText,
+                    onValueChange = { newValue ->
+                        viewModel.updatesendText(newValue)
                     },
                     modifier = Modifier.weight(1f),
                     placeholder = { Text(stringResource(Res.string.message) + " ...") }

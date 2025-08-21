@@ -86,9 +86,7 @@ fun App() {
 
                     // chat
                     composable<Route.Chat> {
-                        val sharedViewModel = it.sharedKoinViewModel<SharedViewModel>(navController)
                         ChatScreen(
-                            sharedViewModel = sharedViewModel,
                             onBackClick = {
                                 navController.navigateUp()
                             }

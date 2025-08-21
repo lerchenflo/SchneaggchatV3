@@ -1,14 +1,25 @@
 package org.lerchenflo.schneaggchatv3mp.sharedUi
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.database.Message
+import org.lerchenflo.schneaggchatv3mp.database.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.network.GROUPTEXTMESSAGE
 import org.lerchenflo.schneaggchatv3mp.network.SINGLETEXTMESSAGE
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
@@ -16,26 +27,77 @@ import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 @Preview
 @Composable
 fun MessageView(
-    message: Message,
+    messagewithreaders: MessageWithReaders,
     modifier: Modifier = Modifier
         .fillMaxWidth()
+
 ){
-    Box(
+    val mymessage = messagewithreaders.message.isMyMessage()
+
+    //gesamtbox
+    Column(
         modifier = modifier
     ){
-        Column(){
+        //Contentrow
+        Row(
+
+        ) {  }
+
+        //Sendedatum / Gelesen row
+        Row(
+
+        ) {  }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    Box(
+        modifier = modifier
+            .padding(
+                bottom = 10.dp
+            )
+            .background(Color.Transparent)
+
+    ){
+        Column(
+            modifier = Modifier
+                .padding(
+                    start = if (mymessage){45.dp}else{15.dp},
+                    end = if (mymessage){15.dp}else{45.dp},
+                    top = 5.dp,
+                    bottom = 5.dp
+                )
+                .background(
+                    color = if (mymessage){MaterialTheme.colorScheme.primaryContainer}else {MaterialTheme.colorScheme.secondaryContainer},
+                    shape = RoundedCornerShape(15.dp)
+                )
+                .wrapContentSize()
+        ){
             // je nach msgtype unterschiedliche anzeigen
-            when(message.msgType){
-                SINGLETEXTMESSAGE -> TextMessage(message)
-                GROUPTEXTMESSAGE -> TextMessage(message)
+            when(messagewithreaders.message.msgType){
+                SINGLETEXTMESSAGE -> TextMessage(messagewithreaders, mymessage)
+                GROUPTEXTMESSAGE -> TextMessage(messagewithreaders, mymessage)
 
                 else -> ErrorMessage()
             }
 
             // Time and Read info
-            Row(){
+            Row(
+                modifier = Modifier
+            ){
                 Text(
-                    text = millisToString(message.sendDate?.toLong() ?: 0, format = "HH:mm")
+                    text = millisToString(messagewithreaders.message.sendDate?.toLong() ?: 0, format = "HH:mm"),
+                    textAlign = TextAlign.End
                 )
             }
 
@@ -47,11 +109,15 @@ fun MessageView(
 
 @Composable
 fun TextMessage(
-    message: Message,
+    messageWithReaders: MessageWithReaders,
+    myMessage: Boolean,
     modifier: Modifier = Modifier
 ){
+    Text(
+        text = messageWithReaders.message.content ?: "",
+        modifier = modifier,
 
-
+    )
 }
 
 @Composable

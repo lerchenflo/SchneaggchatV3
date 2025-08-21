@@ -68,6 +68,9 @@ class AppDatabaseRepository(
         return database.messageDao().getMessageIdsWithChangeDates()
     }
 
+    fun getMessagesByUserId(userId: Long): Flow<List<MessageWithReaders>> {
+        return database.messageDao().getMessagesByUserId(userId)
+    }
 
 
     suspend fun insertReader(reader: MessageReader) {

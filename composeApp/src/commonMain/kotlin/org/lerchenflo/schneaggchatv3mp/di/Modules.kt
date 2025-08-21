@@ -6,6 +6,7 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DeleteUserUseCase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllMessagesForUserIdUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllMessagesWithReadersUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdMessageUseCase
@@ -48,6 +49,7 @@ val sharedmodule = module{
     singleOf(::GetChangeIdMessageUseCase)
     singleOf(::UpsertMessageUseCase)
     singleOf(::GetAllMessagesWithReadersUseCase)
+    singleOf(::GetAllMessagesForUserIdUseCase)
 
     //View model
     singleOf(::SharedViewModel)
