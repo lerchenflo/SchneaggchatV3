@@ -1,5 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.chat.Presentation
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -34,9 +37,17 @@ class ChatSelectorViewModel: ViewModel() {
     val sharedViewModel: SharedViewModel = getKoin().get()
 
     init {
-        sharedViewModel.executeuserandmsgidsync()
+        sharedViewModel.executeuserandmsgidsync { isLoadingMessages1 ->
+            isLoadingMessages = isLoadingMessages1
+            println("Loading messages: $isLoadingMessages")
+        }
     }
 
+    var isLoadingMessages by mutableStateOf(false)
+        private set
+    fun updateIsLoadingMessages(newValue: Boolean) {
+        isLoadingMessages = newValue
+    }
 
 
     private val _searchTerm = MutableStateFlow("")
