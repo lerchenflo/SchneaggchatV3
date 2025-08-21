@@ -182,7 +182,7 @@ fun ErrorMessage(
 }
 
 @Composable
-fun DayDivider(date: LocalDate?) {
+fun DayDivider(millis: Long) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -191,7 +191,7 @@ fun DayDivider(date: LocalDate?) {
     ) {
         Divider(modifier = Modifier.fillMaxWidth())
         Text(
-            text = date.toString(), // you can format this
+            text = millisToString(millis, "dd.MM.yyyy"), // you can format this
             modifier = Modifier.padding(vertical = 4.dp)
         )
         Divider(modifier = Modifier.fillMaxWidth())

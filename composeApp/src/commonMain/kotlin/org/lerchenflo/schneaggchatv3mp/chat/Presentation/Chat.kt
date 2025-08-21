@@ -104,20 +104,22 @@ fun ChatScreen(
                 reverseLayout = true
             ) {
                 itemsIndexed(messages) { index, message ->
-                    val currentDate = message.message.sendDate?.toLongOrNull()?.toLocalDate()
-                    val previousDate =
-                        messages.getOrNull(index - 1)?.message?.sendDate?.toLongOrNull()
+                    val currentDateMillis = message.message.sendDate?.toLongOrNull()
+                    val currentDate = currentDateMillis?.toLocalDate()
+                    val nextDate =
+                        messages.getOrNull(index + 1)?.message?.sendDate?.toLongOrNull()
                             ?.toLocalDate()
 
-                    // Show divider only if this message starts a new day
-                    if (currentDate != previousDate) {
-                        DayDivider(date = currentDate)
-                    }
+
 
                     MessageView(
                         messagewithreaders = message,
                         modifier = Modifier
                     )
+                    // Show divider only if this message starts a new day
+                    if (currentDate != nextDate && currentDate != null) {
+                        DayDivider(currentDateMillis)
+                    }
                 }
             }
 
