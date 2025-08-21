@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import org.koin.compose.getKoin
+import org.lerchenflo.schneaggchatv3mp.LOGGEDIN
 import org.lerchenflo.schneaggchatv3mp.OWNID
 import org.lerchenflo.schneaggchatv3mp.SESSIONID
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DeleteUserUseCase
@@ -48,6 +49,8 @@ class SharedViewModel(
         print("SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT")
 
         //executeuserandmsgidsync()
+
+        //TODO: Sync alle 10 sek oda so der an login macht wenn du offline bisch und location und so
     }
 
 
@@ -69,9 +72,25 @@ class SharedViewModel(
                     networkUtils = networkUtils,
                     onLoadingStateChange = {onLoadingStateChange(it)},
                 )
+
+                //TODO: GROUPIDSYNC
             }
 
         }
+    }
+
+    suspend fun areLoginCredentialsSaved(): Boolean{
+        val (username, password) = preferencemanager.getAutologinCreds()
+        if (username.isNotBlank() && password.isNotBlank()){
+            OWNID = preferencemanager.getOWNID()
+        }
+        viewModelScope.launch {
+            login(username, password, onResult = { success, body ->
+                LOGGEDIN = success
+                println("LOGGEDIN $success")
+            })
+        }
+        return username.isNotBlank() && password.isNotBlank()
     }
 
     fun login(

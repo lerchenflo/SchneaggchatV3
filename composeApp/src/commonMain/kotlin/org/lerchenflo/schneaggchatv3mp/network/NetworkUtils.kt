@@ -282,7 +282,7 @@ class NetworkUtils(
             syncResult.onSuccessWithBody { success, body ->
                 val operations = json.decodeFromString<List<IdOperation>>(body)
                 CoroutineScope(Dispatchers.Default).launch {
-                    val results = operations.map { operation ->
+                    operations.map { operation ->
                         when (operation.Status) {
                             "deleted" -> {
                                 try {
@@ -338,6 +338,7 @@ class NetworkUtils(
         onLoadingStateChange(true)
 
         var moremessages = true
+        var errorcount = 0
 
         try {
 
@@ -435,6 +436,11 @@ class NetworkUtils(
                 }
                 syncResult.onError {
                     println("Msgidsync error: $it")
+                    errorcount ++
+
+                    if (errorcount > 5){
+                        moremessages = false
+                    }
                 }
 
                 //delay bevor da nächste sync startet

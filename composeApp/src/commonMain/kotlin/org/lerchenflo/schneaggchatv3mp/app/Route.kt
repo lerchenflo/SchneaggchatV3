@@ -20,6 +20,9 @@ sealed interface Route {
     data object LoginGraph: Route
 
     @Serializable
+    data object AutoLoginCredChecker: Route
+
+    @Serializable
     data object Login: Route
     @Serializable
     data object SignUp: Route

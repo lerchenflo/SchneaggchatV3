@@ -2,6 +2,9 @@ package org.lerchenflo.schneaggchatv3mp.app
 
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -9,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
@@ -51,10 +56,34 @@ fun App() {
                 navController = navController,
                 startDestination = Route.ChatGraph
             ) {
-                val startDestination = if(false){Route.ChatSelector} else {Route.Login} // todo logik ob ma ind login kummt oder ned
+
                 navigation<Route.ChatGraph>(
-                    startDestination = startDestination
+                    startDestination = Route.AutoLoginCredChecker
                 ) {
+                    composable<Route.AutoLoginCredChecker> {
+
+                        val sharedViewModel = it.sharedKoinViewModel<SharedViewModel>(navController)
+
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+
+
+                        LaunchedEffect(Unit) {
+                            val savedCreds = sharedViewModel.areLoginCredentialsSaved()
+
+                            if (savedCreds) {
+                                navController.navigate(Route.ChatSelector) {
+                                    popUpTo(Route.AutoLoginCredChecker) { inclusive = true } // remove loading from backstack
+                                }
+                            } else {
+                                navController.navigate(Route.Login) {
+                                    popUpTo(Route.AutoLoginCredChecker) { inclusive = true }
+                                }
+                            }
+                        }
+                    }
+
+
+
                     // chat selector (gegnerauswahl)
                     composable<Route.ChatSelector>(
                         enterTransition = { slideInHorizontally { fullWidth -> fullWidth } },
