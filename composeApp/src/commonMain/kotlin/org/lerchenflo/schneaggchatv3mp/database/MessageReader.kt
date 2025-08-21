@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 
+/*
 @Entity(
     tableName = "message_readers",
     foreignKeys = [
@@ -19,12 +20,14 @@ import kotlinx.serialization.Serializable
     indices = [Index(value = ["messageId"])]
 )
 
-@Serializable
-data class MessageReader(
-    @PrimaryKey()
-    val readerEntryId: Long = 0L,
+ */
 
-    val messageId: Long,     // FK → Message.id
+@Serializable
+@Entity(tableName = "message_readers")
+data class MessageReader(
+    @PrimaryKey(autoGenerate = true)
+    val readerEntryId: Long = 0L,
+    val messageId: Long,
     val readerID: Long?,
     val readDate: String?
 ) {

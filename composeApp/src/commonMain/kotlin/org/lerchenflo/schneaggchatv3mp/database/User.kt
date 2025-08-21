@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.database
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
 import androidx.room.Entity
+import androidx.room.Ignore
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -66,5 +67,8 @@ data class User(
     var requested: Boolean? = null,
 
     @ColumnInfo(name = "notis_muted")
-    var notisMuted: Boolean? = null
+    var notisMuted: Boolean? = null,
+
+    @Ignore
+    var lastmessage: Message? = null
 )

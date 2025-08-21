@@ -221,7 +221,7 @@ class NetworkUtils(
 
 
 
-    suspend fun messageidsync(databaseids: String): NetworkResult<Boolean, String> {
+    suspend fun messageidsync(databaseids: String): NetworkResult<Map<String, String>, String> {
         val headers = mapOf(
             "msgtype" to GETMESSAGESWITHOUTPICTURES,
         )
@@ -232,7 +232,7 @@ class NetworkUtils(
 
             is NetworkResult.Success -> {
                 // 4. Access the body directly from the Success result
-                NetworkResult.Success(true, res.body)
+                NetworkResult.Success(res.data, res.body)
             }
             is NetworkResult.Error -> NetworkResult.Error(res.error)
         }
@@ -342,9 +342,11 @@ class NetworkUtils(
 
 
 
-    suspend fun executeMsgIDSync(getChangeIdMessageUseCase: GetChangeIdMessageUseCase, upsertMessageUseCase: UpsertMessageUseCase,networkUtils: NetworkUtils) {
+    suspend fun executeMsgIDSync(getChangeIdMessageUseCase: GetChangeIdMessageUseCase, upsertMessageUseCase: UpsertMessageUseCase,networkUtils: NetworkUtils) : Boolean {
 
         println("MSgidsync startet")
+
+        var moremessages = false
 
         try {
 
@@ -361,7 +363,7 @@ class NetworkUtils(
 
             val syncResult = networkUtils.messageidsync(serializedData)
 
-            syncResult.onSuccessWithBody { success, body ->
+            syncResult.onSuccessWithBody { responseheaders, body ->
 
                 val serverlist = json.decodeFromString<List<ServerMessageDto>>(body)
 
@@ -377,6 +379,11 @@ class NetworkUtils(
                     ).launch {
                         upsertMessageUseCase(normalMessages)
                         println("Message insert: fertig")
+
+                        if (responseheaders["moremessages"].toBoolean()){
+                            //Es git mehr messages
+                            moremessages = true
+                        }
                     }
                 }
 

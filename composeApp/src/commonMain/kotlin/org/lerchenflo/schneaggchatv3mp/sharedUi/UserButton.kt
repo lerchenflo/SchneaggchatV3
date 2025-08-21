@@ -129,7 +129,7 @@ fun UserButton(
                 ) {
                     // Last message preview
                     Text(
-                        text = "Placeholder message text",
+                        text = lastMessage.content ?: "",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,

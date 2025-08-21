@@ -63,6 +63,7 @@ fun App() {
                     ) {
                         val sharedViewModel = it.sharedKoinViewModel<SharedViewModel>(navController)
 
+
                         LaunchedEffect(true) {
                             sharedViewModel.onLeaveChat() // am afang wenn ma noch nix selected hot an null
                         }

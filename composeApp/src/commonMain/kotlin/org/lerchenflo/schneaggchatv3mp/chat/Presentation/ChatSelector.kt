@@ -61,6 +61,7 @@ fun Chatauswahlscreen(
     val searchterm by viewModel.searchterm.collectAsState() // read-only display of current search term
 
 
+
     //Hauptlayout
     Column(
         modifier = modifier
@@ -172,7 +173,7 @@ fun Chatauswahlscreen(
                     user = user,
                     useOnClickGes = false,
                     unreadMessages = false,
-                    lastMessage = null,
+                    lastMessage = user.lastmessage,
                     onClickText = { onChatSelected(user)},
                     onClickImage = {
                         SnackbarManager.showMessage("Imagepreview incoming")

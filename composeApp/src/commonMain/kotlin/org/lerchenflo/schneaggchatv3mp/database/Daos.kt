@@ -23,6 +23,7 @@ interface UserDao {
 
     @Query("SELECT id, changedate FROM users")
     suspend fun getUserIdsWithChangeDates(): List<IdChangeDate>
+
 }
 
 
@@ -36,12 +37,11 @@ interface MessageDao {
     suspend fun updateMessages(messages: List<Message>)
 
 
-
     @Transaction
     @Query("SELECT * FROM messages WHERE id = :id")
     fun getMessageWithReaders(id: Long): Flow<MessageWithReaders>
 
-    @Transaction
+
     @Query("SELECT * FROM messages")
     fun getAllMessagesWithReaders(): Flow<List<MessageWithReaders>>
 
