@@ -15,6 +15,9 @@ class AppDatabaseRepository(
         database.userDao().upsert(user)
     }
 
+    suspend fun deleteAllAppData(){
+        database.allDatabaseDao().clearAll()
+    }
 
     suspend fun deleteUser(userid: Long){
         database.userDao().delete(userid)

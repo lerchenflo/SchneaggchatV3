@@ -127,9 +127,7 @@ fun App() {
 
                     // Settings page
                     composable<Route.Settings>{
-                        val sharedViewModel = it.sharedKoinViewModel<SharedViewModel>(navController)
                         SettingsScreen(
-                            sharedViewModel = sharedViewModel,
                             onBackClick = {
                                 navController.navigateUp()
                             }
