@@ -44,5 +44,10 @@
     <string name="requirement_special">At least one special character</string>
     <string name="requirement_forbidden">Must not contain common or forbidden patterns</string>
     <string name="password_missing_requirements">Missing: %1$s</string>
+    <string name="logout">logout</string>
+    <string name="are_you_sure_you_want_to_logout">Are you sure you want to log out?</string>
+    <string name="yes">yes</string>
+    <string name="no">no</string>
+    <string name="version">Version: %1$s</string>
 
 </resources>

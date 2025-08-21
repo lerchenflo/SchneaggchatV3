@@ -47,6 +47,7 @@ import schneaggchatv3mp.composeapp.generated.resources.*
 fun Chatauswahlscreen(
     onChatSelected: (User) -> Unit,  // navigation callback
     onNewChatClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
         .safeContentPadding()
 ) {
@@ -110,7 +111,7 @@ fun Chatauswahlscreen(
                     contentDescription = stringResource(Res.string.settings),
                     modifier = Modifier
                         .size(size)
-                        .clickable { SnackbarManager.showMessage("Es gibt noch koa settings") },
+                        .clickable {onSettingsClick()},
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
                 )
             }
