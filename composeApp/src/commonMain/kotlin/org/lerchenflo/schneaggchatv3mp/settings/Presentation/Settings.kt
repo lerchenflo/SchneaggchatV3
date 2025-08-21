@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.settings.Presentation
 import LoginViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,9 +45,13 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
+import org.lerchenflo.schneaggchatv3mp.OWNID
+import org.lerchenflo.schneaggchatv3mp.USERNAME
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.settings.Domain.DeleteAppDataUseCase
+import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.*
@@ -60,75 +65,82 @@ fun SettingsScreen(
         .fillMaxWidth()
         .safeContentPadding()
 ){
-    Box(
-        modifier= modifier
+    Column(
+        modifier = modifier
     ){
-        Column(
+        ActivityTitle(
+            title = stringResource(Res.string.settings),
+            onBackClick = onBackClick
+        )
 
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+        // Section Userinfo
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
         ){
-            //TODO: Title composable für activities
-            ActivityTitle(
-                title = stringResource(Res.string.settings),
-                onBackClick = onBackClick
+
+            Image(
+                painterResource(Res.drawable.icon_nutzer),
+                contentDescription = stringResource(Res.string.tools_and_games),
+                modifier = Modifier
+                    .size(80.dp)
+                    .clickable { SnackbarManager.showMessage("Bald kann ma profilbild ändern") }
+                    .padding(8.dp)
             )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            // Section Userinfo
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-            ){
-
-                Image(
-                    painterResource(Res.drawable.icon_nutzer),
-                    contentDescription = stringResource(Res.string.tools_and_games),
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clickable { SnackbarManager.showMessage("Bald kann ma profilbild ändern") },
-                )
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                ){
-                    Text(
-                        text = "Username",
-                        modifier = Modifier
-                            .clickable{viewModel.changeUsername()}
-                    )
-                    Text(
-                        text = "Userid : 12"
-                    )
-                }
-            }
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-            //---- App Einstellungen ----
-            // App kaputt button
-            val deleteAppDataUseCase = koinInject<DeleteAppDataUseCase>()
-            Button(
-                onClick = {viewModel.deleteAllAppData(deleteAppDataUseCase)},
-                modifier = Modifier
-                    .fillMaxWidth()
+                    .weight(1f)
             ){
                 Text(
-                    text = stringResource(Res.string.app_broken)
+                    text = USERNAME,
+                    modifier = Modifier
+                        .clickable{viewModel.changeUsername()}
+
+                )
+                Text(
+                    text = "Userid : $OWNID"
                 )
             }
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-            // Account section
-            LogoutButton(
-                viewModel = viewModel
-            )
-
-            Text(
-                text = stringResource(Res.string.version, "3.x.x"),
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
-
         }
+
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+        //---- App Einstellungen ----
+        // App kaputt button
+        val deleteAppDataUseCase = koinInject<DeleteAppDataUseCase>()
+
+
+        NormalButton(
+            text = stringResource(Res.string.app_broken),
+            onClick = {viewModel.deleteAllAppData(deleteAppDataUseCase)},
+            disabled = false,
+            isLoading = false,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = 10.dp,
+                    end = 10.dp,
+                    top = 2.dp,
+                    bottom = 2.dp
+                )
+        )
+
+
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+        // Account section
+        LogoutButton(
+            viewModel = viewModel
+        )
+
+        Text(
+            text = stringResource(Res.string.version, "3.x.x"),
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+
     }
 }
 
@@ -138,14 +150,21 @@ fun LogoutButton(
 )
 {
     var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
-    // Your logout button
-    Button(
-        onClick = { showLogoutDialog = true },
+
+    NormalButton(
+        text = stringResource(Res.string.logout),
+        onClick = {showLogoutDialog = true},
+        disabled = false,
+        isLoading = false,
         modifier = Modifier
             .fillMaxWidth()
-    ) {
-        Text(text = stringResource(Res.string.logout))
-    }
+            .padding(
+                start = 10.dp,
+                end = 10.dp,
+                top = 2.dp,
+                bottom = 2.dp
+            )
+    )
 
     // Confirmation dialog
     if (showLogoutDialog) {

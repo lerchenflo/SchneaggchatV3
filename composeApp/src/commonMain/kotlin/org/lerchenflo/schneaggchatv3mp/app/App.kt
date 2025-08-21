@@ -41,7 +41,7 @@ fun App() {
         val navController = rememberNavController()
         val snackbarHostState = remember { SnackbarHostState() } // for snackbar
         val scope = rememberCoroutineScope()
-        //println("hello world")
+        
         // initialize manager
         LaunchedEffect(Unit) {
             SnackbarManager.init(snackbarHostState, scope)

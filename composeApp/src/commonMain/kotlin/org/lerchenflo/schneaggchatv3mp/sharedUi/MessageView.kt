@@ -127,6 +127,8 @@ fun TextMessage(
     modifier: Modifier = Modifier
 ){
 /*
+
+        //TODO: Markdown einschalten in da settings (Chat künnt laggen)
         Markdown(
             content = messageWithReaders.message.content ?: "",
             modifier = modifier
