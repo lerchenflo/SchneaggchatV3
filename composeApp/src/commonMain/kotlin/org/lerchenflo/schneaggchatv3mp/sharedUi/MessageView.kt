@@ -10,21 +10,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.FactCheck
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mikepenz.markdown.compose.elements.MarkdownText
 import com.mikepenz.markdown.m3.Markdown
+import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -35,7 +32,6 @@ import org.lerchenflo.schneaggchatv3mp.network.SINGLETEXTMESSAGE
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.check
-import schneaggchatv3mp.composeapp.generated.resources.go_back
 import schneaggchatv3mp.composeapp.generated.resources.read
 
 @Preview
@@ -130,12 +126,17 @@ fun TextMessage(
     myMessage: Boolean,
     modifier: Modifier = Modifier
 ){
-
+/*
         Markdown(
             content = messageWithReaders.message.content ?: "",
             modifier = modifier
         )
-    
+
+
+ */
+    Text(
+        text = messageWithReaders.message.content ?: ""
+    )
 }
 
 @Composable
@@ -178,3 +179,19 @@ fun ErrorMessage(
     )
 }
 
+@Composable
+fun DayDivider(date: LocalDate?) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+    ) {
+        Divider(modifier = Modifier.fillMaxWidth())
+        Text(
+            text = date.toString(), // you can format this
+            modifier = Modifier.padding(vertical = 4.dp)
+        )
+        Divider(modifier = Modifier.fillMaxWidth())
+    }
+}
