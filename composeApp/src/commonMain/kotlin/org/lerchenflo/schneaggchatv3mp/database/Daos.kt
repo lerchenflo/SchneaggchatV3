@@ -77,7 +77,7 @@ interface MessageReaderDao {
 interface GroupDao {
     @Upsert
     suspend fun upsertGroup(group: Group)
-    
+
 }
 
 @Dao
