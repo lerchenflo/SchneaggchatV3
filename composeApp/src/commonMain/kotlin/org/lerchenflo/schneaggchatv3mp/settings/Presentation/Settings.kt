@@ -45,6 +45,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.settings.Domain.DeleteAppDataUseCase
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -65,41 +66,11 @@ fun SettingsScreen(
         Column(
 
         ){
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ){
-                // Backbutton
-                IconButton(
-                    onClick = onBackClick,
-                    modifier = Modifier
-                        .padding(top = 5.dp, start = 5.dp)
-                        .statusBarsPadding()
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(Res.string.go_back),
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                // Settings Text
-                BasicText(
-                        text = stringResource(Res.string.settings),
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 10.dp),
-                style = TextStyle(
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                ),
-                autoSize = TextAutoSize.StepBased(
-                    minFontSize = 20.sp,
-                    maxFontSize = 30.sp
-                ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-                )
-            }
+            //TODO: Title composable für activities
+            ActivityTitle(
+                title = stringResource(Res.string.settings),
+                onBackClick = onBackClick
+            )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 

@@ -14,12 +14,14 @@ import org.koin.compose.getKoin
 import org.lerchenflo.schneaggchatv3mp.OWNID
 import org.lerchenflo.schneaggchatv3mp.SESSIONID
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DeleteUserUseCase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllMessagesForUserIdUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllMessagesWithReadersUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdMessageUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertMessageUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertUserUseCase
+import org.lerchenflo.schneaggchatv3mp.database.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.database.User
 import org.lerchenflo.schneaggchatv3mp.database.UserDao
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
@@ -35,6 +37,7 @@ class SharedViewModel(
     private val getChangeIdMessageUseCase: GetChangeIdMessageUseCase,
     private val upsertMessageUseCase: UpsertMessageUseCase,
     private val getAllMessagesWithReadersUseCase: GetAllMessagesWithReadersUseCase,
+    private val getAllMessagesForUserIdUseCase: GetAllMessagesForUserIdUseCase,
 
     private val networkUtils: NetworkUtils,
     private val preferencemanager: Preferencemanager
@@ -147,6 +150,10 @@ class SharedViewModel(
                 user.apply { lastmessage = last }
             }
         }
+    }
+
+    fun getMessagesForUserId(userid: Long): Flow<List<MessageWithReaders>> {
+        return getAllMessagesForUserIdUseCase(userid)
     }
 
 

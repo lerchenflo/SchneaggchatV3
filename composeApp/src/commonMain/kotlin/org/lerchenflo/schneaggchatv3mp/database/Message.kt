@@ -9,6 +9,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Relation
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.OWNID
 import org.lerchenflo.schneaggchatv3mp.network.GROUPPICTUREMESSAGE
 import org.lerchenflo.schneaggchatv3mp.network.SINGLEPICTUREMESSAGE
 
@@ -69,5 +70,9 @@ data class Message(
 
     fun getSendDateAsLong(): Long {
         return sendDate?.toLongOrNull() ?: 0L
+    }
+
+    fun isMyMessage(): Boolean {
+        return sender == OWNID
     }
 }
