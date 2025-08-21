@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.utilities
 
 import androidx.compose.runtime.Composable
 import kotlinx.datetime.Clock
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
@@ -41,39 +42,48 @@ fun millisToDuration(millis: Long): String {
     }
 }
 
-@Composable
 @OptIn(kotlinx.datetime.format.FormatStringsInDatetimeFormats::class)
+@Composable
 fun millisToTimeDateOrYesterday(
     millis: Long,
     timeFormat: String = "HH:mm",
     dateFormatWithoutYear: String = "dd.MM",
     dateFormatWithYear: String = "dd.MM.yyyy"
 ): String {
+
+
+    val tz = TimeZone.currentSystemDefault()
     val instant = Instant.fromEpochMilliseconds(millis)
     val now = Clock.System.now()
 
-    val currentDate = now.toLocalDateTime(TimeZone.currentSystemDefault()).date
-    val targetDate = instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
+    val targetLdt = instant.toLocalDateTime(tz)
+    val nowLdt = now.toLocalDateTime(tz)
+
+    val targetDate = targetLdt.date
+    val currentDate = nowLdt.date
 
     return when {
+        // Today -> show time
         targetDate == currentDate -> {
-            // Today - return time only
             val timeFormatter = LocalDateTime.Format { byUnicodePattern(timeFormat) }
-            timeFormatter.format(instant.toLocalDateTime(TimeZone.currentSystemDefault()))
+            timeFormatter.format(targetLdt)
         }
-        targetDate == currentDate.minus(1, DateTimeUnit.DAY) -> {
-            // Yesterday
+
+        // Yesterday -> localized "Yesterday" string
+        targetDate == currentDate.minus(DatePeriod(days = 1)) -> {
             stringResource(Res.string.yesterday)
         }
+
+        // Same year -> show date without year
         targetDate.year == currentDate.year -> {
-            // This year - return date without year
             val dateFormatter = LocalDateTime.Format { byUnicodePattern(dateFormatWithoutYear) }
-            dateFormatter.format(instant.toLocalDateTime(TimeZone.currentSystemDefault())) + "."
+            dateFormatter.format(targetLdt) + "."
         }
+
+        // Older -> show full date with year
         else -> {
-            // Previous years - return date with year
             val dateFormatter = LocalDateTime.Format { byUnicodePattern(dateFormatWithYear) }
-            dateFormatter.format(instant.toLocalDateTime(TimeZone.currentSystemDefault()))
+            dateFormatter.format(targetLdt)
         }
     }
 }

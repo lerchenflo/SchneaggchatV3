@@ -141,6 +141,7 @@ fun UserButton(
                         modifier = Modifier.weight(1f)
                     )
 
+                    //println("milis to date ${lastMessage.sendDate} result ${millisToTimeDateOrYesterday(lastMessage.sendDate?.toLong() ?: 0L)}")
                     // Time indicator
                     Text(
                         text = millisToTimeDateOrYesterday(lastMessage.sendDate?.toLong() ?: 0L),
