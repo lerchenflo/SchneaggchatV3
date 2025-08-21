@@ -52,4 +52,5 @@
     <string name="app_broken">App broken</string>
     <string name="loadinginfo_messages">Loading messages...</string>
     <string name="loadinginfo_offline">You are currently offline...</string>
+    <string name="read">read</string>
 </resources>
