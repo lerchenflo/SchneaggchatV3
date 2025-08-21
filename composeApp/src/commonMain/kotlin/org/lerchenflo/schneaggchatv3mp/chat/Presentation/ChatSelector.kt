@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.Presentation
 
-import LoginViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -24,7 +23,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -37,15 +35,31 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.login.Presentation.InputTextField
+import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.*
+import schneaggchatv3mp.composeapp.generated.resources.app_name
+import schneaggchatv3mp.composeapp.generated.resources.filter
+import schneaggchatv3mp.composeapp.generated.resources.loadinginfo
+import schneaggchatv3mp.composeapp.generated.resources.new_chat
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap
+import schneaggchatv3mp.composeapp.generated.resources.search_friend
+import schneaggchatv3mp.composeapp.generated.resources.settings
+import schneaggchatv3mp.composeapp.generated.resources.settings_gear
+import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 
+@Preview
 @Composable
 fun Chatauswahlscreen(
     viewModel: ChatSelectorViewModel = viewModel(
@@ -72,7 +86,7 @@ fun Chatauswahlscreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp),
+                .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
 
         ) {
@@ -86,79 +100,103 @@ fun Chatauswahlscreen(
                     color = MaterialTheme.colorScheme.primary
                 ),
                 autoSize = TextAutoSize.StepBased(
-                    minFontSize = 20.sp,
+                    minFontSize = 10.sp,
                     maxFontSize = 30.sp
                 ),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                val size = 40.dp
-                Image(
-                    painterResource(Res.drawable.tools_and_games),
-                    contentDescription = stringResource(Res.string.tools_and_games),
-                    modifier = Modifier
-                        .size(size)
-                        .clickable { SnackbarManager.showMessage("Es gibt noch koa spiele und o koa tools") },
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
-                )
-                Spacer(Modifier.width(4.dp))
-                Image(
-                    painterResource(Res.drawable.schneaggmap),
-                    contentDescription = stringResource(Res.string.schneaggmap),
-                    modifier = Modifier
-                        .size(size)
-                        .clickable { SnackbarManager.showMessage("Es gibt noch koa schneaggmap") },
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
-                )
-                Spacer(Modifier.width(4.dp))
-                Image(
-                    painterResource(Res.drawable.settings_gear),
-                    contentDescription = stringResource(Res.string.settings),
-                    modifier = Modifier
-                        .size(size)
-                        .clickable {onSettingsClick()},
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
-                )
-            }
+            val size = 30.dp //Größe vo a ui elemente oba rechts
+            val distance = 10.dp //Abstand zwüschat da buttons oba rechts
+
+            //Loadingbar für messages
+            RoundLoadingIndicator(
+                visible = viewModel.isLoadingMessages,
+                onClick = {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        SnackbarManager.showMessage(getString(Res.string.loadinginfo))
+                    }
+                },
+                strokeWidth = 2.dp,
+                size = 18.dp
+
+
+            )
+
+            Spacer(Modifier.width(distance))
+
+
+            Image(
+                painterResource(Res.drawable.tools_and_games),
+                contentDescription = stringResource(Res.string.tools_and_games),
+                modifier = Modifier
+                    .size(size)
+                    .clickable { SnackbarManager.showMessage("Es gibt noch koa spiele und o koa tools") },
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+            )
+            Spacer(Modifier.width(distance))
+            Image(
+                painterResource(Res.drawable.schneaggmap),
+                contentDescription = stringResource(Res.string.schneaggmap),
+                modifier = Modifier
+                    .size(size)
+                    .clickable { SnackbarManager.showMessage("Es gibt noch koa schneaggmap") },
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+            )
+            Spacer(Modifier.width(distance))
+            Image(
+                painterResource(Res.drawable.settings_gear),
+                contentDescription = stringResource(Res.string.settings),
+                modifier = Modifier
+                    .size(size)
+                    .clickable {onSettingsClick()},
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+            )
+
         }
 
         //Zweite Zeile für Freund suchen
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp),
+                .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+
             OutlinedTextField(
                 value = searchterm,
+                maxLines = 1,
                 onValueChange = { viewModel.updateSearchterm(it) }, //In da datenbank gits a suchfeature
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f),
                 placeholder = { Text(stringResource(Res.string.search_friend)) }
             )
 
-            Spacer(Modifier.width(8.dp))
+
+            Spacer(Modifier.width(10.dp))
 
             Image(
                 painterResource(Res.drawable.filter),
                 contentDescription = stringResource(Res.string.filter),
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(30.dp)
                     .clickable { SnackbarManager.showMessage("muasch noch selber suacha") },
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
             )
 
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(10.dp))
 
             Button(
                 onClick = { onNewChatClick() },
-                modifier = Modifier.height(48.dp)
+                modifier = Modifier
+                    .size(48.dp)
+                    .weight(0.4f)
             ) {
                 Icon(
                     painterResource(Res.drawable.new_chat),
-                    null,
-                    modifier = Modifier.size(24.dp)
+                    "Add friend",
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
@@ -177,11 +215,11 @@ fun Chatauswahlscreen(
                     lastMessage = user.lastmessage,
                     onClickText = { onChatSelected(user)},
                     onClickImage = {
-                        SnackbarManager.showMessage("Imagepreview incoming")
+                        SnackbarManager.showMessage("TODO")
                     }
                 )
                 HorizontalDivider(
-                    thickness = 2.dp
+                    thickness = 0.5.dp
                 )
             }
         }
