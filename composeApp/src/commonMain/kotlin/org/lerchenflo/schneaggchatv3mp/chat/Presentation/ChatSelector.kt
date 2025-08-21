@@ -55,19 +55,6 @@ fun Chatauswahlscreen(
 
     val users by sharedViewModel.getAllUsers().collectAsState(initial = emptyList())
 
-
-    LaunchedEffect(true) {
-        val userlist = listOf<User>(
-            User(1, 0, "Ben"),
-            User(3, 0, "flo"),
-            User(4, 0, "fabi")
-        )
-
-        userlist.forEach {
-            sharedViewModel.upsertUser(it)
-        }
-    }
-
     //Hauptlayout
     Column(
         modifier = modifier

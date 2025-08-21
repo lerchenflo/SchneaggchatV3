@@ -11,8 +11,11 @@ import io.ktor.http.HttpMethod
 import io.ktor.util.network.UnresolvedAddressException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -20,12 +23,18 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.SESSIONID
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DeleteUserUseCase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdMessageUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdUserUseCase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertMessageUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertUserUseCase
 import org.lerchenflo.schneaggchatv3mp.database.IdChangeDate
 import org.lerchenflo.schneaggchatv3mp.database.IdOperation
+import org.lerchenflo.schneaggchatv3mp.database.Message
+import org.lerchenflo.schneaggchatv3mp.database.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.database.ServerMessageDto
 import org.lerchenflo.schneaggchatv3mp.database.User
 import org.lerchenflo.schneaggchatv3mp.database.UserDao
+import org.lerchenflo.schneaggchatv3mp.database.convertServerMessageDtoToMessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.network.util.onError
@@ -54,7 +63,7 @@ class NetworkUtils(
         headers: Map<String, String>? = null,
         body: T? = null,
         get: Boolean = true,
-        requestTimeoutMillis: Long = 5_000L
+        requestTimeoutMillis: Long = 20_000L
     ): NetworkResult<Map<String, String>, String> {
         try {
             val response: HttpResponse = httpClient.request {
@@ -121,7 +130,7 @@ class NetworkUtils(
             return NetworkResult.Error(ResponseReason.NO_INTERNET.toString())
         } catch (e: HttpRequestTimeoutException) {
             return NetworkResult.Error(ResponseReason.TIMEOUT.toString())
-        } catch (e: io.ktor.client.network.sockets.SocketTimeoutException) {
+        } catch (e: SocketTimeoutException) {
             return NetworkResult.Error(ResponseReason.TIMEOUT.toString())
         } catch (e: SocketTimeoutException) {
             return NetworkResult.Error(ResponseReason.TIMEOUT.toString())
@@ -212,88 +221,223 @@ class NetworkUtils(
 
 
 
+    suspend fun messageidsync(databaseids: String): NetworkResult<Boolean, String> {
+        val headers = mapOf(
+            "msgtype" to GETMESSAGESWITHOUTPICTURES,
+        )
+
+        val res = executeNetworkOperation(headers = headers, body = databaseids, get = false)
+
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
+            }
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
+        }
+    }
+
+    //Theoretisch nur no für bilder
+    suspend fun getmessagebyid(id: Long): NetworkResult<Boolean, String> {
+        val headers = mapOf(
+            "msgtype" to GETMESSAGEBYID,
+            "msgid" to id.toString()
+        )
+
+        val res = executeNetworkOperation(headers = headers, body = "", get = true)
+
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
+            }
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     suspend fun executeUserIDSync(getChangeIdUserUseCase: GetChangeIdUserUseCase, deleteUserUseCase: DeleteUserUseCase, upsertUserUseCase: UpsertUserUseCase, networkUtils: NetworkUtils) {
 
-        println("USeridsync startet!")
+        try {
 
-        withContext(Dispatchers.IO){
-            try {
+            val json = Json {
+                prettyPrint = false
+                ignoreUnknownKeys = true
+            }
 
-                val json = Json { prettyPrint = false }
+            // 1. Get local user IDs and change dates
+            val localUsers = getChangeIdUserUseCase()
+            val serializedData = json.encodeToString(localUsers)
 
-                // 1. Get local user IDs and change dates
-                val localUsers = getChangeIdUserUseCase() ?: emptyList()
-                val serializedData = json.encodeToString(localUsers)
+            // 2. Execute user ID sync with server
+            val syncResult = networkUtils.useridsync(serializedData)
 
-                // 2. Execute user ID sync with server
-                val syncResult = networkUtils.useridsync(serializedData)
-
-                syncResult.onSuccessWithBody { success, body ->
-
-                    println(body)
-
-                    val operations = json.decodeFromString<List<IdOperation>>(body)
+            syncResult.onSuccessWithBody { success, body ->
+                val operations = json.decodeFromString<List<IdOperation>>(body)
+                CoroutineScope(Dispatchers.Default).launch {
                     val results = operations.map { operation ->
-                        async{
-                            when (operation.Status) {
-                                "deleted" -> {
-                                    try {
+                        when (operation.Status) {
+                            "deleted" -> {
+                                try {
 
-                                        deleteUserUseCase(operation.Id)
-                                        Result.success(Unit)
-                                    } catch (e: Exception) {
-                                        Result.failure<Unit>(e)
-                                    }
+                                    deleteUserUseCase(operation.Id)
+                                    Result.success(Unit)
+                                } catch (e: Exception) {
+                                    Result.failure<Unit>(e)
                                 }
-                                "new", "modified" -> {
-                                    try {
-                                        CoroutineScope(Dispatchers.IO).launch {
-                                            val userResult = networkUtils.getuserbyid(operation.Id)
-                                            userResult.onSuccessWithBody { success, body ->
+                            }
+                            "new", "modified" -> {
+                                try {
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        val userResult = networkUtils.getuserbyid(operation.Id)
+                                        userResult.onSuccessWithBody { success, body ->
 
-                                                println(body)
-                                                val user = json.decodeFromString<List<User>>(body)
+                                            //println(body)
+                                            val users = json.decodeFromString<List<User>>(body)
 
-                                                runBlocking {
-                                                    upsertUserUseCase(user[0])
-                                                }
-
-
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                upsertUserUseCase(users[0])
+                                                println("User inserted: ${users[0].id}")
                                             }
                                         }
-
-
-                                    } catch (e: Exception) {
-                                        Result.failure<Unit>(e)
                                     }
+
+                                } catch (e: Exception) {
+                                    Result.failure<Unit>(e)
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+            syncResult.onError {
+                println(it)
+            }
+        } catch (e: Exception) {
+            // Log error (platform-specific logging would be implemented separately)
+            println("Useridsync fail")
+            e.printStackTrace()
+        }
+
+    }
+
+
+
+
+    suspend fun executeMsgIDSync(getChangeIdMessageUseCase: GetChangeIdMessageUseCase, upsertMessageUseCase: UpsertMessageUseCase,networkUtils: NetworkUtils) {
+
+        println("MSgidsync startet")
+
+        try {
+
+            val json = Json {
+                prettyPrint = false
+                //ignoreUnknownKeys = true
+            }
+
+            //println("Json messagewithreader ${json.encodeToString(ServerMessageDto)}")
+
+            // 1. Get local user IDs and change dates
+            val localMessages = getChangeIdMessageUseCase()
+            val serializedData = json.encodeToString(localMessages)
+
+            val syncResult = networkUtils.messageidsync(serializedData)
+
+            syncResult.onSuccessWithBody { success, body ->
+
+                val serverlist = json.decodeFromString<List<ServerMessageDto>>(body)
+
+                val messageListwithReaders = convertServerMessageDtoToMessageWithReaders(serverlist)
+
+                val (normalMessages, pictureMessages) = messageListwithReaders.partition { !it.message.isPicture() }
+
+                if (normalMessages.isNotEmpty()) {
+
+                    //Non blocking Coroutine for Upsert message
+                    CoroutineScope(
+                        context = Dispatchers.IO
+                    ).launch {
+                        upsertMessageUseCase(normalMessages)
+                        println("Message insert: fertig")
+                    }
+                }
+
+
+                /* TODO: Bilder hola
+                val deferreds = pictureMessages.map { m ->
+                    async {
+                        val messageResult = networkUtils.getmessagebyid(m.id)
+                        messageResult.onSuccessWithBody { _, body1 ->
+                            if (body1 != "[]") {
+                                val messages = json.decodeFromString<List<Message>>(body1)
+                                upsertMessageUseCase(messages[0]) // direct suspend call
+                            }
+                        }
+                    }
+                }
+
+                deferreds.awaitAll()
+
+                 */
+
+
+                //Bilder einzeln hola
+                for (m in pictureMessages){
+                    try {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val messageResult = networkUtils.getmessagebyid(m.message.id)
+                            messageResult.onSuccessWithBody { success, body1 ->
+
+                                val messageasdto = json.decodeFromString<List<ServerMessageDto>>(body1)
+
+                                val message = convertServerMessageDtoToMessageWithReaders(messageasdto)
+
+                                CoroutineScope(
+                                    context = Dispatchers.IO
+                                ).launch {
+                                    upsertMessageUseCase(message[0])
                                 }
 
                             }
                         }
 
+                    } catch (e: Exception) {
+                        Result.failure<Unit>(e)
                     }
 
                 }
 
-                syncResult.onError {
-                    println(it)
-                }
 
-
-
-            } catch (e: Exception) {
-                // Log error (platform-specific logging would be implemented separately)
-                println("Useridsync fail")
-                e.printStackTrace()
             }
+            syncResult.onError {
+                println("Msgidsync error: $it")
+            }
+        } catch (e: Exception) {
+            // Log error (platform-specific logging would be implemented separately)
+            println("Useridsync fail")
+            e.printStackTrace()
         }
 
 
     }
-
-
 
 
 

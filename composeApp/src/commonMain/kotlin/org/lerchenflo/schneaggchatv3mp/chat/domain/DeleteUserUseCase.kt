@@ -10,8 +10,6 @@ class DeleteUserUseCase(
     private val userRepository: AppDatabaseRepository
 ) {
     suspend operator fun invoke(userid: Long){
-        withContext(Dispatchers.IO) {
-            userRepository.deleteUser(userid)
-        }
+        userRepository.deleteUser(userid)
     }
 }

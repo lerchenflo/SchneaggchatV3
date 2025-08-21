@@ -2,16 +2,21 @@ package org.lerchenflo.schneaggchatv3mp.chat.Presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import org.koin.compose.getKoin
 import org.lerchenflo.schneaggchatv3mp.OWNID
 import org.lerchenflo.schneaggchatv3mp.SESSIONID
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DeleteUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllUserUseCase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdMessageUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdUserUseCase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertMessageUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertUserUseCase
 import org.lerchenflo.schneaggchatv3mp.database.User
 import org.lerchenflo.schneaggchatv3mp.database.UserDao
@@ -25,22 +30,42 @@ class SharedViewModel(
     private val getAllUserUseCase: GetAllUserUseCase,
     private val getChangeIdUserUseCase: GetChangeIdUserUseCase,
     private val deleteUserUseCase: DeleteUserUseCase,
+    private val getChangeIdMessageUseCase: GetChangeIdMessageUseCase,
+    private val upsertMessageUseCase: UpsertMessageUseCase,
+
     private val networkUtils: NetworkUtils,
     private val preferencemanager: Preferencemanager
 
 ):ViewModel() {
 
     init {
-        viewModelScope.launch {
-            networkUtils.executeUserIDSync(
-                getChangeIdUserUseCase = getChangeIdUserUseCase,
-                deleteUserUseCase = deleteUserUseCase,
-                upsertUserUseCase = upsertUserUseCase,
-                networkUtils = networkUtils
-            )
-        }
+        print("SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT")
+
+        executeuserandmsgidsync()
     }
 
+
+    fun executeuserandmsgidsync(){
+        viewModelScope.launch {
+            supervisorScope { //Es kann uana crashen aber da andre ned
+                delay(1000)
+
+                networkUtils.executeUserIDSync(
+                    getChangeIdUserUseCase = getChangeIdUserUseCase,
+                    deleteUserUseCase = deleteUserUseCase,
+                    upsertUserUseCase = upsertUserUseCase,
+                    networkUtils = networkUtils
+                )
+
+                networkUtils.executeMsgIDSync(
+                    getChangeIdMessageUseCase = getChangeIdMessageUseCase,
+                    upsertMessageUseCase = upsertMessageUseCase,
+                    networkUtils = networkUtils
+                )
+            }
+
+        }
+    }
 
     fun login(
         username: String,
