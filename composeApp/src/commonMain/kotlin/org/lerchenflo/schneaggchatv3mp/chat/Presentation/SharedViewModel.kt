@@ -48,7 +48,7 @@ class SharedViewModel(
     }
 
 
-    fun executeuserandmsgidsync(){
+    fun executeuserandmsgidsync(onLoadingStateChange: (Boolean) -> Unit){
         viewModelScope.launch {
             supervisorScope { //Es kann uana crashen aber da andre ned
                 delay(1000)
@@ -63,7 +63,8 @@ class SharedViewModel(
                 networkUtils.executeMsgIDSync(
                     getChangeIdMessageUseCase = getChangeIdMessageUseCase,
                     upsertMessageUseCase = upsertMessageUseCase,
-                    networkUtils = networkUtils
+                    networkUtils = networkUtils,
+                    onLoadingStateChange = {onLoadingStateChange(it)},
                 )
             }
 
@@ -81,6 +82,7 @@ class SharedViewModel(
                     //println("Success: $success $message")
                     viewModelScope.launch {
                         preferencemanager.saveAutologinCreds(username, password)
+                        preferencemanager.saveOWNID(headers["userid"]?.toLong() ?: 0)
                     }
 
                     println(headers)

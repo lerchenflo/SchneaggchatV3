@@ -4,6 +4,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -43,6 +45,23 @@ class Preferencemanager(
         }
     }
 
+    suspend fun saveOWNID(ownid: Long) {
+        with(dispatcher) {
+            pref.edit { datastore ->
+                val key = longPreferencesKey("OWNID")
+                datastore[key] = ownid
+            }
+        }
+    }
 
+    suspend fun getOWNID(): Long {
+        return with(dispatcher) {
+            val key = longPreferencesKey("OWNID")
+            val prefs = pref.data.first()
+            val id = prefs[key] ?: -1
+
+            id
+        }
+    }
 
 }

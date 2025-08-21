@@ -17,6 +17,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -342,9 +343,10 @@ class NetworkUtils(
 
 
 
-    suspend fun executeMsgIDSync(getChangeIdMessageUseCase: GetChangeIdMessageUseCase, upsertMessageUseCase: UpsertMessageUseCase,networkUtils: NetworkUtils) {
+    suspend fun executeMsgIDSync(getChangeIdMessageUseCase: GetChangeIdMessageUseCase, upsertMessageUseCase: UpsertMessageUseCase,networkUtils: NetworkUtils, onLoadingStateChange: (Boolean) -> Unit) {
 
         println("MSgidsync startet")
+        onLoadingStateChange(true)
 
         var moremessages = true
 
@@ -359,6 +361,7 @@ class NetworkUtils(
 
             // 1. Get local user IDs and change dates
             while (moremessages){
+
                 val localMessages = getChangeIdMessageUseCase()
                 val serializedData = json.encodeToString(localMessages)
 
@@ -366,10 +369,17 @@ class NetworkUtils(
 
                 syncResult.onSuccessWithBody { responseheaders, body ->
 
-                    moremessages = responseheaders["moremessages"].toBoolean()
-                    println("Messageidsync: es git $moremessages zum hola!")
+                    if (moremessages){
+                        moremessages = responseheaders["moremessages"].toBoolean()
+                    }
+                    println("Messageidsync: es git mehr messages zum hola: $moremessages")
 
                     val serverlist = json.decodeFromString<List<ServerMessageDto>>(body)
+
+                    if (serverlist.size > 1){
+                        println("Startid: ${serverlist[0].id}")
+
+                    }
 
                     val messageListwithReaders = convertServerMessageDtoToMessageWithReaders(serverlist)
 
@@ -437,11 +447,16 @@ class NetworkUtils(
                 syncResult.onError {
                     println("Msgidsync error: $it")
                 }
+
+                //delay bevor da nächste sync startet
+                delay(1500)
             }
         } catch (e: Exception) {
             // Log error (platform-specific logging would be implemented separately)
             println("Useridsync fail")
             e.printStackTrace()
+        }finally {
+            onLoadingStateChange(false) // End loading
         }
 
 

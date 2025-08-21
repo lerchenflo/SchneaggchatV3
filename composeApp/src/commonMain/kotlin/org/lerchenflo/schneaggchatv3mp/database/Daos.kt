@@ -42,6 +42,7 @@ interface MessageDao {
     fun getMessageWithReaders(id: Long): Flow<MessageWithReaders>
 
 
+    @Transaction
     @Query("SELECT * FROM messages")
     fun getAllMessagesWithReaders(): Flow<List<MessageWithReaders>>
 
