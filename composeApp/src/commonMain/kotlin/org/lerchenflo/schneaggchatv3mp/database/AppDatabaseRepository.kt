@@ -24,7 +24,7 @@ class AppDatabaseRepository(
         return database.userDao().getallusers(searchterm)
     }
 
-    fun getuserchangeid(): List<IdChangeDate>{
+    suspend fun getuserchangeid(): List<IdChangeDate>{
         return database.userDao().getUserIdsWithChangeDates()
     }
 
@@ -60,7 +60,7 @@ class AppDatabaseRepository(
     }
 
 
-    fun getmessagechangeid(): List<IdChangeDate>{
+    suspend fun getmessagechangeid(): List<IdChangeDate>{
         return database.messageDao().getMessageIdsWithChangeDates()
     }
 

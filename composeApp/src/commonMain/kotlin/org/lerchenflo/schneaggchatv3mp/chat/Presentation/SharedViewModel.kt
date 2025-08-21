@@ -46,14 +46,12 @@ class SharedViewModel(
             supervisorScope { //Es kann uana crashen aber da andre ned
                 delay(1000)
 
-
                 networkUtils.executeUserIDSync(
                     getChangeIdUserUseCase = getChangeIdUserUseCase,
                     deleteUserUseCase = deleteUserUseCase,
                     upsertUserUseCase = upsertUserUseCase,
                     networkUtils = networkUtils
                 )
-
 
                 networkUtils.executeMsgIDSync(
                     getChangeIdMessageUseCase = getChangeIdMessageUseCase,
