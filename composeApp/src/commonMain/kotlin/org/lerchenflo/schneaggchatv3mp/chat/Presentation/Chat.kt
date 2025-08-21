@@ -102,15 +102,10 @@ fun ChatScreen(
                     .weight(1f),
                 reverseLayout = true
             ) {
-                items(
-                    messages
-                ) { message ->
+                items(messages) { message ->
                     MessageView(
                         messagewithreaders = message,
                         modifier = Modifier
-                    )
-                    HorizontalDivider(
-                        thickness = 0.5.dp
                     )
                 }
             }
