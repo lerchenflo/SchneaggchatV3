@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import org.koin.mp.KoinPlatform.getKoin
 import org.lerchenflo.schneaggchatv3mp.OWNID
-import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.database.tables.User
 import kotlin.reflect.KClass
 
 class ChatSelectorViewModel: ViewModel() {

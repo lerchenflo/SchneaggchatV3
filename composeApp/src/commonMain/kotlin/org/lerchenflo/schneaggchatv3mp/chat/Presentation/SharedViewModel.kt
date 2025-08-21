@@ -21,8 +21,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdMessageUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertMessageUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertUserUseCase
-import org.lerchenflo.schneaggchatv3mp.database.MessageWithReaders
-import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.database.tables.User
 import org.lerchenflo.schneaggchatv3mp.database.UserDao
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.util.onError

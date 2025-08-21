@@ -19,8 +19,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.lerchenflo.schneaggchatv3mp.database.Message
-import org.lerchenflo.schneaggchatv3mp.database.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.database.tables.Message
+import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.network.GROUPTEXTMESSAGE
 import org.lerchenflo.schneaggchatv3mp.network.SINGLETEXTMESSAGE
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString

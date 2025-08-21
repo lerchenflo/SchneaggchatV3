@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.lerchenflo.schneaggchatv3mp.database.AppDatabaseRepository
 import org.lerchenflo.schneaggchatv3mp.database.IdChangeDate
-import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.database.tables.User
 
 class GetChangeIdUserUseCase(
     private val userRepository: AppDatabaseRepository
