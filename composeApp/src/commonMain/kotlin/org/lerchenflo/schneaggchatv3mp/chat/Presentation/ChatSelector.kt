@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.Presentation
 
+import LoginViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -34,6 +35,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -45,6 +48,9 @@ import schneaggchatv3mp.composeapp.generated.resources.*
 
 @Composable
 fun Chatauswahlscreen(
+    viewModel: ChatSelectorViewModel = viewModel(
+        factory = ChatSelectorViewModel .Factory
+    ),
     onChatSelected: (User) -> Unit,  // navigation callback
     onNewChatClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -52,9 +58,10 @@ fun Chatauswahlscreen(
         .safeContentPadding()
 ) {
 
-    val sharedViewModel = koinViewModel<SharedViewModel>()
+    val users by viewModel.usersState.collectAsStateWithLifecycle() // androidx.lifecycle.compose
+    val searchterm by viewModel.searchterm.collectAsState() // read-only display of current search term
 
-    val users by sharedViewModel.getAllUsers().collectAsState(initial = emptyList())
+
 
     //Hauptlayout
     Column(
@@ -125,8 +132,8 @@ fun Chatauswahlscreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedTextField(
-                value = "",
-                onValueChange = { /* TODO: Suchen */ }, //In da datenbank gits a suchfeature
+                value = searchterm,
+                onValueChange = { viewModel.updateSearchterm(it) }, //In da datenbank gits a suchfeature
                 modifier = Modifier.weight(1f),
                 placeholder = { Text(stringResource(Res.string.search_friend)) }
             )
@@ -167,7 +174,7 @@ fun Chatauswahlscreen(
                     user = user,
                     useOnClickGes = false,
                     unreadMessages = false,
-                    lastMessage = null,
+                    lastMessage = user.lastmessage,
                     onClickText = { onChatSelected(user)},
                     onClickImage = {
                         SnackbarManager.showMessage("Imagepreview incoming")

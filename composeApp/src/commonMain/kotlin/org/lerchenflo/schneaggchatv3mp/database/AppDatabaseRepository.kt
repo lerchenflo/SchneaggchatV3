@@ -59,6 +59,10 @@ class AppDatabaseRepository(
         if (readers.isNotEmpty()) insertReaders(readers)
     }
 
+    fun getAllMessagesWithReaders(): Flow<List<MessageWithReaders>>{
+        return database.messageDao().getAllMessagesWithReaders()
+    }
+
 
     suspend fun getmessagechangeid(): List<IdChangeDate>{
         return database.messageDao().getMessageIdsWithChangeDates()
@@ -77,6 +81,7 @@ class AppDatabaseRepository(
     suspend fun deleteReadersForMessage(messageId: Long){
         database.messagereaderDao().deleteReadersForMessage(messageId)
     }
+
 
 
 }

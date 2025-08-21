@@ -7,12 +7,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import org.koin.compose.getKoin
 import org.lerchenflo.schneaggchatv3mp.OWNID
 import org.lerchenflo.schneaggchatv3mp.SESSIONID
 import org.lerchenflo.schneaggchatv3mp.chat.domain.DeleteUserUseCase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllMessagesWithReadersUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdMessageUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdUserUseCase
@@ -32,6 +34,7 @@ class SharedViewModel(
     private val deleteUserUseCase: DeleteUserUseCase,
     private val getChangeIdMessageUseCase: GetChangeIdMessageUseCase,
     private val upsertMessageUseCase: UpsertMessageUseCase,
+    private val getAllMessagesWithReadersUseCase: GetAllMessagesWithReadersUseCase,
 
     private val networkUtils: NetworkUtils,
     private val preferencemanager: Preferencemanager
@@ -41,7 +44,7 @@ class SharedViewModel(
     init {
         print("SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT")
 
-        executeuserandmsgidsync()
+        //executeuserandmsgidsync()
     }
 
 
@@ -124,6 +127,26 @@ class SharedViewModel(
     fun getAllUsers(searchterm: String = ""): Flow<List<User>> {
         return getAllUserUseCase(searchterm)
     }
+
+
+    fun getusersWithLastMessage(searchterm: String): Flow<List<User>> {
+        val usersFlow = getAllUserUseCase(searchterm)
+        val messagesFlow = getAllMessagesWithReadersUseCase()
+
+        return combine(usersFlow, messagesFlow) { users, messagesWithReaders ->
+            val messages = messagesWithReaders.map { it.message }
+
+            users.map { user ->
+                val last = messages
+                    .filter { it.sender == user.id || it.receiver == user.id }
+                    .maxByOrNull { it.getSendDateAsLong() }
+
+                // return a copy of the user with lastmessage assigned
+                user.apply { lastmessage = last }
+            }
+        }
+    }
+
 
 
 

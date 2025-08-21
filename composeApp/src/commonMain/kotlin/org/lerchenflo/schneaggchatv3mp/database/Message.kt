@@ -66,4 +66,8 @@ data class Message(
     fun isPicture() : Boolean{
         return msgType == SINGLEPICTUREMESSAGE || msgType == GROUPPICTUREMESSAGE
     }
+
+    fun getSendDateAsLong(): Long {
+        return sendDate?.toLongOrNull() ?: 0L
+    }
 }
