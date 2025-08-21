@@ -41,7 +41,11 @@ class SharedViewModel(
     init {
         print("SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT")
 
+        executeuserandmsgidsync()
+    }
 
+
+    fun executeuserandmsgidsync(){
         viewModelScope.launch {
             supervisorScope { //Es kann uana crashen aber da andre ned
                 delay(1000)
@@ -62,7 +66,6 @@ class SharedViewModel(
 
         }
     }
-
 
     fun login(
         username: String,
