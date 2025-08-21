@@ -51,4 +51,5 @@
     <string name="version">Version: %1$s</string>
     <string name="app_broken">App broken</string>
     <string name="loadinginfo">Loading messages...</string>
+    <string name="read">read</string>
 </resources>

@@ -96,6 +96,10 @@ kotlin {
             api(libs.datastore.preferences)
             api(libs.datastore)
 
+            // Markdown
+            //implementation(libs.mikepenzMultiplatformMarkdown)
+            implementation(libs.mikepenzMultiplatformMarkdownM3)
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
