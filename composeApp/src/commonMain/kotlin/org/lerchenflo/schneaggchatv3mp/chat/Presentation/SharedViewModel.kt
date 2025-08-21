@@ -139,11 +139,10 @@ class SharedViewModel(
         val messagesFlow = getAllMessagesWithReadersUseCase()
 
         return combine(usersFlow, messagesFlow) { users, messagesWithReaders ->
-            val messages = messagesWithReaders.map { it.message }
 
             users.map { user ->
-                val last = messages
-                    .filter { it.sender == user.id || it.receiver == user.id }
+                val last = messagesWithReaders
+                    .filter { it.message.sender == user.id || it.message.receiver == user.id }
                     .maxByOrNull { it.getSendDateAsLong() }
 
                 // return a copy of the user with lastmessage assigned

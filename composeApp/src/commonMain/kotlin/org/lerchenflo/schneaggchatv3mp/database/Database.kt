@@ -9,7 +9,7 @@ import androidx.room.RoomDatabaseConstructor
 @Database(
     entities = [User::class, Message::class, MessageReader::class],
     exportSchema = true,
-    version = 12
+    version = 13
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)

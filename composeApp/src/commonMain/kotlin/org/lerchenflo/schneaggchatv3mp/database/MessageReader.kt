@@ -28,7 +28,7 @@ data class MessageReader(
     @PrimaryKey(autoGenerate = true)
     val readerEntryId: Long = 0L,
     val messageId: Long,
-    val readerID: Long?,
+    val readerID: Long,
     val readDate: String?
 ) {
     fun getReadDateAsLong(): Long = readDate?.toLongOrNull() ?: 0L

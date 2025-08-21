@@ -69,7 +69,7 @@ class ChatSelectorViewModel: ViewModel() {
         .map { list ->
             list
                 .filter { it.id != OWNID }                // remove self
-                .sortedByDescending { it.lastmessage?.sendDate } // then sort
+                .sortedByDescending { it.lastmessage?.message?.sendDate } // then sort
         }
         .flowOn(Dispatchers.Default) //Im default despatcher für mehr cores -> Mehr hoaza
 

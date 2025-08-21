@@ -22,7 +22,27 @@ data class MessageWithReaders(
         entityColumn = "messageId"
     )
     val readers: List<MessageReader>
-)
+){
+    fun isReadbyMe() : Boolean{
+        return readers.any{ it.readerID == OWNID}
+    }
+
+    fun isReadById(id: Long) : Boolean{
+        return readers.any {it.readerID == id}
+    }
+
+    fun isPicture() : Boolean{
+        return message.msgType == SINGLEPICTUREMESSAGE || message.msgType == GROUPPICTUREMESSAGE
+    }
+
+    fun getSendDateAsLong(): Long {
+        return message.sendDate?.toLongOrNull() ?: 0L
+    }
+
+    fun isMyMessage(): Boolean {
+        return message.sender == OWNID
+    }
+}
 
 
 
@@ -75,4 +95,6 @@ data class Message(
     fun isMyMessage(): Boolean {
         return sender == OWNID
     }
+
+
 }

@@ -70,5 +70,5 @@ data class User(
     var notisMuted: Boolean? = null,
 
     @Ignore
-    var lastmessage: Message? = null
+    var lastmessage: MessageWithReaders? = null
 )
