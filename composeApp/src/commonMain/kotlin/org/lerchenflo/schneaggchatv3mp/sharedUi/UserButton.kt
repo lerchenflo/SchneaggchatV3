@@ -1,11 +1,14 @@
 package org.lerchenflo.schneaggchatv3mp.sharedUi
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -25,6 +29,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.database.Message
 import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 import schneaggchatv3mp.composeapp.generated.resources.no_status
@@ -46,7 +51,6 @@ import schneaggchatv3mp.composeapp.generated.resources.unknown_user
  * @param onClickImage OnClickListener only for the Image (profile picture)
  */
 
-@Preview
 @Composable
 fun UserButton(
     user: User?,
@@ -61,7 +65,9 @@ fun UserButton(
 ) {
     var modifierGes = Modifier
         .fillMaxWidth()
-        .height(IntrinsicSize.Min) // Use minimal intrinsic height
+        .padding(6.dp)
+        .height(50.dp)
+        //.height(IntrinsicSize.Min) // Use minimal intrinsic height
     if(useOnClickGes){
         modifierGes = modifierGes.clickable{onClickGes()}
     }
@@ -72,7 +78,7 @@ fun UserButton(
         if(showProfilePicture){
             // Profile picture
             var modifierImage = Modifier
-                .size(48.dp) // Use square aspect ratio
+                .size(40.dp) // Use square aspect ratio
                 .padding(end = 8.dp) // Right padding only
                 .clip(CircleShape) // Circular image
             if(!useOnClickGes){
@@ -118,9 +124,7 @@ fun UserButton(
 
             }
 
-            // todo unreadMessages
-
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
             if (lastMessage != null) { // todo: check if lastmessage isch existent
                 Row(
@@ -139,9 +143,10 @@ fun UserButton(
 
                     // Time indicator
                     Text(
-                        text = "16:15",
+                        text = millisToTimeDateOrYesterday(lastMessage.sendDate?.toLong() ?: 0L),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.outline,
+                        maxLines = 1,
                         modifier = Modifier.padding(start = 4.dp)
                     )
                 }
@@ -153,7 +158,7 @@ fun UserButton(
                 Text(
                     text = bottomTextOverride ?: (user?.status ?: // override if not null
                         stringResource(Res.string.no_status)),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier
                         .fillMaxWidth()
                 )
@@ -161,3 +166,34 @@ fun UserButton(
         }
     }
 }
+
+@Preview()
+@Composable
+fun userButtonPreview() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()            // ← make Box take the whole preview
+            .background(Color.Gray)   // ← background covers full area now
+            .padding(16.dp),          // optional padding like your main view
+        contentAlignment = Alignment.Center
+    ) {
+        Column {
+            UserButton(
+                user = null,
+                unreadMessages = true,
+                lastMessage = null,
+                bottomTextOverride = "Dine alte message",
+                useOnClickGes = false,
+            )
+
+            UserButton(
+                user = null,
+                unreadMessages = true,
+                lastMessage = null,
+                bottomTextOverride = "Dine neue message",
+                useOnClickGes = false,
+            )
+        }
+    }
+}
+

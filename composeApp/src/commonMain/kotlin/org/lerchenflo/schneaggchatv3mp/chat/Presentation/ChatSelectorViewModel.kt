@@ -67,9 +67,9 @@ class ChatSelectorViewModel: ViewModel() {
             sharedViewModel.getusersWithLastMessage(searchterm.value)
         }
         .map { list ->
-
-            list.filter { it.id != OWNID } //Sich sealb us da liste ussa
-            //list.sortedBy { it.displayName?.lowercase() ?: "" }
+            list
+                .filter { it.id != OWNID }                // remove self
+                .sortedByDescending { it.lastmessage?.sendDate } // then sort
         }
         .flowOn(Dispatchers.Default) //Im default despatcher für mehr cores -> Mehr hoaza
 

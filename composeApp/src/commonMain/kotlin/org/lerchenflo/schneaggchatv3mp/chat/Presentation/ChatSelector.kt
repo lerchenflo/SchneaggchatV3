@@ -42,7 +42,9 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.database.User
+import org.lerchenflo.schneaggchatv3mp.login.Presentation.InputTextField
 import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -57,6 +59,7 @@ import schneaggchatv3mp.composeapp.generated.resources.settings
 import schneaggchatv3mp.composeapp.generated.resources.settings_gear
 import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 
+@Preview
 @Composable
 fun Chatauswahlscreen(
     viewModel: ChatSelectorViewModel = viewModel(
@@ -160,34 +163,40 @@ fun Chatauswahlscreen(
                 .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+
             OutlinedTextField(
                 value = searchterm,
+                maxLines = 1,
                 onValueChange = { viewModel.updateSearchterm(it) }, //In da datenbank gits a suchfeature
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f),
                 placeholder = { Text(stringResource(Res.string.search_friend)) }
             )
 
-            Spacer(Modifier.width(8.dp))
+
+            Spacer(Modifier.width(10.dp))
 
             Image(
                 painterResource(Res.drawable.filter),
                 contentDescription = stringResource(Res.string.filter),
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(30.dp)
                     .clickable { SnackbarManager.showMessage("muasch noch selber suacha") },
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
             )
 
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(10.dp))
 
             Button(
                 onClick = { onNewChatClick() },
-                modifier = Modifier.height(48.dp)
+                modifier = Modifier
+                    .size(48.dp)
+                    .weight(0.4f)
             ) {
                 Icon(
                     painterResource(Res.drawable.new_chat),
-                    null,
-                    modifier = Modifier.size(24.dp)
+                    "Add friend",
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
@@ -206,11 +215,11 @@ fun Chatauswahlscreen(
                     lastMessage = user.lastmessage,
                     onClickText = { onChatSelected(user)},
                     onClickImage = {
-                        SnackbarManager.showMessage("Imagepreview incoming")
+                        SnackbarManager.showMessage("TODO")
                     }
                 )
                 HorizontalDivider(
-                    thickness = 2.dp
+                    thickness = 0.5.dp
                 )
             }
         }
