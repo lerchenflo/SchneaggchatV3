@@ -42,6 +42,7 @@ interface MessageDao {
     fun getMessageWithReaders(id: Long): Flow<MessageWithReaders>
 
 
+    @Transaction
     @Query("SELECT * FROM messages")
     fun getAllMessagesWithReaders(): Flow<List<MessageWithReaders>>
 
@@ -60,6 +61,26 @@ interface MessageReaderDao {
 
     @Query("DELETE FROM message_readers WHERE messageId = :messageId")
     suspend fun deleteReadersForMessage(messageId: Long)
+}
+
+@Dao
+interface AllDatabaseDao {
+    @Query("DELETE FROM message_readers")
+    suspend fun clearMessageReaders()
+
+    @Query("DELETE FROM messages")
+    suspend fun clearMessages()
+
+    @Query("DELETE FROM users")
+    suspend fun clearUsers()
+
+    @Transaction
+    suspend fun clearAll() {
+        // Clear tables in proper order to respect foreign key constraints
+        clearMessageReaders()  // Child table first
+        clearMessages()        // Then parent table
+        clearUsers()           // Finally users table
+    }
 }
 
 @Serializable

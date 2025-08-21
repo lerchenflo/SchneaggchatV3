@@ -19,6 +19,7 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun messageDao(): MessageDao
 
     abstract fun messagereaderDao(): MessageReaderDao
+    abstract fun allDatabaseDao(): AllDatabaseDao
 
     companion object {
         const val DB_NAME = "database.db"
