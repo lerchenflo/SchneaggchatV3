@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 @Dao
 interface UserDao {
 
-    @Upsert
+    @Upsert()
     suspend fun upsert(user: User) //Suspend: Async mit warten
 
     @Query("DELETE FROM users WHERE id = :userid")
@@ -22,7 +22,7 @@ interface UserDao {
 
 
     @Query("SELECT id, changedate FROM users")
-    fun getUserIdsWithChangeDates(): List<IdChangeDate?>?
+    fun getUserIdsWithChangeDates(): List<IdChangeDate>
 }
 
 
@@ -32,6 +32,10 @@ interface MessageDao {
     @Upsert()
     suspend fun updateMessage(message: Message): Long
 
+    @Upsert
+    suspend fun updateMessages(messages: List<Message>)
+
+
 
     @Transaction
     @Query("SELECT * FROM messages WHERE id = :id")
@@ -40,6 +44,22 @@ interface MessageDao {
     @Transaction
     @Query("SELECT * FROM messages")
     fun getAllMessagesWithReaders(): Flow<List<MessageWithReaders>>
+
+    @Query("SELECT id, changedate FROM messages")
+    fun getMessageIdsWithChangeDates(): List<IdChangeDate>
+}
+
+@Dao
+interface MessageReaderDao {
+
+    @Upsert()
+    suspend fun upsertReader(reader: MessageReader): Long
+
+    @Upsert
+    suspend fun upsertReaders(readers: List<MessageReader>): List<Long>
+
+    @Query("DELETE FROM message_readers WHERE messageId = :messageId")
+    suspend fun deleteReadersForMessage(messageId: Long)
 }
 
 @Serializable

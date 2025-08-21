@@ -10,8 +10,6 @@ class UpsertUserUseCase(
     private val userRepository: AppDatabaseRepository
 ) {
     suspend operator fun invoke(user: User) {
-        withContext(Dispatchers.IO) {
-            userRepository.upsertUser(user)
-        }
+        userRepository.upsertUser(user)
     }
 }

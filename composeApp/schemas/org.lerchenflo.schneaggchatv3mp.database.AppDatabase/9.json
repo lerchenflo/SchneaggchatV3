@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 7,
-    "identityHash": "7558410ca196b00debce18b803bf3f64",
+    "version": 9,
+    "identityHash": "b492d0a6a2c82d9aad5319b6ebf4e832",
     "entities": [
       {
         "tableName": "users",
@@ -94,7 +94,7 @@
       },
       {
         "tableName": "messages",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `msgType` TEXT, `content` TEXT, `sender` INTEGER NOT NULL, `receiver` INTEGER NOT NULL, `changedate` TEXT, `sendDate` TEXT, `answerId` INTEGER NOT NULL, `groupMessage` INTEGER NOT NULL, `deleted` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `msgType` TEXT, `content` TEXT, `sender` INTEGER NOT NULL, `receiver` INTEGER NOT NULL, `changedate` TEXT, `sendDate` TEXT, `answerId` INTEGER NOT NULL, `deleted` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -137,12 +137,6 @@
           {
             "fieldPath": "answerId",
             "columnName": "answerId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "groupMessage",
-            "columnName": "groupMessage",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -221,7 +215,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7558410ca196b00debce18b803bf3f64')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b492d0a6a2c82d9aad5319b6ebf4e832')"
     ]
   }
 }

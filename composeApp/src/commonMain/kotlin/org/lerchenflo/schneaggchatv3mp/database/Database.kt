@@ -9,7 +9,7 @@ import androidx.room.RoomDatabaseConstructor
 @Database(
     entities = [User::class, Message::class, MessageReader::class],
     exportSchema = true,
-    version = 7
+    version = 9
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -17,6 +17,8 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun userDao(): UserDao
 
     abstract fun messageDao(): MessageDao
+
+    abstract fun messagereaderDao(): MessageReaderDao
 
     companion object {
         const val DB_NAME = "database.db"
