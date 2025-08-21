@@ -73,8 +73,6 @@ fun App() {
                             onChatSelected = { user ->
                                 sharedViewModel.onSelectChat(user)
 
-                                // Navigate to Chat screen with user ID
-                                println("opening chat with $user.id")
                                 navController.navigate(Route.Chat)
                             },
                             onNewChatClick = {

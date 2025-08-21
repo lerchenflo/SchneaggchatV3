@@ -94,14 +94,13 @@ fun Chatauswahlscreen(
                 text = stringResource(Res.string.app_name),
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 10.dp),
+                    .padding(start = 5.dp),
                 style = TextStyle(
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.onSurface
                 ),
                 autoSize = TextAutoSize.StepBased(
                     minFontSize = 10.sp,
-                    maxFontSize = 30.sp
+                    maxFontSize = 25.sp
                 ),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
