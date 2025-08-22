@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdMessageUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertMessageUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertUserUseCase
+import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.database.IdOperation
 import org.lerchenflo.schneaggchatv3mp.database.helperFunctions.ServerMessageDto
 import org.lerchenflo.schneaggchatv3mp.database.tables.User
@@ -208,6 +209,42 @@ class NetworkUtils(
     }
 
 
+    suspend fun groupidsync(databaseids: String): NetworkResult<Boolean, String> {
+        val headers = mapOf(
+            "msgtype" to GROUPIDSYNC,
+        )
+
+        val res = executeNetworkOperation(headers = headers, body = databaseids, get = false)
+
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
+            }
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
+        }
+    }
+
+    suspend fun getgroupbyid(id: Long): NetworkResult<Boolean, String> {
+        val headers = mapOf(
+            "msgtype" to GETGROUPBYID,
+            "groupid" to id.toString()
+        )
+
+        val res = executeNetworkOperation(headers = headers, body = "", get = true)
+
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
+            }
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
+        }
+    }
+
+
 
 
 
@@ -270,6 +307,73 @@ class NetworkUtils(
             val json = Json {
                 prettyPrint = false
                 ignoreUnknownKeys = true
+            }
+
+            // 1. Get local user IDs and change dates
+            val localUsers = getChangeIdUserUseCase()
+            val serializedData = json.encodeToString(localUsers)
+
+            // 2. Execute user ID sync with server
+            val syncResult = networkUtils.useridsync(serializedData)
+
+            syncResult.onSuccessWithBody { success, body ->
+                val operations = json.decodeFromString<List<IdOperation>>(body)
+                CoroutineScope(Dispatchers.Default).launch {
+                    operations.map { operation ->
+                        when (operation.Status) {
+                            "deleted" -> {
+                                try {
+
+                                    deleteUserUseCase(operation.Id)
+                                    Result.success(Unit)
+                                } catch (e: Exception) {
+                                    Result.failure<Unit>(e)
+                                }
+                            }
+                            "new", "modified" -> {
+                                try {
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        val userResult = networkUtils.getuserbyid(operation.Id)
+                                        userResult.onSuccessWithBody { success, body ->
+
+                                            //println(body)
+                                            val users = json.decodeFromString<List<User>>(body)
+
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                upsertUserUseCase(users[0])
+                                                println("User inserted: ${users[0].id}")
+                                            }
+                                        }
+                                    }
+
+                                } catch (e: Exception) {
+                                    Result.failure<Unit>(e)
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+            syncResult.onError {
+                println(it)
+            }
+        } catch (e: Exception) {
+            // Log error (platform-specific logging would be implemented separately)
+            println("Useridsync fail")
+            e.printStackTrace()
+        }
+
+    }
+
+
+    suspend fun executeGroupIDSync(repository: AppRepository) {
+
+        try {
+
+            val json = Json {
+                prettyPrint = false
+                //ignoreUnknownKeys = true
             }
 
             // 1. Get local user IDs and change dates

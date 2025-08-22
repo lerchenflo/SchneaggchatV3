@@ -1,13 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.withContext
-import org.lerchenflo.schneaggchatv3mp.database.AppDatabaseRepository
+import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.database.tables.User
 
 class UpsertUserUseCase(
-    private val userRepository: AppDatabaseRepository
+    private val userRepository: AppRepository
 ) {
     suspend operator fun invoke(user: User) {
         userRepository.upsertUser(user)

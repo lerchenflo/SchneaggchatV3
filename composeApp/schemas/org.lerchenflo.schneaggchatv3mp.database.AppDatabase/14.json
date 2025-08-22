@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 14,
-    "identityHash": "da162146a5b5c711e552850d4561b22d",
+    "identityHash": "07c92c4eeda0fc4b283bc681abb03a9c",
     "entities": [
       {
         "tableName": "users",
@@ -191,11 +191,11 @@
       },
       {
         "tableName": "groups",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`groupid` INTEGER NOT NULL, `name` TEXT NOT NULL, `profile_picture` TEXT, `description` TEXT, `create_date` TEXT, `change_date` TEXT, `creator_id` TEXT NOT NULL, `notis_muted` INTEGER NOT NULL, PRIMARY KEY(`groupid`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `profile_picture` TEXT, `description` TEXT, `create_date` TEXT, `changedate` TEXT, `notis_muted` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
-            "columnName": "groupid",
+            "columnName": "id",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -221,15 +221,9 @@
             "affinity": "TEXT"
           },
           {
-            "fieldPath": "changeDate",
-            "columnName": "change_date",
+            "fieldPath": "changedate",
+            "columnName": "changedate",
             "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "creatorid",
-            "columnName": "creator_id",
-            "affinity": "TEXT",
-            "notNull": true
           },
           {
             "fieldPath": "muted",
@@ -241,7 +235,7 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "groupid"
+            "id"
           ]
         }
       },
@@ -296,7 +290,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'da162146a5b5c711e552850d4561b22d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '07c92c4eeda0fc4b283bc681abb03a9c')"
     ]
   }
 }

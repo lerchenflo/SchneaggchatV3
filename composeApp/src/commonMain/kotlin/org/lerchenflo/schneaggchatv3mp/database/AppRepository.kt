@@ -1,18 +1,16 @@
 package org.lerchenflo.schneaggchatv3mp.database
 
-import androidx.room.Query
 import androidx.room.Transaction
-import androidx.room.Upsert
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import org.lerchenflo.schneaggchatv3mp.database.tables.Message
 import org.lerchenflo.schneaggchatv3mp.database.tables.MessageReader
 import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.database.tables.User
+import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 
-class AppDatabaseRepository(
-    private val database: AppDatabase
+class AppRepository(
+    private val database: AppDatabase,
+    private val networkUtils: NetworkUtils
 ) {
 
     suspend fun upsertUser(user: User){
@@ -31,6 +29,7 @@ class AppDatabaseRepository(
         return database.userDao().getallusers(searchterm)
     }
 
+    @Transaction
     suspend fun getuserchangeid(): List<IdChangeDate>{
         return database.userDao().getUserIdsWithChangeDates()
     }
@@ -66,15 +65,17 @@ class AppDatabaseRepository(
         if (readers.isNotEmpty()) insertReaders(readers)
     }
 
+    @Transaction
     fun getAllMessagesWithReaders(): Flow<List<MessageWithReaders>>{
         return database.messageDao().getAllMessagesWithReaders()
     }
 
-
+    @Transaction
     suspend fun getmessagechangeid(): List<IdChangeDate>{
         return database.messageDao().getMessageIdsWithChangeDates()
     }
 
+    @Transaction
     fun getMessagesByUserId(userId: Long): Flow<List<MessageWithReaders>> {
         return database.messageDao().getMessagesByUserId(userId)
     }
@@ -83,6 +84,7 @@ class AppDatabaseRepository(
     suspend fun insertReader(reader: MessageReader) {
         database.messagereaderDao().upsertReader(reader)
     }
+
 
     suspend fun insertReaders(readers: List<MessageReader>){
         database.messagereaderDao().upsertReaders(readers)

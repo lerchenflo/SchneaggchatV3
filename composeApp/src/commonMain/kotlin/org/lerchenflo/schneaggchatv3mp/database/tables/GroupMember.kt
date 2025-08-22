@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.database.tables
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -16,15 +17,19 @@ data class GroupMember(
     @ColumnInfo(name = "group_id")
     val gid: Long,
 
+    @SerialName("_id")
     @ColumnInfo(name = "user_id")
     val uid: String,
 
+    @SerialName("_color")
     @ColumnInfo(name = "color")
     val color: Int,
 
+    @SerialName("_joindate")
     @ColumnInfo(name = "join_date")
     val joinDate: String,
 
+    @SerialName("_isadmin")
     @ColumnInfo(name = "is_admin")
     val isAdmin: Boolean
 

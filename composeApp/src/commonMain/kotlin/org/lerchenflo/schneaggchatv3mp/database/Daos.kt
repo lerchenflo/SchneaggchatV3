@@ -78,6 +78,8 @@ interface GroupDao {
     @Upsert
     suspend fun upsertGroup(group: Group)
 
+    @Query("SELECT id, changedate FROM `groups`")
+    suspend fun getGroupIdsWithChangeDates(): List<IdChangeDate>
 }
 
 @Dao

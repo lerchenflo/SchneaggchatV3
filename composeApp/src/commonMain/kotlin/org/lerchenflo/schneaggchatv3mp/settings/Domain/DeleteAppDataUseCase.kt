@@ -1,11 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp.settings.Domain
 
-import org.lerchenflo.schneaggchatv3mp.database.AppDatabaseRepository
+import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 
 class DeleteAppDataUseCase(
-    private val appDatabaseRepository: AppDatabaseRepository
+    private val appRepository: AppRepository
 ) {
     suspend operator fun invoke(){
-        appDatabaseRepository.deleteAllAppData()
+        appRepository.deleteAllAppData()
     }
 }

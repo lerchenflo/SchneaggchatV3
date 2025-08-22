@@ -48,12 +48,7 @@ fun convertServerGroupDtoToGroupWithMembers(serverList: List<ServerGroupDto>): L
             profilePicture = dto.profilePicture,
             description = dto.description,
             createDate = dto.createDate,
-            changeDate = dto.changeDate,
-            creatorid = when {
-                dto.creatorId != null -> dto.creatorId
-                dto.creatorIdAlt >= 0L -> dto.creatorIdAlt.toString()
-                else -> ""
-            },
+            changedate = dto.changeDate,
             muted = dto.muted
         )
 

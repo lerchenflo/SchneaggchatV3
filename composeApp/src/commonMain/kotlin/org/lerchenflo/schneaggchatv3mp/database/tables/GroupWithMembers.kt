@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 data class GroupWithMembers(
     @Embedded val group: Group,
     @Relation(
-        parentColumn = "groupid",
+        parentColumn = "id",
         entityColumn = "group_id"
     )
     val members: List<GroupMember>

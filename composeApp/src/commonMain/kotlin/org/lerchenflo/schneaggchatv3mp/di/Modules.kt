@@ -1,7 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.di
 
 import io.ktor.client.HttpClient
-import org.koin.core.module.dsl.*
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
@@ -14,14 +13,12 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdUserUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertMessageUseCase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertUserUseCase
 import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
-import org.lerchenflo.schneaggchatv3mp.database.AppDatabaseRepository
+import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.Domain.DeleteAppDataUseCase
-import org.lerchenflo.schneaggchatv3mp.settings.Presentation.SettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
-import kotlin.math.sin
 
 val sharedmodule = module{
 
@@ -32,7 +29,7 @@ val sharedmodule = module{
 
 
     //Repository
-    singleOf(::AppDatabaseRepository)
+    singleOf(::AppRepository)
 
 
     //Netzwerktask
