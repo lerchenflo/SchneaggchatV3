@@ -5,6 +5,8 @@ import androidx.room.Relation
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.OWNID
 import org.lerchenflo.schneaggchatv3mp.network.GROUPPICTUREMESSAGE
+import org.lerchenflo.schneaggchatv3mp.network.GROUPTEXTMESSAGE
+import org.lerchenflo.schneaggchatv3mp.network.GROUPVOICEMESSAGE
 import org.lerchenflo.schneaggchatv3mp.network.SINGLEPICTUREMESSAGE
 
 @Serializable
@@ -34,5 +36,9 @@ data class MessageWithReaders(
 
     fun isMyMessage(): Boolean {
         return message.sender == OWNID
+    }
+
+    fun isGroupMessage(): Boolean {
+        return message.msgType == GROUPTEXTMESSAGE || message.msgType == GROUPPICTUREMESSAGE || message.msgType == GROUPVOICEMESSAGE
     }
 }

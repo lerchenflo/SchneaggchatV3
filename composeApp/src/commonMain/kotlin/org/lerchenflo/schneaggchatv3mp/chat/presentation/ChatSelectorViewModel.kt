@@ -68,21 +68,20 @@ class ChatSelectorViewModel(
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val usersFlow: Flow<List<User>> = _searchTerm
-
+    val chatSelectorFlow: Flow<List<ChatSelectorItem>> = _searchTerm
         .flatMapLatest { term ->
-            // getallusers should return Flow<List<User>>
-            sharedViewModel.getusersWithLastMessage(searchterm.value)
+            appRepository.getChatSelectorFlow(term)
         }
         .map { list ->
             list
-                .filter { it.id != OWNID }                // remove self
-                .sortedByDescending { it.lastmessage?.message?.sendDate } // then sort
+                // remove yourself if the item is a user with your OWNID
+                .filter { !(it.id == OWNID && !it.gruppe) }
+                // already sorted in repository, but safe to sort again
+                .sortedByDescending { it.lastmessage?.getSendDateAsLong() }
         }
-        .flowOn(Dispatchers.Default) //Im default despatcher für mehr cores -> Mehr hoaza
+        .flowOn(Dispatchers.Default)
 
-    // Expose as StateFlow so UI can collect easily and get a current value
-    val usersState: StateFlow<List<User>> = usersFlow
+    val chatSelectorState: StateFlow<List<ChatSelectorItem>> = chatSelectorFlow
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),

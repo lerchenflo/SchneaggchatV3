@@ -22,10 +22,10 @@ data class ServerGroupMemberDto(
 data class ServerGroupDto(
     @SerialName("id") val id: Long = 0L,
     @SerialName("groupname") val name: String? = null,
-    @SerialName("profilepicture") val profilePicture: String? = null,
-    @SerialName("gruppenbeschreibung") val description: String? = null,
-    @SerialName("createdate") val createDate: String? = null,
-    @SerialName("lastchanged") val changeDate: String? = null,
+    @SerialName("profilepicture") val profilePicture: String,
+    @SerialName("gruppenbeschreibung") val description: String,
+    @SerialName("createdate") val createDate: String,
+    @SerialName("lastchanged") val changeDate: String,
     @SerialName("members") val members: List<ServerGroupMemberDto> = emptyList()
 )
 

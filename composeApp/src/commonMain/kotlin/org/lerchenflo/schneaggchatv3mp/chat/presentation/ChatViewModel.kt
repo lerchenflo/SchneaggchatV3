@@ -39,9 +39,10 @@ class ChatViewModel(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val messagesFlow: Flow<List<MessageWithReaders>> =
-        sharedViewModel.selectedChat // must be a Flow or StateFlow<User>
+        sharedViewModel.selectedChat
             .flatMapLatest { chat ->
-                sharedViewModel.getMessagesForUserId(chat?.id ?: 0)
+                //TODO: Eig kriagt jede message an bool gruppenmessage
+                appRepository.getMessagesByUserId(chat?.id ?: 0)
             }
             .map { list ->
                 list.sortedByDescending { it.message.sendDate }

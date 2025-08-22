@@ -88,7 +88,7 @@ fun ChatScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     UserButton(
-                        user = sharedViewModel.selectedChat.value,
+                        chatSelectorItem = sharedViewModel.selectedChat.value,
                         onClickGes = {
                             // todo open chatdetails
                             SnackbarManager.showMessage("Bald chatdetails")

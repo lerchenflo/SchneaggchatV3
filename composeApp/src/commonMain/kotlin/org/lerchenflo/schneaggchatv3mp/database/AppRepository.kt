@@ -1,6 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.database
 
+import androidx.compose.ui.graphics.Path.Companion.combine
+import androidx.compose.ui.text.style.TextDecoration.Companion.combine
 import androidx.room.Transaction
+import io.ktor.util.Hash.combine
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -9,8 +12,12 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.ChatEntity
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.ChatSelectorItem
 import org.lerchenflo.schneaggchatv3mp.database.tables.Group
 import org.lerchenflo.schneaggchatv3mp.database.tables.GroupMember
 import org.lerchenflo.schneaggchatv3mp.database.tables.GroupWithMembers
@@ -93,6 +100,8 @@ class AppRepository(
     }
 
 
+
+
     suspend fun insertReader(reader: MessageReader) {
         database.messagereaderDao().upsertReader(reader)
     }
@@ -114,6 +123,11 @@ class AppRepository(
     @Transaction
     suspend fun getgroupchangeid(): List<IdChangeDate>{
         return database.groupDao().getGroupIdsWithChangeDates()
+    }
+
+    @Transaction
+    fun getallgroupswithmembers(): Flow<List<GroupWithMembers>> {
+        return database.groupDao().getAllGroupsWithMembers()
     }
 
     suspend fun deleteGroup(groupid: Long){
@@ -138,6 +152,57 @@ class AppRepository(
             database.groupDao().upsertMembers(joinRows)
         }
     }
+
+
+    //Gegnerauswahl getten
+    // In repository / data layer
+    fun getChatSelectorFlow(searchTerm: String): Flow<List<ChatSelectorItem>> {
+        val messagesFlow = getAllMessagesWithReaders()
+        val usersFlow = getallusers(searchTerm)
+        val groupsFlow = getallgroupswithmembers()
+
+        return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
+
+            val userItems = users.mapNotNull { user ->
+                val last = messages
+                    .filter {
+                        (it.message.sender == user.id || it.message.receiver == user.id)
+                            && !it.isGroupMessage()
+                    }
+                    .maxByOrNull { it.getSendDateAsLong() }
+                last?.let {
+                    ChatSelectorItem(
+                        id = user.id,
+                        gruppe = false,
+                        lastmessage = it,
+                        entity = ChatEntity.UserEntity(user)
+                    )
+                }
+            }
+
+            val groupItems = groups.mapNotNull { gwm ->
+                val groupId = gwm.group.id
+                val last = messages
+                    .filter { it.message.receiver == groupId && it.isGroupMessage()} // adjust if your schema differs
+                    .maxByOrNull { it.getSendDateAsLong() }
+
+                last?.let {
+                    ChatSelectorItem(
+                        id = groupId,
+                        gruppe = true,
+                        lastmessage = it,
+                        entity = ChatEntity.GroupEntity(gwm)
+                    )
+                }
+            }
+
+            (userItems + groupItems).sortedByDescending { it.lastmessage?.getSendDateAsLong() }
+        }.flowOn(Dispatchers.Default)
+    }
+
+
+
+
 
 
 

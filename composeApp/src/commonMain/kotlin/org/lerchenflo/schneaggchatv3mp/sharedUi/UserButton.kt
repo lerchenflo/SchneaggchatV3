@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.ChatSelectorItem
 import org.lerchenflo.schneaggchatv3mp.database.tables.Message
 import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.database.tables.User
@@ -54,7 +55,7 @@ import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 
 @Composable
 fun UserButton(
-    user: User?,
+    chatSelectorItem: ChatSelectorItem?,
     showProfilePicture: Boolean = true,
     lastMessage: MessageWithReaders? = null,
     bottomTextOverride: String? = "",
@@ -105,7 +106,7 @@ fun UserButton(
 
             ){
                 Text(
-                    text = user?.name ?: stringResource(Res.string.unknown_user),
+                    text = chatSelectorItem?.getName() ?: stringResource(Res.string.unknown_user),
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -157,7 +158,7 @@ fun UserButton(
             if(bottomTextOverride == null || !bottomTextOverride.isEmpty()){
 
                 Text(
-                    text = bottomTextOverride ?: (user?.status ?: // override if not null
+                    text = bottomTextOverride ?: (chatSelectorItem?.getStatus() ?: // override if not null
                         stringResource(Res.string.no_status)),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier
@@ -167,32 +168,3 @@ fun UserButton(
         }
     }
 }
-
-@Preview()
-@Composable
-fun UserButtonPreview() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()            // ← make Box take the whole preview
-            .background(Color.Gray)   // ← background covers full area now
-            .padding(16.dp),          // optional padding like your main view
-        contentAlignment = Alignment.Center
-    ) {
-        Column {
-            UserButton(
-                user = null,
-                lastMessage = null,
-                bottomTextOverride = "Dine alte message",
-                useOnClickGes = false,
-            )
-
-            UserButton(
-                user = null,
-                lastMessage = null,
-                bottomTextOverride = "Dine neue message",
-                useOnClickGes = false,
-            )
-        }
-    }
-}
-

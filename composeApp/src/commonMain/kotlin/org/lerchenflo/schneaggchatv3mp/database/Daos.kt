@@ -86,8 +86,8 @@ interface GroupDao {
     suspend fun deleteGroup(groupid: Long)
 
     @Transaction
-    @Query("SELECT * FROM `groups` WHERE id = :id")
-    fun getGroupWithMembersFlow(id: Long): Flow<GroupWithMembers>
+    @Query("SELECT * FROM `groups`")
+    fun getAllGroupsWithMembers(): Flow<List<GroupWithMembers>>
 
     @Upsert
     suspend fun upsertMembers(members: List<GroupMember>): List<Long>
@@ -107,12 +107,23 @@ interface AllDatabaseDao {
     @Query("DELETE FROM users")
     suspend fun clearUsers()
 
+    @Query("DELETE FROM `groups`")
+    suspend fun clearGroups()
+
+    @Query("DELETE FROM group_members")
+    suspend fun clearGroupMembers()
+
+
+
     @Transaction
     suspend fun clearAll() {
         // Clear tables in proper order to respect foreign key constraints
         clearMessageReaders()  // Child table first
         clearMessages()        // Then parent table
         clearUsers()           // Finally users table
+        clearGroupMembers()
+        clearGroups()
+
     }
 }
 

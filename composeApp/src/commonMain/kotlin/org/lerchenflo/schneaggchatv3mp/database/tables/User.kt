@@ -21,7 +21,7 @@ data class User(
 
     @SerialName("username")
     @ColumnInfo(name = "name")
-    var name: String? = null,
+    var name: String,
 
     @SerialName("userdescription")
     @ColumnInfo(name = "description")
@@ -29,7 +29,7 @@ data class User(
 
     @SerialName("userstatus")
     @ColumnInfo(name = "status")
-    var status: String? = null,
+    var status: String,
 
 
     @ColumnInfo(name = "location_lat")
@@ -68,7 +68,4 @@ data class User(
 
     @ColumnInfo(name = "notis_muted")
     var notisMuted: Boolean? = null,
-
-    @Ignore
-    var lastmessage: MessageWithReaders? = null
 )

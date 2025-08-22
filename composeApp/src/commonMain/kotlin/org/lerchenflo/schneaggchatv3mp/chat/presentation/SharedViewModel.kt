@@ -105,37 +105,14 @@ class SharedViewModel(
 
 
 
-    fun getusersWithLastMessage(searchterm: String): Flow<List<User>> {
-        val usersFlow = appRepository.getallusers(searchterm)
-        val messagesFlow = appRepository.getAllMessagesWithReaders()
-
-        return combine(usersFlow, messagesFlow) { users, messagesWithReaders ->
-
-            users.map { user ->
-                val last = messagesWithReaders
-                    .filter { it.message.sender == user.id || it.message.receiver == user.id }
-                    .maxByOrNull { it.getSendDateAsLong() }
-
-                // return a copy of the user with lastmessage assigned
-                user.apply { lastmessage = last }
-            }
-        }
-    }
-
-    fun getMessagesForUserId(userid: Long): Flow<List<MessageWithReaders>> {
-        return appRepository.getMessagesByUserId(userid)
-    }
-
-
-
 
 
     //aktuell ausgewählter chat
-    private val _selectedChat = MutableStateFlow<User?>(null)
+    private val _selectedChat = MutableStateFlow<ChatSelectorItem?>(null)
     val selectedChat = _selectedChat.asStateFlow()
 
-    fun onSelectChat(user: User?) {
-        _selectedChat.value = user
+    fun onSelectChat(chat: ChatSelectorItem) {
+        _selectedChat.value = chat
     }
 
     fun onLeaveChat(){
