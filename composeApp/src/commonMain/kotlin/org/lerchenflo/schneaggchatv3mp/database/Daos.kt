@@ -8,6 +8,7 @@ import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.database.tables.Group
+import org.lerchenflo.schneaggchatv3mp.database.tables.GroupMember
 import org.lerchenflo.schneaggchatv3mp.database.tables.GroupWithMembers
 import org.lerchenflo.schneaggchatv3mp.database.tables.Message
 import org.lerchenflo.schneaggchatv3mp.database.tables.MessageReader
@@ -80,6 +81,19 @@ interface GroupDao {
 
     @Query("SELECT id, changedate FROM `groups`")
     suspend fun getGroupIdsWithChangeDates(): List<IdChangeDate>
+
+    @Query("DELETE FROM `groups` WHERE id = :groupid")
+    suspend fun deleteGroup(groupid: Long)
+
+    @Transaction
+    @Query("SELECT * FROM `groups` WHERE id = :id")
+    fun getGroupWithMembersFlow(id: Long): Flow<GroupWithMembers>
+
+    @Upsert
+    suspend fun upsertMembers(members: List<GroupMember>): List<Long>
+
+    @Query("DELETE FROM group_members WHERE group_id = :groupId")
+    suspend fun deleteMembersForGroup(groupId: Long)
 }
 
 @Dao

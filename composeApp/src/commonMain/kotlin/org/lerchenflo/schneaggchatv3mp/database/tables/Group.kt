@@ -37,5 +37,5 @@ data class Group(
 
 
     @ColumnInfo(name = "notis_muted")
-    val muted: Boolean
+    val muted: Boolean = false
 )

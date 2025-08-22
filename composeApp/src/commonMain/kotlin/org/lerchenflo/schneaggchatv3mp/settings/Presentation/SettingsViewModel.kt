@@ -8,7 +8,6 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import kotlinx.coroutines.launch
 import org.koin.compose.getKoin
 import org.koin.compose.koinInject
-import org.lerchenflo.schneaggchatv3mp.settings.Domain.DeleteAppDataUseCase
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import kotlin.reflect.KClass
 
@@ -34,10 +33,14 @@ class SettingsViewModel: ViewModel() {
         // todo
     }
 
+
+    /* TODO flo
     fun deleteAllAppData(deleteAppDataUseCase: DeleteAppDataUseCase){
         viewModelScope.launch {
             deleteAppDataUseCase()
             SnackbarManager.showMessage("App data deleted ✅")
         }
     }
+
+     */
 }

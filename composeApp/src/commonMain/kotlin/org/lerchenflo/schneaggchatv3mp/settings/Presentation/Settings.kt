@@ -45,12 +45,12 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.OWNID
 import org.lerchenflo.schneaggchatv3mp.USERNAME
 import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.settings.Domain.DeleteAppDataUseCase
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -59,12 +59,14 @@ import schneaggchatv3mp.composeapp.generated.resources.*
 @Composable
 @Preview
 fun SettingsScreen(
-    viewModel: SettingsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .safeContentPadding()
 ){
+    val viewModel = koinViewModel<SettingsViewModel>()
+
+
     Column(
         modifier = modifier
     ){
@@ -107,13 +109,12 @@ fun SettingsScreen(
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
         //---- App Einstellungen ----
-        // App kaputt button
-        val deleteAppDataUseCase = koinInject<DeleteAppDataUseCase>()
+
 
 
         NormalButton(
             text = stringResource(Res.string.app_broken),
-            onClick = {viewModel.deleteAllAppData(deleteAppDataUseCase)},
+            onClick = {/*viewModel.deleteAllAppData(deleteAppDataUseCase)TODO flo */},
             disabled = false,
             isLoading = false,
             modifier = Modifier

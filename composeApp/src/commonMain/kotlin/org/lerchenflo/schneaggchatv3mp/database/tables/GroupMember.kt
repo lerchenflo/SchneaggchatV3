@@ -19,7 +19,7 @@ data class GroupMember(
 
     @SerialName("_id")
     @ColumnInfo(name = "user_id")
-    val uid: String,
+    val uid: Long,
 
     @SerialName("_color")
     @ColumnInfo(name = "color")
