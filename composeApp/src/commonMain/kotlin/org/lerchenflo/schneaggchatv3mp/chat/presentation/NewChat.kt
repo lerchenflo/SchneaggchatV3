@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.Presentation
+package org.lerchenflo.schneaggchatv3mp.chat.presentation
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize

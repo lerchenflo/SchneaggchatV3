@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.Presentation
+package org.lerchenflo.schneaggchatv3mp.chat.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
@@ -29,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,9 +41,9 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.LOGGEDIN
 import org.lerchenflo.schneaggchatv3mp.database.tables.User
-import org.lerchenflo.schneaggchatv3mp.login.Presentation.InputTextField
 import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -64,9 +62,6 @@ import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 @Preview
 @Composable
 fun Chatauswahlscreen(
-    viewModel: ChatSelectorViewModel = viewModel(
-        factory = ChatSelectorViewModel.Factory
-    ),
     onChatSelected: (User) -> Unit,  // navigation callback
     onNewChatClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -74,6 +69,7 @@ fun Chatauswahlscreen(
         .safeContentPadding()
 ) {
 
+    val viewModel = koinViewModel<ChatSelectorViewModel>()
     val users by viewModel.usersState.collectAsStateWithLifecycle() // androidx.lifecycle.compose
     val searchterm by viewModel.searchterm.collectAsState() // read-only display of current search term
 

@@ -16,15 +16,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.SESSIONID
-import org.lerchenflo.schneaggchatv3mp.chat.domain.DeleteUserUseCase
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdMessageUseCase
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdUserUseCase
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertMessageUseCase
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertUserUseCase
+import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.database.IdOperation
-import org.lerchenflo.schneaggchatv3mp.database.helperFunctions.ServerMessageDto
+import org.lerchenflo.schneaggchatv3mp.database.dtos.ServerGroupDto
+import org.lerchenflo.schneaggchatv3mp.database.dtos.ServerMessageDto
+import org.lerchenflo.schneaggchatv3mp.database.dtos.convertServerGroupDtoToGroupWithMembers
 import org.lerchenflo.schneaggchatv3mp.database.tables.User
-import org.lerchenflo.schneaggchatv3mp.database.helperFunctions.convertServerMessageDtoToMessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.database.dtos.convertServerMessageDtoToMessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.network.util.onError
@@ -208,6 +206,42 @@ class NetworkUtils(
     }
 
 
+    suspend fun groupidsync(databaseids: String): NetworkResult<Boolean, String> {
+        val headers = mapOf(
+            "msgtype" to GROUPIDSYNC,
+        )
+
+        val res = executeNetworkOperation(headers = headers, body = databaseids, get = false)
+
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
+            }
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
+        }
+    }
+
+    suspend fun getgroupbyid(id: Long): NetworkResult<Boolean, String> {
+        val headers = mapOf(
+            "msgtype" to GETGROUPBYID,
+            "groupid" to id.toString()
+        )
+
+        val res = executeNetworkOperation(headers = headers, body = "", get = true)
+
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
+            }
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
+        }
+    }
+
+
 
 
 
@@ -263,7 +297,9 @@ class NetworkUtils(
 
 
 
-    suspend fun executeUserIDSync(getChangeIdUserUseCase: GetChangeIdUserUseCase, deleteUserUseCase: DeleteUserUseCase, upsertUserUseCase: UpsertUserUseCase, networkUtils: NetworkUtils) {
+    suspend fun executeUserIDSync(appRepository: AppRepository) {
+
+        println("Useridsync STARTET")
 
         try {
 
@@ -273,11 +309,11 @@ class NetworkUtils(
             }
 
             // 1. Get local user IDs and change dates
-            val localUsers = getChangeIdUserUseCase()
+            val localUsers = appRepository.getuserchangeid()
             val serializedData = json.encodeToString(localUsers)
 
             // 2. Execute user ID sync with server
-            val syncResult = networkUtils.useridsync(serializedData)
+            val syncResult = useridsync(serializedData)
 
             syncResult.onSuccessWithBody { success, body ->
                 val operations = json.decodeFromString<List<IdOperation>>(body)
@@ -287,7 +323,7 @@ class NetworkUtils(
                             "deleted" -> {
                                 try {
 
-                                    deleteUserUseCase(operation.Id)
+                                    appRepository.deleteUser(operation.Id)
                                     Result.success(Unit)
                                 } catch (e: Exception) {
                                     Result.failure<Unit>(e)
@@ -296,15 +332,15 @@ class NetworkUtils(
                             "new", "modified" -> {
                                 try {
                                     CoroutineScope(Dispatchers.IO).launch {
-                                        val userResult = networkUtils.getuserbyid(operation.Id)
+                                        val userResult = getuserbyid(operation.Id)
                                         userResult.onSuccessWithBody { success, body ->
 
                                             //println(body)
                                             val users = json.decodeFromString<List<User>>(body)
 
                                             CoroutineScope(Dispatchers.IO).launch {
-                                                upsertUserUseCase(users[0])
-                                                println("User inserted: ${users[0].id}")
+                                                appRepository.upsertUser(users[0])
+                                                println("User inserted: ${users[0].name}")
                                             }
                                         }
                                     }
@@ -330,9 +366,81 @@ class NetworkUtils(
     }
 
 
+    suspend fun executeGroupIDSync(appRepository: AppRepository) {
+
+        println("Groupidsync STARTET")
 
 
-    suspend fun executeMsgIDSync(getChangeIdMessageUseCase: GetChangeIdMessageUseCase, upsertMessageUseCase: UpsertMessageUseCase,networkUtils: NetworkUtils, onLoadingStateChange: (Boolean) -> Unit) {
+        try {
+
+            val json = Json {
+                prettyPrint = false
+                //ignoreUnknownKeys = true
+            }
+
+            // 1. Get local user IDs and change dates
+            val localGroups = appRepository.getgroupchangeid()
+            val serializedData = json.encodeToString(localGroups)
+
+            // 2. Execute user ID sync with server
+            val syncResult = groupidsync(serializedData)
+
+            syncResult.onSuccessWithBody { success, body ->
+                val operations = json.decodeFromString<List<IdOperation>>(body)
+                CoroutineScope(Dispatchers.Default).launch {
+                    operations.map { operation ->
+                        when (operation.Status) {
+                            "deleted" -> {
+                                try {
+
+                                    appRepository.deleteGroup(operation.Id)
+                                    Result.success(Unit)
+                                } catch (e: Exception) {
+                                    Result.failure<Unit>(e)
+                                }
+                            }
+                            "new", "modified" -> {
+                                try {
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        val groupResult = getgroupbyid(operation.Id)
+                                        groupResult.onSuccessWithBody { success, body ->
+
+                                            //Einzelne gruppe isch ako, jetzt in a liste vo dtos verwandla
+                                            val serverlist = json.decodeFromString<List<ServerGroupDto>>(body)
+
+                                            val groups = convertServerGroupDtoToGroupWithMembers(serverlist)
+
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                appRepository.upsertGroupWithMembers(groups[0])
+                                                println("Group inserted: ${groups[0].group.name}")
+                                            }
+                                        }
+                                    }
+
+                                } catch (e: Exception) {
+                                    Result.failure<Unit>(e)
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+            syncResult.onError {
+                println(it)
+            }
+        } catch (e: Exception) {
+            // Log error (platform-specific logging would be implemented separately)
+            println("Groupidsync fail")
+            e.printStackTrace()
+        }
+
+    }
+
+
+
+
+    suspend fun executeMsgIDSync(appRepository: AppRepository, onLoadingStateChange: (Boolean) -> Unit) {
 
         println("MSgidsync startet")
         onLoadingStateChange(true)
@@ -352,10 +460,10 @@ class NetworkUtils(
             // 1. Get local user IDs and change dates
             while (moremessages){
 
-                val localMessages = getChangeIdMessageUseCase()
+                val localMessages = appRepository.getmessagechangeid()
                 val serializedData = json.encodeToString(localMessages)
 
-                val syncResult = networkUtils.messageidsync(serializedData)
+                val syncResult = messageidsync(serializedData)
 
                 syncResult.onSuccessWithBody { responseheaders, body ->
 
@@ -381,7 +489,7 @@ class NetworkUtils(
                         CoroutineScope(
                             context = Dispatchers.IO
                         ).launch {
-                            upsertMessageUseCase(normalMessages)
+                            appRepository.upsertMessagesWithReaders(normalMessages)
                             println("Message insert gmacht: ${normalMessages.size} messages")
 
                         }
@@ -410,7 +518,7 @@ class NetworkUtils(
                     for (m in pictureMessages){
                         try {
                             CoroutineScope(Dispatchers.IO).launch {
-                                val messageResult = networkUtils.getmessagebyid(m.message.id)
+                                val messageResult = getmessagebyid(m.message.id)
                                 messageResult.onSuccessWithBody { success, body1 ->
 
                                     val messageasdto = json.decodeFromString<List<ServerMessageDto>>(body1)
@@ -420,7 +528,7 @@ class NetworkUtils(
                                     CoroutineScope(
                                         context = Dispatchers.IO
                                     ).launch {
-                                        upsertMessageUseCase(message[0])
+                                        appRepository.upsertMessageWithReaders(message[0])
                                     }
 
                                 }

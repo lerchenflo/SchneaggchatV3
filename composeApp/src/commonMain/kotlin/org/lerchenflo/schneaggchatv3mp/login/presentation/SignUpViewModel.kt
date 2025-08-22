@@ -1,55 +1,39 @@
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform.getKoin
-import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
+import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.network.util.toEnumOrNull
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.acc_locked
-import schneaggchatv3mp.composeapp.generated.resources.acc_not_exist
 import schneaggchatv3mp.composeapp.generated.resources.cannot_be_empty
 import schneaggchatv3mp.composeapp.generated.resources.email_exists
-import schneaggchatv3mp.composeapp.generated.resources.feature_disabled
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
-import schneaggchatv3mp.composeapp.generated.resources.offline
 import schneaggchatv3mp.composeapp.generated.resources.password_missing_requirements
 import schneaggchatv3mp.composeapp.generated.resources.password_needs_to_be_the_same
-import schneaggchatv3mp.composeapp.generated.resources.password_wrong
 import schneaggchatv3mp.composeapp.generated.resources.requirement_digit
 import schneaggchatv3mp.composeapp.generated.resources.requirement_forbidden
 import schneaggchatv3mp.composeapp.generated.resources.requirement_length
 import schneaggchatv3mp.composeapp.generated.resources.requirement_special
 import schneaggchatv3mp.composeapp.generated.resources.unknown_error
-import schneaggchatv3mp.composeapp.generated.resources.username
 import schneaggchatv3mp.composeapp.generated.resources.username_exists
 import schneaggchatv3mp.composeapp.generated.resources.username_too_long
 import kotlin.reflect.KClass
 
 
-class SignUpViewModel: ViewModel() {
+class SignUpViewModel(
+    appRepository: AppRepository
+): ViewModel() {
 
-    //Custom Factory für desktop fix
-    companion object {
-        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
-                return SignUpViewModel() as T
-            }
-        }
-    }
+
 
 
     // TextField states

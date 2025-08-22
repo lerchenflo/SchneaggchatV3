@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.Presentation
+package org.lerchenflo.schneaggchatv3mp.chat.presentation
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,22 +17,13 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import org.koin.mp.KoinPlatform.getKoin
-import org.lerchenflo.schneaggchatv3mp.OWNID
-import org.lerchenflo.schneaggchatv3mp.database.tables.Message
+import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
-import org.lerchenflo.schneaggchatv3mp.database.tables.User
 import kotlin.reflect.KClass
 
-class ChatViewModel: ViewModel() {
-
-    companion object {
-        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
-                return ChatViewModel() as T
-            }
-        }
-    }
+class ChatViewModel(
+    appRepository: AppRepository
+): ViewModel() {
 
     val sharedViewModel: SharedViewModel = getKoin().get()
 

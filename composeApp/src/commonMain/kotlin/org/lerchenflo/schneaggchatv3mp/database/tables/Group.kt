@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.database.tables
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -10,27 +11,31 @@ import kotlinx.serialization.Serializable
 data class Group(
 
     @PrimaryKey(autoGenerate = false)
-    @ColumnInfo(name = "groupid")
+    @SerialName("Id")
+    @ColumnInfo(name = "id")
     val id: Long = 0,
 
+    @SerialName("groupname")
     @ColumnInfo(name = "name")
     val name: String,
 
+    @SerialName("profilepicture")
     @ColumnInfo(name = "profile_picture")
     val profilePicture: String?,   // nullable in case no picture is set
 
+    @SerialName("groupdescription")
     @ColumnInfo(name = "description")
     val description: String?,
 
+    @SerialName("createdate")
     @ColumnInfo(name = "create_date")
     val createDate: String?,
 
-    @ColumnInfo(name = "change_date")
-    val changeDate: String?,
+    @SerialName("lastchanged")
+    @ColumnInfo(name = "changedate")
+    val changedate: String?,
 
-    @ColumnInfo(name = "creator_id")
-    val creatorid: String,
 
     @ColumnInfo(name = "notis_muted")
-    val muted: Boolean
+    val muted: Boolean = false
 )

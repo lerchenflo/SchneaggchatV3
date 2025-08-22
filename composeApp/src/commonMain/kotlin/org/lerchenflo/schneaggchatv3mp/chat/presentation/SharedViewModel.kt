@@ -1,45 +1,26 @@
-package org.lerchenflo.schneaggchatv3mp.chat.Presentation
+package org.lerchenflo.schneaggchatv3mp.chat.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
-import org.koin.compose.getKoin
 import org.lerchenflo.schneaggchatv3mp.LOGGEDIN
 import org.lerchenflo.schneaggchatv3mp.OWNID
 import org.lerchenflo.schneaggchatv3mp.SESSIONID
-import org.lerchenflo.schneaggchatv3mp.chat.domain.DeleteUserUseCase
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllMessagesForUserIdUseCase
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllMessagesWithReadersUseCase
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GetAllUserUseCase
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdMessageUseCase
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GetChangeIdUserUseCase
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertMessageUseCase
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UpsertUserUseCase
+import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.database.tables.User
-import org.lerchenflo.schneaggchatv3mp.database.UserDao
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 
 class SharedViewModel(
-    private val upsertUserUseCase: UpsertUserUseCase,
-    private val getAllUserUseCase: GetAllUserUseCase,
-    private val getChangeIdUserUseCase: GetChangeIdUserUseCase,
-    private val deleteUserUseCase: DeleteUserUseCase,
-    private val getChangeIdMessageUseCase: GetChangeIdMessageUseCase,
-    private val upsertMessageUseCase: UpsertMessageUseCase,
-    private val getAllMessagesWithReadersUseCase: GetAllMessagesWithReadersUseCase,
-    private val getAllMessagesForUserIdUseCase: GetAllMessagesForUserIdUseCase,
 
+    private val appRepository: AppRepository,
     private val networkUtils: NetworkUtils,
     private val preferencemanager: Preferencemanager
 
@@ -56,26 +37,7 @@ class SharedViewModel(
 
     fun executeuserandmsgidsync(onLoadingStateChange: (Boolean) -> Unit){
         viewModelScope.launch {
-            supervisorScope { //Es kann uana crashen aber da andre ned
-                delay(1000)
-
-                networkUtils.executeUserIDSync(
-                    getChangeIdUserUseCase = getChangeIdUserUseCase,
-                    deleteUserUseCase = deleteUserUseCase,
-                    upsertUserUseCase = upsertUserUseCase,
-                    networkUtils = networkUtils
-                )
-
-                networkUtils.executeMsgIDSync(
-                    getChangeIdMessageUseCase = getChangeIdMessageUseCase,
-                    upsertMessageUseCase = upsertMessageUseCase,
-                    networkUtils = networkUtils,
-                    onLoadingStateChange = {onLoadingStateChange(it)},
-                )
-
-                //TODO: GROUPIDSYNC
-            }
-
+            appRepository.executeSync(onLoadingStateChange)
         }
     }
 
@@ -143,19 +105,9 @@ class SharedViewModel(
 
 
 
-    // user getten und inserten
-    val upsertUser = fun(user: User){
-        viewModelScope.launch { upsertUserUseCase(user) }
-    }
-
-    fun getAllUsers(searchterm: String = ""): Flow<List<User>> {
-        return getAllUserUseCase(searchterm)
-    }
-
-
     fun getusersWithLastMessage(searchterm: String): Flow<List<User>> {
-        val usersFlow = getAllUserUseCase(searchterm)
-        val messagesFlow = getAllMessagesWithReadersUseCase()
+        val usersFlow = appRepository.getallusers(searchterm)
+        val messagesFlow = appRepository.getAllMessagesWithReaders()
 
         return combine(usersFlow, messagesFlow) { users, messagesWithReaders ->
 
@@ -171,7 +123,7 @@ class SharedViewModel(
     }
 
     fun getMessagesForUserId(userid: Long): Flow<List<MessageWithReaders>> {
-        return getAllMessagesForUserIdUseCase(userid)
+        return appRepository.getMessagesByUserId(userid)
     }
 
 

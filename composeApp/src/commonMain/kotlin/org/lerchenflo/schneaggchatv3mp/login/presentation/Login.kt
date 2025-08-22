@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.login.Presentation
+package org.lerchenflo.schneaggchatv3mp.login.presentation
 
 import LoginViewModel
 import androidx.compose.foundation.background
@@ -31,21 +31,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
 
 @Preview()
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = viewModel(
-        factory = LoginViewModel.Factory
-    ),
     onLoginSuccess: () -> Unit = {}, // when login has finished successful
     onSignUp: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxSize()
         .safeContentPadding()
 ){
+    val viewModel = koinViewModel<LoginViewModel>()
+
     SchneaggchatTheme {
 
         viewModel.trysavedcredslogin(onLoginSuccess)
