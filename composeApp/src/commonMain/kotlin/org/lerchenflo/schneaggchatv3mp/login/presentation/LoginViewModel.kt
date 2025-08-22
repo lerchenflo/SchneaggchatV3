@@ -1,20 +1,15 @@
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform.getKoin
-import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.network.util.toEnumOrNull
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
@@ -28,17 +23,10 @@ import schneaggchatv3mp.composeapp.generated.resources.unknown_error
 import kotlin.reflect.KClass
 
 
-class LoginViewModel: ViewModel() {
+class LoginViewModel(
+    appRepository: AppRepository
+): ViewModel() {
 
-    //Custom Factory für desktop fix
-    companion object {
-        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: KClass<T>, extras: CreationExtras): T {
-                return LoginViewModel() as T
-            }
-        }
-    }
 
 
     fun trysavedcredslogin(onLoginSuccess: () -> Unit){

@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.Presentation
+package org.lerchenflo.schneaggchatv3mp.chat.presentation
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -34,6 +34,8 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.getKoin
+import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DayDivider
 import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
@@ -47,15 +49,13 @@ import schneaggchatv3mp.composeapp.generated.resources.message
 @Preview
 @Composable
 fun ChatScreen(
-    viewModel: ChatViewModel = viewModel(
-        factory = ChatViewModel.Factory
-    ),
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
         .fillMaxSize()
         .safeContentPadding()
 ){
-    val sharedViewModel = getKoin().get<SharedViewModel>()
+    val sharedViewModel = koinInject<SharedViewModel>()
+    val viewModel = koinViewModel<ChatViewModel>()
     val messages by viewModel.messagesState.collectAsStateWithLifecycle()
 
     SchneaggchatTheme{ // theme wida setza

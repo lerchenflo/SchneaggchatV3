@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.login.Presentation
+package org.lerchenflo.schneaggchatv3mp.login.presentation
 
 import SignUpViewModel
 import androidx.compose.foundation.background
@@ -30,20 +30,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
 
 @Preview()
 @Composable
 fun SignUpScreen(
-    viewModel: SignUpViewModel = viewModel(
-        factory = SignUpViewModel.Factory
-    ),
     onSignUpSuccess: () -> Unit = {}, // when login has finished successful
     modifier: Modifier = Modifier
         .fillMaxSize()
         .safeContentPadding()
 ){
+    val viewModel = koinViewModel<SignUpViewModel>()
+
     SchneaggchatTheme {
         //Responsive UI mit scaffold
         Scaffold(

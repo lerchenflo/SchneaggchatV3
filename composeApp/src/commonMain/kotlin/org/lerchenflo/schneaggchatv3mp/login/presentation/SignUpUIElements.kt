@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.login.Presentation
+package org.lerchenflo.schneaggchatv3mp.login.presentation
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -16,11 +16,8 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.create_account
 import schneaggchatv3mp.composeapp.generated.resources.create_account_subtitle
 import schneaggchatv3mp.composeapp.generated.resources.email
-import schneaggchatv3mp.composeapp.generated.resources.login
-import schneaggchatv3mp.composeapp.generated.resources.loginsubtitle
 import schneaggchatv3mp.composeapp.generated.resources.password
 import schneaggchatv3mp.composeapp.generated.resources.password_again
-import schneaggchatv3mp.composeapp.generated.resources.sign_up
 import schneaggchatv3mp.composeapp.generated.resources.username
 
 //Signup element für Username und email

@@ -23,13 +23,13 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.chat.Presentation.ChatScreen
-import org.lerchenflo.schneaggchatv3mp.chat.Presentation.Chatauswahlscreen
-import org.lerchenflo.schneaggchatv3mp.chat.Presentation.NewChat
-import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
-import org.lerchenflo.schneaggchatv3mp.login.Presentation.LoginScreen
-import org.lerchenflo.schneaggchatv3mp.login.Presentation.SignUpScreen
-import org.lerchenflo.schneaggchatv3mp.settings.Presentation.SettingsScreen
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.ChatScreen
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.Chatauswahlscreen
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.NewChat
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.login.presentation.LoginScreen
+import org.lerchenflo.schneaggchatv3mp.login.presentation.SignUpScreen
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 
