@@ -18,11 +18,11 @@ import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.SESSIONID
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.database.IdOperation
-import org.lerchenflo.schneaggchatv3mp.database.helperFunctions.ServerGroupDto
-import org.lerchenflo.schneaggchatv3mp.database.helperFunctions.ServerMessageDto
-import org.lerchenflo.schneaggchatv3mp.database.helperFunctions.convertServerGroupDtoToGroupWithMembers
+import org.lerchenflo.schneaggchatv3mp.database.dtos.ServerGroupDto
+import org.lerchenflo.schneaggchatv3mp.database.dtos.ServerMessageDto
+import org.lerchenflo.schneaggchatv3mp.database.dtos.convertServerGroupDtoToGroupWithMembers
 import org.lerchenflo.schneaggchatv3mp.database.tables.User
-import org.lerchenflo.schneaggchatv3mp.database.helperFunctions.convertServerMessageDtoToMessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.database.dtos.convertServerMessageDtoToMessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.network.util.onError

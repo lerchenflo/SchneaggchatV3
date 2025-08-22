@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.database.helperFunctions
+package org.lerchenflo.schneaggchatv3mp.database.dtos
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
