@@ -170,7 +170,7 @@ fun UserButton(
 
 @Preview()
 @Composable
-fun userButtonPreview() {
+fun UserButtonPreview() {
     Box(
         modifier = Modifier
             .fillMaxSize()            // ← make Box take the whole preview

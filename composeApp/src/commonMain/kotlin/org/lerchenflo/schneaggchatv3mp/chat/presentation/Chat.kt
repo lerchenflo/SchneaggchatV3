@@ -45,6 +45,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.go_back
 import schneaggchatv3mp.composeapp.generated.resources.message
+import kotlin.time.ExperimentalTime
 
 @Preview
 @Composable
@@ -175,6 +176,7 @@ fun ChatScreen(
     }
 }
 
+@OptIn(ExperimentalTime::class)
 fun Long.toLocalDate(): LocalDate {
     val instant = Instant.fromEpochMilliseconds(this)
     return instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
