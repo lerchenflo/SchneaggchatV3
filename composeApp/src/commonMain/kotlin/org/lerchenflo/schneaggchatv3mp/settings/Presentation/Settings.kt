@@ -7,15 +7,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Announcement
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
@@ -24,6 +28,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -107,6 +113,40 @@ fun SettingsScreen(
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
         //---- App Einstellungen ----
+
+        // Marddown Formatting
+        Row(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "useMarkdowntext"
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            IconButton(
+                onClick = { SnackbarManager.showMessage("mdinfo")},
+                modifier = Modifier
+                    .padding(top = 5.dp, start = 5.dp)
+                    .statusBarsPadding()
+            ) {
+                // todo info icon
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Announcement,
+                    contentDescription = stringResource(Res.string.go_back),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Switch(
+                checked = viewModel.markdownEnabeled,
+                onCheckedChange = { viewModel.updateMardownSwitch(it) },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = androidx.compose.ui.graphics.Color.Green,
+                    uncheckedThumbColor = androidx.compose.ui.graphics.Color.Gray
+                )
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+
         // App kaputt button
         val deleteAppDataUseCase = koinInject<DeleteAppDataUseCase>()
 

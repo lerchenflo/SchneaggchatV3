@@ -1,6 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.settings.Presentation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -23,7 +26,12 @@ class SettingsViewModel: ViewModel() {
         }
     }
 
+    var markdownEnabeled by mutableStateOf(false)
+    private set
 
+    fun updateMardownSwitch(neValue: Boolean){
+        markdownEnabeled = neValue
+    }
 
     fun changeUsername(){
         // todo
