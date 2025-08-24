@@ -16,6 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.acc_locked
 import schneaggchatv3mp.composeapp.generated.resources.acc_not_exist
+import schneaggchatv3mp.composeapp.generated.resources.birthdateerror
 import schneaggchatv3mp.composeapp.generated.resources.feature_disabled
 import schneaggchatv3mp.composeapp.generated.resources.offline
 import schneaggchatv3mp.composeapp.generated.resources.password_wrong
@@ -107,6 +108,8 @@ class LoginViewModel(
                             ResponseReason.nomember,
                             ResponseReason.same,
                             null -> getString(Res.string.unknown_error)
+
+                            ResponseReason.invalid_birthdate -> getString(Res.string.birthdateerror)
                         }
 
                     }

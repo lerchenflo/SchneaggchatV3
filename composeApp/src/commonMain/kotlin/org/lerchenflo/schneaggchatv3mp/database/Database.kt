@@ -14,7 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.database.tables.User
 @Database(
     entities = [User::class, Message::class, MessageReader::class, Group::class, GroupMember::class],
     exportSchema = true,
-    version = 16
+    version = 18
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)

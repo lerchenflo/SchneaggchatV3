@@ -7,11 +7,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 @Entity(tableName = "message_readers")
 data class MessageReader(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey(autoGenerate = false)
     val readerEntryId: Long = 0L,
     val messageId: Long,
     val readerID: Long,
-    val readDate: String?
+    val readDate: String
 ) {
-    fun getReadDateAsLong(): Long = readDate?.toLongOrNull() ?: 0L
+    fun getReadDateAsLong(): Long = readDate.toLongOrNull() ?: 0L
 }

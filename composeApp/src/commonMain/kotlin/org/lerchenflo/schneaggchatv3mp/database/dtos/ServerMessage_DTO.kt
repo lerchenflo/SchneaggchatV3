@@ -6,55 +6,84 @@ import org.lerchenflo.schneaggchatv3mp.database.tables.Message
 import org.lerchenflo.schneaggchatv3mp.database.tables.MessageReader
 import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
 
-//Data transaction objects die so direkt als json geparst werrand:
-
 @Serializable
 data class ServerReaderDto(
-    @SerialName("id") val id: Long = 0L,
-    @SerialName("changedate") val changedate: String? = null
+    @SerialName("id") val id: Long = 0,                   // server-assigned PK for the reader entry
+    @SerialName("messageId") val messageId: Long = 0,     // may be 0 or missing; converter will fallback to outer message id
+    @SerialName("userId") val userId: Long = 0,           // the user who read the message
+    @SerialName("readTimestamp") val readTimestamp: String = "" // timestamp string
 )
 
 @Serializable
 data class ServerMessageDto(
-    @SerialName("id") val id: Long = 0L,
-    @SerialName("msgtype") val msgtype: String? = null,
-    @SerialName("inhalt") val inhalt: String? = null,
-    @SerialName("sender") val sender: Long = 0L,
-    @SerialName("empfaenger") val empfaenger: Long = 0L,
-    @SerialName("sendedatum") val sendedatum: String? = null,
-    @SerialName("geaendert") val geaendert: String? = null,
-    @SerialName("answerid") val answerid: Long = -1L,
+    @SerialName("id") val id: Long = 0,
+    @SerialName("msgtype") val msgtype: String = "",
+    @SerialName("inhalt") val inhalt: String = "",
+    @SerialName("sender") val sender: Long = 0,
+    @SerialName("empfaenger") val empfaenger: Long = 0,
+    @SerialName("sendedatum") val sendedatum: String = "",
+    @SerialName("geaendert") val geaendert: String = "",
     @SerialName("deleted") val deleted: Boolean = false,
+    @SerialName("groupmessage") val groupmessage: Boolean = false,
+    @SerialName("answerid") val answerid: Long = -1,
     @SerialName("gelesenliste") val gelesenliste: List<ServerReaderDto> = emptyList()
 )
 
-fun convertServerMessageDtoToMessageWithReaders(serverList: List<ServerMessageDto>) : List<MessageWithReaders>{
-    val batch: List<MessageWithReaders> = serverList.map { dto ->
+fun convertServerMessageDtoToMessageWithReaders(serverList: List<ServerMessageDto>): List<MessageWithReaders> {
+    return serverList.map { dto ->
+        // create Message using the new property names/types
         val message = Message(
             id = dto.id,
             msgType = dto.msgtype,
             content = dto.inhalt,
-            sender = dto.sender,
-            receiver = dto.empfaenger,
-            changeDate = dto.geaendert,
+            senderId = dto.sender,
+            receiverId = dto.empfaenger,
             sendDate = dto.sendedatum,
+            changeDate = dto.geaendert,
+            deleted = dto.deleted,
+            groupMessage = dto.groupmessage,
             answerId = dto.answerid,
-            deleted = dto.deleted
         )
 
-        // map readers. Ensure messageId is set to message.id so FK is correct.
+        // map readers; use server-assigned PK (r.id) as readerEntryId
         val readers: List<MessageReader> = dto.gelesenliste.map { r ->
-            // NOTE: adjust mapping below according to what the server's "id" actually means
+            val resolvedMessageId = if (r.messageId.toInt() != 0) r.messageId.toLong() else dto.id.toLong()
             MessageReader(
-                readerEntryId = 0,       // if server provides a unique entry id
-                messageId = dto.id,         // FK -> message.id
-                readerID = r.id,            // set if server supplies reader user id as different field
-                readDate = r.changedate
+                readerEntryId = r.id.toLong(),     // server PK for this reader record
+                messageId = resolvedMessageId,     // FK -> message.id
+                readerID = r.userId.toLong(),      // user who read the message
+                readDate = r.readTimestamp
             )
         }
 
         MessageWithReaders(message = message, readers = readers)
     }
-
-    return batch
 }
+
+fun convertServerMessageDtoToMessageWithReaders(dto: ServerMessageDto): MessageWithReaders {
+    val message = Message(
+        id = dto.id,
+        msgType = dto.msgtype,
+        content = dto.inhalt,
+        senderId = dto.sender,
+        receiverId = dto.empfaenger,
+        sendDate = dto.sendedatum,
+        changeDate = dto.geaendert,
+        deleted = dto.deleted,
+        groupMessage = dto.groupmessage,
+        answerId = dto.answerid,
+    )
+
+    val readers: List<MessageReader> = dto.gelesenliste.map { r ->
+        val resolvedMessageId = if (r.messageId != 0L) r.messageId else dto.id
+        MessageReader(
+            readerEntryId = r.id,           // server PK for this reader record
+            messageId = resolvedMessageId,  // FK -> message.id
+            readerID = r.userId,            // user who read the message
+            readDate = r.readTimestamp
+        )
+    }
+
+    return MessageWithReaders(message = message, readers = readers)
+}
+

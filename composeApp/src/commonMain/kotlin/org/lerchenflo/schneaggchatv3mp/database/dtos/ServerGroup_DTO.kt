@@ -31,36 +31,27 @@ data class ServerGroupDto(
 
 // --- Conversion function ---
 
-fun convertServerGroupDtoToGroupWithMembers(serverList: List<ServerGroupDto>): List<GroupWithMembers> {
-    return serverList.map { dto ->
-        // pick the real group id (prefer 'id' then 'groupid' alias)
+fun convertServerGroupDtoToGroupWithMembers(dto: ServerGroupDto): GroupWithMembers {
+    val group = Group(
+        id = dto.id,
+        name = dto.name ?: "",
+        profilePicture = dto.profilePicture,
+        description = dto.description,
+        createDate = dto.createDate,
+        changedate = dto.changeDate
+    )
 
-        val group = Group(
-            id = dto.id,
-            name = dto.name ?: "",                     // require non-null in your local model (adjust if you allow null)
-            profilePicture = dto.profilePicture,
-            description = dto.description,
-            createDate = dto.createDate,
-            changedate = dto.changeDate
+    val members: List<GroupMember> = dto.members.map { mDto ->
+        GroupMember(
+            id = mDto.entryid,
+            gid = dto.id,
+            uid = mDto.userId,
+            color = mDto.color ?: 0,
+            joinDate = mDto.joinDate ?: "",
+            isAdmin = mDto.isAdmin
         )
-
-        val members: List<GroupMember> = dto.members.map { mDto ->
-            // determine uid (string) — try string, then numeric fallback
-            val uid = mDto.userId
-
-            // determine color: prefer numeric color, else parse hex if present, else 0
-            val colorInt: Int = mDto.color ?: 0
-
-            GroupMember(
-                id = 0,                // local DB will autogenerate entry id
-                gid = dto.id,
-                uid = uid,
-                color = colorInt,
-                joinDate = mDto.joinDate ?: "",
-                isAdmin = mDto.isAdmin
-            )
-        }
-
-        GroupWithMembers(group = group, members = members)
     }
+
+    return GroupWithMembers(group = group, members = members)
 }
+

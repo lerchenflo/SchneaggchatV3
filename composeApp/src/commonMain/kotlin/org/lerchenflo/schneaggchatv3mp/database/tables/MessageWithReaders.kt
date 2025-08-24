@@ -4,10 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Relation
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.OWNID
-import org.lerchenflo.schneaggchatv3mp.network.GROUPPICTUREMESSAGE
-import org.lerchenflo.schneaggchatv3mp.network.GROUPTEXTMESSAGE
-import org.lerchenflo.schneaggchatv3mp.network.GROUPVOICEMESSAGE
-import org.lerchenflo.schneaggchatv3mp.network.SINGLEPICTUREMESSAGE
+import org.lerchenflo.schneaggchatv3mp.network.PICTUREMESSAGE
 
 @Serializable
 data class MessageWithReaders(
@@ -27,7 +24,7 @@ data class MessageWithReaders(
     }
 
     fun isPicture() : Boolean{
-        return message.msgType == SINGLEPICTUREMESSAGE || message.msgType == GROUPPICTUREMESSAGE
+        return message.msgType == PICTUREMESSAGE
     }
 
     fun getSendDateAsLong(): Long {
@@ -35,10 +32,10 @@ data class MessageWithReaders(
     }
 
     fun isMyMessage(): Boolean {
-        return message.sender == OWNID
+        return message.senderId == OWNID
     }
 
     fun isGroupMessage(): Boolean {
-        return message.msgType == GROUPTEXTMESSAGE || message.msgType == GROUPPICTUREMESSAGE || message.msgType == GROUPVOICEMESSAGE
+        return message.groupMessage
     }
 }

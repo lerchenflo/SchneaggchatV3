@@ -3,9 +3,6 @@ package org.lerchenflo.schneaggchatv3mp.network
 import schneaggchatv3mp.composeapp.generated.resources.Res.string
 
 
-
-
-
 //A paar messagetypes
 
 const val CREATEACCOUNTMESSAGE = "0"
@@ -32,21 +29,15 @@ const val FRIENDACCEPT = "15"
 const val FRIENDREMOVE = "16"
 
 
-const val SINGLETEXTMESSAGE = "21"
+//Textnachrichten
+const val TEXTMESSAGE = "21"
 
-const val GROUPTEXTMESSAGE = "22"
+//Bilder
+const val PICTUREMESSAGE = "23"
 
+const val VOICEMESSAGE = "25"
 
-
-const val SINGLEPICTUREMESSAGE = "23"
-
-const val GROUPPICTUREMESSAGE = "24"
-
-const val SINGLEVOICEMESSAGE = "25"
-
-const val GROUPVOICEMESSAGE = "26"
-
-const val GROUPPOLLMESSAGE = "27"
+const val POLLMESSAGE = "27"
 
 
 const val MSGIDSYNC = "30"

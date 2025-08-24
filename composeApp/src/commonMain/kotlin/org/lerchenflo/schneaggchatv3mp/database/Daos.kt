@@ -54,7 +54,7 @@ interface MessageDao {
     fun getAllMessagesWithReaders(): Flow<List<MessageWithReaders>>
 
     @Transaction
-    @Query("SELECT * FROM messages WHERE sender = :userId OR receiver = :userId")
+    @Query("SELECT * FROM messages WHERE senderId = :userId OR receiverId = :userId")
     fun getMessagesByUserId(userId: Long): Flow<List<MessageWithReaders>>
 
     @Query("SELECT id, changedate FROM messages")

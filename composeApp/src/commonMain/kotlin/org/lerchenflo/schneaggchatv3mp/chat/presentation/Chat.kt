@@ -105,7 +105,7 @@ fun ChatScreen(
                 reverseLayout = true
             ) {
                 itemsIndexed(messages) { index, message ->
-                    val currentDateMillis = message.message.sendDate?.toLongOrNull()
+                    val currentDateMillis = message.message.sendDate.toLongOrNull()
                     val currentDate = currentDateMillis?.toLocalDate()
                     val nextDate =
                         messages.getOrNull(index + 1)?.message?.sendDate?.toLongOrNull()

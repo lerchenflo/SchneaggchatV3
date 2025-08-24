@@ -307,7 +307,7 @@ class NetworkUtils(
 
             val json = Json {
                 prettyPrint = false
-                ignoreUnknownKeys = true
+                //ignoreUnknownKeys = true
             }
 
             // 1. Get local user IDs and change dates
@@ -338,11 +338,11 @@ class NetworkUtils(
                                         userResult.onSuccessWithBody { success, body ->
 
                                             //println(body)
-                                            val users = json.decodeFromString<List<User>>(body)
+                                            val user = json.decodeFromString<User>(body)
 
                                             CoroutineScope(Dispatchers.IO).launch {
-                                                appRepository.upsertUser(users[0])
-                                                println("User inserted: ${users[0].name}")
+                                                appRepository.upsertUser(user)
+                                                println("User inserted: ${user.name}")
                                             }
                                         }
                                     }
@@ -408,13 +408,13 @@ class NetworkUtils(
                                         groupResult.onSuccessWithBody { success, body ->
 
                                             //Einzelne gruppe isch ako, jetzt in a liste vo dtos verwandla
-                                            val serverlist = json.decodeFromString<List<ServerGroupDto>>(body)
+                                            val serverlist = json.decodeFromString<ServerGroupDto>(body)
 
-                                            val groups = convertServerGroupDtoToGroupWithMembers(serverlist)
+                                            val group = convertServerGroupDtoToGroupWithMembers(serverlist)
 
                                             CoroutineScope(Dispatchers.IO).launch {
-                                                appRepository.upsertGroupWithMembers(groups[0])
-                                                println("Group inserted: ${groups[0].group.name}")
+                                                appRepository.upsertGroupWithMembers(group)
+                                                println("Group inserted: ${group}")
                                             }
                                         }
                                     }
@@ -523,14 +523,14 @@ class NetworkUtils(
                                 val messageResult = getmessagebyid(m.message.id)
                                 messageResult.onSuccessWithBody { success, body1 ->
 
-                                    val messageasdto = json.decodeFromString<List<ServerMessageDto>>(body1)
+                                    val messageasdto = json.decodeFromString<ServerMessageDto>(body1)
 
                                     val message = convertServerMessageDtoToMessageWithReaders(messageasdto)
 
                                     CoroutineScope(
                                         context = Dispatchers.IO
                                     ).launch {
-                                        appRepository.upsertMessageWithReaders(message[0])
+                                        appRepository.upsertMessageWithReaders(message)
                                     }
 
                                 }

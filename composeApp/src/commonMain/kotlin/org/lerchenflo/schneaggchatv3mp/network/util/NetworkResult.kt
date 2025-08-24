@@ -43,6 +43,7 @@ enum class ResponseReason {
     feature_disabled,
     too_big,
     account_temp_locked,
+    invalid_birthdate,
     unknown_error,
     none
 }

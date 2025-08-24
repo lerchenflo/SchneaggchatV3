@@ -167,47 +167,55 @@ class AppRepository(
     // In repository / data layer
     fun getChatSelectorFlow(searchTerm: String): Flow<List<ChatSelectorItem>> {
         val messagesFlow = getAllMessagesWithReaders()
-        val usersFlow = getallusers(searchTerm)
+        val usersFlow = getallusers()
         val groupsFlow = getallgroupswithmembers()
 
         return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
 
-            val userItems = users.mapNotNull { user ->
+            val loweredSearch = searchTerm.trim().lowercase()
+
+            val userItems = users.map { user ->
                 val last = messages
                     .filter {
-                        (it.message.sender == user.id || it.message.receiver == user.id)
-                            && !it.isGroupMessage()
+                        (it.message.senderId == user.id || it.message.receiverId == user.id)
+                                && !it.isGroupMessage()
                     }
                     .maxByOrNull { it.getSendDateAsLong() }
-                last?.let {
-                    ChatSelectorItem(
-                        id = user.id,
-                        gruppe = false,
-                        lastmessage = it,
-                        entity = ChatEntity.UserEntity(user)
-                    )
-                }
+
+                ChatSelectorItem(
+                    id = user.id,
+                    gruppe = false,
+                    lastmessage = last, // may be null
+                    entity = ChatEntity.UserEntity(user)
+                )
+            }.filter { item ->
+                loweredSearch.isEmpty() ||
+                        (item.entity as? ChatEntity.UserEntity)?.user?.name?.lowercase()?.contains(loweredSearch) == true
             }
 
-            val groupItems = groups.mapNotNull { gwm ->
+            val groupItems = groups.map { gwm ->
                 val groupId = gwm.group.id
                 val last = messages
-                    .filter { it.message.receiver == groupId && it.isGroupMessage()} // adjust if your schema differs
+                    .filter { it.message.receiverId == groupId && it.isGroupMessage() }
                     .maxByOrNull { it.getSendDateAsLong() }
 
-                last?.let {
-                    ChatSelectorItem(
-                        id = groupId,
-                        gruppe = true,
-                        lastmessage = it,
-                        entity = ChatEntity.GroupEntity(gwm)
-                    )
-                }
+                ChatSelectorItem(
+                    id = groupId,
+                    gruppe = true,
+                    lastmessage = last, // may be null
+                    entity = ChatEntity.GroupEntity(gwm)
+                )
+            }.filter { item ->
+                loweredSearch.isEmpty() ||
+                        (item.entity as? ChatEntity.GroupEntity)?.groupWithMembers?.group?.name?.lowercase()?.contains(loweredSearch) == true
             }
 
-            (userItems + groupItems).sortedByDescending { it.lastmessage?.getSendDateAsLong() }
+            (userItems + groupItems)
+                .sortedByDescending { it.lastmessage?.getSendDateAsLong() ?: 0L } // nulls treated as 0
         }.flowOn(Dispatchers.Default)
     }
+
+
 
 
 

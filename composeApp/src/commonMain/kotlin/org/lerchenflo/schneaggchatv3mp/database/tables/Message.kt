@@ -7,58 +7,62 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.OWNID
-import org.lerchenflo.schneaggchatv3mp.network.GROUPPICTUREMESSAGE
-import org.lerchenflo.schneaggchatv3mp.network.SINGLEPICTUREMESSAGE
+import org.lerchenflo.schneaggchatv3mp.network.PICTUREMESSAGE
 
 @Serializable
 @Entity(tableName = "messages")
 data class Message(
-    @PrimaryKey()
-    var id: Long = 0L,
+    @PrimaryKey
+    var id: Long = 0,
 
     @SerialName("msgtype")
-    var msgType: String? = null,
+    var msgType: String = "",
 
     @SerialName("inhalt")
-    var content: String? = null,
+    var content: String = "",
 
     @SerialName("sender")
-    var sender: Long = 0L,
+    var senderId: Long = 0,
 
     @SerialName("empfaenger")
-    var receiver: Long = 0L,
+    var receiverId: Long = 0,
+
+    @SerialName("sendedatum")
+    var sendDate: String = "",
 
     @SerialName("geaendert")
     @ColumnInfo(name = "changedate")
-    var changeDate: String? = null,
+    var changeDate: String = "",
 
-    @SerialName("sendedatum")
-    var sendDate: String? = null,
+    @SerialName("deleted")
+    var deleted: Boolean = false,
+
+    @SerialName("groupmessage")
+    var groupMessage: Boolean = false,
 
     @SerialName("answerid")
     var answerId: Long = -1,
-    var deleted: Boolean = false,
 
     @Ignore
     var senderAsString: String = "",
 
     @Ignore
     var senderColor: Int = 0,
-
-
-
-){
-    fun isPicture() : Boolean{
-        return msgType == SINGLEPICTUREMESSAGE || msgType == GROUPPICTUREMESSAGE
+) {
+    fun isPicture(): Boolean {
+        return msgType == PICTUREMESSAGE
     }
 
     fun getSendDateAsLong(): Long {
-        return sendDate?.toLongOrNull() ?: 0L
+        return sendDate.toLongOrNull() ?: 0L
     }
 
     fun isMyMessage(): Boolean {
-        return sender == OWNID
+        // compare as strings to be robust to OWNID being Int/Long/String
+        return try {
+            senderId.toString() == OWNID.toString()
+        } catch (_: Exception) {
+            false
+        }
     }
-
-
 }
