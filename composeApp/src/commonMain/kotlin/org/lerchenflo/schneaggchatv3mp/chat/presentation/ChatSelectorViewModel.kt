@@ -43,10 +43,12 @@ class ChatSelectorViewModel(
                 //Ungesendete nachrichten versuacha senden
                 appRepository.sendOfflineMessages()
 
+
                 sharedViewModel.executeuserandmsgidsync { isLoadingMessages1 ->
-                    isLoadingMessages = isLoadingMessages1
+                    updateIsLoadingMessages(isLoadingMessages1)
                     println("Loading messages: $isLoadingMessages")
                 }
+
             }
         }
 

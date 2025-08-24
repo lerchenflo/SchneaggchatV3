@@ -43,6 +43,7 @@ fun convertServerMessageDtoToMessageWithReaders(serverList: List<ServerMessageDt
             deleted = dto.deleted,
             groupMessage = dto.groupmessage,
             answerId = dto.answerid,
+            sent = true
         )
 
         // map readers; use server-assigned PK (r.id) as readerEntryId
@@ -72,6 +73,7 @@ fun convertServerMessageDtoToMessageWithReaders(dto: ServerMessageDto): MessageW
         deleted = dto.deleted,
         groupMessage = dto.groupmessage,
         answerId = dto.answerid,
+        sent = true
     )
 
     val readers: List<MessageReader> = dto.gelesenliste.map { r ->

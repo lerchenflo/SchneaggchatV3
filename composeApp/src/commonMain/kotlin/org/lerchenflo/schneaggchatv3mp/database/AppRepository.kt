@@ -313,45 +313,33 @@ class AppRepository(
         )
 
         //Nachricht hot scho a pk vo da db, also scho din
-        if (localpk == 0L){
-            localpkintern = database.messageDao().upsertMessage(message)
+        if (localpkintern == 0L){
+            localpkintern = database.messageDao().insertMessage(message)
             println("LocalPK: $localpkintern")
-
         }
 
 
         val serverrequest = networkUtils.sendMessageToServer(msgtype, empfaenger, gruppe, content, answerid, sendedatum)
         serverrequest.onSuccess { headers ->
 
-            val msgid = headers["msgid"]?.toLong()
+            withContext(Dispatchers.IO) {
+                val msgid = headers["msgid"]?.toLong()
 
 
-            if (msgid != null){
-                println("Message gesendet: msgid $msgid")
+                if (msgid != null){
+                    println("Message gesendet: msgid $msgid")
 
-                val newmessage = message.copy(
-                    id = msgid,
-                    localPK = localpkintern,
-                    sent = true
-                )
+                    database.messageDao().markMessageAsSent( msgid, localpkintern)
 
-                database.messageDao().markMessageAsSent(localpk, msgid)
-
-                database.messagereaderDao().upsertReader(MessageReader(
-                    messageId = msgid,
-                    readerID = OWNID ?:0,
-                    readDate = newmessage.sendDate
-                ))
-                println("Message gesendet update: $newmessage")
-
-                val unsentmessages = database.messageDao().getUnsentMessages()
-                println("UNGESENDETE MESSAGES: ${unsentmessages}")
-            }else{
-                println("Message senden error: Keine Msgid erhalten -----------------------------------------------------------------------")
+                    database.messagereaderDao().upsertReader(MessageReader(
+                        messageId = msgid,
+                        readerID = OWNID ?:0,
+                        readDate = message.sendDate
+                    ))
+                }else{
+                    println("Message senden error: Keine Msgid erhalten -----------------------------------------------------------------------")
+                }
             }
-            //Wenn success denn gesendet und msgid updaten, sunsch passiert nix und sie isch bei da offlinemessages dabei
-
-
 
         }
         serverrequest.onError {

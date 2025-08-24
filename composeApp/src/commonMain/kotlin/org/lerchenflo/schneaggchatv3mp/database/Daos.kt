@@ -2,8 +2,11 @@ package org.lerchenflo.schneaggchatv3mp.database
 
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
@@ -37,6 +40,12 @@ interface UserDao {
 @Dao
 interface MessageDao {
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMessage(message: Message): Long
+
+    @Update
+    suspend fun updateMessage(message: Message)
+
     @Upsert()
     suspend fun upsertMessage(message: Message): Long
 
@@ -66,7 +75,12 @@ interface MessageDao {
 
     @Transaction
     @Query("UPDATE messages SET id = :serverId, sent = 1 WHERE localPK = :localPK")
-    suspend fun markMessageAsSent(localPK: Long, serverId: Long)
+    suspend fun markMessageAsSent(serverId: Long, localPK: Long)
+
+
+    @Query("SELECT * FROM messages WHERE id = :id")
+    suspend fun getMessageById(id: Long): Message?
+
 
 }
 

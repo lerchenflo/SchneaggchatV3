@@ -115,7 +115,7 @@ fun UserButton(
 
                 //Noti wird zoagt wenn i s ned gleasa hob (Es isch a neue nachricht vo jemandem andra)
                 //Oder wenn se no ned gsendet worra isch (Es git no kuan reader entry weils denn würgt mit da ids)
-                if(lastMessage != null && (!lastMessage.isReadbyMe() || !lastMessage.message.sent)){
+                if(lastMessage != null && !lastMessage.isReadbyMe() && lastMessage.message.sent){
                     Image(
                         painter = painterResource(Res.drawable.noti_bell),
                         contentDescription = stringResource(Res.string.notification_bell),
