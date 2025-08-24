@@ -28,7 +28,7 @@ import org.lerchenflo.schneaggchatv3mp.database.tables.User
 import kotlin.reflect.KClass
 
 class ChatSelectorViewModel(
-    appRepository: AppRepository
+    private val appRepository: AppRepository
 ): ViewModel() {
 
 

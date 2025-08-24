@@ -24,7 +24,7 @@ import kotlin.reflect.KClass
 
 
 class LoginViewModel(
-    appRepository: AppRepository
+    private val appRepository: AppRepository
 ): ViewModel() {
 
 
@@ -81,7 +81,7 @@ class LoginViewModel(
             isLoading = true
 
             // Use the sharedViewModel's login function with a callback
-            sharedViewModel.login(username, password) { success, message ->
+            appRepository.login(username, password) { success, message ->
                 if (success) {
                     println("Login erfolgreich")
                     onLoginSuccess()

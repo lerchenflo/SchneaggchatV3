@@ -1,15 +1,38 @@
 package org.lerchenflo.schneaggchatv3mp.login.presentation
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -29,6 +52,7 @@ fun SignUpForm1(
     emailText: String,
     onemailTextChange: (String) -> Unit,
     emailerrorText: String?,
+    ongebidateselected: (LocalDate?) -> Unit,
     modifier: Modifier = Modifier
 ){
     Column(
@@ -66,6 +90,15 @@ fun SignUpForm1(
                 .fillMaxWidth()
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        //TODO: Ned immer zoaga
+        //TODO: Gender als string printen zum luaga obs format passt
+        DateDropdownPicker(
+            onDateSelected = { ongebidateselected(it) },
+            modifier = Modifier.fillMaxWidth()
+        )
+
     }
 }
 
@@ -77,6 +110,9 @@ fun SignUpForm2(
     password2Text: String,
     onpassword2TextChange: (String) -> Unit,
     password2errorText: String?,
+    genderslidertext: String,
+    genderslidervalue: Float,
+    ongendersliderValueChange: (Float) -> Unit,
     onSignupButtonClick: () -> Unit,
     signupbuttondisabled: Boolean = false,
     signupbuttonloading: Boolean = false,
@@ -111,6 +147,20 @@ fun SignUpForm2(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        //TODO: gender input
+        Slider(
+            value = genderslidervalue,
+            onValueChange = ongendersliderValueChange,
+            valueRange = 0f..1f,
+            steps = 4,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Text(text = genderslidertext)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+
         NormalButton(
             text = stringResource(Res.string.create_account),
             onClick = onSignupButtonClick,
@@ -141,5 +191,173 @@ fun SignUpHeaderText(
             text = stringResource(Res.string.create_account_subtitle),
             style = MaterialTheme.typography.bodyLarge
         )
+    }
+}
+
+@Composable
+fun DateDropdownPicker(
+    initialDate: LocalDate? = null,
+    onDateSelected: (LocalDate?) -> Unit,
+    modifier: Modifier = Modifier,
+    minYear: Int = 1900,
+    maxYear: Int = run {
+        // default to current system year
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        now.date.year
+    },
+    monthNames: List<String> = listOf(
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ),
+    labelDay: String = "Day",
+    labelMonth: String = "Month",
+    labelYear: String = "Year",
+) {
+    // Initialize selections from initialDate (or null)
+    var selectedDay by remember { mutableStateOf(initialDate?.dayOfMonth) }
+    var selectedMonth by remember { mutableStateOf(initialDate?.monthNumber) } // 1..12
+    var selectedYear by remember { mutableStateOf(initialDate?.year) }
+
+    // Dropdown expanded states
+    var dayExpanded by remember { mutableStateOf(false) }
+    var monthExpanded by remember { mutableStateOf(false) }
+    var yearExpanded by remember { mutableStateOf(false) }
+
+    // Helper: compute days in month, handles leap years
+    fun isLeapYear(year: Int): Boolean =
+        (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
+
+    fun daysInMonth(year: Int, month: Int): Int {
+        return when (month) {
+            1, 3, 5, 7, 8, 10, 12 -> 31
+            4, 6, 9, 11 -> 30
+            2 -> if (isLeapYear(year)) 29 else 28
+            else -> 31
+        }
+    }
+
+    // Ensure selectedDay remains valid when month/year change
+    LaunchedEffect(selectedMonth, selectedYear) {
+        val sDay = selectedDay
+        val sMonth = selectedMonth
+        val sYear = selectedYear
+        if (sDay != null && sMonth != null && sYear != null) {
+            val maxDay = daysInMonth(sYear, sMonth)
+            if (sDay > maxDay) {
+                selectedDay = maxDay
+            }
+        }
+    }
+
+    // Emit LocalDate when all parts are present; emit null when incomplete
+    LaunchedEffect(selectedDay, selectedMonth, selectedYear) {
+        val sDay = selectedDay
+        val sMonth = selectedMonth
+        val sYear = selectedYear
+        if (sDay != null && sMonth != null && sYear != null) {
+            onDateSelected(LocalDate(sYear, sMonth, sDay))
+        } else {
+            onDateSelected(null)
+        }
+    }
+
+    Row(modifier = modifier.padding(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        // DAY dropdown
+        Box(modifier = Modifier.weight(1f)) {
+            OutlinedTextField(
+                value = selectedDay?.toString() ?: "",
+                onValueChange = {},
+                label = { Text(labelDay) },
+                readOnly = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { dayExpanded = true },
+                trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = "Select day") }
+            )
+            val dayItems = if (selectedMonth != null && selectedYear != null)
+                (1..daysInMonth(selectedYear!!, selectedMonth!!)).toList()
+            else (1..31).toList()
+
+            DropdownMenu(
+                expanded = dayExpanded,
+                onDismissRequest = { dayExpanded = false },
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .heightIn(max = 240.dp)
+            ) {
+                dayItems.forEach { d ->
+                    DropdownMenuItem(
+                        text = { Text(d.toString()) },
+                        onClick = {
+                            selectedDay = d
+                            dayExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        // MONTH dropdown
+        Box(modifier = Modifier.weight(1.5f)) {
+            OutlinedTextField(
+                value = selectedMonth?.let { monthNames.getOrNull(it - 1) } ?: "",
+                onValueChange = {},
+                label = { Text(labelMonth) },
+                readOnly = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { monthExpanded = true },
+                trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = "Select month") }
+            )
+            DropdownMenu(
+                expanded = monthExpanded,
+                onDismissRequest = { monthExpanded = false },
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .heightIn(max = 300.dp)
+            ) {
+                monthNames.forEachIndexed { index, name ->
+                    DropdownMenuItem(
+                        text = { Text(name) },
+                        onClick = {
+                            selectedMonth = index + 1
+                            monthExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        // YEAR dropdown
+        Box(modifier = Modifier.weight(1f)) {
+            OutlinedTextField(
+                value = selectedYear?.toString() ?: "",
+                onValueChange = {},
+                label = { Text(labelYear) },
+                readOnly = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { yearExpanded = true },
+                trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = "Select year") }
+            )
+            val years = (minYear..maxYear).toList().reversed() // show newest first
+            DropdownMenu(
+                expanded = yearExpanded,
+                onDismissRequest = { yearExpanded = false },
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .heightIn(max = 300.dp)
+            ) {
+                years.forEach { y ->
+                    DropdownMenuItem(
+                        text = { Text(y.toString()) },
+                        onClick = {
+                            selectedYear = y
+                            yearExpanded = false
+                        }
+                    )
+                }
+            }
+        }
     }
 }

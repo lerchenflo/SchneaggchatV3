@@ -22,7 +22,7 @@ import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
 import kotlin.reflect.KClass
 
 class ChatViewModel(
-    appRepository: AppRepository
+    private val appRepository: AppRepository
 ): ViewModel() {
 
     val sharedViewModel: SharedViewModel = getKoin().get()

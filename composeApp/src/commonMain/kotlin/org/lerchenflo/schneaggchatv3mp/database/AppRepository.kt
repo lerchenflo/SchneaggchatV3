@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.database
 
 import androidx.compose.ui.graphics.Path.Companion.combine
 import androidx.compose.ui.text.style.TextDecoration.Companion.combine
+import androidx.lifecycle.viewModelScope
 import androidx.room.Transaction
 import io.ktor.util.Hash.combine
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -16,6 +17,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
+import org.lerchenflo.schneaggchatv3mp.LOGGEDIN
+import org.lerchenflo.schneaggchatv3mp.OWNID
+import org.lerchenflo.schneaggchatv3mp.SESSIONID
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.ChatEntity
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.ChatSelectorItem
 import org.lerchenflo.schneaggchatv3mp.database.tables.Group
@@ -26,10 +30,15 @@ import org.lerchenflo.schneaggchatv3mp.database.tables.MessageReader
 import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.database.tables.User
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.network.util.onError
+import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
+import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 
 class AppRepository(
     private val database: AppDatabase,
-    private val networkUtils: NetworkUtils
+    private val networkUtils: NetworkUtils,
+    private val preferencemanager: Preferencemanager
+
 ) {
 
     suspend fun upsertUser(user: User){
@@ -204,6 +213,72 @@ class AppRepository(
 
 
 
+
+
+    fun login(
+        username: String,
+        password: String,
+        onResult: (Boolean, String) -> Unit
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            networkUtils.login(username, password)
+                .onSuccessWithBody { headers, message ->
+                    //println("Success: $success $message")
+                    CoroutineScope(Dispatchers.IO).launch {
+                        preferencemanager.saveAutologinCreds(username, password)
+                        preferencemanager.saveOWNID(headers["userid"]?.toLong() ?: 0)
+                    }
+
+                    println(headers)
+                    SESSIONID = headers["sessionid"]
+                    OWNID = headers["userid"]?.toLong()
+                    println("SESSIONID gesetzt: $SESSIONID")
+                    onResult(true, message)
+                }
+                .onError { error ->
+                    println("Error: $error")
+
+                    onResult(false, error.toString())
+                }
+        }
+
+    }
+
+    fun createAccount(
+        username: String,
+        email: String,
+        password: String,
+        gender: String,
+        birthdate: String,
+        onResult: (Boolean, String) -> Unit
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            networkUtils.createAccount(username, password, email, gender, birthdate)
+                .onSuccessWithBody { success, message ->
+                    println("Success: $success $message")
+                    onResult(success, message)
+                }
+                .onError { error ->
+                    println("Error: $error")
+
+                    onResult(false, error.toString())
+                }
+        }
+    }
+
+    suspend fun areLoginCredentialsSaved(): Boolean{
+        val (username, password) = preferencemanager.getAutologinCreds()
+        if (username.isNotBlank() && password.isNotBlank()){
+            OWNID = preferencemanager.getOWNID()
+        }
+        CoroutineScope(Dispatchers.IO).launch {
+            login(username, password, onResult = { success, body ->
+                LOGGEDIN = success
+                println("LOGGEDIN $success")
+            })
+        }
+        return username.isNotBlank() && password.isNotBlank()
+    }
 
 
 

@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform.getKoin
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.SharedViewModel
@@ -30,7 +31,7 @@ import kotlin.reflect.KClass
 
 
 class SignUpViewModel(
-    appRepository: AppRepository
+    private val appRepository: AppRepository
 ): ViewModel() {
 
 
@@ -79,7 +80,34 @@ class SignUpViewModel(
         private set
 
 
-    //TODO: DAtepicker für gebi
+    //TODO: DAtepicker für gebi  und gender (Es wird als string gschickt also eig a dropdown mit nam custom input dazua)
+
+    var gebidate by mutableStateOf<LocalDate?>(null)
+        private set
+    fun updategebidate(newValue: LocalDate?) {
+        gebidate = newValue
+        updateState()
+    }
+    var gebidateerrorMessage by mutableStateOf<String?>(null)
+        private set
+
+
+    var gender by mutableStateOf("")
+        private set
+    fun updategender(newValue: String) {
+        gender = newValue
+        updateState()
+    }
+    var gendererrorMessage by mutableStateOf<String?>(null)
+        private set
+
+
+    var genderslidervalue by mutableStateOf(0f)
+        private set
+    fun updategenderslidervalue(newValue: Float) {
+        genderslidervalue = newValue
+        updateState()
+    }
 
 
 
@@ -97,11 +125,11 @@ class SignUpViewModel(
                     isLoading = true
 
                     // Use the sharedViewModel's login function with a callback
-                    sharedViewModel.createAccount(username, email, password) { success, message ->
+                    appRepository.createAccount(username, email, password, gender, gebidate.toString()) { success, message ->
                         if (success) {
                             println("Account erstellen erfolgreich")
 
-                            sharedViewModel.login(username, password) { success, message ->
+                            appRepository.login(username, password) { success, message ->
                                 if (success){
                                     onCreateSuccess()
                                 }
