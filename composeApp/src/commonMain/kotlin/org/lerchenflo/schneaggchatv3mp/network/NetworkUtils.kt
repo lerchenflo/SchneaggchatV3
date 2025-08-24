@@ -196,7 +196,7 @@ class NetworkUtils(
         )
 
         val res = executeNetworkOperation(headers = headers, body = "", get = true)
-
+        //TODO: User returnen
         return when (res) {
 
             is NetworkResult.Success -> {
@@ -232,6 +232,8 @@ class NetworkUtils(
         )
 
         val res = executeNetworkOperation(headers = headers, body = "", get = true)
+
+        //Todo: Group objekt returnen
 
         return when (res) {
 
@@ -271,6 +273,8 @@ class NetworkUtils(
             "msgid" to id.toString()
         )
 
+        //TODO: A message object returnen
+
         val res = executeNetworkOperation(headers = headers, body = "", get = true)
 
         return when (res) {
@@ -284,16 +288,18 @@ class NetworkUtils(
     }
 
 
+    //Do isch da netzwerkteil vom message senden (gmergta teil im appRepositor)
+    suspend fun sendMessageToServer(msgtype: String, empfaenger: Long, gruppe: Boolean, message: String, answerid: Long, sendedatum: String): NetworkResult<Map<String, String>, String> {
+        val headers = mapOf(
+            "msgtype" to msgtype,
+            "empfaenger" to empfaenger.toString(),
+            "sendedatum" to sendedatum,
+            "answerid" to answerid.toString(),
+            "groupmessage" to gruppe.toString()
+        )
 
-
-
-
-
-
-
-
-
-
+        return executeNetworkOperation(headers = headers, body = message, get = false)
+    }
 
 
 
@@ -444,6 +450,7 @@ class NetworkUtils(
 
     suspend fun executeMsgIDSync(appRepository: AppRepository, onLoadingStateChange: (Boolean) -> Unit) {
 
+        //TODO: Richta dassas ersch startet wenn da vorherige request fertig isch
         println("MSgidsync startet")
         onLoadingStateChange(true)
 
@@ -464,6 +471,8 @@ class NetworkUtils(
 
                 val localMessages = appRepository.getmessagechangeid()
                 val serializedData = json.encodeToString(localMessages)
+
+                println("Msgidsync: $serializedData")
 
                 val syncResult = messageidsync(serializedData)
 
@@ -496,24 +505,6 @@ class NetworkUtils(
 
                         }
                     }
-
-
-                    /* TODO: Bilder hola
-                    val deferreds = pictureMessages.map { m ->
-                        async {
-                            val messageResult = networkUtils.getmessagebyid(m.id)
-                            messageResult.onSuccessWithBody { _, body1 ->
-                                if (body1 != "[]") {
-                                    val messages = json.decodeFromString<List<Message>>(body1)
-                                    upsertMessageUseCase(messages[0]) // direct suspend call
-                                }
-                            }
-                        }
-                    }
-
-                    deferreds.awaitAll()
-
-                     */
 
 
                     //Bilder einzeln hola

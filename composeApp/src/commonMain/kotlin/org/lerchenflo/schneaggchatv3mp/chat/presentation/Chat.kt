@@ -157,7 +157,7 @@ fun ChatScreen(
 
                 // send button
                 IconButton(
-                    onClick = {/*todo*/},
+                    onClick = {viewModel.sendMessage()},
                     modifier = Modifier
                         .padding(top = 5.dp, start = 5.dp)
                         .statusBarsPadding()

@@ -38,10 +38,10 @@ interface UserDao {
 interface MessageDao {
 
     @Upsert()
-    suspend fun updateMessage(message: Message): Long
+    suspend fun upsertMessage(message: Message): Long
 
     @Upsert
-    suspend fun updateMessages(messages: List<Message>)
+    suspend fun upsertMessages(messages: List<Message>)
 
 
     @Transaction
@@ -54,11 +54,20 @@ interface MessageDao {
     fun getAllMessagesWithReaders(): Flow<List<MessageWithReaders>>
 
     @Transaction
-    @Query("SELECT * FROM messages WHERE senderId = :userId OR receiverId = :userId")
-    fun getMessagesByUserId(userId: Long): Flow<List<MessageWithReaders>>
+    @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ")
+    fun getMessagesByUserId(userId: Long, gruppe: Boolean): Flow<List<MessageWithReaders>>
 
-    @Query("SELECT id, changedate FROM messages")
+    @Query("SELECT id, changedate FROM messages WHERE id != 0")
     suspend fun getMessageIdsWithChangeDates(): List<IdChangeDate>
+
+    @Transaction
+    @Query("SELECT * FROM messages WHERE sent = 0")
+    suspend fun getUnsentMessages(): List<Message>
+
+    @Transaction
+    @Query("UPDATE messages SET id = :serverId, sent = 1 WHERE localPK = :localPK")
+    suspend fun markMessageAsSent(localPK: Long, serverId: Long)
+
 }
 
 @Dao
@@ -72,6 +81,8 @@ interface MessageReaderDao {
 
     @Query("DELETE FROM message_readers WHERE messageId = :messageId")
     suspend fun deleteReadersForMessage(messageId: Long)
+
+
 }
 
 @Dao

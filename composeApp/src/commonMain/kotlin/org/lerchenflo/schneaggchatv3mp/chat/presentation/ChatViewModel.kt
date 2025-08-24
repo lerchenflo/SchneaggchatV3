@@ -16,9 +16,12 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform.getKoin
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.network.TEXTMESSAGE
+import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import kotlin.reflect.KClass
 
 class ChatViewModel(
@@ -28,10 +31,34 @@ class ChatViewModel(
     val sharedViewModel: SharedViewModel = getKoin().get()
 
 
+
+    //TODO: Null check ob an selectegegner gwählt isch (Oder einfach id und bool gruppe übergia denn hot ma des clean grichtet und sharedviewmodel selected bruchts num)
+    //Sharedviewmodel bruchama trotzdem für networktasks
+
     var sendText by mutableStateOf("")
         private set
     fun updatesendText(newValue: String) {
         sendText = newValue
+    }
+
+    fun sendMessage(){
+
+        //TODO: Do wechla bild und sunschwas
+        var msgtype = TEXTMESSAGE
+        val content = sendText
+        updatesendText("")
+
+        //Im sharedviewmodel dassas ewig leabig isch
+        sharedViewModel.viewModelScope.launch {
+            appRepository.sendMessage(
+                msgtype = msgtype,
+                empfaenger = sharedViewModel.selectedChat.value?.id ?: 0,
+                gruppe = sharedViewModel.selectedChat.value?.gruppe ?: false,
+                content = content,
+                answerid = -1, //TODO: Antworten
+                sendedatum = getCurrentTimeMillisString()
+            )
+        }
     }
 
 
@@ -41,8 +68,7 @@ class ChatViewModel(
     val messagesFlow: Flow<List<MessageWithReaders>> =
         sharedViewModel.selectedChat
             .flatMapLatest { chat ->
-                //TODO: Eig kriagt jede message an bool gruppenmessage
-                appRepository.getMessagesByUserId(chat?.id ?: 0)
+                appRepository.getMessagesByUserId(chat?.id ?: 0, chat?.gruppe ?: false)
             }
             .map { list ->
                 list.sortedByDescending { it.message.sendDate }

@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 18,
-    "identityHash": "cf98c5ed0ae9d321fa37dce128ee76fc",
+    "version": 19,
+    "identityHash": "c351adf309647c4bb93440ac0791e1cb",
     "entities": [
       {
         "tableName": "users",
@@ -205,7 +205,7 @@
       },
       {
         "tableName": "message_readers",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`readerEntryId` INTEGER NOT NULL, `messageId` INTEGER NOT NULL, `readerID` INTEGER NOT NULL, `readDate` TEXT NOT NULL, PRIMARY KEY(`readerEntryId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`readerEntryId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `messageId` INTEGER NOT NULL, `readerID` INTEGER NOT NULL, `readDate` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "readerEntryId",
@@ -233,7 +233,7 @@
           }
         ],
         "primaryKey": {
-          "autoGenerate": false,
+          "autoGenerate": true,
           "columnNames": [
             "readerEntryId"
           ]
@@ -341,7 +341,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cf98c5ed0ae9d321fa37dce128ee76fc')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c351adf309647c4bb93440ac0791e1cb')"
     ]
   }
 }

@@ -12,8 +12,12 @@ import org.lerchenflo.schneaggchatv3mp.network.PICTUREMESSAGE
 @Serializable
 @Entity(tableName = "messages")
 data class Message(
-    @PrimaryKey
-    var id: Long = 0,
+
+    @PrimaryKey(autoGenerate = true)
+    var localPK : Long = 0L,
+
+    @SerialName("id")
+    var id: Long = 0L,
 
     @SerialName("msgtype")
     var msgType: String = "",
@@ -43,12 +47,17 @@ data class Message(
     @SerialName("answerid")
     var answerId: Long = -1,
 
+    @ColumnInfo(name = "sent")
+    var sent: Boolean = false,
+
     @Ignore
     var senderAsString: String = "",
 
     @Ignore
     var senderColor: Int = 0,
 ) {
+
+
     fun isPicture(): Boolean {
         return msgType == PICTUREMESSAGE
     }

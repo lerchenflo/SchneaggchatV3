@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 @Entity(tableName = "message_readers")
 data class MessageReader(
-    @PrimaryKey(autoGenerate = false)
+    @PrimaryKey(autoGenerate = true)
     val readerEntryId: Long = 0L,
     val messageId: Long,
     val readerID: Long,
