@@ -149,12 +149,14 @@ class NetworkUtils(
         }
     }
 
-    suspend fun createAccount(username: String, password: String, email: String): NetworkResult<Boolean, String> {
+    suspend fun createAccount(username: String, password: String, email: String, gender: String, birthdate: String): NetworkResult<Boolean, String> {
         val headers = mapOf(
             "msgtype" to CREATEACCOUNTMESSAGE,
             "username" to username,
             "password" to password,
-            "email" to email
+            "email" to email,
+            "gender" to gender,
+            "birthdate" to birthdate
         )
 
         val res = executeNetworkOperation(headers = headers, body = "", get = true)
@@ -194,7 +196,7 @@ class NetworkUtils(
         )
 
         val res = executeNetworkOperation(headers = headers, body = "", get = true)
-
+        //TODO: User returnen
         return when (res) {
 
             is NetworkResult.Success -> {
@@ -230,6 +232,8 @@ class NetworkUtils(
         )
 
         val res = executeNetworkOperation(headers = headers, body = "", get = true)
+
+        //Todo: Group objekt returnen
 
         return when (res) {
 
@@ -269,6 +273,8 @@ class NetworkUtils(
             "msgid" to id.toString()
         )
 
+        //TODO: A message object returnen
+
         val res = executeNetworkOperation(headers = headers, body = "", get = true)
 
         return when (res) {
@@ -282,16 +288,18 @@ class NetworkUtils(
     }
 
 
+    //Do isch da netzwerkteil vom message senden (gmergta teil im appRepositor)
+    suspend fun sendMessageToServer(msgtype: String, empfaenger: Long, gruppe: Boolean, message: String, answerid: Long, sendedatum: String): NetworkResult<Map<String, String>, String> {
+        val headers = mapOf(
+            "msgtype" to msgtype,
+            "empfaenger" to empfaenger.toString(),
+            "sendedatum" to sendedatum,
+            "answerid" to answerid.toString(),
+            "groupmessage" to gruppe.toString()
+        )
 
-
-
-
-
-
-
-
-
-
+        return executeNetworkOperation(headers = headers, body = message, get = false)
+    }
 
 
 
@@ -305,7 +313,7 @@ class NetworkUtils(
 
             val json = Json {
                 prettyPrint = false
-                ignoreUnknownKeys = true
+                //ignoreUnknownKeys = true
             }
 
             // 1. Get local user IDs and change dates
@@ -336,11 +344,11 @@ class NetworkUtils(
                                         userResult.onSuccessWithBody { success, body ->
 
                                             //println(body)
-                                            val users = json.decodeFromString<List<User>>(body)
+                                            val user = json.decodeFromString<User>(body)
 
                                             CoroutineScope(Dispatchers.IO).launch {
-                                                appRepository.upsertUser(users[0])
-                                                println("User inserted: ${users[0].name}")
+                                                appRepository.upsertUser(user)
+                                                println("User inserted: ${user.name}")
                                             }
                                         }
                                     }
@@ -406,13 +414,13 @@ class NetworkUtils(
                                         groupResult.onSuccessWithBody { success, body ->
 
                                             //Einzelne gruppe isch ako, jetzt in a liste vo dtos verwandla
-                                            val serverlist = json.decodeFromString<List<ServerGroupDto>>(body)
+                                            val serverlist = json.decodeFromString<ServerGroupDto>(body)
 
-                                            val groups = convertServerGroupDtoToGroupWithMembers(serverlist)
+                                            val group = convertServerGroupDtoToGroupWithMembers(serverlist)
 
                                             CoroutineScope(Dispatchers.IO).launch {
-                                                appRepository.upsertGroupWithMembers(groups[0])
-                                                println("Group inserted: ${groups[0].group.name}")
+                                                appRepository.upsertGroupWithMembers(group)
+                                                println("Group inserted: ${group}")
                                             }
                                         }
                                     }
@@ -442,6 +450,7 @@ class NetworkUtils(
 
     suspend fun executeMsgIDSync(appRepository: AppRepository, onLoadingStateChange: (Boolean) -> Unit) {
 
+        //TODO: Richta dassas ersch startet wenn da vorherige request fertig isch
         println("MSgidsync startet")
         onLoadingStateChange(true)
 
@@ -462,6 +471,8 @@ class NetworkUtils(
 
                 val localMessages = appRepository.getmessagechangeid()
                 val serializedData = json.encodeToString(localMessages)
+
+                println("Msgidsync: $serializedData")
 
                 val syncResult = messageidsync(serializedData)
 
@@ -496,24 +507,6 @@ class NetworkUtils(
                     }
 
 
-                    /* TODO: Bilder hola
-                    val deferreds = pictureMessages.map { m ->
-                        async {
-                            val messageResult = networkUtils.getmessagebyid(m.id)
-                            messageResult.onSuccessWithBody { _, body1 ->
-                                if (body1 != "[]") {
-                                    val messages = json.decodeFromString<List<Message>>(body1)
-                                    upsertMessageUseCase(messages[0]) // direct suspend call
-                                }
-                            }
-                        }
-                    }
-
-                    deferreds.awaitAll()
-
-                     */
-
-
                     //Bilder einzeln hola
                     for (m in pictureMessages){
                         try {
@@ -521,14 +514,14 @@ class NetworkUtils(
                                 val messageResult = getmessagebyid(m.message.id)
                                 messageResult.onSuccessWithBody { success, body1 ->
 
-                                    val messageasdto = json.decodeFromString<List<ServerMessageDto>>(body1)
+                                    val messageasdto = json.decodeFromString<ServerMessageDto>(body1)
 
                                     val message = convertServerMessageDtoToMessageWithReaders(messageasdto)
 
                                     CoroutineScope(
                                         context = Dispatchers.IO
                                     ).launch {
-                                        appRepository.upsertMessageWithReaders(message[0])
+                                        appRepository.upsertMessageWithReaders(message)
                                     }
 
                                 }

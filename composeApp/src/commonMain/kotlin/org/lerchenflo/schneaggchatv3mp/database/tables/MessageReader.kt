@@ -11,7 +11,7 @@ data class MessageReader(
     val readerEntryId: Long = 0L,
     val messageId: Long,
     val readerID: Long,
-    val readDate: String?
+    val readDate: String
 ) {
-    fun getReadDateAsLong(): Long = readDate?.toLongOrNull() ?: 0L
+    fun getReadDateAsLong(): Long = readDate.toLongOrNull() ?: 0L
 }

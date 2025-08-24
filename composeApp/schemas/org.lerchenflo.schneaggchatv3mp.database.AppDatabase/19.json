@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 15,
-    "identityHash": "68761c6e02fb26b7c147dc47a31a39d1",
+    "version": 19,
+    "identityHash": "c351adf309647c4bb93440ac0791e1cb",
     "entities": [
       {
         "tableName": "users",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `changedate` INTEGER, `name` TEXT NOT NULL, `description` TEXT, `status` TEXT NOT NULL, `location_lat` REAL, `location_long` REAL, `location_date` INTEGER, `locationshared` INTEGER, `wakeupenabled` INTEGER, `profilepicture` TEXT, `last_online` INTEGER, `accepted` INTEGER, `requested` INTEGER, `notis_muted` INTEGER, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `changedate` INTEGER NOT NULL, `name` TEXT NOT NULL, `description` TEXT NOT NULL, `status` TEXT NOT NULL, `location_lat` REAL, `location_long` REAL, `location_date` INTEGER, `locationshared` INTEGER NOT NULL, `wakeupenabled` INTEGER NOT NULL, `profilepicture` TEXT NOT NULL, `last_online` INTEGER, `accepted` INTEGER NOT NULL, `requested` INTEGER NOT NULL, `notis_muted` INTEGER NOT NULL, `birthdate` TEXT NOT NULL, `gender` TEXT NOT NULL, `settings` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -17,7 +17,8 @@
           {
             "fieldPath": "lastChanged",
             "columnName": "changedate",
-            "affinity": "INTEGER"
+            "affinity": "INTEGER",
+            "notNull": true
           },
           {
             "fieldPath": "name",
@@ -28,7 +29,8 @@
           {
             "fieldPath": "description",
             "columnName": "description",
-            "affinity": "TEXT"
+            "affinity": "TEXT",
+            "notNull": true
           },
           {
             "fieldPath": "status",
@@ -54,17 +56,20 @@
           {
             "fieldPath": "locationShared",
             "columnName": "locationshared",
-            "affinity": "INTEGER"
+            "affinity": "INTEGER",
+            "notNull": true
           },
           {
             "fieldPath": "wakeupEnabled",
             "columnName": "wakeupenabled",
-            "affinity": "INTEGER"
+            "affinity": "INTEGER",
+            "notNull": true
           },
           {
             "fieldPath": "profilePicture",
             "columnName": "profilepicture",
-            "affinity": "TEXT"
+            "affinity": "TEXT",
+            "notNull": true
           },
           {
             "fieldPath": "lastOnline",
@@ -74,17 +79,37 @@
           {
             "fieldPath": "accepted",
             "columnName": "accepted",
-            "affinity": "INTEGER"
+            "affinity": "INTEGER",
+            "notNull": true
           },
           {
             "fieldPath": "requested",
             "columnName": "requested",
-            "affinity": "INTEGER"
+            "affinity": "INTEGER",
+            "notNull": true
           },
           {
             "fieldPath": "notisMuted",
             "columnName": "notis_muted",
-            "affinity": "INTEGER"
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "birthDate",
+            "columnName": "birthdate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gender",
+            "columnName": "gender",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "settings",
+            "columnName": "settings",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -96,8 +121,14 @@
       },
       {
         "tableName": "messages",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `msgType` TEXT, `content` TEXT, `sender` INTEGER NOT NULL, `receiver` INTEGER NOT NULL, `changedate` TEXT, `sendDate` TEXT, `answerId` INTEGER NOT NULL, `deleted` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localPK` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` INTEGER NOT NULL, `msgType` TEXT NOT NULL, `content` TEXT NOT NULL, `senderId` INTEGER NOT NULL, `receiverId` INTEGER NOT NULL, `sendDate` TEXT NOT NULL, `changedate` TEXT NOT NULL, `deleted` INTEGER NOT NULL, `groupMessage` INTEGER NOT NULL, `answerId` INTEGER NOT NULL, `sent` INTEGER NOT NULL)",
         "fields": [
+          {
+            "fieldPath": "localPK",
+            "columnName": "localPK",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
           {
             "fieldPath": "id",
             "columnName": "id",
@@ -107,34 +138,50 @@
           {
             "fieldPath": "msgType",
             "columnName": "msgType",
-            "affinity": "TEXT"
+            "affinity": "TEXT",
+            "notNull": true
           },
           {
             "fieldPath": "content",
             "columnName": "content",
-            "affinity": "TEXT"
+            "affinity": "TEXT",
+            "notNull": true
           },
           {
-            "fieldPath": "sender",
-            "columnName": "sender",
+            "fieldPath": "senderId",
+            "columnName": "senderId",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "receiver",
-            "columnName": "receiver",
+            "fieldPath": "receiverId",
+            "columnName": "receiverId",
             "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sendDate",
+            "columnName": "sendDate",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
             "fieldPath": "changeDate",
             "columnName": "changedate",
-            "affinity": "TEXT"
+            "affinity": "TEXT",
+            "notNull": true
           },
           {
-            "fieldPath": "sendDate",
-            "columnName": "sendDate",
-            "affinity": "TEXT"
+            "fieldPath": "deleted",
+            "columnName": "deleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "groupMessage",
+            "columnName": "groupMessage",
+            "affinity": "INTEGER",
+            "notNull": true
           },
           {
             "fieldPath": "answerId",
@@ -143,22 +190,22 @@
             "notNull": true
           },
           {
-            "fieldPath": "deleted",
-            "columnName": "deleted",
+            "fieldPath": "sent",
+            "columnName": "sent",
             "affinity": "INTEGER",
             "notNull": true
           }
         ],
         "primaryKey": {
-          "autoGenerate": false,
+          "autoGenerate": true,
           "columnNames": [
-            "id"
+            "localPK"
           ]
         }
       },
       {
         "tableName": "message_readers",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`readerEntryId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `messageId` INTEGER NOT NULL, `readerID` INTEGER NOT NULL, `readDate` TEXT)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`readerEntryId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `messageId` INTEGER NOT NULL, `readerID` INTEGER NOT NULL, `readDate` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "readerEntryId",
@@ -181,7 +228,8 @@
           {
             "fieldPath": "readDate",
             "columnName": "readDate",
-            "affinity": "TEXT"
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -293,7 +341,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '68761c6e02fb26b7c147dc47a31a39d1')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c351adf309647c4bb93440ac0791e1cb')"
     ]
   }
 }

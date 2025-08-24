@@ -45,6 +45,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.go_back
 import schneaggchatv3mp.composeapp.generated.resources.message
+import kotlin.time.ExperimentalTime
 
 @Preview
 @Composable
@@ -87,7 +88,7 @@ fun ChatScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     UserButton(
-                        user = sharedViewModel.selectedChat.value,
+                        chatSelectorItem = sharedViewModel.selectedChat.value,
                         onClickGes = {
                             // todo open chatdetails
                             SnackbarManager.showMessage("Bald chatdetails")
@@ -104,7 +105,7 @@ fun ChatScreen(
                 reverseLayout = true
             ) {
                 itemsIndexed(messages) { index, message ->
-                    val currentDateMillis = message.message.sendDate?.toLongOrNull()
+                    val currentDateMillis = message.message.sendDate.toLongOrNull()
                     val currentDate = currentDateMillis?.toLocalDate()
                     val nextDate =
                         messages.getOrNull(index + 1)?.message?.sendDate?.toLongOrNull()
@@ -156,7 +157,7 @@ fun ChatScreen(
 
                 // send button
                 IconButton(
-                    onClick = {/*todo*/},
+                    onClick = {viewModel.sendMessage()},
                     modifier = Modifier
                         .padding(top = 5.dp, start = 5.dp)
                         .statusBarsPadding()
@@ -175,6 +176,7 @@ fun ChatScreen(
     }
 }
 
+@OptIn(ExperimentalTime::class)
 fun Long.toLocalDate(): LocalDate {
     val instant = Instant.fromEpochMilliseconds(this)
     return instant.toLocalDateTime(TimeZone.currentSystemDefault()).date

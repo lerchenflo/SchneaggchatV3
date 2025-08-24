@@ -14,7 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.database.tables.User
 @Database(
     entities = [User::class, Message::class, MessageReader::class, Group::class, GroupMember::class],
     exportSchema = true,
-    version = 15
+    version = 20
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -24,9 +24,12 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun messageDao(): MessageDao
 
     abstract fun messagereaderDao(): MessageReaderDao
-    abstract fun allDatabaseDao(): AllDatabaseDao
 
     abstract fun groupDao(): GroupDao
+
+
+    abstract fun allDatabaseDao(): AllDatabaseDao
+
 
     companion object {
         const val DB_NAME = "database.db"

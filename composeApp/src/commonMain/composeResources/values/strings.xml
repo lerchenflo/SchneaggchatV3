@@ -31,6 +31,7 @@
     <string name="acc_not_exist">Account does not exist</string>
     <string name="offline">You are offline</string>
     <string name="unknown_error">An unknown error occurred</string>
+    <string name="birthdateerror">Error with birthdate</string>
     <string name="acc_locked">Your account is currently locked</string>
     <string name="password_wrong">Password is incorrect</string>
     <string name="feature_disabled">This feature is currently disabled</string>

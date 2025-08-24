@@ -16,6 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.acc_locked
 import schneaggchatv3mp.composeapp.generated.resources.acc_not_exist
+import schneaggchatv3mp.composeapp.generated.resources.birthdateerror
 import schneaggchatv3mp.composeapp.generated.resources.feature_disabled
 import schneaggchatv3mp.composeapp.generated.resources.offline
 import schneaggchatv3mp.composeapp.generated.resources.password_wrong
@@ -24,7 +25,7 @@ import kotlin.reflect.KClass
 
 
 class LoginViewModel(
-    appRepository: AppRepository
+    private val appRepository: AppRepository
 ): ViewModel() {
 
 
@@ -81,7 +82,7 @@ class LoginViewModel(
             isLoading = true
 
             // Use the sharedViewModel's login function with a callback
-            sharedViewModel.login(username, password) { success, message ->
+            appRepository.login(username, password) { success, message ->
                 if (success) {
                     println("Login erfolgreich")
                     onLoginSuccess()
@@ -107,6 +108,8 @@ class LoginViewModel(
                             ResponseReason.nomember,
                             ResponseReason.same,
                             null -> getString(Res.string.unknown_error)
+
+                            ResponseReason.invalid_birthdate -> getString(Res.string.birthdateerror)
                         }
 
                     }

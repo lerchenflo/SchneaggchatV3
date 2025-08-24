@@ -81,8 +81,9 @@ fun SignUpScreen(
                             onusernameTextChange = { viewModel.updateUsername(it) },
                             usernameerrorText = viewModel.usernameerrorMessage,
                             emailText = viewModel.email,
-                            onemailTextChange = {viewModel.updateEmail(it)},
+                            onemailTextChange = { viewModel.updateEmail(it) },
                             emailerrorText = viewModel.emailerrorMessage,
+                            ongebidateselected = {viewModel.updategebidate(it)},
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -90,14 +91,17 @@ fun SignUpScreen(
 
                         SignUpForm2(
                             passwordText = viewModel.password,
-                            onpasswordTextChange = {viewModel.updatePassword(it)},
+                            onpasswordTextChange = { viewModel.updatePassword(it) },
                             passworderrorText = viewModel.passworderrorMessage,
                             password2Text = viewModel.password2,
-                            onpassword2TextChange = {viewModel.updatePassword2(it)},
+                            onpassword2TextChange = { viewModel.updatePassword2(it) },
                             password2errorText = viewModel.password2errorMessage,
                             onSignupButtonClick = { viewModel.signup(onSignUpSuccess) },
                             signupbuttondisabled = viewModel.signupButtonDisabled,
                             signupbuttonloading = viewModel.isLoading,
+                            genderslidertext = viewModel.gender,
+                            genderslidervalue = viewModel.genderslidervalue,
+                            ongendersliderValueChange = {viewModel.updategenderslidervalue(it)},
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
@@ -121,23 +125,28 @@ fun SignUpScreen(
                             onusernameTextChange = { viewModel.updateUsername(it) },
                             usernameerrorText = viewModel.usernameerrorMessage,
                             emailText = viewModel.email,
-                            onemailTextChange = {viewModel.updateEmail(it)},
+                            onemailTextChange = { viewModel.updateEmail(it) },
                             emailerrorText = viewModel.emailerrorMessage,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            ongebidateselected = { viewModel.updategebidate(it) }
                         )
 
                         SignUpForm2(
                             passwordText = viewModel.password,
-                            onpasswordTextChange = {viewModel.updatePassword(it)},
+                            onpasswordTextChange = { viewModel.updatePassword(it) },
                             passworderrorText = viewModel.passworderrorMessage,
                             password2Text = viewModel.password2,
-                            onpassword2TextChange = {viewModel.updatePassword2(it)},
+                            onpassword2TextChange = { viewModel.updatePassword2(it) },
                             password2errorText = viewModel.password2errorMessage,
                             onSignupButtonClick = { viewModel.signup(onSignUpSuccess) },
                             signupbuttondisabled = viewModel.signupButtonDisabled,
                             signupbuttonloading = viewModel.isLoading,
+                            genderslidertext = viewModel.gender,
+                            genderslidervalue = viewModel.genderslidervalue,
+                            ongendersliderValueChange = { viewModel.updategenderslidervalue(it) },
                             modifier = Modifier.weight(1f)
-                        )
+
+                            )
                     }
                 }
                 DeviceSizeConfiguration.TABLET_PORTRAIT,
@@ -157,6 +166,7 @@ fun SignUpScreen(
                             emailText = viewModel.email,
                             onemailTextChange = {viewModel.updateEmail(it)},
                             emailerrorText = viewModel.emailerrorMessage,
+                            ongebidateselected = { viewModel.updategebidate(it) },
                             modifier = Modifier.weight(1f)
                         )
 
@@ -172,6 +182,9 @@ fun SignUpScreen(
                             onSignupButtonClick = { viewModel.signup(onSignUpSuccess) },
                             signupbuttondisabled = viewModel.signupButtonDisabled,
                             signupbuttonloading = viewModel.isLoading,
+                            genderslidertext = viewModel.gender,
+                            genderslidervalue = viewModel.genderslidervalue,
+                            ongendersliderValueChange = { viewModel.updategenderslidervalue(it) },
                             modifier = Modifier.weight(1f)
                         )
                     }

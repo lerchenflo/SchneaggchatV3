@@ -28,8 +28,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.database.tables.Message
 import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
-import org.lerchenflo.schneaggchatv3mp.network.GROUPTEXTMESSAGE
-import org.lerchenflo.schneaggchatv3mp.network.SINGLETEXTMESSAGE
+import org.lerchenflo.schneaggchatv3mp.network.TEXTMESSAGE
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.check
@@ -80,8 +79,8 @@ fun MessageView(
 
                     ) {
                         when(messagewithreaders.message.msgType){
-                            SINGLETEXTMESSAGE -> TextMessage(messagewithreaders, mymessage)
-                            GROUPTEXTMESSAGE -> TextMessage(messagewithreaders, mymessage)
+                            TEXTMESSAGE -> TextMessage(messagewithreaders, mymessage)
+                            //GROUPTEXTMESSAGE -> TextMessage(messagewithreaders, mymessage)
 
                             else -> ErrorMessage()
                         }

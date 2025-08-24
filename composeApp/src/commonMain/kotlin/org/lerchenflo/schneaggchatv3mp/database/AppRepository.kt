@@ -1,6 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.database
 
+import androidx.compose.ui.graphics.Path.Companion.combine
+import androidx.compose.ui.text.style.TextDecoration.Companion.combine
+import androidx.lifecycle.viewModelScope
 import androidx.room.Transaction
+import io.ktor.util.Hash.combine
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -8,9 +12,18 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.withContext
+import org.lerchenflo.schneaggchatv3mp.LOGGEDIN
+import org.lerchenflo.schneaggchatv3mp.OWNID
+import org.lerchenflo.schneaggchatv3mp.SESSIONID
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.ChatEntity
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.ChatSelectorItem
 import org.lerchenflo.schneaggchatv3mp.database.tables.Group
 import org.lerchenflo.schneaggchatv3mp.database.tables.GroupMember
 import org.lerchenflo.schneaggchatv3mp.database.tables.GroupWithMembers
@@ -19,10 +32,16 @@ import org.lerchenflo.schneaggchatv3mp.database.tables.MessageReader
 import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.database.tables.User
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.network.util.onError
+import org.lerchenflo.schneaggchatv3mp.network.util.onSuccess
+import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
+import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 
 class AppRepository(
     private val database: AppDatabase,
-    private val networkUtils: NetworkUtils
+    private val networkUtils: NetworkUtils,
+    private val preferencemanager: Preferencemanager
+
 ) {
 
     suspend fun upsertUser(user: User){
@@ -49,11 +68,11 @@ class AppRepository(
 
 
     suspend fun upsertMessage(message: Message){
-        database.messageDao().updateMessage(message)
+        database.messageDao().upsertMessage(message)
     }
 
     suspend fun upsertMessages(messages: List<Message>){
-        database.messageDao().updateMessages(messages)
+        database.messageDao().upsertMessages(messages)
     }
 
     @Transaction
@@ -88,9 +107,11 @@ class AppRepository(
     }
 
     @Transaction
-    fun getMessagesByUserId(userId: Long): Flow<List<MessageWithReaders>> {
-        return database.messageDao().getMessagesByUserId(userId)
+    fun getMessagesByUserId(userId: Long, gruppe: Boolean): Flow<List<MessageWithReaders>> {
+        return database.messageDao().getMessagesByUserId(userId, gruppe)
     }
+
+
 
 
     suspend fun insertReader(reader: MessageReader) {
@@ -116,6 +137,11 @@ class AppRepository(
         return database.groupDao().getGroupIdsWithChangeDates()
     }
 
+    @Transaction
+    fun getallgroupswithmembers(): Flow<List<GroupWithMembers>> {
+        return database.groupDao().getAllGroupsWithMembers()
+    }
+
     suspend fun deleteGroup(groupid: Long){
         database.groupDao().deleteGroup(groupid)
     }
@@ -139,6 +165,245 @@ class AppRepository(
         }
     }
 
+
+    //Gegnerauswahl getten
+    // In repository / data layer
+    fun getChatSelectorFlow(searchTerm: String): Flow<List<ChatSelectorItem>> {
+        val messagesFlow = getAllMessagesWithReaders()
+        val usersFlow = getallusers()
+        val groupsFlow = getallgroupswithmembers()
+
+        return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
+
+            val loweredSearch = searchTerm.trim().lowercase()
+
+            val userItems = users.map { user ->
+                val last = messages
+                    .filter {
+                        (it.message.senderId == user.id || it.message.receiverId == user.id)
+                                && !it.isGroupMessage()
+                    }
+                    .maxByOrNull { it.getSendDateAsLong() }
+
+                ChatSelectorItem(
+                    id = user.id,
+                    gruppe = false,
+                    lastmessage = last, // may be null
+                    entity = ChatEntity.UserEntity(user)
+                )
+            }.filter { item ->
+                loweredSearch.isEmpty() ||
+                        (item.entity as? ChatEntity.UserEntity)?.user?.name?.lowercase()?.contains(loweredSearch) == true
+            }
+
+            val groupItems = groups.map { gwm ->
+                val groupId = gwm.group.id
+                val last = messages
+                    .filter { it.message.receiverId == groupId && it.isGroupMessage() }
+                    .maxByOrNull { it.getSendDateAsLong() }
+
+                ChatSelectorItem(
+                    id = groupId,
+                    gruppe = true,
+                    lastmessage = last, // may be null
+                    entity = ChatEntity.GroupEntity(gwm)
+                )
+            }.filter { item ->
+                loweredSearch.isEmpty() ||
+                        (item.entity as? ChatEntity.GroupEntity)?.groupWithMembers?.group?.name?.lowercase()?.contains(loweredSearch) == true
+            }
+
+            (userItems + groupItems)
+                .sortedByDescending { it.lastmessage?.getSendDateAsLong() ?: 0L } // nulls treated as 0
+        }.flowOn(Dispatchers.Default)
+    }
+
+
+
+
+
+
+
+    fun login(
+        username: String,
+        password: String,
+        onResult: (Boolean, String) -> Unit
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            networkUtils.login(username, password)
+                .onSuccessWithBody { headers, message ->
+                    //println("Success: $success $message")
+                    CoroutineScope(Dispatchers.IO).launch {
+                        preferencemanager.saveAutologinCreds(username, password)
+                        preferencemanager.saveOWNID(headers["userid"]?.toLong() ?: 0)
+                    }
+
+                    println(headers)
+                    SESSIONID = headers["sessionid"]
+                    OWNID = headers["userid"]?.toLong()
+                    println("SESSIONID gesetzt: $SESSIONID")
+                    onResult(true, message)
+                }
+                .onError { error ->
+                    println("Error: $error")
+
+                    onResult(false, error.toString())
+                }
+        }
+
+    }
+
+    fun createAccount(
+        username: String,
+        email: String,
+        password: String,
+        gender: String,
+        birthdate: String,
+        onResult: (Boolean, String) -> Unit
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            networkUtils.createAccount(username, password, email, gender, birthdate)
+                .onSuccessWithBody { success, message ->
+                    println("Success: $success $message")
+                    onResult(success, message)
+                }
+                .onError { error ->
+                    println("Error: $error")
+
+                    onResult(false, error.toString())
+                }
+        }
+    }
+
+    /**
+     * @param localpk Local pk, only pass if already in db
+     *
+     */
+    suspend fun sendMessage(msgtype: String, empfaenger: Long, gruppe: Boolean, content: String, answerid: Long, sendedatum: String, localpk: Long = 0){
+
+        var localpkintern = localpk
+
+        //TODO: FABI leas des
+        /*
+        Do siaht ma schö s prinzip vo nam repository. die funktion ruft ma uf, und sie addet die nachricht in die lokale datenbank und versuacht
+        glichzittig no an send zum server. wenn da server des ned mag oda halt offline isch, denn wird se lokal gspeichert und kann süäter neu gschickt werra.
+        so wird se direkt im chat azoagt und ma muss o nur ua tolle funktion ufrufa
+         */
+
+        if (OWNID == null){
+            println("Message senden abort: No OWNID")
+            return
+        }
+
+
+        //Interne message macha die ned alles hot
+        val message = Message(
+            localPK = localpkintern,
+            id = 0,
+            msgType = msgtype,
+            content = content,
+            senderId = OWNID ?: 0,
+            receiverId = empfaenger,
+            sendDate = sendedatum,
+            changeDate = sendedatum,
+            deleted = false,
+            groupMessage = gruppe,
+            answerId = answerid,
+            sent = false
+        )
+
+        //Nachricht hot scho a pk vo da db, also scho din
+        if (localpk == 0L){
+            localpkintern = database.messageDao().upsertMessage(message)
+            println("LocalPK: $localpkintern")
+
+        }
+
+
+        val serverrequest = networkUtils.sendMessageToServer(msgtype, empfaenger, gruppe, content, answerid, sendedatum)
+        serverrequest.onSuccess { headers ->
+
+            val msgid = headers["msgid"]?.toLong()
+
+
+            if (msgid != null){
+                println("Message gesendet: msgid $msgid")
+
+                val newmessage = message.copy(
+                    id = msgid,
+                    localPK = localpkintern,
+                    sent = true
+                )
+
+                database.messageDao().markMessageAsSent(localpk, msgid)
+
+                database.messagereaderDao().upsertReader(MessageReader(
+                    messageId = msgid,
+                    readerID = OWNID ?:0,
+                    readDate = newmessage.sendDate
+                ))
+                println("Message gesendet update: $newmessage")
+
+                val unsentmessages = database.messageDao().getUnsentMessages()
+                println("UNGESENDETE MESSAGES: ${unsentmessages}")
+            }else{
+                println("Message senden error: Keine Msgid erhalten -----------------------------------------------------------------------")
+            }
+            //Wenn success denn gesendet und msgid updaten, sunsch passiert nix und sie isch bei da offlinemessages dabei
+
+
+
+        }
+        serverrequest.onError {
+            println("Message senden error: $it")
+        }
+    }
+
+
+    //TODO: Do passiert an fehler, iwenn gits ahuffa ungelesene messages die alle nomml gschickt werrand ka warum
+    fun sendOfflineMessages(){
+        CoroutineScope(Dispatchers.IO).launch {
+            val messages = database.messageDao().getUnsentMessages()
+
+            println("Unsent: $messages")
+
+            //Do no parallel des loft jetzt alles seriell
+            for (m in messages){
+                try {
+                    sendMessage(
+                        msgtype = m.msgType,
+                        empfaenger = m.receiverId,
+                        gruppe = m.groupMessage,
+                        content = m.content,
+                        answerid = m.answerId,
+                        sendedatum = m.sendDate,
+                        localpk = m.localPK
+                    )
+                } catch (e: Exception){
+                    println("Retry send failed for localPK=${m.localPK}: $e")
+                    // optional: increment retry counter in DB, break or continue
+                }
+            }
+        }
+
+    }
+
+
+
+
+    suspend fun areLoginCredentialsSaved(): Boolean{
+        val (username, password) = preferencemanager.getAutologinCreds()
+        if (username.isNotBlank() && password.isNotBlank()){
+            OWNID = preferencemanager.getOWNID()
+        }
+        CoroutineScope(Dispatchers.IO).launch {
+            login(username, password, onResult = { success, body ->
+                LOGGEDIN = success
+                println("LOGGEDIN $success")
+            })
+        }
+        return username.isNotBlank() && password.isNotBlank()
+    }
 
 
 

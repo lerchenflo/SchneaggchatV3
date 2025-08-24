@@ -32,8 +32,9 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     jvm()
+
 
     jvmToolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
@@ -124,6 +125,8 @@ kotlin {
     }
 
      */
+
+
 }
 
 
@@ -135,6 +138,8 @@ project.tasks.withType(KotlinCompilationTask::class.java).configureEach {
 }
 
  */
+
+
 
 
 android {

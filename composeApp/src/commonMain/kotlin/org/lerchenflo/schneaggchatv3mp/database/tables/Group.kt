@@ -25,7 +25,7 @@ data class Group(
 
     @SerialName("groupdescription")
     @ColumnInfo(name = "description")
-    val description: String?,
+    val description: String,
 
     @SerialName("createdate")
     @ColumnInfo(name = "create_date")

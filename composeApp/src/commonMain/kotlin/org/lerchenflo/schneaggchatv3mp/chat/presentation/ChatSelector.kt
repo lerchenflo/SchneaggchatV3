@@ -62,7 +62,7 @@ import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 @Preview
 @Composable
 fun Chatauswahlscreen(
-    onChatSelected: (User) -> Unit,  // navigation callback
+    onChatSelected: (ChatSelectorItem) -> Unit,  // navigation callback
     onNewChatClick: () -> Unit,
     onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -70,7 +70,7 @@ fun Chatauswahlscreen(
 ) {
 
     val viewModel = koinViewModel<ChatSelectorViewModel>()
-    val users by viewModel.usersState.collectAsStateWithLifecycle() // androidx.lifecycle.compose
+    val availablegegners by viewModel.chatSelectorState.collectAsStateWithLifecycle(emptyList())
     val searchterm by viewModel.searchterm.collectAsState() // read-only display of current search term
 
 
@@ -211,12 +211,12 @@ fun Chatauswahlscreen(
                 .fillMaxWidth(),
             contentPadding = PaddingValues(16.dp),
         ) {
-            items(users) { user ->
+            items(availablegegners) { gegner ->
                 UserButton(
-                    user = user,
+                    chatSelectorItem = gegner,
                     useOnClickGes = false,
-                    lastMessage = user.lastmessage,
-                    onClickText = { onChatSelected(user)},
+                    lastMessage = gegner.lastmessage,
+                    onClickText = { onChatSelected(gegner)},
                     onClickImage = {
                         SnackbarManager.showMessage("TODO")
                     }

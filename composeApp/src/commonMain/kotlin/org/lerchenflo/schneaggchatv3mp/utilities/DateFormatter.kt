@@ -15,6 +15,18 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.just_now
 import schneaggchatv3mp.composeapp.generated.resources.yesterday
 
+
+@OptIn(kotlinx.datetime.format.FormatStringsInDatetimeFormats::class)
+fun getCurrentTimeMillisString(
+): String {
+    return getCurrentTimeMillisLong().toString()
+}
+
+fun getCurrentTimeMillisLong(): Long {
+    return Clock.System.now().toEpochMilliseconds()
+}
+
+
 @OptIn(kotlinx.datetime.format.FormatStringsInDatetimeFormats::class)
 fun millisToString(
     millis: Long,
