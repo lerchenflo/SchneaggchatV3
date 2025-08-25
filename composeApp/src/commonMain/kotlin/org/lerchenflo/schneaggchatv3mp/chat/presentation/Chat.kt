@@ -59,6 +59,8 @@ fun ChatScreen(
     val viewModel = koinViewModel<ChatViewModel>()
     val messages by viewModel.messagesState.collectAsStateWithLifecycle()
 
+    viewModel.initPrefs()
+
     SchneaggchatTheme{ // theme wida setza
         Column(
             modifier = modifier
@@ -114,6 +116,7 @@ fun ChatScreen(
 
 
                     MessageView(
+                        chatViewModel = viewModel,
                         messagewithreaders = message,
                         modifier = Modifier
                     )

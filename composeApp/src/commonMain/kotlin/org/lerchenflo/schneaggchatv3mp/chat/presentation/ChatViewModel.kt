@@ -12,6 +12,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -21,11 +22,13 @@ import org.koin.mp.KoinPlatform.getKoin
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.network.TEXTMESSAGE
+import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import kotlin.reflect.KClass
 
 class ChatViewModel(
-    private val appRepository: AppRepository
+    private val appRepository: AppRepository,
+    private val preferenceManager: Preferencemanager
 ): ViewModel() {
 
     val sharedViewModel: SharedViewModel = getKoin().get()
@@ -82,5 +85,21 @@ class ChatViewModel(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+
+    fun initPrefs(){
+        viewModelScope.launch {
+            preferenceManager.getUseMdFlow()
+                .catch { exception ->
+                    println("Problem getting MD preference: ${exception.printStackTrace()}")
+                }
+                .collect { value ->
+                    markdownEnabeled = value
+                }
+
+        }
+    }
+
+    var markdownEnabeled by mutableStateOf(false)
+        private set
 
 }

@@ -26,9 +26,12 @@ import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.ChatViewModel
 import org.lerchenflo.schneaggchatv3mp.database.tables.Message
 import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.network.TEXTMESSAGE
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.check
@@ -37,6 +40,7 @@ import schneaggchatv3mp.composeapp.generated.resources.read
 @Preview
 @Composable
 fun MessageView(
+    chatViewModel: ChatViewModel,
     messagewithreaders: MessageWithReaders,
     modifier: Modifier = Modifier
         .fillMaxWidth()
@@ -79,7 +83,11 @@ fun MessageView(
 
                     ) {
                         when(messagewithreaders.message.msgType){
-                            TEXTMESSAGE -> TextMessage(messagewithreaders, mymessage)
+                            TEXTMESSAGE -> TextMessage(
+                                chatViewModel = chatViewModel,
+                                messageWithReaders = messagewithreaders,
+                                myMessage = mymessage
+                            )
                             //GROUPTEXTMESSAGE -> TextMessage(messagewithreaders, mymessage)
 
                             else -> ErrorMessage()
@@ -122,23 +130,22 @@ fun MessageView(
 
 @Composable
 fun TextMessage(
+    chatViewModel: ChatViewModel,
     messageWithReaders: MessageWithReaders,
     myMessage: Boolean,
     modifier: Modifier = Modifier
 ){
-/*
-
-        //TODO: Markdown einschalten in da settings (Chat künnt laggen)
+    // ma künnt es chatViewmodel o do instanzieren aber denn würd des für jede message einzeln passiera des isch glob ned des wahre
+    if(chatViewModel.markdownEnabeled){ // get setting if if md is enabled
         Markdown(
-            content = messageWithReaders.message.content ?: "",
+            content = messageWithReaders.message.content,
             modifier = modifier
         )
-
-
- */
-    Text(
-        text = messageWithReaders.message.content ?: ""
-    )
+    }else{
+        Text(
+            text = messageWithReaders.message.content
+        )
+    }
 }
 
 @Composable
