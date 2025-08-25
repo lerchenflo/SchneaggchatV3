@@ -129,7 +129,6 @@ fun SettingsScreen(
                         .padding(top = 5.dp, start = 5.dp)
                         .statusBarsPadding()
                 ) {
-                    // todo info icon
                     Icon(
                         imageVector = Icons.Default.Info,
                         contentDescription = stringResource(Res.string.markdownInfo),

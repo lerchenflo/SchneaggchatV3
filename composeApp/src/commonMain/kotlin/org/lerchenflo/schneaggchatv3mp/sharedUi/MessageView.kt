@@ -28,6 +28,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.ChatViewModel
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.SharedViewModel
 import org.lerchenflo.schneaggchatv3mp.database.tables.Message
 import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.network.TEXTMESSAGE
@@ -36,11 +37,13 @@ import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.check
 import schneaggchatv3mp.composeapp.generated.resources.read
+import schneaggchatv3mp.composeapp.generated.resources.something_wrong_message
 
 @Preview
 @Composable
 fun MessageView(
-    chatViewModel: ChatViewModel,
+    chatViewModel: ChatViewModel, // für md preference
+    sharedViewModel: SharedViewModel, // für selectedChat id
     messagewithreaders: MessageWithReaders,
     modifier: Modifier = Modifier
         .fillMaxWidth()
@@ -109,7 +112,7 @@ fun MessageView(
                                 modifier = Modifier
                             )
                             // gelesen haken
-                            if(true && mymessage){ // todo flos abfrage
+                            if(messagewithreaders.isReadById(sharedViewModel.selectedChat.value?.id ?: -1) && mymessage){
                                 Icon(
                                     painter = painterResource(Res.drawable.check),
                                     contentDescription = stringResource(Res.string.read),
@@ -184,7 +187,7 @@ fun ErrorMessage(
     modifier: Modifier = Modifier
 ){
     Text(
-        text = "Something went wrong with this message" //todo strings und styling
+        text = stringResource(Res.string.something_wrong_message)
     )
 }
 
