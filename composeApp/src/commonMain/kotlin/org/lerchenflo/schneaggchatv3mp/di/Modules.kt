@@ -39,9 +39,11 @@ val sharedmodule = module{
     //View model
     singleOf(::SharedViewModel)
 
+    //singleOf(::SettingsViewModel)
+
     //Alle viewmodels mit factory für desktop
     viewModelOf(::SettingsViewModel)
-    factory { SettingsViewModel(get()) } // factory -> new instance each injection
+    factory { SettingsViewModel(get(), get()) } // factory -> new instance each injection
 
     viewModelOf(::ChatSelectorViewModel)
     factory { ChatSelectorViewModel(get()) }

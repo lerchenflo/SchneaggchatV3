@@ -450,6 +450,7 @@ class NetworkUtils(
 
     suspend fun executeMsgIDSync(appRepository: AppRepository, onLoadingStateChange: (Boolean) -> Unit) {
 
+        //Todo für irgendwean: bein msgidsync switch case (ka ob des döt din usch subsch vom groupidsynf klaua) o des deleted iboua dass ma wenn ma da server wekfetzt o alle am handy wek hot
         //TODO: Richta dassas ersch startet wenn da vorherige request fertig isch
         println("MSgidsync startet")
         onLoadingStateChange(true)

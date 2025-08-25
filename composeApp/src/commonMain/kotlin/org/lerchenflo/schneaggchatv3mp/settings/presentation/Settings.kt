@@ -1,10 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation
 
-import LoginViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,15 +12,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Announcement
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -40,19 +31,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.OWNID
 import org.lerchenflo.schneaggchatv3mp.USERNAME
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
@@ -70,6 +54,8 @@ fun SettingsScreen(
         .safeContentPadding()
 ){
     val viewModel = koinViewModel<SettingsViewModel>()
+
+    viewModel.init() // load all settings to show
 
 
     Column(
@@ -154,7 +140,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.width(8.dp))
             Switch(
                 checked = viewModel.markdownEnabeled,
-                onCheckedChange = { viewModel.updateMardownSwitch(it) },
+                onCheckedChange = { viewModel.updateMarkdownSwitch(it) },
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = androidx.compose.ui.graphics.Color.Green,
                     uncheckedThumbColor = androidx.compose.ui.graphics.Color.Gray
