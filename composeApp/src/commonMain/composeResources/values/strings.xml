@@ -54,4 +54,6 @@
     <string name="loadinginfo_messages">Loading messages...</string>
     <string name="loadinginfo_offline">You are currently offline...</string>
     <string name="read">read</string>
+    <string name="useMarkdown">use Markdown formatting</string>
+    <string name="markdownInfo">This will add Markdown formatting to messages, but slow down Message loading</string>
 </resources>

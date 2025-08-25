@@ -1,5 +1,4 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation
-package org.lerchenflo.schneaggchatv3mp.settings.Presentation
 
 import LoginViewModel
 import androidx.compose.foundation.Image
@@ -15,6 +14,7 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
@@ -55,10 +55,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.OWNID
 import org.lerchenflo.schneaggchatv3mp.USERNAME
-import org.lerchenflo.schneaggchatv3mp.chat.Presentation.SharedViewModel
-import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.settings.Domain.DeleteAppDataUseCase
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -67,7 +64,6 @@ import schneaggchatv3mp.composeapp.generated.resources.*
 @Composable
 @Preview
 fun SettingsScreen(
-    viewModel: SettingsViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
@@ -121,24 +117,39 @@ fun SettingsScreen(
 
         // Marddown Formatting
         Row(
-            modifier = Modifier.padding(16.dp)
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
         ) {
-            Text(
-                text = "useMarkdowntext"
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            IconButton(
-                onClick = { SnackbarManager.showMessage("mdinfo")},
+            Row(
                 modifier = Modifier
-                    .padding(top = 5.dp, start = 5.dp)
-                    .statusBarsPadding()
-            ) {
-                // todo info icon
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Announcement,
-                    contentDescription = stringResource(Res.string.go_back),
-                    tint = MaterialTheme.colorScheme.onSurface
+                    .weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Text(
+                    text = stringResource(Res.string.useMarkdown),
+                    maxLines = 2,
+                    modifier = Modifier
+                        .wrapContentHeight(align = Alignment.CenterVertically),
                 )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                val mdInfo = stringResource(Res.string.markdownInfo) // pfusch wegs composable
+                IconButton(
+                    onClick = { SnackbarManager.showMessage(mdInfo)},
+                    modifier = Modifier
+                        .padding(top = 5.dp, start = 5.dp)
+                        .statusBarsPadding()
+                ) {
+                    // todo info icon
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = stringResource(Res.string.markdownInfo),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
             Spacer(modifier = Modifier.width(8.dp))
             Switch(
@@ -152,8 +163,6 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.width(8.dp))
         }
 
-        // App kaputt button
-        val deleteAppDataUseCase = koinInject<DeleteAppDataUseCase>()
 
 
         NormalButton(
