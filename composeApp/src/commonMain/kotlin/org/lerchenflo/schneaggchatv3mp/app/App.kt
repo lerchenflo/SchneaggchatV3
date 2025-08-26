@@ -129,7 +129,6 @@ fun App() {
                     // Login screen
                     composable<Route.Login>{
 
-                        // todo fix dass es ned beim ilogga crasht
                         LoginScreen(
 
                             onLoginSuccess = {

@@ -118,6 +118,7 @@ fun SettingsScreen(
                     text = stringResource(Res.string.useMarkdown),
                     maxLines = 2,
                     modifier = Modifier
+                        .weight(1f)
                         .wrapContentHeight(align = Alignment.CenterVertically),
                 )
 
