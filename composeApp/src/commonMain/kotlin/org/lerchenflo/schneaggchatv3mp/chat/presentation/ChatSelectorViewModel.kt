@@ -55,6 +55,18 @@ class ChatSelectorViewModel(
 
     }
 
+    val _isRefreshing = mutableStateOf(false)
+
+    fun refresh() {
+
+        _isRefreshing.value = true
+        viewModelScope.launch {
+            // todo refresh logic
+
+            _isRefreshing.value = false
+        }
+    }
+
     var isLoadingMessages by mutableStateOf(false)
         private set
     fun updateIsLoadingMessages(newValue: Boolean) {
