@@ -48,7 +48,8 @@ fun LoginScreen(
 
     SchneaggchatTheme {
 
-        viewModel.trysavedcredslogin(onLoginSuccess)
+        // bruchts numma und da logout button müsst ma sunsch apassa dass ma ned direkt wida igloggt isch
+        //viewModel.trysavedcredslogin(onLoginSuccess)
 
         //Responsive UI mit scaffold
         Scaffold(

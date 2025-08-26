@@ -57,4 +57,5 @@
     <string name="useMarkdown">use Markdown formatting</string>
     <string name="markdownInfo">This will add Markdown formatting to messages, but slow down Message loading</string>
     <string name="something_wrong_message">Something went wrong with this message</string>
+    <string name="log_out_successfully">Successfully logged out</string>
 </resources>

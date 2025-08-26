@@ -313,7 +313,7 @@ class NetworkUtils(
 
             val json = Json {
                 prettyPrint = false
-                //ignoreUnknownKeys = true
+                ignoreUnknownKeys = true
             }
 
             // 1. Get local user IDs and change dates

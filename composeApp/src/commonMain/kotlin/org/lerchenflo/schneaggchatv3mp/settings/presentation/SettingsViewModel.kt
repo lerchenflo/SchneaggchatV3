@@ -10,9 +10,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
 
 class SettingsViewModel(
     private val appRepository: AppRepository,
@@ -46,8 +50,12 @@ class SettingsViewModel(
     }
 
     fun logout(){
-        SnackbarManager.showMessage("Not impemented")
-        // todo
+        viewModelScope.launch {
+            appRepository.deleteAllAppData() // delete all app data when logging out
+            preferenceManager.saveAutologinCreds("", "") // override credentials with empty string
+            SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
+            // todo navigate to login screen
+        }
     }
 
 

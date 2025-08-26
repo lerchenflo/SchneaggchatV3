@@ -129,6 +129,7 @@ fun App() {
                     // Login screen
                     composable<Route.Login>{
 
+                        // todo fix dass es ned beim ilogga crasht
                         LoginScreen(
 
                             onLoginSuccess = {
@@ -157,6 +158,9 @@ fun App() {
                         SettingsScreen(
                             onBackClick = {
                                 navController.navigateUp()
+                            },
+                            toLoginNavigator = {
+                                navController.navigate(Route.Login)
                             }
                         )
                     }

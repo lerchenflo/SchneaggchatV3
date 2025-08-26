@@ -49,6 +49,7 @@ import schneaggchatv3mp.composeapp.generated.resources.*
 @Preview
 fun SettingsScreen(
     onBackClick: () -> Unit = {},
+    toLoginNavigator: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .safeContentPadding()
@@ -170,7 +171,8 @@ fun SettingsScreen(
 
         // Account section
         LogoutButton(
-            viewModel = viewModel
+            viewModel = viewModel,
+            toLoginNavigator = toLoginNavigator
         )
 
         Text(
@@ -185,6 +187,7 @@ fun SettingsScreen(
 
 @Composable
 fun LogoutButton(
+    toLoginNavigator: () -> Unit = {},
     viewModel: SettingsViewModel
 )
 {
@@ -215,6 +218,7 @@ fun LogoutButton(
                 TextButton(onClick = {
                     showLogoutDialog = false
                     viewModel.logout()
+                    toLoginNavigator()
                 }) {
                     Text(text = stringResource(Res.string.yes))
                 }
