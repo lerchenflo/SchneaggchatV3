@@ -32,6 +32,7 @@ import schneaggchatv3mp.composeapp.generated.resources.no_description
 import schneaggchatv3mp.composeapp.generated.resources.no_status
 import schneaggchatv3mp.composeapp.generated.resources.others_say_about
 import schneaggchatv3mp.composeapp.generated.resources.profile_picture
+import schneaggchatv3mp.composeapp.generated.resources.remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.status
 import schneaggchatv3mp.composeapp.generated.resources.status_info
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
@@ -159,9 +160,12 @@ fun ChatDetails(
 
         HorizontalDivider()
 
+        // remove friend
         NormalButton(
-            text = "remove friend", // todo strings
-            onClick = {},
+            text = stringResource(Res.string.remove_friend),
+            onClick = {
+                // todo
+            },
             modifier = Modifier
                 .fillMaxWidth()
         )

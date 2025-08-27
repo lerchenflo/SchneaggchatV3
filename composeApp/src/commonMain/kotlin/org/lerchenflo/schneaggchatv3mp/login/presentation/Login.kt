@@ -78,7 +78,7 @@ fun LoginScreen(
             val windowSizeclass = currentWindowAdaptiveInfo().windowSizeClass
             val deviceConfiguration = DeviceSizeConfiguration.fromWindowSizeClass(windowSizeclass)
 
-            // for contiuning with tab
+            // for continuing with tab
             val usernameFocusRequester = remember { FocusRequester() }
             val passwordFocusRequester = remember { FocusRequester() }
             val loginFocusRequester = remember { FocusRequester() }

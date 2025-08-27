@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -138,17 +139,21 @@ fun TextMessage(
     myMessage: Boolean,
     modifier: Modifier = Modifier
 ){
-    // ma künnt es chatViewmodel o do instanzieren aber denn würd des für jede message einzeln passiera des isch glob ned des wahre
-    if(chatViewModel.markdownEnabeled){ // get setting if if md is enabled
-        Markdown(
-            content = messageWithReaders.message.content,
-            modifier = modifier
-        )
-    }else{
-        Text(
-            text = messageWithReaders.message.content
-        )
+    SelectionContainer { // damit ma text markiera und kopiera kann (künnt evnt. mit am onLongClick in zukunft interferrieren oder so)
+        // ma künnt es chatViewmodel o do instanzieren aber denn würd des für jede message einzeln passiera des isch glob ned des wahre
+        if(chatViewModel.markdownEnabeled){ // get setting if if md is enabled
+            Markdown(
+                content = messageWithReaders.message.content,
+                modifier = modifier
+            )
+        }else{
+            Text(
+                text = messageWithReaders.message.content
+            )
+        }
     }
+
+
 }
 
 @Composable

@@ -49,8 +49,6 @@ import schneaggchatv3mp.composeapp.generated.resources.password
 import schneaggchatv3mp.composeapp.generated.resources.sign_up
 import schneaggchatv3mp.composeapp.generated.resources.username
 
-// todo mit tab nächster login input field
-// todo koa zeilenumbüche erlauben
 @Composable
 fun InputTextField(
     text: String,
@@ -83,7 +81,7 @@ fun InputTextField(
         }
         fieldModifier = fieldModifier.onPreviewKeyEvent { keyEvent ->
             // desktop Tab handling
-            if (keyEvent.key == Key.Tab && keyEvent.type == KeyEventType.KeyDown) {
+            if ((keyEvent.key == Key.Tab || keyEvent.key == Key.Enter) && keyEvent.type == KeyEventType.KeyDown) {
                 nextFocusRequester?.requestFocus()
                 true
             } else {

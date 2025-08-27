@@ -14,11 +14,6 @@ sealed interface Route {
     data object Chat: Route
     @Serializable
     data object NewChat: Route
-
-    // Login feature
-    @Serializable
-    data object LoginGraph: Route
-
     @Serializable
     data object AutoLoginCredChecker: Route
 
