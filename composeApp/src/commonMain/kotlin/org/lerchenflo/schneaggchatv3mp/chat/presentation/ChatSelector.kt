@@ -110,6 +110,7 @@ fun Chatauswahlscreen(
             val distance = 10.dp //Abstand zwüschat da buttons oba rechts
 
             //Loadingbar für messages
+            // todo am desktop disablen oder so
             RoundLoadingIndicator(
                 visible = viewModel.isLoadingMessages || !LOGGEDIN,
                 onClick = {

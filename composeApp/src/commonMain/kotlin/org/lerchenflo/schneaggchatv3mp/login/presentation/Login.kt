@@ -25,9 +25,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -75,6 +77,12 @@ fun LoginScreen(
 
             val windowSizeclass = currentWindowAdaptiveInfo().windowSizeClass
             val deviceConfiguration = DeviceSizeConfiguration.fromWindowSizeClass(windowSizeclass)
+
+            // for contiuning with tab
+            val usernameFocusRequester = remember { FocusRequester() }
+            val passwordFocusRequester = remember { FocusRequester() }
+            val loginFocusRequester = remember { FocusRequester() }
+
             when (deviceConfiguration){
                 DeviceSizeConfiguration.MOBILE_PORTRAIT -> {
                     Column(
@@ -99,7 +107,10 @@ fun LoginScreen(
                                 .fillMaxWidth(),
                             onLoginButtonClick = { viewModel.login(onLoginSuccess) },
                             onSignupButtonClick = { onSignUp() },
-                            loginbuttonloading = viewModel.isLoading
+                            loginbuttonloading = viewModel.isLoading,
+                            usernameFocusRequester = usernameFocusRequester,
+                            passwordFocusRequester = passwordFocusRequester,
+                            loginFocusRequester = loginFocusRequester
                         )
                     }
 
@@ -131,7 +142,10 @@ fun LoginScreen(
                                 .weight(1f),
                             onLoginButtonClick = { viewModel.login(onLoginSuccess) },
                             onSignupButtonClick = { onSignUp() },
-                            loginbuttonloading = viewModel.isLoading
+                            loginbuttonloading = viewModel.isLoading,
+                            usernameFocusRequester = usernameFocusRequester,
+                            passwordFocusRequester = passwordFocusRequester,
+                            loginFocusRequester = loginFocusRequester
                         )
                     }
                 }
@@ -164,7 +178,10 @@ fun LoginScreen(
                                 .weight(1f),
                             onLoginButtonClick = { viewModel.login(onLoginSuccess) },
                             onSignupButtonClick = { onSignUp() },
-                            loginbuttonloading = viewModel.isLoading
+                            loginbuttonloading = viewModel.isLoading,
+                            usernameFocusRequester = usernameFocusRequester,
+                            passwordFocusRequester = passwordFocusRequester,
+                            loginFocusRequester = loginFocusRequester
                         )
                     }
                 }

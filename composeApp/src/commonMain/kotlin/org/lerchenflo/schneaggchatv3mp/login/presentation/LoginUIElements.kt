@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -22,7 +24,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -46,7 +59,8 @@ fun InputTextField(
     hint: String,
     errortext: String? = null,
     isInputSecret: Boolean,
-
+    focusRequester: FocusRequester? = null,
+    nextFocusRequester: FocusRequester? = null,
     modifier: Modifier = Modifier
 ) {
     var isPasswordVisible by remember {
@@ -61,8 +75,24 @@ fun InputTextField(
             style = MaterialTheme.typography.bodyMedium
         )
         Spacer(modifier = Modifier.height(6.dp))
+
+        // build the field modifier conditionally (only attach focusRequester if provided)
+        var fieldModifier = Modifier.fillMaxWidth()
+        if (focusRequester != null) {
+            fieldModifier = fieldModifier.focusRequester(focusRequester)
+        }
+        fieldModifier = fieldModifier.onPreviewKeyEvent { keyEvent ->
+            // desktop Tab handling
+            if (keyEvent.key == Key.Tab && keyEvent.type == KeyEventType.KeyDown) {
+                nextFocusRequester?.requestFocus()
+                true
+            } else {
+                false
+            }
+        }
+
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = fieldModifier,
             value = text,
             onValueChange = onValueChange,
             visualTransformation = if (isInputSecret){
@@ -85,12 +115,21 @@ fun InputTextField(
             },
             textStyle = MaterialTheme.typography.bodyLarge,
             shape = RoundedCornerShape(10.dp),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = if (isInputSecret) ImeAction.Done else ImeAction.Next,
+                keyboardType = if (isInputSecret) KeyboardType.Password else KeyboardType.Text
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = { nextFocusRequester?.requestFocus() },
+                onDone = { /* you may want to trigger login here, or clear focus */ }
+            ),
             trailingIcon = {
                 if (isInputSecret){
                     IconButton(
                         onClick = {
                             isPasswordVisible = !isPasswordVisible
-                        }
+                        },
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
                     ){
                         when {
                             isPasswordVisible -> {
@@ -172,6 +211,10 @@ fun LoginFormSection(
     passwordTextError: String? = null,
     loginbuttondisabled: Boolean = false,
     loginbuttonloading: Boolean = false,
+    usernameFocusRequester: FocusRequester,
+    passwordFocusRequester: FocusRequester,
+    loginFocusRequester: FocusRequester,
+
     modifier: Modifier = Modifier
 ){
     Column(
@@ -184,6 +227,8 @@ fun LoginFormSection(
             hint = stringResource(Res.string.username),
             isInputSecret = false,
             errortext = null,
+            focusRequester = usernameFocusRequester,
+            nextFocusRequester = passwordFocusRequester,
             modifier = Modifier
                 .fillMaxWidth()
         )
@@ -197,6 +242,8 @@ fun LoginFormSection(
             hint = stringResource(Res.string.password),
             isInputSecret = true,
             errortext = passwordTextError,
+            focusRequester = passwordFocusRequester,
+            nextFocusRequester = loginFocusRequester,
             modifier = Modifier
                 .fillMaxWidth()
         )
@@ -208,6 +255,7 @@ fun LoginFormSection(
             onClick = onLoginButtonClick,
             disabled = loginbuttondisabled,
             isLoading = loginbuttonloading,
+            focusRequester = loginFocusRequester,
             modifier = Modifier
                 .fillMaxWidth()
         )
