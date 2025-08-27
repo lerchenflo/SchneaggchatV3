@@ -18,8 +18,8 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 fun NormalButton(
     text: String,
     onClick: () -> Unit,
-    disabled: Boolean,
-    isLoading: Boolean,
+    disabled: Boolean = false,
+    isLoading: Boolean = false,
     modifier: Modifier = Modifier
 ){
     Button(

@@ -23,6 +23,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.ChatDetails
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.ChatScreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.Chatauswahlscreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.NewChat
@@ -116,6 +117,9 @@ fun App() {
                         ChatScreen(
                             onBackClick = {
                                 navController.navigateUp()
+                            },
+                            onChatDetailsClick = {
+                                navController.navigate(Route.ChatDetails)
                             }
                         )
 
@@ -124,6 +128,14 @@ fun App() {
                     // newChat (neuegegnergruppen)
                     composable<Route.NewChat> {
                         NewChat()
+                    }
+
+                    composable<Route.ChatDetails>{
+                        ChatDetails(
+                            onBackClick = {
+                                navController.navigateUp()
+                            }
+                        )
                     }
 
                     // Login screen

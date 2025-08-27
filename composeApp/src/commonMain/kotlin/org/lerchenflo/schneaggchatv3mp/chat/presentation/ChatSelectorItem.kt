@@ -25,6 +25,13 @@ data class ChatSelectorItem(
             is ChatEntity.GroupEntity -> entity.groupWithMembers.group.description
         }
     }
+
+    fun getDescription(): String {
+        return when (entity) {
+            is ChatEntity.UserEntity -> entity.user.description
+            is ChatEntity.GroupEntity -> entity.groupWithMembers.group.description
+        }
+    }
 }
 
 
