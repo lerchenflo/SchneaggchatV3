@@ -23,6 +23,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.ChatDetails
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.ChatScreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.Chatauswahlscreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.NewChat
@@ -116,6 +117,9 @@ fun App() {
                         ChatScreen(
                             onBackClick = {
                                 navController.navigateUp()
+                            },
+                            onChatDetailsClick = {
+                                navController.navigate(Route.ChatDetails)
                             }
                         )
 
@@ -126,6 +130,14 @@ fun App() {
                         NewChat()
                     }
 
+                    composable<Route.ChatDetails>{
+                        ChatDetails(
+                            onBackClick = {
+                                navController.navigateUp()
+                            }
+                        )
+                    }
+
                     // Login screen
                     composable<Route.Login>{
 
@@ -133,7 +145,9 @@ fun App() {
 
                             onLoginSuccess = {
                                 println("Login success, Chatselector")
-                                navController.navigate(Route.ChatSelector)
+                                navController.navigate(Route.ChatSelector) {
+                                    popUpTo(Route.ChatGraph) { inclusive = true }
+                                }
                             },
                             onSignUp = {
                                 println("Create acc")
@@ -147,7 +161,9 @@ fun App() {
                         SignUpScreen(
                             onSignUpSuccess = {
                                 println("Signup success, chatselector")
-                                navController.navigate(Route.ChatSelector)
+                                navController.navigate(Route.ChatSelector){
+                                    popUpTo(Route.ChatGraph) { inclusive = true }
+                                }
                             }
                         )
                     }
@@ -157,6 +173,9 @@ fun App() {
                         SettingsScreen(
                             onBackClick = {
                                 navController.navigateUp()
+                            },
+                            toLoginNavigator = {
+                                navController.navigate(Route.Login)
                             }
                         )
                     }

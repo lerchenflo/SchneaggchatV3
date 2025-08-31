@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp
 
+// todo sessionid und ownid und so in a extra klasse zum besser verwalta
 var SESSIONID: String? = null
 var OWNID: Long? = null
 var USERNAME = "" //Da eigene nutzername

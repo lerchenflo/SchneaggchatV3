@@ -3,13 +3,17 @@ package org.lerchenflo.schneaggchatv3mp.utilities
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import okio.Path.Companion.toPath
 
 class Preferencemanager(
@@ -63,5 +67,21 @@ class Preferencemanager(
             id
         }
     }
+
+    val mdFormatKey = "MdFormat"
+
+    suspend fun saveUseMd(value: Boolean){
+        with(dispatcher) {
+            pref.edit { datastore ->
+                val key = booleanPreferencesKey(mdFormatKey)
+                datastore[key] = value
+            }
+        }
+    }
+
+    // In PreferenceManager
+    fun getUseMdFlow(): Flow<Boolean> = pref.data.map { prefs ->
+        prefs[booleanPreferencesKey(mdFormatKey)] ?: false
+    }.flowOn(Dispatchers.IO)
 
 }

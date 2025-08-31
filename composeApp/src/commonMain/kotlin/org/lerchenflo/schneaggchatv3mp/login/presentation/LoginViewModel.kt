@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform.getKoin
@@ -85,7 +87,9 @@ class LoginViewModel(
             appRepository.login(username, password) { success, message ->
                 if (success) {
                     println("Login erfolgreich")
-                    onLoginSuccess()
+                    CoroutineScope(Dispatchers.Main).launch { // launch on main thread (to avoid crash)
+                        onLoginSuccess()
+                    }
                 } else {
 
                     viewModelScope.launch {

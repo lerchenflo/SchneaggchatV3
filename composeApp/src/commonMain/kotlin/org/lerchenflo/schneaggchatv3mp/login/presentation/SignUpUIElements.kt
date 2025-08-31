@@ -15,6 +15,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -194,6 +197,7 @@ fun SignUpHeaderText(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateDropdownPicker(
     initialDate: LocalDate? = null,
@@ -223,47 +227,18 @@ fun DateDropdownPicker(
     var monthExpanded by remember { mutableStateOf(false) }
     var yearExpanded by remember { mutableStateOf(false) }
 
-    // Helper: compute days in month, handles leap years
-    fun isLeapYear(year: Int): Boolean =
-        (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
-
-    fun daysInMonth(year: Int, month: Int): Int {
-        return when (month) {
-            1, 3, 5, 7, 8, 10, 12 -> 31
-            4, 6, 9, 11 -> 30
-            2 -> if (isLeapYear(year)) 29 else 28
-            else -> 31
-        }
-    }
-
-    // Ensure selectedDay remains valid when month/year change
-    LaunchedEffect(selectedMonth, selectedYear) {
-        val sDay = selectedDay
-        val sMonth = selectedMonth
-        val sYear = selectedYear
-        if (sDay != null && sMonth != null && sYear != null) {
-            val maxDay = daysInMonth(sYear, sMonth)
-            if (sDay > maxDay) {
-                selectedDay = maxDay
-            }
-        }
-    }
-
-    // Emit LocalDate when all parts are present; emit null when incomplete
-    LaunchedEffect(selectedDay, selectedMonth, selectedYear) {
-        val sDay = selectedDay
-        val sMonth = selectedMonth
-        val sYear = selectedYear
-        if (sDay != null && sMonth != null && sYear != null) {
-            onDateSelected(LocalDate(sYear, sMonth, sDay))
-        } else {
-            onDateSelected(null)
-        }
+    val daysList = (1..31)
+    val yearsList = remember(minYear, maxYear) {
+        (minYear..maxYear).toList().reversed()
     }
 
     Row(modifier = modifier.padding(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         // DAY dropdown
-        Box(modifier = Modifier.weight(1f)) {
+        ExposedDropdownMenuBox(
+            expanded = dayExpanded,
+            onExpandedChange = { dayExpanded = it },
+            modifier = Modifier.weight(1f)
+        ) {
             OutlinedTextField(
                 value = selectedDay?.toString() ?: "",
                 onValueChange = {},
@@ -271,21 +246,17 @@ fun DateDropdownPicker(
                 readOnly = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { dayExpanded = true },
-                trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = "Select day") }
+                    .menuAnchor(),
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = dayExpanded)
+                }
             )
-            val dayItems = if (selectedMonth != null && selectedYear != null)
-                (1..daysInMonth(selectedYear!!, selectedMonth!!)).toList()
-            else (1..31).toList()
 
-            DropdownMenu(
+            ExposedDropdownMenu(
                 expanded = dayExpanded,
-                onDismissRequest = { dayExpanded = false },
-                modifier = Modifier
-                    .wrapContentWidth()
-                    .heightIn(max = 240.dp)
+                onDismissRequest = { dayExpanded = false }
             ) {
-                dayItems.forEach { d ->
+                daysList.forEach { d ->
                     DropdownMenuItem(
                         text = { Text(d.toString()) },
                         onClick = {
@@ -298,7 +269,11 @@ fun DateDropdownPicker(
         }
 
         // MONTH dropdown
-        Box(modifier = Modifier.weight(1.5f)) {
+        ExposedDropdownMenuBox(
+            expanded = monthExpanded,
+            onExpandedChange = { monthExpanded = it },
+            modifier = Modifier.weight(1f)
+        ) {
             OutlinedTextField(
                 value = selectedMonth?.let { monthNames.getOrNull(it - 1) } ?: "",
                 onValueChange = {},
@@ -306,10 +281,10 @@ fun DateDropdownPicker(
                 readOnly = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { monthExpanded = true },
-                trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = "Select month") }
+                    .menuAnchor(),
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = monthExpanded) }
             )
-            DropdownMenu(
+            ExposedDropdownMenu(
                 expanded = monthExpanded,
                 onDismissRequest = { monthExpanded = false },
                 modifier = Modifier
@@ -329,7 +304,11 @@ fun DateDropdownPicker(
         }
 
         // YEAR dropdown
-        Box(modifier = Modifier.weight(1f)) {
+        ExposedDropdownMenuBox(
+            expanded = yearExpanded,
+            onExpandedChange = { yearExpanded = it },
+            modifier = Modifier.weight(1f)
+        ) {
             OutlinedTextField(
                 value = selectedYear?.toString() ?: "",
                 onValueChange = {},
@@ -337,18 +316,17 @@ fun DateDropdownPicker(
                 readOnly = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { yearExpanded = true },
-                trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = "Select year") }
+                    .menuAnchor(),
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = monthExpanded) }
             )
-            val years = (minYear..maxYear).toList().reversed() // show newest first
-            DropdownMenu(
+            ExposedDropdownMenu(
                 expanded = yearExpanded,
                 onDismissRequest = { yearExpanded = false },
                 modifier = Modifier
                     .wrapContentWidth()
                     .heightIn(max = 300.dp)
             ) {
-                years.forEach { y ->
+                yearsList.forEach { y ->
                     DropdownMenuItem(
                         text = { Text(y.toString()) },
                         onClick = {

@@ -3,4 +3,61 @@
 <resources>
     <string name="app_name">SchneaggchatV3</string>
     <string name="profile_picture">Profilbild</string>
+
+    <string name="schneaggmap">Schneaggmap</string>
+    <string name="settings">Einstellungen</string>
+    <string name="tools_and_games">Tools und Spiele</string>
+    <string name="filter">Filter</string>
+    <string name="search_friend">Freund suchen ...</string>
+    <string name="no_status">kein Status</string>
+    <string name="unknown_user">unbekannter Nutzer</string>
+    <string name="notification_bell">Benachrichtigungsglocke</string>
+    <string name="go_back">zurück</string>
+    <string name="add">hinzufügen</string>
+    <string name="message">Nachricht</string>
+    <string name="login">Einloggen</string>
+
+    <string name="just_now">gerade jetzt</string>
+    <string name="yesterday">gestern</string>
+
+    <string name="username">Nutzername</string>
+    <string name="password">Passwort</string>
+    <string name="password_again">Passwort wiederholen</string>
+
+    <string name="email">E-mail</string>
+    <string name="invalid_email">Gib eine korrekte E-mail-Adresse ein</string>
+    <string name="sign_up">neuen Account erstellen?</string>
+    <string name="loginsubtitle">Die beste Chattingplatform jemals - Jetzt in da V3 mit Crossplatform für Android, IOS und Desktop!</string>
+    <string name="create_account">Account erstellen</string>
+    <string name="create_account_subtitle">jetzt beitreten</string>
+    <string name="acc_not_exist">Account existiert nicht</string>
+    <string name="offline">Du bist offline</string>
+    <string name="unknown_error">Ein unbekannter Fehler ist aufgetreten</string>
+    <string name="birthdateerror">Fehler mit dem Geburtsdatum</string>
+    <string name="acc_locked">Dein Account ist derzeit gesperrt</string>
+    <string name="password_wrong">Passwort ist falsch</string>
+    <string name="feature_disabled">Diese Funktion ist derzeit deaktiviert</string>
+    <string name="cannot_be_empty">Dieses Feld darf nicht leer sein</string>
+    <string name="password_needs_to_be_the_same">Passwörter müssen übereinstimmen</string>
+    <string name="email_exists">Ein Account mit dieser Email existiert bereits</string>
+    <string name="username_exists">Ein Account mit diesem Nutzernamen existiert bereits</string>
+    <string name="username_too_long">Dein Nutzername ist zu lang</string>
+    <string name="requirement_length">8 oder mehr Zeichen</string>
+    <string name="requirement_digit">mindestens eine Zahl</string>
+    <string name="requirement_special">mindestens ein Sonderzeichen</string>
+    <string name="requirement_forbidden">darf keine verbotenen eingaben enthalten</string>
+    <string name="password_missing_requirements">Fehlt: %1$s</string>
+    <string name="logout">Ausloggen</string>
+    <string name="are_you_sure_you_want_to_logout">Bist du dir sicher, dass du dich ausloggen willst?</string>
+    <string name="yes">ja</string>
+    <string name="no">nein</string>
+    <string name="version">Version: %1$s</string>
+    <string name="app_broken">App kaputt</string>
+    <string name="loadinginfo_messages">Lade Nachrichten...</string>
+    <string name="loadinginfo_offline">Du bist derzeit offline...</string>
+    <string name="read">gelesen</string>
+    <string name="useMarkdown">Markdown-formatierung verwenden</string>
+    <string name="markdownInfo">Damit wird die Markdown-formatierung von Nachrichten aktiviert. Dies kann jedoch das Laden der Nachrichten verlangsamen</string>
+    <string name="something_wrong_message">Bei dieser Nachricht stimmt etwas nicht.</string>
+    <string name="log_out_successfully">Erfolgreich ausgeloggt</string>
 </resources>

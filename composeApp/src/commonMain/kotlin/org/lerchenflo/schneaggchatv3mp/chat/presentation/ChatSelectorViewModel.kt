@@ -37,6 +37,7 @@ class ChatSelectorViewModel(
 
     init {
         viewModelScope.launch {
+            // todo wenn ma vom loginscreen kummt würrend nochrichta ned glada
             delay(1500)
 
             if (LOGGEDIN){
@@ -53,6 +54,18 @@ class ChatSelectorViewModel(
         }
 
 
+    }
+
+    val _isRefreshing = mutableStateOf(false)
+
+    fun refresh() {
+
+        _isRefreshing.value = true
+        viewModelScope.launch {
+            // todo refresh logic
+
+            _isRefreshing.value = false
+        }
     }
 
     var isLoadingMessages by mutableStateOf(false)

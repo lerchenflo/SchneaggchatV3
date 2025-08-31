@@ -129,7 +129,7 @@ fun UserButton(
 
             Spacer(modifier = Modifier.height(2.dp))
 
-            if (lastMessage != null) { // todo: check if lastmessage isch existent
+            if (lastMessage != null) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically

@@ -229,6 +229,8 @@ class AppRepository(
         password: String,
         onResult: (Boolean, String) -> Unit
     ) {
+        // chat von flo: bitte a todo iboua dassas mem login besser gmacht wird des mitam login delay
+
         CoroutineScope(Dispatchers.IO).launch {
             networkUtils.login(username, password)
                 .onSuccessWithBody { headers, message ->

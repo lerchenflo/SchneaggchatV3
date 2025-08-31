@@ -51,6 +51,7 @@ import kotlin.time.ExperimentalTime
 @Composable
 fun ChatScreen(
     onBackClick: () -> Unit,
+    onChatDetailsClick: () -> Unit,
     modifier: Modifier = Modifier
         .fillMaxSize()
         .safeContentPadding()
@@ -58,6 +59,8 @@ fun ChatScreen(
     val sharedViewModel = koinInject<SharedViewModel>()
     val viewModel = koinViewModel<ChatViewModel>()
     val messages by viewModel.messagesState.collectAsStateWithLifecycle()
+
+    viewModel.initPrefs()
 
     SchneaggchatTheme{ // theme wida setza
         Column(
@@ -90,8 +93,7 @@ fun ChatScreen(
                     UserButton(
                         chatSelectorItem = sharedViewModel.selectedChat.value,
                         onClickGes = {
-                            // todo open chatdetails
-                            SnackbarManager.showMessage("Bald chatdetails")
+                            onChatDetailsClick()
                         }
                     )
                 }
@@ -114,6 +116,8 @@ fun ChatScreen(
 
 
                     MessageView(
+                        chatViewModel = viewModel,
+                        sharedViewModel = sharedViewModel,
                         messagewithreaders = message,
                         modifier = Modifier
                     )

@@ -16,11 +16,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -32,7 +34,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -43,7 +44,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.LOGGEDIN
-import org.lerchenflo.schneaggchatv3mp.database.tables.User
 import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -59,6 +59,7 @@ import schneaggchatv3mp.composeapp.generated.resources.settings
 import schneaggchatv3mp.composeapp.generated.resources.settings_gear
 import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 
+@OptIn(ExperimentalMaterial3Api::class) // PullToRefreshBox is experimental
 @Preview
 @Composable
 fun Chatauswahlscreen(
@@ -74,6 +75,7 @@ fun Chatauswahlscreen(
     val searchterm by viewModel.searchterm.collectAsState() // read-only display of current search term
 
 
+    // todo swiprefreshlayout
 
     //Hauptlayout
     Column(
@@ -108,14 +110,15 @@ fun Chatauswahlscreen(
             val distance = 10.dp //Abstand zwüschat da buttons oba rechts
 
             //Loadingbar für messages
+            // todo am desktop disablen oder so
             RoundLoadingIndicator(
                 visible = viewModel.isLoadingMessages || !LOGGEDIN,
                 onClick = {
-                    if (viewModel.isLoadingMessages){
+                    if (viewModel.isLoadingMessages) {
                         CoroutineScope(Dispatchers.IO).launch {
                             SnackbarManager.showMessage(getString(Res.string.loadinginfo_messages))
                         }
-                    }else{
+                    } else {
                         CoroutineScope(Dispatchers.IO).launch {
                             SnackbarManager.showMessage(getString(Res.string.loadinginfo_offline))
                         }
@@ -154,7 +157,7 @@ fun Chatauswahlscreen(
                 contentDescription = stringResource(Res.string.settings),
                 modifier = Modifier
                     .size(size)
-                    .clickable {onSettingsClick()},
+                    .clickable { onSettingsClick() },
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
             )
 
@@ -206,24 +209,43 @@ fun Chatauswahlscreen(
         }
 
         //Gegneranzeige
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth(),
-            contentPadding = PaddingValues(16.dp),
+        //val state = rememberPullToRefreshState()
+        PullToRefreshBox( // needs experimental opt in
+            isRefreshing = viewModel._isRefreshing.value,
+            onRefresh = { viewModel.refresh() }, // Trigger refresh
+            /* custom indicator falls ma farba oder so selber macha will. Brucht da state
+            state = state,
+            indicator = {
+                Indicator(// optional custom indicator
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    isRefreshing = viewModel._isRefreshing.value,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    state = state
+                )
+            },
+
+             */
         ) {
-            items(availablegegners) { gegner ->
-                UserButton(
-                    chatSelectorItem = gegner,
-                    useOnClickGes = false,
-                    lastMessage = gegner.lastmessage,
-                    onClickText = { onChatSelected(gegner)},
-                    onClickImage = {
-                        SnackbarManager.showMessage("TODO")
-                    }
-                )
-                HorizontalDivider(
-                    thickness = 0.5.dp
-                )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(16.dp),
+            ) {
+                items(availablegegners) { gegner ->
+                    UserButton(
+                        chatSelectorItem = gegner,
+                        useOnClickGes = false,
+                        lastMessage = gegner.lastmessage,
+                        onClickText = { onChatSelected(gegner) },
+                        onClickImage = {
+                            SnackbarManager.showMessage("TODO")
+                        }
+                    )
+                    HorizontalDivider(
+                        thickness = 0.5.dp
+                    )
+                }
             }
         }
     }
