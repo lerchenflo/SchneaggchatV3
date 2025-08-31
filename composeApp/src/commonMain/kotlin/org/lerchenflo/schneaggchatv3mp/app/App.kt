@@ -145,7 +145,9 @@ fun App() {
 
                             onLoginSuccess = {
                                 println("Login success, Chatselector")
-                                navController.navigate(Route.ChatSelector)
+                                navController.navigate(Route.ChatSelector) {
+                                    popUpTo(Route.ChatGraph) { inclusive = true }
+                                }
                             },
                             onSignUp = {
                                 println("Create acc")
@@ -159,7 +161,9 @@ fun App() {
                         SignUpScreen(
                             onSignUpSuccess = {
                                 println("Signup success, chatselector")
-                                navController.navigate(Route.ChatSelector)
+                                navController.navigate(Route.ChatSelector){
+                                    popUpTo(Route.ChatGraph) { inclusive = true }
+                                }
                             }
                         )
                     }
