@@ -29,7 +29,9 @@ class MessageRepository(
             upsertMessage(mwr.message)
 
             // normalize readers to ensure messageId matches message.id
-            val readers = mwr.readers.map { it.copy(messageId = mwr.message.id) }
+            val readers = mwr.readers.map {
+                it.copy(messageId = mwr.message.id ?: 0)
+            }
             if (readers.isNotEmpty()) insertReaders(readers)
         }
     }
@@ -39,7 +41,7 @@ class MessageRepository(
         upsertMessage(message.message)
 
         // normalize readers to ensure messageId matches message.id
-        val readers = message.readers.map { it.copy(messageId = message.message.id) }
+        val readers = message.readers.map { it.copy(messageId = message.message.id ?: 0) }
         if (readers.isNotEmpty()) insertReaders(readers)
     }
 

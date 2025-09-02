@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -10,14 +11,17 @@ import org.lerchenflo.schneaggchatv3mp.app.OWNID
 import org.lerchenflo.schneaggchatv3mp.network.PICTUREMESSAGE
 
 @Serializable
-@Entity(tableName = "messages")
+@Entity(
+    tableName = "messages",
+    indices = [Index(value = ["id"], unique = true)]
+)
 data class Message(
 
     @PrimaryKey(autoGenerate = true)
     var localPK : Long = 0L,
 
     @SerialName("id")
-    var id: Long = 0L,
+    var id: Long? = null,
 
     @SerialName("msgtype")
     var msgType: String = "",

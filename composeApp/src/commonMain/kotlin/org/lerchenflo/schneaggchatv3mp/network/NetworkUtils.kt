@@ -474,6 +474,7 @@ class NetworkUtils(
             // 1. Get local user IDs and change dates
             while (moremessages){
 
+                //TODO: Jeda key nur uamol
                 val localMessages = messageRepository.getmessagechangeid()
                 val serializedData = json.encodeToString(localMessages)
 
@@ -516,7 +517,7 @@ class NetworkUtils(
                     for (m in pictureMessages){
                         try {
                             CoroutineScope(Dispatchers.IO).launch {
-                                val messageResult = getmessagebyid(m.message.id)
+                                val messageResult = getmessagebyid(m.message.id ?: 0) //TODO: DO null abfrage gschied
                                 messageResult.onSuccessWithBody { success, body1 ->
 
                                     val messageasdto = json.decodeFromString<ServerMessageDto>(body1)
