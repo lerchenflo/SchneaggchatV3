@@ -43,8 +43,8 @@ import schneaggchatv3mp.composeapp.generated.resources.something_wrong_message
 @Preview
 @Composable
 fun MessageView(
-    chatViewModel: ChatViewModel, // für md preference
-    sharedViewModel: SharedViewModel, // für selectedChat id
+    useMD: Boolean = false,
+    selectedChatId: Long = -1,
     messagewithreaders: MessageWithReaders,
     modifier: Modifier = Modifier
         .fillMaxWidth()
@@ -88,7 +88,7 @@ fun MessageView(
                     ) {
                         when(messagewithreaders.message.msgType){
                             TEXTMESSAGE -> TextMessage(
-                                chatViewModel = chatViewModel,
+                                useMD = useMD,
                                 messageWithReaders = messagewithreaders,
                                 myMessage = mymessage
                             )
@@ -112,8 +112,9 @@ fun MessageView(
                                 fontSize = 12.sp,
                                 modifier = Modifier
                             )
+
                             // gelesen haken
-                            if(messagewithreaders.isReadById(sharedViewModel.selectedChat.value?.id ?: -1) && mymessage){
+                            if(messagewithreaders.isReadById(selectedChatId) && mymessage){
                                 Icon(
                                     painter = painterResource(Res.drawable.check),
                                     contentDescription = stringResource(Res.string.read),
@@ -134,14 +135,14 @@ fun MessageView(
 
 @Composable
 fun TextMessage(
-    chatViewModel: ChatViewModel,
+    useMD: Boolean = false,
     messageWithReaders: MessageWithReaders,
     myMessage: Boolean,
     modifier: Modifier = Modifier
 ){
     SelectionContainer { // damit ma text markiera und kopiera kann (künnt evnt. mit am onLongClick in zukunft interferrieren oder so)
         // ma künnt es chatViewmodel o do instanzieren aber denn würd des für jede message einzeln passiera des isch glob ned des wahre
-        if(chatViewModel.markdownEnabeled){ // get setting if if md is enabled
+        if(useMD){ // get setting if if md is enabled
             Markdown(
                 content = messageWithReaders.message.content,
                 modifier = modifier

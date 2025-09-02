@@ -38,6 +38,8 @@ class ChatSelectorViewModel(
     init {
         viewModelScope.launch {
             // todo wenn ma vom loginscreen kummt würrend nochrichta ned glada
+
+
             delay(1500)
 
             if (LOGGEDIN){

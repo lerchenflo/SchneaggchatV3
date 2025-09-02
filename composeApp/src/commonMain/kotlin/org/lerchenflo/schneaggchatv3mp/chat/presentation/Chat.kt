@@ -116,8 +116,8 @@ fun ChatScreen(
 
 
                     MessageView(
-                        chatViewModel = viewModel,
-                        sharedViewModel = sharedViewModel,
+                        useMD = viewModel.markdownEnabled,
+                        selectedChatId = sharedViewModel.selectedChat.value?.id ?: -1,
                         messagewithreaders = message,
                         modifier = Modifier
                     )

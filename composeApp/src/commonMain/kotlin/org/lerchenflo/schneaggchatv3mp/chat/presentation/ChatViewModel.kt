@@ -28,7 +28,6 @@ import kotlin.reflect.KClass
 
 class ChatViewModel(
     private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager
 ): ViewModel() {
 
     val sharedViewModel: SharedViewModel = getKoin().get()
@@ -88,18 +87,18 @@ class ChatViewModel(
 
     fun initPrefs(){
         viewModelScope.launch {
-            preferenceManager.getUseMdFlow()
+            appRepository.getUsemd()
                 .catch { exception ->
                     println("Problem getting MD preference: ${exception.printStackTrace()}")
                 }
                 .collect { value ->
-                    markdownEnabeled = value
+                    markdownEnabled = value
                 }
 
         }
     }
 
-    var markdownEnabeled by mutableStateOf(false)
+    var markdownEnabled by mutableStateOf(false)
         private set
 
 }

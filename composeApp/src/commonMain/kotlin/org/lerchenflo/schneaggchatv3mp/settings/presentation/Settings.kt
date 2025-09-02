@@ -102,7 +102,7 @@ fun SettingsScreen(
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
         //---- App Einstellungen ----
 
-        // Marddown Formatting
+        // Markdown Formatting
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
