@@ -15,19 +15,22 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.Chatauswahlscreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
@@ -42,8 +45,11 @@ fun App() {
         val navController = rememberNavController()
         val snackbarHostState = remember { SnackbarHostState() } // for snackbar
         val scope = rememberCoroutineScope()
-        
-        // initialize manager
+
+        val appRepository = koinInject<AppRepository>()
+
+
+            // initialize manager
         LaunchedEffect(Unit) {
             SnackbarManager.init(snackbarHostState, scope)
         }
@@ -63,17 +69,26 @@ fun App() {
                 ) {
                     composable<Route.AutoLoginCredChecker> {
 
-                        val sharedViewModel = it.sharedKoinViewModel<SharedViewModel>(navController)
+                        val globalViewModel = it.sharedKoinViewModel<GlobalViewModel>(navController)
+
 
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
 
 
                         LaunchedEffect(Unit) {
-                            val savedCreds = sharedViewModel.areLoginCredentialsSaved()
+                            val savedCreds = globalViewModel.areLoginCredentialsSaved()
 
                             if (savedCreds) {
                                 navController.navigate(Route.ChatSelector) {
                                     popUpTo(Route.AutoLoginCredChecker) { inclusive = true } // remove loading from backstack
+                                }
+
+                                globalViewModel.viewModelScope.launch {
+                                    //Autologin
+                                    appRepository.login(appRepository.sessionCache.username,
+                                        appRepository.sessionCache.passwordDonotprint, onResult = { success, body ->
+                                        println("Login abgeschlossen mit success: $success")
+                                    })
                                 }
                             } else {
                                 navController.navigate(Route.Login) {
@@ -92,16 +107,16 @@ fun App() {
                         popEnterTransition = { slideInHorizontally { fullWidth -> -fullWidth } },
                         popExitTransition = { slideOutHorizontally { fullWidth -> fullWidth } }
                     ) {
-                        val sharedViewModel = it.sharedKoinViewModel<SharedViewModel>(navController)
+                        val globalViewModel = it.sharedKoinViewModel<GlobalViewModel>(navController)
 
 
                         LaunchedEffect(true) {
-                            sharedViewModel.onLeaveChat() // am afang wenn ma noch nix selected hot an null
+                            globalViewModel.onLeaveChat() // am afang wenn ma noch nix selected hot an null
                         }
 
                         Chatauswahlscreen(
                             onChatSelected = { user ->
-                                sharedViewModel.onSelectChat(user)
+                                globalViewModel.onSelectChat(user)
 
                                 navController.navigate(Route.Chat)
                             },

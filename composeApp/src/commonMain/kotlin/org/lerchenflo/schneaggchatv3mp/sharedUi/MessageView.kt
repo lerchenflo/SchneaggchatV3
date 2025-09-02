@@ -25,6 +25,7 @@ import com.mikepenz.markdown.m3.Markdown
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.lerchenflo.schneaggchatv3mp.app.OWNID
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.network.TEXTMESSAGE

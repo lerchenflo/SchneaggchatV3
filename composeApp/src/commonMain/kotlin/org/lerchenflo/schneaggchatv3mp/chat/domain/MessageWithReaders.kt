@@ -3,7 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 import androidx.room.Embedded
 import androidx.room.Relation
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.OWNID
+import org.lerchenflo.schneaggchatv3mp.app.OWNID
 import org.lerchenflo.schneaggchatv3mp.network.PICTUREMESSAGE
 
 @Serializable

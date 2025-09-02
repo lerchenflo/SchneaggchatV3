@@ -43,9 +43,10 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.LOGGEDIN
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorViewModel
+import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -72,12 +73,10 @@ fun Chatauswahlscreen(
         .safeContentPadding()
 ) {
 
+    val appRepository = koinInject<AppRepository>()
     val viewModel = koinViewModel<ChatSelectorViewModel>()
     val availablegegners by viewModel.chatSelectorState.collectAsStateWithLifecycle(emptyList())
     val searchterm by viewModel.searchterm.collectAsState() // read-only display of current search term
-
-
-    // todo swiprefreshlayout
 
     //Hauptlayout
     Column(
@@ -115,7 +114,7 @@ fun Chatauswahlscreen(
             // todo am desktop disablen oder so
 
             RoundLoadingIndicator(
-                visible = viewModel.isLoadingMessages || !LOGGEDIN,
+                visible = viewModel.isLoadingMessages || !appRepository.sessionCache.loggedIn,
                 onClick = {
                     if (viewModel.isLoadingMessages) {
                         CoroutineScope(Dispatchers.IO).launch {

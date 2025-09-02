@@ -7,7 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,11 +20,12 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.mp.KoinPlatform
-import org.lerchenflo.schneaggchatv3mp.LOGGEDIN
-import org.lerchenflo.schneaggchatv3mp.OWNID
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.cancellation.CancellationException
 
 class ChatSelectorViewModel(
     private val appRepository: AppRepository
@@ -30,27 +33,47 @@ class ChatSelectorViewModel(
 
 
 
-    val sharedViewModel: SharedViewModel = KoinPlatform.getKoin().get()
+    val globalViewModel: GlobalViewModel = KoinPlatform.getKoin().get()
 
     init {
         refresh()
     }
 
 
-    fun refresh() {
-        viewModelScope.launch {
-            // todo wenn ma vom loginscreen kummt würrend nochrichta ned glada
+    private var refreshJob: Job? = null
 
-            if (LOGGEDIN){
-                //Ungesendete nachrichten versuacha senden
+    fun refresh() {
+        // if a refresh is already running, do nothing
+        if (refreshJob?.isActive == true) return
+
+        refreshJob = viewModelScope.launch {
+            // wait up to 10 seconds for login, checking every 1 second
+            val becameLoggedIn = withTimeoutOrNull(10_000L) {
+                while (!appRepository.sessionCache.loggedIn) {
+                    delay(1_000L) // retry after 1 second
+                }
+                true // logged in
+            } ?: false // timed out -> false
+
+            if (!becameLoggedIn) {
+                // timed out waiting for login — exit silently or log
+                println("refresh() aborted: user did not log in within 10s")
+                return@launch
+            }
+
+            // at this point we're guaranteed logged in (or the condition was already true)
+            try {
+                // send queued messages
                 appRepository.sendOfflineMessages()
 
-
-                sharedViewModel.executeuserandmsgidsync { isLoadingMessages1 ->
+                // run your sync callback
+                globalViewModel.executeuserandmsgidsync { isLoadingMessages1 ->
                     updateIsLoadingMessages(isLoadingMessages1)
                     println("Loading messages: $isLoadingMessages")
                 }
-
+            } catch (e: Exception) {
+                ensureActive()
+                e.printStackTrace()
             }
         }
     }
@@ -79,7 +102,7 @@ class ChatSelectorViewModel(
         .map { list ->
             list
                 // remove yourself if the item is a user with your OWNID
-                .filter { !(it.id == OWNID && !it.gruppe) }
+                .filter { !(it.id == appRepository.sessionCache.ownId && !it.gruppe) }
                 // already sorted in repository, but safe to sort again
                 .sortedByDescending { it.lastmessage?.getSendDateAsLong() }
         }

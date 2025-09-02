@@ -8,7 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform.getKoin
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.network.util.toEnumOrNull
@@ -26,26 +26,6 @@ import schneaggchatv3mp.composeapp.generated.resources.unknown_error
 class LoginViewModel(
     private val appRepository: AppRepository
 ): ViewModel() {
-
-
-
-    fun trysavedcredslogin(onLoginSuccess: () -> Unit){
-        viewModelScope.launch {
-            val prefmanager = getKoin().get<Preferencemanager>()
-            val (username, password) = prefmanager.getAutologinCreds()
-
-            if (username.isNotBlank() && password.isNotBlank()){
-                println("Username: $username passwort $password")
-                //Form usfülla
-                updateUsername(username)
-                updatePassword(password)
-                login(onLoginSuccess)
-            }
-        }
-    }
-
-    // TextField states
-    val sharedViewModel: SharedViewModel = getKoin().get()
 
 
     var username by mutableStateOf("")

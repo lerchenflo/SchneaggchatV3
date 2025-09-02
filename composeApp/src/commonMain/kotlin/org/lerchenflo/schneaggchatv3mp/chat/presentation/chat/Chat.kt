@@ -34,8 +34,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DayDivider
 import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
@@ -55,7 +54,7 @@ fun ChatScreen(
         .fillMaxSize()
         .safeContentPadding()
 ){
-    val sharedViewModel = koinInject<SharedViewModel>()
+    val globalViewModel = koinInject<GlobalViewModel>()
     val viewModel = koinViewModel<ChatViewModel>()
     val messages by viewModel.messagesState.collectAsStateWithLifecycle()
 
@@ -90,7 +89,7 @@ fun ChatScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     UserButton(
-                        chatSelectorItem = sharedViewModel.selectedChat.value,
+                        chatSelectorItem = globalViewModel.selectedChat.value,
                         onClickGes = {
                             onChatDetailsClick()
                         }
@@ -116,7 +115,7 @@ fun ChatScreen(
 
                     MessageView(
                         useMD = viewModel.markdownEnabled,
-                        selectedChatId = sharedViewModel.selectedChat.value?.id ?: -1,
+                        selectedChatId = globalViewModel.selectedChat.value?.id ?: -1,
                         messagewithreaders = message,
                         modifier = Modifier
                     )

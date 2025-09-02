@@ -2,11 +2,11 @@ package org.lerchenflo.schneaggchatv3mp.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.network.sockets.SocketTimeoutException
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.plugins.timeout
 import io.ktor.client.request.*
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
-import io.ktor.client.plugins.HttpRequestTimeoutException
-import io.ktor.client.plugins.timeout
 import io.ktor.http.HttpMethod
 import io.ktor.util.network.UnresolvedAddressException
 import kotlinx.coroutines.CoroutineScope
@@ -15,17 +15,19 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import org.lerchenflo.schneaggchatv3mp.SESSIONID
+import org.koin.compose.koinInject
+import org.lerchenflo.schneaggchatv3mp.app.SESSIONID
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
-import org.lerchenflo.schneaggchatv3mp.database.AppRepository
-import org.lerchenflo.schneaggchatv3mp.database.IdOperation
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.ServerGroupDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.ServerMessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.convertServerGroupDtoToGroupWithMembers
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.convertServerMessageDtoToMessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.database.AppRepository
+import org.lerchenflo.schneaggchatv3mp.database.IdOperation
 import org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.network.util.onError

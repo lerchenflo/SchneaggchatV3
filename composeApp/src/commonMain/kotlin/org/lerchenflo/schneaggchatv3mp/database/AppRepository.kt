@@ -14,21 +14,15 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
-import org.lerchenflo.schneaggchatv3mp.LOGGEDIN
-import org.lerchenflo.schneaggchatv3mp.OWNID
-import org.lerchenflo.schneaggchatv3mp.SESSIONID
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatEntity
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorItem
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupWithMembers
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatEntity
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorItem
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccess
@@ -42,7 +36,9 @@ class AppRepository(
 
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
-    private val messageRepository: MessageRepository
+    private val messageRepository: MessageRepository,
+
+    val sessionCache: SessionCache
 
 ) {
 
@@ -131,9 +127,10 @@ class AppRepository(
                     }
 
                     println(headers)
-                    SESSIONID = headers["sessionid"]
-                    OWNID = headers["userid"]?.toLong()
-                    println("SESSIONID gesetzt: $SESSIONID")
+                    sessionCache.updateSessionId(headers["sessionid"])
+                    sessionCache.updateOwnId(headers["userid"]?.toLong())
+                    sessionCache.updateLoggedIn(true)
+                    println("Sessioncache: ${sessionCache.toString()}")
                     onResult(true, message)
                 }
                 .onError { error ->
@@ -182,7 +179,7 @@ class AppRepository(
         so wird se direkt im chat azoagt und ma muss o nur ua tolle funktion ufrufa
          */
 
-        if (OWNID == null){
+        if (sessionCache.ownId == null){
             println("Message senden abort: No OWNID")
             return
         }
@@ -194,7 +191,7 @@ class AppRepository(
             id = 0,
             msgType = msgtype,
             content = content,
-            senderId = OWNID ?: 0,
+            senderId = sessionCache.ownId ?: 0,
             receiverId = empfaenger,
             sendDate = sendedatum,
             changeDate = sendedatum,
@@ -225,7 +222,7 @@ class AppRepository(
 
                     database.messagereaderDao().upsertReader(MessageReader(
                         messageId = msgid,
-                        readerID = OWNID ?:0,
+                        readerID = sessionCache.ownId ?:0,
                         readDate = message.sendDate
                     ))
                 }else{
@@ -271,13 +268,9 @@ class AppRepository(
     suspend fun areLoginCredentialsSaved(): Boolean{
         val (username, password) = preferencemanager.getAutologinCreds()
         if (username.isNotBlank() && password.isNotBlank()){
-            OWNID = preferencemanager.getOWNID()
-        }
-        CoroutineScope(Dispatchers.IO).launch {
-            login(username, password, onResult = { success, body ->
-                LOGGEDIN = success
-                println("LOGGEDIN $success")
-            })
+            sessionCache.updateOwnId(preferencemanager.getOWNID())
+            sessionCache.updateUsername(username)
+            sessionCache.updatePassword(password)
         }
         return username.isNotBlank() && password.isNotBlank()
     }

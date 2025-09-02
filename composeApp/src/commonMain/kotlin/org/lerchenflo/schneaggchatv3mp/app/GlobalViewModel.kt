@@ -1,18 +1,19 @@
-package org.lerchenflo.schneaggchatv3mp.chat.presentation
+package org.lerchenflo.schneaggchatv3mp.app
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorItem
+import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 
-class SharedViewModel(
+class GlobalViewModel(
 
-    private val appRepository: AppRepository,
+    private val appRepository: AppRepository
 
-):ViewModel() {
+    ): ViewModel() {
 
     init {
         print("SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT")
@@ -40,14 +41,19 @@ class SharedViewModel(
 
 
     //aktuell ausgewählter chat
-    private val _selectedChat = MutableStateFlow<ChatSelectorItem?>(null)
+    private var _selectedChat = MutableStateFlow<ChatSelectorItem?>(null)
+        private set
     val selectedChat = _selectedChat.asStateFlow()
 
     fun onSelectChat(chat: ChatSelectorItem) {
-        _selectedChat.value = chat
+        _selectedChat.update {
+            chat
+        }
     }
 
     fun onLeaveChat(){
-        _selectedChat.value = null
+        _selectedChat.update {
+            null
+        }
     }
 }

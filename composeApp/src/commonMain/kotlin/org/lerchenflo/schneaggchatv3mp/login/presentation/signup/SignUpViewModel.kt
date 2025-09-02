@@ -7,7 +7,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform.getKoin
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.network.util.toEnumOrNull
@@ -34,7 +34,7 @@ class SignUpViewModel(
 
 
     // TextField states
-    val sharedViewModel: SharedViewModel = getKoin().get()
+    val globalViewModel: GlobalViewModel = getKoin().get()
 
     var username by mutableStateOf("")
         private set

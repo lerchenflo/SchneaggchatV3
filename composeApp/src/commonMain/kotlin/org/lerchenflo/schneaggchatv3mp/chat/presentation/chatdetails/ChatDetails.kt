@@ -21,7 +21,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -44,9 +44,9 @@ fun ChatDetails(
         .fillMaxWidth()
         .safeContentPadding()
 ) {
-    val sharedViewModel = koinInject<SharedViewModel>()
-    val selectedChatName = sharedViewModel.selectedChat.value?.getName() ?: stringResource(Res.string.unknown_user)
-    val group = sharedViewModel.selectedChat.value?.gruppe ?: false
+    val globalViewModel = koinInject<GlobalViewModel>()
+    val selectedChatName = globalViewModel.selectedChat.value?.getName() ?: stringResource(Res.string.unknown_user)
+    val group = globalViewModel.selectedChat.value?.gruppe ?: false
 
     Column(
         modifier = modifier
@@ -82,7 +82,7 @@ fun ChatDetails(
                 .wrapContentWidth(Alignment.CenterHorizontally)
         ){
             Text(
-                text = "id: ${sharedViewModel.selectedChat.value?.id }"
+                text = "id: ${globalViewModel.selectedChat.value?.id }"
             )
         }
 
@@ -110,7 +110,7 @@ fun ChatDetails(
 
                     )
                     Text(
-                        text = sharedViewModel.selectedChat.value?.getStatus()?.replace("\\n", "\n")
+                        text = globalViewModel.selectedChat.value?.getStatus()?.replace("\\n", "\n")
                             ?: stringResource(Res.string.no_status),
                         softWrap = true,
                         maxLines = 20
@@ -139,7 +139,7 @@ fun ChatDetails(
 
                 )
                 Text(
-                    text = sharedViewModel.selectedChat.value?.getDescription()?.replace("\\n", "\n")
+                    text = globalViewModel.selectedChat.value?.getDescription()?.replace("\\n", "\n")
                         ?: stringResource(Res.string.no_description),
                     softWrap = true,
                     maxLines = 20

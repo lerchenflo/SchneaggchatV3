@@ -6,7 +6,7 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.OWNID
+import org.lerchenflo.schneaggchatv3mp.app.OWNID
 import org.lerchenflo.schneaggchatv3mp.network.PICTUREMESSAGE
 
 @Serializable

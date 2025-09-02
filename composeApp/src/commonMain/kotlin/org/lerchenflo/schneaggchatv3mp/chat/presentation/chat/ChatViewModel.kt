@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.SharedViewModel
+import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.network.TEXTMESSAGE
@@ -29,7 +29,7 @@ class ChatViewModel(
     private val settingsRepository: SettingsRepository
 ): ViewModel() {
 
-    val sharedViewModel: SharedViewModel = KoinPlatform.getKoin().get()
+    val globalViewModel: GlobalViewModel = KoinPlatform.getKoin().get()
 
 
 
@@ -50,11 +50,11 @@ class ChatViewModel(
         updatesendText("")
 
         //Im sharedviewmodel dassas ewig leabig isch
-        sharedViewModel.viewModelScope.launch {
+        globalViewModel.viewModelScope.launch {
             appRepository.sendMessage(
                 msgtype = msgtype,
-                empfaenger = sharedViewModel.selectedChat.value?.id ?: 0,
-                gruppe = sharedViewModel.selectedChat.value?.gruppe ?: false,
+                empfaenger = globalViewModel.selectedChat.value?.id ?: 0,
+                gruppe = globalViewModel.selectedChat.value?.gruppe ?: false,
                 content = content,
                 answerid = -1, //TODO: Antworten
                 sendedatum = getCurrentTimeMillisString()
@@ -67,7 +67,7 @@ class ChatViewModel(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val messagesFlow: Flow<List<MessageWithReaders>> =
-        sharedViewModel.selectedChat
+        globalViewModel.selectedChat
             .flatMapLatest { chat ->
                 appRepository.getMessagesByUserId(chat?.id ?: 0, chat?.gruppe ?: false)
             }
