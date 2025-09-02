@@ -16,13 +16,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.SESSIONID
+import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.database.IdOperation
-import org.lerchenflo.schneaggchatv3mp.database.dtos.ServerGroupDto
-import org.lerchenflo.schneaggchatv3mp.database.dtos.ServerMessageDto
-import org.lerchenflo.schneaggchatv3mp.database.dtos.convertServerGroupDtoToGroupWithMembers
-import org.lerchenflo.schneaggchatv3mp.database.tables.User
-import org.lerchenflo.schneaggchatv3mp.database.dtos.convertServerMessageDtoToMessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.ServerGroupDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.ServerMessageDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.convertServerGroupDtoToGroupWithMembers
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.convertServerMessageDtoToMessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.network.util.onError
@@ -305,7 +308,7 @@ class NetworkUtils(
 
 
 
-    suspend fun executeUserIDSync(appRepository: AppRepository) {
+    suspend fun executeUserIDSync(userRepository: UserRepository) {
 
         println("Useridsync STARTET")
 
@@ -317,7 +320,7 @@ class NetworkUtils(
             }
 
             // 1. Get local user IDs and change dates
-            val localUsers = appRepository.getuserchangeid()
+            val localUsers = userRepository.getuserchangeid()
             val serializedData = json.encodeToString(localUsers)
 
             // 2. Execute user ID sync with server
@@ -331,7 +334,7 @@ class NetworkUtils(
                             "deleted" -> {
                                 try {
 
-                                    appRepository.deleteUser(operation.Id)
+                                    userRepository.deleteUser(operation.Id)
                                     Result.success(Unit)
                                 } catch (e: Exception) {
                                     Result.failure<Unit>(e)
@@ -347,7 +350,7 @@ class NetworkUtils(
                                             val user = json.decodeFromString<User>(body)
 
                                             CoroutineScope(Dispatchers.IO).launch {
-                                                appRepository.upsertUser(user)
+                                                userRepository.upsertUser(user)
                                                 println("User inserted: ${user.name}")
                                             }
                                         }
@@ -374,7 +377,7 @@ class NetworkUtils(
     }
 
 
-    suspend fun executeGroupIDSync(appRepository: AppRepository) {
+    suspend fun executeGroupIDSync(groupRepository: GroupRepository) {
 
         println("Groupidsync STARTET")
 
@@ -387,7 +390,7 @@ class NetworkUtils(
             }
 
             // 1. Get local user IDs and change dates
-            val localGroups = appRepository.getgroupchangeid()
+            val localGroups = groupRepository.getgroupchangeid()
             val serializedData = json.encodeToString(localGroups)
 
             // 2. Execute user ID sync with server
@@ -400,8 +403,7 @@ class NetworkUtils(
                         when (operation.Status) {
                             "deleted" -> {
                                 try {
-
-                                    appRepository.deleteGroup(operation.Id)
+                                    groupRepository.deleteGroup(operation.Id)
                                     Result.success(Unit)
                                 } catch (e: Exception) {
                                     Result.failure<Unit>(e)
@@ -419,7 +421,7 @@ class NetworkUtils(
                                             val group = convertServerGroupDtoToGroupWithMembers(serverlist)
 
                                             CoroutineScope(Dispatchers.IO).launch {
-                                                appRepository.upsertGroupWithMembers(group)
+                                                groupRepository.upsertGroupWithMembers(group)
                                                 println("Group inserted: ${group}")
                                             }
                                         }
@@ -448,7 +450,7 @@ class NetworkUtils(
 
 
 
-    suspend fun executeMsgIDSync(appRepository: AppRepository, onLoadingStateChange: (Boolean) -> Unit) {
+    suspend fun executeMsgIDSync(messageRepository: MessageRepository, onLoadingStateChange: (Boolean) -> Unit) {
 
         //Todo für irgendwean: bein msgidsync switch case (ka ob des döt din usch subsch vom groupidsynf klaua) o des deleted iboua dass ma wenn ma da server wekfetzt o alle am handy wek hot
         //TODO: Richta dassas ersch startet wenn da vorherige request fertig isch
@@ -470,7 +472,7 @@ class NetworkUtils(
             // 1. Get local user IDs and change dates
             while (moremessages){
 
-                val localMessages = appRepository.getmessagechangeid()
+                val localMessages = messageRepository.getmessagechangeid()
                 val serializedData = json.encodeToString(localMessages)
 
                 println("Msgidsync: $serializedData")
@@ -501,7 +503,7 @@ class NetworkUtils(
                         CoroutineScope(
                             context = Dispatchers.IO
                         ).launch {
-                            appRepository.upsertMessagesWithReaders(normalMessages)
+                            messageRepository.upsertMessagesWithReaders(normalMessages)
                             println("Message insert gmacht: ${normalMessages.size} messages")
 
                         }
@@ -522,7 +524,7 @@ class NetworkUtils(
                                     CoroutineScope(
                                         context = Dispatchers.IO
                                     ).launch {
-                                        appRepository.upsertMessageWithReaders(message)
+                                        messageRepository.upsertMessageWithReaders(message)
                                     }
 
                                 }

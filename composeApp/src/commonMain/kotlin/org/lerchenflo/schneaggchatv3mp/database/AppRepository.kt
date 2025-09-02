@@ -1,10 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.database
 
-import androidx.compose.ui.graphics.Path.Companion.combine
-import androidx.compose.ui.text.style.TextDecoration.Companion.combine
-import androidx.lifecycle.viewModelScope
 import androidx.room.Transaction
-import io.ktor.util.Hash.combine
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -12,7 +8,6 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
@@ -22,15 +17,18 @@ import kotlinx.coroutines.withContext
 import org.lerchenflo.schneaggchatv3mp.LOGGEDIN
 import org.lerchenflo.schneaggchatv3mp.OWNID
 import org.lerchenflo.schneaggchatv3mp.SESSIONID
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.ChatEntity
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.ChatSelectorItem
-import org.lerchenflo.schneaggchatv3mp.database.tables.Group
-import org.lerchenflo.schneaggchatv3mp.database.tables.GroupMember
-import org.lerchenflo.schneaggchatv3mp.database.tables.GroupWithMembers
-import org.lerchenflo.schneaggchatv3mp.database.tables.Message
-import org.lerchenflo.schneaggchatv3mp.database.tables.MessageReader
-import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
-import org.lerchenflo.schneaggchatv3mp.database.tables.User
+import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatEntity
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupWithMembers
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccess
@@ -40,70 +38,16 @@ import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 class AppRepository(
     private val database: AppDatabase,
     private val networkUtils: NetworkUtils,
-    private val preferencemanager: Preferencemanager
+    private val preferencemanager: Preferencemanager,
+
+    private val userRepository: UserRepository,
+    private val groupRepository: GroupRepository,
+    private val messageRepository: MessageRepository
 
 ) {
 
-    suspend fun upsertUser(user: User){
-        database.userDao().upsert(user)
-    }
-
     suspend fun deleteAllAppData(){
         database.allDatabaseDao().clearAll()
-    }
-
-    suspend fun deleteUser(userid: Long){
-        database.userDao().delete(userid)
-    }
-
-    fun getallusers(searchterm: String = ""): Flow<List<User>>{
-        return database.userDao().getallusers(searchterm)
-    }
-
-    @Transaction
-    suspend fun getuserchangeid(): List<IdChangeDate>{
-        return database.userDao().getUserIdsWithChangeDates()
-    }
-
-
-
-    suspend fun upsertMessage(message: Message){
-        database.messageDao().upsertMessage(message)
-    }
-
-    suspend fun upsertMessages(messages: List<Message>){
-        database.messageDao().upsertMessages(messages)
-    }
-
-    @Transaction
-    suspend fun upsertMessagesWithReaders(batch: List<MessageWithReaders>) {
-        for (mwr in batch) {
-            // upsert the message first (message.id must exist in JSON or be assigned)
-            upsertMessage(mwr.message)
-
-            // normalize readers to ensure messageId matches message.id
-            val readers = mwr.readers.map { it.copy(messageId = mwr.message.id) }
-            if (readers.isNotEmpty()) insertReaders(readers)
-        }
-    }
-
-    @Transaction
-    suspend fun upsertMessageWithReaders(message: MessageWithReaders) {
-        upsertMessage(message.message)
-
-        // normalize readers to ensure messageId matches message.id
-        val readers = message.readers.map { it.copy(messageId = message.message.id) }
-        if (readers.isNotEmpty()) insertReaders(readers)
-    }
-
-    @Transaction
-    fun getAllMessagesWithReaders(): Flow<List<MessageWithReaders>>{
-        return database.messageDao().getAllMessagesWithReaders()
-    }
-
-    @Transaction
-    suspend fun getmessagechangeid(): List<IdChangeDate>{
-        return database.messageDao().getMessageIdsWithChangeDates()
     }
 
     @Transaction
@@ -113,65 +57,12 @@ class AppRepository(
 
 
 
-
-    suspend fun insertReader(reader: MessageReader) {
-        database.messagereaderDao().upsertReader(reader)
-    }
-
-
-    suspend fun insertReaders(readers: List<MessageReader>){
-        database.messagereaderDao().upsertReaders(readers)
-    }
-
-    suspend fun deleteReadersForMessage(messageId: Long){
-        database.messagereaderDao().deleteReadersForMessage(messageId)
-    }
-
-
-    suspend fun upsertGroup(group: Group){
-        database.groupDao().upsertGroup(group)
-    }
-
-    @Transaction
-    suspend fun getgroupchangeid(): List<IdChangeDate>{
-        return database.groupDao().getGroupIdsWithChangeDates()
-    }
-
-    @Transaction
-    fun getallgroupswithmembers(): Flow<List<GroupWithMembers>> {
-        return database.groupDao().getAllGroupsWithMembers()
-    }
-
-    suspend fun deleteGroup(groupid: Long){
-        database.groupDao().deleteGroup(groupid)
-    }
-
-    @Transaction
-    suspend fun upsertGroupWithMembers(gwm: GroupWithMembers) {
-        // 1) upsert the group
-        database.groupDao().upsertGroup(gwm.group)
-
-        // 3) replace membership rows for this group
-        // delete old members for the group
-        database.groupDao().deleteMembersForGroup(gwm.group.id)
-
-        // create new join rows and insert
-        val joinRows = gwm.members.map { member ->
-            GroupMember(0, gwm.group.id, member.id, member.color, member.joinDate, member.isAdmin)
-        }
-
-        if (joinRows.isNotEmpty()) {
-            database.groupDao().upsertMembers(joinRows)
-        }
-    }
-
-
     //Gegnerauswahl getten
     // In repository / data layer
     fun getChatSelectorFlow(searchTerm: String): Flow<List<ChatSelectorItem>> {
-        val messagesFlow = getAllMessagesWithReaders()
-        val usersFlow = getallusers()
-        val groupsFlow = getallgroupswithmembers()
+        val messagesFlow = messageRepository.getAllMessagesWithReaders()
+        val usersFlow = userRepository.getallusers()
+        val groupsFlow = groupRepository.getallgroupswithmembers()
 
         return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
 
@@ -218,9 +109,7 @@ class AppRepository(
         }.flowOn(Dispatchers.Default)
     }
 
-    fun getUsemd() : Flow<Boolean> {
-        return preferencemanager.getUseMdFlow()
-    }
+
 
 
 
@@ -351,7 +240,6 @@ class AppRepository(
     }
 
 
-    //TODO: Do passiert an fehler, iwenn gits ahuffa ungelesene messages die alle nomml gschickt werrand ka warum
     fun sendOfflineMessages(){
         CoroutineScope(Dispatchers.IO).launch {
             val messages = database.messageDao().getUnsentMessages()
@@ -378,8 +266,6 @@ class AppRepository(
         }
 
     }
-
-
 
 
     suspend fun areLoginCredentialsSaved(): Boolean{
@@ -414,7 +300,7 @@ class AppRepository(
                     val msgSync = async {
                         try {
                             // pass a no-op loading lambda because repository manages loading state
-                            networkUtils.executeMsgIDSync(appRepository = this@AppRepository, onLoadingStateChange = {})
+                            networkUtils.executeMsgIDSync(messageRepository = messageRepository, onLoadingStateChange = {})
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
@@ -422,7 +308,7 @@ class AppRepository(
 
                     val userSync = async {
                         try {
-                            networkUtils.executeUserIDSync(appRepository = this@AppRepository)
+                            networkUtils.executeUserIDSync(userRepository = userRepository)
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
@@ -430,7 +316,7 @@ class AppRepository(
 
                     val groupSync = async {
                         try {
-                            networkUtils.executeGroupIDSync(appRepository = this@AppRepository)
+                            networkUtils.executeGroupIDSync(groupRepository = groupRepository)
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }

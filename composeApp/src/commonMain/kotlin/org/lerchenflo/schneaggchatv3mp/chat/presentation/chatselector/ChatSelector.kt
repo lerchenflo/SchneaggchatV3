@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.presentation
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,6 +45,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.LOGGEDIN
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -111,6 +113,7 @@ fun Chatauswahlscreen(
 
             //Loadingbar für messages
             // todo am desktop disablen oder so
+
             RoundLoadingIndicator(
                 visible = viewModel.isLoadingMessages || !LOGGEDIN,
                 onClick = {
@@ -211,11 +214,11 @@ fun Chatauswahlscreen(
         //Gegneranzeige
         //val state = rememberPullToRefreshState()
         PullToRefreshBox( // needs experimental opt in
-            isRefreshing = viewModel._isRefreshing.value,
+            isRefreshing = false,
             onRefresh = { viewModel.refresh() }, // Trigger refresh
-            /* custom indicator falls ma farba oder so selber macha will. Brucht da state
-            state = state,
             indicator = {
+                null //Überschrieba dassa garned kut
+                /*
                 Indicator(// optional custom indicator
                     modifier = Modifier.align(Alignment.TopCenter),
                     isRefreshing = viewModel._isRefreshing.value,
@@ -223,9 +226,10 @@ fun Chatauswahlscreen(
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     state = state
                 )
+
+                 */
             },
 
-             */
         ) {
             LazyColumn(
                 modifier = Modifier

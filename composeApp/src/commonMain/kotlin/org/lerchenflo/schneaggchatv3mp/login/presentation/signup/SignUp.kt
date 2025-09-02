@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.login.presentation
+package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 
 import SignUpViewModel
 import androidx.compose.foundation.background
@@ -28,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme

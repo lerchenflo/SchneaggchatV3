@@ -1,10 +1,10 @@
-package org.lerchenflo.schneaggchatv3mp.database.dtos
+package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.database.tables.Group
-import org.lerchenflo.schneaggchatv3mp.database.tables.GroupMember
-import org.lerchenflo.schneaggchatv3mp.database.tables.GroupWithMembers
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupWithMembers
 import org.lerchenflo.schneaggchatv3mp.utilities.ColorIntSerializer
 
 // --- DTOs expected from server (adjust SerialName fields to match your API) ---

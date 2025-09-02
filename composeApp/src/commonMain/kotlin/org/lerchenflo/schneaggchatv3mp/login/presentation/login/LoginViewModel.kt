@@ -2,9 +2,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.CreationExtras
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,7 +21,6 @@ import schneaggchatv3mp.composeapp.generated.resources.feature_disabled
 import schneaggchatv3mp.composeapp.generated.resources.offline
 import schneaggchatv3mp.composeapp.generated.resources.password_wrong
 import schneaggchatv3mp.composeapp.generated.resources.unknown_error
-import kotlin.reflect.KClass
 
 
 class LoginViewModel(

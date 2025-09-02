@@ -2,15 +2,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.CreationExtras
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform.getKoin
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.SharedViewModel
-import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.network.util.toEnumOrNull
@@ -27,7 +24,6 @@ import schneaggchatv3mp.composeapp.generated.resources.requirement_special
 import schneaggchatv3mp.composeapp.generated.resources.unknown_error
 import schneaggchatv3mp.composeapp.generated.resources.username_exists
 import schneaggchatv3mp.composeapp.generated.resources.username_too_long
-import kotlin.reflect.KClass
 
 
 class SignUpViewModel(

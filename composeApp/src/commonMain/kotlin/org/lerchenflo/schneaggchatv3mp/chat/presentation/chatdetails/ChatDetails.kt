@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.presentation
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +21,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.SharedViewModel
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager

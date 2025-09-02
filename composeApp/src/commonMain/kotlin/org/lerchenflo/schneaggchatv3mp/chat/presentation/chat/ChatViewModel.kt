@@ -1,12 +1,10 @@
-package org.lerchenflo.schneaggchatv3mp.chat.presentation
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.CreationExtras
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -18,19 +16,20 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.koin.mp.KoinPlatform.getKoin
+import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.SharedViewModel
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
-import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.network.TEXTMESSAGE
-import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
-import kotlin.reflect.KClass
 
 class ChatViewModel(
     private val appRepository: AppRepository,
+    private val settingsRepository: SettingsRepository
 ): ViewModel() {
 
-    val sharedViewModel: SharedViewModel = getKoin().get()
+    val sharedViewModel: SharedViewModel = KoinPlatform.getKoin().get()
 
 
 
@@ -81,13 +80,13 @@ class ChatViewModel(
     val messagesState: StateFlow<List<MessageWithReaders>> = messagesFlow
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
+            started = SharingStarted.Companion.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
 
     fun initPrefs(){
         viewModelScope.launch {
-            appRepository.getUsemd()
+            settingsRepository.getUsemd()
                 .catch { exception ->
                     println("Problem getting MD preference: ${exception.printStackTrace()}")
                 }

@@ -1,8 +1,8 @@
-package org.lerchenflo.schneaggchatv3mp.chat.presentation
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector
 
-import org.lerchenflo.schneaggchatv3mp.database.tables.GroupWithMembers
-import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
-import org.lerchenflo.schneaggchatv3mp.database.tables.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupWithMembers
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 
 //Gegnerauswahl gegner
 data class ChatSelectorItem(

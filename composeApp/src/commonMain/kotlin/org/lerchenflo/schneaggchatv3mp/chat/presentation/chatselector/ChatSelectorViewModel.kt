@@ -1,12 +1,10 @@
-package org.lerchenflo.schneaggchatv3mp.chat.presentation
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.CreationExtras
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -20,12 +18,11 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.koin.mp.KoinPlatform.getKoin
+import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.LOGGEDIN
 import org.lerchenflo.schneaggchatv3mp.OWNID
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.SharedViewModel
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
-import org.lerchenflo.schneaggchatv3mp.database.tables.User
-import kotlin.reflect.KClass
 
 class ChatSelectorViewModel(
     private val appRepository: AppRepository
@@ -33,14 +30,16 @@ class ChatSelectorViewModel(
 
 
 
-    val sharedViewModel: SharedViewModel = getKoin().get()
+    val sharedViewModel: SharedViewModel = KoinPlatform.getKoin().get()
 
     init {
+        refresh()
+    }
+
+
+    fun refresh() {
         viewModelScope.launch {
             // todo wenn ma vom loginscreen kummt würrend nochrichta ned glada
-
-
-            delay(1500)
 
             if (LOGGEDIN){
                 //Ungesendete nachrichten versuacha senden
@@ -53,20 +52,6 @@ class ChatSelectorViewModel(
                 }
 
             }
-        }
-
-
-    }
-
-    val _isRefreshing = mutableStateOf(false)
-
-    fun refresh() {
-
-        _isRefreshing.value = true
-        viewModelScope.launch {
-            // todo refresh logic
-
-            _isRefreshing.value = false
         }
     }
 
@@ -103,7 +88,7 @@ class ChatSelectorViewModel(
     val chatSelectorState: StateFlow<List<ChatSelectorItem>> = chatSelectorFlow
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
+            started = SharingStarted.Companion.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
 

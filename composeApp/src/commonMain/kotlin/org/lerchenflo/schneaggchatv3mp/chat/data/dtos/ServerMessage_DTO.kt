@@ -1,10 +1,10 @@
-package org.lerchenflo.schneaggchatv3mp.database.dtos
+package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.database.tables.Message
-import org.lerchenflo.schneaggchatv3mp.database.tables.MessageReader
-import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
 
 @Serializable
 data class ServerReaderDto(

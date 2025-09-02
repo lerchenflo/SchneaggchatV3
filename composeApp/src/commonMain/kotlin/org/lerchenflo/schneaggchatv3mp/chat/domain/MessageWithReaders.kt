@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.database.tables
+package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 import androidx.room.Embedded
 import androidx.room.Relation
