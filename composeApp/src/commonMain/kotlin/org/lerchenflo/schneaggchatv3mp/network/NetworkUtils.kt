@@ -14,6 +14,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.SESSIONID
@@ -25,6 +26,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.ServerGroupDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.ServerMessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.convertServerGroupDtoToGroupWithMembers
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.convertServerMessageDtoToMessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.database.IdOperation
@@ -474,7 +476,6 @@ class NetworkUtils(
             // 1. Get local user IDs and change dates
             while (moremessages){
 
-                //TODO: Jeda key nur uamol
                 val localMessages = messageRepository.getmessagechangeid()
                 val serializedData = json.encodeToString(localMessages)
 
@@ -493,7 +494,6 @@ class NetworkUtils(
 
                     if (serverlist.size > 1){
                         println("Startid: ${serverlist[0].id}")
-
                     }
 
                     val messageListwithReaders = convertServerMessageDtoToMessageWithReaders(serverlist)
@@ -502,13 +502,9 @@ class NetworkUtils(
 
                     if (normalMessages.isNotEmpty()) {
 
-                        //Non blocking Coroutine for Upsert message
-                        CoroutineScope(
-                            context = Dispatchers.IO
-                        ).launch {
+                        //Starta und warta bis fertig inkjected
+                        withContext(Dispatchers.IO) {
                             messageRepository.upsertMessagesWithReaders(normalMessages)
-                            println("Message insert gmacht: ${normalMessages.size} messages")
-
                         }
                     }
 
@@ -516,22 +512,34 @@ class NetworkUtils(
                     //Bilder einzeln hola
                     for (m in pictureMessages){
                         try {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                val messageResult = getmessagebyid(m.message.id ?: 0) //TODO: DO null abfrage gschied
-                                messageResult.onSuccessWithBody { success, body1 ->
+                            val id = m.message.id
+                            val messageResult = id?.let { getmessagebyid(it) }
 
-                                    val messageasdto = json.decodeFromString<ServerMessageDto>(body1)
+                            if (messageResult == null) {
+                                println("ERROR: Messageid nicht vorhanden")
+                            } else {
+                                try {
+                                    var messageToUpsert: MessageWithReaders? = null
 
-                                    val message = convertServerMessageDtoToMessageWithReaders(messageasdto)
-
-                                    CoroutineScope(
-                                        context = Dispatchers.IO
-                                    ).launch {
-                                        messageRepository.upsertMessageWithReaders(message)
+                                    // onSuccessWithBody is suspending — await it and convert the body
+                                    messageResult.onSuccessWithBody { _, body1 ->
+                                        val messageasdto = json.decodeFromString<ServerMessageDto>(body1)
+                                        messageToUpsert = convertServerMessageDtoToMessageWithReaders(messageasdto)
                                     }
 
+                                    // if successful, upsert and wait for DB write to finish before next iteration
+                                    messageToUpsert?.let { msg ->
+                                        withContext(Dispatchers.IO) {
+                                            messageRepository.upsertMessageWithReaders(msg)
+                                        }
+                                        println("Picture message upserted: $id")
+                                    } ?: println("Failed to fetch/parse picture message id $id")
+
+                                } catch (e: Exception) {
+                                    println("Error fetching picture message id $id: ${e.message}")
                                 }
                             }
+
 
                         } catch (e: Exception) {
                             Result.failure<Unit>(e)
@@ -560,8 +568,6 @@ class NetworkUtils(
         }finally {
             onLoadingStateChange(false) // End loading
         }
-
-
     }
 
 
