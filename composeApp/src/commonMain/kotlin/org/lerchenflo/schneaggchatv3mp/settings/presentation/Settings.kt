@@ -39,6 +39,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
+import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -56,6 +57,7 @@ fun SettingsScreen(
 ){
     val viewModel = koinViewModel<SettingsViewModel>()
     val appRepository = koinInject<AppRepository>()
+    val appVersion = koinInject<AppVersion>()
 
     viewModel.init() // load all settings to show
 
@@ -178,7 +180,7 @@ fun SettingsScreen(
         )
 
         Text(
-            text = stringResource(Res.string.version, "3.x.x"),
+            text = stringResource(Res.string.version, appVersion.getversionName()) + " Buildnr: " + appVersion.getversionCode(),
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()

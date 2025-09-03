@@ -9,6 +9,7 @@ import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.database.desktopAppDatabaseBuilder
 import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
+import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 
 
 val desktopAppDatabaseModule = module {
@@ -21,4 +22,8 @@ val desktopHttpModule = module {
 
 val desktopDataStoreModule = module {
     single<DataStore<Preferences>> { desktopDatastoreBuilder() }
+}
+
+val desktopVersionModule = module {
+    single { AppVersion() }
 }
