@@ -36,9 +36,10 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.OWNID
-import org.lerchenflo.schneaggchatv3mp.USERNAME
+import org.lerchenflo.schneaggchatv3mp.database.AppRepository
+import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -55,6 +56,8 @@ fun SettingsScreen(
         .safeContentPadding()
 ){
     val viewModel = koinViewModel<SettingsViewModel>()
+    val appRepository = koinInject<AppRepository>()
+    val appVersion = koinInject<AppVersion>()
 
     viewModel.init() // load all settings to show
 
@@ -88,13 +91,13 @@ fun SettingsScreen(
                     .weight(1f)
             ){
                 Text(
-                    text = USERNAME,
+                    text = appRepository.sessionCache.username,
                     modifier = Modifier
                         .clickable{viewModel.changeUsername()}
 
                 )
                 Text(
-                    text = "Userid : $OWNID"
+                    text = "Userid : ${appRepository.sessionCache.ownId}"
                 )
             }
         }
@@ -102,7 +105,7 @@ fun SettingsScreen(
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
         //---- App Einstellungen ----
 
-        // Marddown Formatting
+        // Markdown Formatting
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -177,7 +180,7 @@ fun SettingsScreen(
         )
 
         Text(
-            text = stringResource(Res.string.version, "3.x.x"),
+            text = stringResource(Res.string.version, appVersion.getversionName()) + " Buildnr: " + appVersion.getversionCode(),
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()

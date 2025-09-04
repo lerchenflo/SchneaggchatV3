@@ -1,7 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.database
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -10,13 +9,13 @@ import androidx.room.Update
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.database.tables.Group
-import org.lerchenflo.schneaggchatv3mp.database.tables.GroupMember
-import org.lerchenflo.schneaggchatv3mp.database.tables.GroupWithMembers
-import org.lerchenflo.schneaggchatv3mp.database.tables.Message
-import org.lerchenflo.schneaggchatv3mp.database.tables.MessageReader
-import org.lerchenflo.schneaggchatv3mp.database.tables.MessageWithReaders
-import org.lerchenflo.schneaggchatv3mp.database.tables.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupWithMembers
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 
 @Dao
 interface UserDao {

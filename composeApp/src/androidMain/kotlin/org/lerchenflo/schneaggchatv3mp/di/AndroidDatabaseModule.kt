@@ -10,6 +10,7 @@ import org.koin.android.ext.koin.androidContext
 import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.database.androidAppDatabaseBuilder
 import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
+import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 
 val androidUserDatabaseModule = module {
     single<RoomDatabase.Builder<AppDatabase>> { androidAppDatabaseBuilder(androidContext()) }
@@ -21,4 +22,8 @@ val androidHttpModule = module {
 
 val androidDataStoreModule = module {
     single<DataStore<Preferences>> { createAndroidDataStore(androidContext()) }
+}
+
+val androidVersionModule = module {
+    single { AppVersion(androidContext()) }
 }

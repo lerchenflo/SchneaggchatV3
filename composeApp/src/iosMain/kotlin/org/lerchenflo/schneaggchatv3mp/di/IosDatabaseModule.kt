@@ -8,8 +8,8 @@ import io.ktor.client.engine.darwin.Darwin
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.database.iosAppDatabaseBuilder
-import org.lerchenflo.schneaggchatv3mp.database.iosDatastoreBuilder
 import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
+import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 
 val IosDatabaseModule = module {
     single<RoomDatabase.Builder<AppDatabase>> { iosAppDatabaseBuilder() }
@@ -21,4 +21,8 @@ val IosHttpModule = module {
 
 val IosDatastoreModule = module {
     single<DataStore<Preferences>> { iosDatastoreBuilder() }
+}
+
+val IosVersionModule = module {
+    single { AppVersion() }
 }

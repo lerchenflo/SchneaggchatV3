@@ -1,13 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp
 
-// todo sessionid und ownid und so in a extra klasse zum besser verwalta
-var SESSIONID: String? = null
-var OWNID: Long? = null
-var USERNAME = "" //Da eigene nutzername
-
-
-
-
 var URL_PRIVACY = "https://schneaggchat.lerchenflo.eu/privacypolicy/index.html"
 
 var URL_INSTAGRAM =
@@ -29,10 +21,6 @@ var GROUPPROFILEPICTURE = ""
 
 var PROFILEPICTURE = ""
 
-var PASSWORD_DONOTPRINT = "" //S eigene Passwort
 
-var LOGGEDIN = false //Ob du iggloggt bisch
-
-var ONLINE = true //Ob du online bisch
 
 

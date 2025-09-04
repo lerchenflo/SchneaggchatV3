@@ -6,6 +6,7 @@ import org.koin.core.context.startKoin
 import org.lerchenflo.schneaggchatv3mp.di.androidDataStoreModule
 import org.lerchenflo.schneaggchatv3mp.di.androidHttpModule
 import org.lerchenflo.schneaggchatv3mp.di.androidUserDatabaseModule
+import org.lerchenflo.schneaggchatv3mp.di.androidVersionModule
 
 import org.lerchenflo.schneaggchatv3mp.di.sharedmodule
 
@@ -21,7 +22,7 @@ class MainApp: Application() {
             modules(androidUserDatabaseModule, sharedmodule)
 
             //Modules für Httpclient
-            modules(androidHttpModule, androidDataStoreModule)
+            modules(androidHttpModule, androidDataStoreModule, androidVersionModule)
         }
     }
 }

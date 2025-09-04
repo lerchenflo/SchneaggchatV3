@@ -57,7 +57,7 @@
     <string name="loadinginfo_offline">Du bist derzeit offline...</string>
     <string name="read">gelesen</string>
     <string name="useMarkdown">Markdown-formatierung verwenden</string>
-    <string name="markdownInfo">Damit wird die Markdown-formatierung von Nachrichten aktiviert. Dies kann jedoch das Laden der Nachrichten verlangsamen</string>
+    <string name="markdownInfo">Damit wird die Markdown-formatierung von Nachrichten aktiviert. Dies kann jedoch das Scrollen im Chat verlangsamen</string>
     <string name="something_wrong_message">Bei dieser Nachricht stimmt etwas nicht.</string>
     <string name="log_out_successfully">Erfolgreich ausgeloggt</string>
 </resources>
