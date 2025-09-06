@@ -45,7 +45,7 @@ import schneaggchatv3mp.composeapp.generated.resources.go_back
 import schneaggchatv3mp.composeapp.generated.resources.message
 import kotlin.time.ExperimentalTime
 
-@Preview
+@Preview()
 @Composable
 fun ChatScreen(
     onBackClick: () -> Unit,
