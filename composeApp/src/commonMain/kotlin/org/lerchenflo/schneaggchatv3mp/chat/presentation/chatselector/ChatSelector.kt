@@ -15,6 +15,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ManageSearch
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -69,6 +72,7 @@ fun Chatauswahlscreen(
     onChatSelected: (ChatSelectorItem) -> Unit,  // navigation callback
     onNewChatClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    onToolsAndGamesClick: () -> Unit,
     modifier: Modifier = Modifier
         .safeContentPadding()
 ) {
@@ -141,7 +145,7 @@ fun Chatauswahlscreen(
                 contentDescription = stringResource(Res.string.tools_and_games),
                 modifier = Modifier
                     .size(size)
-                    .clickable { SnackbarManager.showMessage("Es gibt noch koa spiele und o koa tools") },
+                    .clickable { onToolsAndGamesClick() },
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
             )
             Spacer(Modifier.width(distance))
@@ -179,7 +183,13 @@ fun Chatauswahlscreen(
                 onValueChange = { viewModel.updateSearchterm(it) }, //In da datenbank gits a suchfeature
                 modifier = Modifier
                     .weight(1f),
-                placeholder = { Text(stringResource(Res.string.search_friend)) }
+                placeholder = { Text(stringResource(Res.string.search_friend)) },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search"
+                    )
+                }
             )
 
 

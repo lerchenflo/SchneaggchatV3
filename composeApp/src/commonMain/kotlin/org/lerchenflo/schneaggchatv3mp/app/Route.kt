@@ -28,4 +28,7 @@ sealed interface Route {
     @Serializable
     data object ChatDetails: Route
 
+    @Serializable
+    data object Todolist: Route
+
 }
