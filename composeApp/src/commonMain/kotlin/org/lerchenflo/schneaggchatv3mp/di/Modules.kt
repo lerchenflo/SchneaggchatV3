@@ -22,6 +22,8 @@ import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsViewModel
+import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
+import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 
 val sharedmodule = module{
@@ -38,6 +40,7 @@ val sharedmodule = module{
     singleOf(::GroupRepository)
     singleOf(::UserRepository)
     singleOf(::MessageRepository)
+    singleOf(::TodoRepository)
 
 
     //Netzwerktask
@@ -67,4 +70,7 @@ val sharedmodule = module{
 
     viewModelOf(::SignUpViewModel)
     factory { SignUpViewModel(get()) }
+
+    viewModelOf(::TodolistViewModel)
+    factory { TodolistViewModel(get()) }
 }

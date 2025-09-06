@@ -35,6 +35,7 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
+import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 
 
@@ -123,7 +124,12 @@ fun App() {
                             onNewChatClick = {
                                 navController.navigate(Route.NewChat)
                             },
-                            onSettingsClick = {navController.navigate(Route.Settings)}
+                            onSettingsClick = {
+                                navController.navigate(Route.Settings)
+                            },
+                            onToolsAndGamesClick = {
+                                navController.navigate(Route.Todolist)
+                            }
                         )
                     }
 
@@ -195,6 +201,14 @@ fun App() {
                         )
                     }
 
+                    //Todoliste
+                    composable<Route.Todolist>{
+                        TodolistScreen(
+                            onBackClick = {
+                                navController.navigateUp()
+                            }
+                        )
+                    }
 
                 }
             }

@@ -9,12 +9,13 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntityDto
 
 
 @Database(
-    entities = [User::class, Message::class, MessageReader::class, Group::class, GroupMember::class],
+    entities = [User::class, Message::class, MessageReader::class, Group::class, GroupMember::class, TodoEntityDto::class],
     exportSchema = true,
-    version = 21
+    version = 22
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -27,6 +28,7 @@ abstract class AppDatabase: RoomDatabase() {
 
     abstract fun groupDao(): GroupDao
 
+    abstract fun todolistdao(): TodolistDao
 
     abstract fun allDatabaseDao(): AllDatabaseDao
 

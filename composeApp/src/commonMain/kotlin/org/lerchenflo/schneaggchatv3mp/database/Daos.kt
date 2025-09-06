@@ -16,6 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntityDto
 
 @Dao
 interface UserDao {
@@ -119,6 +120,21 @@ interface GroupDao {
     @Query("DELETE FROM group_members WHERE group_id = :groupId")
     suspend fun deleteMembersForGroup(groupId: Long)
 }
+
+
+@Dao
+interface TodolistDao{
+    @Upsert
+    suspend fun upsertTodo(todo: TodoEntityDto)
+
+    @Query("DELETE FROM todoentitydto WHERE id = :todoid")
+    suspend fun delete(todoid: Long)
+
+    @Transaction
+    @Query("SELECT * FROM todoentitydto")
+    fun getAllTodos(): Flow<List<TodoEntityDto>>
+}
+
 
 @Dao
 interface AllDatabaseDao {
