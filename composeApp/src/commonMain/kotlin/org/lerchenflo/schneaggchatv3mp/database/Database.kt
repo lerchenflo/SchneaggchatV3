@@ -9,13 +9,13 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntityDto
+import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
 
 
 @Database(
     entities = [User::class, Message::class, MessageReader::class, Group::class, GroupMember::class, TodoEntityDto::class],
     exportSchema = true,
-    version = 22
+    version = 25
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)

@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.todolist.presentation
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,6 +41,23 @@ fun TodolistScreen(
     val viewModel = koinViewModel<TodolistViewModel>()
     val todoliste by viewModel.todoflowState.collectAsStateWithLifecycle(emptyList())
 
+    val popupVisible by viewModel.popupVisible
+    val selectedTodo by viewModel.selectedTodo
+
+    if (popupVisible && selectedTodo != null) {
+        ShowTodoDetails(
+            todoEntry = selectedTodo!!,
+            onDismiss = { viewModel.hidePopup() },
+            onSave = { newtodoitem ->
+                viewModel.changeItem(newtodoitem, selectedTodo!!)
+                viewModel.hidePopup()
+            },
+            onDelete = {
+                //TODO todo löscha
+            }
+        )
+    }
+
 
     Column(
         modifier = modifier
@@ -67,7 +86,10 @@ fun TodolistScreen(
                     todoliste
                 ) { todo ->
                     TodoEntryUI(
-                        todoEntry = todo
+                        todoEntry = todo,
+                        onClick = {
+                            viewModel.showPopup(todo)
+                        }
                     )
                     HorizontalDivider(
                         thickness = 0.5.dp

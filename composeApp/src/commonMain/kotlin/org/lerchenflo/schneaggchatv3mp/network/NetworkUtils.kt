@@ -16,9 +16,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.SESSIONID
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
@@ -28,12 +26,13 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.convertServerGroupDtoToGro
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.convertServerMessageDtoToMessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.database.IdOperation
 import org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
+import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
+import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
 import org.lerchenflo.schneaggchatv3mp.utilities.Base64Util
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -255,6 +254,44 @@ class NetworkUtils(
 
 
 
+    suspend fun todoidsync(databaseids: String): NetworkResult<Boolean, String> {
+        val headers = mapOf(
+            "msgtype" to BUGFEATURESYNC,
+        )
+
+        val res = executeNetworkOperation(headers = headers, body = databaseids, get = false)
+
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
+            }
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
+        }
+    }
+
+    suspend fun gettodobyid(id: Long): NetworkResult<Boolean, String> {
+        val headers = mapOf(
+            "msgtype" to GETBUGFEATUREBYID,
+            "bugfeatureid" to id.toString()
+        )
+
+        val res = executeNetworkOperation(headers = headers, body = "", get = true)
+
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
+            }
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
+        }
+    }
+
+
+
+
 
     suspend fun messageidsync(databaseids: String): NetworkResult<Map<String, String>, String> {
         val headers = mapOf(
@@ -456,7 +493,6 @@ class NetworkUtils(
 
     suspend fun executeMsgIDSync(messageRepository: MessageRepository, onLoadingStateChange: (Boolean) -> Unit) {
 
-        //Todo für irgendwean: bein msgidsync switch case (ka ob des döt din usch subsch vom groupidsynf klaua) o des deleted iboua dass ma wenn ma da server wekfetzt o alle am handy wek hot
         //TODO: Richta dassas ersch startet wenn da vorherige request fertig isch
         println("MSgidsync startet")
         onLoadingStateChange(true)
@@ -568,6 +604,74 @@ class NetworkUtils(
         }finally {
             onLoadingStateChange(false) // End loading
         }
+    }
+
+
+    suspend fun executeTodoIDSync(todoRepository: TodoRepository) {
+
+        println("Groupidsync STARTET")
+
+
+        try {
+
+            val json = Json {
+                prettyPrint = false
+                //ignoreUnknownKeys = true
+            }
+
+            // 1. Get local user IDs and change dates
+            val localTodos = todoRepository.gettodochangeid()
+            val serializedData = json.encodeToString(localTodos)
+
+            // 2. Execute user ID sync with server
+            val syncResult = todoidsync(serializedData)
+
+            syncResult.onSuccessWithBody { success, body ->
+                val operations = json.decodeFromString<List<IdOperation>>(body)
+                CoroutineScope(Dispatchers.Default).launch {
+                    operations.map { operation ->
+                        when (operation.Status) {
+                            "deleted" -> {
+                                try {
+                                    todoRepository.deleteTodo(operation.Id)
+                                    Result.success(Unit)
+                                } catch (e: Exception) {
+                                    Result.failure<Unit>(e)
+                                }
+                            }
+                            "new", "modified" -> {
+                                try {
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        val todoResult = gettodobyid(operation.Id)
+                                        todoResult.onSuccessWithBody { success, body ->
+
+                                            val todo = json.decodeFromString<TodoEntityDto>(body)
+
+                                            CoroutineScope(Dispatchers.IO).launch {
+                                                todoRepository.upsertTodo(todo)
+                                                println("Todo inserted: ${todo}")
+                                            }
+                                        }
+                                    }
+
+                                } catch (e: Exception) {
+                                    Result.failure<Unit>(e)
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+            syncResult.onError {
+                println(it)
+            }
+        } catch (e: Exception) {
+            // Log error (platform-specific logging would be implemented separately)
+            println("Groupidsync fail")
+            e.printStackTrace()
+        }
+
     }
 
 

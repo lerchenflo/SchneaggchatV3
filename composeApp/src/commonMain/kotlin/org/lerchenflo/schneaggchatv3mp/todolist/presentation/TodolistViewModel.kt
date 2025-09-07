@@ -1,5 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.todolist.presentation
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -38,9 +41,41 @@ class TodolistViewModel(
     }
 
 
+    var popupVisible = mutableStateOf(false)
+        private set
+
+    var selectedTodo = mutableStateOf<TodoEntry?>(null)
+        private set
+
+    fun showPopup(todo: TodoEntry) {
+        selectedTodo.value = todo
+        popupVisible.value = true
+    }
+
+    fun hidePopup() {
+        popupVisible.value = false
+        selectedTodo.value = null
+    }
+
+    fun changeItem(newtodo: TodoEntry, oldtodo: TodoEntry){
+        if (newtodo != oldtodo){
+            //TODO: In datenbank updaten und an server schicka
+
+        }
+
+    }
+
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val todoFlow: Flow<List<TodoEntry>> = todoRepository.getTodoItemsFlow()
+    val todoFlow: Flow<List<TodoEntry>> = todoRepository
+        .getTodoItemsFlow()
+        .map {
+            list -> list.sortedWith(
+            compareBy(
+                { it.priority },
+                { it.lastChanged })
+            )
+        }
         .flowOn(Dispatchers.Default)
 
     val todoflowState: StateFlow<List<TodoEntry>> = todoFlow

@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.settings.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,9 +13,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -31,8 +37,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -75,7 +83,7 @@ fun SettingsScreen(
         // Section Userinfo
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(),
         ){
 
             Image(
@@ -88,12 +96,22 @@ fun SettingsScreen(
             )
             Column(
                 modifier = Modifier
-                    .weight(1f)
+                    .weight(1f),
+                horizontalAlignment = Alignment.Start
             ){
-                Text(
+
+                BasicText(
+                    //TODO: Style besser macha
                     text = appRepository.sessionCache.username,
                     modifier = Modifier
-                        .clickable{viewModel.changeUsername()}
+                        .clickable{viewModel.changeUsername()},
+                    style = TextStyle(
+                        color = MaterialTheme.colorScheme.primary
+                    ),
+                    autoSize = TextAutoSize.StepBased(
+                        minFontSize = 10.sp,
+                        maxFontSize = 30.sp
+                    ),
 
                 )
                 Text(
@@ -197,11 +215,8 @@ fun LogoutButton(
 {
     var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
 
-    NormalButton(
-        text = stringResource(Res.string.logout),
+    Button(
         onClick = {showLogoutDialog = true},
-        disabled = false,
-        isLoading = false,
         modifier = Modifier
             .fillMaxWidth()
             .padding(
@@ -209,8 +224,21 @@ fun LogoutButton(
                 end = 10.dp,
                 top = 2.dp,
                 bottom = 2.dp
-            )
-    )
+            ),
+    ){
+        Text(
+            text = stringResource(Res.string.logout),
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Icon(
+            imageVector = Icons.Default.ExitToApp,
+            contentDescription = "Logout icon", // or null if purely decorative
+            modifier = Modifier
+                .padding(start = 8.dp)
+        )
+    }
 
     // Confirmation dialog
     if (showLogoutDialog) {
