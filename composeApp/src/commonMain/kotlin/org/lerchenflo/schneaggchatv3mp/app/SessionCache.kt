@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 //DIe variabla sind static und ma muss ned uf se höra falls se sich ändrand (Ned alle funktiona mol)
 var OWNID: Long? = -1;
 var SESSIONID: String? = null
+var developer: Boolean = (OWNID == 1L || OWNID == 2L)
 
 
 class SessionCache {
@@ -23,6 +24,7 @@ class SessionCache {
     fun updateOwnId(newValue: Long?) {
         ownId = newValue
         OWNID = newValue
+        developer = (OWNID == 1L || OWNID == 2L)
     }
 
     var username: String by mutableStateOf("")

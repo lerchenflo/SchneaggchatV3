@@ -63,7 +63,8 @@ fun ShowTodoDetails(
     todoEntry: TodoEntry,
     onDismiss: () -> Unit,
     onSave: (TodoEntry) -> Unit,
-    onDelete: (() -> Unit)? = null
+    onDelete: (() -> Unit)? = null,
+    editable: Boolean
 ){
 
     var title by rememberSaveable { mutableStateOf(todoEntry.title) }
@@ -94,12 +95,17 @@ fun ShowTodoDetails(
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
                     text = title, style = MaterialTheme.typography.titleLarge,
-                    maxLines = 1
+                    maxLines = 1,
+                    modifier = Modifier
+                        .weight(1f)
                 )
 
-                if (onDelete != null) {
-                    IconButton(onClick = { onDelete() }) {
+                if (onDelete != null && editable) {
+                    IconButton(
+                        onClick = { onDelete() },
+                    ) {
                         Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+
                     }
                 }
             }
@@ -121,7 +127,8 @@ fun ShowTodoDetails(
                     value = title,
                     onValueChange = { title = it },
                     label = { Text("Titel") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    readOnly = !editable
                 )
                 Spacer(modifier = Modifier.height(4.dp))
 
@@ -136,7 +143,10 @@ fun ShowTodoDetails(
                     )
 
                     Box{
-                        TextButton(onClick = { typeExpanded = true }) {
+                        TextButton(
+                            onClick = { typeExpanded = true },
+                            enabled = editable
+                        ) {
                             Text(text = selectedType.toString())
                         }
 
@@ -169,7 +179,10 @@ fun ShowTodoDetails(
                     )
 
                     Box{
-                        TextButton(onClick = { platformExpanded = true }) {
+                        TextButton(
+                            onClick = { platformExpanded = true },
+                            enabled = editable
+                        ) {
                             Text(text = selectedPlatform.toString())
                         }
 
@@ -203,7 +216,10 @@ fun ShowTodoDetails(
                     )
 
                     Box{
-                        TextButton(onClick = { editorsExpanded = true }) {
+                        TextButton(
+                            onClick = { editorsExpanded = true },
+                            enabled = editable
+                        ) {
                             Text(text = selectedEditor.toString())
                         }
 
@@ -234,7 +250,7 @@ fun ShowTodoDetails(
                         .fillMaxWidth()
                         .height(140.dp),
                     singleLine = false,
-                    maxLines = 10
+                    enabled = editable
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -248,7 +264,10 @@ fun ShowTodoDetails(
                         text = stringResource(Res.string.bugstatus),
                     )
                     Box{
-                        TextButton(onClick = { statusExpanded = true }) {
+                        TextButton(
+                            onClick = { statusExpanded = true },
+                            enabled = editable
+                        ) {
                             Text(text = selectedStatus.toString())
                         }
 
@@ -273,7 +292,10 @@ fun ShowTodoDetails(
                         text = stringResource(Res.string.bugpriority),
                     )
                     Box{
-                        TextButton(onClick = { priorityExpanded = true }) {
+                        TextButton(
+                            onClick = { priorityExpanded = true },
+                            enabled = editable
+                        ) {
                             Text(text = selectedPriority.toString())
                         }
 
@@ -297,9 +319,8 @@ fun ShowTodoDetails(
 
 
         },
-        confirmButton = {
-            //TODO: Recreate todoentry with the new values from all fields
 
+        confirmButton = {
             val newtodo = TodoEntry(
                 id = todoEntry.id,
                 senderId = todoEntry.senderId,
@@ -314,12 +335,12 @@ fun ShowTodoDetails(
                 priority = selectedPriority.value
             )
 
-            /*
-            TextButton(onClick = onSave()) {
-                Text(stringResource(Res.string.save))
+            if (editable){
+                TextButton(onClick = { onSave(newtodo) }) {
+                    Text(stringResource(Res.string.save))
+                }
             }
 
-             */
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {

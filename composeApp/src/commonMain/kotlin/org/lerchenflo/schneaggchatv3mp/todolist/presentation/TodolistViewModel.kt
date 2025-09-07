@@ -47,7 +47,7 @@ class TodolistViewModel(
     var selectedTodo = mutableStateOf<TodoEntry?>(null)
         private set
 
-    fun showPopup(todo: TodoEntry) {
+    fun showPopup(todo: TodoEntry?) {
         selectedTodo.value = todo
         popupVisible.value = true
     }
@@ -59,10 +59,25 @@ class TodolistViewModel(
 
     fun changeItem(newtodo: TodoEntry, oldtodo: TodoEntry){
         if (newtodo != oldtodo){
-            //TODO: In datenbank updaten und an server schicka
-
+            globalViewModel.viewModelScope.launch {
+                todoRepository.upsertTodoServer(newtodo)
+                println("Todo update: true")
+            }
+        }else{
+            println("Todo update: false")
         }
+    }
 
+    fun deleteItem(todoId: Long){
+        globalViewModel.viewModelScope.launch {
+            todoRepository.deleteTodoServer(todoId)
+        }
+    }
+
+    fun addItem(todoItem: TodoEntry){
+        globalViewModel.viewModelScope.launch {
+            todoRepository.upsertTodoServer(todoItem)
+        }
     }
 
 
@@ -71,10 +86,9 @@ class TodolistViewModel(
         .getTodoItemsFlow()
         .map {
             list -> list.sortedWith(
-            compareBy(
-                { it.priority },
-                { it.lastChanged })
-            )
+            compareByDescending<TodoEntry> { it.priority }
+                .thenByDescending { it.lastChanged }
+        )
         }
         .flowOn(Dispatchers.Default)
 

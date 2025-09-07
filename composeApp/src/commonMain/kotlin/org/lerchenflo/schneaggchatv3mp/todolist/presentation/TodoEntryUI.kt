@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.StarHalf
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -60,17 +61,33 @@ fun TodoEntryUI(
                 maxLines = 1,
                 modifier = Modifier
                     .padding(5.dp)
+                    .weight(1f)
             )
 
-            if (todoEntry.priority == BugPriority.Low.value){
-                Image(
-                    imageVector = Icons.Outlined.Star,
-                    contentDescription = "highlighted",
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
-                    modifier = Modifier
-                        .size(20.dp)
-                )
+            when(todoEntry.priority){
+                BugPriority.High.value -> {
+                    Image(
+                        imageVector = Icons.Outlined.Star,
+                        contentDescription = "highlighted",
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
+                        modifier = Modifier
+                            .padding(5.dp)
+                    )
+                }
+
+                BugPriority.Extreme.value -> {
+                    Image(
+                        imageVector = Icons.Filled.Star,
+                        contentDescription = "highlighted",
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                        modifier = Modifier
+                            .padding(5.dp)
+                    )
+                }
+
+
             }
+
         }
 
         Row {

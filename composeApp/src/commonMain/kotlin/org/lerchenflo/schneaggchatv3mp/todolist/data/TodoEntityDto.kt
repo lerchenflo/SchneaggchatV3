@@ -9,16 +9,17 @@ import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugPlatform
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugPriority
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugType
+import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntry
 
 @Serializable
 @Entity
 data class TodoEntityDto(
     @PrimaryKey(autoGenerate = false)
     @SerialName("id")
-    var id: Int = 0,
+    var id: Long = 0,
 
     @SerialName("senderId")
-    var senderId: Int = 0,
+    var senderId: Long = 0,
 
     @SerialName("platform")
     var platform: Int = BugPlatform.Multiplatform.value,
@@ -51,3 +52,37 @@ data class TodoEntityDto(
     @SerialName("priority")
     var priority: Int = BugPriority.Normal.value
 )
+
+fun TodoEntityDto.toTodoEntry(): TodoEntry {
+    return TodoEntry(
+        id = this.id,
+        senderId = this.senderId,
+        createDate = this.createDate,
+        platform = this.platform,
+        type = this.type,
+        editorId = this.editorId,
+        content = this.content,
+        title = this.title,
+        lastChanged = this.lastChanged,
+        senderAsString = this.senderAsString,
+        status = this.status,
+        priority = this.priority
+    )
+}
+
+fun TodoEntry.toTodoEntityDto(): TodoEntityDto {
+    return TodoEntityDto(
+        id = this.id,
+        senderId = this.senderId,
+        createDate = this.createDate,
+        platform = this.platform,
+        type = this.type,
+        editorId = this.editorId,
+        content = this.content,
+        title = this.title,
+        lastChanged = this.lastChanged,
+        senderAsString = this.senderAsString,
+        status = this.status,
+        priority = this.priority
+    )
+}

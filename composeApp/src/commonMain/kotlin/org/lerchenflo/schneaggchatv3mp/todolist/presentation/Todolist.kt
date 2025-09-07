@@ -1,24 +1,40 @@
 package org.lerchenflo.schneaggchatv3mp.todolist.presentation
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.NoteAdd
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.app.developer
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
@@ -26,6 +42,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.todolist
 
 
@@ -34,7 +51,7 @@ import schneaggchatv3mp.composeapp.generated.resources.todolist
 fun TodolistScreen(
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
-        .fillMaxWidth()
+        .fillMaxSize()
         .safeContentPadding()
 ){
 
@@ -44,60 +61,100 @@ fun TodolistScreen(
     val popupVisible by viewModel.popupVisible
     val selectedTodo by viewModel.selectedTodo
 
-    if (popupVisible && selectedTodo != null) {
-        ShowTodoDetails(
-            todoEntry = selectedTodo!!,
-            onDismiss = { viewModel.hidePopup() },
-            onSave = { newtodoitem ->
-                viewModel.changeItem(newtodoitem, selectedTodo!!)
-                viewModel.hidePopup()
-            },
-            onDelete = {
-                //TODO todo löscha
-            }
-        )
-    }
+    //Zoagts grad a popup
+    if (popupVisible ) {
 
-
-    Column(
-        modifier = modifier
-    ) {
-        ActivityTitle(
-            title = stringResource(Res.string.todolist),
-            onBackClick = onBackClick
-        )
-
-        //Do vlt no sortiera
-
-        PullToRefreshBox( // needs experimental opt in
-            isRefreshing = false,
-            onRefresh = { viewModel.refresh() }, // Trigger refresh
-            indicator = {
-                null //Überschrieba dassa garned kut
-            },
-
-            ) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                contentPadding = PaddingValues(16.dp),
-            ) {
-                items(
-                    todoliste
-                ) { todo ->
-                    TodoEntryUI(
-                        todoEntry = todo,
-                        onClick = {
-                            viewModel.showPopup(todo)
-                        }
-                    )
-                    HorizontalDivider(
-                        thickness = 0.5.dp
-                    )
+        //Wenn a tod usgwählt isch, denn a details zoaga
+        if (selectedTodo != null){
+            ShowTodoDetails(
+                todoEntry = selectedTodo!!,
+                onDismiss = { viewModel.hidePopup() },
+                onSave = { newtodoitem ->
+                    viewModel.changeItem(newtodoitem, selectedTodo!!)
+                    viewModel.hidePopup()
+                },
+                onDelete = {
+                    viewModel.deleteItem(selectedTodo!!.id)
+                    viewModel.hidePopup()
+                },
+                editable = developer
+            )
+        }else{
+            ShowAddPopup(
+                onDismiss = {
+                    viewModel.hidePopup()
+                },
+                onSubmit = {
+                    viewModel.addItem(it)
+                    viewModel.hidePopup()
                 }
-            }
+            )
         }
 
 
     }
+
+
+    Box(
+        modifier = modifier
+
+    ){
+        Column{
+            ActivityTitle(
+                title = stringResource(Res.string.todolist),
+                onBackClick = onBackClick
+            )
+
+            //Do vlt no sortiera
+
+            PullToRefreshBox( // needs experimental opt in
+                isRefreshing = false,
+                onRefresh = { viewModel.refresh() }, // Trigger refresh
+                indicator = {
+                    null //Überschrieba dassa garned kut
+                }
+            ) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    contentPadding = PaddingValues(16.dp),
+                ) {
+                    itemsIndexed(todoliste) { index, todo ->
+                        TodoEntryUI(
+                            todoEntry = todo,
+                            onClick = { viewModel.showPopup(todo) }
+                        )
+
+                        // Add space if next item has a lower priority
+                        val isNotLast = index < todoliste.lastIndex
+                        if (isNotLast) {
+                            val currentPriority = todo.priority
+                            val nextPriority = todoliste[index + 1].priority
+                            if (nextPriority < currentPriority) {
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+        FloatingActionButton(
+            onClick = {
+                viewModel.showPopup(null)
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+
+            ){
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = stringResource(Res.string.add),
+            )
+        }
+    }
+
+
 }

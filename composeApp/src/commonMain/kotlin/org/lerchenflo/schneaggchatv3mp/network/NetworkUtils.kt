@@ -7,7 +7,9 @@ import io.ktor.client.plugins.timeout
 import io.ktor.client.request.*
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
+import io.ktor.http.contentType
 import io.ktor.util.network.UnresolvedAddressException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +35,9 @@ import org.lerchenflo.schneaggchatv3mp.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
+import org.lerchenflo.schneaggchatv3mp.todolist.data.toTodoEntityDto
+import org.lerchenflo.schneaggchatv3mp.todolist.data.toTodoEntry
+import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.Base64Util
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -74,23 +79,24 @@ class NetworkUtils(
                     append("handytime", Base64Util.encode(Clock.System.now().toEpochMilliseconds().toString()))
 
                     SESSIONID?.let { append("sessionid", Base64Util.encode(it)) }
-                }
 
-
-
-                // Additional headers (encode values)
-                headers?.forEach { (k, v) ->
-                    // normalize keys: trim newlines, toLowerCase
-                    val key = k.replace("\n", "").lowercase()
-                    val value = v.replace("\n", "")
-                    if (key.isNotBlank() && value.isNotBlank()) {
-                        header(key, Base64Util.encode(value))
+                    // Additional headers (encode values)
+                    headers?.forEach { (k, v) ->
+                        // normalize keys: trim newlines, toLowerCase
+                        val key = k.replace("\n", "").lowercase()
+                        val value = v.replace("\n", "")
+                        if (key.isNotBlank() && value.isNotBlank()) {
+                            header(key, Base64Util.encode(value))
+                        }
                     }
                 }
 
                 // Body for POST
                 if (!get && body.toString() != "") {
-                    setBody(body.toString())
+                    contentType(ContentType.Application.Json)
+                    if (body != null){
+                        setBody(body)
+                    }
                 }
             }
 
@@ -279,6 +285,39 @@ class NetworkUtils(
 
         val res = executeNetworkOperation(headers = headers, body = "", get = true)
 
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
+            }
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
+        }
+    }
+
+    suspend fun upsertTodo(todo: TodoEntry): NetworkResult<Boolean, String> {
+        val headers = mapOf(
+            "msgtype" to ADDBUGFEATURE
+        )
+
+        val res = executeNetworkOperation(headers = headers, body = todo.toTodoEntityDto() , get = false)
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
+            }
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
+        }
+    }
+
+    suspend fun deleteTodo(todoId: Long): NetworkResult<Boolean, String> {
+        val headers = mapOf(
+            "msgtype" to DELETEBUGFEATUREBYID,
+            "bugfeatureid" to todoId.toString()
+        )
+
+        val res = executeNetworkOperation(headers = headers, body = "", get = false)
         return when (res) {
 
             is NetworkResult.Success -> {
@@ -609,7 +648,7 @@ class NetworkUtils(
 
     suspend fun executeTodoIDSync(todoRepository: TodoRepository) {
 
-        println("Groupidsync STARTET")
+        println("Todoidsync STARTET")
 
 
         try {
@@ -648,7 +687,7 @@ class NetworkUtils(
                                             val todo = json.decodeFromString<TodoEntityDto>(body)
 
                                             CoroutineScope(Dispatchers.IO).launch {
-                                                todoRepository.upsertTodo(todo)
+                                                todoRepository.upsertTodo(todo.toTodoEntry())
                                                 println("Todo inserted: ${todo}")
                                             }
                                         }
