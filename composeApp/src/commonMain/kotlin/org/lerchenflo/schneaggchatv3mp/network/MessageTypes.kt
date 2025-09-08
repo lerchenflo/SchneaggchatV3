@@ -1,156 +1,162 @@
 package org.lerchenflo.schneaggchatv3mp.network
 
-import schneaggchatv3mp.composeapp.generated.resources.Res.string
 
+// Account & Authentication (0-99)
 
-//A paar messagetypes
+val CREATEACCOUNTMESSAGE: String = "0"
 
-const val CREATEACCOUNTMESSAGE = "0"
+val LOGINMESSAGE: String = "10"
 
-const val CREATEGROUPMESSAGE = "1"
+val DELETEACCOUNTMESSAGE: String = "20"
 
-const val LOGINMESSAGE = "7"
+// User Management (100-199)
 
-const val DELETEACCOUNTMESSAGE = "8"
+val CHANGEUSERNAMEMESSAGE: String = "100"
 
-//Für settings und so
+val CHANGEPASSWORDMESSAGE: String = "110"
 
-const val CHANGEPASSWORDMESSAGE = "11"
+val SETPROFILEPICTURE: String = "120"
 
-const val CHANGEUSERNAMEMESSAGE = "12"
+val SETUSERDESCRIPTION: String = "130"
 
+val SETUSERSTATUS: String = "140"
 
-const val SETPROFILEPICTURE = "13"
+val USERIDSYNC: String = "150"
 
-const val FRIENDREQUEST = "14"
+val GETUSERBYID: String = "160"
 
-const val FRIENDACCEPT = "15"
+// Friends (200-299)
 
-const val FRIENDREMOVE = "16"
+val FRIENDREQUEST: String = "200"
 
+val FRIENDACCEPT: String = "210"
 
-//Textnachrichten
-const val TEXTMESSAGE = "21"
+val FRIENDREMOVE: String = "220"
 
-//Bilder
-const val PICTUREMESSAGE = "23"
+val GETCOMMONGROUPS: String = "230"
 
-const val VOICEMESSAGE = "25"
+// Messaging (300-399)
 
-const val POLLMESSAGE = "27"
+val TEXTMESSAGE: String = "300"
 
+val PICTUREMESSAGE: String = "310"
 
-const val MSGIDSYNC = "30"
+val VOICEMESSAGE: String = "320"
 
-const val GETUSERLISTE = "31"
+val POLLMESSAGE: String = "330"
 
-const val GETALLCHANGEDMESSAGES = "32"
+val DELETECHATMESSAGE: String = "340"
 
-const val GETMESSAGEBYID = "33"
+val SETMESSAGEGELESEN: String = "350"
 
-const val GETGROUPMEMBERS = "34"
+val CHANGEMESSAGE: String = "360"
 
-const val REMOVEGROUPMEMBER = "35"
+val SETALLMESSAGESINCHATGELESEN: String = "370"
 
-const val ADDGROUPMEMBER = "36"
+// Sync & Utilities (400-499)
 
-const val MAKEGROUPADMIN = "37"
+val MSGIDSYNC: String = "400"
 
-const val GETGROUPLISTE = "38"
+val GETUSERLISTE: String = "410"
 
-const val SETGROUPPROFILEPICTURE = "39"
+val GETALLCHANGEDMESSAGES: String = "420"
 
-const val REMOVEGROUPADMIN = "1111" //Muss ma no ändra also alle messagetypes verschiaba
+val GETMESSAGEBYID: String = "430"
 
-const val DELETEGROUP = "1112"
+val GETMESSAGESWITHOUTPICTURES: String = "440"
 
-const val GROUPIDSYNC = "1113"
+// Group Management (500-599)
 
-const val GETGROUPBYID = "1114"
+val CREATEGROUPMESSAGE: String = "500"
 
+val GETGROUPLISTE: String = "510"
 
+val GETGROUPMEMBERS: String = "520"
 
-const val SETGROUPDESCRIPTION = "1115"
+val ADDGROUPMEMBER: String = "530"
 
-const val SETGROUPNAME = "1116"
+val REMOVEGROUPMEMBER: String = "540"
 
+val MAKEGROUPADMIN: String = "550"
 
-//Einzelne user
+val REMOVEGROUPADMIN: String = "560"
 
-const val DELETECHATMESSAGE = "40"
+val SETGROUPPROFILEPICTURE: String = "570"
 
-const val GETCOMMONGROUPS = "41"
+val SETGROUPNAME: String = "580"
 
-const val SETUSERDESCRIPTION = "42"
+val SETGROUPDESCRIPTION: String = "590"
 
-const val SETUSERSTATUS = "43"
+val DELETEGROUP: String = "600"
 
-const val USERIDSYNC = "44"
+val GROUPIDSYNC: String = "610"
 
-const val GETUSERBYID = "45"
+val GETGROUPBYID: String = "620"
 
-//Locationzüg
+// Location (700-799)
 
-const val GETUSERLOCATIONS = "50"
+val GETUSERLOCATIONS: String = "700"
 
-const val IMPORTANTLOCATIONSYNC = "51"
+val IMPORTANTLOCATIONSYNC: String = "710"
 
-const val ADDIMPORTANTLOCATION = "52"
+val ADDIMPORTANTLOCATION: String = "720"
 
-const val REMOVEIMPORTANTLOCATION = "53"
+val REMOVEIMPORTANTLOCATION: String = "730"
 
-const val CHANGEIMPORTANDLOCATIONDESCRIPTION = "54"
+val CHANGEIMPORTANDLOCATIONDESCRIPTION: String = "740"
 
-const val GETIMPORTANTLOCATIONBYID = "56"
+val GETIMPORTANTLOCATIONBYID: String = "750"
 
-const val UPDATELOCATIONRATING = "57"
+val UPDATELOCATIONRATING: String = "760"
 
-const val REMOVELOCATIONRATING = "58"
+val REMOVELOCATIONRATING: String = "770"
 
+val SHARELOCATIONWITHUSER: String = "780"
 
+val SETWAKEUPENABLEDWITHUSER: String = "790"
 
-const val SHARELOCATIONWITHUSER = "55"
+// System & Public (800-899)
 
+val PING: String = "800"
 
+val WAKEUPMESSAGE: String = "810"
 
-const val GETMESSAGESWITHOUTPICTURES = "99"
+val DDOS: String = "820"
 
+val SETFIREBASETOKEN: String = "830"
 
-const val PING = "100"
+// Games (2000-2099)
 
-const val WAKEUPMESSAGE = "101"
+val GAME_CREATE: String = "2000"
 
-const val DDOS = "102"
+val GAME_JOIN: String = "2010"
 
+val GAME_GETPLAYERS: String = "2020"
 
-//Spiele
+val GAME_GETCONTENT: String = "2030"
 
-const val GAME_CREATE = "4000"
+// GeoGuesser (2100-2199)
 
-const val GAME_JOIN = "4001"
+val GEOGUESSER_GETHIGHSCORE: String = "2100"
 
-const val GAME_GETPLAYERS = "4002"
+val GEOGUESSER_SETHIGHSCORE: String = "2110"
 
-const val GAME_GETCONTENT = "4003"
+// Leaderboard (2200-2299)
 
+val CREATELEADERBOARD: String = "2200"
 
-const val GEOGUESSER_GETHIGHSCORE = "5000"
+val GETHIGHSCORE: String = "2210"
 
-const val GEOGUESSER_SETHIGHSCORE = "5001"
+val SETHIGHSCORE: String = "2220"
 
+val DELETEHIGHSCORE: String = "2230"
 
-const val SETMESSAGEGELESEN = "6000"
+// Bug Reports (2300-2399)
 
-const val CHANGEMESSAGE = "6001"
+val BUGFEATURESYNC: String = "2300"
 
+val ADDBUGFEATURE: String = "2310"
 
+val GETBUGFEATUREBYID: String = "2320"
 
-const val BUGFEATURESYNC = "7000"
-
-const val ADDBUGFEATURE = "7001"
-
-const val GETBUGFEATUREBYID = "7002"
-
-const val DELETEBUGFEATUREBYID = "7003"
-
-const val SETFIREBASETOKEN = "10000"
+val DELETEBUGFEATUREBYID: String = "2330"
