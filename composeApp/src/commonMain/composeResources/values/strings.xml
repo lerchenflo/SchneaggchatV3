@@ -61,12 +61,27 @@
 
     <!-- bis hier auf deutsch übersetzt -->
     <string name="status">Status:</string>
-    <string name="others_say_about">others say about %1$s:</string>
+    <string name="others_say_about">others wrote about %1$s:</string>
     <string name="status_info">This Text is written by the user himself</string>
     <!--<string name="description_info">All friends of %1$s can edit this text, but %1$s cannot.</string>-->
     <string name="no_description">No description</string>
     <string name="remove_friend">remove friend</string>
     <string name="todolist">Todos</string>
+    <string name="save">save</string>
+    <string name="close">close</string>
+    <string name="not_assigned">Not assigned</string>
+    <string name="assignedto">Assigned to</string>
+    <string name="bugplatform">Platform</string>
+    <string name="bugtype">Type</string>
+    <string name="bugpriority">Priority</string>
+    <string name="enteredby">Entered by</string>
+    <string name="bugstatus">Status</string>
+    <string name="buglastchanged">Last changed</string>
+
+
+
+
+
 
 
 </resources>

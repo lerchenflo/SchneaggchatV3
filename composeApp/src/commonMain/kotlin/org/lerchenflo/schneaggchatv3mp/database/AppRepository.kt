@@ -27,6 +27,7 @@ import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccess
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
+import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 
 class AppRepository(
@@ -37,6 +38,7 @@ class AppRepository(
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
     private val messageRepository: MessageRepository,
+    private val todoRepository: TodoRepository,
 
     val sessionCache: SessionCache
 
@@ -315,8 +317,17 @@ class AppRepository(
                         }
                     }
 
+                    val todoSync = async {
+                        try {
+                            networkUtils.executeTodoIDSync(todoRepository = todoRepository)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+
+
                     // wait for all to finish; exceptions were handled in each async block so awaitAll won't throw
-                    awaitAll(msgSync, userSync, groupSync)
+                    awaitAll(msgSync, userSync, groupSync, todoSync)
                 }
             } finally {
                 onLoadingStateChange(false)

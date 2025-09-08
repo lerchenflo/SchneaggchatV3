@@ -16,7 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntityDto
+import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
 
 @Dao
 interface UserDao {
@@ -133,6 +133,9 @@ interface TodolistDao{
     @Transaction
     @Query("SELECT * FROM todoentitydto")
     fun getAllTodos(): Flow<List<TodoEntityDto>>
+
+    @Query("SELECT id, changedate FROM todoentitydto")
+    suspend fun getTodoIdsWithChangeDates(): List<IdChangeDate>
 }
 
 
