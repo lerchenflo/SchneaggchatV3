@@ -37,6 +37,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -55,7 +57,6 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.*
 
 @Composable
-@Preview
 fun SettingsScreen(
     onBackClick: () -> Unit = {},
     toLoginNavigator: () -> Unit = {},
@@ -123,54 +124,16 @@ fun SettingsScreen(
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
         //---- App Einstellungen ----
 
+
         // Markdown Formatting
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-        ) {
-            Row(
-                modifier = Modifier
-                    .weight(1f),
-                verticalAlignment = Alignment.CenterVertically
-            ){
-                Text(
-                    text = stringResource(Res.string.useMarkdown),
-                    maxLines = 2,
-                    modifier = Modifier
-                        .weight(1f)
-                        .wrapContentHeight(align = Alignment.CenterVertically),
-                )
+        SettingsSwitch(
+            titletext = stringResource(Res.string.useMarkdown),
+            infotext = stringResource(Res.string.markdownInfo),
+            switchchecked = viewModel.markdownEnabeled,
+            onSwitchChange = { viewModel.updateMarkdownSwitch(it) },
+        )
 
-                Spacer(modifier = Modifier.width(8.dp))
-
-                val mdInfo = stringResource(Res.string.markdownInfo) // pfusch wegs composable
-                IconButton(
-                    onClick = { SnackbarManager.showMessage(mdInfo)},
-                    modifier = Modifier
-                        .padding(top = 5.dp, start = 5.dp)
-                        .statusBarsPadding()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = stringResource(Res.string.markdownInfo),
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Switch(
-                checked = viewModel.markdownEnabeled,
-                onCheckedChange = { viewModel.updateMarkdownSwitch(it) },
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = androidx.compose.ui.graphics.Color.Green,
-                    uncheckedThumbColor = androidx.compose.ui.graphics.Color.Gray
-                )
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-        }
-
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
         NormalButton(
