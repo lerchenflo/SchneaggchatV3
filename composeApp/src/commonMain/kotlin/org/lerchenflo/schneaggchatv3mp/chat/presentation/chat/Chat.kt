@@ -26,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -180,6 +179,6 @@ fun ChatScreen(
 
 @OptIn(ExperimentalTime::class)
 fun Long.toLocalDate(): LocalDate {
-    val instant = Instant.fromEpochMilliseconds(this)
+    val instant = kotlin.time.Instant.fromEpochMilliseconds(this)
     return instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
 }

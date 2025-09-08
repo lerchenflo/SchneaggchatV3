@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -39,6 +40,7 @@ import schneaggchatv3mp.composeapp.generated.resources.email
 import schneaggchatv3mp.composeapp.generated.resources.password
 import schneaggchatv3mp.composeapp.generated.resources.password_again
 import schneaggchatv3mp.composeapp.generated.resources.username
+import kotlin.time.ExperimentalTime
 
 //Signup element für Username und email
 @Composable
@@ -200,7 +202,7 @@ fun DateDropdownPicker(
     minYear: Int = 1900,
     maxYear: Int = run {
         // default to current system year
-        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val now = kotlin.time.Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
         now.date.year
     },
     monthNames: List<String> = listOf(

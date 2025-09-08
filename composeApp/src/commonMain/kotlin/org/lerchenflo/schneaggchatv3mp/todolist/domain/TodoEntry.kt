@@ -35,7 +35,9 @@ enum class BugPlatform(val value: Int) {
 
 enum class BugType(val value: Int) {
     BugReport(0),
-    FeatureRequest(1);
+    FeatureRequest(1),
+
+    Todo(2);
 
     companion object {
         fun fromInt(value: Int): BugType =
