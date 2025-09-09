@@ -10,6 +10,7 @@ import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.database.desktopAppDatabaseBuilder
 import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 
 val desktopAppDatabaseModule = module {
@@ -26,4 +27,8 @@ val desktopDataStoreModule = module {
 
 val desktopVersionModule = module {
     single { AppVersion() }
+}
+
+val desktopPictureManagerModule = module {
+    single { PictureManager() }
 }

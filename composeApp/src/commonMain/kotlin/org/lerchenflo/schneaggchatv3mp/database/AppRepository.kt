@@ -56,7 +56,7 @@ class AppRepository(
     }
 
     @Transaction
-    fun getownUser(): User? {
+    suspend fun getownUser(): User? {
         return database.userDao().getUserbyId(OWNID?: 0)
     }
 
