@@ -1,19 +1,25 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
 import android.content.Context
+import android.graphics.BitmapFactory
+import android.util.Log
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.io.bytestring.decode
-import org.lerchenflo.schneaggchatv3mp.utilities.Base64.decodeFromBase64
+import okio.ByteString.Companion.decodeBase64
 import java.io.File
-import kotlin.io.encoding.ExperimentalEncodingApi
 
 actual class PictureManager(private val context: Context) {
 
-    @OptIn(ExperimentalEncodingApi::class)
     actual suspend fun savePictureToStorage(base64Pic: String, filename: String): String =
         withContext(Dispatchers.IO) {
-            val bytes = base64Pic.encodeToByteArray()
+            Log.d("ANDROID-Picturesave", "Saving: $filename")
+
+            // ✅ Correct Base64 decoding
+            val bytes = base64Pic.decodeBase64()?.toByteArray()
+                ?: throw IllegalArgumentException("Invalid Base64 string")
+
             savePictureBytes(bytes, filename)
         }
 
@@ -29,17 +35,29 @@ actual class PictureManager(private val context: Context) {
         return file.absolutePath
     }
 
-    actual suspend fun loadPictureFromStorage(filename: String): ByteArray? =
+    actual suspend fun loadPictureFromStorage(filename: String): ImageBitmap? =
         withContext(Dispatchers.IO) {
             val file = File(context.filesDir, filename)
-            if (!file.exists()) return@withContext null
-            return@withContext file.readBytes()
+            if (!file.exists()) {
+                Log.d("Android file load", "File not found: $filename")
+                return@withContext null
+            }
+
+            try {
+                val bytes = file.readBytes()
+                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                Log.d("Android file load", "Loaded picture: $filename (${bytes.size} bytes)")
+                bitmap?.asImageBitmap()
+            } catch (e: Exception) {
+                Log.e("Android file load", "Error loading picture: $filename", e)
+                null
+            }
         }
 
     actual suspend fun deletePicture(filename: String): Boolean =
         withContext(Dispatchers.IO) {
             val file = File(context.filesDir, filename)
             if (!file.exists()) return@withContext false
-            return@withContext file.delete()
+            file.delete()
         }
 }

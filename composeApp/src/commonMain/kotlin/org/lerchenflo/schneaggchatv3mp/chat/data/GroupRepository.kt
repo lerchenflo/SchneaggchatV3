@@ -38,8 +38,9 @@ class GroupRepository(
     @Transaction
     suspend fun upsertGroupWithMembers(gwm: GroupWithMembers) {
         // 1) upsert the group
-        val savefilename = gwm.group.name + GROUPPROFILEPICTURE_FILE_NAME
+        val savefilename = gwm.group.id.toString() + GROUPPROFILEPICTURE_FILE_NAME
         pictureManager.savePictureToStorage(gwm.group.profilePicture, savefilename)
+        gwm.group.profilePicture = savefilename
 
         database.groupDao().upsertGroup(gwm.group)
 

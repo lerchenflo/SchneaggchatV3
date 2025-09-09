@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
+import androidx.compose.ui.graphics.ImageBitmap
+
 expect class PictureManager {
     /**
      * Save a base64 encoded picture under [filename].
@@ -16,7 +18,7 @@ expect class PictureManager {
     /**
      * Load the picture bytes for [filename], or null if not found.
      */
-    suspend fun loadPictureFromStorage(filename: String): ByteArray?
+    suspend fun loadPictureFromStorage(filename: String): ImageBitmap?
 
     /**
      * Delete picture with [filename]. Returns true if deleted.
