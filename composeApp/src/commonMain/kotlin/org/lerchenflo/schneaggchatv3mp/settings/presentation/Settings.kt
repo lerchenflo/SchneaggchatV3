@@ -26,6 +26,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -196,7 +197,7 @@ fun LogoutButton(
         Spacer(modifier = Modifier.weight(1f))
 
         Icon(
-            imageVector = Icons.Default.ExitToApp,
+            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
             contentDescription = "Logout icon", // or null if purely decorative
             modifier = Modifier
                 .padding(start = 8.dp)

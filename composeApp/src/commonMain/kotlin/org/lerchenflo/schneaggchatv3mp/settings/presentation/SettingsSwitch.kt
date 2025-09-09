@@ -65,11 +65,8 @@ fun SettingsSwitch(
             checked = switchchecked,
             onCheckedChange = {
                 onSwitchChange(it)
-            },
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.primary,
-                uncheckedThumbColor = Color.Gray
-            )
+            }
+
         )
     }
 }

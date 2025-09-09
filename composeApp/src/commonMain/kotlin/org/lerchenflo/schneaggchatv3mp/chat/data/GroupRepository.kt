@@ -2,16 +2,20 @@ package org.lerchenflo.schneaggchatv3mp.chat.data
 
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
+import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
+import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupWithMembers
 import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.database.IdChangeDate
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 class GroupRepository(
     private val database: AppDatabase,
     private val networkUtils: NetworkUtils,
+    private val pictureManager: PictureManager
 ) {
     suspend fun upsertGroup(group: Group){
         database.groupDao().upsertGroup(group)
@@ -34,6 +38,9 @@ class GroupRepository(
     @Transaction
     suspend fun upsertGroupWithMembers(gwm: GroupWithMembers) {
         // 1) upsert the group
+        val savefilename = gwm.group.name + GROUPPROFILEPICTURE_FILE_NAME
+        pictureManager.savePictureToStorage(gwm.group.profilePicture, savefilename)
+
         database.groupDao().upsertGroup(gwm.group)
 
         // 3) replace membership rows for this group
