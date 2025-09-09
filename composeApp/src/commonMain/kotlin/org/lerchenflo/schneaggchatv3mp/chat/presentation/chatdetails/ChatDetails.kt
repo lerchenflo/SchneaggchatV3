@@ -22,8 +22,10 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatEntity
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
@@ -62,18 +64,30 @@ fun ChatDetails(
                 .fillMaxWidth()
                 .wrapContentWidth(Alignment.CenterHorizontally)
         ){
-            Image(
-                painter = painterResource(Res.drawable.icon_nutzer),
-                contentDescription = stringResource(Res.string.profile_picture),
+
+
+            val profilepic_Imagepath = when (globalViewModel.selectedChat.value?.entity) {
+                is ChatEntity.GroupEntity -> {
+                    (globalViewModel.selectedChat.value?.entity as ChatEntity.GroupEntity).groupWithMembers.group.profilePicture
+                }
+                is ChatEntity.UserEntity -> {
+                    (globalViewModel.selectedChat.value?.entity as ChatEntity.UserEntity).user.profilePicture
+                }
+                null -> ""
+            }
+            ProfilePictureView(
+                filepath = profilepic_Imagepath,
                 modifier = Modifier
                     .size(200.dp) // Use square aspect ratio
                     .padding(bottom = 10.dp)
-                    .clip(CircleShape) // Circular image
                     .clickable {
                         //todo: profilbild groß azoaga
                     }
             )
+
         }
+
+        //TODO: Augenkrebs die activity buggla buggla
 
         // Id azoaga
         Row(

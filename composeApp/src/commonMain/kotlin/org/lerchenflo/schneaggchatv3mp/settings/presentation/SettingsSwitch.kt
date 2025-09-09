@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -16,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import schneaggchatv3mp.composeapp.generated.resources.Res
 
 
@@ -46,12 +48,14 @@ fun SettingsSwitch(
             Text(
                 text = titletext,
                 maxLines = 1,
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleMedium
             )
 
             Text(
                 text = infotext,
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall,
+                color = LocalContentColor.current.copy(alpha = 0.65f)
+
             )
         }
 
@@ -61,11 +65,8 @@ fun SettingsSwitch(
             checked = switchchecked,
             onCheckedChange = {
                 onSwitchChange(it)
-            },
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.primary,
-                uncheckedThumbColor = Color.Gray
-            )
+            }
+
         )
     }
 }
@@ -77,10 +78,13 @@ fun SettingsSwitch(
 private fun SettingsSwitchPreview(
 
 ){
-    SettingsSwitch(
-        titletext = "Use markdown",
-        infotext = "Blabla es wird din gerät w3ru2p3rnbpfis7dhfciubfpasubiusdbzvouszbevuowszrbvoueszrbfguepzrbgvoaeuzrbg0e8zrghaueozrbgtöta und es crasht oft",
-        switchchecked = false,
-        onSwitchChange = {}
-    )
+    SchneaggchatTheme {
+        SettingsSwitch(
+            titletext = "Use markdown",
+            infotext = "Blabla es wird din gerät w3ru2p3rnbpfis7dhfciubfpasubiusdbzvouszbevuowszrbvoueszrbfguepzrbgvoaeuzrbg0e8zrghaueozrbgtöta und es crasht oft",
+            switchchecked = false,
+            onSwitchChange = {}
+        )
+    }
+
 }

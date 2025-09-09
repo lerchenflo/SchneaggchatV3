@@ -17,6 +17,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
@@ -26,11 +27,13 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -40,18 +43,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.app.OWNID
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.*
@@ -70,6 +79,7 @@ fun SettingsScreen(
 
     viewModel.init() // load all settings to show
 
+    val ownuser by viewModel.ownUser.collectAsStateWithLifecycle()
 
     Column(
         modifier = modifier
@@ -85,16 +95,18 @@ fun SettingsScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ){
 
-            Image(
-                painterResource(Res.drawable.icon_nutzer),
-                contentDescription = stringResource(Res.string.tools_and_games),
+            ProfilePictureView(
+                filepath = ownuser?.profilePicture ?: "",
                 modifier = Modifier
-                    .size(80.dp)
+                    .size(120.dp)
                     .clickable { SnackbarManager.showMessage("Bald kann ma profilbild ändern") }
                     .padding(8.dp)
             )
+
+
             Column(
                 modifier = Modifier
                     .weight(1f),
@@ -136,11 +148,8 @@ fun SettingsScreen(
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
-        NormalButton(
-            text = stringResource(Res.string.app_broken),
+        Button(
             onClick = {viewModel.deleteAllAppData()},
-            disabled = false,
-            isLoading = false,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
@@ -148,8 +157,21 @@ fun SettingsScreen(
                     end = 10.dp,
                     top = 2.dp,
                     bottom = 2.dp
-                )
-        )
+                ),
+        ){
+            Text(
+                text = stringResource(Res.string.app_broken),
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Logout icon", // or null if purely decorative
+                modifier = Modifier
+                    .padding(start = 8.dp)
+            )
+        }
 
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -196,7 +218,7 @@ fun LogoutButton(
         Spacer(modifier = Modifier.weight(1f))
 
         Icon(
-            imageVector = Icons.Default.ExitToApp,
+            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
             contentDescription = "Logout icon", // or null if purely decorative
             modifier = Modifier
                 .padding(start = 8.dp)

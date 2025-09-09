@@ -38,6 +38,7 @@ import org.lerchenflo.schneaggchatv3mp.app.developer
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.ChipSelection
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -105,7 +106,7 @@ fun TodolistScreen(
                 onBackClick = onBackClick
             )
 
-            //Do vlt no sortiera
+
 
             PullToRefreshBox( // needs experimental opt in
                 isRefreshing = false,
@@ -114,6 +115,18 @@ fun TodolistScreen(
                     null //Überschrieba dassa garned kut
                 }
             ) {
+
+                //Do vlt no sortiera
+                //TODO: Sortiera iboua
+                /*
+                ChipSelection(
+                    listOf("Alle", "Für mich", "Wichtig", "Unwichtig", "Lastchanged"),
+                    {}
+                )
+
+                 */
+
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth(),

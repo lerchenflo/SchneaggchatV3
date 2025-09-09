@@ -11,6 +11,7 @@ import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.database.androidAppDatabaseBuilder
 import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 val androidUserDatabaseModule = module {
     single<RoomDatabase.Builder<AppDatabase>> { androidAppDatabaseBuilder(androidContext()) }
@@ -26,4 +27,8 @@ val androidDataStoreModule = module {
 
 val androidVersionModule = module {
     single { AppVersion(androidContext()) }
+}
+
+val androidPictureManagerModule = module {
+    single { PictureManager(androidContext()) }
 }

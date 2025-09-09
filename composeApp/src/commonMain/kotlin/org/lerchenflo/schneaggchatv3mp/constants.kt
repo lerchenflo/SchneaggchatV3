@@ -8,7 +8,10 @@ var URL_INSTAGRAM =
 
 var LOGFILE_NAME = "zzzlogs.txt"
 
-var PROFILEPICTURE_FILE_NAME = "_profilbild.drawable"
+var USERPROFILEPICTURE_FILE_NAME = ".upb"
+
+var GROUPPROFILEPICTURE_FILE_NAME = ".gpb"
+
 
 var PICTURE_FILE_NAME = "_bild.drawable"
 

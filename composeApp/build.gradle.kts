@@ -101,6 +101,11 @@ kotlin {
             //implementation(libs.mikepenzMultiplatformMarkdown)
             implementation(libs.mikepenzMultiplatformMarkdownM3)
 
+            //Base64 encoding
+            implementation(libs.base64)
+
+            //Image loading async
+            implementation(libs.coil3.coil.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

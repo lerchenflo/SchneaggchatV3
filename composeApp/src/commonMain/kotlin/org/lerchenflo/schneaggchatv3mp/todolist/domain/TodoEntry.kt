@@ -42,6 +42,7 @@ enum class BugType(val value: Int) {
     override fun toString(): String = when (this) {
         BugReport -> "Bug Report"
         FeatureRequest -> "Feature Request"
+        Todo -> "Todo"
     }
 
     companion object {

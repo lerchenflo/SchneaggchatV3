@@ -21,7 +21,7 @@ data class Group(
 
     @SerialName("profilepicture")
     @ColumnInfo(name = "profile_picture")
-    val profilePicture: String?,   // nullable in case no picture is set
+    var profilePicture: String,
 
     @SerialName("groupdescription")
     @ColumnInfo(name = "description")

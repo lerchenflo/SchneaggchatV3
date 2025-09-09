@@ -10,19 +10,43 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import io.ktor.http.ContentDisposition.Companion.File
+import org.jetbrains.compose.resources.decodeToImageBitmap
+import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorItem
+import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.koinInject
+import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE
+import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
+import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatEntity
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorItem
+import org.lerchenflo.schneaggchatv3mp.utilities.Base64.decodeFromBase64
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
@@ -46,6 +70,7 @@ import schneaggchatv3mp.composeapp.generated.resources.unknown_user
  */
 
 @Composable
+@Preview
 fun UserButton(
     chatSelectorItem: ChatSelectorItem?,
     showProfilePicture: Boolean = true,
@@ -77,11 +102,26 @@ fun UserButton(
             if(!useOnClickGes){
                 modifierImage = modifierImage.clickable{onClickImage()}
             }
-            Image(
-                painter = painterResource(Res.drawable.icon_nutzer),
-                contentDescription = stringResource(Res.string.profile_picture),
+
+
+            val profilepic_Imagepath = when (chatSelectorItem?.entity) {
+                is ChatEntity.GroupEntity -> {
+                    chatSelectorItem.entity.groupWithMembers.group.profilePicture
+                }
+                is ChatEntity.UserEntity -> {
+                    chatSelectorItem.entity.user.profilePicture
+                }
+                null -> ""
+            }
+
+            ProfilePictureView(
+                filepath = profilepic_Imagepath,
                 modifier = modifierImage
             )
+
+
+
+
         }
 
         // User info column

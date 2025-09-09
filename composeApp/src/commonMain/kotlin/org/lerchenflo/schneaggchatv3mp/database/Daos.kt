@@ -30,6 +30,8 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE name LIKE '%' || :searchterm || '%'")
     fun getallusers(searchterm: String = ""): Flow<List<User>>
 
+    @Query("SELECT * FROM users WHERE id = :userid")
+    suspend fun getUserbyId(userid: Long): User?
 
     @Query("SELECT id, changedate FROM users")
     suspend fun getUserIdsWithChangeDates(): List<IdChangeDate>

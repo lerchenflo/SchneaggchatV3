@@ -10,6 +10,7 @@ import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.database.iosAppDatabaseBuilder
 import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 val IosDatabaseModule = module {
     single<RoomDatabase.Builder<AppDatabase>> { iosAppDatabaseBuilder() }
@@ -25,4 +26,8 @@ val IosDatastoreModule = module {
 
 val IosVersionModule = module {
     single { AppVersion() }
+}
+
+val IosPictureManagerModule = module {
+    single { PictureManager() }
 }
