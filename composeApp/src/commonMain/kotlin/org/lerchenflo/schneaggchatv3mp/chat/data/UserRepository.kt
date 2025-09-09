@@ -18,8 +18,8 @@ class UserRepository(
     @Transaction
     suspend fun upsertUser(user: User){
         val savefilename = user.id.toString() + USERPROFILEPICTURE_FILE_NAME
-        pictureManager.savePictureToStorage(user.profilePicture, savefilename)
-        user.profilePicture = savefilename
+        val path = pictureManager.savePictureToStorage(user.profilePicture, savefilename)
+        user.profilePicture = path
         database.userDao().upsert(user)
     }
 

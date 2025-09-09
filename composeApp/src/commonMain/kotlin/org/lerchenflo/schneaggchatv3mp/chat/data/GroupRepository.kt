@@ -39,8 +39,8 @@ class GroupRepository(
     suspend fun upsertGroupWithMembers(gwm: GroupWithMembers) {
         // 1) upsert the group
         val savefilename = gwm.group.id.toString() + GROUPPROFILEPICTURE_FILE_NAME
-        pictureManager.savePictureToStorage(gwm.group.profilePicture, savefilename)
-        gwm.group.profilePicture = savefilename
+        val path = pictureManager.savePictureToStorage(gwm.group.profilePicture, savefilename)
+        gwm.group.profilePicture = path
 
         database.groupDao().upsertGroup(gwm.group)
 

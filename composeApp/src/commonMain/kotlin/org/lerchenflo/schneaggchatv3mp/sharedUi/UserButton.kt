@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -103,25 +104,25 @@ fun UserButton(
             }
 
 
-            val filepath = "${chatSelectorItem?.id}${if (chatSelectorItem?.gruppe == true) GROUPPROFILEPICTURE_FILE_NAME else USERPROFILEPICTURE_FILE_NAME}"
-            println(filepath)
-            val pictureManager = koinInject<PictureManager>()
-            var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
+            //val filepath = "${chatSelectorItem?.id}${if (chatSelectorItem?.gruppe == true) GROUPPROFILEPICTURE_FILE_NAME else USERPROFILEPICTURE_FILE_NAME}"
+            //println(filepath)
+            //val pictureManager = koinInject<PictureManager>()
 
-            LaunchedEffect(Unit) {
-                imageBitmap = pictureManager.loadPictureFromStorage(filepath)
+            val imageModel = when (chatSelectorItem?.entity) {
+                is ChatEntity.GroupEntity -> {
+                    chatSelectorItem.entity.groupWithMembers.group.profilePicture
+                }
+                is ChatEntity.UserEntity -> {
+                    chatSelectorItem.entity.user.profilePicture
+                }
+                null -> ""
             }
 
-            imageBitmap?.let { bitmap ->
-                Image(
-                    bitmap = bitmap,
-                    contentDescription = stringResource(Res.string.profile_picture),
-                    modifier = modifierImage
-                )
-            } ?: run {
-                // Optional: Show placeholder while loading
-                CircularProgressIndicator()
-            }
+            AsyncImage(
+                model = imageModel, // Coil supports local file paths, Uris, URLs, etc.
+                contentDescription = "Profile picture",
+                modifier = modifierImage,
+            )
 
 
 
