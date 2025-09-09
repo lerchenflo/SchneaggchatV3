@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
+import org.lerchenflo.schneaggchatv3mp.app.OWNID
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
@@ -21,6 +22,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatEntity
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorItem
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
@@ -51,6 +53,11 @@ class AppRepository(
     @Transaction
     fun getMessagesByUserId(userId: Long, gruppe: Boolean): Flow<List<MessageWithReaders>> {
         return database.messageDao().getMessagesByUserId(userId, gruppe)
+    }
+
+    @Transaction
+    fun getownUser(): User? {
+        return database.userDao().getUserbyId(OWNID?: 0)
     }
 
 

@@ -8,10 +8,13 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -34,7 +37,14 @@ class SettingsViewModel(
                 }
 
         }
+        CoroutineScope(Dispatchers.IO).launch {
+            _ownUser.value = appRepository.getownUser()
+        }
     }
+
+
+    private val _ownUser = MutableStateFlow<User?>(null)
+    val ownUser: StateFlow<User?> = _ownUser
 
     var markdownEnabeled by mutableStateOf(false)
         private set

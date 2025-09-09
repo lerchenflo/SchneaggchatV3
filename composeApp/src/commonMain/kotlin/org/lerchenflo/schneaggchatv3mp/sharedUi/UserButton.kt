@@ -104,11 +104,7 @@ fun UserButton(
             }
 
 
-            //val filepath = "${chatSelectorItem?.id}${if (chatSelectorItem?.gruppe == true) GROUPPROFILEPICTURE_FILE_NAME else USERPROFILEPICTURE_FILE_NAME}"
-            //println(filepath)
-            //val pictureManager = koinInject<PictureManager>()
-
-            val imageModel = when (chatSelectorItem?.entity) {
+            val profilepic_Imagepath = when (chatSelectorItem?.entity) {
                 is ChatEntity.GroupEntity -> {
                     chatSelectorItem.entity.groupWithMembers.group.profilePicture
                 }
@@ -118,10 +114,9 @@ fun UserButton(
                 null -> ""
             }
 
-            AsyncImage(
-                model = imageModel, // Coil supports local file paths, Uris, URLs, etc.
-                contentDescription = "Profile picture",
-                modifier = modifierImage,
+            ProfilePictureView(
+                filepath = profilepic_Imagepath,
+                modifier = modifierImage
             )
 
 
