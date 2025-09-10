@@ -619,6 +619,7 @@ class NetworkUtils(
 
 
                         } catch (e: Exception) {
+                            e.printStackTrace()
                             Result.failure<Unit>(e)
                         }
 
