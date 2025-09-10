@@ -7,7 +7,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.app.OWNID
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.network.PICTUREMESSAGE
 
 @Serializable
@@ -73,7 +73,7 @@ data class Message(
     fun isMyMessage(): Boolean {
         // compare as strings to be robust to OWNID being Int/Long/String
         return try {
-            senderId.toString() == OWNID.toString()
+            senderId.toString() == SessionCache.getOwnIdValue().toString()
         } catch (_: Exception) {
             false
         }

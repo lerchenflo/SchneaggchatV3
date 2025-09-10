@@ -3,7 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 import androidx.room.Embedded
 import androidx.room.Relation
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.app.OWNID
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.network.PICTUREMESSAGE
 
 @Serializable
@@ -16,7 +16,7 @@ data class MessageWithReaders(
     val readers: List<MessageReader>
 ){
     fun isReadbyMe() : Boolean{
-        return readers.any{ it.readerID == OWNID }
+        return readers.any{ it.readerID == SessionCache.getOwnIdValue() }
     }
 
     fun isReadById(id: Long) : Boolean{
@@ -32,7 +32,7 @@ data class MessageWithReaders(
     }
 
     fun isMyMessage(): Boolean {
-        return message.senderId == OWNID
+        return message.senderId == SessionCache.getOwnIdValue()
     }
 
     fun isGroupMessage(): Boolean {

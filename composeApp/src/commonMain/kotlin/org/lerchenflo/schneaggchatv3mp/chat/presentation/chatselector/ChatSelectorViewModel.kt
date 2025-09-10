@@ -23,9 +23,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.cancellation.CancellationException
 
 class ChatSelectorViewModel(
     private val appRepository: AppRepository
@@ -49,7 +48,7 @@ class ChatSelectorViewModel(
         refreshJob = viewModelScope.launch {
             // wait up to 10 seconds for login, checking every 1 second
             val becameLoggedIn = withTimeoutOrNull(10_000L) {
-                while (!appRepository.sessionCache.loggedIn) {
+                while (!SessionCache.loggedIn) {
                     delay(1_000L) // retry after 1 second
                 }
                 true // logged in
@@ -102,7 +101,7 @@ class ChatSelectorViewModel(
         .map { list ->
             list
                 // remove yourself if the item is a user with your OWNID
-                .filter { !(it.id == appRepository.sessionCache.ownId && !it.gruppe) }
+                .filter { !(it.id == SessionCache.getOwnIdValue() && !it.gruppe) }
                 // already sorted in repository, but safe to sort again
                 .sortedByDescending { it.lastmessage?.getSendDateAsLong() }
         }

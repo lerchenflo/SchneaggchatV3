@@ -50,9 +50,6 @@ val sharedmodule = module{
     //Preferences
     singleOf(::Preferencemanager)
 
-    //Session cache
-    singleOf(::SessionCache)
-
     //View model
     singleOf(::GlobalViewModel)
 

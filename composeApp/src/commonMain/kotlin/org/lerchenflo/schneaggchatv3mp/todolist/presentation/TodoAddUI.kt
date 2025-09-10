@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.todolist.presentation
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,13 +8,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -29,24 +25,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.app.OWNID
-import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugEditor
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugPlatform
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugPriority
-import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugType
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntry
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
-import schneaggchatv3mp.composeapp.generated.resources.assignedto
-import schneaggchatv3mp.composeapp.generated.resources.buglastchanged
 import schneaggchatv3mp.composeapp.generated.resources.bugplatform
-import schneaggchatv3mp.composeapp.generated.resources.bugpriority
-import schneaggchatv3mp.composeapp.generated.resources.bugstatus
 import schneaggchatv3mp.composeapp.generated.resources.bugtype
 import schneaggchatv3mp.composeapp.generated.resources.close
-import schneaggchatv3mp.composeapp.generated.resources.enteredby
 import schneaggchatv3mp.composeapp.generated.resources.save
 
 @Composable
@@ -176,7 +164,7 @@ fun ShowAddPopup(
         confirmButton = {
             val newtodo = TodoEntry(
                 id = 0L,
-                senderId = OWNID?: 0L,
+                senderId = SessionCache.getOwnIdValue()?: 0L,
                 platform = selectedPlatform.value,
                 type = selectedType.value,
                 editorId = 0,

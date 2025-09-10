@@ -8,6 +8,8 @@ import androidx.compose.ui.graphics.asImageBitmap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okio.ByteString.Companion.decodeBase64
+import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
+import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import java.io.File
 
 actual class PictureManager(private val context: Context) {
@@ -60,4 +62,11 @@ actual class PictureManager(private val context: Context) {
             if (!file.exists()) return@withContext false
             file.delete()
         }
+
+    actual fun getProfilePicFilePath(id: Long, gruppe: Boolean) : String {
+
+        val filename = id.toString() + if (gruppe) GROUPPROFILEPICTURE_FILE_NAME else USERPROFILEPICTURE_FILE_NAME
+
+        return File(context.filesDir, filename).absolutePath
+    }
 }

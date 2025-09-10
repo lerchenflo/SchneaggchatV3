@@ -50,6 +50,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
@@ -116,7 +117,7 @@ fun Chatauswahlscreen(
             val distance = 10.dp //Abstand zwüschat da buttons oba rechts
 
             RoundLoadingIndicator(
-                visible = viewModel.isLoadingMessages || !appRepository.sessionCache.loggedIn,
+                visible = viewModel.isLoadingMessages || !SessionCache.loggedIn,
                 onClick = {
                     if (viewModel.isLoadingMessages) {
                         CoroutineScope(Dispatchers.IO).launch {
