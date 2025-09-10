@@ -86,8 +86,8 @@ fun App() {
 
                                 globalViewModel.viewModelScope.launch {
                                     //Autologin
-                                    appRepository.login(appRepository.sessionCache.username,
-                                        appRepository.sessionCache.passwordDonotprint, onResult = { success, body ->
+                                    appRepository.login(SessionCache.username,
+                                        SessionCache.passwordDonotprint, onResult = { success, body ->
                                         println("Login abgeschlossen mit success: $success")
                                     })
                                 }

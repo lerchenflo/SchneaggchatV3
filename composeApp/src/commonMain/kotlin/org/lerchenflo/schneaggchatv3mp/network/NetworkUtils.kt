@@ -18,7 +18,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import org.lerchenflo.schneaggchatv3mp.app.SESSIONID
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
@@ -78,7 +78,9 @@ class NetworkUtils(
                 headers {
                     append("handytime", Base64Util.encode(Clock.System.now().toEpochMilliseconds().toString()))
 
-                    SESSIONID?.let { append("sessionid", Base64Util.encode(it)) }
+                    SessionCache.getOwnIdValue()?.let {
+                        append("sessionid", Base64Util.encode(it.toString()))
+                    }
 
                     // Additional headers (encode values)
                     headers?.forEach { (k, v) ->

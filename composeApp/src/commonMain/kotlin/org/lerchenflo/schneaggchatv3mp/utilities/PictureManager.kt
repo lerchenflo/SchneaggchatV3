@@ -24,4 +24,7 @@ expect class PictureManager {
      * Delete picture with [filename]. Returns true if deleted.
      */
     suspend fun deletePicture(filename: String): Boolean
+
+
+    fun getProfilePicFilePath(id: Long, gruppe: Boolean) : String
 }

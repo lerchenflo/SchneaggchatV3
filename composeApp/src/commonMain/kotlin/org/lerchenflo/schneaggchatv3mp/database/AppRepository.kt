@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withContext
-import org.lerchenflo.schneaggchatv3mp.app.OWNID
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
@@ -41,9 +40,6 @@ class AppRepository(
     private val groupRepository: GroupRepository,
     private val messageRepository: MessageRepository,
     private val todoRepository: TodoRepository,
-
-    val sessionCache: SessionCache
-
 ) {
 
     suspend fun deleteAllAppData(){
@@ -57,7 +53,7 @@ class AppRepository(
 
     @Transaction
     suspend fun getownUser(): User? {
-        return database.userDao().getUserbyId(OWNID?: 0)
+        return database.userDao().getUserbyId(SessionCache.getOwnIdValue()?: 0)
     }
 
 
@@ -136,10 +132,10 @@ class AppRepository(
                     }
 
                     println(headers)
-                    sessionCache.updateSessionId(headers["sessionid"])
-                    sessionCache.updateOwnId(headers["userid"]?.toLong())
-                    sessionCache.updateLoggedIn(true)
-                    println("Sessioncache: ${sessionCache.toString()}")
+                    SessionCache.updateSessionId(headers["sessionid"])
+                    SessionCache.updateOwnId(headers["userid"]?.toLong())
+                    SessionCache.updateLoggedIn(true)
+                    println("Sessioncache: ${SessionCache.toString()}")
                     onResult(true, message)
                 }
                 .onError { error ->
@@ -188,7 +184,7 @@ class AppRepository(
         so wird se direkt im chat azoagt und ma muss o nur ua tolle funktion ufrufa
          */
 
-        if (sessionCache.ownId == null){
+        if (SessionCache.getOwnIdValue() == null){
             println("Message senden abort: No OWNID")
             return
         }
@@ -200,7 +196,7 @@ class AppRepository(
             id = 0,
             msgType = msgtype,
             content = content,
-            senderId = sessionCache.ownId ?: 0,
+            senderId = SessionCache.getOwnIdValue() ?: 0,
             receiverId = empfaenger,
             sendDate = sendedatum,
             changeDate = sendedatum,
@@ -231,7 +227,7 @@ class AppRepository(
 
                     database.messagereaderDao().upsertReader(MessageReader(
                         messageId = msgid,
-                        readerID = sessionCache.ownId ?:0,
+                        readerID = SessionCache.getOwnIdValue() ?:0,
                         readDate = message.sendDate
                     ))
                 }else{
@@ -277,9 +273,9 @@ class AppRepository(
     suspend fun areLoginCredentialsSaved(): Boolean{
         val (username, password) = preferencemanager.getAutologinCreds()
         if (username.isNotBlank() && password.isNotBlank()){
-            sessionCache.updateOwnId(preferencemanager.getOWNID())
-            sessionCache.updateUsername(username)
-            sessionCache.updatePassword(password)
+            SessionCache.updateOwnId(preferencemanager.getOWNID())
+            SessionCache.updateUsername(username)
+            SessionCache.updatePassword(password)
         }
         return username.isNotBlank() && password.isNotBlank()
     }
