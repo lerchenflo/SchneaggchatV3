@@ -13,6 +13,8 @@ import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.skia.Image
+import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
+import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import platform.Foundation.NSData
 import platform.Foundation.NSDataBase64DecodingIgnoreUnknownCharacters
 import platform.Foundation.NSDocumentDirectory
@@ -108,5 +110,11 @@ actual class PictureManager {
         usePinned {
             memcpy(it.addressOf(0), bytes, length)
         }
+    }
+
+    actual fun getProfilePicFilePath(id: Long, gruppe: Boolean): String {
+        val filename = id.toString() + if(gruppe) GROUPPROFILEPICTURE_FILE_NAME else USERPROFILEPICTURE_FILE_NAME
+
+        return "$basePath/$filename"
     }
 }
