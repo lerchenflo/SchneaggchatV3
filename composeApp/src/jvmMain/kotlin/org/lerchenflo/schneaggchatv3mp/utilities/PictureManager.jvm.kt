@@ -8,6 +8,8 @@ import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import okio.ByteString.Companion.decodeBase64
+import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
+import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 
 actual class PictureManager {
 
@@ -71,5 +73,11 @@ actual class PictureManager {
 
     actual suspend fun deletePicture(filename: String): Boolean {
         return File(getPath(filename)).delete()
+    }
+
+    actual fun getProfilePicFilePath(id: Long, gruppe: Boolean): String {
+        val filename = id.toString() + if (gruppe) GROUPPROFILEPICTURE_FILE_NAME else USERPROFILEPICTURE_FILE_NAME
+
+        return getPath(filename)
     }
 }

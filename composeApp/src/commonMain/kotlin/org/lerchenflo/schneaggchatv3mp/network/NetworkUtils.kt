@@ -7,6 +7,7 @@ import io.ktor.client.plugins.timeout
 import io.ktor.client.request.*
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.request
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
@@ -78,7 +79,7 @@ class NetworkUtils(
                 headers {
                     append("handytime", Base64Util.encode(Clock.System.now().toEpochMilliseconds().toString()))
 
-                    SessionCache.getOwnIdValue()?.let {
+                    SessionCache.getSessionIdValue()?.let {
                         append("sessionid", Base64Util.encode(it.toString()))
                     }
 
@@ -91,6 +92,7 @@ class NetworkUtils(
                             header(key, Base64Util.encode(value))
                         }
                     }
+
                 }
 
                 // Body for POST
@@ -122,6 +124,8 @@ class NetworkUtils(
 
             //Hot die operation gfunkt
             if (!decodedHeaders["successful"].toBoolean()){
+                println("Not successful")
+
                 return NetworkResult.Error(responseBody)
             }
 
@@ -137,6 +141,7 @@ class NetworkUtils(
         } catch (e: SocketTimeoutException) {
             return NetworkResult.Error(ResponseReason.TIMEOUT.toString())
         } catch (e: Exception) {
+            e.printStackTrace()
             // You can log e.message here if you have a logger
             return NetworkResult.Error(ResponseReason.unknown_error.toString())
         }
@@ -415,7 +420,6 @@ class NetworkUtils(
                         when (operation.Status) {
                             "deleted" -> {
                                 try {
-
                                     userRepository.deleteUser(operation.Id)
                                     Result.success(Unit)
                                 } catch (e: Exception) {
@@ -555,8 +559,6 @@ class NetworkUtils(
 
                 val localMessages = messageRepository.getmessagechangeid()
                 val serializedData = json.encodeToString(localMessages)
-
-                println("Msgidsync: $serializedData")
 
                 val syncResult = messageidsync(serializedData)
 
