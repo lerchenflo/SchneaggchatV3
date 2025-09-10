@@ -22,37 +22,31 @@ import kotlinx.coroutines.flow.asStateFlow
 object SessionCache {
 
     // --------------------- sessionId ---------------------
-    private val _sessionIdFlow = MutableStateFlow<String?>(null)
-    val sessionIdFlow: StateFlow<String?> = _sessionIdFlow.asStateFlow()
 
     var sessionId: String? by mutableStateOf(null)
         private set
 
     fun updateSessionId(newValue: String?) {
         sessionId = newValue
-        _sessionIdFlow.value = newValue
     }
 
     // synchronous, non-colliding helper
-    fun getSessionIdValue(): String? = _sessionIdFlow.value
+    fun getSessionIdValue(): String? = sessionId
 
     // --------------------- ownId ---------------------
     // Keep -1L as initial value to preserve previous behaviour (was -1)
-    private val _ownIdFlow = MutableStateFlow<Long?>(-1L)
-    val ownIdFlow: StateFlow<Long?> = _ownIdFlow.asStateFlow()
 
     var ownId: Long? by mutableStateOf(-1L)
         private set
 
     fun updateOwnId(newValue: Long?) {
         ownId = newValue
-        _ownIdFlow.value = newValue
         // keep developer flag in sync
         developer = (newValue == 1L || newValue == 2L)
     }
 
     // synchronous, non-colliding helper
-    fun getOwnIdValue(): Long? = _ownIdFlow.value
+    fun getOwnIdValue(): Long? = ownId
 
     // --------------------- developer flag ---------------------
     var developer: Boolean by mutableStateOf((getOwnIdValue() == 1L || getOwnIdValue() == 2L))
