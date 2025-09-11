@@ -83,7 +83,6 @@ interface MessageDao {
     @Query("SELECT * FROM messages WHERE id = :id")
     suspend fun getMessageById(id: Long): Message?
 
-
 }
 
 @Dao

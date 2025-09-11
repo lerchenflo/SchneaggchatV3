@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.sharedUi
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Badge
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -76,6 +78,7 @@ fun UserButton(
     showProfilePicture: Boolean = true,
     lastMessage: MessageWithReaders? = null,
     bottomTextOverride: String? = "",
+    unreadmessageBubbleCount: Int = 0,
     useOnClickGes: Boolean = true,
     onClickGes: () -> Unit = {},  // Add click for everything
     onClickText: () -> Unit = {},  // Add click for name ...
@@ -119,9 +122,6 @@ fun UserButton(
                 modifier = modifierImage
             )
 
-
-
-
         }
 
         // User info column
@@ -145,6 +145,19 @@ fun UserButton(
                     modifier = Modifier.weight(1f)
                 )
 
+
+                if (unreadmessageBubbleCount != 0){
+                    Badge(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ){
+                        Text(
+                            text = "$unreadmessageBubbleCount",
+                        )
+                    }
+                }
+
+                /*
                 //Noti wird zoagt wenn i s ned gleasa hob (Es isch a neue nachricht vo jemandem andra)
                 //Oder wenn se no ned gsendet worra isch (Es git no kuan reader entry weils denn würgt mit da ids)
                 if(lastMessage != null && !lastMessage.isReadbyMe() && lastMessage.message.sent){
@@ -155,6 +168,8 @@ fun UserButton(
                             .size(20.dp)
                     )
                 }
+
+                 */
 
             }
 

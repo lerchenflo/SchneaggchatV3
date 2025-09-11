@@ -35,6 +35,8 @@ object SessionCache {
 
     // --------------------- ownId ---------------------
     // Keep -1L as initial value to preserve previous behaviour (was -1)
+    private val _ownidFlow = MutableStateFlow<Long>(-1L)
+    val ownidFlow: StateFlow<Long> = _ownidFlow.asStateFlow()
 
     var ownId: Long? by mutableStateOf(-1L)
         private set

@@ -65,7 +65,7 @@ class AppRepository(
         val usersFlow = userRepository.getallusers()
         val groupsFlow = groupRepository.getallgroupswithmembers()
 
-        return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
+        return combine(messagesFlow, usersFlow, groupsFlow, ) { messages, users, groups ->
 
             val loweredSearch = searchTerm.trim().lowercase()
 
@@ -77,10 +77,17 @@ class AppRepository(
                     }
                     .maxByOrNull { it.getSendDateAsLong() }
 
+                val unreadMessageCount =
+                    messages.count { message ->
+                        message.isThisChatMessage(user.id, false) &&
+                                !message.isReadbyMe()
+                }
+
                 ChatSelectorItem(
                     id = user.id,
                     gruppe = false,
                     lastmessage = last, // may be null
+                    unreadMessageCount = unreadMessageCount,
                     entity = ChatEntity.UserEntity(user)
                 )
             }.filter { item ->
@@ -94,10 +101,17 @@ class AppRepository(
                     .filter { it.message.receiverId == groupId && it.isGroupMessage() }
                     .maxByOrNull { it.getSendDateAsLong() }
 
+                val unreadMessageCount =
+                    messages.count { message ->
+                        message.isThisChatMessage(gwm.group.id, true) &&
+                                !message.isReadbyMe()
+                    }
+
                 ChatSelectorItem(
                     id = groupId,
                     gruppe = true,
                     lastmessage = last, // may be null
+                    unreadMessageCount = unreadMessageCount,
                     entity = ChatEntity.GroupEntity(gwm)
                 )
             }.filter { item ->
@@ -227,7 +241,7 @@ class AppRepository(
 
                     database.messagereaderDao().upsertReader(MessageReader(
                         messageId = msgid,
-                        readerID = SessionCache.getOwnIdValue() ?:0,
+                        readerID = SessionCache.getOwnIdValue() ?: 0,
                         readDate = message.sendDate
                     ))
                 }else{
