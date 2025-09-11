@@ -141,6 +141,16 @@ fun SettingsScreen(
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
+        SettingsOption(
+            Icons.Default.Delete,
+            "Dekete app data",
+            "Deletes all app data and destroys ur phone"
+        )
+
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+
+
         Button(
             onClick = {viewModel.deleteAllAppData()},
             modifier = Modifier
@@ -184,6 +194,7 @@ fun SettingsScreen(
 
     }
 }
+
 
 @Composable
 fun LogoutButton(
