@@ -12,6 +12,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,20 +47,16 @@ fun ActivityTitle(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = stringResource(Res.string.go_back),
-                tint = MaterialTheme.colorScheme.onSurface
             )
         }
 
-        // Settings Text
-        BasicText(
+
+        Text(
             text = title,
             modifier = Modifier
                 .weight(1f)
                 .align(alignment = Alignment.CenterVertically)
                 .padding(start = 10.dp),
-            style = TextStyle(
-                color = MaterialTheme.colorScheme.primary
-            ),
             autoSize = TextAutoSize.StepBased(
                 minFontSize = 20.sp,
                 maxFontSize = 30.sp

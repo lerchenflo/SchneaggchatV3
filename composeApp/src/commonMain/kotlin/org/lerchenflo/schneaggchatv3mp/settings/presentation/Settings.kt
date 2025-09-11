@@ -108,14 +108,12 @@ fun SettingsScreen(
                 horizontalAlignment = Alignment.Start
             ){
 
-                BasicText(
+                Text(
                     //TODO: Style besser macha
                     text = ownuser?.name ?: "",
                     modifier = Modifier
                         .clickable{viewModel.changeUsername()},
-                    style = TextStyle(
-                        color = MaterialTheme.colorScheme.primary
-                    ),
+
                     autoSize = TextAutoSize.StepBased(
                         minFontSize = 10.sp,
                         maxFontSize = 30.sp

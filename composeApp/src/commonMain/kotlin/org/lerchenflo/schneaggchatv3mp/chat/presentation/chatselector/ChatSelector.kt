@@ -97,14 +97,12 @@ fun Chatauswahlscreen(
             verticalAlignment = Alignment.CenterVertically
 
         ) {
-            BasicText(
+            Text(
                 text = stringResource(Res.string.app_name),
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 5.dp),
-                style = TextStyle(
-                    color = MaterialTheme.colorScheme.onSurface
-                ),
+
                 autoSize = TextAutoSize.StepBased(
                     minFontSize = 10.sp,
                     maxFontSize = 25.sp
@@ -146,6 +144,8 @@ fun Chatauswahlscreen(
                     .size(size)
                     .clickable { onToolsAndGamesClick() },
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+
+
             )
             Spacer(Modifier.width(distance))
             Image(
@@ -155,6 +155,8 @@ fun Chatauswahlscreen(
                     .size(size)
                     .clickable { SnackbarManager.showMessage("Es gibt noch koa schneaggmap") },
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+
+
             )
             Spacer(Modifier.width(distance))
             Image(
@@ -204,6 +206,7 @@ fun Chatauswahlscreen(
                     .size(30.dp)
                     .clickable { SnackbarManager.showMessage("muasch noch selber suacha") },
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+
             )
 
             Spacer(Modifier.width(10.dp))

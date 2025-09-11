@@ -61,7 +61,6 @@ fun SignUpScreen(
                     topStart = 15.dp,
                     topEnd = 15.dp
                 ))
-                .background(MaterialTheme.colorScheme.surfaceContainerLowest)
                 .padding(
                     horizontal = 16.dp,
                     vertical = 24.dp

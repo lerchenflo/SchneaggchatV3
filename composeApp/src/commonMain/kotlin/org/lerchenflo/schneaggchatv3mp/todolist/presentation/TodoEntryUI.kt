@@ -38,10 +38,6 @@ fun TodoEntryUI(
             top = 4.dp,
             start = 4.dp,
             end = 4.dp
-        )
-        .background(
-            color = MaterialTheme.colorScheme.primaryContainer,
-            shape = RoundedCornerShape(15.dp)
         ),
     onClick: () -> Unit,
 ) {
@@ -69,7 +65,6 @@ fun TodoEntryUI(
                     Image(
                         imageVector = Icons.Outlined.Star,
                         contentDescription = "highlighted",
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
                         modifier = Modifier
                             .padding(5.dp)
                     )
@@ -79,7 +74,6 @@ fun TodoEntryUI(
                     Image(
                         imageVector = Icons.Filled.Star,
                         contentDescription = "highlighted",
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
                         modifier = Modifier
                             .padding(5.dp)
                     )

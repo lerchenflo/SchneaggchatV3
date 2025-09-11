@@ -151,7 +151,6 @@ fun UserButton(
                     Image(
                         painter = painterResource(Res.drawable.noti_bell),
                         contentDescription = stringResource(Res.string.notification_bell),
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
                         modifier = Modifier
                             .size(20.dp)
                     )
@@ -170,7 +169,7 @@ fun UserButton(
                     Text(
                         text = lastMessage.message.content ?: "",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
@@ -181,7 +180,6 @@ fun UserButton(
                     Text(
                         text = millisToTimeDateOrYesterday(lastMessage.message.sendDate?.toLong() ?: 0L),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.outline,
                         maxLines = 1,
                         modifier = Modifier.padding(start = 4.dp)
                     )
