@@ -281,6 +281,7 @@ fun Chatauswahlscreen(
                             useOnClickGes = false,
                             lastMessage = gegner.lastmessage,
                             unreadmessageBubbleCount = gegner.unreadMessageCount,
+                            unsentmessageBubbleCount = gegner.unsentMessageCount,
                             onClickText = { onChatSelected(gegner) },
                             onClickImage = {
                                 SnackbarManager.showMessage("TODO")

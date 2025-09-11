@@ -10,6 +10,7 @@ data class ChatSelectorItem(
     val gruppe: Boolean,
     val lastmessage: MessageWithReaders?,
     val unreadMessageCount: Int,
+    val unsentMessageCount: Int,
     val entity: ChatEntity
 ){
     fun getName(): String {
@@ -49,6 +50,7 @@ fun User.asChatSelectorItem(): ChatSelectorItem {
         gruppe = false,
         lastmessage = null,
         unreadMessageCount = 0,
+        unsentMessageCount = 0,
         entity = ChatEntity.UserEntity(this)
     )
 }
@@ -63,6 +65,7 @@ fun GroupWithMembers.asChatSelectorItem(): ChatSelectorItem {
         gruppe = true,
         lastmessage = null,
         unreadMessageCount = 0,
+        unsentMessageCount = 0,
         entity = ChatEntity.GroupEntity(this)
     )
 }
