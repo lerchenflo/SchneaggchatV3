@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.sharedUi
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,7 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Badge
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -76,6 +79,8 @@ fun UserButton(
     showProfilePicture: Boolean = true,
     lastMessage: MessageWithReaders? = null,
     bottomTextOverride: String? = "",
+    unreadmessageBubbleCount: Int = 0,
+    unsentmessageBubbleCount: Int = 0,
     useOnClickGes: Boolean = true,
     onClickGes: () -> Unit = {},  // Add click for everything
     onClickText: () -> Unit = {},  // Add click for name ...
@@ -119,9 +124,6 @@ fun UserButton(
                 modifier = modifierImage
             )
 
-
-
-
         }
 
         // User info column
@@ -145,17 +147,44 @@ fun UserButton(
                     modifier = Modifier.weight(1f)
                 )
 
+
+                if (unsentmessageBubbleCount != 0){
+                    Badge(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    ){
+                        Text(
+                            text = "$unsentmessageBubbleCount",
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(4.dp))
+
+                if (unreadmessageBubbleCount != 0){
+                    Badge(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ){
+                        Text(
+                            text = "${unreadmessageBubbleCount - unsentmessageBubbleCount}", // ungesendete messages sind no ned gleasa vo mir
+                        )
+                    }
+                }
+
+                /*
                 //Noti wird zoagt wenn i s ned gleasa hob (Es isch a neue nachricht vo jemandem andra)
                 //Oder wenn se no ned gsendet worra isch (Es git no kuan reader entry weils denn würgt mit da ids)
                 if(lastMessage != null && !lastMessage.isReadbyMe() && lastMessage.message.sent){
                     Image(
                         painter = painterResource(Res.drawable.noti_bell),
                         contentDescription = stringResource(Res.string.notification_bell),
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
                         modifier = Modifier
                             .size(20.dp)
                     )
                 }
+
+                 */
 
             }
 
@@ -170,7 +199,7 @@ fun UserButton(
                     Text(
                         text = lastMessage.message.content ?: "",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)
@@ -181,7 +210,6 @@ fun UserButton(
                     Text(
                         text = millisToTimeDateOrYesterday(lastMessage.message.sendDate?.toLong() ?: 0L),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.outline,
                         maxLines = 1,
                         modifier = Modifier.padding(start = 4.dp)
                     )

@@ -8,12 +8,14 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
@@ -26,6 +28,8 @@ class SettingsViewModel(
     private val preferenceManager: Preferencemanager
 ): ViewModel() {
 
+
+
     fun init(){
         viewModelScope.launch {
             preferenceManager.getUseMdFlow()
@@ -33,18 +37,17 @@ class SettingsViewModel(
                     println("Problem getting MD preference: ${exception.printStackTrace()}")
                 }
                 .collect { value ->
-                markdownEnabeled = value
+                    markdownEnabeled = value
                 }
 
         }
-        CoroutineScope(Dispatchers.IO).launch {
-            _ownUser.value = appRepository.getownUser()
-        }
+
     }
 
 
-    private val _ownUser = MutableStateFlow<User?>(null)
-    val ownUser: StateFlow<User?> = _ownUser
+    fun getOwnuser() : Flow<User?>{
+        return appRepository.getownUser()
+    }
 
     var markdownEnabeled by mutableStateOf(false)
         private set
@@ -63,6 +66,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             appRepository.deleteAllAppData() // delete all app data when logging out
             preferenceManager.saveAutologinCreds("", "") // override credentials with empty string
+            SessionCache.clear() //Alle variabla löscja
             SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
             // todo navigate to login screen
         }

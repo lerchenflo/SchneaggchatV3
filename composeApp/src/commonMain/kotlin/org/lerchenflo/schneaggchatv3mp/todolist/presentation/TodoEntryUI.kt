@@ -38,10 +38,6 @@ fun TodoEntryUI(
             top = 4.dp,
             start = 4.dp,
             end = 4.dp
-        )
-        .background(
-            color = MaterialTheme.colorScheme.primaryContainer,
-            shape = RoundedCornerShape(15.dp)
         ),
     onClick: () -> Unit,
 ) {
@@ -51,6 +47,9 @@ fun TodoEntryUI(
             .clickable{
                 onClick()
             }
+            .background(
+                MaterialTheme.colorScheme.tertiaryContainer
+            )
     ) {
         //TODO: DO am afang s profilbild ine
 
@@ -61,7 +60,8 @@ fun TodoEntryUI(
                 maxLines = 1,
                 modifier = Modifier
                     .padding(5.dp)
-                    .weight(1f)
+                    .weight(1f),
+                style = MaterialTheme.typography.titleMedium
             )
 
             when(todoEntry.priority){
@@ -69,9 +69,9 @@ fun TodoEntryUI(
                     Image(
                         imageVector = Icons.Outlined.Star,
                         contentDescription = "highlighted",
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface),
                         modifier = Modifier
-                            .padding(5.dp)
+                            .padding(5.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
                     )
                 }
 
@@ -79,9 +79,9 @@ fun TodoEntryUI(
                     Image(
                         imageVector = Icons.Filled.Star,
                         contentDescription = "highlighted",
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
                         modifier = Modifier
-                            .padding(5.dp)
+                            .padding(5.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
                     )
                 }
 
@@ -95,8 +95,10 @@ fun TodoEntryUI(
                 text = todoEntry.content,
                 maxLines = 1,
                 modifier = Modifier
-                    .padding(5.dp)
-            )
+                    .padding(5.dp),
+                style = MaterialTheme.typography.bodySmall,
+
+                )
         }
     }
 

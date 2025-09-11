@@ -80,7 +80,6 @@ fun ChatScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = stringResource(Res.string.go_back),
-                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
@@ -91,7 +90,7 @@ fun ChatScreen(
                         chatSelectorItem = globalViewModel.selectedChat.value,
                         onClickGes = {
                             onChatDetailsClick()
-                        }
+                        },
                     )
                 }
             }
@@ -143,7 +142,7 @@ fun ChatScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.NoteAdd,
                         contentDescription = stringResource(Res.string.add),
-                        tint = MaterialTheme.colorScheme.onSurface
+
                     )
                 }
 
@@ -166,7 +165,6 @@ fun ChatScreen(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Send,
                         contentDescription = stringResource(Res.string.add),
-                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
 

@@ -59,9 +59,9 @@ class NetworkUtils(
      * Returns Result.Success(map) where map contains all decoded response headers (lowercased keys)
      * and the response body under the key "body". On error returns Result.Error(NetworkError.*).
      */
-    suspend fun <T> executeNetworkOperation(
+    suspend fun executeNetworkOperation(
         headers: Map<String, String>? = null,
-        body: T? = null,
+        body: String? = null,
         get: Boolean = true,
         requestTimeoutMillis: Long = 20_000L
     ): NetworkResult<Map<String, String>, String> {
@@ -307,7 +307,7 @@ class NetworkUtils(
             "msgtype" to ADDBUGFEATURE
         )
 
-        val res = executeNetworkOperation(headers = headers, body = todo.toTodoEntityDto() , get = false)
+        val res = executeNetworkOperation(headers = headers, body = Json.encodeToString(todo.toTodoEntityDto()), get = false)
         return when (res) {
 
             is NetworkResult.Success -> {

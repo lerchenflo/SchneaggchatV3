@@ -52,7 +52,7 @@ class AppRepository(
     }
 
     @Transaction
-    suspend fun getownUser(): User? {
+    fun getownUser(): Flow<User?> {
         return database.userDao().getUserbyId(SessionCache.getOwnIdValue()?: 0)
     }
 
@@ -65,7 +65,7 @@ class AppRepository(
         val usersFlow = userRepository.getallusers()
         val groupsFlow = groupRepository.getallgroupswithmembers()
 
-        return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
+        return combine(messagesFlow, usersFlow, groupsFlow, ) { messages, users, groups ->
 
             val loweredSearch = searchTerm.trim().lowercase()
 
@@ -77,10 +77,27 @@ class AppRepository(
                     }
                     .maxByOrNull { it.getSendDateAsLong() }
 
+                val thischatmessages =
+                    messages.filter { message ->
+                        message.isThisChatMessage(user.id, false)
+                    }
+
+                val unreadMessageCount =
+                    thischatmessages.count { message ->
+                        !message.isReadbyMe()
+                }
+
+                val unsentMessageCOunt =
+                    thischatmessages.count { message ->
+                        !message.message.sent
+                    }
+
                 ChatSelectorItem(
                     id = user.id,
                     gruppe = false,
                     lastmessage = last, // may be null
+                    unreadMessageCount = unreadMessageCount,
+                    unsentMessageCount = unsentMessageCOunt,
                     entity = ChatEntity.UserEntity(user)
                 )
             }.filter { item ->
@@ -94,10 +111,29 @@ class AppRepository(
                     .filter { it.message.receiverId == groupId && it.isGroupMessage() }
                     .maxByOrNull { it.getSendDateAsLong() }
 
+                val thisChatMessages =
+                    messages.filter { message ->
+                        message.isThisChatMessage(gwm.group.id, true)
+                    }
+
+                val unreadMessageCount =
+                    thisChatMessages.count { message ->
+                        !message.isReadbyMe()
+                    }
+
+                val unsentMessageCount =
+                    thisChatMessages.count { message ->
+                        !message.message.sent
+                    }
+
+
+
                 ChatSelectorItem(
                     id = groupId,
                     gruppe = true,
                     lastmessage = last, // may be null
+                    unreadMessageCount = unreadMessageCount,
+                    unsentMessageCount = unsentMessageCount,
                     entity = ChatEntity.GroupEntity(gwm)
                 )
             }.filter { item ->
@@ -227,7 +263,7 @@ class AppRepository(
 
                     database.messagereaderDao().upsertReader(MessageReader(
                         messageId = msgid,
-                        readerID = SessionCache.getOwnIdValue() ?:0,
+                        readerID = SessionCache.getOwnIdValue() ?: 0,
                         readDate = message.sendDate
                     ))
                 }else{

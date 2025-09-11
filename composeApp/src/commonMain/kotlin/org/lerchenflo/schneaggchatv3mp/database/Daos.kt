@@ -31,7 +31,7 @@ interface UserDao {
     fun getallusers(searchterm: String = ""): Flow<List<User>>
 
     @Query("SELECT * FROM users WHERE id = :userid")
-    suspend fun getUserbyId(userid: Long): User?
+    fun getUserbyId(userid: Long): Flow<User?>
 
     @Query("SELECT id, changedate FROM users")
     suspend fun getUserIdsWithChangeDates(): List<IdChangeDate>
@@ -82,7 +82,6 @@ interface MessageDao {
 
     @Query("SELECT * FROM messages WHERE id = :id")
     suspend fun getMessageById(id: Long): Message?
-
 
 }
 

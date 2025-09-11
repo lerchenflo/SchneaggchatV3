@@ -28,8 +28,8 @@ fun SettingsSwitch(
         .padding(
             start = 16.dp,
             end = 16.dp,
-            top = 4.dp,
-            bottom = 16.dp
+            top = 20.dp,
+            bottom = 20.dp
         ),
     titletext: String,
     infotext: String,

@@ -29,10 +29,6 @@ class GlobalViewModel(
     }
 
 
-    suspend fun areLoginCredentialsSaved(): Boolean {
-        return appRepository.areLoginCredentialsSaved()
-    }
-
 
 
 

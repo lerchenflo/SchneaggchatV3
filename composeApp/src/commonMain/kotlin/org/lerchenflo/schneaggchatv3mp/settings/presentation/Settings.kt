@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -65,9 +66,11 @@ fun SettingsScreen(
     val appRepository = koinInject<AppRepository>()
     val appVersion = koinInject<AppVersion>()
 
-    viewModel.init() // load all settings to show
+    LaunchedEffect(Unit){
+        viewModel.init()
+    }
 
-    val ownuser by viewModel.ownUser.collectAsStateWithLifecycle()
+    val ownuser by viewModel.getOwnuser().collectAsStateWithLifecycle(null)
 
     Column(
         modifier = modifier
@@ -82,7 +85,11 @@ fun SettingsScreen(
         // Section Userinfo
         Row(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(
+                    top = 8.dp,
+                    bottom = 8.dp
+                ),
             verticalAlignment = Alignment.CenterVertically
         ){
 
@@ -101,14 +108,12 @@ fun SettingsScreen(
                 horizontalAlignment = Alignment.Start
             ){
 
-                BasicText(
+                Text(
                     //TODO: Style besser macha
-                    text = SessionCache.username,
+                    text = ownuser?.name ?: "",
                     modifier = Modifier
                         .clickable{viewModel.changeUsername()},
-                    style = TextStyle(
-                        color = MaterialTheme.colorScheme.primary
-                    ),
+
                     autoSize = TextAutoSize.StepBased(
                         minFontSize = 10.sp,
                         maxFontSize = 30.sp
@@ -116,7 +121,7 @@ fun SettingsScreen(
 
                 )
                 Text(
-                    text = "Userid : ${SessionCache.getOwnIdValue()}"
+                    text = "Userid : ${ownuser?.id}"
                 )
             }
         }
@@ -131,6 +136,15 @@ fun SettingsScreen(
             infotext = stringResource(Res.string.markdownInfo),
             switchchecked = viewModel.markdownEnabeled,
             onSwitchChange = { viewModel.updateMarkdownSwitch(it) },
+        )
+
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+
+        SettingsOption(
+            Icons.Default.Delete,
+            "Dekete app data",
+            "Deletes all app data and destroys ur phone"
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -164,6 +178,11 @@ fun SettingsScreen(
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
+        
+        
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+
         // Account section
         LogoutButton(
             viewModel = viewModel,
@@ -179,6 +198,7 @@ fun SettingsScreen(
 
     }
 }
+
 
 @Composable
 fun LogoutButton(

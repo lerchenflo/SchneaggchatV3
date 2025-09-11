@@ -77,7 +77,7 @@ fun App() {
 
 
                         LaunchedEffect(Unit) {
-                            val savedCreds = globalViewModel.areLoginCredentialsSaved()
+                            val savedCreds = appRepository.areLoginCredentialsSaved()
 
                             if (savedCreds) {
                                 navController.navigate(Route.ChatSelector) {

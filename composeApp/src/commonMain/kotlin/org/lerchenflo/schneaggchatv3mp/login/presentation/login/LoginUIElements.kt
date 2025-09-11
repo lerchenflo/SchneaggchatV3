@@ -70,7 +70,6 @@ fun InputTextField(
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium
         )
         Spacer(modifier = Modifier.height(6.dp))
 
@@ -171,7 +170,6 @@ fun ClickableLink(
         modifier = modifier
             .clickable(onClick = onClick),
         style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
         textAlign = TextAlign.Center
     )
 }

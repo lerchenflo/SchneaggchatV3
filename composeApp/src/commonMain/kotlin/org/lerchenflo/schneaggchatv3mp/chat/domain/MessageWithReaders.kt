@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
+import androidx.compose.ui.util.packFloats
 import androidx.room.Embedded
 import androidx.room.Relation
 import kotlinx.serialization.Serializable
@@ -37,5 +38,23 @@ data class MessageWithReaders(
 
     fun isGroupMessage(): Boolean {
         return message.groupMessage
+    }
+
+    /**
+     * Was this message sent into this chat?
+     */
+    fun isThisChatMessage(chatID: Long, gruppe : Boolean) : Boolean {
+        if (gruppe){
+            if (message.receiverId == chatID && message.groupMessage){
+                return true
+            }
+        }else {
+            if (isMyMessage() && message.receiverId == chatID && !message.groupMessage){
+                return true
+            }else if (message.senderId == chatID && message.receiverId == SessionCache.getOwnIdValue() && !message.groupMessage){
+                return true
+            }
+        }
+        return false
     }
 }

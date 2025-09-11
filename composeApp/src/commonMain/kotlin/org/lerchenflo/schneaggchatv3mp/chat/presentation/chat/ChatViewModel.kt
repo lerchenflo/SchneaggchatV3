@@ -44,6 +44,8 @@ class ChatViewModel(
 
     fun sendMessage(){
 
+        if (sendText == "") return
+
         //TODO: Do wechla bild und sunschwas
         var msgtype = TEXTMESSAGE
         val content = sendText
