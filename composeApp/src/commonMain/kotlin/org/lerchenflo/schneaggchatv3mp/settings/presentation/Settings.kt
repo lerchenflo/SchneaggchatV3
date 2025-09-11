@@ -150,7 +150,6 @@ fun SettingsScreen(
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
-
         Button(
             onClick = {viewModel.deleteAllAppData()},
             modifier = Modifier
@@ -178,6 +177,11 @@ fun SettingsScreen(
 
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+        
+        
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
 
         // Account section
         LogoutButton(

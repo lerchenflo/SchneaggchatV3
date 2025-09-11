@@ -90,7 +90,7 @@ fun ChatScreen(
                         chatSelectorItem = globalViewModel.selectedChat.value,
                         onClickGes = {
                             onChatDetailsClick()
-                        }
+                        },
                     )
                 }
             }
