@@ -245,7 +245,11 @@ fun Chatauswahlscreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth(),
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = 16.dp
+                ),
             ) {
                 items(availablegegners) { gegner ->
                     UserButton(

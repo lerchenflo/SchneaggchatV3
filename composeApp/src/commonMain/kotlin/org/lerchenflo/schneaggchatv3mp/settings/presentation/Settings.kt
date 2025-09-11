@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -65,9 +66,11 @@ fun SettingsScreen(
     val appRepository = koinInject<AppRepository>()
     val appVersion = koinInject<AppVersion>()
 
-    viewModel.init() // load all settings to show
+    LaunchedEffect(Unit){
+        viewModel.init()
+    }
 
-    val ownuser by viewModel.ownUser.collectAsStateWithLifecycle()
+    val ownuser by viewModel.getOwnuser().collectAsStateWithLifecycle(null)
 
     Column(
         modifier = modifier
@@ -82,7 +85,11 @@ fun SettingsScreen(
         // Section Userinfo
         Row(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(
+                    top = 8.dp,
+                    bottom = 8.dp
+                ),
             verticalAlignment = Alignment.CenterVertically
         ){
 
@@ -103,7 +110,7 @@ fun SettingsScreen(
 
                 BasicText(
                     //TODO: Style besser macha
-                    text = SessionCache.username,
+                    text = ownuser?.name ?: "",
                     modifier = Modifier
                         .clickable{viewModel.changeUsername()},
                     style = TextStyle(
@@ -116,7 +123,7 @@ fun SettingsScreen(
 
                 )
                 Text(
-                    text = "Userid : ${SessionCache.getOwnIdValue()}"
+                    text = "Userid : ${ownuser?.id}"
                 )
             }
         }

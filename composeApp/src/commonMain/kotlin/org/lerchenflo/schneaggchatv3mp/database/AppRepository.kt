@@ -52,7 +52,7 @@ class AppRepository(
     }
 
     @Transaction
-    suspend fun getownUser(): User? {
+    fun getownUser(): Flow<User?> {
         return database.userDao().getUserbyId(SessionCache.getOwnIdValue()?: 0)
     }
 
