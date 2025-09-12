@@ -63,7 +63,8 @@ class NetworkUtils(
         headers: Map<String, String>? = null,
         body: String? = null,
         get: Boolean = true,
-        requestTimeoutMillis: Long = 20_000L
+        requestTimeoutMillis: Long = 20_000L,
+        timestamp: String = Clock.System.now().toEpochMilliseconds().toString()
     ): NetworkResult<Map<String, String>, String> {
         try {
             val response: HttpResponse = httpClient.request {
@@ -77,7 +78,7 @@ class NetworkUtils(
 
                 // Built-in header: handy time (milliseconds)
                 headers {
-                    append("handytime", Base64Util.encode(Clock.System.now().toEpochMilliseconds().toString()))
+                    append("handytime", Base64Util.encode(timestamp))
 
                     SessionCache.getSessionIdValue()?.let {
                         append("sessionid", Base64Util.encode(it.toString()))
@@ -389,6 +390,26 @@ class NetworkUtils(
         )
 
         return executeNetworkOperation(headers = headers, body = message, get = false)
+    }
+
+
+    suspend fun setAllChatMessagesRead(chatid: Long, gruppe: Boolean, timestamp: String) : NetworkResult<Boolean, String> {
+        val headers = mapOf(
+            "msgtype" to SETALLMESSAGESINCHATGELESEN,
+            "chatid" to chatid.toString(),
+            "group" to gruppe.toString()
+        )
+
+        val res = executeNetworkOperation(headers = headers, body = "", get = true, timestamp = timestamp)
+
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
+            }
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
+        }
     }
 
 

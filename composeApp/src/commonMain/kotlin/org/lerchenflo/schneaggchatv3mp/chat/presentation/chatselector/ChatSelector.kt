@@ -16,8 +16,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Chat
+import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuDefaults.textFieldColors
@@ -88,7 +92,7 @@ fun Chatauswahlscreen(
     val appRepository = koinInject<AppRepository>()
     val viewModel = koinViewModel<ChatSelectorViewModel>()
     val availablegegners by viewModel.chatSelectorState.collectAsStateWithLifecycle(emptyList())
-    val searchterm by viewModel.searchterm.collectAsState() // read-only display of current search term
+    val searchterm by viewModel.searchterm.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier,
@@ -96,7 +100,7 @@ fun Chatauswahlscreen(
             FloatingActionButton(
                 onClick = { onNewChatClick() }) {
                 Icon(
-                    imageVector = Icons.Default.Add,
+                    imageVector = Icons.AutoMirrored.Outlined.Chat,
                     contentDescription = stringResource(Res.string.add),
 
                 )
@@ -105,7 +109,6 @@ fun Chatauswahlscreen(
         floatingActionButtonPosition = FabPosition.End
     ){
         //Hauptlayout
-
         Column{
             //Obere Zeile für Buttons
             Row(
@@ -156,7 +159,7 @@ fun Chatauswahlscreen(
 
 
                 Image(
-                    painterResource(Res.drawable.tools_and_games),
+                    imageVector = Icons.Outlined.Checklist,
                     contentDescription = stringResource(Res.string.tools_and_games),
                     modifier = Modifier
                         .size(size)
