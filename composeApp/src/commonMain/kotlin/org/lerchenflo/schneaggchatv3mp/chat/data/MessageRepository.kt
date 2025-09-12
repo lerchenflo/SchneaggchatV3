@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.data
 
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
@@ -66,6 +67,19 @@ class MessageRepository(
 
     suspend fun deleteReadersForMessage(messageId: Long){
         database.messagereaderDao().deleteReadersForMessage(messageId)
+    }
+
+    @Transaction
+    suspend fun setAllChatMessagesRead(chatid: Long, gruppe: Boolean, timestamp: String) {
+        networkUtils.setAllChatMessagesRead(chatid, gruppe, timestamp)
+
+        database.messageDao().getMessagesByUserId(chatid, gruppe).collect { messagelist ->
+            for (message in messagelist){
+                if (!message.isReadbyMe()){
+                    database.messagereaderDao().upsertReader(MessageReader(messageId = message.message.id ?: 0, readerID = SessionCache.getOwnIdValue() ?: 0, readDate = timestamp))
+                }
+            }
+        }
     }
 
 }

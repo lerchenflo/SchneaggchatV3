@@ -96,9 +96,9 @@ interface MessageReaderDao {
 
     @Query("DELETE FROM message_readers WHERE messageId = :messageId")
     suspend fun deleteReadersForMessage(messageId: Long)
-
-
 }
+
+
 
 @Dao
 interface GroupDao {
@@ -157,6 +157,9 @@ interface AllDatabaseDao {
     @Query("DELETE FROM group_members")
     suspend fun clearGroupMembers()
 
+    @Query("DELETE FROM todoentitydto")
+    suspend fun clearTodos()
+
 
 
     @Transaction
@@ -167,6 +170,7 @@ interface AllDatabaseDao {
         clearUsers()           // Finally users table
         clearGroupMembers()
         clearGroups()
+        clearTodos()
 
     }
 }
