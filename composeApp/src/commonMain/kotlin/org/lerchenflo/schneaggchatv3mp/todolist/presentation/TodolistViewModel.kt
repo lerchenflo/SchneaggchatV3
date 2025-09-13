@@ -135,10 +135,11 @@ class TodolistViewModel(
 
             // then sort (keeps your existing sort by priority, then lastChanged)
             filtered.sortedWith(
-                compareBy<TodoEntry> { it.status }
-                    .thenByDescending { it.priority }
-
+                compareBy<TodoEntry> { it.status == BugStatus.Finished.value } // unfinished (false) come first
+                    .thenByDescending { it.priority }                         // then by priority (high -> low)
+                    .thenByDescending { it.lastChanged }                      // optional: newest changed first
             )
+
         }
         .flowOn(Dispatchers.Default)
 

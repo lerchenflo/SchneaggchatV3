@@ -59,10 +59,12 @@ fun TodoEntryUI(
             .clickable{
                 onClick()
             }
-            .background(
-                MaterialTheme.colorScheme.tertiaryContainer
+            .background(when (todoEntry.status) {
+                BugStatus.InProgress.value -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
+                else -> MaterialTheme.colorScheme.tertiaryContainer
+            }
             )
-            .alpha(if(todoEntry.status == BugStatus.Finished.value) 0.65f else 1f),
+            .alpha(if(todoEntry.status == BugStatus.Finished.value) 0.6f else 1f),
         verticalAlignment = Alignment.CenterVertically
     ) {
 
