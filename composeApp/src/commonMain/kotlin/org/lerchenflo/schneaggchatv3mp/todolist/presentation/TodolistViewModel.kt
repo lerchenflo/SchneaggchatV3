@@ -3,8 +3,10 @@ package org.lerchenflo.schneaggchatv3mp.todolist.presentation
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -16,9 +18,11 @@ import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntry
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 class TodolistViewModel(
-    private val todoRepository: TodoRepository
+    private val todoRepository: TodoRepository,
+    private val pictureManager: PictureManager
 ): ViewModel() {
 
     val globalViewModel: GlobalViewModel = KoinPlatform.getKoin().get()
@@ -54,10 +58,16 @@ class TodolistViewModel(
     }
 
     fun changeItem(newtodo: TodoEntry, oldtodo: TodoEntry){
+        println("OLDTODO: $oldtodo")
+        println("NEWTODO: $newtodo")
+
         if (newtodo != oldtodo){
             globalViewModel.viewModelScope.launch {
-                todoRepository.upsertTodoServer(newtodo)
-                println("Todo update: true")
+                CoroutineScope(Dispatchers.IO).launch {
+                    todoRepository.upsertTodoServer(newtodo)
+                    println("Todo update: true")
+                }
+
             }
         }else{
             println("Todo update: false")
@@ -76,6 +86,10 @@ class TodolistViewModel(
         }
     }
 
+
+    fun getProfilePicfileNameFromId(userid: Int) : String {
+        return pictureManager.getProfilePicFilePath(userid.toLong(), false)
+    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val todoFlow: Flow<List<TodoEntry>> = todoRepository

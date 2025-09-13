@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.todolist.presentation
 
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,8 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
@@ -111,7 +116,11 @@ fun ShowTodoDetails(
             }
         },
         text = {
-            Column {
+            Column(
+                modifier = Modifier
+                    .heightIn(max = 420.dp)           // limit height so it becomes scrollable
+                    .verticalScroll(rememberScrollState())
+            ) {
                 //Entered by text
                 Text(
                     text = stringResource(Res.string.enteredby) + " " + enteredBy,

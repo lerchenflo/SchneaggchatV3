@@ -120,7 +120,8 @@ fun TodolistScreen(
                     itemsIndexed(todoliste) { index, todo ->
                         TodoEntryUI(
                             todoEntry = todo,
-                            onClick = { viewModel.showPopup(todo) }
+                            onClick = { viewModel.showPopup(todo) },
+                            profilepicfilepath = viewModel.getProfilePicfileNameFromId(todo.editorId)
                         )
 
                         // Add space if next item has a lower priority

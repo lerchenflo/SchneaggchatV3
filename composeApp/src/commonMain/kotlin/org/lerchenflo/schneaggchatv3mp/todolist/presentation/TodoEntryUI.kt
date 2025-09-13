@@ -4,26 +4,37 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.content.MediaType.Companion.Text
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.LabelImportant
 import androidx.compose.material.icons.automirrored.filled.StarHalf
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugPriority
+import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntry
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.noti_bell
@@ -40,9 +51,10 @@ fun TodoEntryUI(
             end = 4.dp
         ),
     onClick: () -> Unit,
+    profilepicfilepath : String,
 ) {
 
-    Column(
+    Row(
         modifier = modifier
             .clickable{
                 onClick()
@@ -50,56 +62,81 @@ fun TodoEntryUI(
             .background(
                 MaterialTheme.colorScheme.tertiaryContainer
             )
+            .alpha(if(todoEntry.status == BugStatus.Finished.value) 0.65f else 1f),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        //TODO: DO am afang s profilbild ine
+
+        ProfilePictureView(
+            filepath = profilepicfilepath,
+            modifier = Modifier
+                .size(40.dp) // Use square aspect ratio
+                .clip(CircleShape) // Circular image
+                .padding(4.dp)
+        )
+
+        Column {
+
+            Row {
 
 
-        Row {
-            Text(
-                text = todoEntry.title,
-                maxLines = 1,
-                modifier = Modifier
-                    .padding(5.dp)
-                    .weight(1f),
-                style = MaterialTheme.typography.titleMedium
-            )
+                Text(
+                    text = todoEntry.title,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .padding(5.dp)
+                        .weight(1f),
+                    style = MaterialTheme.typography.titleMedium
+                )
 
-            when(todoEntry.priority){
-                BugPriority.High.value -> {
-                    Image(
-                        imageVector = Icons.Outlined.Star,
-                        contentDescription = "highlighted",
-                        modifier = Modifier
-                            .padding(5.dp),
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
-                    )
+                when(todoEntry.priority){
+                    BugPriority.Low.value -> {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "outlined star",
+                            modifier = Modifier.padding(5.dp).size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    BugPriority.High.value -> {
+                        Icon(
+                            imageVector = Icons.Outlined.Star,
+                            contentDescription = "outlined star",
+                            modifier = Modifier.padding(5.dp).size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    BugPriority.Extreme.value -> {
+
+                        Icon(
+                            imageVector = Icons.Default.Bolt,
+                            contentDescription = "filled star",
+                            modifier = Modifier.padding(5.dp).size(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+
                 }
 
-                BugPriority.Extreme.value -> {
-                    Image(
-                        imageVector = Icons.Filled.Star,
-                        contentDescription = "highlighted",
-                        modifier = Modifier
-                            .padding(5.dp),
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
+            }
+
+            Row {
+                Text(
+                    text = todoEntry.content,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .padding(5.dp),
+                    style = MaterialTheme.typography.bodySmall,
+
                     )
-                }
-
-
             }
 
         }
 
-        Row {
-            Text(
-                text = todoEntry.content,
-                maxLines = 1,
-                modifier = Modifier
-                    .padding(5.dp),
-                style = MaterialTheme.typography.bodySmall,
 
-                )
-        }
+
     }
 
 }

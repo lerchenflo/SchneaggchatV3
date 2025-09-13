@@ -18,6 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
+import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntry
 
 @Dao
 interface UserDao {
@@ -129,6 +130,12 @@ interface TodolistDao{
     @Upsert
     suspend fun upsertTodo(todo: TodoEntityDto)
 
+    @Update
+    suspend fun updateTodo(todo: TodoEntityDto)
+
+    @Insert
+    suspend fun insertTodo(todo: TodoEntityDto)
+
     @Query("DELETE FROM todoentitydto WHERE id = :todoid")
     suspend fun delete(todoid: Long)
 
@@ -138,6 +145,9 @@ interface TodolistDao{
 
     @Query("SELECT id, changedate FROM todoentitydto")
     suspend fun getTodoIdsWithChangeDates(): List<IdChangeDate>
+
+    @Query("SELECT * FROM todoentitydto WHERE id = :id")
+    suspend fun getTodoById(id: Long) : TodoEntityDto?
 }
 
 

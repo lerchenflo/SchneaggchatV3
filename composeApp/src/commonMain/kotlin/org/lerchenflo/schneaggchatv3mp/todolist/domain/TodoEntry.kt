@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.todolist.domain
 
 data class TodoEntry(
-    var id: Long = 0,
+    var id: Long = 0L,
     var senderId: Long = 0,
     var createDate: String = "",
     var platform: Int = BugPlatform.Multiplatform.value,
