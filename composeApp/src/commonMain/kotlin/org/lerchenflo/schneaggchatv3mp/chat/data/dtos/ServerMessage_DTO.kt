@@ -2,9 +2,6 @@ package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
 
 @Serializable
 data class ServerReaderDto(
@@ -29,10 +26,10 @@ data class ServerMessageDto(
     @SerialName("Readers") val gelesenliste: List<ServerReaderDto> = emptyList()
 )
 
-fun convertServerMessageDtoToMessageWithReaders(serverList: List<ServerMessageDto>): List<MessageWithReaders> {
+fun convertServerMessageDtoToMessageWithReaders(serverList: List<ServerMessageDto>): List<MessageWithReadersDto> {
     return serverList.map { dto ->
         // create Message using the new property names/types
-        val message = Message(
+        val messageDto = MessageDto(
             id = dto.id,
             msgType = dto.msgtype,
             content = dto.inhalt,
@@ -47,9 +44,9 @@ fun convertServerMessageDtoToMessageWithReaders(serverList: List<ServerMessageDt
         )
 
         // map readers; use server-assigned PK (r.id) as readerEntryId
-        val readers: List<MessageReader> = dto.gelesenliste.map { r ->
+        val readers: List<MessageReaderDto> = dto.gelesenliste.map { r ->
             val resolvedMessageId = if (r.messageId.toInt() != 0) r.messageId.toLong() else dto.id.toLong()
-            MessageReader(
+            MessageReaderDto(
                 readerEntryId = 0/*r.id.toLong()*/,     // server PK for this reader record
                 messageId = resolvedMessageId,     // FK -> message.id
                 readerID = r.userId.toLong(),      // user who read the message
@@ -57,12 +54,12 @@ fun convertServerMessageDtoToMessageWithReaders(serverList: List<ServerMessageDt
             )
         }
 
-        MessageWithReaders(message = message, readers = readers)
+        MessageWithReadersDto(messageDto = messageDto, readers = readers)
     }
 }
 
-fun convertServerMessageDtoToMessageWithReaders(dto: ServerMessageDto): MessageWithReaders {
-    val message = Message(
+fun convertServerMessageDtoToMessageWithReaders(dto: ServerMessageDto): MessageWithReadersDto {
+    val messageDto = MessageDto(
         id = dto.id,
         msgType = dto.msgtype,
         content = dto.inhalt,
@@ -76,9 +73,9 @@ fun convertServerMessageDtoToMessageWithReaders(dto: ServerMessageDto): MessageW
         sent = true
     )
 
-    val readers: List<MessageReader> = dto.gelesenliste.map { r ->
+    val readers: List<MessageReaderDto> = dto.gelesenliste.map { r ->
         val resolvedMessageId = if (r.messageId != 0L) r.messageId else dto.id
-        MessageReader(
+        MessageReaderDto(
             readerEntryId = r.id,           // server PK for this reader record
             messageId = resolvedMessageId,  // FK -> message.id
             readerID = r.userId,            // user who read the message
@@ -86,6 +83,6 @@ fun convertServerMessageDtoToMessageWithReaders(dto: ServerMessageDto): MessageW
         )
     }
 
-    return MessageWithReaders(message = message, readers = readers)
+    return MessageWithReadersDto(messageDto = messageDto, readers = readers)
 }
 

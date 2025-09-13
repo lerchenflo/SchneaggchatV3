@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,30 +8,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatEntity
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 import schneaggchatv3mp.composeapp.generated.resources.no_description
 import schneaggchatv3mp.composeapp.generated.resources.no_status
 import schneaggchatv3mp.composeapp.generated.resources.others_say_about
-import schneaggchatv3mp.composeapp.generated.resources.profile_picture
 import schneaggchatv3mp.composeapp.generated.resources.remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.status
 import schneaggchatv3mp.composeapp.generated.resources.status_info
@@ -47,8 +40,8 @@ fun ChatDetails(
         .safeContentPadding()
 ) {
     val globalViewModel = koinInject<GlobalViewModel>()
-    val selectedChatName = globalViewModel.selectedChat.value?.getName() ?: stringResource(Res.string.unknown_user)
-    val group = globalViewModel.selectedChat.value?.gruppe ?: false
+    val selectedChatName = globalViewModel.selectedChat.value.name
+    val group = globalViewModel.selectedChat.value.isGroup
 
     Column(
         modifier = modifier
@@ -65,18 +58,8 @@ fun ChatDetails(
                 .wrapContentWidth(Alignment.CenterHorizontally)
         ){
 
-
-            val profilepic_Imagepath = when (globalViewModel.selectedChat.value?.entity) {
-                is ChatEntity.GroupEntity -> {
-                    (globalViewModel.selectedChat.value?.entity as ChatEntity.GroupEntity).groupWithMembers.group.profilePicture
-                }
-                is ChatEntity.UserEntity -> {
-                    (globalViewModel.selectedChat.value?.entity as ChatEntity.UserEntity).user.profilePicture
-                }
-                null -> ""
-            }
             ProfilePictureView(
-                filepath = profilepic_Imagepath,
+                filepath = globalViewModel.selectedChat.value.profilePicture,
                 modifier = Modifier
                     .size(200.dp) // Use square aspect ratio
                     .padding(bottom = 10.dp)
@@ -124,7 +107,9 @@ fun ChatDetails(
 
                     )
                     Text(
-                        text = globalViewModel.selectedChat.value?.getStatus()?.replace("\\n", "\n")
+                        text = globalViewModel.selectedChat.value.status
+                            .takeIf { it.isNotBlank() }
+                            ?.replace("\\n", "\n")
                             ?: stringResource(Res.string.no_status),
                         softWrap = true,
                         maxLines = 20
@@ -153,11 +138,15 @@ fun ChatDetails(
 
                 )
                 Text(
-                    text = globalViewModel.selectedChat.value?.getDescription()?.replace("\\n", "\n")
+                    text = globalViewModel.selectedChat.value
+                        .description
+                        .takeIf { it.isNotBlank() }
+                        ?.replace("\\n", "\n")
                         ?: stringResource(Res.string.no_description),
                     softWrap = true,
                     maxLines = 20
                 )
+
             }
 
         }

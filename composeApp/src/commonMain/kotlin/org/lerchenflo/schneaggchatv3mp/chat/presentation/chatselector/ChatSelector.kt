@@ -13,18 +13,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.outlined.Chat
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.outlined.Checklist
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuDefaults.textFieldColors
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -34,17 +28,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.modifier.modifierLocalConsumer
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,6 +50,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
@@ -70,7 +61,6 @@ import schneaggchatv3mp.composeapp.generated.resources.app_name
 import schneaggchatv3mp.composeapp.generated.resources.filter
 import schneaggchatv3mp.composeapp.generated.resources.loadinginfo_messages
 import schneaggchatv3mp.composeapp.generated.resources.loadinginfo_offline
-import schneaggchatv3mp.composeapp.generated.resources.new_chat
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap
 import schneaggchatv3mp.composeapp.generated.resources.search_friend
 import schneaggchatv3mp.composeapp.generated.resources.settings
@@ -81,7 +71,7 @@ import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 @Preview
 @Composable
 fun Chatauswahlscreen(
-    onChatSelected: (ChatSelectorItem) -> Unit,  // navigation callback
+    onChatSelected: (SelectedChat) -> Unit,  // navigation callback
     onNewChatClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onToolsAndGamesClick: () -> Unit,
@@ -280,7 +270,7 @@ fun Chatauswahlscreen(
                 ) {
                     items(availablegegners) { gegner ->
                         UserButton(
-                            chatSelectorItem = gegner,
+                            selectedChat = gegner,
                             useOnClickGes = false,
                             lastMessage = gegner.lastmessage,
                             unreadmessageBubbleCount = gegner.unreadMessageCount,

@@ -24,6 +24,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 
 class ChatSelectorViewModel(
@@ -94,20 +95,20 @@ class ChatSelectorViewModel(
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val chatSelectorFlow: Flow<List<ChatSelectorItem>> = _searchTerm
+    val chatSelectorFlow: Flow<List<SelectedChat>> = _searchTerm
         .flatMapLatest { term ->
             appRepository.getChatSelectorFlow(term)
         }
         .map { list ->
             list
                 // remove yourself if the item is a user with your OWNID
-                .filter { !(it.id == SessionCache.getOwnIdValue() && !it.gruppe) }
+                .filter { !(it.id == SessionCache.getOwnIdValue() && !it.isGroup) }
                 // already sorted in repository, but safe to sort again
                 .sortedByDescending { it.lastmessage?.getSendDateAsLong() }
         }
         .flowOn(Dispatchers.Default)
 
-    val chatSelectorState: StateFlow<List<ChatSelectorItem>> = chatSelectorFlow
+    val chatSelectorState: StateFlow<List<SelectedChat>> = chatSelectorFlow
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Companion.WhileSubscribed(5_000),

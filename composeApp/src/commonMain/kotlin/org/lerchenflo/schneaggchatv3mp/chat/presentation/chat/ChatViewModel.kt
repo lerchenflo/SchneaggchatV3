@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.network.TEXTMESSAGE
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
@@ -55,8 +55,8 @@ class ChatViewModel(
         globalViewModel.viewModelScope.launch {
             appRepository.sendMessage(
                 msgtype = msgtype,
-                empfaenger = globalViewModel.selectedChat.value?.id ?: 0,
-                gruppe = globalViewModel.selectedChat.value?.gruppe ?: false,
+                empfaenger = globalViewModel.selectedChat.value.id,
+                gruppe = globalViewModel.selectedChat.value.isGroup,
                 content = content,
                 answerid = -1, //TODO: Antworten
                 sendedatum = getCurrentTimeMillisString()
@@ -68,18 +68,18 @@ class ChatViewModel(
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val messagesFlow: Flow<List<MessageWithReaders>> =
+    val messagesFlow: Flow<List<MessageWithReadersDto>> =
         globalViewModel.selectedChat
             .flatMapLatest { chat ->
-                appRepository.getMessagesByUserId(chat?.id ?: 0, chat?.gruppe ?: false)
+                appRepository.getMessagesByUserId(chat.id, chat.isGroup)
             }
             .map { list ->
-                list.sortedByDescending { it.message.sendDate }
+                list.sortedByDescending { it.messageDto.sendDate }
             }
             .flowOn(Dispatchers.Default)
 
     // Expose as StateFlow so UI can collect easily and get a current value
-    val messagesState: StateFlow<List<MessageWithReaders>> = messagesFlow
+    val messagesState: StateFlow<List<MessageWithReadersDto>> = messagesFlow
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Companion.WhileSubscribed(5_000),

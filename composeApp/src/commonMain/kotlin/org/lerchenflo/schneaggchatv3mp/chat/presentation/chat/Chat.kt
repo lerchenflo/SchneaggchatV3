@@ -17,7 +17,6 @@ import androidx.compose.material.icons.automirrored.filled.NoteAdd
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -87,7 +86,7 @@ fun ChatScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     UserButton(
-                        chatSelectorItem = globalViewModel.selectedChat.value,
+                        selectedChat = globalViewModel.selectedChat.value,
                         onClickGes = {
                             onChatDetailsClick()
                         },
@@ -103,10 +102,10 @@ fun ChatScreen(
                 reverseLayout = true
             ) {
                 itemsIndexed(messages) { index, message ->
-                    val currentDateMillis = message.message.sendDate.toLongOrNull()
+                    val currentDateMillis = message.messageDto.sendDate.toLongOrNull()
                     val currentDate = currentDateMillis?.toLocalDate()
                     val nextDate =
-                        messages.getOrNull(index + 1)?.message?.sendDate?.toLongOrNull()
+                        messages.getOrNull(index + 1)?.messageDto?.sendDate?.toLongOrNull()
                             ?.toLocalDate()
 
 

@@ -1,7 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.sharedUi
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,50 +11,21 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Badge
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.request.ImageRequest
-import coil3.request.crossfade
-import io.ktor.http.ContentDisposition.Companion.File
-import org.jetbrains.compose.resources.decodeToImageBitmap
-import org.jetbrains.compose.resources.imageResource
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.koinInject
-import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE
-import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
-import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatEntity
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorItem
-import org.lerchenflo.schneaggchatv3mp.utilities.Base64.decodeFromBase64
-import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 import schneaggchatv3mp.composeapp.generated.resources.no_status
-import schneaggchatv3mp.composeapp.generated.resources.noti_bell
-import schneaggchatv3mp.composeapp.generated.resources.notification_bell
-import schneaggchatv3mp.composeapp.generated.resources.profile_picture
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 
 /**
@@ -75,9 +44,9 @@ import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 @Composable
 @Preview
 fun UserButton(
-    chatSelectorItem: ChatSelectorItem?,
+    selectedChat: SelectedChat,
     showProfilePicture: Boolean = true,
-    lastMessage: MessageWithReaders? = null,
+    lastMessage: MessageWithReadersDto? = null,
     bottomTextOverride: String? = "",
     unreadmessageBubbleCount: Int = 0,
     unsentmessageBubbleCount: Int = 0,
@@ -109,18 +78,8 @@ fun UserButton(
             }
 
 
-            val profilepic_Imagepath = when (chatSelectorItem?.entity) {
-                is ChatEntity.GroupEntity -> {
-                    chatSelectorItem.entity.groupWithMembers.group.profilePicture
-                }
-                is ChatEntity.UserEntity -> {
-                    chatSelectorItem.entity.user.profilePicture
-                }
-                null -> ""
-            }
-
             ProfilePictureView(
-                filepath = profilepic_Imagepath,
+                filepath = selectedChat.profilePicture,
                 modifier = modifierImage
             )
 
@@ -140,7 +99,9 @@ fun UserButton(
 
             ){
                 Text(
-                    text = chatSelectorItem?.getName() ?: stringResource(Res.string.unknown_user),
+                    text = selectedChat.name
+                        .takeIf { it.isNotBlank() }
+                        ?: stringResource(Res.string.unknown_user),
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -197,7 +158,7 @@ fun UserButton(
                 ) {
                     // Last message preview
                     Text(
-                        text = lastMessage.message.content ?: "",
+                        text = lastMessage.messageDto.content ?: "",
                         style = MaterialTheme.typography.bodyMedium,
 
                         maxLines = 1,
@@ -208,7 +169,7 @@ fun UserButton(
                     //println("milis to date ${lastMessage.sendDate} result ${millisToTimeDateOrYesterday(lastMessage.sendDate?.toLong() ?: 0L)}")
                     // Time indicator
                     Text(
-                        text = millisToTimeDateOrYesterday(lastMessage.message.sendDate?.toLong() ?: 0L),
+                        text = millisToTimeDateOrYesterday(lastMessage.messageDto.sendDate?.toLong() ?: 0L),
                         style = MaterialTheme.typography.labelSmall,
                         maxLines = 1,
                         modifier = Modifier.padding(start = 4.dp)
@@ -220,12 +181,14 @@ fun UserButton(
             if(bottomTextOverride == null || !bottomTextOverride.isEmpty()){
 
                 Text(
-                    text = bottomTextOverride ?: (chatSelectorItem?.getStatus() ?: // override if not null
-                        stringResource(Res.string.no_status)),
+                    text = bottomTextOverride
+                        ?: selectedChat.status
+                            .takeIf { it.isNotBlank() }
+                        ?: stringResource(Res.string.no_status),
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                 )
+
             }
         }
     }

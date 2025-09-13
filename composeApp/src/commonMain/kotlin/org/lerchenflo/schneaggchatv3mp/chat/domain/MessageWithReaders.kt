@@ -1,60 +1,63 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
-import androidx.compose.ui.util.packFloats
-import androidx.room.Embedded
-import androidx.room.Relation
-import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.network.PICTUREMESSAGE
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 
-@Serializable
 data class MessageWithReaders(
-    @Embedded val message: Message,
-    @Relation(
-        parentColumn = "id",
-        entityColumn = "messageId"
-    )
+    val message: Message,
     val readers: List<MessageReader>
-){
-    fun isReadbyMe() : Boolean{
-        return readers.any{ it.readerID == SessionCache.getOwnIdValue() }
-    }
+) {
+    fun isReadByMe(): Boolean =
+        readers.any { it.readerId == SessionCache.getOwnIdValue() }
 
-    fun isReadById(id: Long) : Boolean{
-        return readers.any {it.readerID == id}
-    }
+    fun isReadById(id: Long): Boolean =
+        readers.any { it.readerId == id }
 
-    fun isPicture() : Boolean{
-        return message.msgType == PICTUREMESSAGE
-    }
+    fun isPicture(): Boolean =
+        message.isPicture() // delegates to Message.isPicture()
 
-    fun getSendDateAsLong(): Long {
-        return message.sendDate?.toLongOrNull() ?: 0L
-    }
+    fun getSendDateAsLong(): Long =
+        message.getSendDateAsLong() // delegates to Message.getSendDateAsLong()
 
-    fun isMyMessage(): Boolean {
-        return message.senderId == SessionCache.getOwnIdValue()
-    }
+    fun isMyMessage(): Boolean =
+        message.isMyMessage() // delegates to Message.isMyMessage()
 
-    fun isGroupMessage(): Boolean {
-        return message.groupMessage
-    }
+    fun isGroupMessage(): Boolean =
+        message.groupMessage
 
     /**
      * Was this message sent into this chat?
+     * @param chatID id of the chat (group id or user id)
+     * @param gruppe true if chatID refers to a group
      */
-    fun isThisChatMessage(chatID: Long, gruppe : Boolean) : Boolean {
-        if (gruppe){
-            if (message.receiverId == chatID && message.groupMessage){
-                return true
-            }
-        }else {
-            if (isMyMessage() && message.receiverId == chatID && !message.groupMessage){
-                return true
-            }else if (message.senderId == chatID && message.receiverId == SessionCache.getOwnIdValue() && !message.groupMessage){
-                return true
+    fun isThisChatMessage(chatID: Long, gruppe: Boolean): Boolean {
+        return if (gruppe) {
+            message.receiverId == chatID && message.groupMessage
+        } else {
+            if (isMyMessage() && message.receiverId == chatID && !message.groupMessage) {
+                true
+            } else if (message.senderId == chatID &&
+                message.receiverId == SessionCache.getOwnIdValue() &&
+                !message.groupMessage
+            ) {
+                true
+            } else {
+                false
             }
         }
-        return false
     }
 }
+
+
+fun MessageWithReadersDto.toMessageWithReaders(): MessageWithReaders =
+    MessageWithReaders(
+        message = this.messageDto.toMessage(),
+        readers = this.readers.map { it.toMessageReader() }
+    )
+
+/** Domain -> DTO */
+fun MessageWithReaders.toDto(): MessageWithReadersDto =
+    MessageWithReadersDto(
+        messageDto = this.message.toDto(),
+        readers = this.readers.map { it.toDto() }
+    )

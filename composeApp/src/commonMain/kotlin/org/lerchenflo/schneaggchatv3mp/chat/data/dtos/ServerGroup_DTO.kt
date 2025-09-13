@@ -2,9 +2,6 @@ package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupWithMembers
 import org.lerchenflo.schneaggchatv3mp.utilities.ColorIntSerializer
 
 // --- DTOs expected from server (adjust SerialName fields to match your API) ---
@@ -31,8 +28,8 @@ data class ServerGroupDto(
 
 // --- Conversion function ---
 
-fun convertServerGroupDtoToGroupWithMembers(dto: ServerGroupDto): GroupWithMembers {
-    val group = Group(
+fun convertServerGroupDtoToGroupWithMembersDto(dto: ServerGroupDto): GroupWithMembersDto {
+    val group = GroupDto(
         id = dto.id,
         name = dto.name ?: "",
         profilePicture = dto.profilePicture,
@@ -41,8 +38,8 @@ fun convertServerGroupDtoToGroupWithMembers(dto: ServerGroupDto): GroupWithMembe
         changedate = dto.changeDate
     )
 
-    val members: List<GroupMember> = dto.members.map { mDto ->
-        GroupMember(
+    val members: List<GroupMemberDto> = dto.members.map { mDto ->
+        GroupMemberDto(
             id = mDto.entryid,
             gid = dto.id,
             uid = mDto.userId,
@@ -52,6 +49,6 @@ fun convertServerGroupDtoToGroupWithMembers(dto: ServerGroupDto): GroupWithMembe
         )
     }
 
-    return GroupWithMembers(group = group, members = members)
+    return GroupWithMembersDto(group = group, members = members)
 }
 

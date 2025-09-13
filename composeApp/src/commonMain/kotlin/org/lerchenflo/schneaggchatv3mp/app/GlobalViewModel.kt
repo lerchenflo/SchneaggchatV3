@@ -6,7 +6,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 
 class GlobalViewModel(
@@ -37,11 +38,11 @@ class GlobalViewModel(
 
 
     //aktuell ausgewählter chat
-    private var _selectedChat = MutableStateFlow<ChatSelectorItem?>(null)
+    private var _selectedChat = MutableStateFlow<SelectedChat>(NotSelected())
         private set
     val selectedChat = _selectedChat.asStateFlow()
 
-    fun onSelectChat(chat: ChatSelectorItem) {
+    fun onSelectChat(chat: SelectedChat) {
         _selectedChat.update {
             chat
         }
@@ -49,7 +50,7 @@ class GlobalViewModel(
 
     fun onLeaveChat(){
         _selectedChat.update {
-            null
+            NotSelected()
         }
     }
 }

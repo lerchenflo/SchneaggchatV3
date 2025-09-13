@@ -26,8 +26,8 @@ import com.mikepenz.markdown.m3.Markdown
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.network.TEXTMESSAGE
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -40,12 +40,12 @@ import schneaggchatv3mp.composeapp.generated.resources.something_wrong_message
 fun MessageView(
     useMD: Boolean = false,
     selectedChatId: Long = -1,
-    messagewithreaders: MessageWithReaders,
+    messagewithreaders: MessageWithReadersDto,
     modifier: Modifier = Modifier
         .fillMaxWidth()
 
 ){
-    val mymessage = messagewithreaders.message.isMyMessage()
+    val mymessage = messagewithreaders.messageDto.isMyMessage()
 
     //Ganze breite
     Row(
@@ -85,10 +85,10 @@ fun MessageView(
                     Row(
 
                     ) {
-                        when(messagewithreaders.message.msgType){
+                        when(messagewithreaders.messageDto.msgType){
                             TEXTMESSAGE -> TextMessage(
                                 useMD = useMD,
-                                messageWithReaders = messagewithreaders,
+                                messageWithReadersDto = messagewithreaders,
                                 myMessage = mymessage
                             )
                             //GROUPTEXTMESSAGE -> TextMessage(messagewithreaders, mymessage)
@@ -106,7 +106,7 @@ fun MessageView(
                         Row(){
                             //zit
                             Text(
-                                text = millisToString(messagewithreaders.message.sendDate?.toLong() ?: 0, format = "HH:mm"),
+                                text = millisToString(messagewithreaders.messageDto.sendDate?.toLong() ?: 0, format = "HH:mm"),
                                 textAlign = TextAlign.End,
                                 fontSize = 12.sp,
                                 modifier = Modifier
@@ -135,7 +135,7 @@ fun MessageView(
 @Composable
 fun TextMessage(
     useMD: Boolean = false,
-    messageWithReaders: MessageWithReaders,
+    messageWithReadersDto: MessageWithReadersDto,
     myMessage: Boolean,
     modifier: Modifier = Modifier
 ){
@@ -143,12 +143,12 @@ fun TextMessage(
         // ma künnt es chatViewmodel o do instanzieren aber denn würd des für jede message einzeln passiera des isch glob ned des wahre
         if(useMD){ // get setting if if md is enabled
             Markdown(
-                content = messageWithReaders.message.content,
+                content = messageWithReadersDto.messageDto.content,
                 modifier = modifier
             )
         }else{
             Text(
-                text = messageWithReaders.message.content
+                text = messageWithReadersDto.messageDto.content
             )
         }
     }
@@ -158,7 +158,7 @@ fun TextMessage(
 
 @Composable
 fun ImageMessage(
-    message: Message,
+    messageDto: MessageDto,
     modifier: Modifier = Modifier
 ){
     Text(
@@ -168,7 +168,7 @@ fun ImageMessage(
 
 @Composable
 fun VoiceMessage(
-    message: Message,
+    messageDto: MessageDto,
     modifier: Modifier = Modifier
 ){
     Text(
@@ -178,7 +178,7 @@ fun VoiceMessage(
 
 @Composable
 fun PollMessage(
-    message: Message,
+    messageDto: MessageDto,
     modifier: Modifier = Modifier
 ){
     Text(

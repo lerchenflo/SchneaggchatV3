@@ -9,29 +9,30 @@ import androidx.room.Update
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupMemberDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupWithMembersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupWithMembers
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
 
 @Dao
 interface UserDao {
 
     @Upsert()
-    suspend fun upsert(user: User) //Suspend: Async mit warten
+    suspend fun upsert(userDto: UserDto) //Suspend: Async mit warten
 
     @Query("DELETE FROM users WHERE id = :userid")
     suspend fun delete(userid: Long)
 
     @Query("SELECT * FROM users WHERE name LIKE '%' || :searchterm || '%'")
-    fun getallusers(searchterm: String = ""): Flow<List<User>>
+    fun getallusers(searchterm: String = ""): Flow<List<UserDto>>
 
     @Query("SELECT * FROM users WHERE id = :userid")
-    fun getUserbyId(userid: Long): Flow<User?>
+    fun getUserbyId(userid: Long): Flow<UserDto?>
 
     @Query("SELECT id, changedate FROM users")
     suspend fun getUserIdsWithChangeDates(): List<IdChangeDate>
@@ -43,37 +44,37 @@ interface UserDao {
 interface MessageDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMessage(message: Message): Long
+    suspend fun insertMessage(messageDto: MessageDto): Long
 
     @Update
-    suspend fun updateMessage(message: Message)
+    suspend fun updateMessage(messageDto: MessageDto)
 
     @Upsert()
-    suspend fun upsertMessage(message: Message): Long
+    suspend fun upsertMessage(messageDto: MessageDto): Long
 
     @Upsert
-    suspend fun upsertMessages(messages: List<Message>)
+    suspend fun upsertMessages(messageDtos: List<MessageDto>)
 
 
     @Transaction
     @Query("SELECT * FROM messages WHERE id = :id")
-    fun getMessageWithReaders(id: Long): Flow<MessageWithReaders>
+    fun getMessageWithReaders(id: Long): Flow<MessageWithReadersDto>
 
 
     @Transaction
     @Query("SELECT * FROM messages")
-    fun getAllMessagesWithReaders(): Flow<List<MessageWithReaders>>
+    fun getAllMessagesWithReaders(): Flow<List<MessageWithReadersDto>>
 
     @Transaction
     @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ")
-    fun getMessagesByUserId(userId: Long, gruppe: Boolean): Flow<List<MessageWithReaders>>
+    fun getMessagesByUserId(userId: Long, gruppe: Boolean): Flow<List<MessageWithReadersDto>>
 
     @Query("SELECT id, changedate FROM messages WHERE id != 0")
     suspend fun getMessageIdsWithChangeDates(): List<IdChangeDate>
 
     @Transaction
     @Query("SELECT * FROM messages WHERE sent = 0")
-    suspend fun getUnsentMessages(): List<Message>
+    suspend fun getUnsentMessages(): List<MessageDto>
 
     @Transaction
     @Query("UPDATE messages SET id = :serverId, sent = 1 WHERE localPK = :localPK")
@@ -81,7 +82,7 @@ interface MessageDao {
 
 
     @Query("SELECT * FROM messages WHERE id = :id")
-    suspend fun getMessageById(id: Long): Message?
+    suspend fun getMessageById(id: Long): MessageDto?
 
 }
 
@@ -89,10 +90,10 @@ interface MessageDao {
 interface MessageReaderDao {
 
     @Upsert()
-    suspend fun upsertReader(reader: MessageReader): Long
+    suspend fun upsertReader(reader: MessageReaderDto): Long
 
     @Upsert
-    suspend fun upsertReaders(readers: List<MessageReader>): List<Long>
+    suspend fun upsertReaders(readers: List<MessageReaderDto>): List<Long>
 
     @Query("DELETE FROM message_readers WHERE messageId = :messageId")
     suspend fun deleteReadersForMessage(messageId: Long)
@@ -103,7 +104,7 @@ interface MessageReaderDao {
 @Dao
 interface GroupDao {
     @Upsert
-    suspend fun upsertGroup(group: Group)
+    suspend fun upsertGroup(group: GroupDto)
 
     @Query("SELECT id, changedate FROM `groups`")
     suspend fun getGroupIdsWithChangeDates(): List<IdChangeDate>
@@ -113,10 +114,10 @@ interface GroupDao {
 
     @Transaction
     @Query("SELECT * FROM `groups`")
-    fun getAllGroupsWithMembers(): Flow<List<GroupWithMembers>>
+    fun getAllGroupsWithMembers(): Flow<List<GroupWithMembersDto>>
 
     @Upsert
-    suspend fun upsertMembers(members: List<GroupMember>): List<Long>
+    suspend fun upsertMembers(members: List<GroupMemberDto>): List<Long>
 
     @Query("DELETE FROM group_members WHERE group_id = :groupId")
     suspend fun deleteMembersForGroup(groupId: Long)

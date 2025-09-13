@@ -4,18 +4,18 @@ import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupMemberDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
 
 
 @Database(
-    entities = [User::class, Message::class, MessageReader::class, Group::class, GroupMember::class, TodoEntityDto::class],
+    entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, TodoEntityDto::class],
     exportSchema = true,
-    version = 28
+    version = 29
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)
