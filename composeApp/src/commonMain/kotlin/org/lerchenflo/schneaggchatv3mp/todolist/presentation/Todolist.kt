@@ -27,6 +27,8 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.ChipSelection
+import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.todolist
@@ -83,7 +85,6 @@ fun TodolistScreen(
 
     Box(
         modifier = modifier
-
     ){
         Column{
             ActivityTitle(
@@ -91,6 +92,10 @@ fun TodolistScreen(
                 onBackClick = onBackClick
             )
 
+            //Sortieren
+            ChipSelection(BugSorttype.entries.toList().map { it.toString() }) {
+                viewModel.sortType.value = BugSorttype.entries[it]
+            }
 
 
             PullToRefreshBox( // needs experimental opt in
@@ -127,11 +132,22 @@ fun TodolistScreen(
                         // Add space if next item has a lower priority
                         val isNotLast = index < todoliste.lastIndex
                         if (isNotLast) {
+                            val next = todoliste[index + 1]
                             val currentPriority = todo.priority
-                            val nextPriority = todoliste[index + 1].priority
-                            if (nextPriority < currentPriority) {
-                                Spacer(modifier = Modifier.height(16.dp))
+                            val nextPriority = next.priority
+
+                            val currentFinished = todo.status == BugStatus.Finished.value
+                            val nextFinished = next.status == BugStatus.Finished.value
+
+                            //Wenn beide fertig sind denn kuan spacer
+                            if (currentFinished && nextFinished){
+
+                            }else{ //Sunsch scho wenn sich was ändert
+                                if (nextPriority < currentPriority || currentFinished != nextFinished) {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                }
                             }
+
                         }
                     }
                 }
@@ -154,6 +170,4 @@ fun TodolistScreen(
             )
         }
     }
-
-
 }
