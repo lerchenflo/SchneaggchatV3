@@ -20,6 +20,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,7 +57,10 @@ fun ChatScreen(
     val viewModel = koinViewModel<ChatViewModel>()
     val messages by viewModel.messagesState.collectAsStateWithLifecycle()
 
-    viewModel.initPrefs()
+    //TODO Fabi leas: Immer a launchedeffect verwenda sunsch wirds bei jeder recomposition ufgrufa (Denkt da chatbot mol)
+    LaunchedEffect(true){
+        viewModel.initPrefs()
+    }
 
     SchneaggchatTheme{ // theme wida setza
         Column(

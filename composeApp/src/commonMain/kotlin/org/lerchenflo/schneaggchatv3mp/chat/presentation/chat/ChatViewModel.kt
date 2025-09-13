@@ -5,8 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +20,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.network.TEXTMESSAGE
@@ -26,11 +29,21 @@ import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 
 class ChatViewModel(
     private val appRepository: AppRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val messageRepository: MessageRepository
 ): ViewModel() {
 
     val globalViewModel: GlobalViewModel = KoinPlatform.getKoin().get()
 
+
+    init {
+        println("Chatviewmodel init")
+        globalViewModel.viewModelScope.launch {
+            CoroutineScope(Dispatchers.IO).launch {
+                messageRepository.setAllChatMessagesRead(globalViewModel.selectedChat.value.id, globalViewModel.selectedChat.value.isGroup, getCurrentTimeMillisString())
+            }
+        }
+    }
 
 
     //TODO: Null check ob an selectegegner gwählt isch (Oder einfach id und bool gruppe übergia denn hot ma des clean grichtet und sharedviewmodel selected bruchts num)
@@ -101,5 +114,6 @@ class ChatViewModel(
 
     var markdownEnabled by mutableStateOf(false)
         private set
+
 
 }

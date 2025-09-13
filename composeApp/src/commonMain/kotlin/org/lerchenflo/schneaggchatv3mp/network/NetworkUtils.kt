@@ -124,7 +124,7 @@ class NetworkUtils(
 
             //Hot die operation gfunkt
             if (!decodedHeaders["successful"].toBoolean()){
-                println("Not successful")
+                println("Networktask not successful: Msgtype $headers")
 
                 return NetworkResult.Error(responseBody)
             }
@@ -399,7 +399,7 @@ class NetworkUtils(
             "group" to gruppe.toString()
         )
 
-        val res = executeNetworkOperation(headers = headers, body = "", get = true, timestamp = timestamp)
+        val res = executeNetworkOperation(headers = headers, body = "", get = false, timestamp = timestamp)
 
         return when (res) {
 
@@ -558,7 +558,7 @@ class NetworkUtils(
 
     suspend fun executeMsgIDSync(messageRepository: MessageRepository, onLoadingStateChange: (Boolean) -> Unit) {
 
-        //TODO: Richta dassas ersch startet wenn da vorherige request fertig isch
+        //TODO: Irgendwie gits do a problem mit da lastchanged updates in da db ???
         println("MSgidsync startet")
         onLoadingStateChange(true)
 

@@ -5,8 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
@@ -63,13 +65,17 @@ class ChatSelectorViewModel(
 
             // at this point we're guaranteed logged in (or the condition was already true)
             try {
-                // send queued messages
-                appRepository.sendOfflineMessages()
+                globalViewModel.viewModelScope.launch {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        // send queued messages
+                        appRepository.sendOfflineMessages()
 
-                // run your sync callback
-                globalViewModel.executeuserandmsgidsync { isLoadingMessages1 ->
-                    updateIsLoadingMessages(isLoadingMessages1)
-                    println("Loading messages: $isLoadingMessages")
+                        // run your sync callback
+                        appRepository.executeSync { isLoadingMessages1 ->
+                            updateIsLoadingMessages(isLoadingMessages1)
+                            println("Loading messages: $isLoadingMessages")
+                        }
+                    }.join()
                 }
             } catch (e: Exception) {
                 ensureActive()

@@ -23,16 +23,6 @@ class GlobalViewModel(
     }
 
 
-    fun executeuserandmsgidsync(onLoadingStateChange: (Boolean) -> Unit){
-        viewModelScope.launch {
-            appRepository.executeSync(onLoadingStateChange)
-        }
-    }
-
-
-
-
-
 
 
 
