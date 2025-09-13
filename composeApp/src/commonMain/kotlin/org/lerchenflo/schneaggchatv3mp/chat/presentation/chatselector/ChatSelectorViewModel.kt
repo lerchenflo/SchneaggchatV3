@@ -5,8 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
@@ -24,6 +26,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 
 class ChatSelectorViewModel(
@@ -62,13 +65,17 @@ class ChatSelectorViewModel(
 
             // at this point we're guaranteed logged in (or the condition was already true)
             try {
-                // send queued messages
-                appRepository.sendOfflineMessages()
+                globalViewModel.viewModelScope.launch {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        // send queued messages
+                        appRepository.sendOfflineMessages()
 
-                // run your sync callback
-                globalViewModel.executeuserandmsgidsync { isLoadingMessages1 ->
-                    updateIsLoadingMessages(isLoadingMessages1)
-                    println("Loading messages: $isLoadingMessages")
+                        // run your sync callback
+                        appRepository.executeSync { isLoadingMessages1 ->
+                            updateIsLoadingMessages(isLoadingMessages1)
+                            println("Loading messages: $isLoadingMessages")
+                        }
+                    }.join()
                 }
             } catch (e: Exception) {
                 ensureActive()
@@ -94,20 +101,20 @@ class ChatSelectorViewModel(
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val chatSelectorFlow: Flow<List<ChatSelectorItem>> = _searchTerm
+    val chatSelectorFlow: Flow<List<SelectedChat>> = _searchTerm
         .flatMapLatest { term ->
             appRepository.getChatSelectorFlow(term)
         }
         .map { list ->
             list
                 // remove yourself if the item is a user with your OWNID
-                .filter { !(it.id == SessionCache.getOwnIdValue() && !it.gruppe) }
+                .filter { !(it.id == SessionCache.getOwnIdValue() && !it.isGroup) }
                 // already sorted in repository, but safe to sort again
                 .sortedByDescending { it.lastmessage?.getSendDateAsLong() }
         }
         .flowOn(Dispatchers.Default)
 
-    val chatSelectorState: StateFlow<List<ChatSelectorItem>> = chatSelectorFlow
+    val chatSelectorState: StateFlow<List<SelectedChat>> = chatSelectorFlow
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Companion.WhileSubscribed(5_000),

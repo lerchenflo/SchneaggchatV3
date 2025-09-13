@@ -1,17 +1,28 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 
-@Serializable
-@Entity(tableName = "message_readers")
 data class MessageReader(
-    @PrimaryKey(autoGenerate = true)
     val readerEntryId: Long = 0L,
-    val messageId: Long,
-    val readerID: Long,
-    val readDate: String
+    val messageId: Long = 0L,
+    val readerId: Long = 0L,
+    val readDate: String = ""
 ) {
     fun getReadDateAsLong(): Long = readDate.toLongOrNull() ?: 0L
 }
+
+
+fun MessageReaderDto.toMessageReader(): MessageReader = MessageReader(
+    readerEntryId = this.readerEntryId,
+    messageId = this.messageId,
+    readerId = this.readerID,
+    readDate = this.readDate
+)
+
+/** Domain -> DTO */
+fun MessageReader.toDto(): MessageReaderDto = MessageReaderDto(
+    readerEntryId = this.readerEntryId,
+    messageId = this.messageId,
+    readerID = this.readerId,
+    readDate = this.readDate
+)

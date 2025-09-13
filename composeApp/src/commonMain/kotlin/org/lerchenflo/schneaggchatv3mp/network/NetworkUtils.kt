@@ -7,7 +7,6 @@ import io.ktor.client.plugins.timeout
 import io.ktor.client.request.*
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
-import io.ktor.client.statement.request
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
@@ -25,10 +24,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.ServerGroupDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.ServerMessageDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.convertServerGroupDtoToGroupWithMembers
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.convertServerGroupDtoToGroupWithMembersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.convertServerMessageDtoToMessageWithReaders
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.database.IdOperation
 import org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
@@ -125,7 +124,7 @@ class NetworkUtils(
 
             //Hot die operation gfunkt
             if (!decodedHeaders["successful"].toBoolean()){
-                println("Not successful")
+                println("Networktask not successful: Msgtype $headers")
 
                 return NetworkResult.Error(responseBody)
             }
@@ -400,7 +399,7 @@ class NetworkUtils(
             "group" to gruppe.toString()
         )
 
-        val res = executeNetworkOperation(headers = headers, body = "", get = true, timestamp = timestamp)
+        val res = executeNetworkOperation(headers = headers, body = "", get = false, timestamp = timestamp)
 
         return when (res) {
 
@@ -454,11 +453,11 @@ class NetworkUtils(
                                         userResult.onSuccessWithBody { success, body ->
 
                                             //println(body)
-                                            val user = json.decodeFromString<User>(body)
+                                            val userDto = json.decodeFromString<UserDto>(body)
 
                                             CoroutineScope(Dispatchers.IO).launch {
-                                                userRepository.upsertUser(user)
-                                                println("User inserted: ${user.name}")
+                                                userRepository.upsertUser(userDto)
+                                                println("User inserted: ${userDto.name}")
                                             }
                                         }
                                     }
@@ -525,7 +524,7 @@ class NetworkUtils(
                                             //Einzelne gruppe isch ako, jetzt in a liste vo dtos verwandla
                                             val serverlist = json.decodeFromString<ServerGroupDto>(body)
 
-                                            val group = convertServerGroupDtoToGroupWithMembers(serverlist)
+                                            val group = convertServerGroupDtoToGroupWithMembersDto(serverlist)
 
                                             CoroutineScope(Dispatchers.IO).launch {
                                                 groupRepository.upsertGroupWithMembers(group)
@@ -559,7 +558,7 @@ class NetworkUtils(
 
     suspend fun executeMsgIDSync(messageRepository: MessageRepository, onLoadingStateChange: (Boolean) -> Unit) {
 
-        //TODO: Richta dassas ersch startet wenn da vorherige request fertig isch
+        //TODO: Irgendwie gits do a problem mit da lastchanged updates in da db ???
         println("MSgidsync startet")
         onLoadingStateChange(true)
 
@@ -598,7 +597,7 @@ class NetworkUtils(
 
                     val messageListwithReaders = convertServerMessageDtoToMessageWithReaders(serverlist)
 
-                    val (normalMessages, pictureMessages) = messageListwithReaders.partition { !it.message.isPicture() }
+                    val (normalMessages, pictureMessages) = messageListwithReaders.partition { !it.messageDto.isPicture() }
 
                     if (normalMessages.isNotEmpty()) {
 
@@ -612,14 +611,14 @@ class NetworkUtils(
                     //Bilder einzeln hola
                     for (m in pictureMessages){
                         try {
-                            val id = m.message.id
+                            val id = m.messageDto.id
                             val messageResult = id?.let { getmessagebyid(it) }
 
                             if (messageResult == null) {
                                 println("ERROR: Messageid nicht vorhanden")
                             } else {
                                 try {
-                                    var messageToUpsert: MessageWithReaders? = null
+                                    var messageToUpsert: MessageWithReadersDto? = null
 
                                     // onSuccessWithBody is suspending — await it and convert the body
                                     messageResult.onSuccessWithBody { _, body1 ->

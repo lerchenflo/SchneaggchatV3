@@ -1,78 +1,74 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 
-@Serializable
-@Entity(tableName = "users")
 data class User(
-    @PrimaryKey
-    @ColumnInfo(name = "id")
-    var id: Long = 0L,
+    override val id: Long = 0L,
+    val lastChanged: Long = 0L,
+    override val name: String = "",
+    override val description: String = "",
+    override val status: String = "",
+    val locationLat: Double? = null,
+    val locationLong: Double? = null,
+    val locationDate: Long? = null,
+    val locationShared: Boolean = false,
+    val wakeupEnabled: Boolean = false,
+    override val profilePicture: String = "",
+    val lastOnline: Long? = null,
+    val accepted: Boolean = false,
+    val requested: Boolean = false,
+    val notisMuted: Boolean = false,
+    val birthDate: String = "",
+    val gender: String = "",
+    val settings: String? = null
+) : SelectedChat() {
+    override val isGroup: Boolean
+        get() = false
 
-    @SerialName("lastchanged")
-    @ColumnInfo(name = "changedate")
-    var lastChanged: Long = 0L,
 
-    @SerialName("username")
-    @ColumnInfo(name = "name")
-    var name: String = "",
+}
 
-    @SerialName("userdescription")
-    @ColumnInfo(name = "description")
-    var description: String = "",
 
-    @SerialName("userstatus")
-    @ColumnInfo(name = "status")
-    var status: String = "",
 
-    @ColumnInfo(name = "location_lat")
-    var locationLat: Double? = null,
+fun UserDto.toUser(): User = User(
+    id = this.id,
+    lastChanged = this.lastChanged,
+    name = this.name,
+    description = this.description,
+    status = this.status,
+    locationLat = this.locationLat,
+    locationLong = this.locationLong,
+    locationDate = this.locationDate,
+    locationShared = this.locationShared,
+    wakeupEnabled = this.wakeupEnabled,
+    profilePicture = this.profilePicture,
+    lastOnline = this.lastOnline,
+    accepted = this.accepted,
+    requested = this.requested,
+    notisMuted = this.notisMuted,
+    birthDate = this.birthDate,
+    gender = this.gender,
+    settings = this.settings
+)
 
-    @ColumnInfo(name = "location_long")
-    var locationLong: Double? = null,
-
-    @ColumnInfo(name = "location_date")
-    var locationDate: Long? = null,
-
-    @SerialName("locationshared")
-    @ColumnInfo(name = "locationshared")
-    var locationShared: Boolean = false,
-
-    @SerialName("wakeupenabled")
-    @ColumnInfo(name = "wakeupenabled")
-    var wakeupEnabled: Boolean = false,
-
-    @SerialName("profilepicture")
-    @ColumnInfo(name = "profilepicture")
-    var profilePicture: String = "",
-
-    @ColumnInfo(name = "last_online")
-    var lastOnline: Long? = null,
-
-    @SerialName("friendaccepted")
-    @ColumnInfo(name = "accepted")
-    var accepted: Boolean = false,
-
-    @SerialName("friendrequested")
-    @ColumnInfo(name = "requested")
-    var requested: Boolean = false,
-
-    @ColumnInfo(name = "notis_muted")
-    var notisMuted: Boolean = false,
-
-    @SerialName("birthdate")
-    @ColumnInfo(name = "birthdate")
-    var birthDate: String = "",
-
-    @SerialName("gender")
-    @ColumnInfo(name = "gender")
-    var gender: String = "",
-
-    @SerialName("settings")
-    @ColumnInfo(name = "settings")
-    var settings: String? = ""
+/** Convert domain User back to UserDto (for persistence/transport) */
+fun User.toDto(): UserDto = UserDto(
+    id = this.id,
+    lastChanged = this.lastChanged,
+    name = this.name,
+    description = this.description,
+    status = this.status,
+    locationLat = this.locationLat,
+    locationLong = this.locationLong,
+    locationDate = this.locationDate,
+    locationShared = this.locationShared,
+    wakeupEnabled = this.wakeupEnabled,
+    profilePicture = this.profilePicture,
+    lastOnline = this.lastOnline,
+    accepted = this.accepted,
+    requested = this.requested,
+    notisMuted = this.notisMuted,
+    birthDate = this.birthDate,
+    gender = this.gender,
+    settings = this.settings
 )

@@ -18,12 +18,11 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageWithReaders
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatEntity
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorItem
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccess
@@ -47,12 +46,12 @@ class AppRepository(
     }
 
     @Transaction
-    fun getMessagesByUserId(userId: Long, gruppe: Boolean): Flow<List<MessageWithReaders>> {
+    fun getMessagesByUserId(userId: Long, gruppe: Boolean): Flow<List<MessageWithReadersDto>> {
         return database.messageDao().getMessagesByUserId(userId, gruppe)
     }
 
     @Transaction
-    fun getownUser(): Flow<User?> {
+    fun getownUser(): Flow<UserDto?> {
         return database.userDao().getUserbyId(SessionCache.getOwnIdValue()?: 0)
     }
 
@@ -60,7 +59,7 @@ class AppRepository(
 
     //Gegnerauswahl getten
     // In repository / data layer
-    fun getChatSelectorFlow(searchTerm: String): Flow<List<ChatSelectorItem>> {
+    fun getChatSelectorFlow(searchTerm: String): Flow<List<SelectedChat>> {
         val messagesFlow = messageRepository.getAllMessagesWithReaders()
         val usersFlow = userRepository.getallusers()
         val groupsFlow = groupRepository.getallgroupswithmembers()
@@ -72,7 +71,7 @@ class AppRepository(
             val userItems = users.map { user ->
                 val last = messages
                     .filter {
-                        (it.message.senderId == user.id || it.message.receiverId == user.id)
+                        (it.messageDto.senderId == user.id || it.messageDto.receiverId == user.id)
                                 && !it.isGroupMessage()
                     }
                     .maxByOrNull { it.getSendDateAsLong() }
@@ -89,26 +88,23 @@ class AppRepository(
 
                 val unsentMessageCOunt =
                     thischatmessages.count { message ->
-                        !message.message.sent
+                        !message.messageDto.sent
                     }
 
-                ChatSelectorItem(
-                    id = user.id,
-                    gruppe = false,
-                    lastmessage = last, // may be null
-                    unreadMessageCount = unreadMessageCount,
-                    unsentMessageCount = unsentMessageCOunt,
-                    entity = ChatEntity.UserEntity(user)
-                )
+                user.unreadMessageCount = unreadMessageCount
+                user.unsentMessageCount = unsentMessageCOunt
+                user.lastmessage = last
+                //Return user
+                user
+
             }.filter { item ->
-                loweredSearch.isEmpty() ||
-                        (item.entity as? ChatEntity.UserEntity)?.user?.name?.lowercase()?.contains(loweredSearch) == true
+                loweredSearch.isEmpty() || item.name.lowercase().contains(loweredSearch)
             }
 
             val groupItems = groups.map { gwm ->
                 val groupId = gwm.group.id
                 val last = messages
-                    .filter { it.message.receiverId == groupId && it.isGroupMessage() }
+                    .filter { it.messageDto.receiverId == groupId && it.isGroupMessage() }
                     .maxByOrNull { it.getSendDateAsLong() }
 
                 val thisChatMessages =
@@ -123,22 +119,17 @@ class AppRepository(
 
                 val unsentMessageCount =
                     thisChatMessages.count { message ->
-                        !message.message.sent
+                        !message.messageDto.sent
                     }
 
+                gwm.unreadMessageCount = unreadMessageCount
+                gwm.unsentMessageCount = unsentMessageCount
+                gwm.lastmessage = last
+                //Return gwm
+                gwm
 
-
-                ChatSelectorItem(
-                    id = groupId,
-                    gruppe = true,
-                    lastmessage = last, // may be null
-                    unreadMessageCount = unreadMessageCount,
-                    unsentMessageCount = unsentMessageCount,
-                    entity = ChatEntity.GroupEntity(gwm)
-                )
             }.filter { item ->
-                loweredSearch.isEmpty() ||
-                        (item.entity as? ChatEntity.GroupEntity)?.groupWithMembers?.group?.name?.lowercase()?.contains(loweredSearch) == true
+                loweredSearch.isEmpty() || item.name.lowercase().contains(loweredSearch)
             }
 
             (userItems + groupItems)
@@ -227,7 +218,7 @@ class AppRepository(
 
 
         //Interne message macha die ned alles hot
-        val message = Message(
+        val messageDto = MessageDto(
             localPK = localpkintern,
             id = 0,
             msgType = msgtype,
@@ -244,7 +235,7 @@ class AppRepository(
 
         //Nachricht hot scho a pk vo da db, also scho din
         if (localpkintern == 0L){
-            localpkintern = database.messageDao().insertMessage(message)
+            localpkintern = database.messageDao().insertMessage(messageDto)
             println("LocalPK: $localpkintern")
         }
 
@@ -261,10 +252,10 @@ class AppRepository(
 
                     database.messageDao().markMessageAsSent( msgid, localpkintern)
 
-                    database.messagereaderDao().upsertReader(MessageReader(
+                    database.messagereaderDao().upsertReader(MessageReaderDto(
                         messageId = msgid,
                         readerID = SessionCache.getOwnIdValue() ?: 0,
-                        readDate = message.sendDate
+                        readDate = messageDto.sendDate
                     ))
                 }else{
                     println("Message senden error: Keine Msgid erhalten -----------------------------------------------------------------------")
