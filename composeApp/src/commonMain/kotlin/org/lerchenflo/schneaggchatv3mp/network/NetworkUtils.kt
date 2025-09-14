@@ -302,12 +302,12 @@ class NetworkUtils(
         }
     }
 
-    suspend fun upsertTodo(todo: TodoEntry): NetworkResult<Boolean, String> {
+    suspend fun upsertTodo(todo: TodoEntry, timestamp: String): NetworkResult<Boolean, String> {
         val headers = mapOf(
             "msgtype" to ADDBUGFEATURE
         )
 
-        val res = executeNetworkOperation(headers = headers, body = Json.encodeToString(todo.toTodoEntityDto()), get = false)
+        val res = executeNetworkOperation(headers = headers, body = Json.encodeToString(todo.toTodoEntityDto()), get = false, timestamp = timestamp)
         return when (res) {
 
             is NetworkResult.Success -> {

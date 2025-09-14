@@ -142,7 +142,6 @@ fun Chatauswahlscreen(
                     strokeWidth = 2.dp,
                     size = 18.dp
 
-
                 )
 
                 Spacer(Modifier.width(distance))
@@ -153,6 +152,7 @@ fun Chatauswahlscreen(
                     contentDescription = stringResource(Res.string.tools_and_games),
                     modifier = Modifier
                         .size(size)
+                        .padding(4.dp)
                         .clickable { onToolsAndGamesClick() },
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
 
@@ -164,6 +164,7 @@ fun Chatauswahlscreen(
                     contentDescription = stringResource(Res.string.schneaggmap),
                     modifier = Modifier
                         .size(size)
+                        .padding(4.dp)
                         .clickable { SnackbarManager.showMessage("Es gibt noch koa schneaggmap") },
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
 
@@ -175,6 +176,7 @@ fun Chatauswahlscreen(
                     contentDescription = stringResource(Res.string.settings),
                     modifier = Modifier
                         .size(size)
+                        .padding(4.dp)
                         .clickable { onSettingsClick() },
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
                 )

@@ -105,7 +105,10 @@ fun ChatScreen(
                     .weight(1f),
                 reverseLayout = true
             ) {
-                itemsIndexed(messages) { index, message ->
+                itemsIndexed(messages, key = { _, msg ->
+                    // combine id + sendDate (or use a uuid field) so duplicates don't collide
+                    "${msg.messageDto.localPK}_${msg.messageDto.sendDate}"
+                })  { index, message ->
                     val currentDateMillis = message.messageDto.sendDate.toLongOrNull()
                     val currentDate = currentDateMillis?.toLocalDate()
                     val nextDate =
@@ -116,7 +119,7 @@ fun ChatScreen(
 
                     MessageView(
                         useMD = viewModel.markdownEnabled,
-                        selectedChatId = globalViewModel.selectedChat.value?.id ?: -1,
+                        selectedChatId = globalViewModel.selectedChat.value.id,
                         messagewithreaders = message,
                         modifier = Modifier
                     )

@@ -39,6 +39,9 @@ class ChatSelectorViewModel(
 
     init {
         refresh()
+
+        //Chat verlassen
+        globalViewModel.onLeaveChat()
     }
 
 

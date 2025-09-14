@@ -25,6 +25,7 @@ import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugType
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.bug_sort_all
 import schneaggchatv3mp.composeapp.generated.resources.bug_sort_assigned_to_me
@@ -34,6 +35,7 @@ import schneaggchatv3mp.composeapp.generated.resources.bug_sort_important
 import schneaggchatv3mp.composeapp.generated.resources.bug_sort_mine
 import schneaggchatv3mp.composeapp.generated.resources.bug_sort_todo
 import schneaggchatv3mp.composeapp.generated.resources.bug_sort_unfinished
+import kotlin.time.Clock
 
 class TodolistViewModel(
     private val todoRepository: TodoRepository,
@@ -81,7 +83,7 @@ class TodolistViewModel(
         if (newtodo != oldtodo){
             globalViewModel.viewModelScope.launch {
                 CoroutineScope(Dispatchers.IO).launch {
-                    todoRepository.upsertTodoServer(newtodo)
+                    todoRepository.upsertTodoServer(newtodo, getCurrentTimeMillisString())
                     println("Todo update: true")
                 }
 
@@ -99,7 +101,7 @@ class TodolistViewModel(
 
     fun addItem(todoItem: TodoEntry){
         globalViewModel.viewModelScope.launch {
-            todoRepository.upsertTodoServer(todoItem)
+            todoRepository.upsertTodoServer(todoItem, getCurrentTimeMillisString())
         }
     }
 
