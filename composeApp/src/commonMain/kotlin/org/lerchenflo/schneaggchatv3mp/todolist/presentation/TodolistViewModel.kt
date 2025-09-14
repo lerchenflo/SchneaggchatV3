@@ -24,6 +24,16 @@ import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugType
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
+import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.bug_sort_all
+import schneaggchatv3mp.composeapp.generated.resources.bug_sort_assigned_to_me
+import schneaggchatv3mp.composeapp.generated.resources.bug_sort_bug
+import schneaggchatv3mp.composeapp.generated.resources.bug_sort_feature
+import schneaggchatv3mp.composeapp.generated.resources.bug_sort_important
+import schneaggchatv3mp.composeapp.generated.resources.bug_sort_mine
+import schneaggchatv3mp.composeapp.generated.resources.bug_sort_todo
+import schneaggchatv3mp.composeapp.generated.resources.bug_sort_unfinished
 
 class TodolistViewModel(
     private val todoRepository: TodoRepository,
@@ -67,8 +77,6 @@ class TodolistViewModel(
     }
 
     fun changeItem(newtodo: TodoEntry, oldtodo: TodoEntry){
-        println("OLDTODO: $oldtodo")
-        println("NEWTODO: $newtodo")
 
         if (newtodo != oldtodo){
             globalViewModel.viewModelScope.launch {
@@ -161,7 +169,17 @@ enum class BugSorttype{
     BUG,
     FEATURE,
     TODO,
-    ASSIGNED_TO_ME
+    ASSIGNED_TO_ME;
 
+    fun toUiText(): UiText = when (this) {
+        ALL -> UiText.StringResourceText(Res.string.bug_sort_all)
+        MINE -> UiText.StringResourceText(Res.string.bug_sort_mine)
+        UNFINISHED -> UiText.StringResourceText(Res.string.bug_sort_unfinished)
+        IMPORTANT -> UiText.StringResourceText(Res.string.bug_sort_important)
+        BUG -> UiText.StringResourceText(Res.string.bug_sort_bug)
+        FEATURE -> UiText.StringResourceText(Res.string.bug_sort_feature)
+        TODO -> UiText.StringResourceText(Res.string.bug_sort_todo)
+        ASSIGNED_TO_ME -> UiText.StringResourceText(Res.string.bug_sort_assigned_to_me)
+    }
 
 }

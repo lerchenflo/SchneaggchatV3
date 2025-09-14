@@ -1,5 +1,16 @@
 package org.lerchenflo.schneaggchatv3mp.todolist.domain
 
+import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.bugpriority_extreme
+import schneaggchatv3mp.composeapp.generated.resources.bugpriority_high
+import schneaggchatv3mp.composeapp.generated.resources.bugpriority_low
+import schneaggchatv3mp.composeapp.generated.resources.bugpriority_normal
+import schneaggchatv3mp.composeapp.generated.resources.bugstatus_finished
+import schneaggchatv3mp.composeapp.generated.resources.bugstatus_in_progress
+import schneaggchatv3mp.composeapp.generated.resources.bugstatus_unfinished
+import schneaggchatv3mp.composeapp.generated.resources.bugtype
+
 data class TodoEntry(
     var id: Long = 0L,
     var senderId: Long = 0,
@@ -60,21 +71,34 @@ enum class BugStatus(val value: Int) {
     InProgress(1),
     Finished(2);
 
+    fun toUiText(): UiText = when (this) {
+        Unfinished -> UiText.StringResourceText(Res.string.bugstatus_unfinished)
+        InProgress -> UiText.StringResourceText(Res.string.bugstatus_in_progress)
+        Finished   -> UiText.StringResourceText(Res.string.bugstatus_finished)
+    }
+
     companion object {
         fun fromInt(value: Int): BugStatus =
-            entries.firstOrNull { it.value == value }
-                ?: Unfinished
+            entries.firstOrNull { it.value == value } ?: Unfinished
 
         fun fromIntOrNull(value: Int): BugStatus? =
             entries.firstOrNull { it.value == value }
     }
 }
 
+
 enum class BugPriority(val value: Int) {
     Low(0),
     Normal(1),
     High(2),
     Extreme(3);
+
+    fun toUiText(): UiText = when (this) {
+        Low -> UiText.StringResourceText(Res.string.bugpriority_low)
+        Normal -> UiText.StringResourceText(Res.string.bugpriority_normal)
+        High -> UiText.StringResourceText(Res.string.bugpriority_high)
+        Extreme -> UiText.StringResourceText(Res.string.bugpriority_extreme)
+    }
 
     companion object {
         fun fromInt(value: Int): BugPriority =

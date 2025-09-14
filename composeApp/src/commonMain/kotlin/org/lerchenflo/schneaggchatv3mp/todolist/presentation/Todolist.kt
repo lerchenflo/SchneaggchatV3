@@ -93,7 +93,7 @@ fun TodolistScreen(
             )
 
             //Sortieren
-            ChipSelection(BugSorttype.entries.toList().map { it.toString() }) {
+            ChipSelection(BugSorttype.entries.toList().map { it.toUiText().asString() }) {
                 viewModel.sortType.value = BugSorttype.entries[it]
             }
 
