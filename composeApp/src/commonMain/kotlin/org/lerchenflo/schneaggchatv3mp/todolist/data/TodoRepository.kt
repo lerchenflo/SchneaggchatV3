@@ -41,8 +41,9 @@ class TodoRepository(
         }
     }
 
-    suspend fun upsertTodoServer(todo: TodoEntry){
-        val networkrequest = networkUtils.upsertTodo(todo)
+    suspend fun upsertTodoServer(todo: TodoEntry, timestamp: String){
+        todo.lastChanged = timestamp
+        val networkrequest = networkUtils.upsertTodo(todo, timestamp)
 
         networkrequest.onSuccessWithBody { bool, body ->
             if (bool){

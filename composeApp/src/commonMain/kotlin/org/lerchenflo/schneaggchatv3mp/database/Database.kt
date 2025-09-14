@@ -1,3 +1,5 @@
+@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+
 package org.lerchenflo.schneaggchatv3mp.database
 
 import androidx.room.ConstructedBy
@@ -15,7 +17,7 @@ import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
 @Database(
     entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, TodoEntityDto::class],
     exportSchema = true,
-    version = 29
+    version = 30
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)

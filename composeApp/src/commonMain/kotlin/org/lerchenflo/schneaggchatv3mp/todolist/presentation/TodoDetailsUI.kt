@@ -97,7 +97,13 @@ fun ShowTodoDetails(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                //horizontalArrangement = Arrangement.
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+
                 Text(
                     text = title, style = MaterialTheme.typography.titleLarge,
                     maxLines = 1,
@@ -118,7 +124,7 @@ fun ShowTodoDetails(
         text = {
             Column(
                 modifier = Modifier
-                    .heightIn(max = 420.dp)           // limit height so it becomes scrollable
+                    .heightIn(max = 440.dp)           // limit height so it becomes scrollable
                     .verticalScroll(rememberScrollState())
             ) {
                 //Entered by text
@@ -277,7 +283,7 @@ fun ShowTodoDetails(
                             onClick = { statusExpanded = true },
                             enabled = editable
                         ) {
-                            Text(text = selectedStatus.toString())
+                            Text(text = selectedStatus.toUiText().asString())
                         }
 
                         DropdownMenu(
@@ -286,7 +292,7 @@ fun ShowTodoDetails(
                         ){
                             BugStatus.entries.forEach { status ->
                                 DropdownMenuItem(
-                                    text = { Text(status.toString()) },
+                                    text = { Text(status.toUiText().asString()) },
                                     onClick = {
                                         selectedStatus = BugStatus.fromInt(status.value)
                                         statusExpanded = false
@@ -305,7 +311,7 @@ fun ShowTodoDetails(
                             onClick = { priorityExpanded = true },
                             enabled = editable
                         ) {
-                            Text(text = selectedPriority.toString())
+                            Text(text = selectedPriority.toUiText().asString())
                         }
 
                         DropdownMenu(
@@ -314,7 +320,7 @@ fun ShowTodoDetails(
                         ){
                             BugPriority.entries.forEach { priority ->
                                 DropdownMenuItem(
-                                    text = { Text(priority.toString()) },
+                                    text = { Text(priority.toUiText().asString()) },
                                     onClick = {
                                         selectedPriority = BugPriority.fromInt(priority.value)
                                         priorityExpanded = false

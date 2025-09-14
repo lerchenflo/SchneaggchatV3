@@ -66,17 +66,36 @@
     <!--<string name="description_info">All friends of %1$s can edit this text, but %1$s cannot.</string>-->
     <string name="no_description">No description</string>
     <string name="remove_friend">remove friend</string>
-    <string name="todolist">Todos</string>
     <string name="save">save</string>
     <string name="close">close</string>
+
+    <!-- Todoliste -->
+    <string name="todolist">Todos</string>
     <string name="not_assigned">Not assigned</string>
     <string name="assignedto">Assigned to</string>
     <string name="bugplatform">Platform</string>
     <string name="bugtype">Type</string>
+    <string name="bugstatus_unfinished">Not done</string>
+    <string name="bugstatus_in_progress">In progress</string>
+    <string name="bugstatus_finished">Done</string>
+    <string name="bugpriority_low">Low</string>
+    <string name="bugpriority_normal">Normal</string>
+    <string name="bugpriority_high">High</string>
+    <string name="bugpriority_extreme">Extreme</string>
+
     <string name="bugpriority">Priority</string>
     <string name="enteredby">Entered by</string>
     <string name="bugstatus">Status</string>
     <string name="buglastchanged">Last changed</string>
+
+    <string name="bug_sort_all">All</string>
+    <string name="bug_sort_mine">Mine</string>
+    <string name="bug_sort_unfinished">Unfinished</string>
+    <string name="bug_sort_important">Important</string>
+    <string name="bug_sort_bug">Bugs</string>
+    <string name="bug_sort_feature">Features</string>
+    <string name="bug_sort_todo">Todos</string>
+    <string name="bug_sort_assigned_to_me">Assigned to me</string>
 
 
 

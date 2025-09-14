@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -17,7 +18,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LabelImportant
 import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.EmojiObjects
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Icon
@@ -35,6 +39,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugPriority
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus
+import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugType
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntry
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.noti_bell
@@ -78,7 +83,9 @@ fun TodoEntryUI(
 
         Column {
 
-            Row {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
 
                 Text(
@@ -124,15 +131,48 @@ fun TodoEntryUI(
 
             }
 
-            Row {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+
+            ) {
                 Text(
                     text = todoEntry.content,
                     maxLines = 1,
                     modifier = Modifier
-                        .padding(5.dp),
-                    style = MaterialTheme.typography.bodySmall,
+                        .padding(5.dp)
+                        .weight(1f),
+                    style = MaterialTheme.typography.bodySmall
+                )
 
-                    )
+                when (todoEntry.type) {
+                    BugType.BugReport.value -> {
+                        Icon(
+                            imageVector = Icons.Default.BugReport,
+                            contentDescription = "bug report",
+                            modifier = Modifier.padding(end = 9.dp).size(16.dp),
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+
+                    BugType.FeatureRequest.value -> {
+                        Icon(
+                            imageVector = Icons.Default.EmojiObjects,
+                            contentDescription = "feature request",
+                            modifier = Modifier.padding(end = 9.dp).size(16.dp),
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+
+                    BugType.Todo.value -> {
+                        Icon(
+                            imageVector = Icons.Default.Checklist,
+                            contentDescription = "todo",
+                            modifier = Modifier.padding(
+                                end = 9.dp).size(16.dp),
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
             }
 
         }

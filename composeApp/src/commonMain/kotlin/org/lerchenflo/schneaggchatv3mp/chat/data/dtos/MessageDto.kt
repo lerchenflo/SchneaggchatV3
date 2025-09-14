@@ -13,7 +13,6 @@ import org.lerchenflo.schneaggchatv3mp.network.PICTUREMESSAGE
 @Serializable
 @Entity(
     tableName = "messages",
-    indices = [Index(value = ["id"], unique = true)]
 )
 data class MessageDto(
 
