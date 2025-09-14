@@ -41,19 +41,19 @@ fun ChipSelection(
                         top = 15.dp,
                         bottom = 15.dp
                     )
+                    .clip(RoundedCornerShape(10.dp))
                     .clickable{
+                        selectedChipIndex = it
                         onSelected(it)
                     }
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(//TODO: Farba ans theme apassa
-                        if (selectedChipIndex == it) MaterialTheme.colorScheme.onSurface
-                        else MaterialTheme.colorScheme.onSurfaceVariant
+                    .background(
+                        if (selectedChipIndex == it) MaterialTheme.colorScheme.primaryContainer
+                        else MaterialTheme.colorScheme.surfaceContainer
                     )
                     .padding(15.dp)
             ){
                 Text(
                     text = chips[it],
-                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }

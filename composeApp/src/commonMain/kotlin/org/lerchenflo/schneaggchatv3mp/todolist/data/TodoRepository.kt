@@ -32,8 +32,13 @@ class TodoRepository(
         database.todolistdao().delete(id)
     }
 
-    suspend fun upsertTodo(todo: TodoEntry){
-        database.todolistdao().upsertTodo(todo.toTodoEntityDto())
+    @Transaction
+    suspend fun upsertTodo(todo: TodoEntry) {
+        if (database.todolistdao().getTodoById(todo.id) != null) {
+            database.todolistdao().updateTodo(todo.toTodoEntityDto())
+        } else {
+            database.todolistdao().insertTodo(todo.toTodoEntityDto())
+        }
     }
 
     suspend fun upsertTodoServer(todo: TodoEntry){
@@ -42,7 +47,7 @@ class TodoRepository(
         networkrequest.onSuccessWithBody { bool, body ->
             if (bool){
                 todo.id = body.toLong()
-                database.todolistdao().upsertTodo(todo.toTodoEntityDto())
+                upsertTodo(todo)
             }
         }
     }

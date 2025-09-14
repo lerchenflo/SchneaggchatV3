@@ -16,7 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntry
 data class TodoEntityDto(
     @PrimaryKey(autoGenerate = false)
     @SerialName("id")
-    var id: Long = 0,
+    var id: Long = 0L,
 
     @SerialName("senderId")
     var senderId: Long = 0,
@@ -74,13 +74,13 @@ fun TodoEntry.toTodoEntityDto(): TodoEntityDto {
     return TodoEntityDto(
         id = this.id,
         senderId = this.senderId,
-        createDate = this.createDate,
+        createDate = this.createDate.ifBlank { "0" },
         platform = this.platform,
         type = this.type,
         editorId = this.editorId,
         content = this.content,
         title = this.title,
-        lastChanged = this.lastChanged,
+        lastChanged = this.lastChanged.ifBlank { "0" },
         senderAsString = this.senderAsString,
         status = this.status,
         priority = this.priority

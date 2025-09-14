@@ -1,24 +1,33 @@
 package org.lerchenflo.schneaggchatv3mp.todolist.presentation
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
+import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus
+import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugType
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntry
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 class TodolistViewModel(
-    private val todoRepository: TodoRepository
+    private val todoRepository: TodoRepository,
+    private val pictureManager: PictureManager
 ): ViewModel() {
 
     val globalViewModel: GlobalViewModel = KoinPlatform.getKoin().get()
@@ -35,6 +44,10 @@ class TodolistViewModel(
 
         }
     }
+
+
+
+    var sortType = mutableStateOf(BugSorttype.ALL)
 
 
     var popupVisible = mutableStateOf(false)
@@ -54,10 +67,16 @@ class TodolistViewModel(
     }
 
     fun changeItem(newtodo: TodoEntry, oldtodo: TodoEntry){
+        println("OLDTODO: $oldtodo")
+        println("NEWTODO: $newtodo")
+
         if (newtodo != oldtodo){
             globalViewModel.viewModelScope.launch {
-                todoRepository.upsertTodoServer(newtodo)
-                println("Todo update: true")
+                CoroutineScope(Dispatchers.IO).launch {
+                    todoRepository.upsertTodoServer(newtodo)
+                    println("Todo update: true")
+                }
+
             }
         }else{
             println("Todo update: false")
@@ -77,14 +96,50 @@ class TodolistViewModel(
     }
 
 
+    fun getProfilePicfileNameFromId(userid: Int) : String {
+        return pictureManager.getProfilePicFilePath(userid.toLong(), false)
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val todoFlow: Flow<List<TodoEntry>> = todoRepository
         .getTodoItemsFlow()
-        .map {
-            list -> list.sortedWith(
-            compareByDescending<TodoEntry> { it.priority }
-                .thenByDescending { it.lastChanged }
-        )
+        // combine repo items with the current sort type (snapshotFlow observes the Compose mutableStateOf)
+        .combine(snapshotFlow { sortType.value }) { list, sort ->
+            // Filter according to the selected sort type
+            val filtered = when (sort) {
+                BugSorttype.MINE -> {
+                    list.filter { it.senderId == SessionCache.getOwnIdValue() }
+                }
+                BugSorttype.UNFINISHED -> {
+                    // assume a boolean property 'finished' (replace with your actual name, e.g. isDone/isCompleted)
+                    list.filter { it.status != BugStatus.Finished.value }
+                }
+                BugSorttype.IMPORTANT -> {
+                    // example: either a boolean `important` or priority threshold; adjust as needed
+                    list.filter { it.priority >= 2 }
+                }
+                BugSorttype.BUG -> {
+                    list.filter { it.type == BugType.BugReport.value }
+                }
+                BugSorttype.FEATURE -> {
+                    list.filter { it.type == BugType.FeatureRequest.value }
+                }
+                BugSorttype.TODO -> {
+                    list.filter { it.type == BugType.Todo.value }
+                }
+                BugSorttype.ASSIGNED_TO_ME -> {
+                    list.filter { it.editorId.toLong() == SessionCache.getOwnIdValue() }
+                }
+                BugSorttype.ALL -> list
+            }
+
+            // then sort (keeps your existing sort by priority, then lastChanged)
+            filtered.sortedWith(
+                compareBy<TodoEntry> { it.status == BugStatus.Finished.value } // unfinished (false) come first
+                    .thenByDescending { it.priority }                         // then by priority (high -> low)
+                    .thenByDescending { it.lastChanged }                      // optional: newest changed first
+            )
+
         }
         .flowOn(Dispatchers.Default)
 
@@ -94,5 +149,19 @@ class TodolistViewModel(
             started = SharingStarted.Companion.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+
+}
+
+
+enum class BugSorttype{
+    ALL,
+    MINE,
+    UNFINISHED,
+    IMPORTANT,
+    BUG,
+    FEATURE,
+    TODO,
+    ASSIGNED_TO_ME
+
 
 }

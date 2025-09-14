@@ -70,5 +70,5 @@ val sharedmodule = module{
     factory { SignUpViewModel(get()) }
 
     viewModelOf(::TodolistViewModel)
-    factory { TodolistViewModel(get()) }
+    factory { TodolistViewModel(get(), get()) }
 }
