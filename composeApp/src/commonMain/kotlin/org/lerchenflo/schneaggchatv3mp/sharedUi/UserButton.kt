@@ -48,8 +48,6 @@ fun UserButton(
     showProfilePicture: Boolean = true,
     lastMessage: MessageWithReadersDto? = null,
     bottomTextOverride: String? = "",
-    unreadmessageBubbleCount: Int = 0,
-    unsentmessageBubbleCount: Int = 0,
     useOnClickGes: Boolean = true,
     onClickGes: () -> Unit = {},  // Add click for everything
     onClickText: () -> Unit = {},  // Add click for name ...
@@ -109,26 +107,26 @@ fun UserButton(
                 )
 
 
-                if (unsentmessageBubbleCount != 0){
+                if (selectedChat.unsentMessageCount != 0){
                     Badge(
                         containerColor = MaterialTheme.colorScheme.error,
                         contentColor = MaterialTheme.colorScheme.onError
                     ){
                         Text(
-                            text = "$unsentmessageBubbleCount",
+                            text = "${selectedChat.unsentMessageCount}",
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.width(4.dp))
 
-                if (unreadmessageBubbleCount != 0){
+                if (selectedChat.unreadMessageCount != 0 && selectedChat.unreadMessageCount - selectedChat.unsentMessageCount != 0){
                     Badge(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     ){
                         Text(
-                            text = "${unreadmessageBubbleCount - unsentmessageBubbleCount}", // ungesendete messages sind no ned gleasa vo mir
+                            text = "${selectedChat.unreadMessageCount - selectedChat.unsentMessageCount}", // ungesendete messages sind no ned gleasa vo mir
                         )
                     }
                 }

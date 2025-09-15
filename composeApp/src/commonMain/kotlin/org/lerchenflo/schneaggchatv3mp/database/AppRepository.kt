@@ -91,6 +91,7 @@ class AppRepository(
                         !message.messageDto.sent
                     }
 
+
                 user.unreadMessageCount = unreadMessageCount
                 user.unsentMessageCount = unsentMessageCOunt
                 user.lastmessage = last
@@ -220,7 +221,7 @@ class AppRepository(
         //Interne message macha die ned alles hot
         val messageDto = MessageDto(
             localPK = localpkintern,
-            id = 0,
+            id = null,
             msgType = msgtype,
             content = content,
             senderId = SessionCache.getOwnIdValue() ?: 0,
