@@ -76,6 +76,12 @@ class AppRepository(
                     }
                     .maxByOrNull { it.getSendDateAsLong() }
 
+                last?.let { msg ->
+                    val senderName = users.firstOrNull { u -> u.id == msg.messageDto.senderId }?.name
+                        ?: msg.messageDto.senderAsString
+                    msg.messageDto.senderAsString = senderName
+                }
+
                 val thischatmessages =
                     messages.filter { message ->
                         message.isThisChatMessage(user.id, false)
@@ -107,6 +113,13 @@ class AppRepository(
                 val last = messages
                     .filter { it.messageDto.receiverId == groupId && it.isGroupMessage() }
                     .maxByOrNull { it.getSendDateAsLong() }
+
+                last?.let { msg ->
+                    val senderName = users.firstOrNull { u -> u.id == msg.messageDto.senderId }?.name
+                        ?: "Unknown"
+                    msg.messageDto.senderAsString = senderName
+                }
+
 
                 val thisChatMessages =
                     messages.filter { message ->

@@ -156,7 +156,7 @@ fun UserButton(
                 ) {
                     // Last message preview
                     Text(
-                        text = lastMessage.messageDto.content ?: "",
+                        text = (lastMessage.messageDto.senderAsString + ": " + lastMessage.messageDto.content),
                         style = MaterialTheme.typography.bodyMedium,
 
                         maxLines = 1,
@@ -167,7 +167,7 @@ fun UserButton(
                     //println("milis to date ${lastMessage.sendDate} result ${millisToTimeDateOrYesterday(lastMessage.sendDate?.toLong() ?: 0L)}")
                     // Time indicator
                     Text(
-                        text = millisToTimeDateOrYesterday(lastMessage.messageDto.sendDate?.toLong() ?: 0L),
+                        text = millisToTimeDateOrYesterday(lastMessage.messageDto.sendDate.toLong()),
                         style = MaterialTheme.typography.labelSmall,
                         maxLines = 1,
                         modifier = Modifier.padding(start = 4.dp)
