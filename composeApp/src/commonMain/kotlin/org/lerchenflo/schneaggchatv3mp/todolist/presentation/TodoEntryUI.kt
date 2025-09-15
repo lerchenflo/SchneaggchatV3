@@ -65,10 +65,11 @@ fun TodoEntryUI(
                 onClick()
             }
             .background(when (todoEntry.status) {
-                BugStatus.InProgress.value -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)
-                else -> MaterialTheme.colorScheme.tertiaryContainer
-            }
+                BugStatus.InProgress.value -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)else -> MaterialTheme.colorScheme.tertiaryContainer
+            },
+                shape = RoundedCornerShape(15.dp)
             )
+            
             .alpha(if(todoEntry.status == BugStatus.Finished.value) 0.6f else 1f),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -76,9 +77,10 @@ fun TodoEntryUI(
         ProfilePictureView(
             filepath = profilepicfilepath,
             modifier = Modifier
+                .padding(8.dp)
                 .size(40.dp) // Use square aspect ratio
                 .clip(CircleShape) // Circular image
-                .padding(4.dp)
+
         )
 
         Column {
