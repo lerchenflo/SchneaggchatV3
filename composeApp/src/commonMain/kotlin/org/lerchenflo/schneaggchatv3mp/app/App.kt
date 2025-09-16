@@ -49,8 +49,7 @@ fun App() {
 
         val appRepository = koinInject<AppRepository>()
 
-
-            // initialize manager
+        // initialize manager
         LaunchedEffect(Unit) {
             SnackbarManager.init(snackbarHostState, scope)
         }

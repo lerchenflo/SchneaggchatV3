@@ -1,7 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -12,6 +11,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
     alias(libs.plugins.jetbrains.kotlin.serialization)
+    id("com.google.gms.google-services")
 }
 
 kotlin {
@@ -30,6 +30,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            export("io.github.mirzemehdi:kmpnotifier:1.6.0")
         }
     }
 
@@ -86,6 +87,9 @@ kotlin {
             //Internet
             implementation(libs.bundles.ktor)
 
+            //Firebase
+            api("io.github.mirzemehdi:kmpnotifier:1.6.0")
+
 
             //DateTime
             implementation(libs.kotlinx.datetime)
@@ -106,6 +110,7 @@ kotlin {
 
             //Image loading async
             implementation(libs.coil3.coil.compose)
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
