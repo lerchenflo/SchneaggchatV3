@@ -5,6 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mmk.kmpnotifier.notification.NotificationImage
+import com.mmk.kmpnotifier.notification.Notifier
+import com.mmk.kmpnotifier.notification.NotifierManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,6 +31,7 @@ import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
+import kotlin.random.Random
 
 class ChatSelectorViewModel(
     private val appRepository: AppRepository
@@ -48,6 +52,24 @@ class ChatSelectorViewModel(
     private var refreshJob: Job? = null
 
     fun refresh() {
+
+        val notifier = NotifierManager.getLocalNotifier()
+        notifier.notify {
+            id= Random.nextInt(0, Int.MAX_VALUE)
+            title = "Title from KMPNotifier"
+            body = "Body message from KMPNotifier"
+            payloadData = mapOf(
+                Notifier.KEY_URL to "https://github.com/mirzemehdi/KMPNotifier/",
+                "extraKey" to "randomValue"
+            )
+            image = NotificationImage.Url("https://github.com/user-attachments/assets/a0f38159-b31d-4a47-97a7-cc230e15d30b")
+        }
+
+
+
+
+
+
         // if a refresh is already running, do nothing
         if (refreshJob?.isActive == true) return
 

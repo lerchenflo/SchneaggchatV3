@@ -1,6 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp
 
 import android.app.Application
+import com.mmk.kmpnotifier.notification.NotifierManager
+import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfiguration
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import org.lerchenflo.schneaggchatv3mp.di.androidDataStoreModule
@@ -30,5 +32,15 @@ class MainApp: Application() {
                 androidPictureManagerModule
             )
         }
+
+//Firebase init
+        NotifierManager.initialize(
+            configuration = NotificationPlatformConfiguration.Android(
+                notificationIconResId = R.drawable.ic_launcher_foreground,
+                showPushNotification = true,
+            )
+        )
+
+
     }
 }

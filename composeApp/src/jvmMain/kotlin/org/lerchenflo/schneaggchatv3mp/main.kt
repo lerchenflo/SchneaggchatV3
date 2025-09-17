@@ -2,6 +2,9 @@ package org.lerchenflo.schneaggchatv3mp
 
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.mmk.kmpnotifier.extensions.composeDesktopResourcesPath
+import com.mmk.kmpnotifier.notification.NotifierManager
+import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfiguration
 import org.koin.core.context.startKoin
 import org.lerchenflo.schneaggchatv3mp.app.App
 import org.lerchenflo.schneaggchatv3mp.di.desktopAppDatabaseModule
@@ -11,6 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.di.desktopPictureManagerModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopVersionModule
 import org.lerchenflo.schneaggchatv3mp.di.sharedmodule
 import java.awt.Dimension
+import java.io.File
 
 fun main() = application {
 
@@ -24,6 +28,17 @@ fun main() = application {
             desktopPictureManagerModule
         )
     }
+
+
+    NotifierManager.initialize(
+        NotificationPlatformConfiguration.Desktop(
+            showPushNotification = true,
+            notificationIconPath = composeDesktopResourcesPath() + File.separator + "schneaggchat_logo_v3.png"
+        )
+    )
+
+    //AppInitializer.onApplicationStart()
+
 
     Window(
         onCloseRequest = ::exitApplication,

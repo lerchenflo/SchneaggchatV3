@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,10 +14,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Chat
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
@@ -30,15 +34,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mmk.kmpnotifier.notification.NotifierManager
+import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfiguration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -83,6 +91,12 @@ fun Chatauswahlscreen(
     val viewModel = koinViewModel<ChatSelectorViewModel>()
     val availablegegners by viewModel.chatSelectorState.collectAsStateWithLifecycle(emptyList())
     val searchterm by viewModel.searchterm.collectAsStateWithLifecycle()
+
+
+    //Noti permission abfrage für ios
+    val permissionUtil = NotifierManager.getPermissionUtil()
+    permissionUtil.askNotificationPermission()
+
 
     Scaffold(
         modifier = modifier,
@@ -146,40 +160,61 @@ fun Chatauswahlscreen(
 
                 Spacer(Modifier.width(distance))
 
-
-                Image(
-                    imageVector = Icons.Outlined.Checklist,
-                    contentDescription = stringResource(Res.string.tools_and_games),
+                val touchSize = 40.dp
+                val iconSize = 28.dp
+                val gap = 0.dp
+                Box(
                     modifier = Modifier
-                        .size(size)
-                        .padding(4.dp)
+                        .padding(2.dp)                      // smaller outer padding so icons sit closer together
+                        .size(touchSize)
+                        .clip(CircleShape)                  // optional: nicer ripple shape
                         .clickable { onToolsAndGamesClick() },
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Checklist,
+                        contentDescription = stringResource(Res.string.tools_and_games),
+                        modifier = Modifier.size(iconSize), // bigger visible icon
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
 
+                Spacer(Modifier.width(gap))
 
-                )
-                Spacer(Modifier.width(distance))
-                Image(
-                    painterResource(Res.drawable.schneaggmap),
-                    contentDescription = stringResource(Res.string.schneaggmap),
+                Box(
                     modifier = Modifier
-                        .size(size)
-                        .padding(4.dp)
+                        .padding(2.dp)
+                        .size(touchSize)
+                        .clip(CircleShape)
                         .clickable { SnackbarManager.showMessage("Es gibt noch koa schneaggmap") },
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Map,
+                        contentDescription = stringResource(Res.string.schneaggmap),
+                        modifier = Modifier.size(iconSize),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
 
+                Spacer(Modifier.width(gap))
 
-                )
-                Spacer(Modifier.width(distance))
-                Image(
-                    painterResource(Res.drawable.settings_gear),
-                    contentDescription = stringResource(Res.string.settings),
+                Box(
                     modifier = Modifier
-                        .size(size)
-                        .padding(4.dp)
+                        .padding(2.dp)
+                        .size(touchSize)
+                        .clip(CircleShape)
                         .clickable { onSettingsClick() },
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
-                )
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = stringResource(Res.string.settings),
+                        modifier = Modifier.size(iconSize),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
 
             }
 
@@ -275,8 +310,6 @@ fun Chatauswahlscreen(
                             selectedChat = gegner,
                             useOnClickGes = false,
                             lastMessage = gegner.lastmessage,
-                            unreadmessageBubbleCount = gegner.unreadMessageCount,
-                            unsentmessageBubbleCount = gegner.unsentMessageCount,
                             onClickText = { onChatSelected(gegner) },
                             onClickImage = {
                                 SnackbarManager.showMessage("TODO")

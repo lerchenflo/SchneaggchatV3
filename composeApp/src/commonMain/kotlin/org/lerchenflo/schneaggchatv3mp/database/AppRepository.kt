@@ -27,6 +27,7 @@ import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccess
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
+import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 
@@ -39,6 +40,9 @@ class AppRepository(
     private val groupRepository: GroupRepository,
     private val messageRepository: MessageRepository,
     private val todoRepository: TodoRepository,
+
+    val appVersion: AppVersion, //Appversion, uf des darf jeder zugriefa
+
 ) {
 
     suspend fun deleteAllAppData(){
@@ -76,6 +80,12 @@ class AppRepository(
                     }
                     .maxByOrNull { it.getSendDateAsLong() }
 
+                last?.let { msg ->
+                    val senderName = users.firstOrNull { u -> u.id == msg.messageDto.senderId }?.name
+                        ?: msg.messageDto.senderAsString
+                    msg.messageDto.senderAsString = senderName
+                }
+
                 val thischatmessages =
                     messages.filter { message ->
                         message.isThisChatMessage(user.id, false)
@@ -90,6 +100,7 @@ class AppRepository(
                     thischatmessages.count { message ->
                         !message.messageDto.sent
                     }
+
 
                 user.unreadMessageCount = unreadMessageCount
                 user.unsentMessageCount = unsentMessageCOunt
@@ -106,6 +117,13 @@ class AppRepository(
                 val last = messages
                     .filter { it.messageDto.receiverId == groupId && it.isGroupMessage() }
                     .maxByOrNull { it.getSendDateAsLong() }
+
+                last?.let { msg ->
+                    val senderName = users.firstOrNull { u -> u.id == msg.messageDto.senderId }?.name
+                        ?: "Unknown"
+                    msg.messageDto.senderAsString = senderName
+                }
+
 
                 val thisChatMessages =
                     messages.filter { message ->
@@ -220,7 +238,7 @@ class AppRepository(
         //Interne message macha die ned alles hot
         val messageDto = MessageDto(
             localPK = localpkintern,
-            id = 0,
+            id = null,
             msgType = msgtype,
             content = content,
             senderId = SessionCache.getOwnIdValue() ?: 0,

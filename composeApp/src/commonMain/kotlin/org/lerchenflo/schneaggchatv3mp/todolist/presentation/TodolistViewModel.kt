@@ -165,13 +165,14 @@ class TodolistViewModel(
 
 enum class BugSorttype{
     ALL,
-    MINE,
-    UNFINISHED,
     IMPORTANT,
+    ASSIGNED_TO_ME,
+    UNFINISHED,
     BUG,
     FEATURE,
     TODO,
-    ASSIGNED_TO_ME;
+    MINE;
+
 
     fun toUiText(): UiText = when (this) {
         ALL -> UiText.StringResourceText(Res.string.bug_sort_all)
