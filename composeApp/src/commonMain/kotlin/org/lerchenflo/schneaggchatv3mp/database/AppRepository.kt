@@ -27,6 +27,7 @@ import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccess
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
+import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 
@@ -39,6 +40,9 @@ class AppRepository(
     private val groupRepository: GroupRepository,
     private val messageRepository: MessageRepository,
     private val todoRepository: TodoRepository,
+
+    val appVersion: AppVersion, //Appversion, uf des darf jeder zugriefa
+
 ) {
 
     suspend fun deleteAllAppData(){

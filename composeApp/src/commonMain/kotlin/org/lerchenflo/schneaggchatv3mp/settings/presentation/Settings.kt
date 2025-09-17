@@ -64,7 +64,6 @@ fun SettingsScreen(
 ){
     val viewModel = koinViewModel<SettingsViewModel>()
     val appRepository = koinInject<AppRepository>()
-    val appVersion = koinInject<AppVersion>()
 
     LaunchedEffect(Unit){
         viewModel.init()
@@ -190,7 +189,7 @@ fun SettingsScreen(
         )
 
         Text(
-            text = stringResource(Res.string.version, appVersion.getversionName()) + " Buildnr: " + appVersion.getversionCode(),
+            text = stringResource(Res.string.version, appRepository.appVersion.getVersionName()) + " Buildnr: " + appRepository.appVersion.getVersionCode(),
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()
