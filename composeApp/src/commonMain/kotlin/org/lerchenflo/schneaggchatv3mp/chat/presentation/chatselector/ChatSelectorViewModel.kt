@@ -42,6 +42,8 @@ class ChatSelectorViewModel(
     val globalViewModel: GlobalViewModel = KoinPlatform.getKoin().get()
 
     init {
+
+
         refresh()
 
         //Chat verlassen

@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.app
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mmk.kmpnotifier.notification.NotifierManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -18,6 +19,12 @@ class GlobalViewModel(
 
     init {
         print("SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT")
+
+        NotifierManager.setLogger { message ->
+            // Log the message
+            println("KMPNotifier log: " + message)
+        }
+
 
         //TODO: Sync alle 10 sek oda so der an login macht wenn du offline bisch und location und so
     }
