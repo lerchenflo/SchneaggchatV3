@@ -124,7 +124,7 @@ fun ShowTodoDetails(
         text = {
             Column(
                 modifier = Modifier
-                    .heightIn(max = 440.dp)           // limit height so it becomes scrollable
+                    .heightIn(max = 460.dp) //Brucht ma damit ma scrollen kann
                     .verticalScroll(rememberScrollState())
             ) {
                 //Entered by text
