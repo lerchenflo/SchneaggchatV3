@@ -23,6 +23,11 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     return true
   }
 
+   func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any]) async -> UIBackgroundFetchResult {
+        NotifierManager.shared.onApplicationDidReceiveRemoteNotification(userInfo: userInfo)
+        return UIBackgroundFetchResult.newData
+   }
+
   func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         Messaging.messaging().apnsToken = deviceToken
   }
