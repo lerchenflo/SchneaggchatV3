@@ -93,9 +93,9 @@ fun Chatauswahlscreen(
     val searchterm by viewModel.searchterm.collectAsStateWithLifecycle()
 
 
-    //Noti permission abfrage für ios
-    val permissionUtil = NotifierManager.getPermissionUtil()
-    permissionUtil.askNotificationPermission()
+    //Noti permission abfrage für ios (Machts auto on start´)
+    //val permissionUtil = NotifierManager.getPermissionUtil()
+    //permissionUtil.askNotificationPermission()
 
 
     Scaffold(

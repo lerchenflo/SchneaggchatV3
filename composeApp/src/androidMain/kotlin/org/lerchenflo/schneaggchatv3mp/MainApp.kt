@@ -33,13 +33,17 @@ class MainApp: Application() {
             )
         }
 
-//Firebase init
+        //Firebase init
         NotifierManager.initialize(
             configuration = NotificationPlatformConfiguration.Android(
                 notificationIconResId = R.drawable.ic_launcher_foreground,
                 showPushNotification = true,
             )
         )
+
+        println("Android firebase init fertig")
+
+
 
 
     }

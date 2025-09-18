@@ -29,6 +29,7 @@ import org.lerchenflo.schneaggchatv3mp.network.util.onSuccess
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 
 class AppRepository(
@@ -47,6 +48,7 @@ class AppRepository(
 
     suspend fun deleteAllAppData(){
         database.allDatabaseDao().clearAll()
+        NotificationManager.removeToken()
     }
 
     @Transaction

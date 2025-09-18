@@ -337,6 +337,24 @@ class NetworkUtils(
 
 
 
+    suspend fun setFirebaseToken(token: String): NetworkResult<Boolean, String> {
+        val headers = mapOf(
+            "msgtype" to SETFIREBASETOKEN,
+            "token" to token
+        )
+
+        val res = executeNetworkOperation(headers = headers, body = "", get = true)
+        return when (res) {
+
+            is NetworkResult.Success -> {
+                // 4. Access the body directly from the Success result
+                NetworkResult.Success(true, res.body)
+            }
+            is NetworkResult.Error -> NetworkResult.Error(res.error)
+        }
+    }
+
+
 
 
     suspend fun messageidsync(databaseids: String): NetworkResult<Map<String, String>, String> {
