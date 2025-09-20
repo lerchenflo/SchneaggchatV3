@@ -97,6 +97,10 @@
     <string name="bug_sort_todo">Todos</string>
     <string name="bug_sort_assigned_to_me">Assigned to me</string>
 
+    <string name="new_chat">new chat</string>
+    <string name="new_group">new group</string>
+    <string name="invite_friend">invite friend</string>
+
 
 
 

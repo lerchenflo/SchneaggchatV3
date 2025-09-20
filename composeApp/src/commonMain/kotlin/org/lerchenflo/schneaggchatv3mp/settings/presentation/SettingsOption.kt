@@ -27,6 +27,7 @@ fun SettingsOption(
     text: String,
     subtext: String? = null
 ){
+    // todo es fehlt an onclick
     Box(
         modifier = Modifier
             .fillMaxWidth()
