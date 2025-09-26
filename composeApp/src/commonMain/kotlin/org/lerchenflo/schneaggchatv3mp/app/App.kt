@@ -147,7 +147,11 @@ fun App() {
 
                     // newChat (neuegegnergruppen)
                     composable<Route.NewChat> {
-                        NewChat()
+                        NewChat(
+                            onBackClick = {
+                                navController.navigateUp()
+                            }
+                        )
                     }
 
                     composable<Route.ChatDetails>{
