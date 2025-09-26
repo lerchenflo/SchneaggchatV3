@@ -69,6 +69,8 @@
     <string name="remove_friend">remove friend</string>
     <string name="save">save</string>
     <string name="close">close</string>
+    <string name="you_sender">You</string>
+
 
     <!-- Todoliste -->
     <string name="todolist">Todos</string>

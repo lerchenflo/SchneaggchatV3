@@ -131,7 +131,6 @@ fun SettingsScreen(
         }
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-        //---- App Einstellungen ----
 
 
         // Markdown Formatting
@@ -140,7 +139,7 @@ fun SettingsScreen(
             infotext = stringResource(Res.string.markdownInfo),
             switchchecked = viewModel.markdownEnabeled,
             onSwitchChange = { viewModel.updateMarkdownSwitch(it) },
-            icon = vectorResource(Res.drawable.markdown_24px)
+            icon = vectorResource(Res.drawable.markdown_24px) //Gibts uf da icons no ned aber uf da website scho
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)

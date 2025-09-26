@@ -27,6 +27,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.no_status
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
+import schneaggchatv3mp.composeapp.generated.resources.you_sender
 
 /**
  * Can be used everywhere where the Username as well as additional information needs to be shown
@@ -156,7 +157,7 @@ fun UserButton(
                 ) {
                     // Last message preview
                     Text(
-                        text = (lastMessage.messageDto.senderAsString + ": " + lastMessage.messageDto.content),
+                        text = (if (lastMessage.isMyMessage()) stringResource(Res.string.you_sender) else lastMessage.messageDto.senderAsString) + ": " + lastMessage.messageDto.content,
                         style = MaterialTheme.typography.bodyMedium,
 
                         maxLines = 1,
