@@ -61,6 +61,7 @@
 
     <!-- bis hier auf deutsch übersetzt -->
     <string name="status">Status:</string>
+    <string name="app_broken_desc">Will fix most of the errors which might occur</string>
     <string name="others_say_about">others wrote about %1$s:</string>
     <string name="status_info">This Text is written by the user himself</string>
     <!--<string name="description_info">All friends of %1$s can edit this text, but %1$s cannot.</string>-->

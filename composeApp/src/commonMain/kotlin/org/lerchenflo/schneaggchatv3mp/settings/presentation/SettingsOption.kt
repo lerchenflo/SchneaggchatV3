@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,18 +26,23 @@ import androidx.compose.ui.unit.dp
 fun SettingsOption(
     icon: ImageVector,
     text: String,
-    subtext: String? = null
+    subtext: String? = null,
+    onClick: () -> Unit
 ){
-    // todo es fehlt an onclick
+
     Box(
         modifier = Modifier
+            .clickable{
+                onClick()
+            }
             .fillMaxWidth()
             .padding(
                 start = 16.dp,
                 end = 16.dp,
                 top = 20.dp,
                 bottom = 20.dp
-            ),
+            )
+            ,
 
         //.background(MaterialTheme.colorScheme.onSurface)
     ){

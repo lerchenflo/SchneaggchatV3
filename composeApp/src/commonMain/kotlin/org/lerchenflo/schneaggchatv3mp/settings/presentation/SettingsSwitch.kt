@@ -5,16 +5,22 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
@@ -34,12 +40,25 @@ fun SettingsSwitch(
     titletext: String,
     infotext: String,
     switchchecked: Boolean,
-    onSwitchChange : (Boolean) -> Unit
-){
+    onSwitchChange : (Boolean) -> Unit,
+    icon: ImageVector
+    ){
     //Quer umme a row
     Row(
-        modifier = modifier
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
+
     ){
+        Icon(
+            contentDescription = titletext,
+            modifier = Modifier.size(35.dp),
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+            imageVector = icon
+        )
+
+        Spacer(modifier = Modifier.width(24.dp))
+
+
         //In da row an titel und drunta a info
         Column(
             modifier = Modifier
@@ -83,7 +102,8 @@ private fun SettingsSwitchPreview(
             titletext = "Use markdown",
             infotext = "Blabla es wird din gerät w3ru2p3rnbpfis7dhfciubfpasubiusdbzvouszbevuowszrbvoueszrbfguepzrbgvoaeuzrbg0e8zrghaueozrbgtöta und es crasht oft",
             switchchecked = false,
-            onSwitchChange = {}
+            onSwitchChange = {},
+            icon = Icons.Default.Delete
         )
     }
 
