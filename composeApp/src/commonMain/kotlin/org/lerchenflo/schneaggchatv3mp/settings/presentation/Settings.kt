@@ -34,7 +34,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.jetbrains.compose.resources.imageResource
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -45,10 +48,13 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.app_broken
+import schneaggchatv3mp.composeapp.generated.resources.app_broken_desc
 import schneaggchatv3mp.composeapp.generated.resources.are_you_sure_you_want_to_logout
 import schneaggchatv3mp.composeapp.generated.resources.logout
 import schneaggchatv3mp.composeapp.generated.resources.markdownInfo
+import schneaggchatv3mp.composeapp.generated.resources.markdown_24px
 import schneaggchatv3mp.composeapp.generated.resources.no
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap
 import schneaggchatv3mp.composeapp.generated.resources.settings
 import schneaggchatv3mp.composeapp.generated.resources.useMarkdown
 import schneaggchatv3mp.composeapp.generated.resources.version
@@ -108,8 +114,7 @@ fun SettingsScreen(
             ){
 
                 Text(
-                    //TODO: Style besser macha
-                    text = ownuser?.name ?: "",
+                    text = ownuser?.name ?: "Username",
                     modifier = Modifier
                         .clickable{viewModel.changeUsername()},
 
@@ -126,7 +131,6 @@ fun SettingsScreen(
         }
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-        //---- App Einstellungen ----
 
 
         // Markdown Formatting
@@ -135,6 +139,7 @@ fun SettingsScreen(
             infotext = stringResource(Res.string.markdownInfo),
             switchchecked = viewModel.markdownEnabeled,
             onSwitchChange = { viewModel.updateMarkdownSwitch(it) },
+            icon = vectorResource(Res.drawable.markdown_24px) //Gibts uf da icons no ned aber uf da website scho
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -142,117 +147,57 @@ fun SettingsScreen(
 
         SettingsOption(
             Icons.Default.Delete,
-            "Dekete app data",
-            "Deletes all app data and destroys ur phone"
+            stringResource(Res.string.app_broken),
+            stringResource(Res.string.app_broken_desc),
+            onClick = {viewModel.deleteAllAppData()}
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
+        var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
+        SettingsOption(
+            icon = Icons.AutoMirrored.Default.ExitToApp,
+            text = stringResource(Res.string.logout),
+            onClick = {
+                showLogoutDialog = true
+            }
+        )
 
-        Button(
-            onClick = {viewModel.deleteAllAppData()},
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = 10.dp,
-                    end = 10.dp,
-                    top = 2.dp,
-                    bottom = 2.dp
-                ),
-        ){
-            Text(
-                text = stringResource(Res.string.app_broken),
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Icon(
-                imageVector = Icons.Default.Delete,
-                contentDescription = "Logout icon", // or null if purely decorative
-                modifier = Modifier
-                    .padding(start = 8.dp)
+        //Logoutdialog
+        if (showLogoutDialog) {
+            AlertDialog(
+                onDismissRequest = { showLogoutDialog = false },
+                title = { Text(text = stringResource(Res.string.logout)) },
+                text = { Text(text = stringResource(Res.string.are_you_sure_you_want_to_logout)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showLogoutDialog = false
+                        viewModel.logout()
+                        toLoginNavigator()
+                    }) {
+                        Text(text = stringResource(Res.string.yes))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showLogoutDialog = false }) {
+                        Text(text = stringResource(Res.string.no))
+                    }
+                }
             )
         }
 
-
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-        
-        
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-
-        // Account section
-        LogoutButton(
-            viewModel = viewModel,
-            toLoginNavigator = toLoginNavigator
-        )
 
         Text(
             text = stringResource(Res.string.version, appRepository.appVersion.getVersionName()) + " Buildnr: " + appRepository.appVersion.getVersionCode(),
             textAlign = TextAlign.Center,
             modifier = Modifier
+                .padding(
+                    top = 16.dp
+                )
                 .fillMaxWidth()
         )
 
     }
 }
-
-
-@Composable
-fun LogoutButton(
-    toLoginNavigator: () -> Unit = {},
-    viewModel: SettingsViewModel
-)
-{
-    var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
-
-    Button(
-        onClick = {showLogoutDialog = true},
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(
-                start = 10.dp,
-                end = 10.dp,
-                top = 2.dp,
-                bottom = 2.dp
-            ),
-    ){
-        Text(
-            text = stringResource(Res.string.logout),
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-            contentDescription = "Logout icon", // or null if purely decorative
-            modifier = Modifier
-                .padding(start = 8.dp)
-        )
-    }
-
-    // Confirmation dialog
-    if (showLogoutDialog) {
-        AlertDialog(
-            onDismissRequest = { showLogoutDialog = false },
-            title = { Text(text = stringResource(Res.string.logout)) },
-            text = { Text(text = stringResource(Res.string.are_you_sure_you_want_to_logout)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    showLogoutDialog = false
-                    viewModel.logout()
-                    toLoginNavigator()
-                }) {
-                    Text(text = stringResource(Res.string.yes))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) {
-                    Text(text = stringResource(Res.string.no))
-                }
-            }
-        )
-    }
-}
-
