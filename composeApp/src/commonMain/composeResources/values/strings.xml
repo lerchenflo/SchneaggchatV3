@@ -73,6 +73,9 @@
     <string name="close">close</string>
     <string name="you_sender">You</string>
 
+    <string name="theme">Theme</string>
+    <string name="theme_sel_desc">Change the look of your app</string>
+
 
     <!-- Todoliste -->
     <string name="todolist">Todos</string>
