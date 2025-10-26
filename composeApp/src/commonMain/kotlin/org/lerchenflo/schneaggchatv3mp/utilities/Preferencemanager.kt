@@ -16,6 +16,19 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import okio.Path.Companion.toPath
 
+enum class PreferenceKey {
+    USERNAME,
+    PASSWORD,
+    OWNID,
+    MD_FORMAT,
+    THEME
+}
+
+enum class ThemeSetting {
+    SYSTEM,    // Follow system setting
+    LIGHT,     // Always light
+    DARK       // Always dark
+}
 class Preferencemanager(
     private val pref: DataStore<Preferences>
 ) {
@@ -25,10 +38,10 @@ class Preferencemanager(
     suspend fun saveAutologinCreds(username: String, password: String) {
         with(dispatcher) {
             pref.edit { datastore ->
-                val usernamekey = stringPreferencesKey("username")
+                val usernamekey = stringPreferencesKey(PreferenceKey.USERNAME.toString())
                 datastore[usernamekey] = username
 
-                val passwordkey = stringPreferencesKey("password")
+                val passwordkey = stringPreferencesKey(PreferenceKey.PASSWORD.toString())
                 datastore[passwordkey] = password
             }
         }
@@ -37,8 +50,8 @@ class Preferencemanager(
 
     suspend fun getAutologinCreds(): Pair<String, String> {
         return with(dispatcher) {
-            val usernameKey = stringPreferencesKey("username")
-            val passwordKey = stringPreferencesKey("password")
+            val usernameKey = stringPreferencesKey(PreferenceKey.USERNAME.toString())
+            val passwordKey = stringPreferencesKey(PreferenceKey.PASSWORD.toString())
 
             val prefs = pref.data.first()
 
@@ -52,7 +65,7 @@ class Preferencemanager(
     suspend fun saveOWNID(ownid: Long) {
         with(dispatcher) {
             pref.edit { datastore ->
-                val key = longPreferencesKey("OWNID")
+                val key = longPreferencesKey(PreferenceKey.OWNID.toString())
                 datastore[key] = ownid
             }
         }
@@ -60,7 +73,7 @@ class Preferencemanager(
 
     suspend fun getOWNID(): Long {
         return with(dispatcher) {
-            val key = longPreferencesKey("OWNID")
+            val key = longPreferencesKey(PreferenceKey.OWNID.toString())
             val prefs = pref.data.first()
             val id = prefs[key] ?: -1
 
@@ -68,7 +81,7 @@ class Preferencemanager(
         }
     }
 
-    val mdFormatKey = "MdFormat"
+    val mdFormatKey = PreferenceKey.MD_FORMAT.toString()
 
     suspend fun saveUseMd(value: Boolean){
         with(dispatcher) {
@@ -83,5 +96,31 @@ class Preferencemanager(
     fun getUseMdFlow(): Flow<Boolean> = pref.data.map { prefs ->
         prefs[booleanPreferencesKey(mdFormatKey)] ?: false
     }.flowOn(Dispatchers.IO)
+
+    // Theme methods
+    suspend fun saveThemeSetting(theme: ThemeSetting) {
+        with(dispatcher) {
+            pref.edit { datastore ->
+                val key = intPreferencesKey(PreferenceKey.THEME.toString())
+                datastore[key] = theme.ordinal
+            }
+        }
+    }
+
+    fun getThemeFlow(): Flow<ThemeSetting> = pref.data.map { prefs ->
+        val key = intPreferencesKey(PreferenceKey.THEME.toString())
+        val ordinal = prefs[key] ?: ThemeSetting.SYSTEM.ordinal
+        ThemeSetting.values()[ordinal]
+    }.flowOn(Dispatchers.IO)
+
+    // For one-time read (use in non-composable contexts)
+    suspend fun getThemeSetting(): ThemeSetting {
+        return with(dispatcher) {
+            val key = intPreferencesKey(PreferenceKey.THEME.toString())
+            val prefs = pref.data.first()
+            val ordinal = prefs[key] ?: ThemeSetting.SYSTEM.ordinal
+            ThemeSetting.values()[ordinal]
+        }
+    }
 
 }

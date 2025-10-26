@@ -7,6 +7,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -88,13 +89,18 @@ private val darkScheme = darkColorScheme(
 @Composable
 fun SchneaggchatTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
+    themeSetting: ThemeSetting = ThemeSetting.SYSTEM,
     content: @Composable() () -> Unit
 ) {
-  val colorScheme = when {
-
-      darkTheme -> darkScheme
-      else -> lightScheme
+  val colorScheme = if(themeSetting == ThemeSetting.SYSTEM){
+      when {
+          darkTheme -> darkScheme
+          else -> lightScheme
+      }
+  }else if(themeSetting == ThemeSetting.DARK){
+      darkScheme
+  }else{
+      lightScheme
   }
 
   MaterialTheme(
