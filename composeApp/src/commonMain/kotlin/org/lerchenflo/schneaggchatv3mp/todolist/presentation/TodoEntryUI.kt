@@ -65,7 +65,7 @@ fun TodoEntryUI(
                 onClick()
             }
             .background(when (todoEntry.status) {
-                BugStatus.InProgress.value -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)else -> MaterialTheme.colorScheme.tertiaryContainer
+                BugStatus.InProgress.value -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)else -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f)
             },
                 shape = RoundedCornerShape(15.dp)
             )

@@ -51,6 +51,8 @@
     <string name="are_you_sure_you_want_to_logout">Bist du dir sicher, dass du dich ausloggen willst?</string>
     <string name="yes">ja</string>
     <string name="no">nein</string>
+    <string name="ok">ok</string>
+    <string name="cancel">abbrechen</string>
     <string name="version">Version: %1$s</string>
     <string name="app_broken">App kaputt</string>
     <string name="loadinginfo_messages">Lade Nachrichten...</string>

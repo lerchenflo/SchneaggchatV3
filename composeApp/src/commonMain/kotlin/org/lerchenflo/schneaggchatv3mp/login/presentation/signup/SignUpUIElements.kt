@@ -4,8 +4,8 @@ package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,13 +16,15 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,14 +49,17 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt1
 import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt2
+import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.create_account
 import schneaggchatv3mp.composeapp.generated.resources.create_account_subtitle
 import schneaggchatv3mp.composeapp.generated.resources.email
+import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.password
 import schneaggchatv3mp.composeapp.generated.resources.password_again
 import schneaggchatv3mp.composeapp.generated.resources.username
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 //Signup element für Username und email
 @Composable
@@ -106,10 +111,26 @@ fun SignUpForm1(
 
         //TODO: Ned immer zoaga
         //TODO: Gender als string printen zum luaga obs format passt
-        DateDropdownPicker(
-            onDateSelected = { ongebidateselected(it) },
-            modifier = Modifier.fillMaxWidth()
-        )
+
+        // Datepicker
+        var showDatePicker by remember { mutableStateOf(false) }
+
+        Button(
+            onClick = { showDatePicker = true },
+            modifier = Modifier
+                .fillMaxWidth()
+        ){
+            Text(text = "Select your date of birth")
+        }
+
+        if (showDatePicker) {
+            DatePickerDialogPopup(
+                onDateSelected = { selectedDate ->
+                    ongebidateselected(selectedDate)
+                },
+                onDismiss = { showDatePicker = false }
+            )
+        }
 
     }
 }
@@ -230,143 +251,36 @@ fun SignUpHeaderText(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DateDropdownPicker(
-    initialDate: LocalDate? = null,
+fun DatePickerDialogPopup(
     onDateSelected: (LocalDate?) -> Unit,
-    modifier: Modifier = Modifier,
-    minYear: Int = 1900,
-    maxYear: Int = run {
-        // default to current system year
-        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        now.date.year
-    },
-    monthNames: List<String> = listOf(
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ),
-    labelDay: String = "Day",
-    labelMonth: String = "Month",
-    labelYear: String = "Year",
+    onDismiss: () -> Unit
 ) {
-    // Initialize selections from initialDate (or null)
-    var selectedDay by remember { mutableStateOf(initialDate?.dayOfMonth) }
-    var selectedMonth by remember { mutableStateOf(initialDate?.monthNumber) } // 1..12
-    var selectedYear by remember { mutableStateOf(initialDate?.year) }
+    val datePickerState = rememberDatePickerState()
 
-    // Dropdown expanded states
-    var dayExpanded by remember { mutableStateOf(false) }
-    var monthExpanded by remember { mutableStateOf(false) }
-    var yearExpanded by remember { mutableStateOf(false) }
-
-    val daysList = (1..31)
-    val yearsList = remember(minYear, maxYear) {
-        (minYear..maxYear).toList().reversed()
-    }
-
-    Row(modifier = modifier.padding(8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        // DAY dropdown
-        ExposedDropdownMenuBox(
-            expanded = dayExpanded,
-            onExpandedChange = { dayExpanded = it },
-            modifier = Modifier.weight(1f)
-        ) {
-            OutlinedTextField(
-                value = selectedDay?.toString() ?: "",
-                onValueChange = {},
-                label = { Text(labelDay) },
-                readOnly = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(),
-                trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = dayExpanded)
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    // 3. Convert the selected milliseconds to LocalDate
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val instant = Instant.fromEpochMilliseconds(millis)
+                        val localDate = instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
+                        onDateSelected(localDate)
+                    }
+                    onDismiss()
                 }
-            )
-
-            ExposedDropdownMenu(
-                expanded = dayExpanded,
-                onDismissRequest = { dayExpanded = false }
             ) {
-                daysList.forEach { d ->
-                    DropdownMenuItem(
-                        text = { Text(d.toString()) },
-                        onClick = {
-                            selectedDay = d
-                            dayExpanded = false
-                        }
-                    )
-                }
+                Text(stringResource(Res.string.ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(Res.string.cancel))
             }
         }
-
-        // MONTH dropdown
-        ExposedDropdownMenuBox(
-            expanded = monthExpanded,
-            onExpandedChange = { monthExpanded = it },
-            modifier = Modifier.weight(1f)
-        ) {
-            OutlinedTextField(
-                value = selectedMonth?.let { monthNames.getOrNull(it - 1) } ?: "",
-                onValueChange = {},
-                label = { Text(labelMonth) },
-                readOnly = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(),
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = monthExpanded) }
-            )
-            ExposedDropdownMenu(
-                expanded = monthExpanded,
-                onDismissRequest = { monthExpanded = false },
-                modifier = Modifier
-                    .wrapContentWidth()
-                    .heightIn(max = 300.dp)
-            ) {
-                monthNames.forEachIndexed { index, name ->
-                    DropdownMenuItem(
-                        text = { Text(name) },
-                        onClick = {
-                            selectedMonth = index + 1
-                            monthExpanded = false
-                        }
-                    )
-                }
-            }
-        }
-
-        // YEAR dropdown
-        ExposedDropdownMenuBox(
-            expanded = yearExpanded,
-            onExpandedChange = { yearExpanded = it },
-            modifier = Modifier.weight(1f)
-        ) {
-            OutlinedTextField(
-                value = selectedYear?.toString() ?: "",
-                onValueChange = {},
-                label = { Text(labelYear) },
-                readOnly = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor(),
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = monthExpanded) }
-            )
-            ExposedDropdownMenu(
-                expanded = yearExpanded,
-                onDismissRequest = { yearExpanded = false },
-                modifier = Modifier
-                    .wrapContentWidth()
-                    .heightIn(max = 300.dp)
-            ) {
-                yearsList.forEach { y ->
-                    DropdownMenuItem(
-                        text = { Text(y.toString()) },
-                        onClick = {
-                            selectedYear = y
-                            yearExpanded = false
-                        }
-                    )
-                }
-            }
-        }
+    ) {
+        // 4. Place the DatePicker inside the dialog
+        DatePicker(state = datePickerState)
     }
 }

@@ -41,7 +41,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 
 
 @Composable
-@Preview
+@Preview(showBackground = true)
 fun App() {
     SchneaggchatTheme {
         val navController = rememberNavController()
