@@ -26,7 +26,7 @@
 
     <string name="email">E-mail</string>
     <string name="invalid_email">Gib eine korrekte E-mail-Adresse ein</string>
-    <string name="sign_up">neuen Account erstellen?</string>
+    <string name="sign_up">Ich habe noch keinen Account</string>
     <string name="loginsubtitle">Die beste Chattingplatform jemals - Jetzt in da V3 mit Crossplatform für Android, IOS und Desktop!</string>
     <string name="create_account">Account erstellen</string>
     <string name="create_account_subtitle">jetzt beitreten</string>

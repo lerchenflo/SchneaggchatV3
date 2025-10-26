@@ -33,6 +33,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreen
+import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
@@ -182,13 +183,10 @@ fun App() {
 
                     // Sign up page
                     composable<Route.SignUp>{
-                        SignUpScreen(
-                            onSignUpSuccess = {
-                                println("Signup success, chatselector")
-                                navController.navigate(Route.ChatSelector){
-                                    popUpTo(Route.ChatGraph) { inclusive = true }
-                                }
-                            }
+                        SignUpScreenRoot( //TODO: Navigation iboua nocham global navigation umbau
+                            //navController.navigate(Route.ChatSelector){
+                            //                                    popUpTo(Route.ChatGraph) { inclusive = true }
+                            //                                }
                         )
                     }
 

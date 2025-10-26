@@ -49,8 +49,7 @@ fun MessageView(
 
     //Ganze breite
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             .clickable{
                 println(messagewithreaders)
                 println("Read by me: ${messagewithreaders.isReadbyMe()}")
