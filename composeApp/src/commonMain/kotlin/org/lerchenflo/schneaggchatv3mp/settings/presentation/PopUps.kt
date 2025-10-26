@@ -57,7 +57,7 @@ fun ThemeSelector(
                     Text(stringResource(Res.string.cancel), color = textContentColor)
                 }
             },
-        icon = { Icon(Icons.Default.Palette, contentDescription = null) },
+        //icon = { Icon(Icons.Default.Palette, contentDescription = null) },
         title = { Text(text = stringResource(Res.string.theme)) },
         text = { Column(
             modifier = Modifier
@@ -79,9 +79,17 @@ fun ThemeSelector(
                             .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+/*
                         RadioButton(
                             selected = (theme == tempSelection),
                             onClick = null // null because the row handles the click
+                        )
+
+ */
+                        Icon(
+                            imageVector = theme.getIcon(),
+                            contentDescription = null,
+                            tint = if(theme == tempSelection) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = theme.toUiText().asString(),

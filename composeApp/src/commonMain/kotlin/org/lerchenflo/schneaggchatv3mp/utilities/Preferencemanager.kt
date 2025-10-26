@@ -1,5 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Contrast
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
@@ -42,6 +48,12 @@ enum class ThemeSetting {
         SYSTEM -> UiText.StringResourceText(Res.string.system_theme)
         LIGHT -> UiText.StringResourceText(Res.string.light_theme)
         DARK   -> UiText.StringResourceText(Res.string.dark_theme)
+    }
+    fun getIcon(): ImageVector = when (this) {
+        SYSTEM -> Icons.Default.Contrast
+        LIGHT -> Icons.Default.LightMode
+        DARK   -> Icons.Default.DarkMode
+        else -> Icons.Default.Palette
     }
 }
 
