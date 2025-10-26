@@ -89,6 +89,12 @@ class SignUpViewModel(
                         agbsAccepted = action.checked
                     )
                 }
+
+                is SignupAction.OnGebiDateChange -> {
+                    state = state.copy(
+                        gebiDate = action.newDate
+                    )
+                }
             }
         }
 
@@ -105,6 +111,7 @@ class SignUpViewModel(
                 && state.passwordState.isCorrect()
                 && state.passwordRetypeState.isCorrect()
                 && state.emailState.isCorrect()
+                && state.gebiDate != null
                 && state.agbsAccepted
     }
 

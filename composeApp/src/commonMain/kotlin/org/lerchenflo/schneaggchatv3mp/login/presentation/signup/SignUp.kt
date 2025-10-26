@@ -99,6 +99,7 @@ fun SignUpScreen(
                             onemailTextChange = { onAction(SignupAction.OnEmailTextChange(it)) },
                             emailerrorText = state.emailState.errorMessage,
                             ongebidateselected = { /*TODO*/},
+                            selectedgebidate = state.gebiDate,
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -158,7 +159,8 @@ fun SignUpScreen(
                             emailText = state.emailState.text,
                             onemailTextChange = { onAction(SignupAction.OnEmailTextChange(it)) },
                             emailerrorText = state.emailState.errorMessage,
-                            ongebidateselected = { /*TODO*/},
+                            ongebidateselected = { onAction(SignupAction.OnGebiDateChange(it!!)) },
+                            selectedgebidate = state.gebiDate,
                             modifier = Modifier.weight(1f),
                             )
 
@@ -198,8 +200,9 @@ fun SignUpScreen(
                             emailText = state.emailState.text,
                             onemailTextChange = { onAction(SignupAction.OnEmailTextChange(it)) },
                             emailerrorText = state.emailState.errorMessage,
-                            ongebidateselected = { /*TODO*/},
-                        )
+                            ongebidateselected = { onAction(SignupAction.OnGebiDateChange(it!!)) },
+                            selectedgebidate = state.gebiDate,
+                            )
 
                         Spacer(modifier = Modifier.height(16.dp))
 

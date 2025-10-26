@@ -4,24 +4,18 @@ package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -33,11 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.platform.UriHandler
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -56,8 +46,8 @@ import schneaggchatv3mp.composeapp.generated.resources.email
 import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.password
 import schneaggchatv3mp.composeapp.generated.resources.password_again
+import schneaggchatv3mp.composeapp.generated.resources.select_gebi_date
 import schneaggchatv3mp.composeapp.generated.resources.username
-import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -71,6 +61,7 @@ fun SignUpForm1(
     onemailTextChange: (String) -> Unit,
     emailerrorText: String?,
     ongebidateselected: (LocalDate?) -> Unit,
+    selectedgebidate: LocalDate?,
     modifier: Modifier = Modifier
 ){
     Column(
@@ -109,19 +100,19 @@ fun SignUpForm1(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        //TODO: Ned immer zoaga
-        //TODO: Gender als string printen zum luaga obs format passt
 
         // Datepicker
         var showDatePicker by remember { mutableStateOf(false) }
 
-        Button(
-            onClick = { showDatePicker = true },
+        NormalButton(
+            text = selectedgebidate?.toString() ?: stringResource(Res.string.select_gebi_date),
+            onClick = {
+                showDatePicker = true
+            },
             modifier = Modifier
-                .fillMaxWidth()
-        ){
-            Text(text = "Select your date of birth")
-        }
+                .fillMaxWidth(),
+            primary = false
+        )
 
         if (showDatePicker) {
             DatePickerDialogPopup(
@@ -259,7 +250,7 @@ fun DatePickerDialogPopup(
 
     DatePickerDialog(
         onDismissRequest = onDismiss,
-        confirmButton = {
+        dismissButton = {
             TextButton(
                 onClick = {
                     // 3. Convert the selected milliseconds to LocalDate
@@ -274,11 +265,14 @@ fun DatePickerDialogPopup(
                 Text(stringResource(Res.string.ok))
             }
         },
-        dismissButton = {
+        confirmButton = {
+
+
             TextButton(onClick = onDismiss) {
                 Text(stringResource(Res.string.cancel))
             }
-        }
+
+        },
     ) {
         // 4. Place the DatePicker inside the dialog
         DatePicker(state = datePickerState)
