@@ -2,10 +2,20 @@
 
 package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -22,14 +32,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.URL_PRIVACY
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt1
+import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt2
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.create_account
 import schneaggchatv3mp.composeapp.generated.resources.create_account_subtitle
@@ -38,6 +57,7 @@ import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.password
 import schneaggchatv3mp.composeapp.generated.resources.password_again
 import schneaggchatv3mp.composeapp.generated.resources.username
+import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -62,7 +82,6 @@ fun SignUpForm1(
         )
 
         Spacer(modifier = Modifier.height(16.dp))
-
 
         InputTextField(
             text = usernameText,
@@ -124,12 +143,13 @@ fun SignUpForm2(
     password2Text: String,
     onpassword2TextChange: (String) -> Unit,
     password2errorText: String?,
-    genderslidertext: String,
-    genderslidervalue: Float,
-    ongendersliderValueChange: (Float) -> Unit,
     onSignupButtonClick: () -> Unit,
     signupbuttondisabled: Boolean = false,
     signupbuttonloading: Boolean = false,
+    onCheckBoxCheckedChange: (Boolean) -> Unit,
+    checkboxChecked: Boolean,
+    
+    
     modifier: Modifier = Modifier
 ){
     Column(
@@ -161,19 +181,38 @@ fun SignUpForm2(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        //TODO: gender input
-        Slider(
-            value = genderslidervalue,
-            onValueChange = ongendersliderValueChange,
-            valueRange = 0f..1f,
-            steps = 4,
-            modifier = Modifier.fillMaxWidth()
-        )
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = checkboxChecked,
+                onCheckedChange = {onCheckBoxCheckedChange(it)},
+            )
 
-        Text(text = genderslidertext)
+            Spacer(modifier = Modifier.width(2.dp))
+
+            val urihandler = LocalUriHandler.current
+            val text1 = stringResource(Res.string.accept_agb_pt1)
+            val text2 = stringResource(Res.string.accept_agb_pt2)
+
+            Row{
+                Text(
+                    text = text1
+                )
+                Text(
+                    text = text2,
+                    color = MaterialTheme.colorScheme.primary,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier
+                        .clickable{
+                            urihandler.openUri(URL_PRIVACY)
+                        }
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
-
 
         NormalButton(
             text = stringResource(Res.string.create_account),
@@ -183,6 +222,8 @@ fun SignUpForm2(
             modifier = Modifier
                 .fillMaxWidth()
         )
+
+
     }
 }
 

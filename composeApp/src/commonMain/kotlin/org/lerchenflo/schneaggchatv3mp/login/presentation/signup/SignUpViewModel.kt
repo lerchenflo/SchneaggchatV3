@@ -1,13 +1,13 @@
+package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.getString
-import org.koin.mp.KoinPlatform.getKoin
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache.username
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.network.util.toEnumOrNull
@@ -15,7 +15,6 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cannot_be_empty
 import schneaggchatv3mp.composeapp.generated.resources.email_exists
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
-import schneaggchatv3mp.composeapp.generated.resources.password_missing_requirements
 import schneaggchatv3mp.composeapp.generated.resources.password_needs_to_be_the_same
 import schneaggchatv3mp.composeapp.generated.resources.requirement_digit
 import schneaggchatv3mp.composeapp.generated.resources.requirement_forbidden
@@ -30,95 +29,94 @@ class SignUpViewModel(
     private val appRepository: AppRepository
 ): ViewModel() {
 
-
-
-
-    // TextField states
-    val globalViewModel: GlobalViewModel = getKoin().get()
-
-    var username by mutableStateOf("")
-        private set
-    fun updateUsername(newValue: String) {
-        username = newValue
-        updateState() // Clear error when user types
-    }
-    var usernameerrorMessage by mutableStateOf<String?>(null)
+    var state by mutableStateOf(SignupState())
         private set
 
 
+    fun onAction(action: SignupAction){
+        viewModelScope.launch {
+            val x = /* Variable for exhaustive when */when(action){
+                is SignupAction.OnUsernameTextChange -> {
+                    state = state.copy(
+                        usernameState = state.usernameState.copy(
+                            text = action.newText,
+                            errorMessage = if (action.newText.isEmpty()) getString(Res.string.cannot_be_empty) else null
+                        )
+                    )
+                }
 
-    var password by mutableStateOf("")
-        private set
-    fun updatePassword(newValue: String) {
-        password = newValue
-        updateState()
-    }
-    var passworderrorMessage by mutableStateOf<String?>(null)
-        private set
+                is SignupAction.OnEmailTextChange -> {
+                    state = state.copy(
+                        emailState = state.emailState.copy(
+                            text = action.newText,
+                            errorMessage = if (isEmailValid(action.newText)) null else getString(Res.string.invalid_email)
+                        )
+                    )
+                }
+                is SignupAction.OnPasswordTextChange -> {
+                    state = if (!action.retrypasswordfield) {
 
-    var password2 by mutableStateOf("")
-        private set
-    fun updatePassword2(newValue: String) {
-        password2 = newValue
-        updateState()
-    }
-    var password2errorMessage by mutableStateOf<String?>(null)
-        private set
+                        val missing = getMissingPasswordRequirements(action.newText)
 
-
-    var email by mutableStateOf("")
-        private set
-    fun updateEmail(newValue: String) {
-        email = newValue
-        updateState()
-    }
-    var emailerrorMessage by mutableStateOf<String?>(null)
-        private set
-
-
-    //TODO: DAtepicker für gebi  und gender (Es wird als string gschickt also eig a dropdown mit nam custom input dazua)
-
-    var gebidate by mutableStateOf<LocalDate?>(null)
-        private set
-    fun updategebidate(newValue: LocalDate?) {
-        gebidate = newValue
-        updateState()
-    }
-    var gebidateerrorMessage by mutableStateOf<String?>(null)
-        private set
+                        val errormessage = if (action.newText.isEmpty()) {
+                            getString(Res.string.cannot_be_empty)
+                        }else if (!missing.isEmpty()){
+                            missing.joinToString("\n")
+                        }else null
 
 
-    var gender by mutableStateOf("")
-        private set
-    fun updategender(newValue: String) {
-        gender = newValue
-        updateState()
-    }
-    var gendererrorMessage by mutableStateOf<String?>(null)
-        private set
+                        state.copy(
+                            passwordState = state.passwordState.copy(
+                                text = action.newText,
+                                errorMessage = errormessage
+                            )
+                        )
+                    }else {
+                        state.copy(
+                            passwordRetypeState = state.passwordRetypeState.copy(
+                                text = action.newText,
+                                errorMessage = if (action.newText == state.passwordState.text) null else getString(Res.string.password_needs_to_be_the_same)
+                            )
+                        )
+                    }
+                }
+                SignupAction.OnSignUpButtonPress -> {
+                    //TODO: Navigate with global navigator
+                }
 
+                is SignupAction.OnAgbChecked -> {
+                    state = state.copy(
+                        agbsAccepted = action.checked
+                    )
+                }
+            }
+        }
 
-    var genderslidervalue by mutableStateOf(0f)
-        private set
-    fun updategenderslidervalue(newValue: Float) {
-        genderslidervalue = newValue
-        updateState()
+        if (isWithoutErrors()) {
+            state = state.copy(
+                createButtonDisabled = false
+            )
+        }
     }
 
 
+    fun isWithoutErrors() : Boolean{
+        return state.usernameState.isCorrect()
+                && state.passwordState.isCorrect()
+                && state.passwordRetypeState.isCorrect()
+                && state.emailState.isCorrect()
+                && state.agbsAccepted
+    }
 
-    var signupButtonDisabled by mutableStateOf(true)
-        private set
 
-    var isLoading by mutableStateOf(false)
-        private set
-
-
+    /* TODO
     fun signup(onCreateSuccess: () -> Unit) {
         viewModelScope.launch {
             if (validateInput()) {
                 try {
-                    isLoading = true
+                    state = state.copy(
+                        isLoading = true
+                    )
 
                     // Use the sharedViewModel's login function with a callback
                     appRepository.createAccount(username, email, password, gender, gebidate.toString()) { success, message ->
@@ -162,123 +160,7 @@ class SignUpViewModel(
 
     }
 
-    /*
-    // Handle login logic
-    fun login(onLoginSuccess: () -> Unit) {
-        if (validateInput()) {
-            try {
-                isLoading = true
-
-                // Use the sharedViewModel's login function with a callback
-                sharedViewModel.login(username, password) { success, message ->
-                    if (success) {
-                        println("Login erfolgreich")
-                        onLoginSuccess()
-                    } else {
-
-                        viewModelScope.launch {
-                            val responsereason = message.toEnumOrNull<ResponseReason>(true)
-
-                            password2errorMessage = when(responsereason){
-                                ResponseReason.NO_INTERNET,
-                                ResponseReason.TIMEOUT -> getString(Res.string.offline)
-                                ResponseReason.notfound -> getString(Res.string.acc_not_exist)
-                                ResponseReason.wrong -> getString(Res.string.password_wrong)
-                                ResponseReason.feature_disabled -> getString(Res.string.feature_disabled) //Haha wenn des kut denn isch was los
-                                ResponseReason.account_temp_locked -> getString(Res.string.acc_locked)
-                                ResponseReason.unknown_error -> getString(Res.string.unknown_error)
-
-                                ResponseReason.too_big,
-                                ResponseReason.none,
-                                ResponseReason.exists -> getString(Res.string.username_exists)
-                                ResponseReason.email_exists -> getString(Res.string.email_exists)
-                                ResponseReason.forbidden,
-                                ResponseReason.nomember,
-                                ResponseReason.same,
-                                null -> getString(Res.string.unknown_error)
-                            }
-
-                        }
-
-                    }
-                }
-
-            } catch (e: Exception) {
-                errorMessage = "Connection error: ${e.message}"
-            } finally {
-                isLoading = false
-            }
-        }
-    }
-
      */
-
-    suspend fun validateInput(): Boolean {
-        var isValid = true
-
-        // Username check
-        if (username.isBlank()) {
-            usernameerrorMessage = getString(Res.string.cannot_be_empty)
-            isValid = false
-        } else {
-            usernameerrorMessage = null
-        }
-
-        if (email.isBlank()) {
-            emailerrorMessage = getString(Res.string.cannot_be_empty)
-            isValid = false
-        } else if (!isEmailValid(email.toString())) {
-            emailerrorMessage = getString(Res.string.invalid_email)
-            isValid = false
-        }else{
-            emailerrorMessage = null
-        }
-
-        // Password check
-        if (password.isBlank()) {
-            passworderrorMessage = getString(Res.string.cannot_be_empty)
-            isValid = false
-        } else {
-            // Check password requirements
-            val missingRequirements = getMissingPasswordRequirements(password)
-            if (missingRequirements.isNotEmpty()) {
-                passworderrorMessage = getString(Res.string.password_missing_requirements, missingRequirements.joinToString(", "))
-
-                isValid = false
-            } else {
-                passworderrorMessage = null
-            }
-        }
-
-        // Password2 check
-        if (password2.isBlank()) {
-            password2errorMessage = getString(Res.string.cannot_be_empty)
-            isValid = false
-        } else if (password != password2) {
-            password2errorMessage = getString(Res.string.password_needs_to_be_the_same)
-            isValid = false
-        } else {
-            password2errorMessage = null
-        }
-
-        return isValid
-    }
-
-
-    private fun updateState() {
-
-        viewModelScope.launch {
-            validateInput()
-
-            if (username.isNotBlank() && password.isNotBlank() && password2.isNotBlank() && email.isNotBlank()){
-                signupButtonDisabled = false
-            }else{
-                signupButtonDisabled = true
-            }
-        }
-
-
-    }
 
 
     private fun isEmailValid(email: String): Boolean {
