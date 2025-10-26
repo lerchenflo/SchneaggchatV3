@@ -35,6 +35,7 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.URL_PRIVACY
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
+import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt1
@@ -62,6 +63,7 @@ fun SignUpForm1(
     emailerrorText: String?,
     ongebidateselected: (LocalDate?) -> Unit,
     selectedgebidate: LocalDate?,
+    onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ){
     Column(
@@ -69,7 +71,8 @@ fun SignUpForm1(
     ) {
         SignUpHeaderText(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            onBackClick = onBackClick
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -225,16 +228,21 @@ fun SignUpForm2(
 @Composable
 fun SignUpHeaderText(
     alignment: Alignment.Horizontal = Alignment.Start,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onBackClick: () -> Unit
 ){
     Column(
         modifier = modifier,
         horizontalAlignment = alignment
     ) {
-        Text(
-            text = stringResource(Res.string.create_account),
-            style = MaterialTheme.typography.titleLarge
+        ActivityTitle(
+            title = stringResource(Res.string.create_account),
+            onBackClick = {
+                onBackClick()
+            }
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text(
             text = stringResource(Res.string.create_account_subtitle),

@@ -54,9 +54,8 @@ fun App() {
     val themeSetting by preferenceManager.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
 
     SchneaggchatTheme(
-            themeSetting = themeSetting
-                     ) 
-     {
+        themeSetting = themeSetting
+    ) {
         val navigator = koinInject<Navigator>()
         val navController = rememberNavController()
 

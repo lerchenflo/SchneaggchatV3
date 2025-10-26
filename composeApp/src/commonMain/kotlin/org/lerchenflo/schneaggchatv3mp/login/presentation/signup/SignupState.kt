@@ -34,4 +34,6 @@ sealed interface SignupAction {
     data class OnGebiDateChange(val newDate: LocalDate) : SignupAction
 
     data class OnAgbChecked(val checked: Boolean) : SignupAction
+
+    data object OnBackClicked : SignupAction
 }

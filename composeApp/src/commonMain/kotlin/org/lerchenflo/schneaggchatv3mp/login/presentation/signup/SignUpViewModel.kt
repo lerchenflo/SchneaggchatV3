@@ -102,6 +102,12 @@ class SignUpViewModel(
                         gebiDate = action.newDate
                     )
                 }
+
+                SignupAction.OnBackClicked -> {
+                    viewModelScope.launch {
+                        navigator.navigate(Route.Login)
+                    }
+                }
             }
         }
 
