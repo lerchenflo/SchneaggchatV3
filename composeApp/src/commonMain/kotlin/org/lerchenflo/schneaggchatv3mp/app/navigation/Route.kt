@@ -1,7 +1,6 @@
-package org.lerchenflo.schneaggchatv3mp.app
+package org.lerchenflo.schneaggchatv3mp.app.navigation
 
 import kotlinx.serialization.Serializable
-
 
 sealed interface Route {
 

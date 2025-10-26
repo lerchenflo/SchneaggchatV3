@@ -64,6 +64,7 @@
     <string name="accept_agb_pt2">Terms and Conditions and the Privacy Policy</string>
 
     <!-- bis hier auf deutsch übersetzt -->
+    <string name="select_gebi_date">Select your birth date</string>
     <string name="status">Status:</string>
     <string name="app_broken_desc">Will fix most of the errors which might occur</string>
     <string name="others_say_about">others wrote about %1$s:</string>

@@ -30,9 +30,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
 
-// todo Datenschutz und Agbs
 // todo back button
-// todo error messages only when typed
 
 @Composable
 fun SignUpScreenRoot(){
@@ -99,6 +97,7 @@ fun SignUpScreen(
                             onemailTextChange = { onAction(SignupAction.OnEmailTextChange(it)) },
                             emailerrorText = state.emailState.errorMessage,
                             ongebidateselected = { /*TODO*/},
+                            selectedgebidate = state.gebiDate,
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -158,7 +157,8 @@ fun SignUpScreen(
                             emailText = state.emailState.text,
                             onemailTextChange = { onAction(SignupAction.OnEmailTextChange(it)) },
                             emailerrorText = state.emailState.errorMessage,
-                            ongebidateselected = { /*TODO*/},
+                            ongebidateselected = { onAction(SignupAction.OnGebiDateChange(it!!)) },
+                            selectedgebidate = state.gebiDate,
                             modifier = Modifier.weight(1f),
                             )
 
@@ -198,8 +198,9 @@ fun SignUpScreen(
                             emailText = state.emailState.text,
                             onemailTextChange = { onAction(SignupAction.OnEmailTextChange(it)) },
                             emailerrorText = state.emailState.errorMessage,
-                            ongebidateselected = { /*TODO*/},
-                        )
+                            ongebidateselected = { onAction(SignupAction.OnGebiDateChange(it!!)) },
+                            selectedgebidate = state.gebiDate,
+                            )
 
                         Spacer(modifier = Modifier.height(16.dp))
 
