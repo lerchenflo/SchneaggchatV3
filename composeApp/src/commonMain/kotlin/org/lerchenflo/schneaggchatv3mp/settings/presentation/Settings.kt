@@ -149,9 +149,6 @@ fun SettingsScreen(
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-        val themes = listOf("light", "dark", "system", "schneaggatheme")
-        var selectedTheme by rememberSaveable { mutableStateOf("light") }
-
         var themeSelDialog by remember{mutableStateOf(false)}
         // Theme selector
         SettingsOption(
@@ -163,9 +160,13 @@ fun SettingsScreen(
         if(themeSelDialog){
             ThemeSelector(
                 onDismiss = {themeSelDialog = false},
-                onConfirm = {themeSelDialog = false},
-                themes = themes,
-                selectedTheme = selectedTheme,
+                onConfirm = {
+                    themeSelDialog = false
+                    viewModel.saveThemeSetting(it)
+                            },
+                selectedTheme = viewModel.selectedTheme,
+
+
 
             )
         }

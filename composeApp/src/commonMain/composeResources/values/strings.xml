@@ -110,6 +110,10 @@
     <string name="invite_friend">invite friend</string>
     <string name="search_user">search user</string>
 
+    <string name="system_theme">system theme</string>
+    <string name="dark_theme">dark theme</string>
+    <string name="light_theme">light theme</string>
+
 
 
 

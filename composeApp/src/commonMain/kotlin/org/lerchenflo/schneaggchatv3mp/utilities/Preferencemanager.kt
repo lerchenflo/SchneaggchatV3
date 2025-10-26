@@ -15,6 +15,16 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import okio.Path.Companion.toPath
+import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus.Finished
+import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus.InProgress
+import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus.Unfinished
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.bugstatus_finished
+import schneaggchatv3mp.composeapp.generated.resources.bugstatus_in_progress
+import schneaggchatv3mp.composeapp.generated.resources.bugstatus_unfinished
+import schneaggchatv3mp.composeapp.generated.resources.dark_theme
+import schneaggchatv3mp.composeapp.generated.resources.light_theme
+import schneaggchatv3mp.composeapp.generated.resources.system_theme
 
 enum class PreferenceKey {
     USERNAME,
@@ -27,8 +37,14 @@ enum class PreferenceKey {
 enum class ThemeSetting {
     SYSTEM,    // Follow system setting
     LIGHT,     // Always light
-    DARK       // Always dark
+    DARK;       // Always dark
+    fun toUiText(): UiText = when (this) {
+        SYSTEM -> UiText.StringResourceText(Res.string.system_theme)
+        LIGHT -> UiText.StringResourceText(Res.string.light_theme)
+        DARK   -> UiText.StringResourceText(Res.string.dark_theme)
+    }
 }
+
 class Preferencemanager(
     private val pref: DataStore<Preferences>
 ) {
@@ -110,7 +126,7 @@ class Preferencemanager(
     fun getThemeFlow(): Flow<ThemeSetting> = pref.data.map { prefs ->
         val key = intPreferencesKey(PreferenceKey.THEME.toString())
         val ordinal = prefs[key] ?: ThemeSetting.SYSTEM.ordinal
-        ThemeSetting.values()[ordinal]
+        ThemeSetting.entries[ordinal]
     }.flowOn(Dispatchers.IO)
 
     // For one-time read (use in non-composable contexts)

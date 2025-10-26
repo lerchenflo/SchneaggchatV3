@@ -18,11 +18,15 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.ok
@@ -30,16 +34,17 @@ import schneaggchatv3mp.composeapp.generated.resources.theme
 
 @Composable
 fun ThemeSelector(
-    onConfirm:() -> Unit,
+    onConfirm:(ThemeSetting) -> Unit,
     onDismiss:() -> Unit,
-    themes:List<String>,
-    selectedTheme:String
+    selectedTheme:ThemeSetting
 ){
+    var tempSelection by mutableStateOf(selectedTheme)
+
     AlertDialog(
         onDismissRequest = {onDismiss()},
         confirmButton = {
             TextButton(
-                onClick = { onConfirm ()}
+                onClick = { onConfirm (tempSelection)}
             ) {
                 Text(stringResource(Res.string.ok), color = textContentColor)
             }
@@ -62,24 +67,24 @@ fun ThemeSelector(
             Column(
                 modifier = Modifier.selectableGroup()
             ) {
-                themes.forEach { theme ->
+                ThemeSetting.values().forEach { theme ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .selectable(
-                                selected = (theme == selectedTheme),
-                                onClick = { /*todo*/ },
+                                selected = (theme == tempSelection),
+                                onClick = { tempSelection = theme},
                                 role = Role.RadioButton
                             )
                             .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
-                            selected = (theme == selectedTheme),
+                            selected = (theme == tempSelection),
                             onClick = null // null because the row handles the click
                         )
                         Text(
-                            text = theme,
+                            text = theme.toUiText().asString(),
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(start = 8.dp)
                         )
