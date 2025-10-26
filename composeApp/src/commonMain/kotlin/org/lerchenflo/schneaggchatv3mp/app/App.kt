@@ -28,13 +28,17 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
+import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.ObserveAsEvents
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreen
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.Chatauswahlscreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
-import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreen
+import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
@@ -49,8 +53,13 @@ fun App() {
     val preferenceManager = koinInject<Preferencemanager>()
     val themeSetting by preferenceManager.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
 
-    SchneaggchatTheme(themeSetting = themeSetting) {
+    SchneaggchatTheme(
+            themeSetting = themeSetting
+                     ) 
+     {
+        val navigator = koinInject<Navigator>()
         val navController = rememberNavController()
+
         val snackbarHostState = remember { SnackbarHostState() } // for snackbar
         val scope = rememberCoroutineScope()
 
@@ -60,6 +69,17 @@ fun App() {
         LaunchedEffect(Unit) {
             SnackbarManager.init(snackbarHostState, scope)
         }
+
+        ObserveAsEvents(
+            flow = navigator.navigationActions
+        ){  action ->
+            when(action){
+                is NavigationAction.Navigate -> navController.navigate(action.destination){action.navOptions(this)}
+                NavigationAction.NavigateBack -> navController.navigateUp()
+            }
+        }
+
+
 
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -189,14 +209,7 @@ fun App() {
 
                     // Sign up page
                     composable<Route.SignUp>{
-                        SignUpScreen(
-                            onSignUpSuccess = {
-                                println("Signup success, chatselector")
-                                navController.navigate(Route.ChatSelector){
-                                    popUpTo(Route.ChatGraph) { inclusive = true }
-                                }
-                            }
-                        )
+                        SignUpScreenRoot()
                     }
 
                     // Settings page

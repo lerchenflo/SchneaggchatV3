@@ -1,7 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 
-import SignUpViewModel
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,7 +18,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -33,19 +30,32 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
 
-// todo Datenschutz und Agbs
 // todo back button
-// todo error messages only when typed
 
-@Preview()
+@Composable
+fun SignUpScreenRoot(){
+    val viewModel = koinViewModel<SignUpViewModel>()
+
+    SignUpScreen(
+        onAction = viewModel::onAction,
+        state = viewModel.state
+    )
+
+}
+
+@Preview(
+    showBackground = true,
+    heightDp = 400,
+    widthDp = 600
+)
 @Composable
 fun SignUpScreen(
-    onSignUpSuccess: () -> Unit = {}, // when login has finished successful
     modifier: Modifier = Modifier
         .fillMaxSize()
-        .safeContentPadding()
+        .safeContentPadding(),
+    onAction : (SignupAction) -> Unit = {},
+    state: SignupState = SignupState()
 ){
-    val viewModel = koinViewModel<SignUpViewModel>()
 
     SchneaggchatTheme {
         //Responsive UI mit scaffold
@@ -72,6 +82,7 @@ fun SignUpScreen(
             val deviceConfiguration = DeviceSizeConfiguration.fromWindowSizeClass(windowSizeclass)
             when (deviceConfiguration){
                 DeviceSizeConfiguration.MOBILE_PORTRAIT -> {
+                    println("Mobile Portrait")
                     Column(
                         modifier = rootmodifier
                             .verticalScroll(rememberScrollState())
@@ -79,37 +90,54 @@ fun SignUpScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ){
                         SignUpForm1(
-                            usernameText = viewModel.username,
-                            onusernameTextChange = { viewModel.updateUsername(it) },
-                            usernameerrorText = viewModel.usernameerrorMessage,
-                            emailText = viewModel.email,
-                            onemailTextChange = { viewModel.updateEmail(it) },
-                            emailerrorText = viewModel.emailerrorMessage,
-                            ongebidateselected = {viewModel.updategebidate(it)},
+                            usernameText = state.usernameState.text,
+                            onusernameTextChange = { onAction(SignupAction.OnUsernameTextChange(it)) },
+                            usernameerrorText = state.usernameState.errorMessage,
+                            emailText = state.emailState.text,
+                            onemailTextChange = { onAction(SignupAction.OnEmailTextChange(it)) },
+                            emailerrorText = state.emailState.errorMessage,
+                            ongebidateselected = { /*TODO*/},
+                            selectedgebidate = state.gebiDate,
                             modifier = Modifier.fillMaxWidth()
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
 
                         SignUpForm2(
-                            passwordText = viewModel.password,
-                            onpasswordTextChange = { viewModel.updatePassword(it) },
-                            passworderrorText = viewModel.passworderrorMessage,
-                            password2Text = viewModel.password2,
-                            onpassword2TextChange = { viewModel.updatePassword2(it) },
-                            password2errorText = viewModel.password2errorMessage,
-                            onSignupButtonClick = { viewModel.signup(onSignUpSuccess) },
-                            signupbuttondisabled = viewModel.signupButtonDisabled,
-                            signupbuttonloading = viewModel.isLoading,
-                            genderslidertext = viewModel.gender,
-                            genderslidervalue = viewModel.genderslidervalue,
-                            ongendersliderValueChange = {viewModel.updategenderslidervalue(it)},
-                            modifier = Modifier.fillMaxWidth()
+                            passwordText = state.passwordState.text,
+                            onpasswordTextChange = {
+                                onAction(
+                                    SignupAction.OnPasswordTextChange(
+                                        it,
+                                        false
+                                    )
+                                )
+                            },
+                            passworderrorText = state.passwordState.errorMessage,
+                            password2Text = state.passwordRetypeState.text,
+                            onpassword2TextChange = {
+                                onAction(
+                                    SignupAction.OnPasswordTextChange(
+                                        it,
+                                        true
+                                    )
+                                )
+                            },
+                            password2errorText = state.passwordRetypeState.errorMessage,
+                            onSignupButtonClick = { onAction(SignupAction.OnSignUpButtonPress) },
+                            signupbuttondisabled = state.createButtonDisabled,
+                            signupbuttonloading = state.isLoading,
+                            onCheckBoxCheckedChange = { onAction(SignupAction.OnAgbChecked(it)) },
+                            checkboxChecked = state.agbsAccepted,
+                            modifier = Modifier.fillMaxWidth(),
+
                         )
                     }
 
                 }
                 DeviceSizeConfiguration.MOBILE_LANDSCAPE -> {
+                    println("Mobile Landscape")
+
                     Row(
                         modifier = rootmodifier
                             .windowInsetsPadding(WindowInsets.displayCutout)
@@ -123,29 +151,29 @@ fun SignUpScreen(
 
 
                         SignUpForm1(
-                            usernameText = viewModel.username,
-                            onusernameTextChange = { viewModel.updateUsername(it) },
-                            usernameerrorText = viewModel.usernameerrorMessage,
-                            emailText = viewModel.email,
-                            onemailTextChange = { viewModel.updateEmail(it) },
-                            emailerrorText = viewModel.emailerrorMessage,
+                            usernameText = state.usernameState.text,
+                            onusernameTextChange = { onAction(SignupAction.OnUsernameTextChange(it)) },
+                            usernameerrorText = state.usernameState.errorMessage,
+                            emailText = state.emailState.text,
+                            onemailTextChange = { onAction(SignupAction.OnEmailTextChange(it)) },
+                            emailerrorText = state.emailState.errorMessage,
+                            ongebidateselected = { onAction(SignupAction.OnGebiDateChange(it!!)) },
+                            selectedgebidate = state.gebiDate,
                             modifier = Modifier.weight(1f),
-                            ongebidateselected = { viewModel.updategebidate(it) }
-                        )
+                            )
 
                         SignUpForm2(
-                            passwordText = viewModel.password,
-                            onpasswordTextChange = { viewModel.updatePassword(it) },
-                            passworderrorText = viewModel.passworderrorMessage,
-                            password2Text = viewModel.password2,
-                            onpassword2TextChange = { viewModel.updatePassword2(it) },
-                            password2errorText = viewModel.password2errorMessage,
-                            onSignupButtonClick = { viewModel.signup(onSignUpSuccess) },
-                            signupbuttondisabled = viewModel.signupButtonDisabled,
-                            signupbuttonloading = viewModel.isLoading,
-                            genderslidertext = viewModel.gender,
-                            genderslidervalue = viewModel.genderslidervalue,
-                            ongendersliderValueChange = { viewModel.updategenderslidervalue(it) },
+                            passwordText = state.passwordState.text,
+                            onpasswordTextChange = { onAction(SignupAction.OnPasswordTextChange(it, false)) },
+                            passworderrorText = state.passwordState.errorMessage,
+                            password2Text = state.passwordRetypeState.text,
+                            onpassword2TextChange = { onAction(SignupAction.OnPasswordTextChange(it, true)) },
+                            password2errorText = state.passwordRetypeState.errorMessage,
+                            onSignupButtonClick = { onAction(SignupAction.OnSignUpButtonPress)},
+                            signupbuttondisabled = state.createButtonDisabled,
+                            signupbuttonloading = state.isLoading,
+                            onCheckBoxCheckedChange = { onAction(SignupAction.OnAgbChecked(it)) },
+                            checkboxChecked = state.agbsAccepted,
                             modifier = Modifier.weight(1f)
 
                             )
@@ -154,40 +182,40 @@ fun SignUpScreen(
                 DeviceSizeConfiguration.TABLET_PORTRAIT,
                 DeviceSizeConfiguration.TABLET_LANDSCAPE,
                 DeviceSizeConfiguration.DESKTOP -> {
+                    println("Desktop")
+
                     Column(
                         modifier = rootmodifier
                             .verticalScroll(rememberScrollState())
                             .padding(top = 32.dp),
-                        verticalArrangement = Arrangement.spacedBy(32.dp),
+                        verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ){
                         SignUpForm1(
-                            usernameText = viewModel.username,
-                            onusernameTextChange = { viewModel.updateUsername(it) },
-                            usernameerrorText = viewModel.usernameerrorMessage,
-                            emailText = viewModel.email,
-                            onemailTextChange = {viewModel.updateEmail(it)},
-                            emailerrorText = viewModel.emailerrorMessage,
-                            ongebidateselected = { viewModel.updategebidate(it) },
-                            modifier = Modifier.weight(1f)
-                        )
+                            usernameText = state.usernameState.text,
+                            onusernameTextChange = { onAction(SignupAction.OnUsernameTextChange(it)) },
+                            usernameerrorText = state.usernameState.errorMessage,
+                            emailText = state.emailState.text,
+                            onemailTextChange = { onAction(SignupAction.OnEmailTextChange(it)) },
+                            emailerrorText = state.emailState.errorMessage,
+                            ongebidateselected = { onAction(SignupAction.OnGebiDateChange(it!!)) },
+                            selectedgebidate = state.gebiDate,
+                            )
 
                         Spacer(modifier = Modifier.height(16.dp))
 
                         SignUpForm2(
-                            passwordText = viewModel.password,
-                            onpasswordTextChange = {viewModel.updatePassword(it)},
-                            passworderrorText = viewModel.passworderrorMessage,
-                            password2Text = viewModel.password2,
-                            onpassword2TextChange = {viewModel.updatePassword2(it)},
-                            password2errorText = viewModel.password2errorMessage,
-                            onSignupButtonClick = { viewModel.signup(onSignUpSuccess) },
-                            signupbuttondisabled = viewModel.signupButtonDisabled,
-                            signupbuttonloading = viewModel.isLoading,
-                            genderslidertext = viewModel.gender,
-                            genderslidervalue = viewModel.genderslidervalue,
-                            ongendersliderValueChange = { viewModel.updategenderslidervalue(it) },
-                            modifier = Modifier.weight(1f)
+                            passwordText = state.passwordState.text,
+                            onpasswordTextChange = { onAction(SignupAction.OnPasswordTextChange(it, false)) },
+                            passworderrorText = state.passwordState.errorMessage,
+                            password2Text = state.passwordRetypeState.text,
+                            onpassword2TextChange = { onAction(SignupAction.OnPasswordTextChange(it, true)) },
+                            password2errorText = state.passwordRetypeState.errorMessage,
+                            onSignupButtonClick = { onAction(SignupAction.OnSignUpButtonPress)},
+                            signupbuttondisabled = state.createButtonDisabled,
+                            onCheckBoxCheckedChange = { onAction(SignupAction.OnAgbChecked(it)) },
+                            checkboxChecked = state.agbsAccepted,
+                            signupbuttonloading = state.isLoading,
                         )
                     }
                 }

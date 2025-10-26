@@ -168,13 +168,12 @@ class NetworkUtils(
         }
     }
 
-    suspend fun createAccount(username: String, password: String, email: String, gender: String, birthdate: String): NetworkResult<Boolean, String> {
+    suspend fun createAccount(username: String, password: String, email: String, birthdate: String): NetworkResult<Boolean, String> {
         val headers = mapOf(
             "msgtype" to CREATEACCOUNTMESSAGE,
             "username" to username,
             "password" to password,
             "email" to email,
-            "gender" to gender,
             "birthdate" to birthdate
         )
 

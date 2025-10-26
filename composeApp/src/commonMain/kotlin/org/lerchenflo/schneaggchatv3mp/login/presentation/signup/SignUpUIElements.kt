@@ -2,16 +2,20 @@
 
 package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -22,14 +26,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.URL_PRIVACY
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt1
+import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt2
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.create_account
 import schneaggchatv3mp.composeapp.generated.resources.create_account_subtitle
@@ -37,6 +46,7 @@ import schneaggchatv3mp.composeapp.generated.resources.email
 import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.password
 import schneaggchatv3mp.composeapp.generated.resources.password_again
+import schneaggchatv3mp.composeapp.generated.resources.select_gebi_date
 import schneaggchatv3mp.composeapp.generated.resources.username
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -51,6 +61,7 @@ fun SignUpForm1(
     onemailTextChange: (String) -> Unit,
     emailerrorText: String?,
     ongebidateselected: (LocalDate?) -> Unit,
+    selectedgebidate: LocalDate?,
     modifier: Modifier = Modifier
 ){
     Column(
@@ -62,7 +73,6 @@ fun SignUpForm1(
         )
 
         Spacer(modifier = Modifier.height(16.dp))
-
 
         InputTextField(
             text = usernameText,
@@ -90,19 +100,19 @@ fun SignUpForm1(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        //TODO: Ned immer zoaga
-        //TODO: Gender als string printen zum luaga obs format passt
 
         // Datepicker
         var showDatePicker by remember { mutableStateOf(false) }
 
-        Button(
-            onClick = { showDatePicker = true },
+        NormalButton(
+            text = selectedgebidate?.toString() ?: stringResource(Res.string.select_gebi_date),
+            onClick = {
+                showDatePicker = true
+            },
             modifier = Modifier
-                .fillMaxWidth()
-        ){
-            Text(text = "Select your date of birth")
-        }
+                .fillMaxWidth(),
+            primary = false
+        )
 
         if (showDatePicker) {
             DatePickerDialogPopup(
@@ -124,17 +134,21 @@ fun SignUpForm2(
     password2Text: String,
     onpassword2TextChange: (String) -> Unit,
     password2errorText: String?,
-    genderslidertext: String,
-    genderslidervalue: Float,
-    ongendersliderValueChange: (Float) -> Unit,
     onSignupButtonClick: () -> Unit,
     signupbuttondisabled: Boolean = false,
     signupbuttonloading: Boolean = false,
+    onCheckBoxCheckedChange: (Boolean) -> Unit,
+    checkboxChecked: Boolean,
+    
+    
     modifier: Modifier = Modifier
 ){
     Column(
         modifier = modifier
     ) {
+        //TODO: Profilepicture selection
+
+
         InputTextField(
             text = passwordText,
             onValueChange = onpasswordTextChange,
@@ -161,19 +175,38 @@ fun SignUpForm2(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        //TODO: gender input
-        Slider(
-            value = genderslidervalue,
-            onValueChange = ongendersliderValueChange,
-            valueRange = 0f..1f,
-            steps = 4,
-            modifier = Modifier.fillMaxWidth()
-        )
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = checkboxChecked,
+                onCheckedChange = {onCheckBoxCheckedChange(it)},
+            )
 
-        Text(text = genderslidertext)
+            Spacer(modifier = Modifier.width(2.dp))
+
+            val urihandler = LocalUriHandler.current
+            val text1 = stringResource(Res.string.accept_agb_pt1)
+            val text2 = stringResource(Res.string.accept_agb_pt2)
+
+            Row{
+                Text(
+                    text = text1
+                )
+                Text(
+                    text = text2,
+                    color = MaterialTheme.colorScheme.primary,
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier
+                        .clickable{
+                            urihandler.openUri(URL_PRIVACY)
+                        }
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
-
 
         NormalButton(
             text = stringResource(Res.string.create_account),
@@ -183,6 +216,8 @@ fun SignUpForm2(
             modifier = Modifier
                 .fillMaxWidth()
         )
+
+
     }
 }
 
@@ -218,7 +253,7 @@ fun DatePickerDialogPopup(
 
     DatePickerDialog(
         onDismissRequest = onDismiss,
-        confirmButton = {
+        dismissButton = {
             TextButton(
                 onClick = {
                     // 3. Convert the selected milliseconds to LocalDate
@@ -233,11 +268,14 @@ fun DatePickerDialogPopup(
                 Text(stringResource(Res.string.ok))
             }
         },
-        dismissButton = {
+        confirmButton = {
+
+
             TextButton(onClick = onDismiss) {
                 Text(stringResource(Res.string.cancel))
             }
-        }
+
+        },
     ) {
         // 4. Place the DatePicker inside the dialog
         DatePicker(state = datePickerState)

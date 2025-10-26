@@ -1,132 +1,147 @@
+package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.getString
-import org.koin.mp.KoinPlatform.getKoin
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache.updateUsername
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.network.util.toEnumOrNull
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cannot_be_empty
-import schneaggchatv3mp.composeapp.generated.resources.email_exists
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
-import schneaggchatv3mp.composeapp.generated.resources.password_missing_requirements
 import schneaggchatv3mp.composeapp.generated.resources.password_needs_to_be_the_same
 import schneaggchatv3mp.composeapp.generated.resources.requirement_digit
 import schneaggchatv3mp.composeapp.generated.resources.requirement_forbidden
 import schneaggchatv3mp.composeapp.generated.resources.requirement_length
 import schneaggchatv3mp.composeapp.generated.resources.requirement_special
-import schneaggchatv3mp.composeapp.generated.resources.unknown_error
-import schneaggchatv3mp.composeapp.generated.resources.username_exists
-import schneaggchatv3mp.composeapp.generated.resources.username_too_long
 
 
 class SignUpViewModel(
-    private val appRepository: AppRepository
+    private val appRepository: AppRepository,
+    private val navigator: Navigator
 ): ViewModel() {
 
-
-
-
-    // TextField states
-    val globalViewModel: GlobalViewModel = getKoin().get()
-
-    var username by mutableStateOf("")
+    var state by mutableStateOf(SignupState())
         private set
-    fun updateUsername(newValue: String) {
-        username = newValue
-        updateState() // Clear error when user types
+
+
+    fun onAction(action: SignupAction){
+        viewModelScope.launch {
+            val x = /* Variable for exhaustive when */when(action){
+                is SignupAction.OnUsernameTextChange -> {
+                    state = state.copy(
+                        usernameState = state.usernameState.copy(
+                            text = action.newText,
+                            errorMessage = if (action.newText.isEmpty()) getString(Res.string.cannot_be_empty) else null
+                        )
+                    )
+                }
+
+                is SignupAction.OnEmailTextChange -> {
+                    state = state.copy(
+                        emailState = state.emailState.copy(
+                            text = action.newText,
+                            errorMessage = if (isEmailValid(action.newText)) null else getString(Res.string.invalid_email)
+                        )
+                    )
+                }
+                is SignupAction.OnPasswordTextChange -> {
+                    state = if (!action.retrypasswordfield) {
+
+                        val missing = getMissingPasswordRequirements(action.newText)
+
+                        val errormessage = if (action.newText.isEmpty()) {
+                            getString(Res.string.cannot_be_empty)
+                        }else if (!missing.isEmpty()){
+                            missing.joinToString("\n")
+                        }else null
+
+
+                        state.copy(
+                            passwordState = state.passwordState.copy(
+                                text = action.newText,
+                                errorMessage = errormessage
+                            )
+                        )
+                    }else {
+                        state.copy(
+                            passwordRetypeState = state.passwordRetypeState.copy(
+                                text = action.newText,
+                                errorMessage = if (action.newText == state.passwordState.text) null else getString(Res.string.password_needs_to_be_the_same)
+                            )
+                        )
+                    }
+                }
+                SignupAction.OnSignUpButtonPress -> {
+                    signup(
+                        {
+                            viewModelScope.launch {
+                                navigator.navigate(Route.ChatSelector){
+                                    popUpTo(Route.ChatGraph) { inclusive = true }
+                                }
+                            }
+                        }
+                    )
+                }
+
+                is SignupAction.OnAgbChecked -> {
+                    state = state.copy(
+                        agbsAccepted = action.checked
+                    )
+                }
+
+                is SignupAction.OnGebiDateChange -> {
+                    state = state.copy(
+                        gebiDate = action.newDate
+                    )
+                }
+            }
+        }
+
+        val enablebutton = isInputComplete()
+        if (enablebutton) {
+            state = state.copy(
+                createButtonDisabled = !enablebutton
+            )
+        }
     }
-    var usernameerrorMessage by mutableStateOf<String?>(null)
-        private set
 
 
-
-    var password by mutableStateOf("")
-        private set
-    fun updatePassword(newValue: String) {
-        password = newValue
-        updateState()
-    }
-    var passworderrorMessage by mutableStateOf<String?>(null)
-        private set
-
-    var password2 by mutableStateOf("")
-        private set
-    fun updatePassword2(newValue: String) {
-        password2 = newValue
-        updateState()
-    }
-    var password2errorMessage by mutableStateOf<String?>(null)
-        private set
-
-
-    var email by mutableStateOf("")
-        private set
-    fun updateEmail(newValue: String) {
-        email = newValue
-        updateState()
-    }
-    var emailerrorMessage by mutableStateOf<String?>(null)
-        private set
-
-
-    //TODO: DAtepicker für gebi  und gender (Es wird als string gschickt also eig a dropdown mit nam custom input dazua)
-
-    var gebidate by mutableStateOf<LocalDate?>(null)
-        private set
-    fun updategebidate(newValue: LocalDate?) {
-        gebidate = newValue
-        updateState()
-    }
-    var gebidateerrorMessage by mutableStateOf<String?>(null)
-        private set
-
-
-    var gender by mutableStateOf("")
-        private set
-    fun updategender(newValue: String) {
-        gender = newValue
-        updateState()
-    }
-    var gendererrorMessage by mutableStateOf<String?>(null)
-        private set
-
-
-    var genderslidervalue by mutableStateOf(0f)
-        private set
-    fun updategenderslidervalue(newValue: Float) {
-        genderslidervalue = newValue
-        updateState()
+    fun isInputComplete() : Boolean{
+        return state.usernameState.isCorrect()
+                && state.passwordState.isCorrect()
+                && state.passwordRetypeState.isCorrect()
+                && state.emailState.isCorrect()
+                && state.gebiDate != null
+                && state.agbsAccepted
+                && state.passwordState.text == state.passwordRetypeState.text
     }
 
-
-
-    var signupButtonDisabled by mutableStateOf(true)
-        private set
-
-    var isLoading by mutableStateOf(false)
-        private set
 
 
     fun signup(onCreateSuccess: () -> Unit) {
         viewModelScope.launch {
-            if (validateInput()) {
+            if (isInputComplete()) {
                 try {
-                    isLoading = true
+                    state = state.copy(
+                        isLoading = true
+                    )
 
-                    // Use the sharedViewModel's login function with a callback
-                    appRepository.createAccount(username, email, password, gender, gebidate.toString()) { success, message ->
+                    appRepository.createAccount(state.usernameState.text, state.emailState.text, state.passwordState.text, state.gebiDate.toString()) { success, message ->
                         if (success) {
                             println("Account erstellen erfolgreich")
 
-                            appRepository.login(username, password) { success, message ->
+                            appRepository.login(state.usernameState.text, state.passwordState.text) { success, message ->
                                 if (success){
+                                    //Set username
+                                    updateUsername(state.usernameState.text)
                                     onCreateSuccess()
                                 }
                             }
@@ -137,15 +152,7 @@ class SignUpViewModel(
                             viewModelScope.launch {
                                 val responsereason = message.toEnumOrNull<ResponseReason>(true)
 
-                                if (responsereason == ResponseReason.exists){
-                                    usernameerrorMessage = getString(Res.string.username_exists)
-                                }else if (responsereason == ResponseReason.email_exists){
-                                    emailerrorMessage = getString(Res.string.email_exists)
-                                }else if (responsereason == ResponseReason.too_big){
-                                    usernameerrorMessage = getString(Res.string.username_too_long)
-                                }else if (responsereason == ResponseReason.unknown_error){
-                                    password2errorMessage = getString(Res.string.unknown_error)
-                                }
+                                //TODO: Show errors according to response
 
                             }
 
@@ -153,132 +160,17 @@ class SignUpViewModel(
                     }
 
                 } catch (e: Exception) {
-                    password2errorMessage = e.message
+                    e.printStackTrace()
                 } finally {
-                    isLoading = false
+                    state = state.copy(
+                        isLoading = false
+                    )
                 }
             }
         }
 
     }
 
-    /*
-    // Handle login logic
-    fun login(onLoginSuccess: () -> Unit) {
-        if (validateInput()) {
-            try {
-                isLoading = true
-
-                // Use the sharedViewModel's login function with a callback
-                sharedViewModel.login(username, password) { success, message ->
-                    if (success) {
-                        println("Login erfolgreich")
-                        onLoginSuccess()
-                    } else {
-
-                        viewModelScope.launch {
-                            val responsereason = message.toEnumOrNull<ResponseReason>(true)
-
-                            password2errorMessage = when(responsereason){
-                                ResponseReason.NO_INTERNET,
-                                ResponseReason.TIMEOUT -> getString(Res.string.offline)
-                                ResponseReason.notfound -> getString(Res.string.acc_not_exist)
-                                ResponseReason.wrong -> getString(Res.string.password_wrong)
-                                ResponseReason.feature_disabled -> getString(Res.string.feature_disabled) //Haha wenn des kut denn isch was los
-                                ResponseReason.account_temp_locked -> getString(Res.string.acc_locked)
-                                ResponseReason.unknown_error -> getString(Res.string.unknown_error)
-
-                                ResponseReason.too_big,
-                                ResponseReason.none,
-                                ResponseReason.exists -> getString(Res.string.username_exists)
-                                ResponseReason.email_exists -> getString(Res.string.email_exists)
-                                ResponseReason.forbidden,
-                                ResponseReason.nomember,
-                                ResponseReason.same,
-                                null -> getString(Res.string.unknown_error)
-                            }
-
-                        }
-
-                    }
-                }
-
-            } catch (e: Exception) {
-                errorMessage = "Connection error: ${e.message}"
-            } finally {
-                isLoading = false
-            }
-        }
-    }
-
-     */
-
-    suspend fun validateInput(): Boolean {
-        var isValid = true
-
-        // Username check
-        if (username.isBlank()) {
-            usernameerrorMessage = getString(Res.string.cannot_be_empty)
-            isValid = false
-        } else {
-            usernameerrorMessage = null
-        }
-
-        if (email.isBlank()) {
-            emailerrorMessage = getString(Res.string.cannot_be_empty)
-            isValid = false
-        } else if (!isEmailValid(email.toString())) {
-            emailerrorMessage = getString(Res.string.invalid_email)
-            isValid = false
-        }else{
-            emailerrorMessage = null
-        }
-
-        // Password check
-        if (password.isBlank()) {
-            passworderrorMessage = getString(Res.string.cannot_be_empty)
-            isValid = false
-        } else {
-            // Check password requirements
-            val missingRequirements = getMissingPasswordRequirements(password)
-            if (missingRequirements.isNotEmpty()) {
-                passworderrorMessage = getString(Res.string.password_missing_requirements, missingRequirements.joinToString(", "))
-
-                isValid = false
-            } else {
-                passworderrorMessage = null
-            }
-        }
-
-        // Password2 check
-        if (password2.isBlank()) {
-            password2errorMessage = getString(Res.string.cannot_be_empty)
-            isValid = false
-        } else if (password != password2) {
-            password2errorMessage = getString(Res.string.password_needs_to_be_the_same)
-            isValid = false
-        } else {
-            password2errorMessage = null
-        }
-
-        return isValid
-    }
-
-
-    private fun updateState() {
-
-        viewModelScope.launch {
-            validateInput()
-
-            if (username.isNotBlank() && password.isNotBlank() && password2.isNotBlank() && email.isNotBlank()){
-                signupButtonDisabled = false
-            }else{
-                signupButtonDisabled = true
-            }
-        }
-
-
-    }
 
 
     private fun isEmailValid(email: String): Boolean {

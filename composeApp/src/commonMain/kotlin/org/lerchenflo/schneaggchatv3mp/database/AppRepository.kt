@@ -194,16 +194,17 @@ class AppRepository(
 
     }
 
+
+    //TODO: Pass profile pic
     fun createAccount(
         username: String,
         email: String,
         password: String,
-        gender: String,
         birthdate: String,
         onResult: (Boolean, String) -> Unit
     ) {
         CoroutineScope(Dispatchers.IO).launch {
-            networkUtils.createAccount(username, password, email, gender, birthdate)
+            networkUtils.createAccount(username, password, email, birthdate)
                 .onSuccessWithBody { success, message ->
                     println("Success: $success $message")
                     onResult(success, message)
