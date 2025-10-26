@@ -57,7 +57,7 @@ fun UserButton(
     var modifierGes = Modifier
         .fillMaxWidth()
         .padding(6.dp)
-        .height(50.dp)
+        .height(60.dp)
         //.height(IntrinsicSize.Min) // Use minimal intrinsic height
     if(useOnClickGes){
         modifierGes = modifierGes.clickable{onClickGes()}
@@ -69,7 +69,7 @@ fun UserButton(
         if(showProfilePicture){
             // Profile picture
             var modifierImage = Modifier
-                .size(40.dp) // Use square aspect ratio
+                .size(50.dp) // Use square aspect ratio
                 .padding(end = 8.dp) // Right padding only
                 .clip(CircleShape) // Circular image
             if(!useOnClickGes){
@@ -101,7 +101,7 @@ fun UserButton(
                     text = selectedChat.name
                         .takeIf { it.isNotBlank() }
                         ?: stringResource(Res.string.unknown_user),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
@@ -157,9 +157,18 @@ fun UserButton(
                 ) {
                     // Last message preview
                     Text(
-                        text = (if (lastMessage.isMyMessage()) stringResource(Res.string.you_sender) else lastMessage.messageDto.senderAsString) + ": " + lastMessage.messageDto.content,
-                        style = MaterialTheme.typography.bodyMedium,
-
+                        text = (
+                                if (lastMessage.isMyMessage()) {
+                                    stringResource(Res.string.you_sender) + ": "
+                                } else if (lastMessage.isGroupMessage()) {
+                                    lastMessage.messageDto.senderAsString + ": "
+                                } else {
+                                    ""
+                                }
+                                ) + lastMessage.messageDto.content,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) // 👈 lighter text
+                        ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)

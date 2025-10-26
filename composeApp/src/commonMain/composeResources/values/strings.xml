@@ -76,6 +76,9 @@
     <string name="close">close</string>
     <string name="you_sender">You</string>
 
+    <string name="theme">Theme</string>
+    <string name="theme_sel_desc">Change the look of your app</string>
+
 
     <!-- Todoliste -->
     <string name="todolist">Todos</string>
@@ -109,6 +112,10 @@
     <string name="new_group">new group</string>
     <string name="invite_friend">invite friend</string>
     <string name="search_user">search user</string>
+
+    <string name="system_theme">system theme</string>
+    <string name="dark_theme">dark theme</string>
+    <string name="light_theme">light theme</string>
 
 
 

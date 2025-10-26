@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation
 
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -17,6 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
 
@@ -38,6 +40,15 @@ class SettingsViewModel(
                 }
 
         }
+        viewModelScope.launch {
+            preferenceManager.getThemeFlow()
+                .catch { exception ->
+                    println("Problem getting Theme setting: ${exception.printStackTrace()}")
+                }
+                .collect { value ->
+                    selectedTheme = value
+                }
+        }
 
     }
 
@@ -45,6 +56,7 @@ class SettingsViewModel(
     fun getOwnuser() : Flow<UserDto?>{
         return appRepository.getownUser()
     }
+
 
     var markdownEnabeled by mutableStateOf(false)
         private set
@@ -77,5 +89,15 @@ class SettingsViewModel(
             SnackbarManager.showMessage("App data deleted ✅")
         }
     }
+
+    var selectedTheme by mutableStateOf(ThemeSetting.SYSTEM)
+        private set
+
+    fun saveThemeSetting(theme: ThemeSetting){
+        CoroutineScope(Dispatchers.IO).launch {
+            preferenceManager.saveThemeSetting(theme = theme)
+        }
+    }
+
 
 }

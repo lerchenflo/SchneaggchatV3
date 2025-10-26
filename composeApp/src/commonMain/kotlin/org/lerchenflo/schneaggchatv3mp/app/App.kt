@@ -10,6 +10,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -40,13 +42,21 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoo
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
+import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
 
 
 @Composable
 @Preview(showBackground = true)
 fun App() {
-    SchneaggchatTheme {
+    val preferenceManager = koinInject<Preferencemanager>()
+    val themeSetting by preferenceManager.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
+
+    SchneaggchatTheme(
+            themeSetting = themeSetting
+                     ) 
+     {
         val navigator = koinInject<Navigator>()
         val navController = rememberNavController()
 
