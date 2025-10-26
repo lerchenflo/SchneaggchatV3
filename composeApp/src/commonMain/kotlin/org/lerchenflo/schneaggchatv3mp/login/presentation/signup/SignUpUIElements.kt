@@ -146,6 +146,9 @@ fun SignUpForm2(
     Column(
         modifier = modifier
     ) {
+        //TODO: Profilepicture selection
+
+
         InputTextField(
             text = passwordText,
             onValueChange = onpasswordTextChange,

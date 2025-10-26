@@ -30,9 +30,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
 
-// todo Datenschutz und Agbs
 // todo back button
-// todo error messages only when typed
 
 @Composable
 fun SignUpScreenRoot(){

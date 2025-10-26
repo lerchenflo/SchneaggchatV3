@@ -12,6 +12,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.database.CreateAppDatabase
@@ -30,6 +32,10 @@ val sharedmodule = module{
 
     single <HttpClient> { createHttpClient(get()) }
 
+
+    single<Navigator> {
+        Navigator(Route.ChatGraph)
+    }
 
     //Repository
     singleOf(::AppRepository)
@@ -64,7 +70,7 @@ val sharedmodule = module{
     factory { LoginViewModel(get()) }
 
     viewModelOf(::SignUpViewModel)
-    factory { SignUpViewModel(get()) }
+    factory { SignUpViewModel(get(), get()) }
 
     viewModelOf(::TodolistViewModel)
     factory { TodolistViewModel(get(), get()) }

@@ -7,26 +7,25 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache.username
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache.updateUsername
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
 import org.lerchenflo.schneaggchatv3mp.network.util.toEnumOrNull
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cannot_be_empty
-import schneaggchatv3mp.composeapp.generated.resources.email_exists
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
 import schneaggchatv3mp.composeapp.generated.resources.password_needs_to_be_the_same
 import schneaggchatv3mp.composeapp.generated.resources.requirement_digit
 import schneaggchatv3mp.composeapp.generated.resources.requirement_forbidden
 import schneaggchatv3mp.composeapp.generated.resources.requirement_length
 import schneaggchatv3mp.composeapp.generated.resources.requirement_special
-import schneaggchatv3mp.composeapp.generated.resources.unknown_error
-import schneaggchatv3mp.composeapp.generated.resources.username_exists
-import schneaggchatv3mp.composeapp.generated.resources.username_too_long
 
 
 class SignUpViewModel(
-    private val appRepository: AppRepository
+    private val appRepository: AppRepository,
+    private val navigator: Navigator
 ): ViewModel() {
 
     var state by mutableStateOf(SignupState())
@@ -81,7 +80,15 @@ class SignUpViewModel(
                     }
                 }
                 SignupAction.OnSignUpButtonPress -> {
-                    //TODO: Navigate with global navigator
+                    signup(
+                        {
+                            viewModelScope.launch {
+                                navigator.navigate(Route.ChatSelector){
+                                    popUpTo(Route.ChatGraph) { inclusive = true }
+                                }
+                            }
+                        }
+                    )
                 }
 
                 is SignupAction.OnAgbChecked -> {
@@ -98,40 +105,43 @@ class SignUpViewModel(
             }
         }
 
-        if (isWithoutErrors()) {
+        val enablebutton = isInputComplete()
+        if (enablebutton) {
             state = state.copy(
-                createButtonDisabled = false
+                createButtonDisabled = !enablebutton
             )
         }
     }
 
 
-    fun isWithoutErrors() : Boolean{
+    fun isInputComplete() : Boolean{
         return state.usernameState.isCorrect()
                 && state.passwordState.isCorrect()
                 && state.passwordRetypeState.isCorrect()
                 && state.emailState.isCorrect()
                 && state.gebiDate != null
                 && state.agbsAccepted
+                && state.passwordState.text == state.passwordRetypeState.text
     }
 
 
-    /* TODO
+
     fun signup(onCreateSuccess: () -> Unit) {
         viewModelScope.launch {
-            if (validateInput()) {
+            if (isInputComplete()) {
                 try {
                     state = state.copy(
                         isLoading = true
                     )
 
-                    // Use the sharedViewModel's login function with a callback
-                    appRepository.createAccount(username, email, password, gender, gebidate.toString()) { success, message ->
+                    appRepository.createAccount(state.usernameState.text, state.emailState.text, state.passwordState.text, state.gebiDate.toString()) { success, message ->
                         if (success) {
                             println("Account erstellen erfolgreich")
 
-                            appRepository.login(username, password) { success, message ->
+                            appRepository.login(state.usernameState.text, state.passwordState.text) { success, message ->
                                 if (success){
+                                    //Set username
+                                    updateUsername(state.usernameState.text)
                                     onCreateSuccess()
                                 }
                             }
@@ -142,15 +152,7 @@ class SignUpViewModel(
                             viewModelScope.launch {
                                 val responsereason = message.toEnumOrNull<ResponseReason>(true)
 
-                                if (responsereason == ResponseReason.exists){
-                                    usernameerrorMessage = getString(Res.string.username_exists)
-                                }else if (responsereason == ResponseReason.email_exists){
-                                    emailerrorMessage = getString(Res.string.email_exists)
-                                }else if (responsereason == ResponseReason.too_big){
-                                    usernameerrorMessage = getString(Res.string.username_too_long)
-                                }else if (responsereason == ResponseReason.unknown_error){
-                                    password2errorMessage = getString(Res.string.unknown_error)
-                                }
+                                //TODO: Show errors according to response
 
                             }
 
@@ -158,16 +160,17 @@ class SignUpViewModel(
                     }
 
                 } catch (e: Exception) {
-                    password2errorMessage = e.message
+                    e.printStackTrace()
                 } finally {
-                    isLoading = false
+                    state = state.copy(
+                        isLoading = false
+                    )
                 }
             }
         }
 
     }
 
-     */
 
 
     private fun isEmailValid(email: String): Boolean {
