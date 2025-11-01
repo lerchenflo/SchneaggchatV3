@@ -55,6 +55,7 @@ import schneaggchatv3mp.composeapp.generated.resources.settings
 @Composable
 fun NewChat(
     onBackClick: () -> Unit = {},
+    onGroupCreator: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .safeContentPadding()
@@ -80,7 +81,7 @@ fun NewChat(
             text = stringResource(Res.string.new_group),
             icon = Icons.Default.GroupAdd,
             onClick = {
-                SnackbarManager.showMessage("Gruppe erstellen noch nicht implementiert")
+                onGroupCreator()
             }
         )
 

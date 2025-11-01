@@ -1,5 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -57,4 +62,39 @@ class NewChatViewModel (
             initialValue = emptyList()
         )
 
+
+
+
+    // GroupCreator
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val usersFlow: Flow<List<SelectedChat>> = _searchTerm
+        .flatMapLatest { term ->
+            appRepository.getChatSelectorFlow(term)
+        }
+        .map { list ->
+            list
+                // Sich selber ussa filtern
+                .filter { (it.id != SessionCache.getOwnIdValue() && !it.isGroup) }
+                // todo nach anzahl gemeinsamer Freunde sortieren
+                .sortedByDescending { it.lastmessage?.getSendDateAsLong() }
+        }
+        .flowOn(Dispatchers.Default)
+
+    val groupCreatorState: StateFlow<List<SelectedChat>> = newChatsFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Companion.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
+    var groupCreatorStage by mutableStateOf(GroupCreatorStage.MEMBERSEL)
+
+    val selectedUsers = mutableStateListOf<SelectedChat>()
+
+
+
+}
+
+enum class GroupCreatorStage{
+    MEMBERSEL,
+    GROUPDETAILS
 }

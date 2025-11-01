@@ -119,6 +119,10 @@
     <string name="ph_theme">PH theme</string>
 
     <string name="common_friends">common friends: %1$s</string>
+    <string name="create_group">Create Group</string>
+
+    <string name="members">Members</string>
+    <string name="info">Info</string>
 
 
 
