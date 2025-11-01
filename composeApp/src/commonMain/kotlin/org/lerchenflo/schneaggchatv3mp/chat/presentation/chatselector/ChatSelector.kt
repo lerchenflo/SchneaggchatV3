@@ -216,6 +216,8 @@ fun Chatauswahlscreen(
                 }
 
 
+
+
             }
 
             //Zweite Zeile für Freund suchen

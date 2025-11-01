@@ -118,6 +118,8 @@
     <string name="light_theme">light theme</string>
     <string name="ph_theme">PH theme</string>
 
+    <string name="common_friends">common friends: %1$s</string>
+
 
 
 
