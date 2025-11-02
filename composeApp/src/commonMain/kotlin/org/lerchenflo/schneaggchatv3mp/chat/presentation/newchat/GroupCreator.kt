@@ -309,7 +309,17 @@ fun GroupCreator(
                 }
             } else if (viewModel.groupCreatorStage == GroupCreatorStage.GROUPDETAILS) {
                 // 2. Stage: Name, Profilbild, Beschreibung, etc.
-                Text(text = "test 2")
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = 10.dp,
+                            end = 10.dp,
+
+                        )
+                ){
+                    Text(text="todo ")
+                }
             }
 
         }

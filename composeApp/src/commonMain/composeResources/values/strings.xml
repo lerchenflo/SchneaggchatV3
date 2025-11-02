@@ -124,6 +124,10 @@
     <string name="members">Members</string>
     <string name="info">Info</string>
 
+    <string name="none">none</string>
+    <string name="persons">persons</string>
+    <string name="groups">groups</string>
+    <string name="unread">unread</string>
 
 
 

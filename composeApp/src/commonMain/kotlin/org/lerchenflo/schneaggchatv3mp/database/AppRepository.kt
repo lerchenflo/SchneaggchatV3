@@ -23,6 +23,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.network.util.onSuccess
@@ -65,7 +66,10 @@ class AppRepository(
 
     //Gegnerauswahl getten
     // In repository / data layer
-    fun getChatSelectorFlow(searchTerm: String): Flow<List<SelectedChat>> {
+    fun getChatSelectorFlow(
+        searchTerm: String,
+        filter: ChatFilter = ChatFilter.NONE
+    ): Flow<List<SelectedChat>> {
         val messagesFlow = messageRepository.getAllMessagesWithReaders()
         val usersFlow = userRepository.getallusers()
         val groupsFlow = groupRepository.getallgroupswithmembers()
@@ -152,8 +156,16 @@ class AppRepository(
                 loweredSearch.isEmpty() || item.name.lowercase().contains(loweredSearch)
             }
 
-            (userItems + groupItems)
+            val allItems = (userItems + groupItems)
                 .sortedByDescending { it.lastmessage?.getSendDateAsLong() ?: 0L } // nulls treated as 0
+            val filtered = when (filter) {
+                ChatFilter.NONE -> allItems
+                ChatFilter.UNREAD -> allItems.filter { it.unreadMessageCount > 0 }
+                ChatFilter.GROUPS -> allItems.filter { it.isGroup } // assuming your SelectedChat has isGroup flag
+                ChatFilter.PERSONS -> allItems.filter { !it.isGroup }
+            }
+
+            filtered.sortedByDescending { it.lastmessage?.getSendDateAsLong() ?: 0L }
         }.flowOn(Dispatchers.Default)
     }
 

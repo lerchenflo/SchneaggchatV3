@@ -18,10 +18,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Chat
+import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Checklist
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -35,6 +38,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -245,15 +251,49 @@ fun Chatauswahlscreen(
 
                 Spacer(Modifier.width(10.dp))
 
-                Image(
-                    painterResource(Res.drawable.filter),
-                    contentDescription = stringResource(Res.string.filter),
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clickable { SnackbarManager.showMessage("muasch noch selber suacha") },
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                var filterDropdownExpanded by remember { mutableStateOf(false) }
 
-                )
+                Box {
+                    Icon(
+                        imageVector = Icons.Default.FilterAlt,
+                        contentDescription = stringResource(Res.string.filter),
+                        modifier = Modifier
+                            .size(30.dp)
+                            .clickable { filterDropdownExpanded = true },
+                        tint = MaterialTheme.colorScheme.onSurface
+
+                    )
+                    DropdownMenu(
+                        expanded = filterDropdownExpanded,
+                        onDismissRequest = { filterDropdownExpanded = false }
+                    ) {
+                        ChatFilter.entries.forEach { filter ->
+                            DropdownMenuItem(
+                                text = {
+                                    Row{
+                                        Icon(
+                                            imageVector = filter.getIcon(),
+                                            contentDescription = filter.toUiText().asString(),
+                                            tint = if(viewModel.filter.value == filter)
+                                                MaterialTheme.colorScheme.primary
+                                            else
+                                                MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Spacer(Modifier.width(5.dp))
+                                        Text(
+                                            text = filter.toUiText().asString()
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    filterDropdownExpanded = false
+                                    viewModel.updateFilter(filter)
+                                }
+                            )
+                        }
+                    }
+                }
+
 
                 /*
                 Spacer(Modifier.width(10.dp))
