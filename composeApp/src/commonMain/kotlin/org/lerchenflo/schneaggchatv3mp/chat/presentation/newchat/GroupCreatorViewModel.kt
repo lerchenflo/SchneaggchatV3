@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +23,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 
-class NewChatViewModel (
+class GroupCreatorViewModel (
     private val appRepository: AppRepository,
 ): ViewModel() {
     val globalViewModel: GlobalViewModel = KoinPlatform.getKoin().get()
@@ -36,13 +35,8 @@ class NewChatViewModel (
         _searchTerm.value = newValue
     }
 
-    // Todo Backend info für neue User vom Server hola und iwie sortiera
-    /*
-    I will dass nur lüt mit 1 oder mehr gemeinsame Freunde azoagt wörrend solang da searchterm "" isch.
-    Wenn ma was suacht wörrend denn halt die ergebnisse azoagt wo am besta zuatreffend
-     */
     @OptIn(ExperimentalCoroutinesApi::class)
-    val newChatsFlow: Flow<List<SelectedChat>> = _searchTerm
+    val usersFlow: Flow<List<SelectedChat>> = _searchTerm
         .flatMapLatest { term ->
             appRepository.getChatSelectorFlow(term)
         }
@@ -50,18 +44,22 @@ class NewChatViewModel (
             list
                 // Sich selber ussa filtern
                 .filter { (it.id != SessionCache.getOwnIdValue() && !it.isGroup) }
-                // todo nach anzahl gemeinsamer Freunde sortieren
                 .sortedByDescending { it.lastmessage?.getSendDateAsLong() }
         }
         .flowOn(Dispatchers.Default)
 
-    val newChatState: StateFlow<List<SelectedChat>> = newChatsFlow
+    val groupCreatorState: StateFlow<List<SelectedChat>> = usersFlow
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Companion.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+    var groupCreatorStage by mutableStateOf(GroupCreatorStage.MEMBERSEL)
 
-
+    val selectedUsers = mutableStateListOf<SelectedChat>()
 }
 
+enum class GroupCreatorStage{
+    MEMBERSEL,
+    GROUPDETAILS
+}

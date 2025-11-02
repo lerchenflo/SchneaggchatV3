@@ -14,6 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChatViewModel
 import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
@@ -69,6 +70,9 @@ val sharedmodule = module{
 
     viewModelOf(::NewChatViewModel)
     factory { NewChatViewModel(get()) }
+
+    viewModelOf(::GroupCreatorViewModel)
+    factory { GroupCreatorViewModel(get()) }
 
     viewModelOf(::LoginViewModel)
     factory { LoginViewModel(get()) }
