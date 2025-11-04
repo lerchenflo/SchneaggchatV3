@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -20,10 +21,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
-import androidx.compose.material.icons.automirrored.outlined.Chat
+import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.GroupAdd
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
@@ -51,6 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
@@ -59,8 +61,11 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.create_group
+import schneaggchatv3mp.composeapp.generated.resources.group_description
+import schneaggchatv3mp.composeapp.generated.resources.group_name
+import schneaggchatv3mp.composeapp.generated.resources.group_picture
+import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 import schneaggchatv3mp.composeapp.generated.resources.info
 import schneaggchatv3mp.composeapp.generated.resources.members
 import schneaggchatv3mp.composeapp.generated.resources.new_group
@@ -75,7 +80,9 @@ fun GroupCreator(
         .safeContentPadding()
 ){
     val viewModel = koinViewModel<GroupCreatorViewModel>()
-    val searchterm by viewModel.searchterm.collectAsStateWithLifecycle()
+    val searchTerm by viewModel.searchterm.collectAsStateWithLifecycle()
+    val groupName by viewModel.groupName.collectAsStateWithLifecycle()
+    val groupDescription by viewModel.groupDescription.collectAsStateWithLifecycle()
     val users by viewModel.groupCreatorState.collectAsStateWithLifecycle(emptyList())
 
     Scaffold(
@@ -240,7 +247,7 @@ fun GroupCreator(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     OutlinedTextField(
-                        value = searchterm,
+                        value = searchTerm,
                         maxLines = 1,
                         onValueChange = { viewModel.updateSearchterm(it) },
                         modifier = Modifier
@@ -309,17 +316,63 @@ fun GroupCreator(
                 }
             } else if (viewModel.groupCreatorStage == GroupCreatorStage.GROUPDETAILS) {
                 // 2. Stage: Name, Profilbild, Beschreibung, etc.
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = 10.dp,
-                            end = 10.dp,
 
+                Column(){
+                    Image( // todo image uswähla und azoaga
+                        painter = painterResource(Res.drawable.icon_nutzer),
+                        contentDescription = stringResource(Res.string.group_picture),
+                        modifier = Modifier
+                            .size(70.dp)
+                            .clickable{
+                                SnackbarManager.showMessage("Profile picture backend missing! Todo")
+                            }
+                    )
+
+                    // Gruppenname
+                    OutlinedTextField(
+                        value = groupName,
+                        maxLines = 1,
+                        onValueChange = {viewModel.updateGroupName(it)},
+                        modifier = Modifier
+                        //    .weight(1f)
+                        ,
+                        placeholder = { Text(stringResource(Res.string.group_name)) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Badge,
+                                contentDescription = stringResource(Res.string.group_name)
+                            )
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = Color.Transparent
                         )
-                ){
-                    Text(text="todo ")
+                    )
+
+                    // Gruppenbeschreibung
+                    OutlinedTextField(
+                        value = groupDescription,
+                        maxLines = 1,
+                        onValueChange = {viewModel.updateGroupDescription(it) },
+                        modifier = Modifier
+                        //    .weight(1f)
+                        ,
+                        placeholder = { Text(stringResource(Res.string.group_description)) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Description,
+                                contentDescription = stringResource(Res.string.group_description)
+                            )
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedBorderColor = Color.Transparent
+                        )
+                    )
                 }
+
+                // Mehr Einstellungen für gruppen falls ma lustig isch
+
+                //Easter Egg: i chill gad mit am StWm Thum in Klagenfurt weil ma do irend an blödsinn holand
+
             }
 
         }

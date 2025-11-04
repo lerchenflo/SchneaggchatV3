@@ -129,6 +129,10 @@
     <string name="groups">groups</string>
     <string name="unread">unread</string>
 
+    <string name="group_picture">group picture</string>
+    <string name="group_name">group name</string>
+    <string name="group_description">group description</string>
+
 
 
 

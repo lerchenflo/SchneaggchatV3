@@ -35,6 +35,19 @@ class GroupCreatorViewModel (
         _searchTerm.value = newValue
     }
 
+    private val _groupName = MutableStateFlow("")
+    val groupName: StateFlow<String> = _groupName.asStateFlow()
+
+    fun updateGroupName(newValue: String) {
+        _groupName.value = newValue
+    }
+    private val _groupDescription = MutableStateFlow("")
+    val groupDescription: StateFlow<String> = _groupDescription.asStateFlow()
+
+    fun updateGroupDescription(newValue: String) {
+        _groupDescription.value = newValue
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val usersFlow: Flow<List<SelectedChat>> = _searchTerm
         .flatMapLatest { term ->
