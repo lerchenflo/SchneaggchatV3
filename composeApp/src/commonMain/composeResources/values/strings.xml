@@ -116,7 +116,22 @@
     <string name="system_theme">system theme</string>
     <string name="dark_theme">dark theme</string>
     <string name="light_theme">light theme</string>
+    <string name="ph_theme">PH theme</string>
 
+    <string name="common_friends">common friends: %1$s</string>
+    <string name="create_group">Create Group</string>
+
+    <string name="members">Members</string>
+    <string name="info">Info</string>
+
+    <string name="none">none</string>
+    <string name="persons">persons</string>
+    <string name="groups">groups</string>
+    <string name="unread">unread</string>
+
+    <string name="group_picture">group picture</string>
+    <string name="group_name">group name</string>
+    <string name="group_description">group description</string>
 
 
 

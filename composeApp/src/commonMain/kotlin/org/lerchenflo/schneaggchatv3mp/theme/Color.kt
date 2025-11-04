@@ -219,6 +219,13 @@ val surfaceContainerHighestDarkHighContrast = Color(0xFF484646)
 
 
 
+// Ph Theme
+val phOragne = Color(0xFFFFA500)
+val phGray = Color(0xFF808080)
+val phDarkGray = Color(0xFF8292929)
+val phBlack = Color(0xFF1B1B1B)
+val phWhite = Color(0xFFFFFFFF)
+val phOrangeLightVariant = Color(0xFFffbb57)
 
 
 

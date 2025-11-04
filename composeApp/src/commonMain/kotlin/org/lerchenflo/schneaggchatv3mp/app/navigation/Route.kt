@@ -14,6 +14,8 @@ sealed interface Route {
     @Serializable
     data object NewChat: Route
     @Serializable
+    data object GroupCreator: Route
+    @Serializable
     data object AutoLoginCredChecker: Route
 
     @Serializable

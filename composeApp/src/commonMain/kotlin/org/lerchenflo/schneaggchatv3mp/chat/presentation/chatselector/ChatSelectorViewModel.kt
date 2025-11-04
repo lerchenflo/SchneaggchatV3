@@ -1,13 +1,17 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterNone
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.MarkChatUnread
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person3
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mmk.kmpnotifier.notification.NotificationImage
-import com.mmk.kmpnotifier.notification.Notifier
-import com.mmk.kmpnotifier.notification.NotifierManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,9 +35,12 @@ import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
-import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
-import kotlin.random.Random
+import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.groups
+import schneaggchatv3mp.composeapp.generated.resources.none
+import schneaggchatv3mp.composeapp.generated.resources.persons
+import schneaggchatv3mp.composeapp.generated.resources.unread
 
 class ChatSelectorViewModel(
     private val appRepository: AppRepository,
@@ -109,19 +116,30 @@ class ChatSelectorViewModel(
         _searchTerm.value = newValue
     }
 
+    private val _filter = MutableStateFlow(ChatFilter.NONE)
+    val filter: StateFlow<ChatFilter> = _filter.asStateFlow()
+
+    fun updateFilter(newValue: ChatFilter) {
+        _filter.value = newValue
+    }
+
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val chatSelectorFlow: Flow<List<SelectedChat>> = _searchTerm
-        .flatMapLatest { term ->
-            appRepository.getChatSelectorFlow(term)
+    private val chatSelectorFlow: Flow<List<SelectedChat>> = kotlinx.coroutines.flow.combine(
+        _searchTerm,
+        _filter
+    ) { term, filter -> term to filter }
+        .flatMapLatest { (term, filter) ->
+            // repository should accept the filter param (you already implemented that)
+            appRepository.getChatSelectorFlow(term, filter)
         }
         .map { list ->
+            // remove yourself (own user item) and keep UI-level safety checks;
+            // repository may already apply the filter, but this keeps the UI invariant.
             list
-                // remove yourself if the item is a user with your OWNID
                 .filter { !(it.id == SessionCache.getOwnIdValue() && !it.isGroup) }
-                // already sorted in repository, but safe to sort again
-                .sortedByDescending { it.lastmessage?.getSendDateAsLong() }
+                .sortedByDescending { it.lastmessage?.getSendDateAsLong() ?: 0L }
         }
         .flowOn(Dispatchers.Default)
 
@@ -131,5 +149,24 @@ class ChatSelectorViewModel(
             started = SharingStarted.Companion.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+}
 
+enum class ChatFilter{
+    NONE,
+    PERSONS,
+    GROUPS,
+    UNREAD;
+    fun toUiText(): UiText = when (this) {
+        NONE -> UiText.StringResourceText(Res.string.none)
+        PERSONS -> UiText.StringResourceText(Res.string.persons)
+        GROUPS   -> UiText.StringResourceText(Res.string.groups)
+        UNREAD -> UiText.StringResourceText(Res.string.unread)
+    }
+    fun getIcon(): ImageVector = when (this) {
+        NONE -> Icons.Default.FilterNone
+        PERSONS -> Icons.Default.Person3
+        GROUPS   -> Icons.Default.Groups
+        UNREAD -> Icons.Default.MarkChatUnread
+        else -> Icons.Default.Menu
+    }
 }

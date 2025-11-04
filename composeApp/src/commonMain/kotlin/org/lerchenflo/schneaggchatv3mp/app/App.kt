@@ -35,6 +35,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.Chatauswahlscreen
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreator
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
@@ -175,6 +176,17 @@ fun App() {
                     // newChat (neuegegnergruppen)
                     composable<Route.NewChat> {
                         NewChat(
+                            onBackClick = {
+                                navController.navigateUp()
+                            },
+                            onGroupCreator = {
+                                navController.navigate(Route.GroupCreator)
+                            }
+                        )
+                    }
+                    // group creator
+                    composable<Route.GroupCreator> {
+                        GroupCreator(
                             onBackClick = {
                                 navController.navigateUp()
                             }
