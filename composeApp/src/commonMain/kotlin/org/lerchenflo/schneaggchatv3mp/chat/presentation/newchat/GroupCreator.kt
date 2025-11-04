@@ -317,6 +317,7 @@ fun GroupCreator(
             } else if (viewModel.groupCreatorStage == GroupCreatorStage.GROUPDETAILS) {
                 // 2. Stage: Name, Profilbild, Beschreibung, etc.
 
+                // todo dia sitta isch hässlich
                 Column(){
                     Image( // todo image uswähla und azoaga
                         painter = painterResource(Res.drawable.icon_nutzer),
