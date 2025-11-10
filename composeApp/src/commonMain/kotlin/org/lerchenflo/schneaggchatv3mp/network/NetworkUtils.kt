@@ -381,8 +381,6 @@ class NetworkUtils(
             "msgid" to id.toString()
         )
 
-        //TODO: A message object returnen
-
         val res = executeNetworkOperation(headers = headers, body = "", get = true)
 
         return when (res) {
