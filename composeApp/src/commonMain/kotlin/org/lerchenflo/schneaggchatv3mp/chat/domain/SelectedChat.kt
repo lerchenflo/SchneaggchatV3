@@ -3,7 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 
 interface _SelectedChatBase {
-    val id: Long
+    val id: String
     val isGroup: Boolean
     val name: String
     val profilePicture: String
@@ -38,7 +38,7 @@ und denn im switch case da rest macha abhängig vom typ.
  */
 
 data class NotSelected(
-    override val id: Long = -1L,
+    override val id: String = "",
     override val isGroup: Boolean = false,
     override val name: String = "",
     override val profilePicture: String = "",

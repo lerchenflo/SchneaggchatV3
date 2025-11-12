@@ -10,7 +10,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material3.Badge
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -50,6 +56,7 @@ fun UserButton(
     lastMessage: MessageWithReadersDto? = null,
     bottomTextOverride: String? = "",
     useOnClickGes: Boolean = true,
+    selected: Boolean? = null,
     onClickGes: () -> Unit = {},  // Add click for everything
     onClickText: () -> Unit = {},  // Add click for name ...
     onClickImage: () -> Unit = {}  // Add click for image (profilepicture)
@@ -130,6 +137,17 @@ fun UserButton(
                             text = "${selectedChat.unreadMessageCount - selectedChat.unsentMessageCount}", // ungesendete messages sind no ned gleasa vo mir
                         )
                     }
+                }
+
+                // an hocka daneabad zum azoaga dass ma dean usgwählt hot
+                if (selected == true){
+                    Icon(imageVector = Icons.Default.CheckBox,
+                        contentDescription = "selected",
+                        tint = MaterialTheme.colorScheme.primary)
+                }else if (selected == false){
+                    Icon(imageVector = Icons.Default.CheckBoxOutlineBlank,
+                        contentDescription = "selected",
+                        tint = MaterialTheme.colorScheme.primary)
                 }
 
                 /*

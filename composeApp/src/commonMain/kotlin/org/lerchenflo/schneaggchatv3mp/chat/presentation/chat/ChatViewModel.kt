@@ -66,6 +66,9 @@ class ChatViewModel(
 
         //Im sharedviewmodel dassas ewig leabig isch
         globalViewModel.viewModelScope.launch {
+
+            /*
+            //TODO: Implement with message sending
             appRepository.sendMessage(
                 msgtype = msgtype,
                 empfaenger = globalViewModel.selectedChat.value.id,
@@ -74,6 +77,8 @@ class ChatViewModel(
                 answerid = -1, //TODO: Antworten
                 sendedatum = getCurrentTimeMillisString()
             )
+
+             */
         }
     }
 

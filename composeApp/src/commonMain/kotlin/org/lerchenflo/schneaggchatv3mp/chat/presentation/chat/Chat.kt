@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.NoteAdd
@@ -97,13 +98,26 @@ fun ChatScreen(
                     )
                 }
             }
+
+
             // Messages
+            val listState = rememberLazyListState()
+
+            //Wenn sich die letzt nachricht ändert denn abescrollen TODO: Testa ob des automatisch abescrollt
+            if (messages.isNotEmpty()){
+                LaunchedEffect(messages.first()) {
+                    listState.animateScrollToItem(0, scrollOffset = 2)
+                }
+            }
+
+            //TODO: Lag fixen do isch iwas falsch
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                reverseLayout = true
+                reverseLayout = true,
+                state = listState
             ) {
                 itemsIndexed(messages, key = { _, msg ->
                     // combine id + sendDate (or use a uuid field) so duplicates don't collide

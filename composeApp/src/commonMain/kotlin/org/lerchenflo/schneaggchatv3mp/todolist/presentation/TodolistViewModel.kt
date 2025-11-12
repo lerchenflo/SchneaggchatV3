@@ -93,7 +93,7 @@ class TodolistViewModel(
         }
     }
 
-    fun deleteItem(todoId: Long){
+    fun deleteItem(todoId: String){
         globalViewModel.viewModelScope.launch {
             todoRepository.deleteTodoServer(todoId)
         }
@@ -138,7 +138,8 @@ class TodolistViewModel(
                     list.filter { it.type == BugType.Todo.value }
                 }
                 BugSorttype.ASSIGNED_TO_ME -> {
-                    list.filter { it.editorId.toLong() == SessionCache.getOwnIdValue() }
+                    //TODO: What the hell how
+                    list.filter { it.editorId.toLong() == 0L/*SessionCache.getOwnIdValue() */ }
                 }
                 BugSorttype.ALL -> list
             }

@@ -163,8 +163,8 @@ fun ShowAddPopup(
 
         confirmButton = {
             val newtodo = TodoEntry(
-                id = 0L,
-                senderId = SessionCache.getOwnIdValue()?: 0L,
+                id = "",
+                senderId = SessionCache.getOwnIdValue() ?: "",
                 platform = selectedPlatform.value,
                 type = selectedType.value,
                 editorId = 0,

@@ -1,59 +1,40 @@
-// file: com/example/network/Result.kt
 package org.lerchenflo.schneaggchatv3mp.network.util
 
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.concurrent.atomics.AtomicBoolean
-import kotlin.concurrent.atomics.ExperimentalAtomicApi
-import kotlin.coroutines.resume
-
-sealed class NetworkResult<out T, out E> {
-    data class Success<T>(val data: T, val body: String) : NetworkResult<T, Nothing>()
-    data class Error<E>(val error: E) : NetworkResult<Nothing, E>()
+sealed interface NetworkResult<out D, out E: Error> {
+    data class Success<out D>(val data: D): NetworkResult<D, Nothing>
+    data class Error<out E: org.lerchenflo.schneaggchatv3mp.network.util.Error>(val error: E): NetworkResult<Nothing, E>
 }
 
-suspend fun <T, E> NetworkResult<T, E>.onSuccess(block: suspend (T) -> Unit): NetworkResult<T, E> {
-    if (this is NetworkResult.Success) {
-        block(this.data)
+inline fun <T, E: Error, R> NetworkResult<T, E>.map(map: (T) -> R): NetworkResult<R, E> {
+    return when(this) {
+        is NetworkResult.Error -> NetworkResult.Error(error)
+        is NetworkResult.Success -> NetworkResult.Success(map(data))
     }
-    return this
 }
 
-suspend fun <T, E> NetworkResult<T, E>.onError(block: suspend (E) -> Unit): NetworkResult<T, E> {
-    if (this is NetworkResult.Error) {
-        block(this.error)
+fun <T, E: Error> NetworkResult<T, E>.asEmptyDataResult(): EmptyResult<E> {
+    return map {  }
+}
+
+inline fun <T, E: Error> NetworkResult<T, E>.onSuccess(action: (T) -> Unit): NetworkResult<T, E> {
+    return when(this) {
+        is NetworkResult.Error -> this
+        is NetworkResult.Success -> {
+            action(data)
+            this
+        }
     }
-    return this
 }
-
-suspend fun <T, E>  NetworkResult<T, E>.onSuccessWithBody(block: suspend (T, String) -> Unit):  NetworkResult<T, E> {
-    if (this is  NetworkResult.Success) {
-        block(this.data, this.body)
+inline fun <T, E: Error> NetworkResult<T, E>.onError(action: (E) -> Unit): NetworkResult<T, E> {
+    return when(this) {
+        is NetworkResult.Error -> {
+            action(error)
+            this
+        }
+        is NetworkResult.Success -> this
     }
-    return this
 }
 
+typealias EmptyResult<E> = NetworkResult<Unit, E>
 
 
-
-// 2. Define NetworkError (example - adjust as needed)
-enum class ResponseReason {
-    NO_INTERNET,
-    TIMEOUT,
-    notfound,
-    exists,
-    email_exists,
-    forbidden,
-    nomember,
-    same,
-    wrong,
-    feature_disabled,
-    too_big,
-    account_temp_locked,
-    invalid_birthdate,
-    unknown_error,
-    none
-}
-
-inline fun <reified T : Enum<T>> String.toEnumOrNull(ignoreCase: Boolean = true): T? {
-    return enumValues<T>().firstOrNull { it.name.equals(this, ignoreCase) }
-}

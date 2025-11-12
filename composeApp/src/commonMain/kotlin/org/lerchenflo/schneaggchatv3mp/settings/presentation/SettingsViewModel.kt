@@ -16,6 +16,7 @@ import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
+import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
@@ -74,7 +75,7 @@ class SettingsViewModel(
     fun logout(){
         viewModelScope.launch {
             appRepository.deleteAllAppData() // delete all app data when logging out
-            preferenceManager.saveAutologinCreds("", "") // override credentials with empty string
+            preferenceManager.saveTokens(tokenPair = NetworkUtils.TokenPair(accessToken = "", refreshToken = "")) // override credentials with empty string
             SessionCache.clear() //Alle variabla löscja
             SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
             // todo navigate to login screen

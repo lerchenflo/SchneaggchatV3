@@ -11,8 +11,6 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache.updateUsername
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
-import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
-import org.lerchenflo.schneaggchatv3mp.network.util.toEnumOrNull
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cannot_be_empty
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
@@ -20,7 +18,9 @@ import schneaggchatv3mp.composeapp.generated.resources.password_needs_to_be_the_
 import schneaggchatv3mp.composeapp.generated.resources.requirement_digit
 import schneaggchatv3mp.composeapp.generated.resources.requirement_forbidden
 import schneaggchatv3mp.composeapp.generated.resources.requirement_length
+import schneaggchatv3mp.composeapp.generated.resources.requirement_lowercase
 import schneaggchatv3mp.composeapp.generated.resources.requirement_special
+import schneaggchatv3mp.composeapp.generated.resources.requirement_uppercase
 
 
 class SignUpViewModel(
@@ -140,26 +140,16 @@ class SignUpViewModel(
                         isLoading = true
                     )
 
-                    appRepository.createAccount(state.usernameState.text, state.emailState.text, state.passwordState.text, state.gebiDate.toString()) { success, message ->
+                    appRepository.createAccount(state.usernameState.text, state.emailState.text, state.passwordState.text, state.gebiDate.toString()) { success ->
                         if (success) {
                             println("Account erstellen erfolgreich")
 
-                            appRepository.login(state.usernameState.text, state.passwordState.text) { success, message ->
+                            appRepository.login(state.usernameState.text, state.passwordState.text) { success ->
                                 if (success){
                                     //Set username
                                     updateUsername(state.usernameState.text)
                                     onCreateSuccess()
                                 }
-                            }
-
-
-                        } else {
-
-                            viewModelScope.launch {
-                                val responsereason = message.toEnumOrNull<ResponseReason>(true)
-
-                                //TODO: Show errors according to response
-
                             }
 
                         }
@@ -268,9 +258,20 @@ class SignUpViewModel(
             missing.add(getString(Res.string.requirement_digit))
         }
 
+
         // Special character check
         if (!password.any { !it.isLetterOrDigit() }) {
             missing.add(getString(Res.string.requirement_special))
+        }
+
+        // Uppercase letter check
+        if (!password.any { it.isUpperCase() }) {
+            missing.add(getString(Res.string.requirement_uppercase))
+        }
+
+        // Lowercase letter check
+        if (!password.any { it.isLowerCase() }) {
+            missing.add(getString(Res.string.requirement_lowercase))
         }
 
         // Common forbidden patterns

@@ -4,10 +4,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -20,39 +20,37 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import okio.Path.Companion.toPath
-import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus.Finished
-import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus.InProgress
-import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus.Unfinished
+import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.bugstatus_finished
-import schneaggchatv3mp.composeapp.generated.resources.bugstatus_in_progress
-import schneaggchatv3mp.composeapp.generated.resources.bugstatus_unfinished
 import schneaggchatv3mp.composeapp.generated.resources.dark_theme
 import schneaggchatv3mp.composeapp.generated.resources.light_theme
+import schneaggchatv3mp.composeapp.generated.resources.ph_theme
 import schneaggchatv3mp.composeapp.generated.resources.system_theme
 
 enum class PreferenceKey {
-    USERNAME,
-    PASSWORD,
+    ACCESSTOKEN,
+    REFRESHTOKEN,
     OWNID,
     MD_FORMAT,
     THEME
 }
 
 enum class ThemeSetting {
-    SYSTEM,    // Follow system setting
-    LIGHT,     // Always light
-    DARK;       // Always dark
+    SYSTEM,     // Follow system setting
+    LIGHT,      // Always light
+    DARK,       // Always dark
+    PHTHEME;    // Anderes Theme ganz sicher ned klaut
     fun toUiText(): UiText = when (this) {
         SYSTEM -> UiText.StringResourceText(Res.string.system_theme)
         LIGHT -> UiText.StringResourceText(Res.string.light_theme)
         DARK   -> UiText.StringResourceText(Res.string.dark_theme)
+        PHTHEME -> UiText.StringResourceText(Res.string.ph_theme)
     }
     fun getIcon(): ImageVector = when (this) {
         SYSTEM -> Icons.Default.Contrast
         LIGHT -> Icons.Default.LightMode
         DARK   -> Icons.Default.DarkMode
+        PHTHEME -> Icons.Default.Male
         else -> Icons.Default.Palette
     }
 }
@@ -63,60 +61,55 @@ class Preferencemanager(
     private val dispatcher = Dispatchers.IO
 
 
-    suspend fun saveAutologinCreds(username: String, password: String) {
-        with(dispatcher) {
-            pref.edit { datastore ->
-                val usernamekey = stringPreferencesKey(PreferenceKey.USERNAME.toString())
-                datastore[usernamekey] = username
+    suspend fun saveTokens(tokenPair: NetworkUtils.TokenPair) {
+        pref.edit { datastore ->
+            val accesskey = stringPreferencesKey(PreferenceKey.ACCESSTOKEN.toString())
+            datastore[accesskey] = tokenPair.accessToken
 
-                val passwordkey = stringPreferencesKey(PreferenceKey.PASSWORD.toString())
-                datastore[passwordkey] = password
-            }
+            val refreshkey = stringPreferencesKey(PreferenceKey.REFRESHTOKEN.toString())
+            datastore[refreshkey] = tokenPair.refreshToken
         }
     }
 
 
-    suspend fun getAutologinCreds(): Pair<String, String> {
+    suspend fun getTokens(): NetworkUtils.TokenPair {
         return with(dispatcher) {
-            val usernameKey = stringPreferencesKey(PreferenceKey.USERNAME.toString())
-            val passwordKey = stringPreferencesKey(PreferenceKey.PASSWORD.toString())
+            val accessKey = stringPreferencesKey(PreferenceKey.ACCESSTOKEN.toString())
+            val refreshKey = stringPreferencesKey(PreferenceKey.REFRESHTOKEN.toString())
 
             val prefs = pref.data.first()
 
-            val username = prefs[usernameKey] ?: ""
-            val password = prefs[passwordKey] ?: ""
+            val accesstoken = prefs[accessKey] ?: ""
+            val refreshtoken = prefs[refreshKey] ?: ""
 
-            Pair(username, password)
+            NetworkUtils.TokenPair(
+                accessToken = accesstoken,
+                refreshToken = refreshtoken
+            )
         }
     }
 
-    suspend fun saveOWNID(ownid: Long) {
-        with(dispatcher) {
-            pref.edit { datastore ->
-                val key = longPreferencesKey(PreferenceKey.OWNID.toString())
-                datastore[key] = ownid
-            }
+    suspend fun saveOWNID(ownid: String) {
+        pref.edit { datastore ->
+            val key = stringPreferencesKey(PreferenceKey.OWNID.toString())
+            datastore[key] = ownid
         }
     }
 
-    suspend fun getOWNID(): Long {
+    suspend fun getOWNID(): String {
         return with(dispatcher) {
-            val key = longPreferencesKey(PreferenceKey.OWNID.toString())
+            val key = stringPreferencesKey(PreferenceKey.OWNID.toString())
             val prefs = pref.data.first()
-            val id = prefs[key] ?: -1
-
-            id
+            prefs[key] ?: ""
         }
     }
 
     val mdFormatKey = PreferenceKey.MD_FORMAT.toString()
 
     suspend fun saveUseMd(value: Boolean){
-        with(dispatcher) {
-            pref.edit { datastore ->
-                val key = booleanPreferencesKey(mdFormatKey)
-                datastore[key] = value
-            }
+        pref.edit { datastore ->
+            val key = booleanPreferencesKey(mdFormatKey)
+            datastore[key] = value
         }
     }
 
@@ -127,11 +120,9 @@ class Preferencemanager(
 
     // Theme methods
     suspend fun saveThemeSetting(theme: ThemeSetting) {
-        with(dispatcher) {
-            pref.edit { datastore ->
-                val key = intPreferencesKey(PreferenceKey.THEME.toString())
-                datastore[key] = theme.ordinal
-            }
+        pref.edit { datastore ->
+            val key = intPreferencesKey(PreferenceKey.THEME.toString())
+            datastore[key] = theme.ordinal
         }
     }
 
@@ -147,7 +138,7 @@ class Preferencemanager(
             val key = intPreferencesKey(PreferenceKey.THEME.toString())
             val prefs = pref.data.first()
             val ordinal = prefs[key] ?: ThemeSetting.SYSTEM.ordinal
-            ThemeSetting.values()[ordinal]
+            ThemeSetting.entries[ordinal]
         }
     }
 

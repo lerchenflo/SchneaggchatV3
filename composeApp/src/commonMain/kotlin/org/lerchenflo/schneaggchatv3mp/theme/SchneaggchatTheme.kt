@@ -85,6 +85,43 @@ private val darkScheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDark,
 )
 
+private val phTheme = darkColorScheme(
+    primary = phOragne,
+    onPrimary = phDarkGray,
+    primaryContainer = phOrangeLightVariant,
+    onPrimaryContainer = phDarkGray,
+    secondary = phGray,
+    onSecondary = phWhite,
+    secondaryContainer = phDarkGray,
+    onSecondaryContainer = phWhite,
+    tertiary = tertiaryDark,
+    onTertiary = onTertiaryDark,
+    tertiaryContainer = tertiaryContainerDark,
+    onTertiaryContainer = onTertiaryContainerDark,
+    error = errorDark,
+    onError = onErrorDark,
+    errorContainer = errorContainerDark,
+    onErrorContainer = onErrorContainerDark,
+    background = phBlack,
+    onBackground = phWhite,
+    surface = phDarkGray,
+    onSurface = phWhite,
+    surfaceVariant = surfaceVariantDark,
+    onSurfaceVariant = onSurfaceVariantDark,
+    outline = phGray,
+    outlineVariant = outlineVariantDark,
+    scrim = scrimDark,
+    inverseSurface = inverseSurfaceDark,
+    inverseOnSurface = inverseOnSurfaceDark,
+    inversePrimary = inversePrimaryDark,
+    surfaceDim = surfaceDimDark,
+    surfaceBright = surfaceBrightDark,
+    surfaceContainerLowest = surfaceContainerLowestDark,
+    surfaceContainerLow = surfaceContainerLowDark,
+    surfaceContainer = surfaceContainerDark,
+    surfaceContainerHigh = surfaceContainerHighDark,
+    surfaceContainerHighest = surfaceContainerHighestDark,
+)
 
 @Composable
 fun SchneaggchatTheme(
@@ -99,6 +136,8 @@ fun SchneaggchatTheme(
       }
   }else if(themeSetting == ThemeSetting.DARK){
       darkScheme
+  }else if(themeSetting == ThemeSetting.PHTHEME){
+      phTheme
   }else{
       lightScheme
   }

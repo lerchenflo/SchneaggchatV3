@@ -6,6 +6,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toMessage
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import kotlin.random.Random
 
@@ -27,7 +31,8 @@ object NotificationManager{
             NotifierManager.addListener(object : NotifierManager.Listener {
                 override fun onNewToken(token: String) {
                     CoroutineScope(Dispatchers.IO).launch{
-                        networkUtils.setFirebaseToken(token)
+                        //TODO : Firebase
+                        //networkUtils.setFirebaseToken(token)
                     }
                     println("onNewToken: $token") //Update user token in the server if needed
                 }
@@ -37,6 +42,32 @@ object NotificationManager{
             NotifierManager.addListener(object : NotifierManager.Listener {
                 override fun onPayloadData(data: PayloadData) {
                     println("Push Notification payloadData: $data") //PayloadData is just typeAlias for Map<String,*>.
+
+                    val action = data.get("action")
+
+                    when (action) {
+                        "getmessagewithid" -> {
+                            val msgid = data.get("msgid")
+
+                            CoroutineScope(Dispatchers.IO).launch {
+                                /* TODO FIREBASE
+                                val request = networkUtils.getmessagebyid(msgid.toString().toLong())
+
+                                val json = Json {
+                                    prettyPrint = false
+                                    ignoreUnknownKeys = true
+                                }
+
+                                request.onSuccessWithBody {responseheaders, body ->
+                                    val message = json.decodeFromString<MessageDto>(body)
+                                    showNotification(message.toMessage())
+                                }
+
+                                 */
+                            }
+                        }
+                    }
+
                     showNotification("Neue noti", "Data: $data")
                 }
             })
@@ -48,6 +79,11 @@ object NotificationManager{
                     println("Notification clicked, Notification payloadData: $data")
                 }
             })
+
+            CoroutineScope(Dispatchers.IO).launch {
+                //TODO FIREBASE
+                //networkUtils.setFirebaseToken(getToken())
+            }
         }catch (e: Exception){
             e.printStackTrace()
         }
@@ -73,6 +109,14 @@ object NotificationManager{
             title = titletext
             body = bodytext
         }
+    }
+
+
+    fun showNotification(message: Message) {
+        val senderstring = message.senderAsString
+        val content = if (message.isPicture()) "Pic" else message.content
+
+        showNotification(senderstring, content)
     }
 
     /**

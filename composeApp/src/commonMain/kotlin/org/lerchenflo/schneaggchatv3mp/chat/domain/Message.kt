@@ -6,16 +6,16 @@ import org.lerchenflo.schneaggchatv3mp.network.PICTUREMESSAGE
 
 data class Message(
     var localPK: Long = 0L,
-    var id: Long? = null,
+    var id: String? = null,
     var msgType: String = "",
     var content: String = "",
-    var senderId: Long = 0,
-    var receiverId: Long = 0,
+    var senderId: String,
+    var receiverId: String,
     var sendDate: String = "",
     var changeDate: String = "",
     var deleted: Boolean = false,
     var groupMessage: Boolean = false,
-    var answerId: Long = -1,
+    var answerId: String? = null,
     var sent: Boolean = false,
     var senderAsString: String = "",
     var senderColor: Int = 0
@@ -65,6 +65,4 @@ fun Message.toDto(): MessageDto = MessageDto(
     groupMessage = this.groupMessage,
     answerId = this.answerId,
     sent = this.sent,
-    senderAsString = this.senderAsString,
-    senderColor = this.senderColor
 )
