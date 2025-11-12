@@ -1,33 +1,24 @@
 package org.lerchenflo.schneaggchatv3mp.database
 
-import androidx.room.Transaction
-import kotlinx.coroutines.CoroutineExceptionHandler
+import com.appstractive.jwt.JWT
+import com.appstractive.jwt.from
+import com.appstractive.jwt.subject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
-import kotlinx.coroutines.withContext
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.network.util.onError
-import org.lerchenflo.schneaggchatv3mp.network.util.onSuccess
-import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
@@ -52,14 +43,12 @@ class AppRepository(
         NotificationManager.removeToken()
     }
 
-    @Transaction
-    fun getMessagesByUserId(userId: Long, gruppe: Boolean): Flow<List<MessageWithReadersDto>> {
+    fun getMessagesByUserId(userId: String, gruppe: Boolean): Flow<List<MessageWithReadersDto>> {
         return database.messageDao().getMessagesByUserId(userId, gruppe)
     }
 
-    @Transaction
     fun getownUser(): Flow<UserDto?> {
-        return database.userDao().getUserbyId(SessionCache.getOwnIdValue()?: 0)
+        return database.userDao().getUserbyId(SessionCache.getOwnIdValue())
     }
 
 
@@ -171,7 +160,11 @@ class AppRepository(
 
 
 
+    suspend fun areLoginCredentialsSaved(): Boolean{
+        val tokens = preferencemanager.getTokens()
 
+        return tokens.accessToken.isNotEmpty() && tokens.refreshToken.isNotEmpty()
+    }
 
 
 
@@ -182,26 +175,34 @@ class AppRepository(
     ) {
 
         CoroutineScope(Dispatchers.IO).launch {
-            networkUtils.login(username, password)
-                .onSuccessWithBody { headers, message ->
-                    //println("Success: $success $message")
+            when(val result = networkUtils.login(username, password)){
+                is org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult.Error<*> -> {
+                    println("Error: ${result.error}")
+
+                    onResult(false, result.error.toString())
+                }
+                is org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult.Success<NetworkUtils.TokenPair> -> {
+                    val tokenpair = result.data
+
+                    //Parse the token to get the user id
+                    val jwt = JWT.from(tokenpair.accessToken)
+                    val userid = jwt.subject!! //Subject of this jwt token is the users id
+
+
                     CoroutineScope(Dispatchers.IO).launch {
-                        preferencemanager.saveAutologinCreds(username, password)
-                        preferencemanager.saveOWNID(headers["userid"]?.toLong() ?: 0)
+                        preferencemanager.saveTokens(tokenpair)
+                        preferencemanager.saveOWNID(userid)
                     }
 
-                    println(headers)
-                    SessionCache.updateSessionId(headers["sessionid"])
-                    SessionCache.updateOwnId(headers["userid"]?.toLong())
+                    println("LOGIN: Userid: $userid")
+                    SessionCache.updateSessionId(tokenpair.accessToken)
+                    SessionCache.updateOwnId(userid)
                     SessionCache.updateLoggedIn(true)
                     println("Sessioncache: ${SessionCache.toString()}")
-                    onResult(true, message)
+                    onResult(true, "")
                 }
-                .onError { error ->
-                    println("Error: $error")
+            }
 
-                    onResult(false, error.toString())
-                }
         }
 
     }
@@ -216,18 +217,21 @@ class AppRepository(
         onResult: (Boolean, String) -> Unit
     ) {
         CoroutineScope(Dispatchers.IO).launch {
-            networkUtils.createAccount(username, password, email, birthdate)
-                .onSuccessWithBody { success, message ->
-                    println("Success: $success $message")
-                    onResult(success, message)
-                }
-                .onError { error ->
-                    println("Error: $error")
+            when(val response = networkUtils.register(username, password, email, birthdate)){
+                is org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult.Error -> {
+                    println("Error: ${response.error}")
 
-                    onResult(false, error.toString())
+                    onResult(false, response.error.toString())
                 }
+                is org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult.Success<*> -> {
+                    onResult(true, "")
+                }
+            }
         }
     }
+
+
+    /* TODO vornazua wieder iboua
 
     /**
      * @param localpk Local pk, only pass if already in db
@@ -237,12 +241,6 @@ class AppRepository(
 
         var localpkintern = localpk
 
-        //TODO: FABI leas des
-        /*
-        Do siaht ma schö s prinzip vo nam repository. die funktion ruft ma uf, und sie addet die nachricht in die lokale datenbank und versuacht
-        glichzittig no an send zum server. wenn da server des ned mag oda halt offline isch, denn wird se lokal gspeichert und kann süäter neu gschickt werra.
-        so wird se direkt im chat azoagt und ma muss o nur ua tolle funktion ufrufa
-         */
 
         if (SessionCache.getOwnIdValue() == null){
             println("Message senden abort: No OWNID")
@@ -330,16 +328,6 @@ class AppRepository(
     }
 
 
-    suspend fun areLoginCredentialsSaved(): Boolean{
-        val (username, password) = preferencemanager.getAutologinCreds()
-        if (username.isNotBlank() && password.isNotBlank()){
-            SessionCache.updateOwnId(preferencemanager.getOWNID())
-            SessionCache.updateUsername(username)
-            SessionCache.updatePassword(password)
-        }
-        return username.isNotBlank() && password.isNotBlank()
-    }
-
 
 
     //Network züg
@@ -397,6 +385,8 @@ class AppRepository(
             }
         }
     }
+
+     */
 
 
 }

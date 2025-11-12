@@ -39,10 +39,13 @@ class GroupRepository(
         }
     }
 
-    suspend fun deleteGroup(groupid: Long){
+    suspend fun deleteGroup(groupid: String){
         database.groupDao().deleteGroup(groupid)
     }
 
+
+    /*
+    //TODO: Rebuild + Rebuild the dtos, all server synced
     @Transaction
     suspend fun upsertGroupWithMembers(gwm: GroupWithMembersDto) {
         // 1) upsert the group
@@ -58,11 +61,13 @@ class GroupRepository(
 
         // create new join rows and insert
         val joinRows = gwm.members.map { member ->
-            GroupMemberDto(0, gwm.group.id, member.id, member.color, member.joinDate, member.isAdmin)
+            //GroupMemberDto(0, gwm.group.id, member.id, member.color, member.joinDate, member.isAdmin)
         }
 
         if (joinRows.isNotEmpty()) {
             database.groupDao().upsertMembers(joinRows)
         }
     }
+
+     */
 }

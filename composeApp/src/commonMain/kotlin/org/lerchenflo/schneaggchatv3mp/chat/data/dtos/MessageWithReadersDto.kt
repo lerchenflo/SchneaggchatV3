@@ -19,7 +19,7 @@ data class MessageWithReadersDto(
         return readers.any{ it.readerID == SessionCache.getOwnIdValue() }
     }
 
-    fun isReadById(id: Long) : Boolean{
+    fun isReadById(id: String) : Boolean{
         return readers.any {it.readerID == id}
     }
 
@@ -28,7 +28,7 @@ data class MessageWithReadersDto(
     }
 
     fun getSendDateAsLong(): Long {
-        return messageDto.sendDate?.toLongOrNull() ?: 0L
+        return messageDto.sendDate.toLong()
     }
 
     fun isMyMessage(): Boolean {
@@ -42,7 +42,7 @@ data class MessageWithReadersDto(
     /**
      * Was this message sent into this chat?
      */
-    fun isThisChatMessage(chatID: Long, gruppe : Boolean) : Boolean {
+    fun isThisChatMessage(chatID: String, gruppe : Boolean) : Boolean {
         if (gruppe){
             if (messageDto.receiverId == chatID && messageDto.groupMessage){
                 return true

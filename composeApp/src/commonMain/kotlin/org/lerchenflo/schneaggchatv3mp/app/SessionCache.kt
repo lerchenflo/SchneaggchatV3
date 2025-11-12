@@ -23,6 +23,7 @@ object SessionCache {
 
     // --------------------- sessionId ---------------------
 
+    //TODO: Rename Sessionid to Accesstoken
     var sessionId: String? by mutableStateOf(null)
         private set
 
@@ -38,20 +39,19 @@ object SessionCache {
     private val _ownidFlow = MutableStateFlow<Long>(-1L)
     val ownidFlow: StateFlow<Long> = _ownidFlow.asStateFlow()
 
-    var ownId: Long? by mutableStateOf(-1L)
+    var ownId: String? by mutableStateOf(null)
         private set
 
-    fun updateOwnId(newValue: Long?) {
+    fun updateOwnId(newValue: String?) {
         ownId = newValue
         // keep developer flag in sync
-        developer = (newValue == 1L || newValue == 2L)
     }
 
     // synchronous, non-colliding helper
-    fun getOwnIdValue(): Long? = ownId
+    fun getOwnIdValue(): String? = ownId
 
     // --------------------- developer flag ---------------------
-    var developer: Boolean by mutableStateOf((getOwnIdValue() == 1L || getOwnIdValue() == 2L))
+    var developer: Boolean by mutableStateOf(false)
         private set
 
     // if you need to set developer manually (rare), provide a setter

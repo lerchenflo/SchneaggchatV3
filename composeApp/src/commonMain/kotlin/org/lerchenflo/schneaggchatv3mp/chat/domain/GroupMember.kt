@@ -3,9 +3,9 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupMemberDto
 
 data class GroupMember(
-    val id: Long = 0L,
-    val groupId: Long,
-    val userId: Long,
+    val id: String,
+    val groupId: String,
+    val userId: String,
     val color: Int,
     val joinDate: String,
     val isAdmin: Boolean

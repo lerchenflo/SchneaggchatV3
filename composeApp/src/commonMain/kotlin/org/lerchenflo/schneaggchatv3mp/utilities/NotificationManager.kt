@@ -11,7 +11,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toMessage
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
 import kotlin.random.Random
 
 object NotificationManager{
@@ -32,7 +31,8 @@ object NotificationManager{
             NotifierManager.addListener(object : NotifierManager.Listener {
                 override fun onNewToken(token: String) {
                     CoroutineScope(Dispatchers.IO).launch{
-                        networkUtils.setFirebaseToken(token)
+                        //TODO : Firebase
+                        //networkUtils.setFirebaseToken(token)
                     }
                     println("onNewToken: $token") //Update user token in the server if needed
                 }
@@ -50,6 +50,7 @@ object NotificationManager{
                             val msgid = data.get("msgid")
 
                             CoroutineScope(Dispatchers.IO).launch {
+                                /* TODO FIREBASE
                                 val request = networkUtils.getmessagebyid(msgid.toString().toLong())
 
                                 val json = Json {
@@ -61,6 +62,8 @@ object NotificationManager{
                                     val message = json.decodeFromString<MessageDto>(body)
                                     showNotification(message.toMessage())
                                 }
+
+                                 */
                             }
                         }
                     }
@@ -78,7 +81,8 @@ object NotificationManager{
             })
 
             CoroutineScope(Dispatchers.IO).launch {
-                networkUtils.setFirebaseToken(getToken())
+                //TODO FIREBASE
+                //networkUtils.setFirebaseToken(getToken())
             }
         }catch (e: Exception){
             e.printStackTrace()

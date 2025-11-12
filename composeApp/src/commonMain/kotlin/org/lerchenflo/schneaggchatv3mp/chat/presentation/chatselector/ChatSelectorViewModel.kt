@@ -86,13 +86,17 @@ class ChatSelectorViewModel(
                 globalViewModel.viewModelScope.launch {
                     CoroutineScope(Dispatchers.IO).launch {
                         // send queued messages
-                        appRepository.sendOfflineMessages()
+                        //TODO: Messagees
+                        //appRepository.sendOfflineMessages()
 
                         // run your sync callback
+                        /*
                         appRepository.executeSync { isLoadingMessages1 ->
                             updateIsLoadingMessages(isLoadingMessages1)
                             println("Loading messages: $isLoadingMessages")
                         }
+                         */
+
                     }.join()
                 }
             } catch (e: Exception) {

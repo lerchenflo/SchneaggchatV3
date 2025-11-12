@@ -16,9 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
-import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntry
 
 @Dao
 interface UserDao {
@@ -27,13 +25,13 @@ interface UserDao {
     suspend fun upsert(userDto: UserDto) //Suspend: Async mit warten
 
     @Query("DELETE FROM users WHERE id = :userid")
-    suspend fun delete(userid: Long)
+    suspend fun delete(userid: String)
 
     @Query("SELECT * FROM users WHERE name LIKE '%' || :searchterm || '%'")
     fun getallusers(searchterm: String = ""): Flow<List<UserDto>>
 
     @Query("SELECT * FROM users WHERE id = :userid")
-    fun getUserbyId(userid: Long): Flow<UserDto?>
+    fun getUserbyId(userid: String?): Flow<UserDto?>
 
     @Query("SELECT id, changedate FROM users")
     suspend fun getUserIdsWithChangeDates(): List<IdChangeDate>
@@ -59,7 +57,7 @@ interface MessageDao {
 
     @Transaction
     @Query("SELECT * FROM messages WHERE id = :id")
-    fun getMessageWithReaders(id: Long): Flow<MessageWithReadersDto>
+    fun getMessageWithReaders(id: String): Flow<MessageWithReadersDto>
 
 
     @Transaction
@@ -68,7 +66,7 @@ interface MessageDao {
 
     @Transaction
     @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ")
-    fun getMessagesByUserId(userId: Long, gruppe: Boolean): Flow<List<MessageWithReadersDto>>
+    fun getMessagesByUserId(userId: String, gruppe: Boolean): Flow<List<MessageWithReadersDto>>
 
     @Query("SELECT id, changedate FROM messages WHERE id != 0")
     suspend fun getMessageIdsWithChangeDates(): List<IdChangeDate>
@@ -79,11 +77,11 @@ interface MessageDao {
 
     @Transaction
     @Query("UPDATE messages SET id = :serverId, sent = 1 WHERE localPK = :localPK")
-    suspend fun markMessageAsSent(serverId: Long, localPK: Long)
+    suspend fun markMessageAsSent(serverId: String, localPK: Long)
 
 
     @Query("SELECT * FROM messages WHERE id = :id")
-    suspend fun getMessageById(id: Long): MessageDto?
+    suspend fun getMessageById(id: String): MessageDto?
 
 }
 
@@ -97,7 +95,7 @@ interface MessageReaderDao {
     suspend fun upsertReaders(readers: List<MessageReaderDto>): List<Long>
 
     @Query("DELETE FROM message_readers WHERE messageId = :messageId")
-    suspend fun deleteReadersForMessage(messageId: Long)
+    suspend fun deleteReadersForMessage(messageId: String)
 }
 
 
@@ -111,7 +109,7 @@ interface GroupDao {
     suspend fun getGroupIdsWithChangeDates(): List<IdChangeDate>
 
     @Query("DELETE FROM `groups` WHERE id = :groupid")
-    suspend fun deleteGroup(groupid: Long)
+    suspend fun deleteGroup(groupid: String)
 
     @Transaction
     @Query("SELECT * FROM `groups`")
@@ -121,7 +119,7 @@ interface GroupDao {
     suspend fun upsertMembers(members: List<GroupMemberDto>): List<Long>
 
     @Query("DELETE FROM group_members WHERE group_id = :groupId")
-    suspend fun deleteMembersForGroup(groupId: Long)
+    suspend fun deleteMembersForGroup(groupId: String)
 }
 
 
@@ -137,7 +135,7 @@ interface TodolistDao{
     suspend fun insertTodo(todo: TodoEntityDto)
 
     @Query("DELETE FROM todoentitydto WHERE id = :todoid")
-    suspend fun delete(todoid: Long)
+    suspend fun delete(todoid: String)
 
     @Transaction
     @Query("SELECT * FROM todoentitydto")
@@ -147,7 +145,7 @@ interface TodolistDao{
     suspend fun getTodoIdsWithChangeDates(): List<IdChangeDate>
 
     @Query("SELECT * FROM todoentitydto WHERE id = :id")
-    suspend fun getTodoById(id: Long) : TodoEntityDto?
+    suspend fun getTodoById(id: String) : TodoEntityDto?
 }
 
 
@@ -191,7 +189,4 @@ data class IdChangeDate(
     val id: Long,
     val changedate: String
 )
-
-@Serializable
-data class IdOperation(val Status: String = "", val Id: Long = 0L)
 

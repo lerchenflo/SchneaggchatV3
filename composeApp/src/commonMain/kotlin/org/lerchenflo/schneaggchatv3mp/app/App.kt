@@ -57,7 +57,7 @@ fun App() {
     SchneaggchatTheme(
             themeSetting = themeSetting
                      ) 
-     {
+    {
         val navigator = koinInject<Navigator>()
         val navController = rememberNavController()
 

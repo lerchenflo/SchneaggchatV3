@@ -9,8 +9,8 @@ import kotlinx.serialization.Serializable
 data class MessageReaderDto(
     @PrimaryKey(autoGenerate = true)
     val readerEntryId: Long = 0L,
-    val messageId: Long,
-    val readerID: Long,
+    val messageId: String,
+    val readerID: String,
     val readDate: String
 ) {
     fun getReadDateAsLong(): Long = readDate.toLongOrNull() ?: 0L

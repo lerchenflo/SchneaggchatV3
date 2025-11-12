@@ -27,7 +27,7 @@ class UserRepository(
     }
 
 
-    suspend fun deleteUser(userid: Long){
+    suspend fun deleteUser(userid: String){
         database.userDao().delete(userid)
     }
 

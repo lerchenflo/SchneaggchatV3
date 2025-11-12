@@ -5,6 +5,7 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
 import io.ktor.client.HttpClient
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
@@ -21,6 +22,7 @@ import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
+import org.lerchenflo.schneaggchatv3mp.network.createHttpClientWithoutAuth
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
@@ -32,12 +34,17 @@ val sharedmodule = module{
     //Database
     single <AppDatabase> { CreateAppDatabase(get()).getDatabase() }
 
-    single <HttpClient> { createHttpClient(get()) }
+    single <HttpClient>(named("api")) { createHttpClient(get(), get()) }
+
+    single <HttpClient>(named("auth")) { createHttpClientWithoutAuth(get()) }
+    //TODO: Dependency injection auf jeder platform
 
 
     single<Navigator> {
         Navigator(Route.ChatGraph)
     }
+
+
 
     //Repository
     singleOf(::AppRepository)
@@ -48,8 +55,9 @@ val sharedmodule = module{
     singleOf(::TodoRepository)
 
 
-    //Netzwerktask
-    singleOf(::NetworkUtils)
+    single<NetworkUtils> {
+        NetworkUtils(get(named("api")), get(named("auth")))
+    }
 
     //Preferences
     singleOf(::Preferencemanager)

@@ -10,7 +10,7 @@ data class MessageWithReaders(
     fun isReadByMe(): Boolean =
         readers.any { it.readerId == SessionCache.getOwnIdValue() }
 
-    fun isReadById(id: Long): Boolean =
+    fun isReadById(id: String): Boolean =
         readers.any { it.readerId == id }
 
     fun isPicture(): Boolean =
@@ -30,7 +30,7 @@ data class MessageWithReaders(
      * @param chatID id of the chat (group id or user id)
      * @param gruppe true if chatID refers to a group
      */
-    fun isThisChatMessage(chatID: Long, gruppe: Boolean): Boolean {
+    fun isThisChatMessage(chatID: String, gruppe: Boolean): Boolean {
         return if (gruppe) {
             message.receiverId == chatID && message.groupMessage
         } else {

@@ -11,8 +11,6 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache.updateUsername
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.database.AppRepository
-import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
-import org.lerchenflo.schneaggchatv3mp.network.util.toEnumOrNull
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cannot_be_empty
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
@@ -150,9 +148,8 @@ class SignUpViewModel(
                         } else {
 
                             viewModelScope.launch {
-                                val responsereason = message.toEnumOrNull<ResponseReason>(true)
 
-                                //TODO: Show errors according to response
+                                //TODO: Show errors acording to response
 
                             }
 

@@ -39,7 +39,7 @@ import schneaggchatv3mp.composeapp.generated.resources.something_wrong_message
 @Composable
 fun MessageView(
     useMD: Boolean = false,
-    selectedChatId: Long = -1,
+    selectedChatId: String = "",
     messagewithreaders: MessageWithReadersDto,
     modifier: Modifier = Modifier
         .fillMaxWidth()
