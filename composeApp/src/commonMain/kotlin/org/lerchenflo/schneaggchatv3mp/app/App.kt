@@ -4,16 +4,20 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
@@ -24,6 +28,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
@@ -41,6 +49,7 @@ import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
+import org.lerchenflo.schneaggchatv3mp.sharedUi.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
@@ -55,9 +64,9 @@ fun App() {
     val themeSetting by preferenceManager.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
 
     SchneaggchatTheme(
-            themeSetting = themeSetting
-                     ) 
-    {
+        themeSetting = themeSetting
+    ) {
+
         val navigator = koinInject<Navigator>()
         val navController = rememberNavController()
 
@@ -80,6 +89,24 @@ fun App() {
             }
         }
 
+        var showAutoFadePopup by remember { mutableStateOf(false) }
+
+        // Coroutine to toggle popup every 5 seconds
+        LaunchedEffect(Unit) {
+            while (true) {
+                delay(10000)
+                showAutoFadePopup = true
+            }
+        }
+
+        // Show popup when state changes
+        if (showAutoFadePopup) {
+            AutoFadePopup(
+                //TODO: Show autofadepopup when network error is thrown
+                message = "jooo do simmaawd aw aw dawd awaw a awdJAwdja awd aw a awdawaw aw aw  aw dawd aw djaiwnd jaawda awjak awd awkda ka wjdakdaw kaaw awd aw dakw akjw kkaw kjawd kjadwa akjn akjwnd aj awdakwj akjd kwajdakjwd kja waak janwk jawkj akjw akjw akj kj akjwdkjawkajw akjwdjkawn kjakjwakjw kja  jajwd jkawd kjakjwdakjwd j akj ajw dakjwd aw",
+                onDismiss = { showAutoFadePopup = false }
+            )
+        }
 
 
         Scaffold(

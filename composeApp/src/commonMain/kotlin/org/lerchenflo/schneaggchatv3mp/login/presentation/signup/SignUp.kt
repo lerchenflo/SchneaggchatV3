@@ -85,8 +85,7 @@ fun SignUpScreen(
                     println("Mobile Portrait")
                     Column(
                         modifier = rootmodifier
-                            .verticalScroll(rememberScrollState())
-                            .padding(top = 32.dp),
+                            .verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ){
                         SignUpForm1(
@@ -98,6 +97,7 @@ fun SignUpScreen(
                             emailerrorText = state.emailState.errorMessage,
                             ongebidateselected = { onAction(SignupAction.OnGebiDateChange(it!!)) },
                             selectedgebidate = state.gebiDate,
+                            onBackClick = {onAction(SignupAction.OnBackClicked)},
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -141,9 +141,6 @@ fun SignUpScreen(
                     Row(
                         modifier = rootmodifier
                             .windowInsetsPadding(WindowInsets.displayCutout)
-                            .padding(
-                                horizontal = 32.dp
-                            )
                             .verticalScroll(rememberScrollState()),
 
                         horizontalArrangement = Arrangement.spacedBy(32.dp)
@@ -159,6 +156,7 @@ fun SignUpScreen(
                             emailerrorText = state.emailState.errorMessage,
                             ongebidateselected = { onAction(SignupAction.OnGebiDateChange(it!!)) },
                             selectedgebidate = state.gebiDate,
+                            onBackClick = {onAction(SignupAction.OnBackClicked)},
                             modifier = Modifier.weight(1f),
                             )
 
@@ -186,8 +184,7 @@ fun SignUpScreen(
 
                     Column(
                         modifier = rootmodifier
-                            .verticalScroll(rememberScrollState())
-                            .padding(top = 32.dp),
+                            .verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ){
@@ -199,6 +196,7 @@ fun SignUpScreen(
                             onemailTextChange = { onAction(SignupAction.OnEmailTextChange(it)) },
                             emailerrorText = state.emailState.errorMessage,
                             ongebidateselected = { onAction(SignupAction.OnGebiDateChange(it!!)) },
+                            onBackClick = {onAction(SignupAction.OnBackClicked)},
                             selectedgebidate = state.gebiDate,
                             )
 
