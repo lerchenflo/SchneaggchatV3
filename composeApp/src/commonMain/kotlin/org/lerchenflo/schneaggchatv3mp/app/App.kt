@@ -113,10 +113,15 @@ fun App() {
 
                                 globalViewModel.viewModelScope.launch {
                                     //Autologin
+
+                                    //TODO: not needed anymore, we do it with to??
+                                    /*
                                     appRepository.login(SessionCache.username,
-                                        SessionCache.passwordDonotprint, onResult = { success, body ->
+                                        SessionCache.passwordDonotprint, onResult = { success ->
                                         println("Login abgeschlossen mit success: $success")
                                     })
+
+                                     */
                                 }
                             } else {
                                 navController.navigate(Route.Login) {

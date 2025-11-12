@@ -6,9 +6,12 @@ import com.appstractive.jwt.subject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
@@ -37,6 +40,32 @@ class AppRepository(
     val appVersion: AppVersion, //Appversion, uf des darf jeder zugriefa
 
 ) {
+    //Errorchannel for global error events (Show in every screen)
+    companion object ErrorChannel{
+
+        data class ErrorEvent (
+            val errorCode: Int?,
+            val errorMessage: String,
+            val durationSeconds: Int
+        )
+
+        private val _channel = Channel<ErrorEvent>(capacity = Channel.BUFFERED)
+        val errors = _channel.receiveAsFlow()
+
+        suspend fun sendErrorSuspend(event: ErrorEvent) {
+            _channel.send(event) // suspending send
+        }
+
+        fun trySendError(event: ErrorEvent) {
+            _channel.trySend(event).onFailure {
+                // handle failure (e.g., log) — channel full or closed
+            }
+        }
+    }
+
+
+
+
 
     suspend fun deleteAllAppData(){
         database.allDatabaseDao().clearAll()
@@ -171,7 +200,7 @@ class AppRepository(
     fun login(
         username: String,
         password: String,
-        onResult: (Boolean, String) -> Unit
+        onResult: (Boolean) -> Unit
     ) {
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -179,7 +208,9 @@ class AppRepository(
                 is org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult.Error<*> -> {
                     println("Error: ${result.error}")
 
-                    onResult(false, result.error.toString())
+                    //TODO: send into errorstream
+
+                    onResult(false)
                 }
                 is org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult.Success<NetworkUtils.TokenPair> -> {
                     val tokenpair = result.data
@@ -199,7 +230,7 @@ class AppRepository(
                     SessionCache.updateOwnId(userid)
                     SessionCache.updateLoggedIn(true)
                     println("Sessioncache: ${SessionCache.toString()}")
-                    onResult(true, "")
+                    onResult(true)
                 }
             }
 
@@ -214,17 +245,19 @@ class AppRepository(
         email: String,
         password: String,
         birthdate: String,
-        onResult: (Boolean, String) -> Unit
+        onResult: (Boolean) -> Unit
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             when(val response = networkUtils.register(username, password, email, birthdate)){
                 is org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult.Error -> {
                     println("Error: ${response.error}")
 
-                    onResult(false, response.error.toString())
+                    //TODO: Send into errorchannel
+
+                    onResult(false)
                 }
                 is org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult.Success<*> -> {
-                    onResult(true, "")
+                    onResult(true)
                 }
             }
         }

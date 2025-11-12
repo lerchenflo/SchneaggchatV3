@@ -46,14 +46,12 @@ class LoginViewModel(
             isLoading = true
 
             // Use the sharedViewModel's login function with a callback
-            appRepository.login(username, password) { success, message ->
+            appRepository.login(username, password) { success ->
                 if (success) {
                     println("Login erfolgreich")
                     CoroutineScope(Dispatchers.Main).launch { // launch on main thread (to avoid crash)
                         onLoginSuccess()
                     }
-                } else {
-                    println("LOGIN ERROR: $message")
                 }
             }
 
