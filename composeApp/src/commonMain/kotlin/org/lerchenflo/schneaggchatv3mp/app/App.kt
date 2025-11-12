@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
@@ -89,24 +90,27 @@ fun App() {
             }
         }
 
-        var showAutoFadePopup by remember { mutableStateOf(false) }
 
-        // Coroutine to toggle popup every 5 seconds
+        var showAutoFadePopup by remember { mutableStateOf(false) }
+        var autoFadeMessage by remember { mutableStateOf("") }
+        var autoFadeDuration by remember { mutableStateOf(5000L) }
+
         LaunchedEffect(Unit) {
-            while (true) {
-                delay(10000)
+            AppRepository.errors.collect { error ->
+                autoFadeDuration = error.duration
+                autoFadeMessage = if (error.errorCode != null) "Errorcode: ${error.errorCode}\n${error.errorMessage}" else error.errorMessage
                 showAutoFadePopup = true
             }
         }
 
-        // Show popup when state changes
-        if (showAutoFadePopup) {
+        if (showAutoFadePopup){
             AutoFadePopup(
-                //TODO: Show autofadepopup when network error is thrown
-                message = "jooo do simmaawd aw aw dawd awaw a awdJAwdja awd aw a awdawaw aw aw  aw dawd aw djaiwnd jaawda awjak awd awkda ka wjdakdaw kaaw awd aw dakw akjw kkaw kjawd kjadwa akjn akjwnd aj awdakwj akjd kwajdakjwd kja waak janwk jawkj akjw akjw akj kj akjwdkjawkajw akjwdjkawn kjakjwakjw kja  jajwd jkawd kjakjwdakjwd j akj ajw dakjwd aw",
-                onDismiss = { showAutoFadePopup = false }
+                message = autoFadeMessage,
+                onDismiss = {showAutoFadePopup = false},
+                showDuration = autoFadeDuration,
             )
         }
+
 
 
         Scaffold(

@@ -44,9 +44,9 @@ class AppRepository(
     companion object ErrorChannel{
 
         data class ErrorEvent (
-            val errorCode: Int?,
+            val errorCode: Int? = null,
             val errorMessage: String,
-            val durationSeconds: Int
+            val duration: Long = 5000L
         )
 
         private val _channel = Channel<ErrorEvent>(capacity = Channel.BUFFERED)
@@ -208,7 +208,11 @@ class AppRepository(
                 is org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult.Error<*> -> {
                     println("Error: ${result.error}")
 
-                    //TODO: send into errorstream
+                    //TODO: Improve error messages (One string for each error message???)
+                    ErrorChannel.sendErrorSuspend(ErrorEvent(
+                        errorMessage = result.error.toString(),
+                        duration = 5000L
+                    ))
 
                     onResult(false)
                 }
@@ -216,6 +220,7 @@ class AppRepository(
                     val tokenpair = result.data
 
                     //Parse the token to get the user id
+                    println("Accesstoken: ${tokenpair.accessToken}")
                     val jwt = JWT.from(tokenpair.accessToken)
                     val userid = jwt.subject!! //Subject of this jwt token is the users id
 
@@ -252,7 +257,7 @@ class AppRepository(
                 is org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult.Error -> {
                     println("Error: ${response.error}")
 
-                    //TODO: Send into errorchannel
+                    //TODO: Send into errorchannel (Look login above)
 
                     onResult(false)
                 }
