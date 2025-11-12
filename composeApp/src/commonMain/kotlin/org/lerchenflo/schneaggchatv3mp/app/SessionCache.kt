@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 
 /**
  * Singleton session cache that combines Compose-friendly mutable state and
@@ -24,20 +25,17 @@ object SessionCache {
     // --------------------- sessionId ---------------------
 
     //TODO: Rename Sessionid to Accesstoken
-    var sessionId: String? by mutableStateOf(null)
+    var tokens: NetworkUtils.TokenPair? by mutableStateOf(null)
         private set
 
-    fun updateSessionId(newValue: String?) {
-        sessionId = newValue
+    fun updateTokenPair(newValue: NetworkUtils.TokenPair?) {
+        tokens = newValue
     }
 
     // synchronous, non-colliding helper
-    fun getSessionIdValue(): String? = sessionId
+    fun getTokenPair(): NetworkUtils.TokenPair? = tokens
 
     // --------------------- ownId ---------------------
-    // Keep -1L as initial value to preserve previous behaviour (was -1)
-    private val _ownidFlow = MutableStateFlow<Long>(-1L)
-    val ownidFlow: StateFlow<Long> = _ownidFlow.asStateFlow()
 
     var ownId: String? by mutableStateOf(null)
         private set
@@ -114,7 +112,7 @@ object SessionCache {
 
     // --------------------- clear / helpers ---------------------
     fun clear() {
-        updateSessionId(null)
+        updateTokenPair(null)
         updateOwnId(null)
         updateUsername("")
         updatePassword("")
@@ -123,14 +121,5 @@ object SessionCache {
         setDeveloperValue(false)
     }
 
-    override fun toString(): String {
-        val sid = sessionId?.let {
-            if (it.length <= 8) it else it.substring(0, 6) + "..."
-        } ?: "null"
 
-        val own = getOwnIdValue()?.toString() ?: "null"
-        val pwd = if (passwordDonotprint.isEmpty()) "<empty>" else "<redacted>"
-
-        return "SessionCache(sessionId=$sid, ownId=$own, username=\"$username\", password=$pwd, loggedIn=$loggedIn, online=$online)"
-    }
 }

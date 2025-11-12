@@ -22,6 +22,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
@@ -188,14 +189,35 @@ class AppRepository(
     }
 
 
+    suspend fun onNewTokenPair(tokenPair: NetworkUtils.TokenPair){
+
+
+        //Parse the token to get the user id
+        println("Accesstoken: ${tokenPair.accessToken}")
+        val jwt = JWT.from(tokenPair.accessToken)
+        val userid = jwt.subject!! //Subject of this jwt token is the users id
+
+
+        CoroutineScope(Dispatchers.IO).launch {
+            preferencemanager.saveTokens(tokenPair)
+            preferencemanager.saveOWNID(userid)
+        }
+
+        println("LOGIN: Userid: $userid")
+        SessionCache.updateTokenPair(tokenPair)
+        SessionCache.updateOwnId(userid)
+        SessionCache.updateLoggedIn(true)
+        println("Sessioncache: ${SessionCache.toString()}")
+    }
+
 
     suspend fun areLoginCredentialsSaved(): Boolean{
         val tokens = preferencemanager.getTokens()
 
+        SessionCache.updateTokenPair(tokens)
+
         return tokens.accessToken.isNotEmpty() && tokens.refreshToken.isNotEmpty()
     }
-
-
 
     fun login(
         username: String,
@@ -217,24 +239,7 @@ class AppRepository(
                     onResult(false)
                 }
                 is org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult.Success<NetworkUtils.TokenPair> -> {
-                    val tokenpair = result.data
-
-                    //Parse the token to get the user id
-                    println("Accesstoken: ${tokenpair.accessToken}")
-                    val jwt = JWT.from(tokenpair.accessToken)
-                    val userid = jwt.subject!! //Subject of this jwt token is the users id
-
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        preferencemanager.saveTokens(tokenpair)
-                        preferencemanager.saveOWNID(userid)
-                    }
-
-                    println("LOGIN: Userid: $userid")
-                    SessionCache.updateSessionId(tokenpair.accessToken)
-                    SessionCache.updateOwnId(userid)
-                    SessionCache.updateLoggedIn(true)
-                    println("Sessioncache: ${SessionCache.toString()}")
+                    onNewTokenPair(result.data)
                     onResult(true)
                 }
             }
@@ -266,6 +271,20 @@ class AppRepository(
                 }
             }
         }
+    }
+
+    suspend fun refreshTokens() {
+        val tokens = preferencemanager.getTokens()
+
+        when(val result = networkUtils.refresh(tokens.refreshToken)){
+            is NetworkResult.Error<*> -> {}
+            is NetworkResult.Success<NetworkUtils.TokenPair> -> {
+                preferencemanager.saveTokens(result.data)
+                println("Tokenpair refresh successful")
+                onNewTokenPair(result.data)
+            }
+        }
+
     }
 
 

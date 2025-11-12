@@ -239,4 +239,16 @@ class NetworkUtils(
         )
     }
 
+    @Serializable
+    data class RefreshRequest(
+        val refreshToken: String
+    )
+
+    suspend fun refresh(refreshToken: String): NetworkResult<TokenPair, NetworkError> {
+        return safeAuthPost<RefreshRequest, TokenPair>(
+            endpoint = "/auth/refresh",
+            body = RefreshRequest(refreshToken = refreshToken)
+        )
+    }
+
 }
