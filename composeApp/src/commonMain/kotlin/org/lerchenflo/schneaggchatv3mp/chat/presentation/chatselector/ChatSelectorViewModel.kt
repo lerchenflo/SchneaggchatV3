@@ -53,6 +53,7 @@ class ChatSelectorViewModel(
     init {
         refresh()
 
+        //TODO: Maybe try login every 5 sec if not logged in (No sync all 5 secs)
         //Chat verlassen
         //globalViewModel.onLeaveChat()
     }
@@ -61,25 +62,33 @@ class ChatSelectorViewModel(
     private var refreshJob: Job? = null
 
     fun refresh() {
-
+        println("Refresh started")
 
         // if a refresh is already running, do nothing
         if (refreshJob?.isActive == true) return
 
         refreshJob = viewModelScope.launch {
-            // wait up to 10 seconds for login, checking every 1 second
-            val becameLoggedIn = withTimeoutOrNull(10_000L) {
-                while (!SessionCache.loggedIn) {
-                    delay(1_000L) // retry after 1 second
-                }
-                true // logged in
-            } ?: false // timed out -> false
 
-            if (!becameLoggedIn) {
-                // timed out waiting for login — exit silently or log
-                println("refresh() aborted: user did not log in within 10s")
-                return@launch
+            if (!SessionCache.loggedIn){
+
+                appRepository.refreshTokens()
+
+                val becameLoggedIn = withTimeoutOrNull(10_000L) {
+                    while (!SessionCache.loggedIn) {
+                        delay(1_000L) // retry after 1 second
+                    }
+                    true // logged in
+                } ?: false // timed out -> false
+
+                if (!becameLoggedIn) {
+                    // timed out waiting for login — exit silently or log
+                    println("refresh() aborted: user did not log in within 10s")
+                    return@launch
+                }
             }
+
+            // wait up to 10 seconds for login, checking every 1 second
+
 
             // at this point we're guaranteed logged in (or the condition was already true)
             try {

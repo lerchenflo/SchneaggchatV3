@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
@@ -36,6 +37,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -319,45 +321,32 @@ fun Chatauswahlscreen(
             PullToRefreshBox( // needs experimental opt in
                 isRefreshing = false,
                 onRefresh = { viewModel.refresh() }, // Trigger refresh
-                indicator = {
-                    null //Überschrieba dassa garned kut
-                    /*
-                    Indicator(// optional custom indicator
-                        modifier = Modifier.align(Alignment.TopCenter),
-                        isRefreshing = viewModel._isRefreshing.value,
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        state = state
-                    )
-
-                     */
-                },
-
+                indicator = {},
                 ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        bottom = 16.dp
-                    ),
-                ) {
-                    items(availablegegners) { gegner ->
-                        UserButton(
-                            selectedChat = gegner,
-                            useOnClickGes = false,
-                            lastMessage = gegner.lastmessage,
-                            onClickText = { onChatSelected(gegner) },
-                            onClickImage = {
-                                SnackbarManager.showMessage("TODO")
-                            }
-                        )
-                        HorizontalDivider(
-                            thickness = 0.5.dp
-                        )
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize(), //TODO: If showing users is not working correctly, change to fillmaxwidth
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = 16.dp
+                        ),
+                    ) {
+                        items(availablegegners) { gegner ->
+                            UserButton(
+                                selectedChat = gegner,
+                                useOnClickGes = false,
+                                lastMessage = gegner.lastmessage,
+                                onClickText = { onChatSelected(gegner) },
+                                onClickImage = {
+                                    SnackbarManager.showMessage("TODO")
+                                }
+                            )
+                            HorizontalDivider(
+                                thickness = 0.5.dp
+                            )
+                        }
                     }
-                }
             }
         }
 

@@ -27,6 +27,8 @@ import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.utilities.getUserIdFromToken
+import org.lerchenflo.schneaggchatv3mp.utilities.isTokenDateValid
 
 class AppRepository(
     private val database: AppDatabase,
@@ -189,13 +191,12 @@ class AppRepository(
     }
 
 
-    suspend fun onNewTokenPair(tokenPair: NetworkUtils.TokenPair){
+    fun onNewTokenPair(tokenPair: NetworkUtils.TokenPair){
 
 
         //Parse the token to get the user id
-        println("Accesstoken: ${tokenPair.accessToken}")
-        val jwt = JWT.from(tokenPair.accessToken)
-        val userid = jwt.subject!! //Subject of this jwt token is the users id
+        //println("Accesstoken: ${tokenPair.accessToken}")
+        val userid = getUserIdFromToken(tokenPair.refreshToken)
 
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -214,9 +215,19 @@ class AppRepository(
     suspend fun areLoginCredentialsSaved(): Boolean{
         val tokens = preferencemanager.getTokens()
 
-        SessionCache.updateTokenPair(tokens)
+        println(tokens)
 
-        return tokens.accessToken.isNotEmpty() && tokens.refreshToken.isNotEmpty()
+        val tokensNotEmpty = tokens.accessToken.isNotEmpty() && tokens.refreshToken.isNotEmpty()
+        val tokenNotExpired = isTokenDateValid(tokens.refreshToken) //is the refreshtoken still valid? If not, user needs to login again
+
+        val credsSaved = tokenNotExpired && tokensNotEmpty
+
+        if (credsSaved){
+            println("Tokens are saved in local storage, autologin permitted")
+            SessionCache.updateTokenPair(tokens)
+        }
+
+        return credsSaved
     }
 
     fun login(

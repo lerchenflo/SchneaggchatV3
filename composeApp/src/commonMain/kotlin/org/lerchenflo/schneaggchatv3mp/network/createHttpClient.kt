@@ -101,9 +101,9 @@ fun createHttpClientWithoutAuth(
         }
 
         install(HttpTimeout) {
-            requestTimeoutMillis = 30000  // 30 seconds for the entire request
-            connectTimeoutMillis = 10000  // 10 seconds to establish connection
-            socketTimeoutMillis = 30000   // 30 seconds between TCP packets
+            requestTimeoutMillis = 3000
+            connectTimeoutMillis = 2000  // 10 seconds to establish connection
+            socketTimeoutMillis = 4000
         }
     }
 }
