@@ -11,7 +11,6 @@ import org.koin.core.qualifier.named
 import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.database.androidAppDatabaseBuilder
 import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
-import org.lerchenflo.schneaggchatv3mp.network.createHttpClientWithoutAuth
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
@@ -20,11 +19,19 @@ val androidUserDatabaseModule = module {
 }
 
 val androidHttpModule = module {
-    single<HttpClient>(named("api")) {createHttpClient(OkHttp.create(), get())}
+    single<HttpClient>(named("api")) {createHttpClient(
+        engine = OkHttp.create(),
+        preferencemanager = get(),
+        useAuth = true
+    )}
 }
 
 val androidHttpAuthModule = module {
-    single<HttpClient>(named("auth")) { createHttpClientWithoutAuth(OkHttp.create()) }
+    single<HttpClient>(named("auth")) { createHttpClient(
+        engine = OkHttp.create(),
+        preferencemanager = get(),
+        useAuth = false
+    ) }
 }
 
 

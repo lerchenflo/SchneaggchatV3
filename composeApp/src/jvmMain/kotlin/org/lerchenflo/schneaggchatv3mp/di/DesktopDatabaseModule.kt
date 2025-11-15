@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.room.RoomDatabase
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.database.desktopAppDatabaseBuilder
@@ -18,7 +19,11 @@ val desktopAppDatabaseModule = module {
 }
 
 val desktopHttpModule = module {
-    single<HttpClient> {createHttpClient(OkHttp.create())}
+    single<HttpClient>(named("api")) {createHttpClient(OkHttp.create(), get(), true)}
+}
+
+val desktopHttpAuthModule = module {
+    single<HttpClient>(named("auth")) {createHttpClient(OkHttp.create(), get(), false)}
 }
 
 val desktopDataStoreModule = module {

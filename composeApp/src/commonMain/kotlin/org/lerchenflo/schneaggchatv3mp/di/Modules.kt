@@ -22,7 +22,6 @@ import org.lerchenflo.schneaggchatv3mp.database.AppRepository
 import org.lerchenflo.schneaggchatv3mp.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
-import org.lerchenflo.schneaggchatv3mp.network.createHttpClientWithoutAuth
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
@@ -34,10 +33,9 @@ val sharedmodule = module{
     //Database
     single <AppDatabase> { CreateAppDatabase(get()).getDatabase() }
 
-    single <HttpClient>(named("api")) { createHttpClient(get(), get()) }
+    single <HttpClient>(named("api")) { createHttpClient(get(), get(), true) }
 
-    single <HttpClient>(named("auth")) { createHttpClientWithoutAuth(get()) }
-    //TODO: Dependency injection auf jeder platform
+    single <HttpClient>(named("auth")) { createHttpClient(get(), get(), false) }
 
 
     single<Navigator> {

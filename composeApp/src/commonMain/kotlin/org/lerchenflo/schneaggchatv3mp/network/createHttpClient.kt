@@ -22,7 +22,8 @@ import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 
 fun createHttpClient(
     engine: HttpClientEngine,
-    preferencemanager: Preferencemanager
+    preferencemanager: Preferencemanager,
+    useAuth: Boolean
     ) : HttpClient {
 
     return HttpClient(engine) {
@@ -40,70 +41,45 @@ fun createHttpClient(
             )
         }
 
-        install(Auth){
-            bearer {
+        if (useAuth){
+            install(Auth){
+                bearer {
 
-                loadTokens {
-                    val tokens = preferencemanager.getTokens()
+                    loadTokens {
+                        val tokens = preferencemanager.getTokens()
 
-                    if (tokens.refreshToken == ""){
-                        null
-                    } else {
-                        BearerTokens(tokens.accessToken, tokens.refreshToken)
+                        if (tokens.refreshToken == ""){
+                            null
+                        } else {
+                            BearerTokens(tokens.accessToken, tokens.refreshToken)
+                        }
                     }
+
+                    refreshTokens {
+
+                        val response: NetworkUtils.TokenPair = client.post("${SERVERURL}/auth/refresh") {
+                            contentType(ContentType.Application.Json)
+                            setBody(oldTokens?.refreshToken)
+                            markAsRefreshTokenRequest()
+                        }.body()
+
+                        // Save new tokens
+                        preferencemanager.saveTokens(response)
+
+                        BearerTokens(response.accessToken, response.refreshToken)
+                    }
+
+
                 }
-
-                refreshTokens {
-
-                    val response: NetworkUtils.TokenPair = client.post("${SERVERURL}/auth/refresh") {
-                        contentType(ContentType.Application.Json)
-                        setBody(oldTokens?.refreshToken)
-                        markAsRefreshTokenRequest()
-                    }.body()
-
-                    // Save new tokens
-                    preferencemanager.saveTokens(response)
-
-                    BearerTokens(response.accessToken, response.refreshToken)
-                }
-
-
             }
         }
 
+
+
         install(HttpTimeout) {
-            requestTimeoutMillis = 30000  // 30 seconds for the entire request
-            connectTimeoutMillis = 10000  // 10 seconds to establish connection
+            requestTimeoutMillis = 20000  // 30 seconds for the entire request
+            connectTimeoutMillis = 3000  // 10 seconds to establish connection
             socketTimeoutMillis = 30000   // 30 seconds between TCP packets
-        }
-    }
-}
-
-
-
-fun createHttpClientWithoutAuth(
-    engine: HttpClientEngine,
-) : HttpClient {
-
-    return HttpClient(engine) {
-        install(Logging){
-            level = LogLevel.ALL
-        }
-
-
-        //Json
-        install(ContentNegotiation) {
-            json(
-                json = Json {
-                    ignoreUnknownKeys = true
-                }
-            )
-        }
-
-        install(HttpTimeout) {
-            requestTimeoutMillis = 3000
-            connectTimeoutMillis = 2000  // 10 seconds to establish connection
-            socketTimeoutMillis = 4000
         }
     }
 }
