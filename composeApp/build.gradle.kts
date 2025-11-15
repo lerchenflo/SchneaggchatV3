@@ -88,6 +88,8 @@ kotlin {
             //Firebase
             api("io.github.mirzemehdi:kmpnotifier:1.6.0")
 
+            //Image picker
+            implementation(libs.github.imagepickerkmp)
 
             //DateTime
             implementation(libs.kotlinx.datetime)
