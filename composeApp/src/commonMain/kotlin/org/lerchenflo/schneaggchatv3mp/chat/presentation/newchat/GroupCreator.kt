@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -44,6 +45,9 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,6 +56,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.ismoy.imagepickerkmp.domain.config.ImagePickerConfig
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.ImagePickerLauncher
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -111,6 +117,23 @@ fun GroupCreator(
         },
         floatingActionButtonPosition = FabPosition.End
     ) {
+
+        var showImagePickerDialog by remember { mutableStateOf(false) }
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (showImagePickerDialog) {
+                ImagePickerLauncher(
+                    config = ImagePickerConfig(
+                        onPhotoCaptured = { /* TODO: handle image */ },
+                        onDismiss = { showImagePickerDialog = false },
+                        onError = {},
+
+                    )
+                )
+            }
+        }
+
+
+
         Column(
             modifier = modifier
         ) {
@@ -318,13 +341,14 @@ fun GroupCreator(
                 // 2. Stage: Name, Profilbild, Beschreibung, etc.
 
                 Column(){
+
                     Image( // todo image uswähla und azoaga
                         painter = painterResource(Res.drawable.icon_nutzer),
                         contentDescription = stringResource(Res.string.group_picture),
                         modifier = Modifier
                             .size(70.dp)
                             .clickable{
-                                SnackbarManager.showMessage("Profile picture backend missing! Todo")
+                                showImagePickerDialog = true
                             }
                     )
 

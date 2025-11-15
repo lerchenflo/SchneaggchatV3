@@ -92,6 +92,8 @@ kotlin {
             //Firebase
             api("io.github.mirzemehdi:kmpnotifier:1.6.0")
 
+            //Image picker
+            implementation(libs.github.imagepickerkmp)
 
             //Jwt parsing
             implementation("com.appstractive:jwt-kt:1.2.0")
