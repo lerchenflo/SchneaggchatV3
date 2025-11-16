@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 
+import io.github.ismoy.imagepickerkmp.domain.models.PhotoResult
 import kotlinx.datetime.LocalDate
 
 data class SignupState(
@@ -11,6 +12,7 @@ data class SignupState(
     val passwordRetypeState: InputfieldState = InputfieldState(),
     val emailState: InputfieldState = InputfieldState(),
     val gebiDate: LocalDate? = null, //"1994-5-25", //Year month day
+    val profilePic: ByteArray? = null,
     val agbsAccepted: Boolean = false
 
     )
@@ -32,6 +34,8 @@ sealed interface SignupAction {
     data object OnSignUpButtonPress : SignupAction
 
     data class OnGebiDateChange(val newDate: LocalDate) : SignupAction
+    data class OnProfilepicSelected(val profilePicResult: PhotoResult) : SignupAction
+
 
     data class OnAgbChecked(val checked: Boolean) : SignupAction
 

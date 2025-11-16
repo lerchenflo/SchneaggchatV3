@@ -5,8 +5,12 @@ import io.ktor.client.call.body
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.util.network.UnresolvedAddressException
@@ -227,16 +231,46 @@ class NetworkUtils(
         val birthDate: String,
     )
 
-    suspend fun register(username: String, password: String, email: String, birthdate: String): NetworkResult<Any, NetworkError> {
-        return safeAuthPost<RegisterRequest, Any>(
-            endpoint = "/auth/register",
-            body = RegisterRequest(
-                username = username,
-                password = password,
-                email = email,
-                birthDate = birthdate
+    suspend fun register(
+        username: String,
+        password: String,
+        email: String,
+        birthDate: String,
+        profilePicBytes: ByteArray,
+        fileName: String = "profile.jpg"
+    ): NetworkResult<Unit, NetworkError> {
+        return try {
+            val response = authHttpClient.submitFormWithBinaryData(
+                url = "$SERVERURL/auth/register",
+                formData = formData {
+                    append("username", username)
+                    append("password", password)
+                    append("email", email)
+                    append("birthDate", birthDate)
+                    append("profilepic", profilePicBytes, Headers.build {
+                        append(HttpHeaders.ContentType, "image/jpeg")
+                        append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+                    })
+                }
             )
-        )
+
+            if (response.status.isSuccess()) {
+                NetworkResult.Success(Unit)
+            } else {
+                NetworkResult.Error(mapHttpStatusToError(response.status.value))
+            }
+        } catch (e: UnresolvedAddressException) {
+            NetworkResult.Error(NetworkError.NO_INTERNET)
+        } catch (e: HttpRequestTimeoutException) {
+            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
+        } catch (e: SocketTimeoutException) {
+            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
+        } catch (e: SerializationException) {
+            NetworkResult.Error(NetworkError.SERIALIZATION)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            NetworkResult.Error(NetworkError.UNKNOWN)
+        }
     }
 
     @Serializable

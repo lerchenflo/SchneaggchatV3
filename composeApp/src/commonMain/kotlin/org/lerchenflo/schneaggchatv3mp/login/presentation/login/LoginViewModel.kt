@@ -13,6 +13,16 @@ class LoginViewModel(
 ): ViewModel() {
 
 
+
+    //TODO: SHow create account button only on mobile (Image picker only there available) (Implement in ui)
+    var showCreateButton by mutableStateOf(false)
+
+    init {
+        if (appRepository.appVersion.isMobile()){
+            showCreateButton = true
+        }
+    }
+
     var username by mutableStateOf("")
         private set
     var password by mutableStateOf("")
@@ -38,6 +48,8 @@ class LoginViewModel(
         password = newValue
         clearError()
     }
+
+
 
 
     // Handle login logic

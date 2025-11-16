@@ -80,7 +80,7 @@ fun LoginScreen(
             val usernameFocusRequester = remember { FocusRequester() }
             val passwordFocusRequester = remember { FocusRequester() }
             val loginFocusRequester = remember { FocusRequester() }
-
+            
             when (deviceConfiguration){
                 DeviceSizeConfiguration.MOBILE_PORTRAIT -> {
                     Column(

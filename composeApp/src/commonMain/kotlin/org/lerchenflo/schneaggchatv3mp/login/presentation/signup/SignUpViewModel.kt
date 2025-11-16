@@ -5,6 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache.updateUsername
@@ -108,6 +112,17 @@ class SignUpViewModel(
                         navigator.navigate(Route.Login)
                     }
                 }
+
+                is SignupAction.OnProfilepicSelected -> {
+                    CoroutineScope(Dispatchers.IO).launch{
+                        val bytearray = action.profilePicResult
+                            .loadBytes()
+                        state = state.copy(
+                            profilePic = bytearray
+                        )
+                    }
+
+                }
             }
         }
 
@@ -126,6 +141,7 @@ class SignUpViewModel(
                 && state.passwordRetypeState.isCorrect()
                 && state.emailState.isCorrect()
                 && state.gebiDate != null
+                && state.profilePic != null
                 && state.agbsAccepted
                 && state.passwordState.text == state.passwordRetypeState.text
     }
@@ -140,7 +156,7 @@ class SignUpViewModel(
                         isLoading = true
                     )
 
-                    appRepository.createAccount(state.usernameState.text, state.emailState.text, state.passwordState.text, state.gebiDate.toString()) { success ->
+                    appRepository.createAccount(state.usernameState.text, state.emailState.text, state.passwordState.text, state.gebiDate.toString(), state.profilePic!!) { success ->
                         if (success) {
                             println("Account erstellen erfolgreich")
 

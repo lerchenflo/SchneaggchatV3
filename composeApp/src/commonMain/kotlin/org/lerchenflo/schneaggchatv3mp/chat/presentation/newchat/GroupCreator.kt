@@ -122,7 +122,7 @@ fun GroupCreator(
         Box(modifier = Modifier.fillMaxSize()) {
             if (showImagePickerDialog) {
                 ImagePickerLauncher(
-                    config = ImagePickerConfig(
+                    config = ImagePickerConfig(//TODO: Fix strings
                         onPhotoCaptured = { /* TODO: handle image */ },
                         onDismiss = { showImagePickerDialog = false },
                         onError = {},

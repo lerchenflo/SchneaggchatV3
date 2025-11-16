@@ -266,18 +266,19 @@ class AppRepository(
         email: String,
         password: String,
         birthdate: String,
+        profilePic: ByteArray,
         onResult: (Boolean) -> Unit
     ) {
         CoroutineScope(Dispatchers.IO).launch {
-            when(val response = networkUtils.register(username, password, email, birthdate)){
-                is org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult.Error -> {
+            when(val response = networkUtils.register(username, password, email, birthdate, profilePic)){
+                is NetworkResult.Error -> {
                     println("Error: ${response.error}")
 
                     //TODO: Send into errorchannel (Look login above)
 
                     onResult(false)
                 }
-                is org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult.Success<*> -> {
+                is NetworkResult.Success<*> -> {
                     onResult(true)
                 }
             }
