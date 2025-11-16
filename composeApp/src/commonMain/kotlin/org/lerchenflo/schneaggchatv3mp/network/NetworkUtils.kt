@@ -279,6 +279,7 @@ class NetworkUtils(
     )
 
     suspend fun refresh(refreshToken: String): NetworkResult<TokenPair, NetworkError> {
+        println("Refreshing token...")
         return safeAuthPost<RefreshRequest, TokenPair>(
             endpoint = "/auth/refresh",
             body = RefreshRequest(refreshToken = refreshToken)

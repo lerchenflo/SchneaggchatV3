@@ -215,8 +215,6 @@ class AppRepository(
     suspend fun areLoginCredentialsSaved(): Boolean{
         val tokens = preferencemanager.getTokens()
 
-        println(tokens)
-
         val tokensNotEmpty = tokens.accessToken.isNotEmpty() && tokens.refreshToken.isNotEmpty()
         val tokenNotExpired = isTokenDateValid(tokens.refreshToken) //is the refreshtoken still valid? If not, user needs to login again
 
@@ -225,6 +223,7 @@ class AppRepository(
         if (credsSaved){
             println("Tokens are saved in local storage, autologin permitted")
             SessionCache.updateTokenPair(tokens)
+            SessionCache.updateLoggedIn(true)
         }
 
         return credsSaved

@@ -71,6 +71,7 @@ class ChatSelectorViewModel(
 
             if (!SessionCache.loggedIn){
 
+                println("Not logged in, refreshing token")
                 appRepository.refreshTokens()
 
                 val becameLoggedIn = withTimeoutOrNull(10_000L) {

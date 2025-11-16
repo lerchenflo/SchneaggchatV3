@@ -58,8 +58,6 @@ fun SignUpScreenRoot(){
 
 @Preview(
     showBackground = true,
-    heightDp = 400,
-    widthDp = 600
 )
 @Composable
 fun SignUpScreen(
@@ -96,7 +94,7 @@ fun SignUpScreen(
                 if (showImagePickerDialog) {
 
                     ImagePickerLauncher(
-                        config = ImagePickerConfig( //TODO: Fix strings
+                        config = ImagePickerConfig( //TODO: Fix all strings
                             onPhotoCaptured = { onAction(SignupAction.OnProfilepicSelected(it))
                                               showImagePickerDialog = false },
                             onDismiss = { showImagePickerDialog = false },

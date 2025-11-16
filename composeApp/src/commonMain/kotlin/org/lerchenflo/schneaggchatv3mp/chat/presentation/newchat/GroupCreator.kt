@@ -121,6 +121,7 @@ fun GroupCreator(
         var showImagePickerDialog by remember { mutableStateOf(false) }
         Box(modifier = Modifier.fillMaxSize()) {
             if (showImagePickerDialog) {
+                //TODO: Copy image selection from Create screen
                 ImagePickerLauncher(
                     config = ImagePickerConfig(//TODO: Fix strings
                         onPhotoCaptured = { /* TODO: handle image */ },
