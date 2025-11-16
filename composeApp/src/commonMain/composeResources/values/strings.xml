@@ -123,6 +123,8 @@
 
     <string name="members">Members</string>
     <string name="info">Info</string>
+    <string name="at_least_members">you need at least %1$s members in your group</string>
+    <string name="group_name_missing">Please Provide a group name</string>
 
     <string name="none">none</string>
     <string name="persons">persons</string>
