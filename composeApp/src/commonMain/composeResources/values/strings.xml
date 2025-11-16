@@ -133,6 +133,11 @@
     <string name="group_name">group name</string>
     <string name="group_description">group description</string>
 
+    <string name="image">image</string>
+    <string name="video">video</string>
+    <string name="audio">audio</string>
+    <string name="poll">poll</string>
+
 
 
 
