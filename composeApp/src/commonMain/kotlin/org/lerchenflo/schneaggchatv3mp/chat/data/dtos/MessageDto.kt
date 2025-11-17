@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.network.PICTUREMESSAGE
+import org.lerchenflo.schneaggchatv3mp.datasource.network.PICTUREMESSAGE
 
 @Serializable
 @Entity(

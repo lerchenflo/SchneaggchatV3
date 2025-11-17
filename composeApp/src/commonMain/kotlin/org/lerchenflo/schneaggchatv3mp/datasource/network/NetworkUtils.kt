@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.network
+package org.lerchenflo.schneaggchatv3mp.datasource.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -16,8 +16,8 @@ import io.ktor.http.isSuccess
 import io.ktor.util.network.UnresolvedAddressException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
-import org.lerchenflo.schneaggchatv3mp.network.util.NetworkError
-import org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import kotlin.time.ExperimentalTime
 
 
@@ -30,7 +30,6 @@ class NetworkUtils(
     private val authHttpClient: HttpClient //For auth without the bearer
 ) {
 
-    //Auth post for the auth endpoint
     private suspend inline fun <reified T, reified R> safeAuthPost(
         endpoint: String,
         body: T
@@ -199,7 +198,13 @@ class NetworkUtils(
 
 
 
+    /*
+    **************************************************************************
 
+    AUTHENTICATION
+
+    **************************************************************************
+     */
 
     @Serializable
     data class TokenPair(
@@ -285,5 +290,25 @@ class NetworkUtils(
             body = RefreshRequest(refreshToken = refreshToken)
         )
     }
+
+
+
+
+
+    /*
+    **************************************************************************
+
+    User sync
+
+    **************************************************************************
+     */
+
+
+    suspend fun getProfilePicForUserId(userId: String) : NetworkResult<ByteArray, NetworkError> {
+        return safeGet(
+            endpoint = "/profilepic/$userId"
+        )
+    }
+
 
 }

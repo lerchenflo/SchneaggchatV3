@@ -1,8 +1,8 @@
-package org.lerchenflo.schneaggchatv3mp.network.util
+package org.lerchenflo.schneaggchatv3mp.datasource.network.util
 
 sealed interface NetworkResult<out D, out E: Error> {
     data class Success<out D>(val data: D): NetworkResult<D, Nothing>
-    data class Error<out E: org.lerchenflo.schneaggchatv3mp.network.util.Error>(val error: E): NetworkResult<Nothing, E>
+    data class Error<out E: org.lerchenflo.schneaggchatv3mp.datasource.network.util.Error>(val error: E): NetworkResult<Nothing, E>
 }
 
 inline fun <T, E: Error, R> NetworkResult<T, E>.map(map: (T) -> R): NetworkResult<R, E> {

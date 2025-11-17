@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.database
+package org.lerchenflo.schneaggchatv3mp.datasource.database
 
 import androidx.room.Dao
 import androidx.room.Insert

@@ -28,7 +28,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
-import org.lerchenflo.schneaggchatv3mp.network.TEXTMESSAGE
+import org.lerchenflo.schneaggchatv3mp.datasource.network.TEXTMESSAGE
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.check

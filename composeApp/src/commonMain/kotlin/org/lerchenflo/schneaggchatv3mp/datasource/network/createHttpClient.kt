@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.network
+package org.lerchenflo.schneaggchatv3mp.datasource.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -10,7 +10,6 @@ import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType

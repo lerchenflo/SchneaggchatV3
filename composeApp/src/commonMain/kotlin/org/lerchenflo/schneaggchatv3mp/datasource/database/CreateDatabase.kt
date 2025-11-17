@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.database
+package org.lerchenflo.schneaggchatv3mp.datasource.database
 
 import androidx.room.RoomDatabase
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver

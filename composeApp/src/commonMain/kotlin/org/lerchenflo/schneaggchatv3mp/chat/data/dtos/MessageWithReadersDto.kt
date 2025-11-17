@@ -4,7 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Relation
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.network.PICTUREMESSAGE
+import org.lerchenflo.schneaggchatv3mp.datasource.network.PICTUREMESSAGE
 
 @Serializable
 data class MessageWithReadersDto(

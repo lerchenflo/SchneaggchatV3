@@ -1,8 +1,5 @@
-package org.lerchenflo.schneaggchatv3mp.database
+package org.lerchenflo.schneaggchatv3mp.datasource
 
-import com.appstractive.jwt.JWT
-import com.appstractive.jwt.from
-import com.appstractive.jwt.subject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -21,8 +18,9 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
-import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult
+import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
@@ -52,7 +50,7 @@ class AppRepository(
             val duration: Long = 5000L
         )
 
-        private val _channel = Channel<ErrorEvent>(capacity = Channel.BUFFERED)
+        private val _channel = Channel<ErrorEvent>(capacity = Channel.Factory.BUFFERED)
         val errors = _channel.receiveAsFlow()
 
         suspend fun sendErrorSuspend(event: ErrorEvent) {
@@ -95,7 +93,7 @@ class AppRepository(
         val usersFlow = userRepository.getallusers()
         val groupsFlow = groupRepository.getallgroupswithmembers()
 
-        return combine(messagesFlow, usersFlow, groupsFlow, ) { messages, users, groups ->
+        return combine(messagesFlow, usersFlow, groupsFlow,) { messages, users, groups ->
 
             val loweredSearch = searchTerm.trim().lowercase()
 
@@ -108,8 +106,9 @@ class AppRepository(
                     .maxByOrNull { it.getSendDateAsLong() }
 
                 last?.let { msg ->
-                    val senderName = users.firstOrNull { u -> u.id == msg.messageDto.senderId }?.name
-                        ?: msg.messageDto.senderAsString
+                    val senderName =
+                        users.firstOrNull { u -> u.id == msg.messageDto.senderId }?.name
+                            ?: msg.messageDto.senderAsString
                     msg.messageDto.senderAsString = senderName
                 }
 
@@ -121,7 +120,7 @@ class AppRepository(
                 val unreadMessageCount =
                     thischatmessages.count { message ->
                         !message.isReadbyMe()
-                }
+                    }
 
                 val unsentMessageCOunt =
                     thischatmessages.count { message ->
@@ -146,8 +145,9 @@ class AppRepository(
                     .maxByOrNull { it.getSendDateAsLong() }
 
                 last?.let { msg ->
-                    val senderName = users.firstOrNull { u -> u.id == msg.messageDto.senderId }?.name
-                        ?: "Unknown"
+                    val senderName =
+                        users.firstOrNull { u -> u.id == msg.messageDto.senderId }?.name
+                            ?: "Unknown"
                     msg.messageDto.senderAsString = senderName
                 }
 
@@ -178,7 +178,9 @@ class AppRepository(
             }
 
             val allItems = (userItems + groupItems)
-                .sortedByDescending { it.lastmessage?.getSendDateAsLong() ?: 0L } // nulls treated as 0
+                .sortedByDescending {
+                    it.lastmessage?.getSendDateAsLong() ?: 0L
+                } // nulls treated as 0
             val filtered = when (filter) {
                 ChatFilter.NONE -> allItems
                 ChatFilter.UNREAD -> allItems.filter { it.unreadMessageCount > 0 }
@@ -216,7 +218,8 @@ class AppRepository(
         val tokens = preferencemanager.getTokens()
 
         val tokensNotEmpty = tokens.accessToken.isNotEmpty() && tokens.refreshToken.isNotEmpty()
-        val tokenNotExpired = isTokenDateValid(tokens.refreshToken) //is the refreshtoken still valid? If not, user needs to login again
+        val tokenNotExpired =
+            isTokenDateValid(tokens.refreshToken) //is the refreshtoken still valid? If not, user needs to login again
 
         val credsSaved = tokenNotExpired && tokensNotEmpty
 
@@ -237,18 +240,18 @@ class AppRepository(
 
         CoroutineScope(Dispatchers.IO).launch {
             when(val result = networkUtils.login(username, password)){
-                is org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult.Error<*> -> {
+                is NetworkResult.Error<*> -> {
                     println("Error: ${result.error}")
 
                     //TODO: Improve error messages (One string for each error message???)
-                    ErrorChannel.sendErrorSuspend(ErrorEvent(
+                    sendErrorSuspend(ErrorEvent(
                         errorMessage = result.error.toString(),
                         duration = 5000L
                     ))
 
                     onResult(false)
                 }
-                is org.lerchenflo.schneaggchatv3mp.network.util.NetworkResult.Success<NetworkUtils.TokenPair> -> {
+                is NetworkResult.Success<NetworkUtils.TokenPair> -> {
                     onNewTokenPair(result.data)
                     onResult(true)
                 }

@@ -1,9 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.database
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import java.io.File
 import java.lang.System
 

@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.network.util
+package org.lerchenflo.schneaggchatv3mp.datasource.network.util
 
 interface Error
 enum class NetworkError : Error {

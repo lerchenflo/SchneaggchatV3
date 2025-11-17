@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
-import org.lerchenflo.schneaggchatv3mp.network.PICTUREMESSAGE
+import org.lerchenflo.schneaggchatv3mp.datasource.network.PICTUREMESSAGE
 
 data class Message(
     var localPK: Long = 0L,
