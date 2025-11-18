@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
@@ -118,6 +119,17 @@ fun SignUpScreen(
                 }
             }
 
+            val focus = SignupFocusRequesters(
+                profilePic = remember { FocusRequester() },
+                username = remember { FocusRequester() },
+                email = remember { FocusRequester() },
+                date = remember { FocusRequester() },
+                password = remember { FocusRequester() },
+                password2 = remember { FocusRequester() },
+                terms = remember { FocusRequester() },
+                signup = remember { FocusRequester() },
+            )
+
 
             //Show other ui only if you are not currently selecting an image
             if (!showImagePickerDialog){
@@ -131,7 +143,7 @@ fun SignUpScreen(
                                 .verticalScroll(rememberScrollState()),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ){
-                            SignUpForm1(
+                                                        SignUpForm1(
                                 usernameText = state.usernameState.text,
                                 onusernameTextChange = { onAction(SignupAction.OnUsernameTextChange(it)) },
                                 usernameerrorText = state.usernameState.errorMessage,
@@ -143,6 +155,7 @@ fun SignUpScreen(
                                 onBackClick = { onAction(SignupAction.OnBackClicked) },
                                 selectedProfilePic = state.profilePic,
                                 onProfilePicClick = {showImagePickerDialog = true},
+                                focus = focus,
                                 modifier = Modifier.fillMaxWidth(),
 
                                 )
@@ -176,6 +189,7 @@ fun SignUpScreen(
                                 onCheckBoxCheckedChange = { onAction(SignupAction.OnAgbChecked(it)) },
                                 checkboxChecked = state.agbsAccepted,
                                 modifier = Modifier.fillMaxWidth(),
+                                focus = focus
 
                                 )
                         }
@@ -205,6 +219,7 @@ fun SignUpScreen(
                                 onBackClick = {onAction(SignupAction.OnBackClicked)},
                                 selectedProfilePic = state.profilePic,
                                 onProfilePicClick = {showImagePickerDialog = true},
+                                focus = focus,
                                 modifier = Modifier.weight(1f),
                             )
 
@@ -220,7 +235,8 @@ fun SignUpScreen(
                                 signupbuttonloading = state.isLoading,
                                 onCheckBoxCheckedChange = { onAction(SignupAction.OnAgbChecked(it)) },
                                 checkboxChecked = state.agbsAccepted,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                focus = focus
 
                             )
                         }
@@ -248,6 +264,7 @@ fun SignUpScreen(
                                 selectedProfilePic = state.profilePic,
                                 onProfilePicClick = {showImagePickerDialog = true},
                                 selectedgebidate = state.gebiDate,
+                                focus = focus,
                             )
 
                             Spacer(modifier = Modifier.height(16.dp))
@@ -264,6 +281,7 @@ fun SignUpScreen(
                                 onCheckBoxCheckedChange = { onAction(SignupAction.OnAgbChecked(it)) },
                                 checkboxChecked = state.agbsAccepted,
                                 signupbuttonloading = state.isLoading,
+                                focus = focus
                             )
                         }
                     }
