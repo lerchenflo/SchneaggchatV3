@@ -8,18 +8,27 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import coil3.compose.AsyncImage
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -42,6 +51,7 @@ fun ChatDetails(
     val globalViewModel = koinInject<GlobalViewModel>()
     val selectedChatName = globalViewModel.selectedChat.value.name
     val group = globalViewModel.selectedChat.value.isGroup
+    var profilePictureDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -64,6 +74,7 @@ fun ChatDetails(
                     .size(200.dp) // Use square aspect ratio
                     .padding(bottom = 10.dp)
                     .clickable {
+                        profilePictureDialog = true
                         //todo: profilbild groß azoaga
                     }
             )
@@ -172,6 +183,13 @@ fun ChatDetails(
                 .fillMaxWidth()
         )
 
+        // Profilbild größer azoaga
+        if(profilePictureDialog){
+            ProfilePictureBigDialog(
+                onDismiss = {profilePictureDialog = false},
+                filepath = globalViewModel.selectedChat.value.profilePicture
+            )
+        }
 
     }
 }
