@@ -22,7 +22,7 @@ import kotlin.time.ExperimentalTime
 
 
 //val SERVERURL = "https://schneaggchatv3.lerchenflo.eu"
-val SERVERURL = "http://192.168.0.4:8080"
+val SERVERURL = "http://10.157.216.81:8080"
 
 @OptIn(ExperimentalTime::class)
 class NetworkUtils(

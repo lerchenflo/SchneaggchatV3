@@ -78,6 +78,7 @@ class SettingsViewModel(
             SessionCache.clear() //Alle variabla löscja
             SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
             // todo navigate to login screen
+            // Des passiert jo scho über da callback. Willsch es umbaua oder wia? -Fabi
         }
     }
 
