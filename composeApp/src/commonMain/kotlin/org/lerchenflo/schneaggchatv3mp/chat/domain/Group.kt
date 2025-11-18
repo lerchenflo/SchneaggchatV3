@@ -3,7 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupDto
 
 data class Group(
-    val id: Long = 0L,
+    val id: String,
     val name: String,
     val profilePicture: String,
     val description: String,

@@ -7,9 +7,9 @@ import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
-import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
-import org.lerchenflo.schneaggchatv3mp.database.IdChangeDate
-import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
+import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 class UserRepository(
@@ -27,7 +27,7 @@ class UserRepository(
     }
 
 
-    suspend fun deleteUser(userid: Long){
+    suspend fun deleteUser(userid: String){
         database.userDao().delete(userid)
     }
 

@@ -14,6 +14,8 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+
+
 kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -53,6 +55,8 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
 
         }
+
+
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -88,6 +92,11 @@ kotlin {
             //Firebase
             api("io.github.mirzemehdi:kmpnotifier:1.6.0")
 
+            //Image picker
+            implementation(libs.github.imagepickerkmp)
+
+            //Jwt parsing
+            implementation("com.appstractive:jwt-kt:1.2.0")
 
             //DateTime
             implementation(libs.kotlinx.datetime)

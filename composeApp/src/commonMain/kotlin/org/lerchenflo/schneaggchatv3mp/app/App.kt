@@ -12,8 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
@@ -37,10 +39,11 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.Chatauswahlscreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreator
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
-import org.lerchenflo.schneaggchatv3mp.database.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
+import org.lerchenflo.schneaggchatv3mp.sharedUi.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
@@ -55,9 +58,9 @@ fun App() {
     val themeSetting by preferenceManager.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
 
     SchneaggchatTheme(
-            themeSetting = themeSetting
-                     ) 
-     {
+        themeSetting = themeSetting
+    ) {
+
         val navigator = koinInject<Navigator>()
         val navController = rememberNavController()
 
@@ -78,6 +81,27 @@ fun App() {
                 is NavigationAction.Navigate -> navController.navigate(action.destination){action.navOptions(this)}
                 NavigationAction.NavigateBack -> navController.navigateUp()
             }
+        }
+
+
+        var showAutoFadePopup by remember { mutableStateOf(false) }
+        var autoFadeMessage by remember { mutableStateOf("") }
+        var autoFadeDuration by remember { mutableStateOf(5000L) }
+
+        LaunchedEffect(Unit) {
+            AppRepository.errors.collect { error ->
+                autoFadeDuration = error.duration
+                autoFadeMessage = if (error.errorCode != null) "Errorcode: ${error.errorCode}\n${error.errorMessage}" else error.errorMessage
+                showAutoFadePopup = true
+            }
+        }
+
+        if (showAutoFadePopup){
+            AutoFadePopup(
+                message = autoFadeMessage,
+                onDismiss = {showAutoFadePopup = false},
+                showDuration = autoFadeDuration,
+            )
         }
 
 
@@ -113,10 +137,9 @@ fun App() {
 
                                 globalViewModel.viewModelScope.launch {
                                     //Autologin
-                                    appRepository.login(SessionCache.username,
-                                        SessionCache.passwordDonotprint, onResult = { success, body ->
-                                        println("Login abgeschlossen mit success: $success")
-                                    })
+
+                                    appRepository.refreshTokens()
+
                                 }
                             } else {
                                 navController.navigate(Route.Login) {

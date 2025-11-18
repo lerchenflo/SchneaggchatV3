@@ -3,7 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 
 data class User(
-    override val id: Long = 0L,
+    override val id: String,
     val lastChanged: Long = 0L,
     override val name: String = "",
     override val description: String = "",

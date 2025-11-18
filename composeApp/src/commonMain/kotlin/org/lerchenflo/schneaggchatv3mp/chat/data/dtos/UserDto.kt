@@ -9,9 +9,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 @Entity(tableName = "users")
 data class UserDto(
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = false)
     @ColumnInfo(name = "id")
-    var id: Long = 0L,
+    var id: String = "",
 
     @SerialName("lastchanged")
     @ColumnInfo(name = "changedate")

@@ -1,12 +1,12 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
@@ -45,7 +45,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,7 +54,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
@@ -324,46 +322,33 @@ fun Chatauswahlscreen(
             PullToRefreshBox( // needs experimental opt in
                 isRefreshing = false,
                 onRefresh = { viewModel.refresh() }, // Trigger refresh
-                indicator = {
-                    null //Überschrieba dassa garned kut
-                    /*
-                    Indicator(// optional custom indicator
-                        modifier = Modifier.align(Alignment.TopCenter),
-                        isRefreshing = viewModel._isRefreshing.value,
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        state = state
-                    )
-
-                     */
-                },
-
+                indicator = {},
                 ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        bottom = 16.dp
-                    ),
-                ) {
-                    items(availablegegners) { gegner ->
-                        UserButton(
-                            selectedChat = gegner,
-                            useOnClickGes = false,
-                            lastMessage = gegner.lastmessage,
-                            onClickText = { onChatSelected(gegner) },
-                            onClickImage = {
-                                profilePictureDialog = true
-                                profilePictureFilePathTemp = gegner.profilePicture
-                            }
-                        )
-                        HorizontalDivider(
-                            thickness = 0.5.dp
-                        )
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize(), //TODO: If showing users is not working correctly, change to fillmaxwidth
+                        contentPadding = PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = 16.dp
+                        ),
+                    ) {
+                        items(availablegegners) { gegner ->
+                            UserButton(
+                                selectedChat = gegner,
+                                useOnClickGes = false,
+                                lastMessage = gegner.lastmessage,
+                                onClickText = { onChatSelected(gegner) },
+                                onClickImage = {
+                                    profilePictureDialog = true
+                                    profilePictureFilePathTemp = gegner.profilePicture
+                                }
+                            )
+                            HorizontalDivider(
+                                thickness = 0.5.dp
+                            )
+                        }
                     }
-                }
             }
         }
 

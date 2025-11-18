@@ -2,11 +2,14 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupWithMembersDto
 
+//TODO Des löscha und stattdessen bei da group implementiera dass die default die members o hot
+
+
 data class GroupWithMembers(
     val group: Group,
     val members: List<GroupMember>
 ) : SelectedChat() {
-    override val id: Long
+    override val id: String
         get() = group.id
     override val isGroup: Boolean
         get() = true
@@ -15,7 +18,7 @@ data class GroupWithMembers(
     override val profilePicture: String
         get() = group.profilePicture
     override val status: String
-        get() = group.description //TODO Was für an groupstatus oda einfach silo mak a o nix returnen
+        get() = group.description
     override val description: String
         get() = group.description
 

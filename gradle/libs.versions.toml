@@ -1,7 +1,7 @@
 [versions]
-agp = "8.13.0"
+agp = "8.13.1"
 android-compileSdk = "36"
-android-minSdk = "24"
+android-minSdk = "26"
 android-targetSdk = "35"
 androidx-activity = "1.11.0"
 androidx-appcompat = "1.7.1"
@@ -14,6 +14,7 @@ coilComposeVersion = "3.3.0"
 composeHotReload = "1.0.0-beta07"
 composeMultiplatform = "1.10.0-alpha01"
 encoding = "2.4.0"
+githubImagepickerkmp = "1.0.28-beta2"
 junit = "4.13.2"
 
 kamelImage = "0.6.0"
@@ -41,6 +42,7 @@ startupRuntime = "1.2.0"
 
 [libraries]
 
+github-imagepickerkmp = { module = "io.github.ismoy:imagepickerkmp", version.ref = "githubImagepickerkmp" }
 kmpnotifier = { module = "io.github.mirzemehdi:kmpnotifier", version.ref = "kmpnotifier"}
 base64 = { module = "io.matthewnelson.encoding:base64", version.ref = "encoding" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }

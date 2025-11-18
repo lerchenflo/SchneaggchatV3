@@ -9,6 +9,7 @@ import org.koin.core.context.startKoin
 import org.lerchenflo.schneaggchatv3mp.app.App
 import org.lerchenflo.schneaggchatv3mp.di.desktopAppDatabaseModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopDataStoreModule
+import org.lerchenflo.schneaggchatv3mp.di.desktopHttpAuthModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopHttpModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopPictureManagerModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopVersionModule
@@ -23,6 +24,7 @@ fun main() = application {
 
         modules(
             desktopHttpModule,
+            desktopHttpAuthModule,
             desktopDataStoreModule,
             desktopVersionModule,
             desktopPictureManagerModule

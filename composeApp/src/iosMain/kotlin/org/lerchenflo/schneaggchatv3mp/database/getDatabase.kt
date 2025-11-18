@@ -1,13 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp.database
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import kotlinx.cinterop.ExperimentalForeignApi
+import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
-import platform.Foundation.NSHomeDirectory
 import platform.Foundation.NSUserDomainMask
 
 @OptIn(ExperimentalForeignApi::class)

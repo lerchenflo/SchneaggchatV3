@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.network.PICTUREMESSAGE
+import org.lerchenflo.schneaggchatv3mp.datasource.network.PICTUREMESSAGE
 
 @Serializable
 @Entity(
@@ -21,7 +21,7 @@ data class MessageDto(
     var localPK : Long = 0L,
 
     @SerialName("id")
-    var id: Long? = null,
+    var id: String? = null,
 
     @SerialName("msgtype")
     var msgType: String = "",
@@ -30,15 +30,14 @@ data class MessageDto(
     var content: String = "",
 
     @SerialName("sender")
-    var senderId: Long = 0,
+    var senderId: String,
 
     @SerialName("empfaenger")
-    var receiverId: Long = 0,
+    var receiverId: String,
 
     @SerialName("sendedatum")
     var sendDate: String = "",
 
-    @SerialName("geaendert")
     @ColumnInfo(name = "changedate")
     var changeDate: String = "",
 
@@ -49,18 +48,17 @@ data class MessageDto(
     var groupMessage: Boolean = false,
 
     @SerialName("answerid")
-    var answerId: Long = -1,
+    var answerId: String? = null,
 
     @ColumnInfo(name = "sent")
     var sent: Boolean = false,
 
-    @Ignore
-    var senderAsString: String = "",
-
-    @Ignore
-    var senderColor: Int = 0,
 ) {
+    @Ignore
+    var senderAsString: String = ""
 
+    @Ignore
+    var senderColor: Int = 0
 
     fun isPicture(): Boolean {
         return msgType == PICTUREMESSAGE

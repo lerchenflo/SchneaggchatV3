@@ -8,6 +8,12 @@ fun initKoin(){
         modules(IosDatabaseModule, sharedmodule)
 
         //Httpclient
-        modules(IosHttpModule, IosDatastoreModule, IosVersionModule, IosPictureManagerModule)
+        modules(
+            IosHttpModule,
+            IosHttpAuthModule,
+            IosDatastoreModule,
+            IosVersionModule,
+            IosPictureManagerModule
+        )
     }
 }

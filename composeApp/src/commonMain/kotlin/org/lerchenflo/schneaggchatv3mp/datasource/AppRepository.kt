@@ -1,37 +1,32 @@
-package org.lerchenflo.schneaggchatv3mp.database
+package org.lerchenflo.schneaggchatv3mp.datasource
 
-import androidx.room.Transaction
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
-import kotlinx.coroutines.withContext
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
-import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.network.util.onError
-import org.lerchenflo.schneaggchatv3mp.network.util.onSuccess
-import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
+import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.utilities.getUserIdFromToken
+import org.lerchenflo.schneaggchatv3mp.utilities.isTokenDateValid
 
 class AppRepository(
     private val database: AppDatabase,
@@ -46,20 +41,44 @@ class AppRepository(
     val appVersion: AppVersion, //Appversion, uf des darf jeder zugriefa
 
 ) {
+    //Errorchannel for global error events (Show in every screen)
+    companion object ErrorChannel{
+
+        data class ErrorEvent (
+            val errorCode: Int? = null,
+            val errorMessage: String,
+            val duration: Long = 5000L
+        )
+
+        private val _channel = Channel<ErrorEvent>(capacity = Channel.Factory.BUFFERED)
+        val errors = _channel.receiveAsFlow()
+
+        suspend fun sendErrorSuspend(event: ErrorEvent) {
+            _channel.send(event) // suspending send
+        }
+
+        fun trySendError(event: ErrorEvent) {
+            _channel.trySend(event).onFailure {
+                // handle failure (e.g., log) — channel full or closed
+            }
+        }
+    }
+
+
+
+
 
     suspend fun deleteAllAppData(){
         database.allDatabaseDao().clearAll()
         NotificationManager.removeToken()
     }
 
-    @Transaction
-    fun getMessagesByUserId(userId: Long, gruppe: Boolean): Flow<List<MessageWithReadersDto>> {
+    fun getMessagesByUserId(userId: String, gruppe: Boolean): Flow<List<MessageWithReadersDto>> {
         return database.messageDao().getMessagesByUserId(userId, gruppe)
     }
 
-    @Transaction
     fun getownUser(): Flow<UserDto?> {
-        return database.userDao().getUserbyId(SessionCache.getOwnIdValue()?: 0)
+        return database.userDao().getUserbyId(SessionCache.getOwnIdValue())
     }
 
 
@@ -74,7 +93,7 @@ class AppRepository(
         val usersFlow = userRepository.getallusers()
         val groupsFlow = groupRepository.getallgroupswithmembers()
 
-        return combine(messagesFlow, usersFlow, groupsFlow, ) { messages, users, groups ->
+        return combine(messagesFlow, usersFlow, groupsFlow,) { messages, users, groups ->
 
             val loweredSearch = searchTerm.trim().lowercase()
 
@@ -87,8 +106,9 @@ class AppRepository(
                     .maxByOrNull { it.getSendDateAsLong() }
 
                 last?.let { msg ->
-                    val senderName = users.firstOrNull { u -> u.id == msg.messageDto.senderId }?.name
-                        ?: msg.messageDto.senderAsString
+                    val senderName =
+                        users.firstOrNull { u -> u.id == msg.messageDto.senderId }?.name
+                            ?: msg.messageDto.senderAsString
                     msg.messageDto.senderAsString = senderName
                 }
 
@@ -100,7 +120,7 @@ class AppRepository(
                 val unreadMessageCount =
                     thischatmessages.count { message ->
                         !message.isReadbyMe()
-                }
+                    }
 
                 val unsentMessageCOunt =
                     thischatmessages.count { message ->
@@ -125,8 +145,9 @@ class AppRepository(
                     .maxByOrNull { it.getSendDateAsLong() }
 
                 last?.let { msg ->
-                    val senderName = users.firstOrNull { u -> u.id == msg.messageDto.senderId }?.name
-                        ?: "Unknown"
+                    val senderName =
+                        users.firstOrNull { u -> u.id == msg.messageDto.senderId }?.name
+                            ?: "Unknown"
                     msg.messageDto.senderAsString = senderName
                 }
 
@@ -157,7 +178,9 @@ class AppRepository(
             }
 
             val allItems = (userItems + groupItems)
-                .sortedByDescending { it.lastmessage?.getSendDateAsLong() ?: 0L } // nulls treated as 0
+                .sortedByDescending {
+                    it.lastmessage?.getSendDateAsLong() ?: 0L
+                } // nulls treated as 0
             val filtered = when (filter) {
                 ChatFilter.NONE -> allItems
                 ChatFilter.UNREAD -> allItems.filter { it.unreadMessageCount > 0 }
@@ -170,38 +193,70 @@ class AppRepository(
     }
 
 
+    fun onNewTokenPair(tokenPair: NetworkUtils.TokenPair){
 
 
+        //Parse the token to get the user id
+        //println("Accesstoken: ${tokenPair.accessToken}")
+        val userid = getUserIdFromToken(tokenPair.refreshToken)
 
 
+        CoroutineScope(Dispatchers.IO).launch {
+            preferencemanager.saveTokens(tokenPair)
+            preferencemanager.saveOWNID(userid)
+        }
+
+        println("LOGIN: Userid: $userid")
+        SessionCache.updateTokenPair(tokenPair)
+        SessionCache.updateOwnId(userid)
+        SessionCache.updateLoggedIn(true)
+        println("Sessioncache: ${SessionCache.toString()}")
+    }
+
+
+    suspend fun areLoginCredentialsSaved(): Boolean{
+        val tokens = preferencemanager.getTokens()
+
+        val tokensNotEmpty = tokens.accessToken.isNotEmpty() && tokens.refreshToken.isNotEmpty()
+        val tokenNotExpired =
+            isTokenDateValid(tokens.refreshToken) //is the refreshtoken still valid? If not, user needs to login again
+
+        val credsSaved = tokenNotExpired && tokensNotEmpty
+
+        if (credsSaved){
+            println("Tokens are saved in local storage, autologin permitted")
+            SessionCache.updateTokenPair(tokens)
+            SessionCache.updateLoggedIn(true)
+        }
+
+        return credsSaved
+    }
 
     fun login(
         username: String,
         password: String,
-        onResult: (Boolean, String) -> Unit
+        onResult: (Boolean) -> Unit
     ) {
 
         CoroutineScope(Dispatchers.IO).launch {
-            networkUtils.login(username, password)
-                .onSuccessWithBody { headers, message ->
-                    //println("Success: $success $message")
-                    CoroutineScope(Dispatchers.IO).launch {
-                        preferencemanager.saveAutologinCreds(username, password)
-                        preferencemanager.saveOWNID(headers["userid"]?.toLong() ?: 0)
-                    }
+            when(val result = networkUtils.login(username, password)){
+                is NetworkResult.Error<*> -> {
+                    println("Error: ${result.error}")
 
-                    println(headers)
-                    SessionCache.updateSessionId(headers["sessionid"])
-                    SessionCache.updateOwnId(headers["userid"]?.toLong())
-                    SessionCache.updateLoggedIn(true)
-                    println("Sessioncache: ${SessionCache.toString()}")
-                    onResult(true, message)
-                }
-                .onError { error ->
-                    println("Error: $error")
+                    //TODO: Improve error messages (One string for each error message???)
+                    sendErrorSuspend(ErrorEvent(
+                        errorMessage = result.error.toString(),
+                        duration = 5000L
+                    ))
 
-                    onResult(false, error.toString())
+                    onResult(false)
                 }
+                is NetworkResult.Success<NetworkUtils.TokenPair> -> {
+                    onNewTokenPair(result.data)
+                    onResult(true)
+                }
+            }
+
         }
 
     }
@@ -213,21 +268,41 @@ class AppRepository(
         email: String,
         password: String,
         birthdate: String,
-        onResult: (Boolean, String) -> Unit
+        profilePic: ByteArray,
+        onResult: (Boolean) -> Unit
     ) {
         CoroutineScope(Dispatchers.IO).launch {
-            networkUtils.createAccount(username, password, email, birthdate)
-                .onSuccessWithBody { success, message ->
-                    println("Success: $success $message")
-                    onResult(success, message)
-                }
-                .onError { error ->
-                    println("Error: $error")
+            when(val response = networkUtils.register(username, password, email, birthdate, profilePic)){
+                is NetworkResult.Error -> {
+                    println("Error: ${response.error}")
 
-                    onResult(false, error.toString())
+                    //TODO: Send into errorchannel (Look login above)
+
+                    onResult(false)
                 }
+                is NetworkResult.Success<*> -> {
+                    onResult(true)
+                }
+            }
         }
     }
+
+    suspend fun refreshTokens() {
+        val tokens = preferencemanager.getTokens()
+
+        when(val result = networkUtils.refresh(tokens.refreshToken)){
+            is NetworkResult.Error<*> -> {}
+            is NetworkResult.Success<NetworkUtils.TokenPair> -> {
+                preferencemanager.saveTokens(result.data)
+                println("Tokenpair refresh successful")
+                onNewTokenPair(result.data)
+            }
+        }
+
+    }
+
+
+    /* TODO vornazua wieder iboua
 
     /**
      * @param localpk Local pk, only pass if already in db
@@ -237,12 +312,6 @@ class AppRepository(
 
         var localpkintern = localpk
 
-        //TODO: FABI leas des
-        /*
-        Do siaht ma schö s prinzip vo nam repository. die funktion ruft ma uf, und sie addet die nachricht in die lokale datenbank und versuacht
-        glichzittig no an send zum server. wenn da server des ned mag oda halt offline isch, denn wird se lokal gspeichert und kann süäter neu gschickt werra.
-        so wird se direkt im chat azoagt und ma muss o nur ua tolle funktion ufrufa
-         */
 
         if (SessionCache.getOwnIdValue() == null){
             println("Message senden abort: No OWNID")
@@ -330,16 +399,6 @@ class AppRepository(
     }
 
 
-    suspend fun areLoginCredentialsSaved(): Boolean{
-        val (username, password) = preferencemanager.getAutologinCreds()
-        if (username.isNotBlank() && password.isNotBlank()){
-            SessionCache.updateOwnId(preferencemanager.getOWNID())
-            SessionCache.updateUsername(username)
-            SessionCache.updatePassword(password)
-        }
-        return username.isNotBlank() && password.isNotBlank()
-    }
-
 
 
     //Network züg
@@ -397,6 +456,8 @@ class AppRepository(
             }
         }
     }
+
+     */
 
 
 }

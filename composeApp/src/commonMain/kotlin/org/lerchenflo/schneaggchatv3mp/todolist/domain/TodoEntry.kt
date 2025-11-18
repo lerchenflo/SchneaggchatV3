@@ -12,8 +12,8 @@ import schneaggchatv3mp.composeapp.generated.resources.bugstatus_unfinished
 import schneaggchatv3mp.composeapp.generated.resources.bugtype
 
 data class TodoEntry(
-    var id: Long = 0L,
-    var senderId: Long = 0,
+    var id: String,
+    var senderId: String,
     var createDate: String = "",
     var platform: Int = BugPlatform.Multiplatform.value,
     var type: Int = BugType.BugReport.value,

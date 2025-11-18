@@ -11,12 +11,7 @@ import kotlinx.serialization.Serializable
 data class GroupDto(
 
     @PrimaryKey(autoGenerate = false)
-    @SerialName("Id")
-    @ColumnInfo(name = "id")
-    val id: Long = 0,
-
-    @SerialName("groupname")
-    @ColumnInfo(name = "name")
+    val id: String,
     val name: String,
 
     @SerialName("profilepicture")

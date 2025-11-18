@@ -3,11 +3,9 @@ package org.lerchenflo.schneaggchatv3mp.todolist.data
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
-import org.lerchenflo.schneaggchatv3mp.database.IdChangeDate
-import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.network.util.onError
-import org.lerchenflo.schneaggchatv3mp.network.util.onSuccessWithBody
+import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
+import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntry
 
 class TodoRepository(
@@ -28,7 +26,7 @@ class TodoRepository(
         return database.todolistdao().getTodoIdsWithChangeDates()
     }
 
-    suspend fun deleteTodo(id: Long){
+    suspend fun deleteTodo(id: String){
         database.todolistdao().delete(id)
     }
 
@@ -43,19 +41,26 @@ class TodoRepository(
 
     suspend fun upsertTodoServer(todo: TodoEntry, timestamp: String){
         todo.lastChanged = timestamp
+        /*
         val networkrequest = networkUtils.upsertTodo(todo, timestamp)
-
         networkrequest.onSuccessWithBody { bool, body ->
             if (bool){
                 todo.id = body.toLong()
                 upsertTodo(todo)
             }
         }
+         */
+
     }
 
-    suspend fun deleteTodoServer(todoID: Long){
+    suspend fun deleteTodoServer(todoID: String){
+        /*
         networkUtils.deleteTodo(todoID)
 
-        database.todolistdao().delete(todoID)
+            database.todolistdao().delete(todoID)
+
+         */
+
+
     }
 }

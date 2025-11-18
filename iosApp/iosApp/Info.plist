@@ -9,5 +9,9 @@
 		<string>remote-notification</string>
 		<string>processing</string>
 	</array>
+    <key>NSCameraUsageDescription</key>
+    <string>Camera access needed to take photos</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Photo library access needed to select images</string>
 </dict>
 </plist>

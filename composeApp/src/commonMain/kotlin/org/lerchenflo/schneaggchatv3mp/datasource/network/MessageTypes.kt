@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.network
+package org.lerchenflo.schneaggchatv3mp.datasource.network
 
 
 // Account & Authentication (0-99)

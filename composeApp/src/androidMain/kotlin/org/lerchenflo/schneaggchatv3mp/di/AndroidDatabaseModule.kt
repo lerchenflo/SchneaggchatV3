@@ -7,9 +7,10 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.dsl.module
 import org.koin.android.ext.koin.androidContext
-import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
+import org.koin.core.qualifier.named
+import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.database.androidAppDatabaseBuilder
-import org.lerchenflo.schneaggchatv3mp.network.createHttpClient
+import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
@@ -18,8 +19,22 @@ val androidUserDatabaseModule = module {
 }
 
 val androidHttpModule = module {
-    single<HttpClient> {createHttpClient(OkHttp.create())}
+    single<HttpClient>(named("api")) {createHttpClient(
+        engine = OkHttp.create(),
+        preferencemanager = get(),
+        useAuth = true
+    )}
 }
+
+val androidHttpAuthModule = module {
+    single<HttpClient>(named("auth")) { createHttpClient(
+        engine = OkHttp.create(),
+        preferencemanager = get(),
+        useAuth = false
+    ) }
+}
+
+
 
 val androidDataStoreModule = module {
     single<DataStore<Preferences>> { createAndroidDataStore(androidContext()) }

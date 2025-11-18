@@ -3,17 +3,13 @@ package org.lerchenflo.schneaggchatv3mp.chat.data
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupMemberDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupWithMembersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupWithMembers
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroupWithMembers
-import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
-import org.lerchenflo.schneaggchatv3mp.database.IdChangeDate
-import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
+import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 class GroupRepository(
@@ -39,10 +35,13 @@ class GroupRepository(
         }
     }
 
-    suspend fun deleteGroup(groupid: Long){
+    suspend fun deleteGroup(groupid: String){
         database.groupDao().deleteGroup(groupid)
     }
 
+
+    /*
+    //TODO: Rebuild + Rebuild the dtos, all server synced
     @Transaction
     suspend fun upsertGroupWithMembers(gwm: GroupWithMembersDto) {
         // 1) upsert the group
@@ -58,11 +57,13 @@ class GroupRepository(
 
         // create new join rows and insert
         val joinRows = gwm.members.map { member ->
-            GroupMemberDto(0, gwm.group.id, member.id, member.color, member.joinDate, member.isAdmin)
+            //GroupMemberDto(0, gwm.group.id, member.id, member.color, member.joinDate, member.isAdmin)
         }
 
         if (joinRows.isNotEmpty()) {
             database.groupDao().upsertMembers(joinRows)
         }
     }
+
+     */
 }

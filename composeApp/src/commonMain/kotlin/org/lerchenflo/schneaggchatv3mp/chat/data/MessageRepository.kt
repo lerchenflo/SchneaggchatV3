@@ -6,9 +6,9 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
-import org.lerchenflo.schneaggchatv3mp.database.AppDatabase
-import org.lerchenflo.schneaggchatv3mp.database.IdChangeDate
-import org.lerchenflo.schneaggchatv3mp.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
+import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 class MessageRepository(
     private val database: AppDatabase,
@@ -31,7 +31,7 @@ class MessageRepository(
 
             // normalize readers to ensure messageId matches message.id
             val readers = mwr.readers.map {
-                it.copy(messageId = mwr.messageDto.id ?: 0)
+                it.copy(messageId = mwr.messageDto.id!!)
             }
             if (readers.isNotEmpty()) insertReaders(readers)
         }
@@ -42,7 +42,7 @@ class MessageRepository(
         upsertMessage(message.messageDto)
 
         // normalize readers to ensure messageId matches message.id
-        val readers = message.readers.map { it.copy(messageId = message.messageDto.id ?: 0) }
+        val readers = message.readers.map { it.copy(messageId = message.messageDto.id!!) }
         if (readers.isNotEmpty()) insertReaders(readers)
     }
 
@@ -65,18 +65,18 @@ class MessageRepository(
         database.messagereaderDao().upsertReaders(readers)
     }
 
-    suspend fun deleteReadersForMessage(messageId: Long){
+    suspend fun deleteReadersForMessage(messageId: String){
         database.messagereaderDao().deleteReadersForMessage(messageId)
     }
 
     @Transaction
-    suspend fun setAllChatMessagesRead(chatid: Long, gruppe: Boolean, timestamp: String) {
-        networkUtils.setAllChatMessagesRead(chatid, gruppe, timestamp)
+    suspend fun setAllChatMessagesRead(chatid: String, gruppe: Boolean, timestamp: String) {
+        //networkUtils.setAllChatMessagesRead(chatid, gruppe, timestamp)TODO Messages
 
         database.messageDao().getMessagesByUserId(chatid, gruppe).collect { messagelist ->
             for (message in messagelist){
                 if (!message.isReadbyMe()){
-                    database.messagereaderDao().upsertReader(MessageReaderDto(messageId = message.messageDto.id ?: 0, readerID = SessionCache.getOwnIdValue() ?: 0, readDate = timestamp))
+                    database.messagereaderDao().upsertReader(MessageReaderDto(messageId = message.messageDto.id!!, readerID = SessionCache.getOwnIdValue()!!, readDate = timestamp))
                 }
             }
         }

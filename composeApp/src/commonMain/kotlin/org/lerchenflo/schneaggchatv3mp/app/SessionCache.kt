@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 /**
  * Singleton session cache that combines Compose-friendly mutable state and
@@ -23,35 +24,32 @@ object SessionCache {
 
     // --------------------- sessionId ---------------------
 
-    var sessionId: String? by mutableStateOf(null)
+    //TODO: Rename Sessionid to Accesstoken
+    var tokens: NetworkUtils.TokenPair? by mutableStateOf(null)
         private set
 
-    fun updateSessionId(newValue: String?) {
-        sessionId = newValue
+    fun updateTokenPair(newValue: NetworkUtils.TokenPair?) {
+        tokens = newValue
     }
 
     // synchronous, non-colliding helper
-    fun getSessionIdValue(): String? = sessionId
+    fun getTokenPair(): NetworkUtils.TokenPair? = tokens
 
     // --------------------- ownId ---------------------
-    // Keep -1L as initial value to preserve previous behaviour (was -1)
-    private val _ownidFlow = MutableStateFlow<Long>(-1L)
-    val ownidFlow: StateFlow<Long> = _ownidFlow.asStateFlow()
 
-    var ownId: Long? by mutableStateOf(-1L)
+    var ownId: String? by mutableStateOf(null)
         private set
 
-    fun updateOwnId(newValue: Long?) {
+    fun updateOwnId(newValue: String?) {
         ownId = newValue
         // keep developer flag in sync
-        developer = (newValue == 1L || newValue == 2L)
     }
 
     // synchronous, non-colliding helper
-    fun getOwnIdValue(): Long? = ownId
+    fun getOwnIdValue(): String? = ownId
 
     // --------------------- developer flag ---------------------
-    var developer: Boolean by mutableStateOf((getOwnIdValue() == 1L || getOwnIdValue() == 2L))
+    var developer: Boolean by mutableStateOf(false)
         private set
 
     // if you need to set developer manually (rare), provide a setter
@@ -114,7 +112,7 @@ object SessionCache {
 
     // --------------------- clear / helpers ---------------------
     fun clear() {
-        updateSessionId(null)
+        updateTokenPair(null)
         updateOwnId(null)
         updateUsername("")
         updatePassword("")
@@ -123,14 +121,5 @@ object SessionCache {
         setDeveloperValue(false)
     }
 
-    override fun toString(): String {
-        val sid = sessionId?.let {
-            if (it.length <= 8) it else it.substring(0, 6) + "..."
-        } ?: "null"
 
-        val own = getOwnIdValue()?.toString() ?: "null"
-        val pwd = if (passwordDonotprint.isEmpty()) "<empty>" else "<redacted>"
-
-        return "SessionCache(sessionId=$sid, ownId=$own, username=\"$username\", password=$pwd, loggedIn=$loggedIn, online=$online)"
-    }
 }

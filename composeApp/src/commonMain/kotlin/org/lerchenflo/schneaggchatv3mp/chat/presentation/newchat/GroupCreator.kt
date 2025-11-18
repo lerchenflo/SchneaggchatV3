@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -53,6 +54,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -64,6 +68,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.ismoy.imagepickerkmp.domain.config.ImagePickerConfig
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.ImagePickerLauncher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -178,6 +184,24 @@ fun GroupCreator(
         },
         floatingActionButtonPosition = FabPosition.End
     ) {
+
+        var showImagePickerDialog by remember { mutableStateOf(false) }
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (showImagePickerDialog) {
+                //TODO: Copy image selection from Create screen
+                ImagePickerLauncher(
+                    config = ImagePickerConfig(//TODO: Fix strings
+                        onPhotoCaptured = { /* TODO: handle image */ },
+                        onDismiss = { showImagePickerDialog = false },
+                        onError = {},
+
+                    )
+                )
+            }
+        }
+
+
+
         Column(
             modifier = modifier
         ) {
@@ -384,14 +408,25 @@ fun GroupCreator(
             } else if (viewModel.groupCreatorStage == GroupCreatorStage.GROUPDETAILS) {
                 // 2. Stage: Name, Profilbild, Beschreibung, etc.
 
-                // todo dia sitta isch hässlich
-                Column(
+                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
 
                 ) {
+
+                    Image( // todo image uswähla und azoaga
+                        painter = painterResource(Res.drawable.icon_nutzer),
+                        contentDescription = stringResource(Res.string.group_picture),
+                        modifier = Modifier
+                            .size(70.dp)
+                            .clickable{
+                                showImagePickerDialog = true
+                            }
+                    )
+                
+               
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         // Avatar with edit overlay

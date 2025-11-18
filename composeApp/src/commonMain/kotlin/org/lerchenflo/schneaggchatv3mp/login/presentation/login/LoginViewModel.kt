@@ -2,31 +2,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.getString
-import org.koin.mp.KoinPlatform.getKoin
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
-import org.lerchenflo.schneaggchatv3mp.database.AppRepository
-import org.lerchenflo.schneaggchatv3mp.network.util.ResponseReason
-import org.lerchenflo.schneaggchatv3mp.network.util.toEnumOrNull
-import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
-import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.acc_locked
-import schneaggchatv3mp.composeapp.generated.resources.acc_not_exist
-import schneaggchatv3mp.composeapp.generated.resources.birthdateerror
-import schneaggchatv3mp.composeapp.generated.resources.feature_disabled
-import schneaggchatv3mp.composeapp.generated.resources.offline
-import schneaggchatv3mp.composeapp.generated.resources.password_wrong
-import schneaggchatv3mp.composeapp.generated.resources.unknown_error
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 
 
 class LoginViewModel(
     private val appRepository: AppRepository
 ): ViewModel() {
 
+
+
+    //TODO: SHow create account button only on mobile (Image picker only there available) (Implement in ui)
+    var showCreateButton by mutableStateOf(false)
+
+    init {
+        if (appRepository.appVersion.isMobile()){
+            showCreateButton = true
+        }
+    }
 
     var username by mutableStateOf("")
         private set
@@ -55,46 +50,20 @@ class LoginViewModel(
     }
 
 
+
+
     // Handle login logic
     fun login(onLoginSuccess: () -> Unit) {
         try {
             isLoading = true
 
             // Use the sharedViewModel's login function with a callback
-            appRepository.login(username, password) { success, message ->
+            appRepository.login(username, password) { success ->
                 if (success) {
                     println("Login erfolgreich")
                     CoroutineScope(Dispatchers.Main).launch { // launch on main thread (to avoid crash)
                         onLoginSuccess()
                     }
-                } else {
-
-                    viewModelScope.launch {
-                        val responsereason = message.toEnumOrNull<ResponseReason>(true)
-
-                        errorMessage = when(responsereason){
-                            ResponseReason.NO_INTERNET,
-                            ResponseReason.TIMEOUT -> getString(Res.string.offline)
-                            ResponseReason.notfound -> getString(Res.string.acc_not_exist)
-                            ResponseReason.wrong -> getString(Res.string.password_wrong)
-                            ResponseReason.feature_disabled -> getString(Res.string.feature_disabled) //Haha wenn des kut denn isch was los
-                            ResponseReason.account_temp_locked -> getString(Res.string.acc_locked)
-                            ResponseReason.unknown_error -> getString(Res.string.unknown_error)
-
-                            ResponseReason.too_big,
-                            ResponseReason.none,
-                            ResponseReason.exists,
-                            ResponseReason.email_exists,
-                            ResponseReason.forbidden,
-                            ResponseReason.nomember,
-                            ResponseReason.same,
-                            null -> getString(Res.string.unknown_error)
-
-                            ResponseReason.invalid_birthdate -> getString(Res.string.birthdateerror)
-                        }
-
-                    }
-
                 }
             }
 

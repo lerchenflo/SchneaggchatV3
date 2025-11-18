@@ -16,3 +16,7 @@ Schrieb uns a uf Schneaggchat (User fabi:2 oder flo:1) und würr teil vom Team
 
 ## Webseite
 https://schneaggchat.lerchenflo.eu/
+
+# Doku
+## Networktask
+The networktask is very simple structurized: There are two networkclients(ktor), one with JWT Auth (For all authenticated entpoints), and one without Auth (For login, register and refresh). For each of them are savecall functions, which return a networkresult.

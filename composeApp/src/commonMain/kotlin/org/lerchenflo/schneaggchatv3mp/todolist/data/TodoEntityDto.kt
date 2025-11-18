@@ -16,10 +16,10 @@ import org.lerchenflo.schneaggchatv3mp.todolist.domain.TodoEntry
 data class TodoEntityDto(
     @PrimaryKey(autoGenerate = false)
     @SerialName("id")
-    var id: Long = 0L,
+    var id: String,
 
     @SerialName("senderId")
-    var senderId: Long = 0,
+    var senderId: String = "",
 
     @SerialName("platform")
     var platform: Int = BugPlatform.Multiplatform.value,
