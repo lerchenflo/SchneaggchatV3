@@ -32,4 +32,7 @@ sealed interface Route {
     @Serializable
     data object Todolist: Route
 
+    @Serializable
+    data object UnderConstruction: Route
+
 }

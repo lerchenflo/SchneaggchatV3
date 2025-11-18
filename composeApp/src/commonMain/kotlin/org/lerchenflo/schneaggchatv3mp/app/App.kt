@@ -26,6 +26,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.lerchenflo.hallenmanager.sharedUi.UnderConstruction
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
@@ -179,6 +180,9 @@ fun App() {
                             },
                             onToolsAndGamesClick = {
                                 navController.navigate(Route.Todolist)
+                            },
+                            onMapClick = {
+                                navController.navigate(Route.UnderConstruction)
                             }
                         )
                     }
@@ -265,6 +269,12 @@ fun App() {
                             onBackClick = {
                                 navController.navigateUp()
                             }
+                        )
+                    }
+
+                    composable<Route.UnderConstruction>{
+                        UnderConstruction(
+
                         )
                     }
 

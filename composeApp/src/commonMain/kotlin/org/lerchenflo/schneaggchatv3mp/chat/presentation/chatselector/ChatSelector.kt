@@ -59,8 +59,10 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
-import org.lerchenflo.schneaggchatv3mp.database.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
@@ -84,6 +86,7 @@ fun Chatauswahlscreen(
     onNewChatClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onToolsAndGamesClick: () -> Unit,
+    onMapClick: () -> Unit = {},
     modifier: Modifier = Modifier
         .safeContentPadding()
 ) {
@@ -191,7 +194,7 @@ fun Chatauswahlscreen(
                         .padding(2.dp)
                         .size(touchSize)
                         .clip(CircleShape)
-                        .clickable { SnackbarManager.showMessage("Es gibt noch koa schneaggmap") },
+                        .clickable {onMapClick()},
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
