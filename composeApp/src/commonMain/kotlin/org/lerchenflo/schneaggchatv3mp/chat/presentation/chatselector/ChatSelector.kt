@@ -60,7 +60,8 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.database.AppRepository
+import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -91,6 +92,10 @@ fun Chatauswahlscreen(
     val viewModel = koinViewModel<ChatSelectorViewModel>()
     val availablegegners by viewModel.chatSelectorState.collectAsStateWithLifecycle(emptyList())
     val searchterm by viewModel.searchterm.collectAsStateWithLifecycle()
+
+    var profilePictureDialog by remember { mutableStateOf(false) }
+    var profilePictureFilePathTemp by remember { mutableStateOf("") }
+
 
 
     //Noti permission abfrage für ios (Machts auto on start´)
@@ -335,7 +340,8 @@ fun Chatauswahlscreen(
                                 lastMessage = gegner.lastmessage,
                                 onClickText = { onChatSelected(gegner) },
                                 onClickImage = {
-                                    SnackbarManager.showMessage("TODO")
+                                    profilePictureDialog = true
+                                    profilePictureFilePathTemp = gegner.profilePicture
                                 }
                             )
                             HorizontalDivider(
@@ -344,6 +350,16 @@ fun Chatauswahlscreen(
                         }
                     }
             }
+        }
+
+        if (profilePictureDialog) {
+            ProfilePictureBigDialog(
+                filepath = profilePictureFilePathTemp,
+                onDismiss = {
+                    profilePictureDialog = false
+                    profilePictureFilePathTemp = ""
+                }
+            )
         }
 
     }
