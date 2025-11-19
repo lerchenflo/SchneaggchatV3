@@ -281,7 +281,11 @@ class AppRepository(
                 is NetworkResult.Error -> {
                     println("Error: ${response.error}")
 
-                    //TODO: Send into errorchannel (Look login above)
+
+                    sendErrorSuspend(ErrorEvent(
+                        errorMessage = response.error.toString(),
+                        duration = 5000L
+                    ))
 
                     onResult(false)
                 }

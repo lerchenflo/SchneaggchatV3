@@ -54,7 +54,7 @@ val sharedmodule = module{
 
 
     single<NetworkUtils> {
-        NetworkUtils(get(named("api")), get(named("auth")))
+        NetworkUtils(get(named("api")), get(named("auth")), get())
     }
 
     //Preferences

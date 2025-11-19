@@ -24,7 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 
 fun createHttpClient(
     engine: HttpClientEngine,
-    preferencemanager: Preferencemanager,
+    preferenceManager: Preferencemanager,
     useAuth: Boolean
     ) : HttpClient {
 
@@ -55,7 +55,7 @@ fun createHttpClient(
                 bearer {
 
                     loadTokens {
-                        val tokens = preferencemanager.getTokens()
+                        val tokens = preferenceManager.getTokens()
 
                         if (tokens.refreshToken == ""){
                             null
@@ -66,14 +66,14 @@ fun createHttpClient(
 
                     refreshTokens {
 
-                        val response: NetworkUtils.TokenPair = client.post("${SERVERURL}/auth/refresh") {
+                        val response: NetworkUtils.TokenPair = client.post(preferenceManager.buildServerUrl("/auth/refresh")) {
                             contentType(ContentType.Application.Json)
                             setBody(oldTokens?.refreshToken)
                             markAsRefreshTokenRequest()
                         }.body()
 
                         // Save new tokens
-                        preferencemanager.saveTokens(response)
+                        preferenceManager.saveTokens(response)
 
                         BearerTokens(response.accessToken, response.refreshToken)
                     }

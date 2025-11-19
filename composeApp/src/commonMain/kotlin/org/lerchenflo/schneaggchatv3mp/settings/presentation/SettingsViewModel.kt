@@ -50,6 +50,15 @@ class SettingsViewModel(
                     selectedTheme = value
                 }
         }
+        viewModelScope.launch {
+            preferenceManager.getServerUrlFlow()
+                .catch { exception ->
+                    println("Problem getting Server URL preference: ${exception.printStackTrace()}")
+                }
+                .collect { value ->
+                    serverURL = value
+                }
+        }
 
     }
 
@@ -79,6 +88,7 @@ class SettingsViewModel(
             SessionCache.clear() //Alle variabla löscja
             SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
             // todo navigate to login screen
+            // Des passiert jo scho über da callback. Willsch es umbaua oder wia? -Fabi
         }
     }
 
@@ -100,5 +110,17 @@ class SettingsViewModel(
         }
     }
 
+    var serverURL by mutableStateOf("")
+        private set
+
+    fun updateServerUrl(newValue: String){ //updates only the variable in the viewmodel
+        serverURL = newValue
+    }
+
+    fun saveServerUrl(){
+        CoroutineScope(Dispatchers.IO).launch { // updates the preferences
+            preferenceManager.saveServerUrl(serverURL)
+        }
+    }
 
 }
