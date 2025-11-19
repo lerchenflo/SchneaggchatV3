@@ -2,16 +2,23 @@ package org.lerchenflo.schneaggchatv3mp.login.presentation.login
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,7 +48,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import io.ktor.http.Url
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.UrlChangeDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.login
@@ -50,6 +60,7 @@ import schneaggchatv3mp.composeapp.generated.resources.password
 import schneaggchatv3mp.composeapp.generated.resources.sign_up
 import schneaggchatv3mp.composeapp.generated.resources.username
 
+// todo keyboard options für signup optimiera
 @Composable
 fun InputTextField(
     text: String,
@@ -197,6 +208,7 @@ fun LoginHeaderText(
 }
 
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun LoginFormSection(
     usernameText: String,
@@ -259,17 +271,53 @@ fun LoginFormSection(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        var showUrlChangeDialog by remember {mutableStateOf(false)}
 
-        Text(
-            text = stringResource(Res.string.sign_up),
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .clickable{
-                    onSignupButtonClick()
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+
+        ) {
+            val iconSize = 48.dp
+            IconButton(
+                onClick = {
+                    showUrlChangeDialog = true
                 }
-                .padding(4.dp)
-                .align(Alignment.CenterHorizontally)
-        )
+            ){
+                Icon(
+                    imageVector = Icons.Default.Link,
+                    contentDescription = "change serverurl", // todo strings
+                    modifier = Modifier.size(iconSize)
+                )
+            }
+            Spacer(
+                modifier = Modifier
+                    .weight(0.5f)
+            )
+            Text(
+                text = stringResource(Res.string.sign_up),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .clickable {
+                        onSignupButtonClick()
+                    }
+                    .padding(4.dp),
+                textAlign = TextAlign.Center
+            )
+            Spacer(
+                modifier = Modifier
+                    .weight(0.5f)
+            )
+            // Empty space to balance the icon on the left
+            Spacer(modifier = Modifier.size(iconSize)) // same width as IconButton
+        }
+
+        if(showUrlChangeDialog){
+            UrlChangeDialog(
+                onDismiss = {showUrlChangeDialog = false},
+                onConfirm = {showUrlChangeDialog = false}
+            )
+        }
 
     }
 }

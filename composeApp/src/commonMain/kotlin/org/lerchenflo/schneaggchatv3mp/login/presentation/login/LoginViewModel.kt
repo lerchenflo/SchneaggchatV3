@@ -15,6 +15,7 @@ class LoginViewModel(
 
 
     //TODO: SHow create account button only on mobile (Image picker only there available) (Implement in ui)
+    // überzeugt mi ned. i würd eif image ned required macha
     var showCreateButton by mutableStateOf(false)
 
     init {
