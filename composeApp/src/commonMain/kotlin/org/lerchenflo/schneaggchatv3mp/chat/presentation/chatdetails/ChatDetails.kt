@@ -75,7 +75,6 @@ fun ChatDetails(
                     .padding(bottom = 10.dp)
                     .clickable {
                         profilePictureDialog = true
-                        //todo: profilbild groß azoaga
                     }
             )
 

@@ -146,6 +146,11 @@
     <string name="poll">poll</string>
 
     <string name="change_server_url">change server URL</string>
+    <string name="developer_settings">developer settings</string>
+    <string name="steps_until_developer">in %1$s you are a developer</string>
+    <string name="you_are_now_developer">you are now a developer</string>
+    <string name="you_are_already_developer">you are already are a developer</string>
+    <string name="developer_setting_info">Be careful with the developer settings. Make sure you know what you are doing.</string>
 
 
 

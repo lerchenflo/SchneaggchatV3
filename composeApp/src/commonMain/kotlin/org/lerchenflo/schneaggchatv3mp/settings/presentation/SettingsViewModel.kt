@@ -31,7 +31,7 @@ class SettingsViewModel(
 
 
     fun init(){
-        viewModelScope.launch {
+        viewModelScope.launch { // Markdown
             preferenceManager.getUseMdFlow()
                 .catch { exception ->
                     println("Problem getting MD preference: ${exception.printStackTrace()}")
@@ -41,7 +41,7 @@ class SettingsViewModel(
                 }
 
         }
-        viewModelScope.launch {
+        viewModelScope.launch { // Theme
             preferenceManager.getThemeFlow()
                 .catch { exception ->
                     println("Problem getting Theme setting: ${exception.printStackTrace()}")
@@ -50,7 +50,7 @@ class SettingsViewModel(
                     selectedTheme = value
                 }
         }
-        viewModelScope.launch {
+        viewModelScope.launch { // Server URL
             preferenceManager.getServerUrlFlow()
                 .catch { exception ->
                     println("Problem getting Server URL preference: ${exception.printStackTrace()}")
@@ -58,6 +58,16 @@ class SettingsViewModel(
                 .collect { value ->
                     serverURL = value
                 }
+        }
+        viewModelScope.launch { // Developer Settings
+            preferenceManager.getDevSettingsFlow()
+                .catch { exception ->
+                    println("Problem getting Developer Settings preference: ${exception.printStackTrace()}")
+                }
+                .collect { value ->
+                    devSettingsEnabeled = value
+                }
+
         }
 
     }
@@ -120,6 +130,19 @@ class SettingsViewModel(
     fun saveServerUrl(){
         CoroutineScope(Dispatchers.IO).launch { // updates the preferences
             preferenceManager.saveServerUrl(serverURL)
+        }
+    }
+
+
+
+
+    // Developer Settings
+    var devSettingsEnabeled by mutableStateOf(false)
+        private set
+
+    fun updateDevSettings(newValue: Boolean){
+        CoroutineScope(Dispatchers.IO).launch {
+            preferenceManager.saveDevSettings(newValue)
         }
     }
 

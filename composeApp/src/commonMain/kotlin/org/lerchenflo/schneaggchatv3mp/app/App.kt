@@ -43,6 +43,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.DeveloperSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.sharedUi.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
@@ -259,6 +260,9 @@ fun App() {
                             },
                             toLoginNavigator = {
                                 navController.navigate(Route.Login)
+                            },
+                            toDevSettingsNavigator = {
+                                navController.navigate(Route.DeveloperSettings)
                             }
                         )
                     }
@@ -272,6 +276,16 @@ fun App() {
                         )
                     }
 
+                    // Developer Settings
+                    composable<Route.DeveloperSettings>{
+                        DeveloperSettings(
+                            onBackClick = {
+                                navController.navigateUp()
+                            }
+                        )
+                    }
+
+                    // Under Construction
                     composable<Route.UnderConstruction>{
                         UnderConstruction(
 

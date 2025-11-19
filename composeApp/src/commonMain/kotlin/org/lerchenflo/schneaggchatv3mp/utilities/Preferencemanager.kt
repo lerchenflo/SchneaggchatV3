@@ -32,7 +32,8 @@ enum class PreferenceKey {
     OWNID,
     MD_FORMAT,
     THEME,
-    SERVERURL
+    SERVERURL,
+    DEVELOPERSETTINGS
 }
 
 enum class ThemeSetting {
@@ -175,4 +176,16 @@ class Preferencemanager(
         val ep = if (endpoint.startsWith("/")) endpoint else "/$endpoint"
         return base + ep
     }
+
+    suspend fun saveDevSettings(value: Boolean){
+        pref.edit { datastore ->
+            val key = booleanPreferencesKey(PreferenceKey.DEVELOPERSETTINGS.toString())
+            datastore[key] = value
+        }
+    }
+
+    // In PreferenceManager
+    fun getDevSettingsFlow(): Flow<Boolean> = pref.data.map { prefs ->
+        prefs[booleanPreferencesKey(PreferenceKey.DEVELOPERSETTINGS.toString())] ?: false
+    }.flowOn(Dispatchers.IO)
 }
