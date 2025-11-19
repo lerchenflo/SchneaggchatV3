@@ -16,6 +16,9 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 
 
@@ -36,6 +39,13 @@ fun createHttpClient(
             json(
                 json = Json {
                     ignoreUnknownKeys = true
+                    serializersModule = SerializersModule {
+                        polymorphic(NetworkUtils.UserResponse::class) {
+                            subclass(NetworkUtils.UserResponse.SimpleUserResponse::class)
+                            subclass(NetworkUtils.UserResponse.FriendUserResponse::class)
+                            subclass(NetworkUtils.UserResponse.SelfUserResponse::class)
+                        }
+                    }
                 }
             )
         }

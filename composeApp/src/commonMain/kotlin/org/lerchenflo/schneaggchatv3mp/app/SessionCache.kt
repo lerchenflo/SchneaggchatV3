@@ -24,7 +24,6 @@ object SessionCache {
 
     // --------------------- sessionId ---------------------
 
-    //TODO: Rename Sessionid to Accesstoken
     var tokens: NetworkUtils.TokenPair? by mutableStateOf(null)
         private set
 
@@ -119,6 +118,46 @@ object SessionCache {
         updateLoggedIn(false)
         updateOnline(true)
         setDeveloperValue(false)
+    }
+
+
+
+
+
+    // Add this to the SessionCache object
+
+    override fun toString(): String {
+        return buildString {
+            appendLine("SessionCache {")
+            appendLine("  tokens: ${if (tokens != null) "[PRESENT]" else "null"}")
+            appendLine("  ownId: ${ownId ?: "null"}")
+            appendLine("  developer: $developer")
+            appendLine("  username: ${if (username.isNotEmpty()) username else "[empty]"}")
+            appendLine("  password: [REDACTED]")
+            appendLine("  loggedIn: $loggedIn")
+            appendLine("  online: $online")
+            append("}")
+        }
+    }
+
+    // Alternative: More detailed version with token info
+    fun toDetailedString(): String {
+        return buildString {
+            appendLine("SessionCache {")
+            appendLine("  tokens: ${tokens?.let { "TokenPair(accessToken=${it.accessToken.take(20)}..., refreshToken=${it.refreshToken.take(20)}...)" } ?: "null"}")
+            appendLine("  ownId: ${ownId ?: "null"}")
+            appendLine("  developer: $developer")
+            appendLine("  username: $username")
+            appendLine("  password: [REDACTED - ${passwordDonotprint.length} chars]")
+            appendLine("  loggedIn: $loggedIn")
+            appendLine("  online: $online")
+            append("}")
+        }
+    }
+
+    // Alternative: Compact single-line version
+    fun toCompactString(): String {
+        return "SessionCache(ownId=$ownId, username=$username, loggedIn=$loggedIn, online=$online, developer=$developer, hasTokens=${tokens != null})"
     }
 
 
