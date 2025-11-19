@@ -7,9 +7,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.AlertDialog
@@ -20,6 +23,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -42,6 +46,8 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.app_broken
 import schneaggchatv3mp.composeapp.generated.resources.app_broken_desc
 import schneaggchatv3mp.composeapp.generated.resources.are_you_sure_you_want_to_logout
+import schneaggchatv3mp.composeapp.generated.resources.developer_setting_info
+import schneaggchatv3mp.composeapp.generated.resources.developer_settings
 import schneaggchatv3mp.composeapp.generated.resources.logout
 import schneaggchatv3mp.composeapp.generated.resources.markdownInfo
 import schneaggchatv3mp.composeapp.generated.resources.markdown_24px
@@ -57,6 +63,7 @@ import schneaggchatv3mp.composeapp.generated.resources.yes
 fun SettingsScreen(
     onBackClick: () -> Unit = {},
     toLoginNavigator: () -> Unit = {},
+    toDevSettingsNavigator: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .safeContentPadding()
@@ -72,6 +79,7 @@ fun SettingsScreen(
 
     Column(
         modifier = modifier
+            .verticalScroll(rememberScrollState())
     ){
         ActivityTitle(
             title = stringResource(Res.string.settings),
@@ -206,6 +214,19 @@ fun SettingsScreen(
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
+        if(viewModel.devSettingsEnabeled){
+            SettingsOption(
+                Icons.Default.Code,
+                stringResource(Res.string.developer_settings),
+                stringResource(Res.string.developer_setting_info),
+                onClick = toDevSettingsNavigator
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+        }
+
+
+        var openDevSettingsCounter by mutableIntStateOf(0)
 
         Text(
             text = stringResource(Res.string.version, appRepository.appVersion.getVersionName()) + " Buildnr: " + appRepository.appVersion.getVersionCode(),
@@ -215,6 +236,16 @@ fun SettingsScreen(
                     top = 16.dp
                 )
                 .fillMaxWidth()
+                .clickable{ // clickable for developer settings
+                    openDevSettingsCounter ++
+                    // todo snackbar oder sunsch irgend a meldung & guate zahl usdenka
+
+                    if (openDevSettingsCounter > 5){ // open dev settings after x clicks
+                        toDevSettingsNavigator()
+                        viewModel.updateDevSettings(true) // save in preferences
+                    }
+                }
+
         )
 
     }

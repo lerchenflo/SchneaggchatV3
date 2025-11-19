@@ -23,6 +23,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.change_server_url
 import schneaggchatv3mp.composeapp.generated.resources.ok
+import schneaggchatv3mp.composeapp.generated.resources.save
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,7 +48,7 @@ fun UrlChangeDialog (
                 onConfirm()
                 settingsViewModel.saveServerUrl()
             }) {
-                Text(text = stringResource(Res.string.ok))
+                Text(text = stringResource(Res.string.save))
             }
         },
         dismissButton = {
