@@ -18,24 +18,30 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
+import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import kotlin.time.ExperimentalTime
 
 
 //val SERVERURL = "https://schneaggchatv3.lerchenflo.eu"
-val SERVERURL = "http://10.157.216.81:8080"
+//val SERVERURL = "http://10.157.216.81:8080"
 
 @OptIn(ExperimentalTime::class)
 class NetworkUtils(
     private val httpClient: HttpClient,
-    private val authHttpClient: HttpClient //For auth without the bearer
+    private val authHttpClient: HttpClient, //For auth without the bearer
+    private val preferenceManager: Preferencemanager
 ) {
+
+    // Helper to build full URL from preferences + endpoint.
+    // If endpoint is already an absolute URL (starts with http) we return it unchanged.
+
 
     private suspend inline fun <reified T, reified R> safeAuthPost(
         endpoint: String,
         body: T
     ): NetworkResult<R, NetworkError> {
         return try {
-            val response = authHttpClient.post("$SERVERURL$endpoint") {
+            val response = authHttpClient.post(preferenceManager.buildServerUrl(endpoint)) {
                 contentType(ContentType.Application.Json)
                 setBody(body)
             }
@@ -68,25 +74,25 @@ class NetworkUtils(
 
     // Base methods that return HttpResponse
     private suspend inline fun <reified T> get(endpoint: String): HttpResponse {
-        return httpClient.get("$SERVERURL$endpoint")
+        return httpClient.get(preferenceManager.buildServerUrl(endpoint))
     }
 
     private suspend inline fun <reified T> post(endpoint: String, body: T): HttpResponse {
-        return httpClient.post("$SERVERURL$endpoint") {
+        return httpClient.post(preferenceManager.buildServerUrl(endpoint)) {
             contentType(ContentType.Application.Json)
             setBody(body)
         }
     }
 
     private suspend inline fun <reified T> put(endpoint: String, body: T): HttpResponse {
-        return httpClient.put("$SERVERURL$endpoint") {
+        return httpClient.put(preferenceManager.buildServerUrl(endpoint)) {
             contentType(ContentType.Application.Json)
             setBody(body)
         }
     }
 
     private suspend inline fun delete(endpoint: String): HttpResponse {
-        return httpClient.delete("$SERVERURL$endpoint")
+        return httpClient.delete(preferenceManager.buildServerUrl(endpoint))
     }
 
     // Helper function to map HTTP status codes to NetworkError
@@ -246,7 +252,7 @@ class NetworkUtils(
     ): NetworkResult<Unit, NetworkError> {
         return try {
             val response = authHttpClient.submitFormWithBinaryData(
-                url = "$SERVERURL/auth/register",
+                url = preferenceManager.buildServerUrl("/auth/register"),
                 formData = formData {
                     append("username", username)
                     append("password", password)

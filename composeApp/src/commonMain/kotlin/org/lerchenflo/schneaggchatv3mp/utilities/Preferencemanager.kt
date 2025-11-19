@@ -31,7 +31,8 @@ enum class PreferenceKey {
     REFRESHTOKEN,
     OWNID,
     MD_FORMAT,
-    THEME
+    THEME,
+    SERVERURL
 }
 
 enum class ThemeSetting {
@@ -141,4 +142,37 @@ class Preferencemanager(
         }
     }
 
+    private val defaultServerUrl = "https://schneaggchatv3.lerchenflo.eu" // default server adresse
+    // todo sollama des in na variable speichera wo ma besser findet?
+
+
+    suspend fun saveServerUrl(url: String) {
+        pref.edit { datastore ->
+            val key = stringPreferencesKey(PreferenceKey.SERVERURL.toString())
+            datastore[key] = url
+        }
+    }
+
+    fun getServerUrlFlow(): Flow<String> = pref.data.map { prefs ->
+        val key = stringPreferencesKey(PreferenceKey.SERVERURL.toString())
+        prefs[key] ?: defaultServerUrl
+
+
+    }.flowOn(Dispatchers.IO)
+
+    // For one-time read (use in non-composable contexts)
+    suspend fun getServerUrl(): String {
+        return with(dispatcher) {
+            val key = stringPreferencesKey(PreferenceKey.SERVERURL.toString())
+            val prefs = pref.data.first()
+            prefs[key] ?: defaultServerUrl
+        }
+    }
+
+    suspend fun buildServerUrl(endpoint: String): String {
+        if (endpoint.startsWith("http", ignoreCase = true)) return endpoint
+        val base = getServerUrl().trimEnd('/')
+        val ep = if (endpoint.startsWith("/")) endpoint else "/$endpoint"
+        return base + ep
+    }
 }

@@ -145,6 +145,8 @@
     <string name="audio">audio</string>
     <string name="poll">poll</string>
 
+    <string name="change_server_url">change server URL</string>
+
 
 
 
