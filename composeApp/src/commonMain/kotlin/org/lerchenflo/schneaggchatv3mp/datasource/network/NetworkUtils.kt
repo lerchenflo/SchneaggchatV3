@@ -20,10 +20,11 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 
-//val SERVERURL = "https://schneaggchatv3.lerchenflo.eu"
-//val SERVERURL = "http://10.157.216.81:8080"
+val SERVERURL = "https://schneaggchatv3.lerchenflo.eu"
+
 
 @OptIn(ExperimentalTime::class)
 class NetworkUtils(
@@ -308,13 +309,106 @@ class NetworkUtils(
 
     **************************************************************************
      */
-
+    @Serializable
+    data class IdTimeStamp(val id: String, val timeStamp: String)
 
     suspend fun getProfilePicForUserId(userId: String) : NetworkResult<ByteArray, NetworkError> {
         return safeGet(
-            endpoint = "/profilepic/$userId"
+            endpoint = "/users/profilepic/$userId"
         )
     }
 
 
+    @Serializable
+    data class UserSyncResponse(val updatedUsers: List<UserResponse>, val deletedUsers: List<String>)
+
+    @Serializable
+    sealed interface UserResponse {
+
+        //Common data which every response contains
+        val id: String
+        val username: String
+        val userDescription: String
+        val userStatus: String
+        val updatedAt: Instant
+
+        //Response for a user (Not yourself and not your friend)
+        @Serializable
+        data class SimpleUserResponse(
+            override val id: String,
+            override val username: String,
+            override val userDescription: String,
+            override val userStatus: String,
+            override val updatedAt: Instant,
+
+            //Custom to simpleuserresponse:
+            val commonFriendCount: Int,
+
+            ) : UserResponse
+
+        //Response for a friend (He accepted your request)
+        @Serializable
+        data class FriendUserResponse(
+            override val id: String,
+            override val username: String,
+            override val userDescription: String,
+            override val userStatus: String,
+            override val updatedAt: Instant,
+
+
+            //Custom to friend response:
+            val birthDate: String,
+
+
+
+            ) : UserResponse
+
+        //Response for yourself (You request your own data)
+        @Serializable
+        data class SelfUserResponse(
+            override val id: String,
+            override val username: String,
+            override val userDescription: String,
+            override val userStatus: String,
+            override val updatedAt: Instant,
+
+
+            //Custom to friend response
+            val birthDate: String,
+
+            //Custom to own user response:
+            val email: String,
+            val createdAt: Instant,
+
+
+            //TODO: User profile pic privacy settings??
+
+
+        ) : UserResponse
+    }
+
+
+    suspend fun userIdSync(userIds: List<IdTimeStamp>) : NetworkResult<UserSyncResponse, NetworkError> {
+        return safePost(
+            endpoint = "/users/sync",
+            body = userIds
+        )
+    }
+
+
+
+    /*
+    **************************************************************************
+
+    Group sync
+
+    **************************************************************************
+     */
+
+
+    suspend fun getProfilePicForGroupId(groupId: String) : NetworkResult<ByteArray, NetworkError> {
+        return safeGet(
+            endpoint = "/groups/profilepic/$groupId"
+        )
+    }
 }

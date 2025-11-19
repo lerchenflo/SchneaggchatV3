@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalTime::class)
+
 package org.lerchenflo.schneaggchatv3mp.datasource
 
+import io.ktor.util.reflect.instanceOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -8,6 +11,7 @@ import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -17,16 +21,18 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.utilities.getUserIdFromToken
-import org.lerchenflo.schneaggchatv3mp.utilities.isTokenDateValid
+import kotlin.time.ExperimentalTime
 
 class AppRepository(
     private val database: AppDatabase,
@@ -77,14 +83,15 @@ class AppRepository(
         return database.messageDao().getMessagesByUserId(userId, gruppe)
     }
 
-    fun getownUser(): Flow<UserDto?> {
-        return database.userDao().getUserbyId(SessionCache.getOwnIdValue())
+    fun getownUser(): Flow<User?> {
+        return database.userDao().getUserbyIdFlow(SessionCache.getOwnIdValue()).map { user ->
+            user?.toUser()
+        }
     }
 
 
 
-    //Gegnerauswahl getten
-    // In repository / data layer
+    //Get main screen available items as flow
     fun getChatSelectorFlow(
         searchTerm: String,
         filter: ChatFilter = ChatFilter.NONE
@@ -195,10 +202,8 @@ class AppRepository(
 
     fun onNewTokenPair(tokenPair: NetworkUtils.TokenPair){
 
-
         //Parse the token to get the user id
-        //println("Accesstoken: ${tokenPair.accessToken}")
-        val userid = getUserIdFromToken(tokenPair.refreshToken)
+        val userid = JwtUtils.getUserIdFromToken(tokenPair.refreshToken)
 
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -210,7 +215,7 @@ class AppRepository(
         SessionCache.updateTokenPair(tokenPair)
         SessionCache.updateOwnId(userid)
         SessionCache.updateLoggedIn(true)
-        println("Sessioncache: ${SessionCache.toString()}")
+        println("Sessioncache: ${SessionCache.toDetailedString()}")
     }
 
 
@@ -219,7 +224,7 @@ class AppRepository(
 
         val tokensNotEmpty = tokens.accessToken.isNotEmpty() && tokens.refreshToken.isNotEmpty()
         val tokenNotExpired =
-            isTokenDateValid(tokens.refreshToken) //is the refreshtoken still valid? If not, user needs to login again
+            JwtUtils.isTokenDateValid(tokens.refreshToken) //is the refreshtoken still valid? If not, user needs to login again
 
         val credsSaved = tokenNotExpired && tokensNotEmpty
 
@@ -302,7 +307,83 @@ class AppRepository(
                 onNewTokenPair(result.data)
             }
         }
+    }
 
+
+    suspend fun userIdSync() {
+        val localusers = userRepository.getuserchangeid()
+
+        val userSyncResponse = networkUtils.userIdSync(localusers.map { (id, changedate) -> NetworkUtils.IdTimeStamp(id, changedate) })
+
+        when (userSyncResponse) {
+            is NetworkResult.Error<*> -> {println("userid sync error")}
+            is NetworkResult.Success<NetworkUtils.UserSyncResponse> -> {
+                println("Userid sync response: ${userSyncResponse.data.toString()}")
+
+                val updatedUsers = userSyncResponse.data.updatedUsers
+                val deletedUsers = userSyncResponse.data.deletedUsers
+
+                updatedUsers.forEach { newUser ->
+                    when (newUser) {
+                        is NetworkUtils.UserResponse.FriendUserResponse -> {
+                            val existing = database.userDao().getUserbyId(newUser.id)
+                            database.userDao().upsert(UserDto(
+                                id = newUser.id,
+                                changedate = newUser.updatedAt.toEpochMilliseconds(),
+                                name = newUser.username,
+                                description = newUser.userDescription,
+                                status = newUser.userStatus,
+                                birthDate = newUser.birthDate,
+                                accepted = true,
+                                // Preserve existing values:
+                                locationLat = existing?.locationLat,
+                                locationLong = existing?.locationLong,
+                                locationDate = existing?.locationDate,
+                                locationShared = existing?.locationShared ?: false,
+                                wakeupEnabled = existing?.wakeupEnabled ?: false,
+                                profilePicture = existing?.profilePicture ?: "",
+                                lastOnline = existing?.lastOnline,
+                                requested = existing?.requested ?: false,
+                                notisMuted = existing?.notisMuted ?: false
+                            ))
+                        }
+                        is NetworkUtils.UserResponse.SelfUserResponse -> {
+                            val existing = database.userDao().getUserbyId(newUser.id)
+                            database.userDao().upsert(UserDto(
+                                id = newUser.id,
+                                changedate = newUser.updatedAt.toEpochMilliseconds(),
+                                name = newUser.username,
+                                description = newUser.userDescription,
+                                status = newUser.userStatus,
+                                birthDate = newUser.birthDate,
+                                accepted = true, // You're always friends with yourself
+                                // Preserve existing values:
+                                locationLat = existing?.locationLat,
+                                locationLong = existing?.locationLong,
+                                locationDate = existing?.locationDate,
+                                locationShared = existing?.locationShared ?: false,
+                                wakeupEnabled = existing?.wakeupEnabled ?: false,
+                                profilePicture = existing?.profilePicture ?: "",
+                                lastOnline = existing?.lastOnline,
+                                requested = existing?.requested ?: false,
+                                notisMuted = existing?.notisMuted ?: false
+                            ))
+                        }
+                        is NetworkUtils.UserResponse.SimpleUserResponse -> { //
+                        // Not used
+                        }
+                    }
+
+
+
+                }
+
+                //Delete all non existing users
+                deletedUsers.forEach { userId ->
+                    database.userDao().delete(userId)
+                }
+            }
+        }
     }
 
 

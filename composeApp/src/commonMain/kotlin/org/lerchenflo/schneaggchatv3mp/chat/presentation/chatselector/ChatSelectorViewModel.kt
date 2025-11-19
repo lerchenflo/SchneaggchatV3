@@ -107,6 +107,8 @@ class ChatSelectorViewModel(
                         }
                          */
 
+                        appRepository.userIdSync()
+
                     }.join()
                 }
             } catch (e: Exception) {

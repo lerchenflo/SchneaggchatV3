@@ -19,8 +19,6 @@ data class User(
     val requested: Boolean = false,
     val notisMuted: Boolean = false,
     val birthDate: String = "",
-    val gender: String = "",
-    val settings: String? = null
 ) : SelectedChat() {
     override val isGroup: Boolean
         get() = false
@@ -32,7 +30,7 @@ data class User(
 
 fun UserDto.toUser(): User = User(
     id = this.id,
-    lastChanged = this.lastChanged,
+    lastChanged = this.changedate,
     name = this.name,
     description = this.description,
     status = this.status,
@@ -47,14 +45,12 @@ fun UserDto.toUser(): User = User(
     requested = this.requested,
     notisMuted = this.notisMuted,
     birthDate = this.birthDate,
-    gender = this.gender,
-    settings = this.settings
 )
 
 /** Convert domain User back to UserDto (for persistence/transport) */
 fun User.toDto(): UserDto = UserDto(
     id = this.id,
-    lastChanged = this.lastChanged,
+    changedate = this.lastChanged,
     name = this.name,
     description = this.description,
     status = this.status,
@@ -69,6 +65,4 @@ fun User.toDto(): UserDto = UserDto(
     requested = this.requested,
     notisMuted = this.notisMuted,
     birthDate = this.birthDate,
-    gender = this.gender,
-    settings = this.settings
 )

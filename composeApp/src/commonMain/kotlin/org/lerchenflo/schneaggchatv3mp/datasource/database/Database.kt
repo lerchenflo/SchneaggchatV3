@@ -6,6 +6,7 @@ import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
+import androidx.room.TypeConverters
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupMemberDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
@@ -17,7 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
 @Database(
     entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, TodoEntityDto::class],
     exportSchema = true,
-    version = 32
+    version = 33
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)
