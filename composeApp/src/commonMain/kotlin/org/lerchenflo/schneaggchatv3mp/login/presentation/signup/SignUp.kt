@@ -19,6 +19,9 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.EmojiTransportation
+import androidx.compose.material.icons.filled.TextRotationNone
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -37,7 +40,9 @@ import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.domain.config.ImagePickerConfig
 import io.github.ismoy.imagepickerkmp.domain.config.UiConfig
 import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
+import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
 import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.ImagePickerLauncher
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
@@ -91,22 +96,53 @@ fun SignUpScreen(
 
             var showImagePickerDialog by remember { mutableStateOf(false) }
             Box(modifier = Modifier.fillMaxSize()) {
-                if (showImagePickerDialog) {
+                if (showImagePickerDialog ) {
 
+                    GalleryPickerLauncher(//TODO: Fix all strings
+                        onPhotosSelected = {
+                            onAction(SignupAction.OnProfilepicSelected(it.first()))
+                            showImagePickerDialog = false
+                        },
+                        onError = {
+                            showImagePickerDialog = false
+                        },
+                        onDismiss = {
+                            showImagePickerDialog = false
+                        },
+                        selectionLimit = 1,
+                        enableCrop = true,
+                        cameraCaptureConfig = CameraCaptureConfig(
+                            compressionLevel = CompressionLevel.HIGH,
+                            preference = CapturePhotoPreference.FAST, //No flash
+                            cropConfig = CropConfig(
+                                enabled = true,
+                                aspectRatioLocked = true,
+                                circularCrop = true,
+                                squareCrop = false,
+                                freeformCrop = false
+                            )
+                        )
+                    )
+
+
+
+                    /*
                     ImagePickerLauncher(
-                        config = ImagePickerConfig( //TODO: Fix all strings
-                            onPhotoCaptured = { onAction(SignupAction.OnProfilepicSelected(it))
-                                              showImagePickerDialog = false },
+                        config = ImagePickerConfig(
+                            onPhotoCaptured = {
+                                //onAction(SignupAction.OnProfilepicSelected(it))
+                                              showImagePickerDialog = false
+
+                                              },
                             onDismiss = { showImagePickerDialog = false },
                             onError = {},
-                            directCameraLaunch = true, //Direct camera launch on ios
+                            directCameraLaunch = false, //Direct camera launch on ios
                             enableCrop = true,
                             cameraCaptureConfig = CameraCaptureConfig(
                                 compressionLevel = CompressionLevel.HIGH,
-
                                 cropConfig = CropConfig(
                                     enabled = true,
-                                    aspectRatioLocked = false,
+                                    aspectRatioLocked = true,
                                     circularCrop = true,
                                     squareCrop = false,
                                     freeformCrop = false
@@ -115,6 +151,10 @@ fun SignUpScreen(
                         )
 
                     )
+
+                     */
+
+
                 }
             }
 

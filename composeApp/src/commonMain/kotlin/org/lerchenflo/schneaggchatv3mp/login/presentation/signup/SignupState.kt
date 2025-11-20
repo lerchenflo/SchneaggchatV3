@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 
+import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
 import io.github.ismoy.imagepickerkmp.domain.models.PhotoResult
 import kotlinx.datetime.LocalDate
 
@@ -34,7 +35,7 @@ sealed interface SignupAction {
     data object OnSignUpButtonPress : SignupAction
 
     data class OnGebiDateChange(val newDate: LocalDate) : SignupAction
-    data class OnProfilepicSelected(val profilePicResult: PhotoResult) : SignupAction
+    data class OnProfilepicSelected(val profilePicResult: GalleryPhotoResult) : SignupAction
 
 
     data class OnAgbChecked(val checked: Boolean) : SignupAction
