@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
@@ -31,6 +32,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import kotlin.time.ExperimentalTime
 
@@ -38,6 +40,7 @@ class AppRepository(
     private val database: AppDatabase,
     private val networkUtils: NetworkUtils,
     private val preferencemanager: Preferencemanager,
+    private val pictureManager: PictureManager,
 
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
@@ -143,6 +146,8 @@ class AppRepository(
 
             }.filter { item ->
                 loweredSearch.isEmpty() || item.name.lowercase().contains(loweredSearch)
+            }.filter { user ->
+                user.id != SessionCache.ownId //Remove self
             }
 
             val groupItems = groups.map { gwm ->
@@ -315,6 +320,8 @@ class AppRepository(
 
         val userSyncResponse = networkUtils.userIdSync(localusers.map { (id, changedate) -> NetworkUtils.IdTimeStamp(id, changedate) })
 
+        val profilePicsToGet = emptyList<String>().toMutableList()
+
         when (userSyncResponse) {
             is NetworkResult.Error<*> -> {println("userid sync error")}
             is NetworkResult.Success<NetworkUtils.UserSyncResponse> -> {
@@ -334,43 +341,72 @@ class AppRepository(
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
                                 birthDate = newUser.birthDate,
-                                accepted = true,
+                                frienshipStatus = NetworkUtils.FriendshipStatus.ACCEPTED,
+                                requesterId = newUser.requesterId,
+
                                 // Preserve existing values:
                                 locationLat = existing?.locationLat,
                                 locationLong = existing?.locationLong,
                                 locationDate = existing?.locationDate,
                                 locationShared = existing?.locationShared ?: false,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
-                                profilePicture = existing?.profilePicture ?: "",
                                 lastOnline = existing?.lastOnline,
-                                requested = existing?.requested ?: false,
-                                notisMuted = existing?.notisMuted ?: false
+                                notisMuted = existing?.notisMuted ?: false,
+                                email = null,
+                                createdAt = null
                             ))
+                            profilePicsToGet += newUser.id
                         }
                         is NetworkUtils.UserResponse.SelfUserResponse -> {
                             val existing = database.userDao().getUserbyId(newUser.id)
                             database.userDao().upsert(UserDto(
                                 id = newUser.id,
-                                changedate = newUser.updatedAt.toLong(),
+                                changedate = newUser.updatedAt,
                                 name = newUser.username,
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
                                 birthDate = newUser.birthDate,
-                                accepted = true, // You're always friends with yourself
+
                                 // Preserve existing values:
                                 locationLat = existing?.locationLat,
                                 locationLong = existing?.locationLong,
                                 locationDate = existing?.locationDate,
                                 locationShared = existing?.locationShared ?: false,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
-                                profilePicture = existing?.profilePicture ?: "",
                                 lastOnline = existing?.lastOnline,
-                                requested = existing?.requested ?: false,
-                                notisMuted = existing?.notisMuted ?: false
+                                frienshipStatus = null,
+                                requesterId = null,
+                                notisMuted = false,
+                                email = newUser.email,
+                                createdAt = newUser.createdAt,
                             ))
+                            profilePicsToGet += newUser.id
                         }
-                        is NetworkUtils.UserResponse.SimpleUserResponse -> { //
-                        // Not used
+                        is NetworkUtils.UserResponse.SimpleUserResponse -> {
+                            database.userDao().upsert(UserDto(
+                                id = newUser.id,
+                                changedate = newUser.updatedAt,
+                                name = newUser.username,
+                                description = null,
+                                status = null,
+
+                                locationLat = null,
+                                locationLong = null,
+                                locationDate = null,
+                                locationShared = false,
+                                wakeupEnabled = false,
+                                lastOnline = null,
+                                frienshipStatus = newUser.friendShipStatus,
+                                requesterId = newUser.requesterId,
+                                notisMuted = false,
+                                birthDate = null,
+                                email = null,
+                                createdAt = null,
+                            ))
+
+                            //Get the profile pic for this user too??
+                            profilePicsToGet += newUser.id
+
                         }
                     }
 
@@ -383,6 +419,24 @@ class AppRepository(
                     database.userDao().delete(userId)
                 }
             }
+        }
+
+
+        println("profilepics to get count: ${profilePicsToGet.size}")
+
+        getProfilePicturesForUserIds(profilePicsToGet)
+    }
+
+    private suspend fun getProfilePicturesForUserIds(userIds: List<String>){
+        userIds.forEach { userId ->
+            val savefilename = userId + USERPROFILEPICTURE_FILE_NAME
+            when (val picture = networkUtils.getProfilePicForUserId(userId)) {
+                is NetworkResult.Error<*> -> {println("Profilepic error for userid $userId")}
+                is NetworkResult.Success<ByteArray> -> {
+                    pictureManager.savePictureToStorage(picture.data, savefilename)
+                }
+            }
+
         }
     }
 

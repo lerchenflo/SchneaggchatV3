@@ -329,8 +329,6 @@ class NetworkUtils(
         //Common data which every response contains
         val id: String
         val username: String
-        val userDescription: String
-        val userStatus: String
         val updatedAt: Long
 
 
@@ -340,8 +338,6 @@ class NetworkUtils(
         data class SimpleUserResponse(
             override val id: String,
             override val username: String,
-            override val userDescription: String,
-            override val userStatus: String,
             override val updatedAt: Long,
 
             //Custom to simpleuserresponse:
@@ -356,13 +352,15 @@ class NetworkUtils(
         data class FriendUserResponse(
             override val id: String,
             override val username: String,
-            override val userDescription: String,
-            override val userStatus: String,
+
             override val updatedAt: Long,
 
+            val requesterId: String?, //Who requested the friendship
 
             //Custom to friend response:
             val birthDate: String,
+            val userDescription: String,
+            val userStatus: String,
 
 
 
@@ -374,13 +372,14 @@ class NetworkUtils(
         data class SelfUserResponse(
             override val id: String,
             override val username: String,
-            override val userDescription: String,
-            override val userStatus: String,
+
             override val updatedAt: Long,
 
 
             //Custom to friend response
             val birthDate: String,
+            val userDescription: String,
+            val userStatus: String,
 
             //Custom to own user response:
             val email: String,

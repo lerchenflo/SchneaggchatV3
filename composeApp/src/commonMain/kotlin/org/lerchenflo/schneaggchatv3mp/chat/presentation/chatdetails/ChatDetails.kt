@@ -118,7 +118,7 @@ fun ChatDetails(
                     )
                     Text(
                         text = globalViewModel.selectedChat.value.status
-                            .takeIf { it.isNotBlank() }
+                            .takeIf { !it.isNullOrBlank() }
                             ?.replace("\\n", "\n")
                             ?: stringResource(Res.string.no_status),
                         softWrap = true,
@@ -150,7 +150,7 @@ fun ChatDetails(
                 Text(
                     text = globalViewModel.selectedChat.value
                         .description
-                        .takeIf { it.isNotBlank() }
+                        .takeIf { !it.isNullOrBlank() }
                         ?.replace("\\n", "\n")
                         ?: stringResource(Res.string.no_description),
                     softWrap = true,

@@ -5,6 +5,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -18,9 +19,9 @@ data class UserDto(
 
     var name: String = "",
 
-    var description: String = "",
+    var description: String? = null,
 
-    var status: String = "",
+    var status: String? = null,
 
     var locationLat: Double? = null,
 
@@ -28,20 +29,26 @@ data class UserDto(
 
     var locationDate: Long? = null,
 
+
+    // friend stuff
+    var frienshipStatus: NetworkUtils.FriendshipStatus?, //Current status of the friendship
+    val requesterId: String?, //Who requested the friendship
+
     var locationShared: Boolean = false,
 
     var wakeupEnabled: Boolean = false,
 
-    var profilePicture: String = "",
 
+    //TODO implement later
     var lastOnline: Long? = null,
-
-    var accepted: Boolean = false,
-
-    var requested: Boolean = false,
 
     var notisMuted: Boolean = false,
 
-    var birthDate: String = "",
+    var birthDate: String? = null,
 
-    )
+    var email: String? = null,
+
+    var createdAt: Long?,
+
+
+)

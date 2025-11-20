@@ -6,9 +6,9 @@ interface _SelectedChatBase {
     val id: String
     val isGroup: Boolean
     val name: String
-    val profilePicture: String
-    val status : String
-    val description : String
+    val profilePicture: String //TODO: Change profilepicture (what is it needed for)
+    val status : String?
+    val description : String?
 
 
     //Default values die ned vo da klasse üverschrieba werrand, bruchts eh nur fürd gegnerauswahl (Chatselector)
@@ -27,7 +27,7 @@ abstract class SelectedChat : _SelectedChatBase {
 
 
 
-//TODO FABI LEAS
+
 /*
 Des isch a interface selectedchat. also a base klasse, die im global view model denn gsetzt werra kann,.
 es git 3 typen: Groupwithmember, User und Notselected, wenn ma kuan user usgwählt hot. So hot ma theoretisch nie null verweise,
