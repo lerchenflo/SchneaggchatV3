@@ -235,6 +235,7 @@ class AppRepository(
 
         if (credsSaved){
             println("Tokens are saved in local storage, autologin permitted")
+            SessionCache.updateOwnId(JwtUtils.getUserIdFromToken(tokens.refreshToken))
             SessionCache.updateTokenPair(tokens)
             SessionCache.updateLoggedIn(true)
         }
@@ -353,7 +354,8 @@ class AppRepository(
                                 lastOnline = existing?.lastOnline,
                                 notisMuted = existing?.notisMuted ?: false,
                                 email = null,
-                                createdAt = null
+                                createdAt = null,
+                                profilePictureUrl = ""
                             ))
                             profilePicsToGet += newUser.id
                         }
@@ -379,6 +381,8 @@ class AppRepository(
                                 notisMuted = false,
                                 email = newUser.email,
                                 createdAt = newUser.createdAt,
+                                profilePictureUrl = ""
+
                             ))
                             profilePicsToGet += newUser.id
                         }
@@ -402,6 +406,7 @@ class AppRepository(
                                 birthDate = null,
                                 email = null,
                                 createdAt = null,
+                                profilePictureUrl = ""
                             ))
 
                             //Get the profile pic for this user too??
@@ -433,7 +438,9 @@ class AppRepository(
             when (val picture = networkUtils.getProfilePicForUserId(userId)) {
                 is NetworkResult.Error<*> -> {println("Profilepic error for userid $userId")}
                 is NetworkResult.Success<ByteArray> -> {
-                    pictureManager.savePictureToStorage(picture.data, savefilename)
+                    val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
+
+                    userRepository.updateUserProfilePicUrl(userId, filepath)
                 }
             }
 

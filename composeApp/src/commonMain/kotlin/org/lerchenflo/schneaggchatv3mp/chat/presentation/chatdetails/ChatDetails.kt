@@ -69,7 +69,7 @@ fun ChatDetails(
         ){
 
             ProfilePictureView(
-                filepath = globalViewModel.selectedChat.value.profilePicture,
+                filepath = globalViewModel.selectedChat.value.profilePictureUrl,
                 modifier = Modifier
                     .size(200.dp) // Use square aspect ratio
                     .padding(bottom = 10.dp)
@@ -186,7 +186,7 @@ fun ChatDetails(
         if(profilePictureDialog){
             ProfilePictureBigDialog(
                 onDismiss = {profilePictureDialog = false},
-                filepath = globalViewModel.selectedChat.value.profilePicture
+                filepath = globalViewModel.selectedChat.value.profilePictureUrl
             )
         }
 

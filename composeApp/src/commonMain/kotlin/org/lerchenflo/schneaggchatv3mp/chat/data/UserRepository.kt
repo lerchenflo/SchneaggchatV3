@@ -40,4 +40,13 @@ class UserRepository(
         return database.userDao().getUserIdsWithChangeDates()
     }
 
+    suspend fun updateUserProfilePicUrl(userId: String, newUrl: String) {
+        val dbUser = database.userDao().getUserbyId(userId)
+        if (dbUser != null){
+            database.userDao().upsert(dbUser.copy(
+                profilePictureUrl = newUrl
+            ))
+        }
+    }
+
 }

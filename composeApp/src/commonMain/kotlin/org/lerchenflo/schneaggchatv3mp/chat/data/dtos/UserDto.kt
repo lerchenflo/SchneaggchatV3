@@ -23,6 +23,8 @@ data class UserDto(
 
     var status: String? = null,
 
+    val profilePictureUrl: String,
+
     var locationLat: Double? = null,
 
     var locationLong: Double? = null,

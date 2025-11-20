@@ -6,7 +6,7 @@ interface _SelectedChatBase {
     val id: String
     val isGroup: Boolean
     val name: String
-    val profilePicture: String //TODO: Change profilepicture (what is it needed for)
+    val profilePictureUrl: String
     val status : String?
     val description : String?
 
@@ -41,7 +41,7 @@ data class NotSelected(
     override val id: String = "",
     override val isGroup: Boolean = false,
     override val name: String = "",
-    override val profilePicture: String = "",
+    override val profilePictureUrl: String = "",
     override val status: String = "",
     override val description: String = ""
 ) : SelectedChat() {

@@ -14,7 +14,7 @@ data class User(
     val locationDate: Long? = null,
     val locationShared: Boolean = false,
     val wakeupEnabled: Boolean = false,
-    override val profilePicture: String = "",
+    override val profilePictureUrl: String = "",
     val lastOnline: Long? = null,
     val friendshipStatus: NetworkUtils.FriendshipStatus? = null,
     val requesterId: String? = null,
@@ -44,6 +44,8 @@ fun UserDto.toUser(): User = User(
     birthDate = this.birthDate,
     email = this.email,
     createdAt = this.createdAt,
+    friendshipStatus = this.frienshipStatus,
+    profilePictureUrl = this.profilePictureUrl,
 )
 
 /** Convert domain User back to UserDto (for persistence/transport) */
@@ -65,4 +67,5 @@ fun User.toDto(): UserDto = UserDto(
     email = this.email,
     frienshipStatus = this.friendshipStatus,
     createdAt = this.createdAt,
+    profilePictureUrl = this.profilePictureUrl,
 )

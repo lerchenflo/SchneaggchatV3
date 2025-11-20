@@ -85,7 +85,7 @@ fun UserButton(
 
 
             ProfilePictureView(
-                filepath = selectedChat.profilePicture,
+                filepath = selectedChat.profilePictureUrl,
                 modifier = modifierImage
             )
 

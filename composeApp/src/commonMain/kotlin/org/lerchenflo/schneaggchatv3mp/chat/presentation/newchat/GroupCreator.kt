@@ -291,7 +291,7 @@ fun GroupCreator(
                             ) {
                                 // Profile picture
                                 ProfilePictureView(
-                                    filepath = user.profilePicture,
+                                    filepath = user.profilePictureUrl,
                                     modifier = Modifier
                                         .size(size)
                                         .padding(8.dp)

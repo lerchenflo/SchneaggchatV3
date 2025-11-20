@@ -100,7 +100,7 @@ fun SettingsScreen(
         ){
 
             ProfilePictureView(
-                filepath = ownuser?.profilePicture ?: "",
+                filepath = ownuser?.profilePictureUrl ?: "",
                 modifier = Modifier
                     .size(120.dp)
                     .clickable { SnackbarManager.showMessage("Bald kann ma profilbild ändern") }

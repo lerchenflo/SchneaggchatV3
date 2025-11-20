@@ -15,7 +15,7 @@ data class GroupWithMembers(
         get() = true
     override val name: String
         get() = group.name
-    override val profilePicture: String
+    override val profilePictureUrl: String
         get() = group.profilePicture
     override val status: String
         get() = group.description
