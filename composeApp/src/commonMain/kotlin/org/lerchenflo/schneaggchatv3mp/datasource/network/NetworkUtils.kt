@@ -22,10 +22,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
-
-val SERVERURL = "https://schneaggchatv3.lerchenflo.eu"
-
-
 @OptIn(ExperimentalTime::class)
 class NetworkUtils(
     private val httpClient: HttpClient,
