@@ -329,7 +329,7 @@ class AppRepository(
                             val existing = database.userDao().getUserbyId(newUser.id)
                             database.userDao().upsert(UserDto(
                                 id = newUser.id,
-                                changedate = newUser.updatedAt.toEpochMilliseconds(),
+                                changedate = newUser.updatedAt.toLong(),
                                 name = newUser.username,
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
@@ -351,7 +351,7 @@ class AppRepository(
                             val existing = database.userDao().getUserbyId(newUser.id)
                             database.userDao().upsert(UserDto(
                                 id = newUser.id,
-                                changedate = newUser.updatedAt.toEpochMilliseconds(),
+                                changedate = newUser.updatedAt.toLong(),
                                 name = newUser.username,
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
