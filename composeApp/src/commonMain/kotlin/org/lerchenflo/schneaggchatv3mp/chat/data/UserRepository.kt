@@ -14,15 +14,11 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 class UserRepository(
     private val database: AppDatabase,
-    private val networkUtils: NetworkUtils,
     private val pictureManager: PictureManager
 ) {
 
     @Transaction
     suspend fun upsertUser(userDto: UserDto){
-        val savefilename = userDto.id.toString() + USERPROFILEPICTURE_FILE_NAME
-        val path = pictureManager.savePictureToStorage(userDto.profilePicture, savefilename)
-        userDto.profilePicture = path
         database.userDao().upsert(userDto)
     }
 
@@ -42,6 +38,15 @@ class UserRepository(
     @Transaction
     suspend fun getuserchangeid(): List<IdChangeDate>{
         return database.userDao().getUserIdsWithChangeDates()
+    }
+
+    suspend fun updateUserProfilePicUrl(userId: String, newUrl: String) {
+        val dbUser = database.userDao().getUserbyId(userId)
+        if (dbUser != null){
+            database.userDao().upsert(dbUser.copy(
+                profilePictureUrl = newUrl
+            ))
+        }
     }
 
 }

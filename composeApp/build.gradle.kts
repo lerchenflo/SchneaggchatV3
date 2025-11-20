@@ -90,13 +90,15 @@ kotlin {
             implementation(libs.bundles.ktor)
 
             //Firebase
-            api("io.github.mirzemehdi:kmpnotifier:1.6.0")
+            api(libs.kmpnotifier)
 
             //Image picker
             implementation(libs.github.imagepickerkmp)
+            //Image refactoring
+
 
             //Jwt parsing
-            implementation("com.appstractive:jwt-kt:1.2.0")
+            implementation(libs.jwt.kt)
 
             //DateTime
             implementation(libs.kotlinx.datetime)

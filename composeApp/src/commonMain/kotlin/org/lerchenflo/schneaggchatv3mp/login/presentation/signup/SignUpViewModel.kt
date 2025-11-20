@@ -1,15 +1,23 @@
 package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 
+import androidx.compose.foundation.Image
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import coil3.Image
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
+import coil3.size.Scale
 import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
+import io.ktor.http.ContentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache.updateUsername
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -117,6 +125,10 @@ class SignUpViewModel(
                     CoroutineScope(Dispatchers.IO).launch{
                         val bytearray = action.profilePicResult
                             .loadBytes()
+                        val imageBitmap = bytearray.decodeToImageBitmap()
+
+                        println("Selected image size: ${bytearray.size}")
+
                         state = state.copy(
                             profilePic = bytearray
                         )

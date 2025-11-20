@@ -344,7 +344,7 @@ fun Chatauswahlscreen(
                                 onClickText = { onChatSelected(gegner) },
                                 onClickImage = {
                                     profilePictureDialog = true
-                                    profilePictureFilePathTemp = gegner.profilePicture
+                                    profilePictureFilePathTemp = gegner.profilePictureUrl
                                 }
                             )
                             HorizontalDivider(

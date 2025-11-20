@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -100,7 +101,7 @@ fun SettingsScreen(
         ){
 
             ProfilePictureView(
-                filepath = ownuser?.profilePicture ?: "",
+                filepath = ownuser?.profilePictureUrl ?: "",
                 modifier = Modifier
                     .size(120.dp)
                     .clickable { SnackbarManager.showMessage("Bald kann ma profilbild ändern") }
@@ -110,7 +111,10 @@ fun SettingsScreen(
 
             Column(
                 modifier = Modifier
-                    .weight(1f),
+                    .weight(1f)
+                    .padding(
+                        end = 4.dp
+                    ),
                 horizontalAlignment = Alignment.Start
             ){
 

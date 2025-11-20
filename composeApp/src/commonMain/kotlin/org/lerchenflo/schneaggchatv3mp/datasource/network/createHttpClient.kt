@@ -39,6 +39,7 @@ fun createHttpClient(
             json(
                 json = Json {
                     ignoreUnknownKeys = true
+                    //https://kotlinlang.org/api/kotlinx.serialization/kotlinx-serialization-core/kotlinx.serialization/-polymorphic-serializer/
                     serializersModule = SerializersModule {
                         polymorphic(NetworkUtils.UserResponse::class) {
                             subclass(NetworkUtils.UserResponse.SimpleUserResponse::class)

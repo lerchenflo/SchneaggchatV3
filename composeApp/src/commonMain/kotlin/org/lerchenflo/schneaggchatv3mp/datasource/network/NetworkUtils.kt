@@ -14,6 +14,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.util.network.UnresolvedAddressException
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
@@ -319,41 +320,47 @@ class NetworkUtils(
     data class UserSyncResponse(val updatedUsers: List<UserResponse>, val deletedUsers: List<String>)
 
     @Serializable
+    enum class FriendshipStatus { PENDING, ACCEPTED, DECLINED, BLOCKED }
+
+
+    @Serializable
     sealed interface UserResponse {
 
         //Common data which every response contains
         val id: String
         val username: String
-        val userDescription: String
-        val userStatus: String
-        val updatedAt: Instant
+        val updatedAt: Long
+
 
         //Response for a user (Not yourself and not your friend)
         @Serializable
+        @SerialName("simple")
         data class SimpleUserResponse(
             override val id: String,
             override val username: String,
-            override val userDescription: String,
-            override val userStatus: String,
-            override val updatedAt: Instant,
+            override val updatedAt: Long,
 
             //Custom to simpleuserresponse:
-            val commonFriendCount: Int,
+            val friendShipStatus: FriendshipStatus?,
+            val requesterId: String,
 
             ) : UserResponse
 
         //Response for a friend (He accepted your request)
         @Serializable
+        @SerialName("friend")
         data class FriendUserResponse(
             override val id: String,
             override val username: String,
-            override val userDescription: String,
-            override val userStatus: String,
-            override val updatedAt: Instant,
 
+            override val updatedAt: Long,
+
+            val requesterId: String?, //Who requested the friendship
 
             //Custom to friend response:
             val birthDate: String,
+            val userDescription: String,
+            val userStatus: String,
 
 
 
@@ -361,20 +368,22 @@ class NetworkUtils(
 
         //Response for yourself (You request your own data)
         @Serializable
+        @SerialName("self")
         data class SelfUserResponse(
             override val id: String,
             override val username: String,
-            override val userDescription: String,
-            override val userStatus: String,
-            override val updatedAt: Instant,
+
+            override val updatedAt: Long,
 
 
             //Custom to friend response
             val birthDate: String,
+            val userDescription: String,
+            val userStatus: String,
 
             //Custom to own user response:
             val email: String,
-            val createdAt: Instant,
+            val createdAt: Long,
 
 
             //TODO: User profile pic privacy settings??

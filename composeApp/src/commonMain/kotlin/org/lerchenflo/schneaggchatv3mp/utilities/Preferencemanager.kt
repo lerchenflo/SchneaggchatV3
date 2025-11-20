@@ -52,7 +52,6 @@ enum class ThemeSetting {
         LIGHT -> Icons.Default.LightMode
         DARK   -> Icons.Default.DarkMode
         PHTHEME -> Icons.Default.Male
-        else -> Icons.Default.Palette
     }
 }
 

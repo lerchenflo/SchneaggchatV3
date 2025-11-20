@@ -85,7 +85,7 @@ fun UserButton(
 
 
             ProfilePictureView(
-                filepath = selectedChat.profilePicture,
+                filepath = selectedChat.profilePictureUrl,
                 modifier = modifierImage
             )
 
@@ -209,7 +209,7 @@ fun UserButton(
                 Text(
                     text = bottomTextOverride
                         ?: selectedChat.status
-                            .takeIf { it.isNotBlank() }
+                            .takeIf { !it.isNullOrBlank() }
                         ?: stringResource(Res.string.no_status),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.fillMaxWidth()
