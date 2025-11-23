@@ -139,7 +139,7 @@ fun NewChat(
                     username = user.username,
                     commonFriendCount = user.commonFriendCount,
                     onClick = {
-                        //TODO: Send friend request
+                        viewModel.addFriend(user.id)
                     },
                 )
 

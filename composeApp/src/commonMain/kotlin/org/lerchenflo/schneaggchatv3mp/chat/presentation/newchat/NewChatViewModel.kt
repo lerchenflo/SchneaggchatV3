@@ -4,9 +4,12 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,6 +29,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 
 class NewChatViewModel (
     private val appRepository: AppRepository,
@@ -66,6 +70,15 @@ class NewChatViewModel (
             // Handle error
             e.printStackTrace()
             _availableChats.value = emptyList()
+        }
+    }
+
+    fun addFriend(friendId: String) {
+        CoroutineScope(Dispatchers.IO).launch { //Launch in coroutinescope to not access the db on main thread
+            val success = appRepository.addFriend(friendId)
+            SnackbarManager.showMessage(
+                if (success) "✔" else "Error" //TODO: Fabi bitte fixen i hobs ned im griff
+            )
         }
     }
 

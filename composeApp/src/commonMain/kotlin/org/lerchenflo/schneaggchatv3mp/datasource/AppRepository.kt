@@ -493,6 +493,8 @@ class AppRepository(
         }
     }
 
+
+    //Add new users
     suspend fun getAvailableUsers(searchTerm: String) : List<NetworkUtils.NewFriendsUserResponse> {
         return when (val response = networkUtils.getAvailableUsers(searchTerm)) {
             is NetworkResult.Error<*> -> {
@@ -504,6 +506,16 @@ class AppRepository(
             }
         }
 
+    }
+
+    suspend fun addFriend(friendId: String) : Boolean {
+        when (val success = networkUtils.addFriend(friendId)){
+            is NetworkResult.Error<*> -> return false
+            is NetworkResult.Success<*> -> {
+                userIdSync()
+                return true
+            }
+        }
     }
 
 

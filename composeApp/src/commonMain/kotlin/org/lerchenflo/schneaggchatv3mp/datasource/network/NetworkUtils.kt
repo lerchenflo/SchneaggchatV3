@@ -412,6 +412,12 @@ class NetworkUtils(
         )
     }
 
+    suspend fun addFriend(friendId: String) : NetworkResult<Any, NetworkError> {
+        return safeGet(
+            endpoint = "/users/addfriend/$friendId",
+        )
+    }
+
 
     /*
     **************************************************************************
