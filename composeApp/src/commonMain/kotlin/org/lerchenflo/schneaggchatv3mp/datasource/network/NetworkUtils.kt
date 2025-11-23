@@ -21,7 +21,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
 @OptIn(ExperimentalTime::class)
 class NetworkUtils(
@@ -288,7 +287,6 @@ class NetworkUtils(
     )
 
     suspend fun refresh(refreshToken: String): NetworkResult<TokenPair, NetworkError> {
-        println("Refreshing token...")
         return safeAuthPost<RefreshRequest, TokenPair>(
             endpoint = "/auth/refresh",
             body = RefreshRequest(refreshToken = refreshToken)
@@ -400,6 +398,30 @@ class NetworkUtils(
         )
     }
 
+    @Serializable
+    data class NewFriendsUserResponse(
+        val id: String,
+        val username: String,
+        val commonFriendCount: Int,
+    )
+
+    suspend fun getAvailableUsers(searchterm: String) : NetworkResult<List<NewFriendsUserResponse>, NetworkError> {
+        return safeGet(
+            endpoint = "/users/availableusers?searchterm=$searchterm"
+        )
+    }
+
+    suspend fun sendFriendRequest(friendId: String) : NetworkResult<Any, NetworkError> {
+        return safeGet(
+            endpoint = "/users/addfriend/$friendId",
+        )
+    }
+
+    suspend fun denyFriendRequest(friendId: String) : NetworkResult<Any, NetworkError> {
+        return safeGet(
+            endpoint = "/users/denyfriend/$friendId"
+        )
+    }
 
 
     /*

@@ -34,7 +34,7 @@ interface UserDao {
     fun getUserbyIdFlow(userid: String?): Flow<UserDto?>
 
     @Query("SELECT * FROM users WHERE id = :userid")
-    fun getUserbyId(userid: String?): UserDto?
+    suspend fun getUserbyId(userid: String?): UserDto?
 
     @Query("SELECT id, changedate FROM users")
     suspend fun getUserIdsWithChangeDates(): List<IdChangeDate>

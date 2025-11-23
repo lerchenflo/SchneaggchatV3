@@ -29,6 +29,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.no_status
@@ -204,17 +205,25 @@ fun UserButton(
             }
 
             // Bottom Text (status ...)
-            if(bottomTextOverride == null || !bottomTextOverride.isEmpty()){
-
+            if (selectedChat.friendshipStatus != null){
                 Text(
-                    text = bottomTextOverride
-                        ?: selectedChat.status
-                            .takeIf { !it.isNullOrBlank() }
-                        ?: stringResource(Res.string.no_status),
+                    // ALSO get requesterid (Who made the request (If i made it the other can accept it)) selectedChat.requesterId
+                    text = selectedChat.friendshipStatus!!.toString(), //TODO: FABI override tostring with uitext please
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.fillMaxWidth()
                 )
+            }else {
+                if(bottomTextOverride == null || !bottomTextOverride.isEmpty()){
 
+                    Text(
+                        text = bottomTextOverride
+                            ?: selectedChat.status
+                                .takeIf { !it.isNullOrBlank() }
+                            ?: stringResource(Res.string.no_status),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
     }

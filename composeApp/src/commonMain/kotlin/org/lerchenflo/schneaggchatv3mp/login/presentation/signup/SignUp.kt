@@ -93,6 +93,7 @@ fun SignUpScreen(
                 )
                 .consumeWindowInsets(WindowInsets.navigationBars)
 
+            //TODO: Back button
 
             var showImagePickerDialog by remember { mutableStateOf(false) }
             Box(modifier = Modifier.fillMaxSize()) {

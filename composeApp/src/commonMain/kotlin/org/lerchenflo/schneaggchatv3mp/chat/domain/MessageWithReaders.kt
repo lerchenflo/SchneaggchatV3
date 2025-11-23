@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 
+//TODO: Remove this and add readers to message object (Keep functions)
 data class MessageWithReaders(
     val message: Message,
     val readers: List<MessageReader>

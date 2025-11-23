@@ -4,9 +4,8 @@ import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupWithMembers
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroupWithMembers
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
@@ -18,7 +17,7 @@ class GroupRepository(
     private val pictureManager: PictureManager
 ) {
     suspend fun upsertGroup(group: Group){
-        database.groupDao().upsertGroup(group.toDto())
+        database.groupDao().upsertGroup(group.toDto().group)
     }
 
     @Transaction
@@ -27,10 +26,10 @@ class GroupRepository(
     }
 
     @Transaction
-    fun getallgroupswithmembers(): Flow<List<GroupWithMembers>> {
+    fun getallgroupswithmembers(): Flow<List<Group>> {
         return database.groupDao().getAllGroupsWithMembers().map { list ->
             list.map {
-                it.toGroupWithMembers()
+                it.toGroup()
             }
         }
     }

@@ -15,8 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -48,8 +46,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import io.ktor.http.Url
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.UrlChangeDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton

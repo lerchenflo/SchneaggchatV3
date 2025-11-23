@@ -68,6 +68,8 @@
     <string name="requirement_lowercase">At least one lowercase character</string>
     <string name="requirement_uppercase">At least one uppercase character</string>
 
+    <string name="error_access_not_permitted">Your saved session was invalidated. Please login again.</string>
+    <string name="error_access_expired">Your saved session expired after 30 days. Please login again</string>
 
     <string name="select_gebi_date">Select your birth date</string>
     <string name="status">Status:</string>
@@ -152,7 +154,10 @@
     <string name="you_are_already_developer">you are already are a developer</string>
     <string name="developer_setting_info">Be careful with the developer settings. Make sure you know what you are doing.</string>
 
-
+    <string name="friend_request_title">Do you want to accept the friend request?</string>
+    <string name="friend_request_accept">Accept</string>
+    <string name="friend_request_deny">Deny</string>
+    <string name="friend_request_block">Block</string>
 
 
 

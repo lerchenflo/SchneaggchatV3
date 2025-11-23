@@ -69,7 +69,7 @@ val sharedmodule = module{
     factory { SettingsViewModel(get(), get()) } // factory -> new instance each injection
 
     viewModelOf(::ChatSelectorViewModel)
-    factory { ChatSelectorViewModel(get()) }
+    factory { ChatSelectorViewModel(get(), get()) }
 
     viewModelOf(::ChatViewModel)
     factory { ChatViewModel(get(), get(), get()) }

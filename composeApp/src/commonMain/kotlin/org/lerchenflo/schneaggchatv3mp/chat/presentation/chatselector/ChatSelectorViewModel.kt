@@ -1,3 +1,5 @@
+@file:OptIn(FlowPreview::class)
+
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector
 
 import androidx.compose.material.icons.Icons
@@ -6,6 +8,7 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.MarkChatUnread
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person3
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -15,6 +18,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -24,6 +28,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -33,8 +40,11 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.groups
@@ -44,26 +54,26 @@ import schneaggchatv3mp.composeapp.generated.resources.unread
 
 class ChatSelectorViewModel(
     private val appRepository: AppRepository,
+    private val navigator: Navigator
 ): ViewModel() {
-
-
 
     val globalViewModel: GlobalViewModel = KoinPlatform.getKoin().get()
 
     init {
-        refresh()
+        viewModelScope.launch {
+            refresh()
+        }
 
         //TODO: Maybe try login every 5 sec if not logged in (No sync all 5 secs)
         //Chat verlassen
         //globalViewModel.onLeaveChat()
     }
 
-
     private var refreshJob: Job? = null
 
     fun refresh() {
-        println("Refresh started")
 
+        println("Chatselector: Pull to refresh")
         // if a refresh is already running, do nothing
         if (refreshJob?.isActive == true) return
 
@@ -71,7 +81,7 @@ class ChatSelectorViewModel(
 
             if (!SessionCache.loggedIn){
 
-                println("Not logged in, refreshing token")
+                println("Not logged in, trying to refresh token")
                 appRepository.refreshTokens()
 
                 val becameLoggedIn = withTimeoutOrNull(10_000L) {
@@ -125,6 +135,45 @@ class ChatSelectorViewModel(
     }
 
 
+    //Navigation
+    fun onChatSelected(selectedChat: SelectedChat) {
+        viewModelScope.launch {
+            //TODO: Maybe when trough all possibilities and show different popups?
+            if (selectedChat.friendshipStatus != NetworkUtils.FriendshipStatus.PENDING) {
+                globalViewModel.onSelectChat(selectedChat)
+                navigator.navigate(Route.Chat)
+            }else {
+                if (selectedChat.requesterId!! != SessionCache.getOwnIdValue()){ //Only when the other user sent the request
+                    _pendingFriendPopup.value = selectedChat
+
+                }
+            }
+
+        }
+    }
+    fun onNewChatClick(){
+        viewModelScope.launch {
+            navigator.navigate(Route.NewChat)
+        }
+    }
+    fun onSettingsClick() {
+        viewModelScope.launch {
+            navigator.navigate(Route.Settings)
+        }
+    }
+    fun onToolsAndGamesClick() {
+        viewModelScope.launch {
+            navigator.navigate(Route.Todolist)
+        }
+    }
+    fun onMapClick(){
+        viewModelScope.launch {
+            navigator.navigate(Route.UnderConstruction)
+        }
+    }
+
+
+    //Search / Filter
     private val _searchTerm = MutableStateFlow("")
     val searchterm: StateFlow<String> = _searchTerm.asStateFlow()
 
@@ -140,26 +189,43 @@ class ChatSelectorViewModel(
     }
 
 
+    //Friend accept / Deny
+    private val _pendingFriendPopup = MutableStateFlow<SelectedChat?>(null)
+    val pendingFriendPopup: StateFlow<SelectedChat?> = _pendingFriendPopup.asStateFlow()
+
+    fun dismissPendingFriendDialog() {
+        _pendingFriendPopup.value = null
+    }
+
+    fun acceptFriend(friendId: String){
+        viewModelScope.launch {
+            appRepository.sendFriendRequest(friendId)
+        }
+        dismissPendingFriendDialog()
+    }
+
+    fun denyFriend(friendId: String){
+        viewModelScope.launch {
+            appRepository.denyFriendRequest(friendId)
+        }
+        dismissPendingFriendDialog()
+    }
+
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val chatSelectorFlow: Flow<List<SelectedChat>> = kotlinx.coroutines.flow.combine(
+    private val chatSelectorFlow: Flow<List<SelectedChat>> = combine(
         _searchTerm,
-        _filter
-    ) { term, filter -> term to filter }
+        _filter,
+        SessionCache.ownId //Add own id to automatically update the chats if the own id changes (On create)
+    ) { term, filter, ownid -> term to filter }
         .flatMapLatest { (term, filter) ->
             // repository should accept the filter param (you already implemented that)
             appRepository.getChatSelectorFlow(term, filter)
         }
-        .map { list ->
-            // remove yourself (own user item) and keep UI-level safety checks;
-            // repository may already apply the filter, but this keeps the UI invariant.
-            list
-                .filter { !(it.id == SessionCache.getOwnIdValue() && !it.isGroup) }
-                .sortedByDescending { it.lastmessage?.getSendDateAsLong() ?: 0L }
-        }
         .flowOn(Dispatchers.Default)
 
     val chatSelectorState: StateFlow<List<SelectedChat>> = chatSelectorFlow
+        .distinctUntilChanged()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Companion.WhileSubscribed(5_000),

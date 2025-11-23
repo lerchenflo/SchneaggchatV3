@@ -19,6 +19,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 
 
@@ -67,17 +68,32 @@ fun createHttpClient(
 
                     refreshTokens {
 
-                        val response: NetworkUtils.TokenPair = client.post(preferenceManager.buildServerUrl("/auth/refresh")) {
+                        val response = client.post(preferenceManager.buildServerUrl("/auth/refresh")) {
                             contentType(ContentType.Application.Json)
                             setBody(oldTokens?.refreshToken)
                             markAsRefreshTokenRequest()
-                        }.body()
+                        }
+                        println("Response tokens: ${response.body<String>()}")
+                        val responseTokens = response.body<NetworkUtils.TokenPair>()
+
+                        println("AUTH Httpclient is refreshing tokens...")
 
                         // Save new tokens
-                        preferenceManager.saveTokens(response)
+                        preferenceManager.saveTokens(responseTokens)
 
-                        BearerTokens(response.accessToken, response.refreshToken)
+                        BearerTokens(
+                            accessToken = responseTokens.accessToken,
+                            refreshToken = responseTokens.refreshToken
+                        )
                     }
+
+                    /*
+                    sendWithoutRequest { request ->
+                        val tokens = SessionCache.tokens
+                        tokens != null
+                    }
+
+                     */
 
 
                 }
