@@ -130,7 +130,7 @@ fun App() {
 
 
                         LaunchedEffect(Unit) {
-                            val savedCreds = appRepository.areLoginCredentialsSaved()
+                            val savedCreds = appRepository.loadSavedLoginConfig()
 
                             if (savedCreds) {
                                 navController.navigate(Route.ChatSelector) {
@@ -140,7 +140,13 @@ fun App() {
                                 globalViewModel.viewModelScope.launch {
                                     //Autologin
 
-                                    appRepository.refreshTokens()
+                                    val success = appRepository.refreshTokens()
+                                    if (!success){
+                                        println("token refresh failed, rerouting to login")
+                                        navController.navigate(Route.Login) {
+                                            popUpTo(Route.Login) { inclusive = true }
+                                        }
+                                    }
 
                                 }
                             } else {

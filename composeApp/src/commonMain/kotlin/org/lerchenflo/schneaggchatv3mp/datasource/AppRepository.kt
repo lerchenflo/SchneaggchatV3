@@ -2,7 +2,6 @@
 
 package org.lerchenflo.schneaggchatv3mp.datasource
 
-import io.ktor.util.reflect.instanceOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -224,7 +223,7 @@ class AppRepository(
     }
 
 
-    suspend fun areLoginCredentialsSaved(): Boolean{
+    suspend fun loadSavedLoginConfig(): Boolean{
         val tokens = preferencemanager.getTokens()
 
         val tokensNotEmpty = tokens.accessToken.isNotEmpty() && tokens.refreshToken.isNotEmpty()
@@ -273,7 +272,6 @@ class AppRepository(
     }
 
 
-    //TODO: Pass profile pic
     fun createAccount(
         username: String,
         email: String,
@@ -302,15 +300,29 @@ class AppRepository(
         }
     }
 
-    suspend fun refreshTokens() {
+
+    var refreshTokenRequestRunning = false //Stop concurrent requests
+    suspend fun refreshTokens() : Boolean {
+        if (refreshTokenRequestRunning){
+            return false
+        }
+        refreshTokenRequestRunning = true
+
         val tokens = preferencemanager.getTokens()
 
-        when(val result = networkUtils.refresh(tokens.refreshToken)){
-            is NetworkResult.Error<*> -> {}
+        println("Token refresh networktask starting: $tokens")
+        return when(val result = networkUtils.refresh(tokens.refreshToken)){
+            is NetworkResult.Error<*> -> {
+                println("Refreshing tokens failed: ${result.error}")
+                refreshTokenRequestRunning = false
+                false
+            }
             is NetworkResult.Success<NetworkUtils.TokenPair> -> {
                 preferencemanager.saveTokens(result.data)
                 println("Tokenpair refresh successful")
                 onNewTokenPair(result.data)
+                refreshTokenRequestRunning = false
+                true
             }
         }
     }
@@ -445,6 +457,19 @@ class AppRepository(
             }
 
         }
+    }
+
+    suspend fun getAvailableUsers(searchTerm: String) : List<NetworkUtils.NewFriendsUserResponse> {
+        return when (val response = networkUtils.getAvailableUsers(searchTerm)) {
+            is NetworkResult.Error<*> -> {
+                //TODO: FABI Get available users failed (Popup??)
+                emptyList()
+            }
+            is NetworkResult.Success<*> -> {
+                response.data as List<NetworkUtils.NewFriendsUserResponse>
+            }
+        }
+
     }
 
 

@@ -51,7 +51,9 @@ class ChatSelectorViewModel(
     val globalViewModel: GlobalViewModel = KoinPlatform.getKoin().get()
 
     init {
-        refresh()
+        viewModelScope.launch {
+            refresh()
+        }
 
         //TODO: Maybe try login every 5 sec if not logged in (No sync all 5 secs)
         //Chat verlassen
@@ -62,8 +64,8 @@ class ChatSelectorViewModel(
     private var refreshJob: Job? = null
 
     fun refresh() {
-        println("Refresh started")
 
+        println("Chatselector: Pull to refresh")
         // if a refresh is already running, do nothing
         if (refreshJob?.isActive == true) return
 
@@ -71,7 +73,7 @@ class ChatSelectorViewModel(
 
             if (!SessionCache.loggedIn){
 
-                println("Not logged in, refreshing token")
+                println("Not logged in, trying to refresh token")
                 appRepository.refreshTokens()
 
                 val becameLoggedIn = withTimeoutOrNull(10_000L) {

@@ -288,7 +288,6 @@ class NetworkUtils(
     )
 
     suspend fun refresh(refreshToken: String): NetworkResult<TokenPair, NetworkError> {
-        println("Refreshing token...")
         return safeAuthPost<RefreshRequest, TokenPair>(
             endpoint = "/auth/refresh",
             body = RefreshRequest(refreshToken = refreshToken)
@@ -400,6 +399,18 @@ class NetworkUtils(
         )
     }
 
+    @Serializable
+    data class NewFriendsUserResponse(
+        val id: String,
+        val username: String,
+        val commonFriendCount: Int,
+    )
+
+    suspend fun getAvailableUsers(searchterm: String) : NetworkResult<List<NewFriendsUserResponse>, NetworkError> {
+        return safeGet(
+            endpoint = "/users/availableusers/$searchterm"
+        )
+    }
 
 
     /*

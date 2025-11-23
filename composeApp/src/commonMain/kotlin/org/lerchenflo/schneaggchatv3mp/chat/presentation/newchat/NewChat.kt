@@ -62,7 +62,7 @@ fun NewChat(
 ){
     val viewModel = koinViewModel<NewChatViewModel>()
     val searchterm by viewModel.searchterm.collectAsStateWithLifecycle()
-    val newChats by viewModel.newChatState.collectAsStateWithLifecycle(emptyList())
+    val newChats by viewModel.availableChats.collectAsStateWithLifecycle()
 
     Column(
         modifier = modifier
@@ -135,20 +135,14 @@ fun NewChat(
             ),
         ) {
             items(newChats) { user ->
-                UserButton(
-                    selectedChat = user,
-                    useOnClickGes = false,
-                    lastMessage = null,
-                    bottomTextOverride = stringResource(Res.string.common_friends,"3"),
-                    onClickText = {
-                        /*todo*/
-                        SnackbarManager.showMessage("TODO: send friend request")
+                NewFriendUserButton(
+                    username = user.username,
+                    commonFriendCount = user.commonFriendCount,
+                    onClick = {
+                        //TODO: Send friend request
                     },
-                    onClickImage = {
-                        /*todo*/
-                        SnackbarManager.showMessage("TODO")
-                    }
                 )
+
                 HorizontalDivider(
                     thickness = 0.5.dp
                 )
