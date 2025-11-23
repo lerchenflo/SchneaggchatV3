@@ -2,6 +2,7 @@
 
 package org.lerchenflo.schneaggchatv3mp.datasource
 
+import androidx.compose.runtime.Composable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -33,6 +34,10 @@ import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
+import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 import kotlin.time.ExperimentalTime
 
 class AppRepository(
@@ -54,9 +59,27 @@ class AppRepository(
 
         data class ErrorEvent (
             val errorCode: Int? = null,
-            val errorMessage: String,
+            val errorMessage: String? = null,
+            val errorMessageUiText: UiText? = null,
             val duration: Long = 5000L
-        )
+        ){
+            @Composable
+            fun toStringComposable(): String {
+                var finalstr = ""
+
+                //Add errorcode
+                finalstr += if (errorCode != null) "Errorcode: ${errorCode}\n" else "" //TODO FABI? Add errorcode tostring (in network error class and insert here)
+                //TODO FABI erste zeile ca so(oda andersch, vlt o code unta mir egal) Errorcode: 401 Forbidden(No valid credentials) //Goht eh locker mit uitext
+                //Add errormessage
+                if (errorMessage != null)
+                    finalstr += errorMessage + "\n"
+
+                if (errorMessageUiText != null)
+                    finalstr += errorMessageUiText.asString()
+
+                return finalstr
+            }
+        }
 
         private val _channel = Channel<ErrorEvent>(capacity = Channel.Factory.BUFFERED)
         val errors = _channel.receiveAsFlow()
@@ -67,7 +90,7 @@ class AppRepository(
 
         fun trySendError(event: ErrorEvent) {
             _channel.trySend(event).onFailure {
-                // handle failure (e.g., log) — channel full or closed
+                println("Error when adding error event: $it")
             }
         }
     }
@@ -229,6 +252,17 @@ class AppRepository(
         val tokensNotEmpty = tokens.accessToken.isNotEmpty() && tokens.refreshToken.isNotEmpty()
         val tokenNotExpired =
             JwtUtils.isTokenDateValid(tokens.refreshToken) //is the refreshtoken still valid? If not, user needs to login again
+
+        //Token is expired, send errormessage
+        if (!tokenNotExpired){
+            AppRepository.trySendError(
+                event = AppRepository.ErrorChannel.ErrorEvent(
+                    401,
+                    errorMessageUiText = UiText.StringResourceText(Res.string.error_access_expired),
+                    duration = 5000L,
+                )
+            )
+        }
 
         val credsSaved = tokenNotExpired && tokensNotEmpty
 

@@ -28,6 +28,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.lerchenflo.hallenmanager.sharedUi.UnderConstruction
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -51,6 +52,9 @@ import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 
 
 @Composable
@@ -86,23 +90,22 @@ fun App() {
         }
 
 
-        var showAutoFadePopup by remember { mutableStateOf(false) }
-        var autoFadeMessage by remember { mutableStateOf("") }
-        var autoFadeDuration by remember { mutableStateOf(5000L) }
+        var currentError by remember { mutableStateOf<AppRepository.ErrorChannel.ErrorEvent?>(null) }
 
         LaunchedEffect(Unit) {
             AppRepository.errors.collect { error ->
-                autoFadeDuration = error.duration
-                autoFadeMessage = if (error.errorCode != null) "Errorcode: ${error.errorCode}\n${error.errorMessage}" else error.errorMessage
-                showAutoFadePopup = true
+                println("Error popup thrown: $error")
+                currentError = error
+                kotlinx.coroutines.delay(error.duration)
+                currentError = null
             }
         }
 
-        if (showAutoFadePopup){
+        currentError?.let { error ->
             AutoFadePopup(
-                message = autoFadeMessage,
-                onDismiss = {showAutoFadePopup = false},
-                showDuration = autoFadeDuration,
+                message = error.toStringComposable(), // Called in composable context
+                showDuration = error.duration,
+                onDismiss = { currentError = null }
             )
         }
 
@@ -143,6 +146,13 @@ fun App() {
                                     val success = appRepository.refreshTokens()
                                     if (!success){
                                         println("token refresh failed, rerouting to login")
+                                        AppRepository.trySendError(
+                                            event = AppRepository.ErrorChannel.ErrorEvent(
+                                                401,
+                                                errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
+                                                duration = 5000L,
+                                            )
+                                        )
                                         navController.navigate(Route.Login) {
                                             popUpTo(Route.Login) { inclusive = true }
                                         }
@@ -153,6 +163,7 @@ fun App() {
                                 navController.navigate(Route.Login) {
                                     popUpTo(Route.AutoLoginCredChecker) { inclusive = true }
                                 }
+
                             }
                         }
                     }
