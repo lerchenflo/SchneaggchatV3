@@ -42,6 +42,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.Chatauswah
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreator
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.DeveloperSettings
@@ -143,8 +144,8 @@ fun App() {
                                 globalViewModel.viewModelScope.launch {
                                     //Autologin
 
-                                    val success = appRepository.refreshTokens()
-                                    if (!success){
+                                    val error = appRepository.refreshTokens()
+                                    if (error == NetworkError.UNAUTHORIZED){
                                         println("token refresh failed, rerouting to login")
                                         AppRepository.trySendError(
                                             event = AppRepository.ErrorChannel.ErrorEvent(

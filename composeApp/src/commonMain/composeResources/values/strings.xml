@@ -159,6 +159,7 @@
     <string name="friend_request_deny">Deny</string>
     <string name="friend_request_block">Block</string>
 
+    <string name="server_not_reachable">Could not establish a connection to the server</string>
 
 
 

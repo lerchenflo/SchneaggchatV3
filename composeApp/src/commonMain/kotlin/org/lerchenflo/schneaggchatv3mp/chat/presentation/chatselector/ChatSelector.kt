@@ -95,6 +95,8 @@ fun Chatauswahlscreen(
 
     val pendingFriendPopup by viewModel.pendingFriendPopup.collectAsStateWithLifecycle()
 
+    val connectionToServer = SessionCache.onlineFlow.collectAsStateWithLifecycle()
+
     //Noti permission abfrage für ios (Machts auto on start´)
     //val permissionUtil = NotifierManager.getPermissionUtil()
     //permissionUtil.askNotificationPermission()
@@ -142,7 +144,7 @@ fun Chatauswahlscreen(
                 val distance = 10.dp //Abstand zwüschat da buttons oba rechts
 
                 RoundLoadingIndicator(
-                    visible = viewModel.isLoadingMessages || !SessionCache.isOnlineValue(),
+                    visible = viewModel.isLoadingMessages || !connectionToServer.value,
                     onClick = {
                         if (viewModel.isLoadingMessages) {
                             CoroutineScope(Dispatchers.IO).launch {

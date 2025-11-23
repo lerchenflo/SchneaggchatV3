@@ -1,26 +1,39 @@
+package org.lerchenflo.schneaggchatv3mp.login.presentation.login
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.server_not_reachable
 
 
 class LoginViewModel(
-    private val appRepository: AppRepository
+    private val appRepository: AppRepository,
+    private val preferencemanager: Preferencemanager
 ): ViewModel() {
 
 
-
-    //TODO: SHow create account button only on mobile (Image picker only there available) (Implement in ui)
-    // überzeugt mi ned. i würd eif image ned required macha
-    var showCreateButton by mutableStateOf(false)
-
     init {
-        if (appRepository.appVersion.isMobile()){
-            showCreateButton = true
+        viewModelScope.launch {
+            val online =  appRepository.testServer()
+            if (!online){
+                AppRepository.sendErrorSuspend(
+                    event = AppRepository.ErrorChannel.ErrorEvent(
+                        errorCode = 408,
+                        errorMessage = "ServerUrl: " + preferencemanager.getServerUrl(),
+                        errorMessageUiText = UiText.StringResourceText(Res.string.server_not_reachable),
+                        duration = 6000L
+                    )
+                )
+            }
         }
     }
 
@@ -33,6 +46,7 @@ class LoginViewModel(
 
     var isLoading by mutableStateOf(false)
         private set
+
 
 
     var errorMessage by mutableStateOf<String?>(null)
