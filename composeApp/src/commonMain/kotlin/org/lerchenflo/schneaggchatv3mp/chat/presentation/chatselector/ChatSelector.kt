@@ -16,6 +16,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Chat
 import androidx.compose.material.icons.filled.FilterAlt
@@ -56,13 +58,8 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
-import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
@@ -71,6 +68,9 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.app_name
 import schneaggchatv3mp.composeapp.generated.resources.filter
+import schneaggchatv3mp.composeapp.generated.resources.friend_request_accept
+import schneaggchatv3mp.composeapp.generated.resources.friend_request_deny
+import schneaggchatv3mp.composeapp.generated.resources.friend_request_title
 import schneaggchatv3mp.composeapp.generated.resources.loadinginfo_messages
 import schneaggchatv3mp.composeapp.generated.resources.loadinginfo_offline
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap
@@ -82,24 +82,18 @@ import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 @Preview
 @Composable
 fun Chatauswahlscreen(
-    onChatSelected: (SelectedChat) -> Unit,  // navigation callback
-    onNewChatClick: () -> Unit,
-    onSettingsClick: () -> Unit,
-    onToolsAndGamesClick: () -> Unit,
-    onMapClick: () -> Unit = {},
     modifier: Modifier = Modifier
         .safeContentPadding()
 ) {
 
-    val appRepository = koinInject<AppRepository>()
     val viewModel = koinViewModel<ChatSelectorViewModel>()
     val availablegegners by viewModel.chatSelectorState.collectAsStateWithLifecycle(emptyList())
     val searchterm by viewModel.searchterm.collectAsStateWithLifecycle()
 
-    var profilePictureDialog by remember { mutableStateOf(false) }
+    var profilePictureDialogShown by remember { mutableStateOf(false) }
     var profilePictureFilePathTemp by remember { mutableStateOf("") }
 
-
+    val pendingFriendPopup by viewModel.pendingFriendPopup.collectAsStateWithLifecycle()
 
     //Noti permission abfrage für ios (Machts auto on start´)
     //val permissionUtil = NotifierManager.getPermissionUtil()
@@ -110,7 +104,7 @@ fun Chatauswahlscreen(
         modifier = modifier,
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onNewChatClick() }) {
+                onClick = { viewModel.onNewChatClick() }) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Outlined.Chat,
                     contentDescription = stringResource(Res.string.add),
@@ -148,7 +142,7 @@ fun Chatauswahlscreen(
                 val distance = 10.dp //Abstand zwüschat da buttons oba rechts
 
                 RoundLoadingIndicator(
-                    visible = viewModel.isLoadingMessages || !SessionCache.loggedIn,
+                    visible = viewModel.isLoadingMessages || !SessionCache.isOnlineValue(),
                     onClick = {
                         if (viewModel.isLoadingMessages) {
                             CoroutineScope(Dispatchers.IO).launch {
@@ -176,7 +170,7 @@ fun Chatauswahlscreen(
                         .padding(2.dp)                      // smaller outer padding so icons sit closer together
                         .size(touchSize)
                         .clip(CircleShape)                  // optional: nicer ripple shape
-                        .clickable { onToolsAndGamesClick() },
+                        .clickable { viewModel.onToolsAndGamesClick() },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -194,7 +188,7 @@ fun Chatauswahlscreen(
                         .padding(2.dp)
                         .size(touchSize)
                         .clip(CircleShape)
-                        .clickable {onMapClick()},
+                        .clickable { viewModel.onMapClick()},
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -212,7 +206,7 @@ fun Chatauswahlscreen(
                         .padding(2.dp)
                         .size(touchSize)
                         .clip(CircleShape)
-                        .clickable { onSettingsClick() },
+                        .clickable { viewModel.onSettingsClick() },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -329,7 +323,7 @@ fun Chatauswahlscreen(
                 ) {
                     LazyColumn(
                         modifier = Modifier
-                            .fillMaxSize(), //TODO: If showing users is not working correctly, change to fillmaxwidth
+                            .fillMaxSize(),
                         contentPadding = PaddingValues(
                             start = 16.dp,
                             end = 16.dp,
@@ -344,9 +338,10 @@ fun Chatauswahlscreen(
                                 selectedChat = gegner,
                                 useOnClickGes = false,
                                 lastMessage = gegner.lastmessage,
-                                onClickText = { onChatSelected(gegner) },
+                                onClickText = { viewModel.onChatSelected(gegner) },
                                 onClickImage = {
-                                    profilePictureDialog = true
+                                    //TODO: Fix for empty images (No profilepic)
+                                    profilePictureDialogShown = true
                                     profilePictureFilePathTemp = gegner.profilePictureUrl
                                 }
                             )
@@ -358,13 +353,50 @@ fun Chatauswahlscreen(
             }
         }
 
-        if (profilePictureDialog) {
+        //Popups
+
+        if (profilePictureDialogShown) {
             ProfilePictureBigDialog(
                 filepath = profilePictureFilePathTemp,
                 onDismiss = {
-                    profilePictureDialog = false
+                    profilePictureDialogShown = false
                     profilePictureFilePathTemp = ""
                 }
+            )
+        }
+
+        pendingFriendPopup?.let { selectedChat->
+            AlertDialog(
+                onDismissRequest = {
+                    viewModel.dismissPendingFriendDialog()
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.acceptFriend(selectedChat.id)
+                        },
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.friend_request_accept)
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.denyFriend(selectedChat.id)
+                        },
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.friend_request_deny)
+                        )
+                    }
+                },
+                title = {
+                    Text(
+                        text = stringResource(Res.string.friend_request_title),
+                        )
+                },
             )
         }
 

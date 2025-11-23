@@ -75,7 +75,7 @@ class NewChatViewModel (
 
     fun addFriend(friendId: String) {
         CoroutineScope(Dispatchers.IO).launch { //Launch in coroutinescope to not access the db on main thread
-            val success = appRepository.addFriend(friendId)
+            val success = appRepository.sendFriendRequest(friendId)
             SnackbarManager.showMessage(
                 if (success) "✔" else "Error" //TODO: Fabi bitte fixen i hobs ned im griff
             )

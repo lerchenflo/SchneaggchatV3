@@ -40,8 +40,11 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.groups
@@ -51,9 +54,8 @@ import schneaggchatv3mp.composeapp.generated.resources.unread
 
 class ChatSelectorViewModel(
     private val appRepository: AppRepository,
+    private val navigator: Navigator
 ): ViewModel() {
-
-
 
     val globalViewModel: GlobalViewModel = KoinPlatform.getKoin().get()
 
@@ -66,7 +68,6 @@ class ChatSelectorViewModel(
         //Chat verlassen
         //globalViewModel.onLeaveChat()
     }
-
 
     private var refreshJob: Job? = null
 
@@ -134,6 +135,42 @@ class ChatSelectorViewModel(
     }
 
 
+    //Navigation
+    fun onChatSelected(selectedChat: SelectedChat) {
+        viewModelScope.launch {
+            //TODO: Maybe when trough all possibilities and show different popups?
+            if (selectedChat.friendshipStatus != NetworkUtils.FriendshipStatus.PENDING) {
+                globalViewModel.onSelectChat(selectedChat)
+                navigator.navigate(Route.Chat)
+            }else {
+                _pendingFriendPopup.value = selectedChat
+            }
+
+        }
+    }
+    fun onNewChatClick(){
+        viewModelScope.launch {
+            navigator.navigate(Route.NewChat)
+        }
+    }
+    fun onSettingsClick() {
+        viewModelScope.launch {
+            navigator.navigate(Route.Settings)
+        }
+    }
+    fun onToolsAndGamesClick() {
+        viewModelScope.launch {
+            navigator.navigate(Route.Todolist)
+        }
+    }
+    fun onMapClick(){
+        viewModelScope.launch {
+            navigator.navigate(Route.UnderConstruction)
+        }
+    }
+
+
+    //Search / Filter
     private val _searchTerm = MutableStateFlow("")
     val searchterm: StateFlow<String> = _searchTerm.asStateFlow()
 
@@ -149,12 +186,35 @@ class ChatSelectorViewModel(
     }
 
 
+    //Friend accept / Deny
+    private val _pendingFriendPopup = MutableStateFlow<SelectedChat?>(null)
+    val pendingFriendPopup: StateFlow<SelectedChat?> = _pendingFriendPopup.asStateFlow()
+
+    fun dismissPendingFriendDialog() {
+        _pendingFriendPopup.value = null
+    }
+
+    fun acceptFriend(friendId: String){
+        viewModelScope.launch {
+            appRepository.sendFriendRequest(friendId)
+        }
+        dismissPendingFriendDialog()
+    }
+
+    fun denyFriend(friendId: String){
+        viewModelScope.launch {
+            appRepository.denyFriendRequest(friendId)
+        }
+        dismissPendingFriendDialog()
+    }
+
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val chatSelectorFlow: Flow<List<SelectedChat>> = combine(
         _searchTerm,
-        _filter
-    ) { term, filter -> term to filter }
+        _filter,
+        SessionCache.ownId //Add own id to automatically update the chats if the own id changes (On create)
+    ) { term, filter, ownid -> term to filter }
         .flatMapLatest { (term, filter) ->
             // repository should accept the filter param (you already implemented that)
             appRepository.getChatSelectorFlow(term, filter)

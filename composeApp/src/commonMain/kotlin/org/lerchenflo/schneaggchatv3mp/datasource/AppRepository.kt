@@ -38,7 +38,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
-import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 import kotlin.time.ExperimentalTime
 
 class AppRepository(
@@ -128,7 +127,7 @@ class AppRepository(
 
         return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
 
-            println("Gegnerauswahl refresh: DB Users: ${users.map { it.name }}")
+            println("Gegnerauswahl refresh: DB Users: ${users.map { it.name to it.id }}")
 
             val loweredSearch = searchTerm.trim().lowercase()
             val ownId = SessionCache.ownId
@@ -146,10 +145,10 @@ class AppRepository(
                     val senderId = msg.messageDto.senderId
                     val receiverId = msg.messageDto.receiverId
 
-                    if (senderId != ownId) {
+                    if (senderId != ownId.value) {
                         messagesByUser.getOrPut(senderId) { mutableListOf() }.add(msg)
                     }
-                    if (receiverId != ownId) {
+                    if (receiverId != ownId.value) {
                         messagesByUser.getOrPut(receiverId) { mutableListOf() }.add(msg)
                     }
                 }
@@ -158,7 +157,7 @@ class AppRepository(
             // Process users - CREATE NEW IMMUTABLE OBJECTS
             val userItems = users
                 .asSequence()
-                .filter { it.id != ownId }
+                .filter { it.id != ownId.value }
                 .filter { loweredSearch.isEmpty() || it.name.lowercase().contains(loweredSearch) }
                 .map { user ->
                     val userMessages = messagesByUser[user.id] ?: emptyList()
@@ -235,7 +234,6 @@ class AppRepository(
         //Parse the token to get the user id
         val userid = JwtUtils.getUserIdFromToken(tokenPair.refreshToken)
 
-
         CoroutineScope(Dispatchers.IO).launch {
             preferencemanager.saveTokens(tokenPair)
             preferencemanager.saveOWNID(userid)
@@ -253,11 +251,11 @@ class AppRepository(
         val tokens = preferencemanager.getTokens()
 
         val tokensNotEmpty = tokens.accessToken.isNotEmpty() && tokens.refreshToken.isNotEmpty()
-        val tokenNotExpired =
+        val tokenDateValid =
             JwtUtils.isTokenDateValid(tokens.refreshToken) //is the refreshtoken still valid? If not, user needs to login again
 
         //Token is expired, send errormessage
-        if (!tokenNotExpired){
+        if (!tokenDateValid && tokensNotEmpty){
             AppRepository.trySendError(
                 event = AppRepository.ErrorChannel.ErrorEvent(
                     401,
@@ -267,7 +265,7 @@ class AppRepository(
             )
         }
 
-        val credsSaved = tokenNotExpired && tokensNotEmpty
+        val credsSaved = tokenDateValid && tokensNotEmpty
 
         if (credsSaved){
             println("Tokens are saved in local storage, autologin permitted")
@@ -511,8 +509,19 @@ class AppRepository(
 
     }
 
-    suspend fun addFriend(friendId: String) : Boolean {
-        when (val success = networkUtils.addFriend(friendId)){
+    //Send or accept friend request
+    suspend fun sendFriendRequest(friendId: String) : Boolean {
+        when (val success = networkUtils.sendFriendRequest(friendId)){
+            is NetworkResult.Error<*> -> return false
+            is NetworkResult.Success<*> -> {
+                userIdSync()
+                return true
+            }
+        }
+    }
+
+    suspend fun denyFriendRequest(friendId: String) : Boolean {
+        when (val success = networkUtils.denyFriendRequest(friendId)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
                 userIdSync()

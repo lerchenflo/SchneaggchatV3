@@ -36,16 +36,15 @@ object SessionCache {
 
     // --------------------- ownId ---------------------
 
-    var ownId: String? by mutableStateOf(null)
-        private set
+    private val _ownId = MutableStateFlow<String?>(null)
+    val ownId = _ownId.asStateFlow()
 
     fun updateOwnId(newValue: String?) {
-        ownId = newValue
-        // keep developer flag in sync
+        _ownId.value = newValue
     }
 
     // synchronous, non-colliding helper
-    fun getOwnIdValue(): String? = ownId
+    fun getOwnIdValue(): String? = ownId.value
 
     // --------------------- developer flag ---------------------
     var developer: Boolean by mutableStateOf(false)
@@ -98,11 +97,7 @@ object SessionCache {
     private val _onlineFlow = MutableStateFlow(true)
     val onlineFlow: StateFlow<Boolean> = _onlineFlow.asStateFlow()
 
-    var online: Boolean by mutableStateOf(true)
-        private set
-
     fun updateOnline(newValue: Boolean) {
-        online = newValue
         _onlineFlow.value = newValue
     }
 
@@ -116,7 +111,7 @@ object SessionCache {
         updateUsername("")
         updatePassword("")
         updateLoggedIn(false)
-        updateOnline(true)
+        updateOnline(false)
         setDeveloperValue(false)
     }
 
@@ -130,12 +125,12 @@ object SessionCache {
         return buildString {
             appendLine("SessionCache {")
             appendLine("  tokens: ${if (tokens != null) "[PRESENT]" else "null"}")
-            appendLine("  ownId: ${ownId ?: "null"}")
+            appendLine("  ownId: ${ownId.value ?: "null"}")
             appendLine("  developer: $developer")
-            appendLine("  username: ${if (username.isNotEmpty()) username else "[empty]"}")
+            appendLine("  username: ${username.ifEmpty { "[empty]" }}")
             appendLine("  password: [REDACTED]")
             appendLine("  loggedIn: $loggedIn")
-            appendLine("  online: $online")
+            appendLine("  online: ${onlineFlow.value}")
             append("}")
         }
     }
@@ -145,19 +140,19 @@ object SessionCache {
         return buildString {
             appendLine("SessionCache {")
             appendLine("  tokens: ${tokens?.let { "TokenPair(accessToken=${it.accessToken.take(20)}..., refreshToken=${it.refreshToken.take(20)}...)" } ?: "null"}")
-            appendLine("  ownId: ${ownId ?: "null"}")
+            appendLine("  ownId: ${ownId.value ?: "null"}")
             appendLine("  developer: $developer")
             appendLine("  username: $username")
             appendLine("  password: [REDACTED - ${passwordDonotprint.length} chars]")
             appendLine("  loggedIn: $loggedIn")
-            appendLine("  online: $online")
+            appendLine("  online: ${onlineFlow.value}")
             append("}")
         }
     }
 
     // Alternative: Compact single-line version
     fun toCompactString(): String {
-        return "SessionCache(ownId=$ownId, username=$username, loggedIn=$loggedIn, online=$online, developer=$developer, hasTokens=${tokens != null})"
+        return "SessionCache(ownId=${ownId.value}, username=$username, loggedIn=$loggedIn, online=${onlineFlow.value}, developer=$developer, hasTokens=${tokens != null})"
     }
 
 

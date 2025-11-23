@@ -154,7 +154,10 @@
     <string name="you_are_already_developer">you are already are a developer</string>
     <string name="developer_setting_info">Be careful with the developer settings. Make sure you know what you are doing.</string>
 
-
+    <string name="friend_request_title">Do you want to accept the friend request?</string>
+    <string name="friend_request_accept">Accept</string>
+    <string name="friend_request_deny">Deny</string>
+    <string name="friend_request_block">Block</string>
 
 
 

@@ -184,25 +184,7 @@ fun App() {
                             globalViewModel.onLeaveChat() // am afang wenn ma noch nix selected hot an null
                         }
 
-                        Chatauswahlscreen(
-                            onChatSelected = { user ->
-                                globalViewModel.onSelectChat(user)
-
-                                navController.navigate(Route.Chat)
-                            },
-                            onNewChatClick = {
-                                navController.navigate(Route.NewChat)
-                            },
-                            onSettingsClick = {
-                                navController.navigate(Route.Settings)
-                            },
-                            onToolsAndGamesClick = {
-                                navController.navigate(Route.Todolist)
-                            },
-                            onMapClick = {
-                                navController.navigate(Route.UnderConstruction)
-                            }
-                        )
+                        Chatauswahlscreen()
                     }
 
                     // chat
