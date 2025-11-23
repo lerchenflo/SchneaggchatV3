@@ -1,3 +1,5 @@
+@file:OptIn(FlowPreview::class)
+
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector
 
 import androidx.compose.material.icons.Icons
@@ -6,6 +8,7 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.MarkChatUnread
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person3
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -15,6 +18,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -24,6 +28,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -144,7 +151,7 @@ class ChatSelectorViewModel(
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val chatSelectorFlow: Flow<List<SelectedChat>> = kotlinx.coroutines.flow.combine(
+    private val chatSelectorFlow: Flow<List<SelectedChat>> = combine(
         _searchTerm,
         _filter
     ) { term, filter -> term to filter }
@@ -152,16 +159,10 @@ class ChatSelectorViewModel(
             // repository should accept the filter param (you already implemented that)
             appRepository.getChatSelectorFlow(term, filter)
         }
-        .map { list ->
-            // remove yourself (own user item) and keep UI-level safety checks;
-            // repository may already apply the filter, but this keeps the UI invariant.
-            list
-                .filter { !(it.id == SessionCache.getOwnIdValue() && !it.isGroup) }
-                .sortedByDescending { it.lastmessage?.getSendDateAsLong() ?: 0L }
-        }
         .flowOn(Dispatchers.Default)
 
     val chatSelectorState: StateFlow<List<SelectedChat>> = chatSelectorFlow
+        .distinctUntilChanged()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Companion.WhileSubscribed(5_000),

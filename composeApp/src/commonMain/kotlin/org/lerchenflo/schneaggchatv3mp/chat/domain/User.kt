@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
@@ -22,7 +23,12 @@ data class User(
     val birthDate: String? = null,
     val email: String? = null,
     val createdAt: Long?,
-) : SelectedChat() {
+
+    //Not in db
+    override val unreadMessageCount: Int = 0,
+    override val unsentMessageCount: Int = 0,
+    override val lastmessage: MessageWithReadersDto? = null,
+) : SelectedChat {
     override val isGroup: Boolean
         get() = false
 }

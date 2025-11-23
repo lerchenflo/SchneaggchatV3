@@ -336,7 +336,10 @@ fun Chatauswahlscreen(
                             bottom = 16.dp
                         ),
                     ) {
-                        items(availablegegners) { gegner ->
+                        items(
+                            items = availablegegners,
+                            key = {it.id}
+                        ) { gegner ->
                             UserButton(
                                 selectedChat = gegner,
                                 useOnClickGes = false,

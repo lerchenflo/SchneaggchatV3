@@ -23,6 +23,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
@@ -125,104 +126,106 @@ class AppRepository(
         val usersFlow = userRepository.getallusers()
         val groupsFlow = groupRepository.getallgroupswithmembers()
 
-        return combine(messagesFlow, usersFlow, groupsFlow,) { messages, users, groups ->
+        return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
+
+            println("Gegnerauswahl refresh: DB Users: ${users.map { it.name }}")
 
             val loweredSearch = searchTerm.trim().lowercase()
+            val ownId = SessionCache.ownId
 
-            val userItems = users.map { user ->
-                val last = messages
-                    .filter {
-                        (it.messageDto.senderId == user.id || it.messageDto.receiverId == user.id)
-                                && !it.isGroupMessage()
+            // PRE-PROCESS: Build message indexes for O(1) lookup
+            val messagesByUser = mutableMapOf<String, MutableList<MessageWithReadersDto>>()
+            val messagesByGroup = mutableMapOf<String, MutableList<MessageWithReadersDto>>()
+            val userIdMap = users.associateBy { it.id }
+
+            // Single pass through messages to build indexes
+            messages.forEach { msg ->
+                if (msg.isGroupMessage()) {
+                    messagesByGroup.getOrPut(msg.messageDto.receiverId) { mutableListOf() }.add(msg)
+                } else {
+                    val senderId = msg.messageDto.senderId
+                    val receiverId = msg.messageDto.receiverId
+
+                    if (senderId != ownId) {
+                        messagesByUser.getOrPut(senderId) { mutableListOf() }.add(msg)
                     }
-                    .maxByOrNull { it.getSendDateAsLong() }
-
-                last?.let { msg ->
-                    val senderName =
-                        users.firstOrNull { u -> u.id == msg.messageDto.senderId }?.name
-                            ?: msg.messageDto.senderAsString
-                    msg.messageDto.senderAsString = senderName
+                    if (receiverId != ownId) {
+                        messagesByUser.getOrPut(receiverId) { mutableListOf() }.add(msg)
+                    }
                 }
-
-                val thischatmessages =
-                    messages.filter { message ->
-                        message.isThisChatMessage(user.id, false)
-                    }
-
-                val unreadMessageCount =
-                    thischatmessages.count { message ->
-                        !message.isReadbyMe()
-                    }
-
-                val unsentMessageCOunt =
-                    thischatmessages.count { message ->
-                        !message.messageDto.sent
-                    }
-
-
-                user.unreadMessageCount = unreadMessageCount
-                user.unsentMessageCount = unsentMessageCOunt
-                user.lastmessage = last
-                //Return user
-                user
-
-            }.filter { item ->
-                loweredSearch.isEmpty() || item.name.lowercase().contains(loweredSearch)
-            }.filter { user ->
-                user.id != SessionCache.ownId //Remove self
             }
 
-            val groupItems = groups.map { gwm ->
-                val groupId = gwm.group.id
-                val last = messages
-                    .filter { it.messageDto.receiverId == groupId && it.isGroupMessage() }
-                    .maxByOrNull { it.getSendDateAsLong() }
+            // Process users - CREATE NEW IMMUTABLE OBJECTS
+            val userItems = users
+                .asSequence()
+                .filter { it.id != ownId }
+                .filter { loweredSearch.isEmpty() || it.name.lowercase().contains(loweredSearch) }
+                .map { user ->
+                    val userMessages = messagesByUser[user.id] ?: emptyList()
 
-                last?.let { msg ->
-                    val senderName =
-                        users.firstOrNull { u -> u.id == msg.messageDto.senderId }?.name
-                            ?: "Unknown"
-                    msg.messageDto.senderAsString = senderName
+                    // Find last message
+                    val last = userMessages.maxByOrNull { it.getSendDateAsLong() }?.apply {
+                        // Update sender name in a copy (if MessageWithReadersDto is immutable)
+                        messageDto.senderAsString =
+                            userIdMap[messageDto.senderId]?.name ?: messageDto.senderAsString
+                    }
+
+                    // Count in single pass
+                    var unreadCount = 0
+                    var unsentCount = 0
+                    userMessages.forEach { message ->
+                        if (!message.isReadbyMe()) unreadCount++
+                        if (!message.messageDto.sent) unsentCount++
+                    }
+
+                    // CREATE NEW IMMUTABLE OBJECT - don't mutate original user
+                    user.toSelectedChat(
+                        unreadCount = unreadCount,
+                        unsentCount = unsentCount,
+                        lastMessage = last
+                    )
                 }
+                .toList()
 
+            // Process groups - CREATE NEW IMMUTABLE OBJECTS
+            val groupItems = groups
+                .asSequence()
+                .filter { loweredSearch.isEmpty() || it.name.lowercase().contains(loweredSearch) }
+                .map { gwm ->
+                    val groupMessages = messagesByGroup[gwm.id] ?: emptyList()
 
-                val thisChatMessages =
-                    messages.filter { message ->
-                        message.isThisChatMessage(gwm.group.id, true)
+                    val last = groupMessages.maxByOrNull { it.getSendDateAsLong() }?.apply {
+                        messageDto.senderAsString =
+                            userIdMap[messageDto.senderId]?.name ?: "Unknown"
                     }
 
-                val unreadMessageCount =
-                    thisChatMessages.count { message ->
-                        !message.isReadbyMe()
+                    var unreadCount = 0
+                    var unsentCount = 0
+                    groupMessages.forEach { message ->
+                        if (!message.isReadbyMe()) unreadCount++
+                        if (!message.messageDto.sent) unsentCount++
                     }
 
-                val unsentMessageCount =
-                    thisChatMessages.count { message ->
-                        !message.messageDto.sent
-                    }
+                    // CREATE NEW IMMUTABLE OBJECT - don't mutate original group
+                    gwm.toSelectedChat(
+                        unreadCount = unreadCount,
+                        unsentCount = unsentCount,
+                        lastMessage = last
+                    )
+                }
+                .toList()
 
-                gwm.unreadMessageCount = unreadMessageCount
-                gwm.unsentMessageCount = unsentMessageCount
-                gwm.lastmessage = last
-                //Return gwm
-                gwm
-
-            }.filter { item ->
-                loweredSearch.isEmpty() || item.name.lowercase().contains(loweredSearch)
-            }
-
-            val allItems = (userItems + groupItems)
-                .sortedByDescending {
-                    it.lastmessage?.getSendDateAsLong() ?: 0L
-                } // nulls treated as 0
+            // Apply filter and sort once
+            val allItems = userItems + groupItems
             val filtered = when (filter) {
                 ChatFilter.NONE -> allItems
                 ChatFilter.UNREAD -> allItems.filter { it.unreadMessageCount > 0 }
-                ChatFilter.GROUPS -> allItems.filter { it.isGroup } // assuming your SelectedChat has isGroup flag
+                ChatFilter.GROUPS -> allItems.filter { it.isGroup }
                 ChatFilter.PERSONS -> allItems.filter { !it.isGroup }
             }
 
             filtered.sortedByDescending { it.lastmessage?.getSendDateAsLong() ?: 0L }
+
         }.flowOn(Dispatchers.Default)
     }
 

@@ -2,48 +2,90 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
 
-interface _SelectedChatBase {
+
+interface SelectedChatBase {
     val id: String
     val isGroup: Boolean
     val name: String
     val profilePictureUrl: String
-    val status : String?
-    val description : String?
-
-
-    //Default values die ned vo da klasse üverschrieba werrand, bruchts eh nur fürd gegnerauswahl (Chatselector)
+    val status: String?
+    val description: String?
     val unreadMessageCount: Int
     val unsentMessageCount: Int
     val lastmessage: MessageWithReadersDto?
-
 }
-
-//A abstract class die die die werte overridet damit ma se o setza kann und ned in da andra klassen überschrieba
-abstract class SelectedChat : _SelectedChatBase {
-    override var unreadMessageCount: Int = 0
-    override var unsentMessageCount: Int = 0
-    override var lastmessage: MessageWithReadersDto? = null
-}
-
-
-
-
-/*
-Des isch a interface selectedchat. also a base klasse, die im global view model denn gsetzt werra kann,.
-es git 3 typen: Groupwithmember, User und Notselected, wenn ma kuan user usgwählt hot. So hot ma theoretisch nie null verweise,
-und weniger code horror. Ma kann direkt uf id und isgroup und alles zugriefa obwohl ma ned mol woas was as genau isch,
-und denn im switch case da rest macha abhängig vom typ.
-
-
- */
 
 data class NotSelected(
     override val id: String = "",
     override val isGroup: Boolean = false,
     override val name: String = "",
     override val profilePictureUrl: String = "",
-    override val status: String = "",
-    override val description: String = ""
-) : SelectedChat() {
+    override val status: String? = null,
+    override val description: String? = null,
+    override val unreadMessageCount: Int = 0,
+    override val unsentMessageCount: Int = 0,
+    override val lastmessage: MessageWithReadersDto? = null
+) : SelectedChatBase
 
+// Create wrapper for User that implements SelectedChat
+data class UserChat(
+    override val id: String,
+    override val name: String,
+    override val profilePictureUrl: String,
+    override val status: String?,
+    override val description: String?,
+    override val unreadMessageCount: Int,
+    override val unsentMessageCount: Int,
+    override val lastmessage: MessageWithReadersDto?
+) : SelectedChatBase {
+    override val isGroup: Boolean = false
 }
+
+// Create wrapper for GroupWithMembers that implements SelectedChat
+data class GroupChat(
+    override val id: String,
+    override val name: String,
+    override val profilePictureUrl: String,
+    override val status: String?,
+    override val description: String?,
+    override val unreadMessageCount: Int,
+    override val unsentMessageCount: Int,
+    override val lastmessage: MessageWithReadersDto?
+) : SelectedChatBase {
+    override val isGroup: Boolean = true
+}
+
+// Type alias for convenience
+typealias SelectedChat = SelectedChatBase
+
+// Extension function to convert User to UserChat
+fun User.toSelectedChat(
+    unreadCount: Int,
+    unsentCount: Int,
+    lastMessage: MessageWithReadersDto?
+): UserChat = UserChat(
+    id = this.id,
+    name = this.name,
+    profilePictureUrl = this.profilePictureUrl,
+    status = this.status,
+    description = this.description,
+    unreadMessageCount = unreadCount,
+    unsentMessageCount = unsentCount,
+    lastmessage = lastMessage
+)
+
+// Extension function to convert GroupWithMembers to GroupChat
+fun Group.toSelectedChat(
+    unreadCount: Int,
+    unsentCount: Int,
+    lastMessage: MessageWithReadersDto?
+): GroupChat = GroupChat(
+    id = this.id,
+    name = this.name,
+    profilePictureUrl = this.profilePicture,
+    status = null,
+    description = this.description,
+    unreadMessageCount = unreadCount,
+    unsentMessageCount = unsentCount,
+    lastmessage = lastMessage
+)
