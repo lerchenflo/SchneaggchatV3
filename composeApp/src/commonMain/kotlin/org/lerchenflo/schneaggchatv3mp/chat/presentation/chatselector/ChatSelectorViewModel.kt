@@ -143,7 +143,10 @@ class ChatSelectorViewModel(
                 globalViewModel.onSelectChat(selectedChat)
                 navigator.navigate(Route.Chat)
             }else {
-                _pendingFriendPopup.value = selectedChat
+                if (selectedChat.requesterId!! != SessionCache.getOwnIdValue()){ //Only when the other user sent the request
+                    _pendingFriendPopup.value = selectedChat
+
+                }
             }
 
         }

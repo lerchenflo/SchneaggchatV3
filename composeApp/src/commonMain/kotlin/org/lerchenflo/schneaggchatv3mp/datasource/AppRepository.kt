@@ -243,6 +243,7 @@ class AppRepository(
         SessionCache.updateTokenPair(tokenPair)
         SessionCache.updateOwnId(userid)
         SessionCache.updateLoggedIn(true)
+        SessionCache.updateOnline(true)
         println("Sessioncache: ${SessionCache.toDetailedString()}")
     }
 

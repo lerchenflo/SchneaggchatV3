@@ -81,7 +81,10 @@ fun createHttpClient(
                         // Save new tokens
                         preferenceManager.saveTokens(responseTokens)
 
-                        BearerTokens(responseTokens.accessToken, responseTokens.refreshToken)
+                        BearerTokens(
+                            accessToken = responseTokens.accessToken,
+                            refreshToken = responseTokens.refreshToken
+                        )
                     }
 
                     /*
