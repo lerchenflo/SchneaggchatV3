@@ -17,18 +17,20 @@ import schneaggchatv3mp.composeapp.generated.resources.server_not_reachable
 
 class LoginViewModel(
     private val appRepository: AppRepository,
-    private val preferencemanager: Preferencemanager
+    private val preferenceManager: Preferencemanager
 ): ViewModel() {
 
 
     init {
+
         viewModelScope.launch {
+            //TODO: Test server again if serverurl is changed
             val online =  appRepository.testServer()
             if (!online){
                 AppRepository.sendErrorSuspend(
                     event = AppRepository.ErrorChannel.ErrorEvent(
                         errorCode = 408,
-                        errorMessage = "ServerUrl: " + preferencemanager.getServerUrl(),
+                        errorMessage = "ServerUrl: " + preferenceManager.getServerUrl(),
                         errorMessageUiText = UiText.StringResourceText(Res.string.server_not_reachable),
                         duration = 6000L
                     )

@@ -68,6 +68,8 @@ fun createHttpClient(
 
                     refreshTokens {
 
+                        println("Authenticated Client refreshing tokens with token $oldTokens")
+
                         val response = client.post(preferenceManager.buildServerUrl("/auth/refresh")) {
                             contentType(ContentType.Application.Json)
                             setBody(oldTokens?.refreshToken)

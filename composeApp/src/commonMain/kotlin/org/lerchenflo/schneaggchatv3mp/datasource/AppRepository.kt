@@ -486,7 +486,7 @@ class AppRepository(
         }
 
 
-        println("profilepics to get count: ${profilePicsToGet.size}")
+        //println("profilepics to get count: ${profilePicsToGet.size}")
 
         getProfilePicturesForUserIds(profilePicsToGet)
     }
