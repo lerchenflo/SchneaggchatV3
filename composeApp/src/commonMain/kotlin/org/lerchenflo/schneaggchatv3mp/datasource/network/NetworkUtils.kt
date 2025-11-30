@@ -17,6 +17,7 @@ import io.ktor.util.network.UnresolvedAddressException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
@@ -28,45 +29,6 @@ class NetworkUtils(
     private val authHttpClient: HttpClient, //For auth without the bearer
     private val preferenceManager: Preferencemanager
 ) {
-
-    // Helper to build full URL from preferences + endpoint.
-    // If endpoint is already an absolute URL (starts with http) we return it unchanged.
-
-
-    private suspend inline fun <reified T, reified R> safeAuthPost(
-        endpoint: String,
-        body: T
-    ): NetworkResult<R, NetworkError> {
-        return try {
-            val response = authHttpClient.post(preferenceManager.buildServerUrl(endpoint)) {
-                contentType(ContentType.Application.Json)
-                setBody(body)
-            }
-
-            if (response.status.isSuccess()) {
-                NetworkResult.Success(response.body())
-            } else {
-                NetworkResult.Error(mapHttpStatusToError(response.status.value))
-            }
-        } catch (e: UnresolvedAddressException) {
-            NetworkResult.Error(NetworkError.NO_INTERNET)
-        } catch (e: HttpRequestTimeoutException) {
-            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
-        } catch (e: SocketTimeoutException) {
-            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
-        } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkError.SERIALIZATION)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            NetworkResult.Error(NetworkError.UNKNOWN)
-        }
-    }
-
-
-
-
-
-
 
 
     // Base methods that return HttpResponse
@@ -92,6 +54,37 @@ class NetworkUtils(
         return httpClient.delete(preferenceManager.buildServerUrl(endpoint))
     }
 
+    private suspend inline fun <reified R> safeCall(
+        crossinline block: suspend () -> HttpResponse
+    ): NetworkResult<R, NetworkError> {
+        return try {
+            val response = block()
+
+            SessionCache.updateOnline(true)
+
+            if (response.status.isSuccess()) {
+                NetworkResult.Success(response.body())
+            } else {
+                NetworkResult.Error(mapHttpStatusToError(response.status.value))
+            }
+        } catch (e: UnresolvedAddressException) {
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.NO_INTERNET)
+        } catch (e: HttpRequestTimeoutException) {
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
+        } catch (e: SocketTimeoutException) {
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
+        } catch (e: SerializationException) {
+            NetworkResult.Error(NetworkError.SERIALIZATION)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.UNKNOWN)
+        }
+    }
+
     // Helper function to map HTTP status codes to NetworkError
     private fun mapHttpStatusToError(statusCode: Int): NetworkError {
         return when (statusCode) {
@@ -105,99 +98,77 @@ class NetworkUtils(
         }
     }
 
-    // Safe wrapper methods with try-catch and response code checking
+    // Now all the safe methods use the single safeCall function
     private suspend inline fun <reified T> safeGet(endpoint: String): NetworkResult<T, NetworkError> {
-        return try {
-            val response = get<T>(endpoint)
-
-            if (response.status.isSuccess()) {
-                NetworkResult.Success(response.body())
-            } else {
-                NetworkResult.Error(mapHttpStatusToError(response.status.value))
-            }
-        } catch (e: UnresolvedAddressException) {
-            NetworkResult.Error(NetworkError.NO_INTERNET)
-        } catch (e: HttpRequestTimeoutException) {
-            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
-        } catch (e: SocketTimeoutException) {
-            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
-        } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkError.SERIALIZATION)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            NetworkResult.Error(NetworkError.UNKNOWN)
+        return safeCall {
+            httpClient.get(preferenceManager.buildServerUrl(endpoint))
         }
     }
 
-    private suspend inline fun <reified T, reified R> safePost(endpoint: String, body: T): NetworkResult<R, NetworkError> {
-        return try {
-            val response = post(endpoint, body)
-
-            if (response.status.isSuccess()) {
-                NetworkResult.Success(response.body())
-            } else {
-                NetworkResult.Error(mapHttpStatusToError(response.status.value))
+    private suspend inline fun <reified T, reified R> safePost(
+        endpoint: String,
+        body: T
+    ): NetworkResult<R, NetworkError> {
+        return safeCall {
+            httpClient.post(preferenceManager.buildServerUrl(endpoint)) {
+                contentType(ContentType.Application.Json)
+                setBody(body)
             }
-        } catch (e: UnresolvedAddressException) {
-            NetworkResult.Error(NetworkError.NO_INTERNET)
-        } catch (e: HttpRequestTimeoutException) {
-            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
-        } catch (e: SocketTimeoutException) {
-            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
-        } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkError.SERIALIZATION)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            NetworkResult.Error(NetworkError.UNKNOWN)
         }
     }
 
-    private suspend inline fun <reified T, reified R> safePut(endpoint: String, body: T): NetworkResult<R, NetworkError> {
-        return try {
-            val response = put(endpoint, body)
-
-            if (response.status.isSuccess()) {
-                NetworkResult.Success(response.body())
-            } else {
-                NetworkResult.Error(mapHttpStatusToError(response.status.value))
+    private suspend inline fun <reified T, reified R> safePut(
+        endpoint: String,
+        body: T
+    ): NetworkResult<R, NetworkError> {
+        return safeCall {
+            httpClient.put(preferenceManager.buildServerUrl(endpoint)) {
+                contentType(ContentType.Application.Json)
+                setBody(body)
             }
-        } catch (e: UnresolvedAddressException) {
-            NetworkResult.Error(NetworkError.NO_INTERNET)
-        } catch (e: HttpRequestTimeoutException) {
-            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
-        } catch (e: SocketTimeoutException) {
-            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
-        } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkError.SERIALIZATION)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            NetworkResult.Error(NetworkError.UNKNOWN)
         }
     }
 
     private suspend inline fun <reified T> safeDelete(endpoint: String): NetworkResult<T, NetworkError> {
-        return try {
-            val response = delete(endpoint)
-
-            if (response.status.isSuccess()) {
-                NetworkResult.Success(response.body())
-            } else {
-                NetworkResult.Error(mapHttpStatusToError(response.status.value))
-            }
-        } catch (e: UnresolvedAddressException) {
-            NetworkResult.Error(NetworkError.NO_INTERNET)
-        } catch (e: HttpRequestTimeoutException) {
-            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
-        } catch (e: SocketTimeoutException) {
-            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
-        } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkError.SERIALIZATION)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            NetworkResult.Error(NetworkError.UNKNOWN)
+        return safeCall {
+            httpClient.delete(preferenceManager.buildServerUrl(endpoint))
         }
     }
 
+    private suspend inline fun <reified T, reified R> safeAuthPost(
+        endpoint: String,
+        body: T
+    ): NetworkResult<R, NetworkError> {
+        return safeCall {
+            authHttpClient.post(preferenceManager.buildServerUrl(endpoint)) {
+                contentType(ContentType.Application.Json)
+                setBody(body)
+            }
+        }
+    }
+
+    private suspend inline fun <reified T, reified R> safeAuthGet(
+        endpoint: String,
+        body: T
+    ): NetworkResult<R, NetworkError> {
+        return safeCall {
+            authHttpClient.get(preferenceManager.buildServerUrl(endpoint)) {
+                contentType(ContentType.Application.Json)
+                setBody(body)
+            }
+        }
+    }
+
+
+
+
+    suspend fun test() : NetworkResult<String, NetworkError> {
+        return safeAuthGet<Any, String>(
+            endpoint = "/test",
+            body = ""
+        )
+
+    }
 
 
 

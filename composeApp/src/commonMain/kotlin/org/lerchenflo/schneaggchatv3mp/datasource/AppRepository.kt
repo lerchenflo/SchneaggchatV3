@@ -28,7 +28,9 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
@@ -278,6 +280,15 @@ class AppRepository(
         return credsSaved
     }
 
+
+    suspend fun testServer() : Boolean {
+        return when(val response = networkUtils.test()){
+            is NetworkResult.Error<*> -> false
+            is NetworkResult.Success<*> -> true
+        }
+    }
+
+
     fun login(
         username: String,
         password: String,
@@ -338,9 +349,9 @@ class AppRepository(
 
 
     var refreshTokenRequestRunning = false //Stop concurrent requests
-    suspend fun refreshTokens() : Boolean {
+    suspend fun refreshTokens() : RequestError? {
         if (refreshTokenRequestRunning){
-            return false
+            return null
         }
         refreshTokenRequestRunning = true
 
@@ -351,14 +362,14 @@ class AppRepository(
             is NetworkResult.Error<*> -> {
                 println("Refreshing tokens failed: ${result.error}")
                 refreshTokenRequestRunning = false
-                false
+                result.error
             }
             is NetworkResult.Success<NetworkUtils.TokenPair> -> {
                 preferencemanager.saveTokens(result.data)
                 println("Tokenpair refresh successful")
                 onNewTokenPair(result.data)
                 refreshTokenRequestRunning = false
-                true
+                null
             }
         }
     }
@@ -475,7 +486,7 @@ class AppRepository(
         }
 
 
-        println("profilepics to get count: ${profilePicsToGet.size}")
+        //println("profilepics to get count: ${profilePicsToGet.size}")
 
         getProfilePicturesForUserIds(profilePicsToGet)
     }

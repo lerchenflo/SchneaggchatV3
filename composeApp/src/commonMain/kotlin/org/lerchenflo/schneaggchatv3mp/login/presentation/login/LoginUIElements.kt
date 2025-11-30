@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package org.lerchenflo.schneaggchatv3mp.login.presentation.login
 
 import androidx.compose.foundation.clickable
@@ -15,10 +17,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.LoadingIndicatorDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -32,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -46,9 +52,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.graphics.shapes.CornerRounding
+import androidx.graphics.shapes.RoundedPolygon
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.UrlChangeDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.login
 import schneaggchatv3mp.composeapp.generated.resources.loginsubtitle
@@ -204,7 +214,7 @@ fun LoginHeaderText(
 }
 
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
+
 @Composable
 fun LoginFormSection(
     usernameText: String,
@@ -267,25 +277,13 @@ fun LoginFormSection(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        var showUrlChangeDialog by remember {mutableStateOf(false)}
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
 
         ) {
-            val iconSize = 48.dp
-            IconButton(
-                onClick = {
-                    showUrlChangeDialog = true
-                }
-            ){
-                Icon(
-                    imageVector = Icons.Default.Link,
-                    contentDescription = "change serverurl", // todo strings
-                    modifier = Modifier.size(iconSize)
-                )
-            }
+
             Spacer(
                 modifier = Modifier
                     .weight(0.5f)
@@ -303,15 +301,6 @@ fun LoginFormSection(
             Spacer(
                 modifier = Modifier
                     .weight(0.5f)
-            )
-            // Empty space to balance the icon on the left
-            Spacer(modifier = Modifier.size(iconSize)) // same width as IconButton
-        }
-
-        if(showUrlChangeDialog){
-            UrlChangeDialog(
-                onDismiss = {showUrlChangeDialog = false},
-                onConfirm = {showUrlChangeDialog = false}
             )
         }
 

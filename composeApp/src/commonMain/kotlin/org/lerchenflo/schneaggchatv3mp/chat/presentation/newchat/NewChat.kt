@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
@@ -125,6 +126,12 @@ fun NewChat(
             )
         }
 
+        HorizontalDivider(
+            thickness = 0.5.dp
+        )
+
+        Spacer(modifier = Modifier.height(2.dp))
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -137,11 +144,14 @@ fun NewChat(
             items(newChats) { user ->
                 NewFriendUserButton(
                     username = user.username,
+                    highlightedLetterCount = searchterm.length,
                     commonFriendCount = user.commonFriendCount,
                     onClick = {
                         viewModel.addFriend(user.id)
                     },
                 )
+
+                Spacer(modifier = Modifier.height(2.dp))
 
                 HorizontalDivider(
                     thickness = 0.5.dp

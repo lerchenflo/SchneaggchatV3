@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.di
 
-import LoginViewModel
+import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
 import io.ktor.client.HttpClient
 import org.koin.core.module.dsl.singleOf
@@ -81,7 +81,7 @@ val sharedmodule = module{
     factory { GroupCreatorViewModel(get()) }
 
     viewModelOf(::LoginViewModel)
-    factory { LoginViewModel(get()) }
+    factory { LoginViewModel(get(), get()) }
 
     viewModelOf(::SignUpViewModel)
     factory { SignUpViewModel(get(), get()) }

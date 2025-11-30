@@ -61,6 +61,7 @@ class ChatSelectorViewModel(
 
     init {
         viewModelScope.launch {
+            delay(1000) //Login delay, else the user is offline
             refresh()
         }
 

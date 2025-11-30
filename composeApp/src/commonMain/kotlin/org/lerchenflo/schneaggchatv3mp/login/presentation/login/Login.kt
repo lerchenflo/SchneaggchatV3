@@ -1,7 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.login.presentation.login
 
-import LoginViewModel
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,17 +13,24 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,6 +38,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.UrlChangeDialog
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
 
@@ -52,12 +58,35 @@ fun LoginScreen(
         // bruchts numma und da logout button müsst ma sunsch apassa dass ma ned direkt wida igloggt isch
         //viewModel.trysavedcredslogin(onLoginSuccess)
 
+        var showUrlChangeDialog by remember {mutableStateOf(false)}
+
         //Responsive UI mit scaffold
         Scaffold(
             modifier = Modifier
                 .fillMaxSize(),
-            contentWindowInsets = WindowInsets.statusBars
+            contentWindowInsets = WindowInsets.statusBars,
+            floatingActionButton = {
+                IconButton(
+                    onClick = {
+                        showUrlChangeDialog = true
+                    },
+                ){
+                    Icon(
+                        imageVector = Icons.Default.Link,
+                        contentDescription = "change serverurl", // todo strings
+                        modifier = Modifier
+                            .size(48.dp)
+                    )
+                }
+            }
         ){innerpadding ->
+
+            if(showUrlChangeDialog){
+                UrlChangeDialog(
+                    onDismiss = {showUrlChangeDialog = false},
+                    onConfirm = {showUrlChangeDialog = false}
+                )
+            }
 
             val rootmodifier = Modifier
                 .fillMaxSize()
@@ -184,6 +213,7 @@ fun LoginScreen(
                     }
                 }
             }
+
         }
     }
 
