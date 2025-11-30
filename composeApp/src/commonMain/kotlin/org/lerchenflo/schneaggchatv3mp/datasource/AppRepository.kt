@@ -129,7 +129,6 @@ class AppRepository(
 
         return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
 
-            println("Gegnerauswahl refresh: DB Users: ${users.map { it.name to it.id }}")
 
             val loweredSearch = searchTerm.trim().lowercase()
             val ownId = SessionCache.ownId

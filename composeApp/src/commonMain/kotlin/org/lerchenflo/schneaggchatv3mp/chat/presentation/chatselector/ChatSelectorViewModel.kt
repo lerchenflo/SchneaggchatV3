@@ -45,6 +45,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.groups
@@ -54,10 +55,9 @@ import schneaggchatv3mp.composeapp.generated.resources.unread
 
 class ChatSelectorViewModel(
     private val appRepository: AppRepository,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val globalViewModel: GlobalViewModel
 ): ViewModel() {
-
-    val globalViewModel: GlobalViewModel = KoinPlatform.getKoin().get()
 
     init {
         viewModelScope.launch {
@@ -76,7 +76,13 @@ class ChatSelectorViewModel(
 
         println("Chatselector: Pull to refresh")
         // if a refresh is already running, do nothing
-        if (refreshJob?.isActive == true) return
+        if (refreshJob?.isActive == true) {
+            println("Refreshjob already running, abort")
+            return
+        }
+
+        println("refreshjob starting")
+
 
         refreshJob = viewModelScope.launch {
 
@@ -99,29 +105,22 @@ class ChatSelectorViewModel(
                 }
             }
 
-            // wait up to 10 seconds for login, checking every 1 second
-
-
             // at this point we're guaranteed logged in (or the condition was already true)
             try {
-                globalViewModel.viewModelScope.launch {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        // send queued messages
-                        //TODO: Messagees
-                        //appRepository.sendOfflineMessages()
+                // send queued messages
+                //TODO: Messagees
+                //appRepository.sendOfflineMessages()
 
-                        // run your sync callback
-                        /*
-                        appRepository.executeSync { isLoadingMessages1 ->
-                            updateIsLoadingMessages(isLoadingMessages1)
-                            println("Loading messages: $isLoadingMessages")
-                        }
-                         */
-
-                        appRepository.userIdSync()
-
-                    }.join()
+                // run your sync callback
+                /*
+                appRepository.executeSync { isLoadingMessages1 ->
+                    updateIsLoadingMessages(isLoadingMessages1)
+                    println("Loading messages: $isLoadingMessages")
                 }
+                 */
+
+                println("Useridsync started from Chatselector refresh")
+                appRepository.userIdSync()
             } catch (e: Exception) {
                 ensureActive()
                 e.printStackTrace()

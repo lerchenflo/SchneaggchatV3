@@ -70,13 +70,6 @@ object SessionCache {
     // synchronous, non-colliding helper
     fun getUsernameValue(): String = _usernameFlow.value
 
-    // --------------------- password (do not print) ---------------------
-    var passwordDonotprint: String by mutableStateOf("")
-        private set
-
-    fun updatePassword(newValue: String) {
-        passwordDonotprint = newValue
-    }
 
     // --------------------- loggedIn ---------------------
     private val _loggedInFlow = MutableStateFlow(false)
@@ -109,7 +102,6 @@ object SessionCache {
         updateTokenPair(null)
         updateOwnId(null)
         updateUsername("")
-        updatePassword("")
         updateLoggedIn(false)
         updateOnline(false)
         setDeveloperValue(false)
@@ -128,7 +120,6 @@ object SessionCache {
             appendLine("  ownId: ${ownId.value ?: "null"}")
             appendLine("  developer: $developer")
             appendLine("  username: ${username.ifEmpty { "[empty]" }}")
-            appendLine("  password: [REDACTED]")
             appendLine("  loggedIn: $loggedIn")
             appendLine("  online: ${onlineFlow.value}")
             append("}")
@@ -143,7 +134,6 @@ object SessionCache {
             appendLine("  ownId: ${ownId.value ?: "null"}")
             appendLine("  developer: $developer")
             appendLine("  username: $username")
-            appendLine("  password: [REDACTED - ${passwordDonotprint.length} chars]")
             appendLine("  loggedIn: $loggedIn")
             appendLine("  online: ${onlineFlow.value}")
             append("}")

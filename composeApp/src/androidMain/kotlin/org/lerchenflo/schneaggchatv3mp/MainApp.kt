@@ -4,7 +4,9 @@ import android.app.Application
 import com.mmk.kmpnotifier.notification.NotifierManager
 import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfiguration
 import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
+import org.koin.core.logger.Level
 import org.lerchenflo.schneaggchatv3mp.di.androidDataStoreModule
 import org.lerchenflo.schneaggchatv3mp.di.androidHttpAuthModule
 import org.lerchenflo.schneaggchatv3mp.di.androidHttpModule
@@ -20,6 +22,7 @@ class MainApp: Application() {
         super.onCreate()
 
         startKoin{
+            //androidLogger(Level.DEBUG) // Enable Koin logging
             androidContext(this@MainApp)
 
             //Modules für room Userdatabase

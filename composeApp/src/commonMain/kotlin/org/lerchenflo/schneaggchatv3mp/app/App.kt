@@ -138,7 +138,7 @@ fun App() {
 
                             if (savedCreds) {
                                 navController.navigate(Route.ChatSelector) {
-                                    popUpTo(Route.AutoLoginCredChecker) { inclusive = true } // remove loading from backstack
+                                    popUpTo(Route.AutoLoginCredChecker) { inclusive = true } // remove login from backstack
                                 }
 
                                 globalViewModel.viewModelScope.launch {
@@ -239,6 +239,7 @@ fun App() {
                                 navController.navigate(Route.ChatSelector) {
                                     popUpTo(Route.ChatGraph) { inclusive = true }
                                 }
+
                             },
                             onSignUp = {
                                 println("Create acc")
