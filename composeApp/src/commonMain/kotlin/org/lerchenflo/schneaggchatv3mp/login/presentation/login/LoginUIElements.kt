@@ -9,21 +9,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.CircularWavyProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LoadingIndicator
-import androidx.compose.material3.LoadingIndicatorDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -37,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -47,18 +40,14 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.graphics.shapes.CornerRounding
-import androidx.graphics.shapes.RoundedPolygon
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.UrlChangeDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
-import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.login
 import schneaggchatv3mp.composeapp.generated.resources.loginsubtitle
@@ -74,7 +63,9 @@ fun InputTextField(
     label: String,
     hint: String,
     errortext: String? = null,
-    isInputSecret: Boolean,
+    imeAction: ImeAction = ImeAction.Default,
+    keyboardType: KeyboardType = KeyboardType.Unspecified,
+    onDoneClick: () -> Unit = {},
     focusRequester: FocusRequester? = null,
     nextFocusRequester: FocusRequester? = null,
     modifier: Modifier = Modifier
@@ -99,7 +90,11 @@ fun InputTextField(
         fieldModifier = fieldModifier.onPreviewKeyEvent { keyEvent ->
             // desktop Tab handling
             if ((keyEvent.key == Key.Tab || keyEvent.key == Key.Enter) && keyEvent.type == KeyEventType.KeyDown) {
-                nextFocusRequester?.requestFocus()
+                if(imeAction == ImeAction.Next){
+                    nextFocusRequester?.requestFocus()
+                }else if(imeAction == ImeAction.Done){
+                    onDoneClick()
+                }
                 true
             } else {
                 false
@@ -110,7 +105,7 @@ fun InputTextField(
             modifier = fieldModifier,
             value = text,
             onValueChange = onValueChange,
-            visualTransformation = if (isInputSecret){
+            visualTransformation = if (keyboardType == KeyboardType.Password){
                 if (!isPasswordVisible){
                     PasswordVisualTransformation(mask = '*')
                 }else VisualTransformation.None
@@ -131,15 +126,18 @@ fun InputTextField(
             textStyle = MaterialTheme.typography.bodyLarge,
             shape = RoundedCornerShape(10.dp),
             keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = if (isInputSecret) ImeAction.Done else ImeAction.Next,
-                keyboardType = if (isInputSecret) KeyboardType.Password else KeyboardType.Text
+                imeAction = imeAction,
+                keyboardType = keyboardType,
+                capitalization = if(keyboardType == KeyboardType.Email) KeyboardCapitalization.None else KeyboardCapitalization.Unspecified,
+                autoCorrectEnabled = keyboardType != KeyboardType.Email
+
             ),
             keyboardActions = KeyboardActions(
                 onNext = { nextFocusRequester?.requestFocus() },
-                onDone = { /* you may want to trigger login here, or clear focus */ }
+                onDone = {onDoneClick()}
             ),
             trailingIcon = {
-                if (isInputSecret){
+                if (keyboardType == KeyboardType.Password){
                     IconButton(
                         onClick = {
                             isPasswordVisible = !isPasswordVisible
@@ -240,7 +238,8 @@ fun LoginFormSection(
             onValueChange = onusernameTextChange,
             label = stringResource(Res.string.username),
             hint = stringResource(Res.string.username),
-            isInputSecret = false,
+            imeAction = ImeAction.Next,
+            keyboardType = KeyboardType.Text,
             errortext = null,
             focusRequester = usernameFocusRequester,
             nextFocusRequester = passwordFocusRequester,
@@ -255,10 +254,12 @@ fun LoginFormSection(
             onValueChange = onPasswordTextChange,
             label = stringResource(Res.string.password),
             hint = stringResource(Res.string.password),
-            isInputSecret = true,
+            imeAction = ImeAction.Done,
+            keyboardType = KeyboardType.Password,
             errortext = passwordTextError,
             focusRequester = passwordFocusRequester,
             nextFocusRequester = loginFocusRequester,
+            onDoneClick = onLoginButtonClick, // bei done drucka direkt login
             modifier = Modifier
                 .fillMaxWidth()
         )

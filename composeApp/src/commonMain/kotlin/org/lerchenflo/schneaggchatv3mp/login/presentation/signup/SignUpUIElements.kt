@@ -3,14 +3,11 @@
 package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -34,10 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.input.key.Key
@@ -46,16 +40,16 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import com.lerchenflo.hallenmanager.sharedUi.UnderConstruction
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.URL_PRIVACY
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
@@ -95,11 +89,17 @@ fun SignUpForm1(
     modifier: Modifier = Modifier
 ){
 
-
+    ActivityTitle(
+        title = stringResource(Res.string.create_account),
+        onBackClick = {
+            onBackClick()
+        })
 
     Column(
         modifier = modifier
     ) {
+
+
         /* // Der isch mir zu stark random in da gegend -fabi
         SignUpHeaderText(
             modifier = Modifier
@@ -130,7 +130,8 @@ fun SignUpForm1(
             onValueChange = onusernameTextChange,
             label = stringResource(Res.string.username),
             hint = stringResource(Res.string.username),
-            isInputSecret = false,
+            imeAction = ImeAction.Next,
+            keyboardType = KeyboardType.Text,
             errortext = usernameerrorText,
             focusRequester = focus.username,
             nextFocusRequester = focus.email,
@@ -145,7 +146,8 @@ fun SignUpForm1(
             onValueChange = onemailTextChange,
             label = stringResource(Res.string.email),
             hint = stringResource(Res.string.email),
-            isInputSecret = false,
+            imeAction = ImeAction.Next,
+            keyboardType = KeyboardType.Email,
             errortext = emailerrorText,
             focusRequester = focus.email,
             nextFocusRequester = focus.date,
@@ -237,7 +239,8 @@ fun SignUpForm2(
             onValueChange = onpasswordTextChange,
             label = stringResource(Res.string.password),
             hint = stringResource(Res.string.password),
-            isInputSecret = true,
+            imeAction = ImeAction.Next,
+            keyboardType = KeyboardType.Password,
             errortext = passworderrorText,
             focusRequester = focus.password,
             nextFocusRequester = focus.password2,
@@ -252,7 +255,8 @@ fun SignUpForm2(
             onValueChange = onpassword2TextChange,
             label = stringResource(Res.string.password_again),
             hint = stringResource(Res.string.password),
-            isInputSecret = true,
+            imeAction = ImeAction.Next,
+            keyboardType = KeyboardType.Password,
             errortext = password2errorText,
             focusRequester = focus.password2,
             nextFocusRequester = focus.terms,

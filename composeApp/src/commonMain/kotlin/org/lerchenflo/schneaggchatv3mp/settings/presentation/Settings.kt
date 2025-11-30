@@ -31,10 +31,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
@@ -45,6 +49,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.app_broken
+import schneaggchatv3mp.composeapp.generated.resources.app_broken_are_you_sure
 import schneaggchatv3mp.composeapp.generated.resources.app_broken_desc
 import schneaggchatv3mp.composeapp.generated.resources.are_you_sure_you_want_to_logout
 import schneaggchatv3mp.composeapp.generated.resources.developer_setting_info
@@ -53,6 +58,7 @@ import schneaggchatv3mp.composeapp.generated.resources.logout
 import schneaggchatv3mp.composeapp.generated.resources.markdownInfo
 import schneaggchatv3mp.composeapp.generated.resources.markdown_24px
 import schneaggchatv3mp.composeapp.generated.resources.no
+import schneaggchatv3mp.composeapp.generated.resources.please_restart_app
 import schneaggchatv3mp.composeapp.generated.resources.settings
 import schneaggchatv3mp.composeapp.generated.resources.theme
 import schneaggchatv3mp.composeapp.generated.resources.theme_sel_desc
@@ -175,12 +181,39 @@ fun SettingsScreen(
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
+        var showAppBrokenDialog by rememberSaveable { mutableStateOf(false) }
         SettingsOption(
             Icons.Default.Delete,
             stringResource(Res.string.app_broken),
             stringResource(Res.string.app_broken_desc),
-            onClick = {viewModel.deleteAllAppData()}
+            onClick = {showAppBrokenDialog = true}
         )
+
+        // app kaputt dialog
+        if (showAppBrokenDialog) {
+            AlertDialog(
+                onDismissRequest = { showAppBrokenDialog = false },
+                title = { Text(text = stringResource(Res.string.app_broken)) },
+                text = { Text(text = stringResource(Res.string.app_broken_are_you_sure)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showAppBrokenDialog = false
+                        viewModel.deleteAllAppData()
+                        CoroutineScope(Dispatchers.IO).launch {
+                            SnackbarManager.showMessage(getString(Res.string.please_restart_app))
+                        }
+
+                    }) {
+                        Text(text = stringResource(Res.string.yes))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showAppBrokenDialog = false }) {
+                        Text(text = stringResource(Res.string.no))
+                    }
+                }
+            )
+        }
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
