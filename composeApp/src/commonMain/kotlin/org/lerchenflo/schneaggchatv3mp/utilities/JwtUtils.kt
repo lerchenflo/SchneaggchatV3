@@ -26,5 +26,18 @@ object JwtUtils {
 
         return isvalid
     }
+
+    fun getTokenValidRemainingMinutes(token: String) : Long {
+        if (token.isBlank()) return 0
+
+        val jwt = JWT.from(token)
+        val exp = jwt.expiresAt ?: return 0
+        val now = Clock.System.now()
+
+        val remainingMillis = exp.toEpochMilliseconds() - now.toEpochMilliseconds()
+        val remainingMinutes = remainingMillis / 1000 / 60
+
+        return remainingMinutes
+    }
 }
 
