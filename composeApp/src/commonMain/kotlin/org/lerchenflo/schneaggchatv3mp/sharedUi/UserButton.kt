@@ -205,7 +205,7 @@ fun UserButton(
             }
 
             // Bottom Text (status ...)
-            if (selectedChat.friendshipStatus != null){
+            if (selectedChat.friendshipStatus == NetworkUtils.FriendshipStatus.PENDING){
                 Text(
                     // ALSO get requesterid (Who made the request (If i made it the other can accept it)) selectedChat.requesterId
                     text = selectedChat.friendshipStatus!!.toString(), //TODO: FABI override tostring with uitext please

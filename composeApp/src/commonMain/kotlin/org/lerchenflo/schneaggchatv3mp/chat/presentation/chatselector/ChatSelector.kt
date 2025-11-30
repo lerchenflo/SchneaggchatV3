@@ -356,7 +356,6 @@ fun Chatauswahlscreen(
         }
 
         //Popups
-
         if (profilePictureDialogShown) {
             ProfilePictureBigDialog(
                 filepath = profilePictureFilePathTemp,
