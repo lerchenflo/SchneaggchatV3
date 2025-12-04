@@ -144,13 +144,12 @@ fun ChatScreen(
                 state = listState
             ) {
                 itemsIndexed(messages, key = { _, msg ->
-                    // combine id + sendDate (or use a uuid field) so duplicates don't collide
-                    "${msg.messageDto.localPK}_${msg.messageDto.sendDate}"
+                    msg.localPK
                 })  { index, message ->
-                    val currentDateMillis = message.messageDto.sendDate.toLongOrNull()
+                    val currentDateMillis = message.sendDate.toLongOrNull()
                     val currentDate = currentDateMillis?.toLocalDate()
                     val nextDate =
-                        messages.getOrNull(index + 1)?.messageDto?.sendDate?.toLongOrNull()
+                        messages.getOrNull(index + 1)?.sendDate?.toLongOrNull()
                             ?.toLocalDate()
 
 

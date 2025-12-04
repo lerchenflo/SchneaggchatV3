@@ -9,6 +9,7 @@ import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -31,6 +32,12 @@ fun createHttpClient(
 
     return HttpClient(engine) {
         install(Logging){
+            logger = object : Logger {
+                override fun log(message: String) {
+                    //TODO: COmment out if not debugging networking
+                    println("KTOR LOG: $message")
+                }
+            }
             level = LogLevel.ALL
         }
 
@@ -76,7 +83,12 @@ fun createHttpClient(
                             markAsRefreshTokenRequest()
                         }
 
-                        val responseTokens = response.body<NetworkUtils.TokenPair>()
+                        val rawBody = response.body<String>()
+                        println("Raw response body: $rawBody")
+
+                        val responseTokens = Json.decodeFromString<NetworkUtils.TokenPair>(rawBody)
+
+                        println("Parsed tokens: $responseTokens")
 
                         // Save new tokens
                         preferenceManager.saveTokens(responseTokens)

@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupWithMembersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembersDto
 
 data class Group(
     val id: String,

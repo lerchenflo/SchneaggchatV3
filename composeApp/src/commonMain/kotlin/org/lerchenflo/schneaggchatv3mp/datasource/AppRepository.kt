@@ -14,23 +14,29 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
@@ -38,6 +44,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
 import kotlin.time.ExperimentalTime
@@ -106,8 +113,11 @@ class AppRepository(
         NotificationManager.removeToken()
     }
 
-    fun getMessagesByUserId(userId: String, gruppe: Boolean): Flow<List<MessageWithReadersDto>> {
-        return database.messageDao().getMessagesByUserId(userId, gruppe)
+    //TODO: Move into message repository
+    fun getMessagesByUserId(userId: String, gruppe: Boolean): Flow<List<Message>> {
+        return database.messageDao().getMessagesByUserIdFlow(userId, gruppe).map { messages ->
+            messages.map { it.toMessage() }
+        }
     }
 
     fun getownUser(): Flow<User?> {
@@ -240,7 +250,6 @@ class AppRepository(
             preferencemanager.saveOWNID(userid)
         }
 
-        println("LOGIN: Userid: $userid")
         SessionCache.updateTokenPair(tokenPair)
         SessionCache.updateOwnId(userid)
         SessionCache.updateLoggedIn(true)
@@ -258,8 +267,8 @@ class AppRepository(
 
         //Token is expired, send errormessage
         if (!tokenDateValid && tokensNotEmpty){
-            AppRepository.trySendError(
-                event = AppRepository.ErrorChannel.ErrorEvent(
+            trySendError(
+                event = ErrorEvent(
                     401,
                     errorMessageUiText = UiText.StringResourceText(Res.string.error_access_expired),
                     duration = 5000L,
@@ -372,6 +381,7 @@ class AppRepository(
             }
         }
     }
+
 
 
     suspend fun userIdSync() {
@@ -506,6 +516,7 @@ class AppRepository(
     }
 
 
+
     //Add new users
     suspend fun getAvailableUsers(searchTerm: String) : List<NetworkUtils.NewFriendsUserResponse> {
         return when (val response = networkUtils.getAvailableUsers(searchTerm)) {
@@ -513,8 +524,8 @@ class AppRepository(
                 //TODO: FABI Get available users failed (Popup??)
                 emptyList()
             }
-            is NetworkResult.Success<*> -> {
-                response.data as List<NetworkUtils.NewFriendsUserResponse>
+            is NetworkResult.Success<List<NetworkUtils.NewFriendsUserResponse>> -> {
+                response.data
             }
         }
 
@@ -542,33 +553,32 @@ class AppRepository(
     }
 
 
-    /* TODO vornazua wieder iboua
 
     /**
      * @param localpk Local pk, only pass if already in db
      *
      */
-    suspend fun sendMessage(msgtype: String, empfaenger: Long, gruppe: Boolean, content: String, answerid: Long, sendedatum: String, localpk: Long = 0){
+    suspend fun sendTextMessage(empfaenger: String, gruppe: Boolean, content: String, answerid: String?, localpk: Long = 0){
 
         var localpkintern = localpk
-
 
         if (SessionCache.getOwnIdValue() == null){
             println("Message senden abort: No OWNID")
             return
         }
 
+        val senddate = getCurrentTimeMillisString()
 
         //Interne message macha die ned alles hot
         val messageDto = MessageDto(
             localPK = localpkintern,
             id = null,
-            msgType = msgtype,
+            msgType = MessageType.TEXT,
             content = content,
-            senderId = SessionCache.getOwnIdValue() ?: 0,
+            senderId = SessionCache.getOwnIdValue()!!,
             receiverId = empfaenger,
-            sendDate = sendedatum,
-            changeDate = sendedatum,
+            sendDate = senddate,
+            changedate = senddate,
             deleted = false,
             groupMessage = gruppe,
             answerId = answerid,
@@ -577,21 +587,27 @@ class AppRepository(
 
         //Nachricht hot scho a pk vo da db, also scho din
         if (localpkintern == 0L){
-            localpkintern = database.messageDao().insertMessage(messageDto)
+            localpkintern = database.messageDao().insertMessageDto(messageDto)
             println("LocalPK: $localpkintern")
         }
 
 
-        val serverrequest = networkUtils.sendMessageToServer(msgtype, empfaenger, gruppe, content, answerid, sendedatum)
-        serverrequest.onSuccess { headers ->
+        val serverrequest = networkUtils.sendTextMessageToServer(
+            empfaenger = empfaenger,
+            gruppe = gruppe,
+            content = content,
+            answerid = answerid
+        )
+        when (serverrequest){
+            is NetworkResult.Error<*> -> println("Message senden error: ${serverrequest.error}")
+            is NetworkResult.Success<MessageResponse> -> {
+                withContext(Dispatchers.IO) {
+                    val msgid = serverrequest.data.messageId
 
-            withContext(Dispatchers.IO) {
-                val msgid = headers["msgid"]?.toLong()
-
-
-                if (msgid != null){
                     println("Message gesendet: msgid $msgid")
 
+                    //TODO: Message gelesen + reader
+                    /*
                     database.messageDao().markMessageAsSent( msgid, localpkintern)
 
                     database.messagereaderDao().upsertReader(MessageReaderDto(
@@ -599,17 +615,16 @@ class AppRepository(
                         readerID = SessionCache.getOwnIdValue() ?: 0,
                         readDate = messageDto.sendDate
                     ))
-                }else{
-                    println("Message senden error: Keine Msgid erhalten -----------------------------------------------------------------------")
+
+                     */
                 }
             }
+        }
 
-        }
-        serverrequest.onError {
-            println("Message senden error: $it")
-        }
     }
 
+
+    /*
 
     fun sendOfflineMessages(){
         CoroutineScope(Dispatchers.IO).launch {

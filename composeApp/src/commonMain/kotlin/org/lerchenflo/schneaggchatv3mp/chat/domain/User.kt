@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
