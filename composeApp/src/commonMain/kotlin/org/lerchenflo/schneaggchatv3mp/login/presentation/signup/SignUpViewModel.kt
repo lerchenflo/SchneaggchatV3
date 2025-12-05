@@ -122,22 +122,25 @@ class SignUpViewModel(
                 }
 
                 is SignupAction.OnProfilepicSelected -> {
-                    CoroutineScope(Dispatchers.IO).launch{
+                    CoroutineScope(Dispatchers.Default).launch{ //Use one core
                         val bytearray = action.profilePicResult
                             .loadBytes()
-                        val imageBitmap = bytearray.decodeToImageBitmap()
-
-                        println("Selected image size: ${bytearray.size}")
 
                         state = state.copy(
                             profilePic = bytearray
                         )
+                        checkenableCreateButton()
+
                     }
 
                 }
             }
         }
 
+        checkenableCreateButton()
+    }
+
+    private fun checkenableCreateButton(){
         val enablebutton = isInputComplete()
         if (enablebutton) {
             state = state.copy(
@@ -145,7 +148,6 @@ class SignUpViewModel(
             )
         }
     }
-
 
     fun isInputComplete() : Boolean{
         return state.usernameState.isCorrect()
