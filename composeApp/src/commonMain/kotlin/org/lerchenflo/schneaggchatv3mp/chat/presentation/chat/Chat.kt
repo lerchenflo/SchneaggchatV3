@@ -282,15 +282,5 @@ enum class AddMediaOptions{
         AUDIO   -> {
             SnackbarManager.showMessage("to be done (audio)")
         }
-        else -> {
-            CoroutineScope(Dispatchers.IO).launch {
-                sendErrorSuspend(ErrorEvent(
-                    errorMessage = this.toString() + "action Unknown",
-                    duration = 5000L
-                ))
-            }
-
-            println("unknown action called")
-        }
     }
 }

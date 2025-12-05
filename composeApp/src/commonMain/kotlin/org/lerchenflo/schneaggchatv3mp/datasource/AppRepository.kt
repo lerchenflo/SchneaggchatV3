@@ -3,6 +3,7 @@
 package org.lerchenflo.schneaggchatv3mp.datasource
 
 import androidx.compose.runtime.Composable
+import io.ktor.http.cio.Request
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -40,6 +41,8 @@ import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
+import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
+import schneaggchatv3mp.composeapp.generated.resources.error_invalid_credentials
 import kotlin.time.ExperimentalTime
 
 class AppRepository(
@@ -62,6 +65,7 @@ class AppRepository(
         data class ErrorEvent (
             val errorCode: Int? = null,
             val errorMessage: String? = null,
+            val error: RequestError? = null,
             val errorMessageUiText: UiText? = null,
             val duration: Long = 5000L
         ){
@@ -70,8 +74,12 @@ class AppRepository(
                 var finalstr = ""
 
                 //Add errorcode
-                finalstr += if (errorCode != null) "Errorcode: ${errorCode}\n" else "" //TODO FABI? Add errorcode tostring (in network error class and insert here)
-                //TODO FABI erste zeile ca so(oda andersch, vlt o code unta mir egal) Errorcode: 401 Forbidden(No valid credentials) //Goht eh locker mit uitext
+                finalstr += if (errorCode != null) "Errorcode: ${errorCode}\n" else ""
+
+                if (error != null && error.message != null){
+                    finalstr += error.message
+                }
+
                 //Add errormessage
                 if (errorMessage != null)
                     finalstr += errorMessage + "\n"
@@ -299,9 +307,8 @@ class AppRepository(
                 is NetworkResult.Error<*> -> {
                     println("Error: ${result.error}")
 
-                    //TODO: Improve error messages (One string for each error message???)
                     sendErrorSuspend(ErrorEvent(
-                        errorMessage = result.error.toString(),
+                        errorMessageUiText = UiText.StringResourceText(Res.string.error_invalid_credentials),
                         duration = 5000L
                     ))
 
@@ -333,7 +340,7 @@ class AppRepository(
 
 
                     sendErrorSuspend(ErrorEvent(
-                        errorMessage = response.error.toString(),
+                        error = response.error,
                         duration = 5000L
                     ))
 
