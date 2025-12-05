@@ -145,7 +145,7 @@ fun App() {
                                     //Autologin
 
                                     val error = appRepository.refreshTokens()
-                                    if (error == NetworkError.UNAUTHORIZED){
+                                    if (error == NetworkError.Unauthorized()){
                                         println("token refresh failed, rerouting to login")
                                         AppRepository.trySendError(
                                             event = AppRepository.ErrorChannel.ErrorEvent(

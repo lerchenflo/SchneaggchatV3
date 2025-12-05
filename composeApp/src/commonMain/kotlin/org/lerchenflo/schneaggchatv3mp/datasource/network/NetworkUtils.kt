@@ -65,36 +65,36 @@ class NetworkUtils(
             if (response.status.isSuccess()) {
                 NetworkResult.Success(response.body())
             } else {
-                NetworkResult.Error(mapHttpStatusToError(response.status.value))
+                NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body()))
             }
         } catch (e: UnresolvedAddressException) {
             SessionCache.updateOnline(false)
-            NetworkResult.Error(NetworkError.NO_INTERNET)
+            NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: HttpRequestTimeoutException) {
             SessionCache.updateOnline(false)
-            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
+            NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: SocketTimeoutException) {
             SessionCache.updateOnline(false)
-            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
+            NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkError.SERIALIZATION)
+            NetworkResult.Error(NetworkError.Serialization(e.message))
         } catch (e: Exception) {
             e.printStackTrace()
             SessionCache.updateOnline(false)
-            NetworkResult.Error(NetworkError.UNKNOWN)
+            NetworkResult.Error(NetworkError.Unknown(e.message))
         }
     }
 
     // Helper function to map HTTP status codes to NetworkError
-    private fun mapHttpStatusToError(statusCode: Int): NetworkError {
+    private fun mapHttpStatusToError(statusCode: Int, message: String?): NetworkError {
         return when (statusCode) {
-            401 -> NetworkError.UNAUTHORIZED
-            408 -> NetworkError.REQUEST_TIMEOUT
-            409 -> NetworkError.CONFLICT
-            413 -> NetworkError.PAYLOAD_TOO_LARGE
-            429 -> NetworkError.TOO_MANY_REQUESTS
-            in 500..599 -> NetworkError.SERVER_ERROR
-            else -> NetworkError.UNKNOWN
+            401 -> NetworkError.Unauthorized()
+            408 -> NetworkError.RequestTimeout()
+            409 -> NetworkError.Conflict()
+            413 -> NetworkError.PayloadTooLarge()
+            429 -> NetworkError.TooManyRequests()
+            in 500..599 -> NetworkError.ServerError()
+            else -> NetworkError.Unknown(message)
         }
     }
 
@@ -236,19 +236,19 @@ class NetworkUtils(
             if (response.status.isSuccess()) {
                 NetworkResult.Success(Unit)
             } else {
-                NetworkResult.Error(mapHttpStatusToError(response.status.value))
+                NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body()))
             }
         } catch (e: UnresolvedAddressException) {
-            NetworkResult.Error(NetworkError.NO_INTERNET)
+            NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: HttpRequestTimeoutException) {
-            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
+            NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: SocketTimeoutException) {
-            NetworkResult.Error(NetworkError.REQUEST_TIMEOUT)
+            NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkError.SERIALIZATION)
+            NetworkResult.Error(NetworkError.Serialization())
         } catch (e: Exception) {
             e.printStackTrace()
-            NetworkResult.Error(NetworkError.UNKNOWN)
+            NetworkResult.Error(NetworkError.Unknown(e.message))
         }
     }
 

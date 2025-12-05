@@ -93,13 +93,12 @@ fun SignUpScreen(
                 )
                 .consumeWindowInsets(WindowInsets.navigationBars)
 
-            //TODO: Back button
-
             var showImagePickerDialog by remember { mutableStateOf(false) }
             Box(modifier = Modifier.fillMaxSize()) {
                 if (showImagePickerDialog ) {
 
-                    GalleryPickerLauncher(//TODO: Fix all strings
+                    //TODO: Fix all strings
+                    GalleryPickerLauncher(
                         onPhotosSelected = {
                             onAction(SignupAction.OnProfilepicSelected(it.first()))
                             showImagePickerDialog = false
@@ -121,6 +120,10 @@ fun SignUpScreen(
                                 circularCrop = true,
                                 squareCrop = false,
                                 freeformCrop = false
+                            ),
+                            galleryConfig = GalleryConfig(
+                                allowMultiple = false,
+                                selectionLimit = 1,
                             )
                         )
                     )
@@ -183,7 +186,7 @@ fun SignUpScreen(
                                 .verticalScroll(rememberScrollState()),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ){
-                                                        SignUpForm1(
+                            SignUpForm1(
                                 usernameText = state.usernameState.text,
                                 onusernameTextChange = { onAction(SignupAction.OnUsernameTextChange(it)) },
                                 usernameerrorText = state.usernameState.errorMessage,

@@ -111,33 +111,40 @@ fun SignUpForm1(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Image(
-            painter = if (selectedProfilePic != null) BitmapPainter(selectedProfilePic.decodeToImageBitmap()) else painterResource(Res.drawable.icon_nutzer),
-            contentDescription = stringResource(Res.string.profile_picture),
-            modifier = Modifier
-                .size(70.dp)
-                .clickable{
-                    onProfilePicClick()
-                }
-        )
+        Row(
+            verticalAlignment = Alignment.Bottom
+        ) {
+
+            InputTextField(
+                text = usernameText,
+                onValueChange = onusernameTextChange,
+                label = stringResource(Res.string.username),
+                hint = stringResource(Res.string.username),
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Text,
+                errortext = usernameerrorText,
+                focusRequester = focus.username,
+                nextFocusRequester = focus.email,
+                modifier = Modifier
+                    .weight(1f)
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Image(
+                painter = if (selectedProfilePic != null) BitmapPainter(selectedProfilePic.decodeToImageBitmap()) else painterResource(Res.drawable.icon_nutzer),
+                contentDescription = stringResource(Res.string.profile_picture),
+                modifier = Modifier
+                    .size(80.dp)
+                    .clickable{
+                        onProfilePicClick()
+                    }
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+        }
 
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-
-        InputTextField(
-            text = usernameText,
-            onValueChange = onusernameTextChange,
-            label = stringResource(Res.string.username),
-            hint = stringResource(Res.string.username),
-            imeAction = ImeAction.Next,
-            keyboardType = KeyboardType.Text,
-            errortext = usernameerrorText,
-            focusRequester = focus.username,
-            nextFocusRequester = focus.email,
-            modifier = Modifier
-                .fillMaxWidth()
-        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -231,7 +238,6 @@ fun SignUpForm2(
     Column(
         modifier = modifier
     ) {
-        //TODO: Profilepicture selection
 
 
         InputTextField(
@@ -360,6 +366,11 @@ fun DatePickerDialogPopup(
     DatePickerDialog(
         onDismissRequest = onDismiss,
         dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(Res.string.cancel))
+            }
+        },
+        confirmButton = {
             TextButton(
                 onClick = {
                     // 3. Convert the selected milliseconds to LocalDate
@@ -373,13 +384,8 @@ fun DatePickerDialogPopup(
             ) {
                 Text(stringResource(Res.string.ok))
             }
-        },
-        confirmButton = {
 
 
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(Res.string.cancel))
-            }
 
         },
     ) {

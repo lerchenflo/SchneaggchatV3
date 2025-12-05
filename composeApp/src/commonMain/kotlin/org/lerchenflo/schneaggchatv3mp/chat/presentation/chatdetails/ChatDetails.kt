@@ -49,6 +49,8 @@ fun ChatDetails(
         .safeContentPadding()
 ) {
     val globalViewModel = koinInject<GlobalViewModel>()
+
+    //TODO: Pass selectedchat when navigating to Chatdetails, do not use globalviewmodel
     val selectedChatName = globalViewModel.selectedChat.value.name
     val group = globalViewModel.selectedChat.value.isGroup
     var profilePictureDialog by remember { mutableStateOf(false) }

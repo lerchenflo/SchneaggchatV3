@@ -47,6 +47,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.login
@@ -55,11 +56,10 @@ import schneaggchatv3mp.composeapp.generated.resources.password
 import schneaggchatv3mp.composeapp.generated.resources.sign_up
 import schneaggchatv3mp.composeapp.generated.resources.username
 
-// todo keyboard options für signup optimiera
 @Composable
 fun InputTextField(
     text: String,
-    onValueChange: (String) -> Unit,
+    onValueChange: (String) -> Unit = {},
     label: String,
     hint: String,
     errortext: String? = null,
@@ -111,11 +111,11 @@ fun InputTextField(
                 }else VisualTransformation.None
             }else VisualTransformation.None,
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
                 cursorColor = MaterialTheme.colorScheme.primary,
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = Color.Transparent
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
             ),
             placeholder = {
                 Text(
@@ -306,4 +306,25 @@ fun LoginFormSection(
         }
 
     }
+}
+
+@Preview(
+    showBackground = true,
+    name = "Loginform",
+    widthDp = 400,
+    heightDp = 800
+)
+@Composable
+private fun Loginformpreview(){
+    LoginFormSection(
+        usernameText = "",
+        onusernameTextChange = {},
+        passwordText = "",
+        onPasswordTextChange = {},
+        onLoginButtonClick = {},
+        onSignupButtonClick = {},
+        usernameFocusRequester = FocusRequester.Default,
+        passwordFocusRequester = FocusRequester.Default,
+        loginFocusRequester = FocusRequester.Default
+    )
 }

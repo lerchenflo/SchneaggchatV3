@@ -55,9 +55,6 @@ fun LoginScreen(
 
     SchneaggchatTheme {
 
-        // bruchts numma und da logout button müsst ma sunsch apassa dass ma ned direkt wida igloggt isch
-        //viewModel.trysavedcredslogin(onLoginSuccess)
-
         var showUrlChangeDialog by remember {mutableStateOf(false)}
 
         //Responsive UI mit scaffold
@@ -73,7 +70,7 @@ fun LoginScreen(
                 ){
                     Icon(
                         imageVector = Icons.Default.Link,
-                        contentDescription = "change serverurl", // todo strings
+                        contentDescription = "change serverurl",
                         modifier = Modifier
                             .size(48.dp)
                     )
