@@ -72,8 +72,6 @@ import kotlin.time.ExperimentalTime
 @Preview()
 @Composable
 fun ChatScreen(
-    onBackClick: () -> Unit,
-    onChatDetailsClick: () -> Unit,
     modifier: Modifier = Modifier
         .fillMaxSize()
         .safeContentPadding()
@@ -82,10 +80,6 @@ fun ChatScreen(
     val viewModel = koinViewModel<ChatViewModel>()
     val messages by viewModel.messagesState.collectAsStateWithLifecycle()
 
-    //TODO Fabi leas: Immer a launchedeffect verwenda sunsch wirds bei jeder recomposition ufgrufa (Denkt da chatbot mol)
-    LaunchedEffect(true){
-        viewModel.initPrefs()
-    }
 
     SchneaggchatTheme{ // theme wida setza
         Column(
@@ -100,7 +94,9 @@ fun ChatScreen(
 
                 // Backbutton
                 IconButton(
-                    onClick = onBackClick,
+                    onClick = {
+                        viewModel.onBackClick()
+                    },
                     modifier = Modifier
                         .padding(top = 5.dp, start = 5.dp)
                         .statusBarsPadding()
@@ -117,7 +113,7 @@ fun ChatScreen(
                     UserButton(
                         selectedChat = globalViewModel.selectedChat.value,
                         onClickGes = {
-                            onChatDetailsClick()
+                            viewModel.onChatDetailsClick()
                         },
                     )
                 }

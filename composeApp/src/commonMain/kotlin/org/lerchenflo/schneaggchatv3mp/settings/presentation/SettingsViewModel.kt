@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -25,12 +27,12 @@ import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
 
 class SettingsViewModel(
     private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager
+    private val preferenceManager: Preferencemanager,
+    private val navigator: Navigator
 ): ViewModel() {
 
 
-
-    fun init(){
+    init {
         viewModelScope.launch { // Markdown
             preferenceManager.getUseMdFlow()
                 .catch { exception ->
@@ -97,8 +99,10 @@ class SettingsViewModel(
             preferenceManager.saveTokens(tokenPair = NetworkUtils.TokenPair(accessToken = "", refreshToken = "")) // override credentials with empty string
             SessionCache.clear() //Alle variabla löscja
             SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
-            // todo navigate to login screen
-            // Des passiert jo scho über da callback. Willsch es umbaua oder wia? -Fabi
+
+            viewModelScope.launch {
+                navigator.navigate(Route.Login, exitAllPreviousScreens = true)
+            }
         }
     }
 
@@ -143,6 +147,20 @@ class SettingsViewModel(
     fun updateDevSettings(newValue: Boolean){
         CoroutineScope(Dispatchers.IO).launch {
             preferenceManager.saveDevSettings(newValue)
+        }
+    }
+
+
+
+    fun onBackClick(){
+        viewModelScope.launch {
+            navigator.navigateBack()
+        }
+    }
+
+    fun toDevSettingsClick() {
+        viewModelScope.launch {
+            navigator.navigate(Route.DeveloperSettings)
         }
     }
 

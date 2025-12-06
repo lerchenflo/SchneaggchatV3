@@ -14,9 +14,10 @@ class Navigator(
 
     suspend fun navigate(
         destination: Route,
-        navOptions: NavOptionsBuilder.() -> Unit = {}
+        exitPreviousScreen: Boolean = false,
+        exitAllPreviousScreens: Boolean = false
     ){
-        _navigationActions.send(NavigationAction.Navigate(destination, navOptions))
+        _navigationActions.send(NavigationAction.Navigate(destination, exitPreviousScreen, exitAllPreviousScreens))
     }
 
     suspend fun navigateBack(){

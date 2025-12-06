@@ -17,7 +17,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 
 class GlobalViewModel(
 
-    private val appRepository: AppRepository,
     private val networkUtils: NetworkUtils
 
 

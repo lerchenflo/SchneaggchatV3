@@ -45,7 +45,7 @@ kotlin {
     
     sourceSets {
         androidMain.dependencies {
-            implementation(compose.preview)
+            implementation(libs.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
 
             implementation(libs.koin.android)
@@ -83,8 +83,12 @@ kotlin {
             api(libs.koin.annotations)
 
             //Navigation
-            implementation(libs.jetbrains.compose.navigation)
-            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.jetbrains.navigation3.ui)
+            implementation(libs.jetbrains.lifecycle.viewmodel.nav3)
+
+            //Old navigation (Not used anymore)
+            //implementation(libs.jetbrains.compose.navigation)
+            //implementation(libs.kotlinx.serialization.json)
 
             //Internet
             implementation(libs.bundles.ktor)
@@ -94,8 +98,6 @@ kotlin {
 
             //Image picker
             implementation(libs.github.imagepickerkmp)
-            //Image refactoring
-
 
             //Jwt parsing
             implementation(libs.jwt.kt)
@@ -218,7 +220,7 @@ room{
 dependencies{
     //add("kspCommonMainMetadata", libs.koin.ksp.compiler)
     ksp(libs.room.compiler)
-    debugImplementation(compose.uiTooling)
+    debugImplementation(libs.ui.tooling)
 }
 
 ksp {

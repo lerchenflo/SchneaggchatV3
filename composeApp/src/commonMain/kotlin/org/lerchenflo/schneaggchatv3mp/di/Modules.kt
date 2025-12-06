@@ -40,7 +40,7 @@ val sharedmodule = module{
 
 
     single<Navigator> {
-        Navigator(Route.ChatGraph)
+        Navigator(Route.AutoLoginCredChecker)
     }
 
 
@@ -67,7 +67,7 @@ val sharedmodule = module{
 
     //Alle viewmodels mit factory für desktop
     viewModelOf(::SettingsViewModel)
-    factory { SettingsViewModel(get(), get()) } // factory -> new instance each injection
+    factory { SettingsViewModel(get(), get(), get()) } // factory -> new instance each injection
 
     viewModelOf(::ChatSelectorViewModel)
     factory { ChatSelectorViewModel(get(), get(), get()) }
@@ -76,20 +76,20 @@ val sharedmodule = module{
     factory { ChatViewModel(get(), get(), get()) }
 
     viewModelOf(::ChatDetailsViewmodel)
-    factory { ChatDetailsViewmodel(get()) }
+    factory { ChatDetailsViewmodel(get(), get()) }
 
     viewModelOf(::NewChatViewModel)
-    factory { NewChatViewModel(get()) }
+    factory { NewChatViewModel(get(), get()) }
 
     viewModelOf(::GroupCreatorViewModel)
-    factory { GroupCreatorViewModel(get()) }
+    factory { GroupCreatorViewModel(get(), get()) }
 
     viewModelOf(::LoginViewModel)
-    factory { LoginViewModel(get(), get()) }
+    factory { LoginViewModel(get(), get(), get()) }
 
     viewModelOf(::SignUpViewModel)
     factory { SignUpViewModel(get(), get()) }
 
     viewModelOf(::TodolistViewModel)
-    factory { TodolistViewModel(get(), get()) }
+    factory { TodolistViewModel(get(), get(), get()) }
 }

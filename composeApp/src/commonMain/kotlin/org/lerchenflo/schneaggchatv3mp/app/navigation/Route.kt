@@ -1,41 +1,40 @@
 package org.lerchenflo.schneaggchatv3mp.app.navigation
 
+import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
-sealed interface Route {
+sealed interface Route : NavKey {
 
     // Chat - Feature
     @Serializable
-    data object ChatGraph: Route
+    data object ChatSelector: Route, NavKey
     @Serializable
-    data object ChatSelector: Route
+    data object Chat: Route, NavKey
     @Serializable
-    data object Chat: Route
+    data object NewChat: Route, NavKey
     @Serializable
-    data object NewChat: Route
+    data object GroupCreator: Route, NavKey
     @Serializable
-    data object GroupCreator: Route
-    @Serializable
-    data object AutoLoginCredChecker: Route
+    data object AutoLoginCredChecker: Route, NavKey
 
     @Serializable
-    data object Login: Route
+    data object Login: Route, NavKey
     @Serializable
-    data object SignUp: Route
+    data object SignUp: Route, NavKey
 
     @Serializable
-    data object Settings: Route
+    data object Settings: Route, NavKey
 
     @Serializable
-    data object ChatDetails: Route
+    data object ChatDetails: Route, NavKey
 
     @Serializable
-    data object Todolist: Route
+    data object Todolist: Route, NavKey
 
     @Serializable
-    data object UnderConstruction: Route
+    data object UnderConstruction: Route, NavKey
 
     @Serializable
-    data object DeveloperSettings: Route
+    data object DeveloperSettings: Route, NavKey
 
 }

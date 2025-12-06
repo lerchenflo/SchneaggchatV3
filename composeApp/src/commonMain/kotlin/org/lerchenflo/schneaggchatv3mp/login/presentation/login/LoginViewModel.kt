@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
@@ -17,9 +19,9 @@ import schneaggchatv3mp.composeapp.generated.resources.server_not_reachable
 
 class LoginViewModel(
     private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager
+    private val preferenceManager: Preferencemanager,
+    private val navigator: Navigator
 ): ViewModel() {
-
 
     init {
 
@@ -70,7 +72,7 @@ class LoginViewModel(
 
 
     // Handle login logic
-    fun login(onLoginSuccess: () -> Unit) {
+    fun login() {
         try {
             isLoading = true
 
@@ -78,8 +80,8 @@ class LoginViewModel(
             appRepository.login(username, password) { success ->
                 if (success) {
                     println("Login erfolgreich")
-                    CoroutineScope(Dispatchers.Main).launch { // launch on main thread (to avoid crash)
-                        onLoginSuccess()
+                    viewModelScope.launch {
+                        navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
                     }
                 }
             }
@@ -88,6 +90,12 @@ class LoginViewModel(
             errorMessage = "Connection error: ${e.message}"
         } finally {
             isLoading = false
+        }
+    }
+
+    fun navigateSignUp(){
+        viewModelScope.launch {
+            navigator.navigate(Route.SignUp)
         }
     }
 

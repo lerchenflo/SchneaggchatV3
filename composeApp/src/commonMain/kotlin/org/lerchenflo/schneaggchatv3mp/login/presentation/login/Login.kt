@@ -45,8 +45,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
 @Preview()
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit = {}, // when login has finished successful
-    onSignUp: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxSize()
         .safeContentPadding()
@@ -129,8 +127,8 @@ fun LoginScreen(
                             loginbuttondisabled = viewModel.loginButtonDisabled,
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            onLoginButtonClick = { viewModel.login(onLoginSuccess) },
-                            onSignupButtonClick = { onSignUp() },
+                            onLoginButtonClick = { viewModel.login() },
+                            onSignupButtonClick = { viewModel.navigateSignUp() },
                             loginbuttonloading = viewModel.isLoading,
                             usernameFocusRequester = usernameFocusRequester,
                             passwordFocusRequester = passwordFocusRequester,
@@ -164,8 +162,8 @@ fun LoginScreen(
                             loginbuttondisabled = viewModel.loginButtonDisabled,
                             modifier = Modifier
                                 .weight(1f),
-                            onLoginButtonClick = { viewModel.login(onLoginSuccess) },
-                            onSignupButtonClick = { onSignUp() },
+                            onLoginButtonClick = { viewModel.login() },
+                            onSignupButtonClick = { viewModel.navigateSignUp() },
                             loginbuttonloading = viewModel.isLoading,
                             usernameFocusRequester = usernameFocusRequester,
                             passwordFocusRequester = passwordFocusRequester,
@@ -200,8 +198,8 @@ fun LoginScreen(
                             loginbuttondisabled = viewModel.loginButtonDisabled,
                             modifier = Modifier
                                 .weight(1f),
-                            onLoginButtonClick = { viewModel.login(onLoginSuccess) },
-                            onSignupButtonClick = { onSignUp() },
+                            onLoginButtonClick = { viewModel.login() },
+                            onSignupButtonClick = { viewModel.navigateSignUp() },
                             loginbuttonloading = viewModel.isLoading,
                             usernameFocusRequester = usernameFocusRequester,
                             passwordFocusRequester = passwordFocusRequester,

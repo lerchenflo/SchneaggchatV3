@@ -101,7 +101,6 @@ import schneaggchatv3mp.composeapp.generated.resources.search_user
 @Preview
 @Composable
 fun GroupCreator(
-    onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .safeContentPadding()
@@ -207,7 +206,9 @@ fun GroupCreator(
         ) {
             ActivityTitle(
                 title = stringResource(Res.string.new_group),
-                onBackClick = onBackClick
+                onBackClick = {
+                    viewModel.onBackClick()
+                }
             )
 
 

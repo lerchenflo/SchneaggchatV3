@@ -32,17 +32,13 @@ import schneaggchatv3mp.composeapp.generated.resources.developer_settings
 
 @Composable
 fun DeveloperSettings(
-    onBackClick: () -> Unit = {},
+    onBackClick: () -> Unit = {}, //TODO: Not used, better navigation inside settings
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .safeContentPadding()
 ) {
     val settingsViewModel = koinViewModel<SettingsViewModel>()
-    val appRepository = koinInject<AppRepository>()
 
-    LaunchedEffect(Unit) {
-        settingsViewModel.init()
-    }
     var showChangeServerUrlPopup by remember { mutableStateOf(false) }
 
     Column(

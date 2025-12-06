@@ -33,9 +33,7 @@ fun UrlChangeDialog (
 ){
     val settingsViewModel = koinViewModel<SettingsViewModel>()
 
-    LaunchedEffect(Unit){
-        settingsViewModel.init()
-    }
+
 
     AlertDialog(
         onDismissRequest = onDismiss,

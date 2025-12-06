@@ -23,13 +23,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigation
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.ui.NavDisplay
+import androidx.savedstate.serialization.SavedStateConfiguration
 import com.lerchenflo.hallenmanager.sharedUi.UnderConstruction
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.stringResource
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
@@ -68,40 +72,75 @@ fun App() {
         themeSetting = themeSetting
     ) {
 
-        val navigator = koinInject<Navigator>()
-        val navController = rememberNavController()
-
-        val snackbarHostState = remember { SnackbarHostState() } // for snackbar
         val scope = rememberCoroutineScope()
 
+
+        //Setup of backstack(All available routes)
+        val backStack = rememberNavBackStack(
+            configuration = SavedStateConfiguration{
+                serializersModule = SerializersModule {
+                    polymorphic(NavKey::class) {
+                        subclass(Route.Login::class, Route.Login.serializer())
+                        subclass(Route.AutoLoginCredChecker::class, Route.AutoLoginCredChecker.serializer())
+                        subclass(Route.ChatSelector::class, Route.ChatSelector.serializer())
+                        subclass(Route.Chat::class, Route.Chat.serializer())
+                        subclass(Route.NewChat::class, Route.NewChat.serializer())
+                        subclass(Route.GroupCreator::class, Route.GroupCreator.serializer())
+                        subclass(Route.SignUp::class, Route.SignUp.serializer())
+                        subclass(Route.Settings::class, Route.Settings.serializer())
+                        subclass(Route.ChatDetails::class, Route.ChatDetails.serializer())
+                        subclass(Route.Todolist::class, Route.Todolist.serializer())
+                        subclass(Route.UnderConstruction::class, Route.UnderConstruction.serializer())
+                        subclass(Route.DeveloperSettings::class, Route.DeveloperSettings.serializer())
+                    }
+                }
+            },
+            Route.AutoLoginCredChecker //Initial activity: Autologinchecker
+        )
+
+        //Initialize navigator (TO navigate from viewmodels)
+        val navigator = koinInject<Navigator>()
+
+        //Initialize global repository
         val appRepository = koinInject<AppRepository>()
 
-        // initialize manager
+
+        val snackbarHostState = remember { SnackbarHostState() } // for snackbar
         LaunchedEffect(Unit) {
             SnackbarManager.init(snackbarHostState, scope)
         }
 
+        //Observe what the navigator sends to change screens etc
         ObserveAsEvents(
             flow = navigator.navigationActions
         ){  action ->
             when(action){
-                is NavigationAction.Navigate -> navController.navigate(action.destination){action.navOptions(this)}
-                NavigationAction.NavigateBack -> navController.navigateUp()
+                is NavigationAction.Navigate -> {
+                    if (action.exitAllPreviousScreens){
+                        backStack.clear() //TODO: DOES THIS WORK??
+                    }
+                    if (action.exitPreviousScreen){
+                        backStack.removeLast()
+                    }
+                    backStack.add(action.destination)
+                }
+                NavigationAction.NavigateBack -> {
+                    backStack.removeLast()
+                }
             }
         }
 
 
+        //Error popup handling
         var currentError by remember { mutableStateOf<AppRepository.ErrorChannel.ErrorEvent?>(null) }
-
         LaunchedEffect(Unit) {
             AppRepository.errors.collect { error ->
                 println("Error popup thrown: $error")
                 currentError = error
-                kotlinx.coroutines.delay(error.duration)
+                delay(error.duration)
                 currentError = null
             }
         }
-
         currentError?.let { error ->
             AutoFadePopup(
                 message = error.toStringComposable(), // Called in composable context
@@ -114,187 +153,122 @@ fun App() {
 
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) }
-        ) { padding ->
+        ) { innerpadding ->
 
+            //TODO: Use this padding everywhere to fix layouts?
+            NavDisplay(
+                backStack = backStack,
+                entryProvider = { key ->
+                    when(key) {
+                        is Route.AutoLoginCredChecker -> {
+                            NavEntry(key) {
+                                //Content of this screen
 
-            NavHost(
-                navController = navController,
-                startDestination = Route.ChatGraph
-            ) {
+                                val globalViewModel = koinInject<GlobalViewModel>()
 
-                navigation<Route.ChatGraph>(
-                    startDestination = Route.AutoLoginCredChecker
-                ) {
-                    composable<Route.AutoLoginCredChecker> {
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
 
-                        val globalViewModel = it.sharedKoinViewModel<GlobalViewModel>(navController)
+                                //Load initial credentials
+                                LaunchedEffect(Unit) {
+                                    val savedCreds = appRepository.loadSavedLoginConfig()
 
+                                    if (savedCreds) {
+                                        navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true) //Clear backstack
 
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                                        globalViewModel.viewModelScope.launch {
+                                            //Autologin
 
+                                            val error = appRepository.refreshTokens()
+                                            if (error == NetworkError.Unauthorized()){
+                                                println("token refresh failed, rerouting to login")
+                                                AppRepository.trySendError(
+                                                    event = AppRepository.ErrorChannel.ErrorEvent(
+                                                        401,
+                                                        errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
+                                                        duration = 5000L,
+                                                    )
+                                                )
+                                                navigator.navigate(Route.Login, exitAllPreviousScreens = true) //Clear backstack
+                                            }
+                                            //TODO: Sometimes there are other errors (Not logged in but in chatselector)
 
-                        LaunchedEffect(Unit) {
-                            val savedCreds = appRepository.loadSavedLoginConfig()
-
-                            if (savedCreds) {
-                                navController.navigate(Route.ChatSelector) {
-                                    popUpTo(Route.AutoLoginCredChecker) { inclusive = true } // remove login from backstack
-                                }
-
-                                globalViewModel.viewModelScope.launch {
-                                    //Autologin
-
-                                    val error = appRepository.refreshTokens()
-                                    if (error == NetworkError.Unauthorized()){
-                                        println("token refresh failed, rerouting to login")
-                                        AppRepository.trySendError(
-                                            event = AppRepository.ErrorChannel.ErrorEvent(
-                                                401,
-                                                errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
-                                                duration = 5000L,
-                                            )
-                                        )
-                                        navController.navigate(Route.Login) {
-                                            popUpTo(Route.Login) { inclusive = true }
                                         }
+                                    } else {
+                                        navigator.navigate(Route.Login, exitAllPreviousScreens = true) //Clear backstack
                                     }
-
                                 }
-                            } else {
-                                navController.navigate(Route.Login) {
-                                    popUpTo(Route.AutoLoginCredChecker) { inclusive = true }
-                                }
-
                             }
                         }
-                    }
-
-
-
-                    // chat selector (gegnerauswahl)
-                    composable<Route.ChatSelector>(
-                        enterTransition = { slideInHorizontally { fullWidth -> fullWidth } },
-                        exitTransition = { slideOutHorizontally { fullWidth -> -fullWidth } },
-                        popEnterTransition = { slideInHorizontally { fullWidth -> -fullWidth } },
-                        popExitTransition = { slideOutHorizontally { fullWidth -> fullWidth } }
-                    ) {
-                        val globalViewModel = it.sharedKoinViewModel<GlobalViewModel>(navController)
-
-
-                        LaunchedEffect(true) {
-                            globalViewModel.onLeaveChat() // am afang wenn ma noch nix selected hot an null
+                        is Route.Login -> {
+                            NavEntry(key) {
+                                LoginScreen()
+                            }
+                        }
+                        is Route.SignUp -> {
+                            NavEntry(key) {
+                                SignUpScreenRoot()
+                            }
+                        }
+                        is Route.ChatSelector -> {
+                            NavEntry(key) {
+                                Chatauswahlscreen()
+                            }
+                        }
+                        is Route.Chat -> {
+                            NavEntry(key) {
+                                ChatScreen()
+                            }
+                        }
+                        is Route.NewChat -> {
+                            NavEntry(key) {
+                                NewChat()
+                            }
+                        }
+                        is Route.GroupCreator -> {
+                            NavEntry(key) {
+                                GroupCreator()
+                            }
                         }
 
-                        Chatauswahlscreen()
-                    }
-
-                    // chat
-                    composable<Route.Chat> {
-                        ChatScreen(
-                            onBackClick = {
-                                navController.navigateUp()
-                            },
-                            onChatDetailsClick = {
-                                navController.navigate(Route.ChatDetails)
+                        is Route.ChatDetails -> {
+                            NavEntry(key) {
+                                ChatDetails()
                             }
-                        )
-
-                    }
-
-                    // newChat (neuegegnergruppen)
-                    composable<Route.NewChat> {
-                        NewChat(
-                            onBackClick = {
-                                navController.navigateUp()
-                            },
-                            onGroupCreator = {
-                                navController.navigate(Route.GroupCreator)
+                        }
+                        is Route.Todolist -> {
+                            NavEntry(key) {
+                                TodolistScreen()
                             }
-                        )
-                    }
-                    // group creator
-                    composable<Route.GroupCreator> {
-                        GroupCreator(
-                            onBackClick = {
-                                navController.navigateUp()
+                        }
+
+
+                        is Route.DeveloperSettings -> {
+                            NavEntry(key) {
+                                DeveloperSettings()
                             }
-                        )
-                    }
-
-                    composable<Route.ChatDetails>{
-                        ChatDetails(
-                            onBackClick = {
-                                navController.navigateUp()
+                        }
+                        is Route.Settings -> {
+                            NavEntry(key) {
+                                SettingsScreen()
                             }
-                        )
-                    }
+                        }
 
-                    // Login screen
-                    composable<Route.Login>{
 
-                        LoginScreen(
 
-                            onLoginSuccess = {
-                                println("Login success, Chatselector")
-                                navController.navigate(Route.ChatSelector) {
-                                    popUpTo(Route.ChatGraph) { inclusive = true }
-                                }
+                        is Route.UnderConstruction -> {
+                            NavEntry(key) {
+                                UnderConstruction(
 
-                            },
-                            onSignUp = {
-                                println("Create acc")
-                                navController.navigate(Route.SignUp)
+                                )
                             }
-                        )
+                        }
+
+
+
+                        else -> error("Unknown navkey: $key")
                     }
-
-                    // Sign up page
-                    composable<Route.SignUp>{
-                        SignUpScreenRoot()
-                    }
-
-                    // Settings page
-                    composable<Route.Settings>{
-                        SettingsScreen(
-                            onBackClick = {
-                                navController.navigateUp()
-                            },
-                            toLoginNavigator = {
-                                navController.navigate(Route.Login)
-                            },
-                            toDevSettingsNavigator = {
-                                navController.navigate(Route.DeveloperSettings)
-                            }
-                        )
-                    }
-
-                    //Todoliste
-                    composable<Route.Todolist>{
-                        TodolistScreen(
-                            onBackClick = {
-                                navController.navigateUp()
-                            }
-                        )
-                    }
-
-                    // Developer Settings
-                    composable<Route.DeveloperSettings>{
-                        DeveloperSettings(
-                            onBackClick = {
-                                navController.navigateUp()
-                            }
-                        )
-                    }
-
-                    // Under Construction
-                    composable<Route.UnderConstruction>{
-                        UnderConstruction(
-
-                        )
-                    }
-
                 }
-            }
+            )
 
         }
 

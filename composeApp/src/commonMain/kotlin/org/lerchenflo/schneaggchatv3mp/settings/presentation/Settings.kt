@@ -68,9 +68,6 @@ import schneaggchatv3mp.composeapp.generated.resources.yes
 
 @Composable
 fun SettingsScreen(
-    onBackClick: () -> Unit = {},
-    toLoginNavigator: () -> Unit = {},
-    toDevSettingsNavigator: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .safeContentPadding()
@@ -78,9 +75,6 @@ fun SettingsScreen(
     val viewModel = koinViewModel<SettingsViewModel>()
     val appRepository = koinInject<AppRepository>()
 
-    LaunchedEffect(Unit){
-        viewModel.init()
-    }
 
     val ownuser by viewModel.getOwnuser().collectAsStateWithLifecycle(null)
 
@@ -90,7 +84,9 @@ fun SettingsScreen(
     ){
         ActivityTitle(
             title = stringResource(Res.string.settings),
-            onBackClick = onBackClick
+            onBackClick = {
+                viewModel.onBackClick()
+            }
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -236,7 +232,6 @@ fun SettingsScreen(
                     TextButton(onClick = {
                         showLogoutDialog = false
                         viewModel.logout()
-                        toLoginNavigator()
                     }) {
                         Text(text = stringResource(Res.string.yes))
                     }
@@ -256,7 +251,9 @@ fun SettingsScreen(
                 Icons.Default.Code,
                 stringResource(Res.string.developer_settings),
                 stringResource(Res.string.developer_setting_info),
-                onClick = toDevSettingsNavigator
+                onClick = {
+                    viewModel.toDevSettingsClick()
+                }
             )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -278,7 +275,7 @@ fun SettingsScreen(
                     // todo snackbar oder sunsch irgend a meldung & guate zahl usdenka
 
                     if (openDevSettingsCounter > 5){ // open dev settings after x clicks
-                        toDevSettingsNavigator()
+                        viewModel.toDevSettingsClick()
                         viewModel.updateDevSettings(true) // save in preferences
                     }
                 }
