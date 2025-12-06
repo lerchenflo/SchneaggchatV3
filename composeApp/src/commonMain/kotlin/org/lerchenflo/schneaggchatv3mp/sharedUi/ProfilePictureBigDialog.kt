@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -23,7 +21,6 @@ import coil3.compose.AsyncImage
 import org.jetbrains.compose.resources.painterResource
 
 // Zoagt es Profilbild groß a
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ProfilePictureBigDialog(
     onDismiss: () -> Unit,
