@@ -18,9 +18,6 @@ data class MessageWithReadersDto(
     )
     val readers: List<MessageReaderDto>
 ){
-    fun isReadbyMe() : Boolean{
-        return readers.any{ it.readerID == SessionCache.getOwnIdValue() }
-    }
 
     fun isReadById(id: String) : Boolean{
         return readers.any {it.readerID == id}
@@ -32,10 +29,6 @@ data class MessageWithReadersDto(
 
     fun getSendDateAsLong(): Long {
         return messageDto.sendDate.toLong()
-    }
-
-    fun isMyMessage(): Boolean {
-        return messageDto.senderId == SessionCache.getOwnIdValue()
     }
 
     fun isGroupMessage(): Boolean {
@@ -51,7 +44,7 @@ data class MessageWithReadersDto(
                 return true
             }
         }else {
-            if (isMyMessage() && messageDto.receiverId == chatID && !messageDto.groupMessage){
+            if (messageDto.myMessage && messageDto.receiverId == chatID && !messageDto.groupMessage){
                 return true
             }else if (messageDto.senderId == chatID && messageDto.receiverId == SessionCache.getOwnIdValue() && !messageDto.groupMessage){
                 return true

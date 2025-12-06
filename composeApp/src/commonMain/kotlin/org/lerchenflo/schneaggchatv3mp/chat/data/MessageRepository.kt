@@ -2,10 +2,13 @@ package org.lerchenflo.schneaggchatv3mp.chat.data
 
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
@@ -50,8 +53,12 @@ class MessageRepository(
     }
 
     @Transaction
-    fun getAllMessagesWithReaders(): Flow<List<MessageWithReadersDto>>{
-        return database.messageDao().getAllMessagesWithReadersFlow()
+    fun getAllMessages(): Flow<List<Message>>{
+        return database.messageDao().getAllMessagesWithReadersFlow().map { messageWithReadersDtos ->
+            messageWithReadersDtos.map {
+                it.toMessage()
+            }
+        }
     }
 
     @Transaction
@@ -78,7 +85,7 @@ class MessageRepository(
 
         database.messageDao().getMessagesByUserIdFlow(chatid, gruppe).collect { messagelist ->
             for (message in messagelist){
-                if (!message.isReadbyMe()){
+                if (!message.messageDto.readByMe){
                     database.messagereaderDao().upsertReader(MessageReaderDto(messageId = message.messageDto.id!!, readerID = SessionCache.getOwnIdValue()!!, readDate = timestamp))
                 }
             }

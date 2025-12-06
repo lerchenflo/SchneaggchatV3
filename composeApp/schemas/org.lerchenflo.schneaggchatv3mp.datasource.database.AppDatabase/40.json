@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 38,
-    "identityHash": "b9bf42fefef09fd40ed52b854d5d707e",
+    "version": 40,
+    "identityHash": "67e8b08cc67c6297f8e488539708e019",
     "entities": [
       {
         "tableName": "users",
@@ -115,7 +115,7 @@
       },
       {
         "tableName": "messages",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localPK` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT, `msgType` TEXT NOT NULL, `content` TEXT NOT NULL, `senderId` TEXT NOT NULL, `receiverId` TEXT NOT NULL, `sendDate` TEXT NOT NULL, `changedate` TEXT NOT NULL, `deleted` INTEGER NOT NULL, `myMessage` INTEGER NOT NULL, `groupMessage` INTEGER NOT NULL, `answerId` TEXT, `sent` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localPK` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT, `msgType` TEXT NOT NULL, `content` TEXT NOT NULL, `senderId` TEXT NOT NULL, `receiverId` TEXT NOT NULL, `sendDate` TEXT NOT NULL, `changedate` TEXT NOT NULL, `deleted` INTEGER NOT NULL, `myMessage` INTEGER NOT NULL, `readByMe` INTEGER NOT NULL, `groupMessage` INTEGER NOT NULL, `answerId` TEXT, `sent` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "localPK",
@@ -177,6 +177,12 @@
             "notNull": true
           },
           {
+            "fieldPath": "readByMe",
+            "columnName": "readByMe",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "groupMessage",
             "columnName": "groupMessage",
             "affinity": "INTEGER",
@@ -211,15 +217,16 @@
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_messages_id` ON `${TABLE_NAME}` (`id`)"
           },
           {
-            "name": "index_messages_myMessage_groupMessage_sent",
+            "name": "index_messages_myMessage_groupMessage_sent_readByMe",
             "unique": false,
             "columnNames": [
               "myMessage",
               "groupMessage",
-              "sent"
+              "sent",
+              "readByMe"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_myMessage_groupMessage_sent` ON `${TABLE_NAME}` (`myMessage`, `groupMessage`, `sent`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_myMessage_groupMessage_sent_readByMe` ON `${TABLE_NAME}` (`myMessage`, `groupMessage`, `sent`, `readByMe`)"
           }
         ]
       },
@@ -446,7 +453,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b9bf42fefef09fd40ed52b854d5d707e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '67e8b08cc67c6297f8e488539708e019')"
     ]
   }
 }

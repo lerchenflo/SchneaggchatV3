@@ -27,7 +27,7 @@ data class User(
     //Not in db
     override val unreadMessageCount: Int = 0,
     override val unsentMessageCount: Int = 0,
-    override val lastmessage: MessageWithReadersDto? = null,
+    override val lastmessage: Message? = null,
 ) : SelectedChat {
     override val isGroup: Boolean
         get() = false

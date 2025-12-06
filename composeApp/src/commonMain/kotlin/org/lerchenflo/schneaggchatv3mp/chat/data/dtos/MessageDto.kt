@@ -12,7 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.PICTUREMESSAGE
 @Serializable
 @Entity(
     tableName = "messages",
-    indices = [Index(value = ["id"], unique = true)]
+    indices = [Index(value = ["id"], unique = true), Index(value = ["myMessage", "groupMessage", "sent", "readByMe"])]
 )
 data class MessageDto(
 
@@ -35,6 +35,10 @@ data class MessageDto(
 
     var deleted: Boolean = false,
 
+    var myMessage: Boolean, //Keep track if this is a message sent by me or not
+    var readByMe: Boolean,
+
+
     var groupMessage: Boolean = false,
 
     var answerId: String? = null,
@@ -48,12 +52,4 @@ data class MessageDto(
     @Ignore
     var senderColor: Int = 0
 
-    fun isMyMessage(): Boolean {
-        // compare as strings to be robust to OWNID being Int/Long/String
-        return try {
-            senderId.toString() == SessionCache.getOwnIdValue().toString()
-        } catch (_: Exception) {
-            false
-        }
-    }
 }

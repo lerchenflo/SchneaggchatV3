@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
@@ -54,7 +55,7 @@ import schneaggchatv3mp.composeapp.generated.resources.you_sender
 fun UserButton(
     selectedChat: SelectedChat,
     showProfilePicture: Boolean = true,
-    lastMessage: MessageWithReadersDto? = null,
+    lastMessage: Message? = null,
     bottomTextOverride: String? = "",
     useOnClickGes: Boolean = true,
     selected: Boolean? = null,
@@ -177,14 +178,14 @@ fun UserButton(
                     // Last message preview
                     Text(
                         text = (
-                                if (lastMessage.isMyMessage()) {
+                                if (lastMessage.myMessage) {
                                     stringResource(Res.string.you_sender) + ": "
                                 } else if (lastMessage.isGroupMessage()) {
-                                    lastMessage.messageDto.senderAsString + ": "
+                                    lastMessage.senderAsString + ": "
                                 } else {
                                     ""
                                 }
-                                ) + lastMessage.messageDto.content,
+                                ) + lastMessage.content,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) // 👈 lighter text
                         ),
@@ -196,7 +197,7 @@ fun UserButton(
                     //println("milis to date ${lastMessage.sendDate} result ${millisToTimeDateOrYesterday(lastMessage.sendDate?.toLong() ?: 0L)}")
                     // Time indicator
                     Text(
-                        text = millisToTimeDateOrYesterday(lastMessage.messageDto.sendDate.toLong()),
+                        text = millisToTimeDateOrYesterday(lastMessage.sendDate.toLong()),
                         style = MaterialTheme.typography.labelSmall,
                         maxLines = 1,
                         modifier = Modifier.padding(start = 4.dp)

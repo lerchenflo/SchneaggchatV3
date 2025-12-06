@@ -27,10 +27,8 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.datasource.network.TEXTMESSAGE
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.check
@@ -42,95 +40,84 @@ import schneaggchatv3mp.composeapp.generated.resources.something_wrong_message
 fun MessageView(
     useMD: Boolean = false,
     selectedChatId: String = "",
-    messagewithreaders: Message,
+    message: Message,
     modifier: Modifier = Modifier
         .fillMaxWidth()
-
 ){
-    val mymessage = messagewithreaders.isMyMessage()
+    val mymessage = message.myMessage
 
     //Ganze breite
     Row(
         modifier = modifier
             .clickable{
-                println(messagewithreaders)
-                println("Read by me: ${messagewithreaders.isReadByMe()}")
-            },
+                println(message)
+                println("Read by me: $mymessage")
+            }
+            .fillMaxWidth(), // Make sure this is here
         horizontalArrangement = if (mymessage) Arrangement.End else Arrangement.Start
     ) {
         //Farbiger kasten
-            Box(
-                modifier = Modifier
-                    .padding(
-                        start = if (mymessage) 40.dp else 0.dp,
-                        end = if (mymessage) 0.dp else 40.dp,
-                        top = 5.dp,
-                        bottom = 5.dp
-                    )
-                    .wrapContentSize()
-                    .background(
-                        color = if (mymessage){MaterialTheme.colorScheme.primaryContainer}else {MaterialTheme.colorScheme.secondaryContainer},
-                        shape = RoundedCornerShape(15.dp)
-                    )
-                    .padding(6.dp)
+        Box(
+            modifier = Modifier
+                .padding(
+                    start = if (mymessage) 40.dp else 0.dp,
+                    end = if (mymessage) 0.dp else 40.dp,
+                    top = 5.dp,
+                    bottom = 5.dp
+                )
+                .wrapContentSize()
+                .background(
+                    color = if (mymessage){MaterialTheme.colorScheme.primaryContainer}else {MaterialTheme.colorScheme.secondaryContainer},
+                    shape = RoundedCornerShape(15.dp)
+                )
+                .padding(6.dp)
+        ){
+            //Contentbox gesammt
+            Column(
+                modifier = Modifier // Remove the modifier parameter here
+            ){
+                //Contentrow
+                Row {
+                    when(message.msgType){
+                        MessageType.TEXT -> TextMessage(
+                            useMD = useMD,
+                            messageWithReaders = message,
+                            myMessage = mymessage
+                        )
+                        else -> ErrorMessage()
+                    }
+                }
 
+                //Sendedatum / Gelesen row
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .padding(end = 6.dp)
+                ) {
+                    Row(){
+                        //zit
+                        Text(
+                            text = millisToString(message.sendDate.toLong(), format = "HH:mm"),
+                            textAlign = TextAlign.End,
+                            fontSize = 12.sp,
+                        )
 
-
-
-                ){
-                //Contentbox gesammt
-                Column(
-                    modifier = modifier
-                ){
-                    //Contentrow
-                    Row(
-
-                    ) {
-                        when(messagewithreaders.msgType){
-                            MessageType.TEXT -> TextMessage(
-                                useMD = useMD,
-                                messageWithReaders = messagewithreaders,
-                                myMessage = mymessage
+                        // gelesen haken
+                        if(message.isReadById(selectedChatId) && mymessage){
+                            Icon(
+                                painter = painterResource(Res.drawable.check),
+                                contentDescription = stringResource(Res.string.read),
+                                modifier = Modifier
+                                    .size(14.dp)
+                                    .padding(start = 2.dp)
+                                    .align(Alignment.CenterVertically)
                             )
-                            //GROUPTEXTMESSAGE -> TextMessage(messagewithreaders, mymessage)
-
-                            else -> ErrorMessage()
                         }
                     }
-
-                    //Sendedatum / Gelesen row
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.End)
-                            .padding(end = 6.dp)
-                    ) {
-                        Row(){
-                            //zit
-                            Text(
-                                text = millisToString(messagewithreaders.sendDate.toLong(), format = "HH:mm"),
-                                textAlign = TextAlign.End,
-                                fontSize = 12.sp,
-                                modifier = Modifier
-                            )
-
-                            // gelesen haken
-                            if(messagewithreaders.isReadById(selectedChatId) && mymessage){
-                                Icon(
-                                    painter = painterResource(Res.drawable.check),
-                                    contentDescription = stringResource(Res.string.read),
-                                    modifier = Modifier
-                                        .size(14.dp)
-                                        .padding(start = 2.dp)
-                                        .align(Alignment.CenterVertically)
-                                )
-                            }
-                        }
-
                 }
             }
         }
     }
-
 }
 
 @Composable

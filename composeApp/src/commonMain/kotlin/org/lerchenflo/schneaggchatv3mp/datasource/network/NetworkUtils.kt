@@ -428,7 +428,7 @@ class NetworkUtils(
 
         val receiverId: String,
         val groupMessage: Boolean,
-        val msgtype: MessageType,
+        val msgType: MessageType,
         val content: String,
         val answerId: String?,
     )
@@ -439,7 +439,7 @@ class NetworkUtils(
         val senderId: String,
         val receiverId: String,
         val groupMessage: Boolean,
-        val msgtype: MessageType,
+        val msgType: MessageType,
         val content: String,
         val answerId: String?,
 
@@ -448,12 +448,12 @@ class NetworkUtils(
         val deleted: Boolean
     )
 
-    suspend fun sendTextMessageToServer(empfaenger: String, gruppe: Boolean, content: String, answerid: String?) : NetworkResult<MessageResponse, NetworkError>{
+    suspend fun sendTextMessageToServer(empfaenger: String, gruppe: Boolean, content: String, answerid: String?) : NetworkResult<MessageResponse, NetworkError> {
         val messageRequest = MessageRequest(
             messageId = null,
             receiverId = empfaenger,
             groupMessage = gruppe,
-            msgtype = MessageType.TEXT,
+            msgType = MessageType.TEXT,
             content = content,
             answerId = answerid,
         )

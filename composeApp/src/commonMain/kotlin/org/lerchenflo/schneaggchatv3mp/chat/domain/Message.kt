@@ -26,6 +26,8 @@ data class Message(
     var groupMessage: Boolean = false,
     var answerId: String? = null,
     var sent: Boolean = false,
+    var myMessage: Boolean,
+    var readByMe: Boolean,
     var senderAsString: String = "",
     var senderColor: Int = 0,
     var readers : List<MessageReader>
@@ -33,17 +35,6 @@ data class Message(
     fun isPicture(): Boolean = msgType == MessageType.IMAGE
 
     fun getSendDateAsLong(): Long = sendDate.toLongOrNull() ?: 0L
-
-    fun isMyMessage(): Boolean {
-        return try {
-            senderId.toString() == SessionCache.getOwnIdValue().toString()
-        } catch (_: Exception) {
-            false
-        }
-    }
-
-    fun isReadByMe(): Boolean =
-        readers.any { it.readerId == SessionCache.getOwnIdValue() }
 
     fun isReadById(id: String): Boolean =
         readers.any { it.readerId == id }
@@ -59,7 +50,7 @@ data class Message(
         return if (gruppe) {
             receiverId == chatID && groupMessage
         } else {
-            if (isMyMessage() && receiverId == chatID && !groupMessage) {
+            if (myMessage && receiverId == chatID && !groupMessage) {
                 true
             } else if (senderId == chatID &&
                 receiverId == SessionCache.getOwnIdValue() &&
@@ -69,6 +60,36 @@ data class Message(
             } else {
                 false
             }
+        }
+    }
+
+    override fun toString(): String {
+        val contentPreview = if (content.length > 50) {
+            content.take(50) + "..."
+        } else {
+            content
+        }
+
+        return buildString {
+            appendLine("Message {")
+            appendLine("  id: $id")
+            appendLine("  type: $msgType")
+            appendLine("  from: ${senderAsString.ifEmpty { senderId }}")
+            appendLine("  to: $receiverId")
+            appendLine("  content: '$contentPreview'")
+            appendLine("  myMessage: $myMessage")
+            appendLine("  readByMe: $readByMe")
+            appendLine("  sent: $sent")
+            appendLine("  groupMessage: $groupMessage")
+            appendLine("  deleted: $deleted")
+            appendLine("  readers: ${readers.size}")
+            appendLine("  sendDate:\t\t $sendDate")
+            appendLine("  lastChanged:\t $changeDate")
+
+            if (answerId != null) {
+                appendLine("  answerId: $answerId")
+            }
+            append("}")
         }
     }
 }
@@ -89,6 +110,8 @@ fun MessageWithReadersDto.toMessage(): Message = Message(
     sent = this.messageDto.sent,
     senderAsString = this.messageDto.senderAsString,
     senderColor = this.messageDto.senderColor,
+    myMessage = this.messageDto.myMessage,
+    readByMe = this.messageDto.readByMe,
     readers = this.readers.map { readerDto ->
         readerDto.toMessageReader()
     },
@@ -108,7 +131,9 @@ fun Message.toDto(): MessageWithReadersDto = MessageWithReadersDto(
         deleted = this.deleted,
         groupMessage = this.groupMessage,
         answerId = this.answerId,
-        sent = this.sent
+        sent = this.sent,
+        myMessage = this.myMessage,
+        readByMe = this.readByMe
     ),
     readers = this.readers.map { reader ->
         reader.toDto()

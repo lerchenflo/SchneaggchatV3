@@ -133,28 +133,27 @@ class AppRepository(
         searchTerm: String,
         filter: ChatFilter = ChatFilter.NONE
     ): Flow<List<SelectedChat>> {
-        val messagesFlow = messageRepository.getAllMessagesWithReaders()
+        val messagesFlow = messageRepository.getAllMessages()
         val usersFlow = userRepository.getallusers()
         val groupsFlow = groupRepository.getallgroupswithmembers()
 
         return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
 
-
             val loweredSearch = searchTerm.trim().lowercase()
             val ownId = SessionCache.ownId
 
             // PRE-PROCESS: Build message indexes for O(1) lookup
-            val messagesByUser = mutableMapOf<String, MutableList<MessageWithReadersDto>>()
-            val messagesByGroup = mutableMapOf<String, MutableList<MessageWithReadersDto>>()
+            val messagesByUser = mutableMapOf<String, MutableList<Message>>()
+            val messagesByGroup = mutableMapOf<String, MutableList<Message>>()
             val userIdMap = users.associateBy { it.id }
 
             // Single pass through messages to build indexes
             messages.forEach { msg ->
                 if (msg.isGroupMessage()) {
-                    messagesByGroup.getOrPut(msg.messageDto.receiverId) { mutableListOf() }.add(msg)
+                    messagesByGroup.getOrPut(msg.receiverId) { mutableListOf() }.add(msg)
                 } else {
-                    val senderId = msg.messageDto.senderId
-                    val receiverId = msg.messageDto.receiverId
+                    val senderId = msg.senderId
+                    val receiverId = msg.receiverId
 
                     if (senderId != ownId.value) {
                         messagesByUser.getOrPut(senderId) { mutableListOf() }.add(msg)
@@ -175,20 +174,21 @@ class AppRepository(
 
                     // Find last message
                     val last = userMessages.maxByOrNull { it.getSendDateAsLong() }?.apply {
-                        // Update sender name in a copy (if MessageWithReadersDto is immutable)
-                        messageDto.senderAsString =
-                            userIdMap[messageDto.senderId]?.name ?: messageDto.senderAsString
+                        this.senderAsString =
+                            userIdMap[this.senderId]?.name ?: this.senderAsString
                     }
 
-                    // Count in single pass
+                    // Count in single pass - my messages are automatically read
                     var unreadCount = 0
                     var unsentCount = 0
                     userMessages.forEach { message ->
-                        if (!message.isReadbyMe()) unreadCount++
-                        if (!message.messageDto.sent) unsentCount++
+                        // Only count as unread if it's NOT my message and NOT read by me
+                        if (!message.myMessage && !message.readByMe) {
+                            unreadCount++
+                        }
+                        if (!message.sent) unsentCount++
                     }
 
-                    // CREATE NEW IMMUTABLE OBJECT - don't mutate original user
                     user.toSelectedChat(
                         unreadCount = unreadCount,
                         unsentCount = unsentCount,
@@ -205,18 +205,21 @@ class AppRepository(
                     val groupMessages = messagesByGroup[gwm.id] ?: emptyList()
 
                     val last = groupMessages.maxByOrNull { it.getSendDateAsLong() }?.apply {
-                        messageDto.senderAsString =
-                            userIdMap[messageDto.senderId]?.name ?: "Unknown"
+                        this.senderAsString =
+                            userIdMap[this.senderId]?.name ?: "Unknown"
                     }
 
+                    // Count in single pass - my messages are automatically read
                     var unreadCount = 0
                     var unsentCount = 0
                     groupMessages.forEach { message ->
-                        if (!message.isReadbyMe()) unreadCount++
-                        if (!message.messageDto.sent) unsentCount++
+                        // Only count as unread if it's NOT my message and NOT read by me
+                        if (!message.myMessage && !message.readByMe) {
+                            unreadCount++
+                        }
+                        if (!message.sent) unsentCount++
                     }
 
-                    // CREATE NEW IMMUTABLE OBJECT - don't mutate original group
                     gwm.toSelectedChat(
                         unreadCount = unreadCount,
                         unsentCount = unsentCount,
@@ -582,7 +585,9 @@ class AppRepository(
             deleted = false,
             groupMessage = gruppe,
             answerId = answerid,
-            sent = false
+            sent = false,
+            myMessage = true,
+            readByMe = true
         )
 
         //Nachricht hot scho a pk vo da db, also scho din
@@ -598,13 +603,33 @@ class AppRepository(
             content = content,
             answerid = answerid
         )
+
         when (serverrequest){
             is NetworkResult.Error<*> -> println("Message senden error: ${serverrequest.error}")
             is NetworkResult.Success<MessageResponse> -> {
                 withContext(Dispatchers.IO) {
-                    val msgid = serverrequest.data.messageId
 
-                    println("Message gesendet: msgid $msgid")
+                    println("Messageid returned from server: ${serverrequest.data.messageId}")
+
+                    messageRepository.upsertMessageWithoutReaders(
+                        MessageDto(
+                            localPK = localpkintern,
+                            id = serverrequest.data.messageId,
+                            msgType = serverrequest.data.msgType,
+                            content = serverrequest.data.content,
+                            senderId = serverrequest.data.senderId,
+                            receiverId = serverrequest.data.receiverId,
+                            sendDate = serverrequest.data.sendDate.toString(),
+                            changedate = serverrequest.data.lastChanged.toString(),
+                            deleted = serverrequest.data.deleted,
+                            groupMessage = serverrequest.data.groupMessage,
+                            answerId = serverrequest.data.answerId,
+                            sent = true,
+                            myMessage = true,
+                            readByMe = true
+                        )
+
+                    )
 
                     //TODO: Message gelesen + reader
                     /*

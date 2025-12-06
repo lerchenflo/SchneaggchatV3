@@ -157,7 +157,7 @@ fun ChatScreen(
                     MessageView(
                         useMD = viewModel.markdownEnabled,
                         selectedChatId = globalViewModel.selectedChat.value.id,
-                        messagewithreaders = message,
+                        message = message,
                         modifier = Modifier
                     )
                     // Show divider only if this message starts a new day
