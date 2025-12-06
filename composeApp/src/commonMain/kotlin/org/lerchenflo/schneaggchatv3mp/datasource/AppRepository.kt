@@ -80,19 +80,29 @@ class AppRepository(
             fun toStringComposable(): String {
                 var finalstr = ""
 
-                //Add errorcode
-                finalstr += if (errorCode != null) "Errorcode: ${errorCode}\n" else ""
-
-                if (error != null && error.message != null){
-                    finalstr += error.message
+                // Add errorCode if provided
+                if (errorCode != null){
+                    finalstr += "Errorcode: ${errorCode}\n"
                 }
 
-                //Add errormessage
-                if (errorMessage != null)
-                    finalstr += errorMessage + "\n"
+                // Add error.errorCode if provided (even if errorCode was also provided)
+                if (error != null) {
+                    finalstr += "Error.errorCode: ${error.errorCode}\n"
 
+                    // Add error message from RequestError
+                    if (error.message != null){
+                        finalstr += "Error.message: ${error.message}\n"
+                    }
+                }
+
+                // Add errormessage if provided
+                if (errorMessage != null)
+                    finalstr += "ErrorMessage: ${errorMessage}\n"
+
+                // Add UI text if provided
                 if (errorMessageUiText != null)
-                    finalstr += errorMessageUiText.asString()
+                    finalstr += "UiText: ${errorMessageUiText.asString()}\n"
+
 
                 return finalstr
             }

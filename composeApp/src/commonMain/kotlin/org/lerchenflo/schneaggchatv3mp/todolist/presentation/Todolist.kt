@@ -37,7 +37,6 @@ import schneaggchatv3mp.composeapp.generated.resources.todolist
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodolistScreen(
-    onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxSize()
         .safeContentPadding()
@@ -89,7 +88,9 @@ fun TodolistScreen(
         Column{
             ActivityTitle(
                 title = stringResource(Res.string.todolist),
-                onBackClick = onBackClick
+                onBackClick ={
+                    viewModel.onBackClick()
+                }
             )
 
             //Sortieren

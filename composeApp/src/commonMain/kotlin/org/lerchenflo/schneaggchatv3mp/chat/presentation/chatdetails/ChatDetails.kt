@@ -19,12 +19,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil3.compose.AsyncImage
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
@@ -43,12 +44,13 @@ import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 @Composable
 @Preview
 fun ChatDetails(
-    onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .safeContentPadding()
 ) {
     val globalViewModel = koinInject<GlobalViewModel>()
+
+    val chatdetailsViewmodel = koinViewModel<ChatDetailsViewmodel>()
 
     //TODO: Pass selectedchat when navigating to Chatdetails, do not use globalviewmodel
     val selectedChatName = globalViewModel.selectedChat.value.name
@@ -60,7 +62,9 @@ fun ChatDetails(
     ){
         ActivityTitle(
             title = selectedChatName,
-            onBackClick = onBackClick
+            onBackClick = {
+                chatdetailsViewmodel.onBackClick()
+            }
         )
         HorizontalDivider()
         // Profile picture

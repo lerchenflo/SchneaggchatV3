@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus
 import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugType
@@ -39,7 +40,8 @@ import kotlin.time.Clock
 
 class TodolistViewModel(
     private val todoRepository: TodoRepository,
-    private val pictureManager: PictureManager
+    private val pictureManager: PictureManager,
+    private val navigator: Navigator
 ): ViewModel() {
 
     val globalViewModel: GlobalViewModel = KoinPlatform.getKoin().get()
@@ -57,6 +59,11 @@ class TodolistViewModel(
         }
     }
 
+    fun onBackClick(){
+        viewModelScope.launch {
+            navigator.navigateBack()
+        }
+    }
 
 
     var sortType = mutableStateOf(BugSorttype.ALL)

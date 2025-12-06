@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
@@ -31,16 +33,19 @@ import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 class ChatViewModel(
     private val appRepository: AppRepository,
     private val settingsRepository: SettingsRepository,
-    private val messageRepository: MessageRepository
+    private val navigator: Navigator
 ): ViewModel() {
 
     val globalViewModel: GlobalViewModel = KoinPlatform.getKoin().get()
 
 
     init {
+        initPrefs()
+
         println("Chatviewmodel init")
         globalViewModel.viewModelScope.launch {
             CoroutineScope(Dispatchers.IO).launch {
+
                 //TODO: Auto set to read
                 //messageRepository.setAllChatMessagesRead(globalViewModel.selectedChat.value.id, globalViewModel.selectedChat.value.isGroup, getCurrentTimeMillisString())
             }
@@ -78,6 +83,18 @@ class ChatViewModel(
         }
     }
 
+
+    fun onBackClick() {
+        viewModelScope.launch {
+            navigator.navigateBack()
+        }
+    }
+
+    fun onChatDetailsClick() {
+        viewModelScope.launch {
+            navigator.navigate(Route.ChatDetails)
+        }
+    }
 
 
 

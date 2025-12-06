@@ -28,14 +28,15 @@ fun createHttpClient(
     engine: HttpClientEngine,
     preferenceManager: Preferencemanager,
     useAuth: Boolean
-    ) : HttpClient {
+
+) : HttpClient {
 
     return HttpClient(engine) {
         install(Logging){
             logger = object : Logger {
                 override fun log(message: String) {
                     //TODO: Comment out if not debugging networking
-                    println("KTOR LOG: $message")
+                    //println("KTOR LOG: $message")
                 }
             }
             level = LogLevel.ALL

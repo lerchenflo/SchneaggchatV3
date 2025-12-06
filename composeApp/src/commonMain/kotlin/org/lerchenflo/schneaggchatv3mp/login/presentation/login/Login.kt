@@ -35,8 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.UrlChangeDialog
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
@@ -45,8 +45,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
 @Preview()
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit = {}, // when login has finished successful
-    onSignUp: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxSize()
         .safeContentPadding()
@@ -129,8 +127,8 @@ fun LoginScreen(
                             loginbuttondisabled = viewModel.loginButtonDisabled,
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            onLoginButtonClick = { viewModel.login(onLoginSuccess) },
-                            onSignupButtonClick = { onSignUp() },
+                            onLoginButtonClick = { viewModel.login() },
+                            onSignupButtonClick = { viewModel.navigateSignUp() },
                             loginbuttonloading = viewModel.isLoading,
                             usernameFocusRequester = usernameFocusRequester,
                             passwordFocusRequester = passwordFocusRequester,
@@ -164,8 +162,8 @@ fun LoginScreen(
                             loginbuttondisabled = viewModel.loginButtonDisabled,
                             modifier = Modifier
                                 .weight(1f),
-                            onLoginButtonClick = { viewModel.login(onLoginSuccess) },
-                            onSignupButtonClick = { onSignUp() },
+                            onLoginButtonClick = { viewModel.login() },
+                            onSignupButtonClick = { viewModel.navigateSignUp() },
                             loginbuttonloading = viewModel.isLoading,
                             usernameFocusRequester = usernameFocusRequester,
                             passwordFocusRequester = passwordFocusRequester,
@@ -200,8 +198,8 @@ fun LoginScreen(
                             loginbuttondisabled = viewModel.loginButtonDisabled,
                             modifier = Modifier
                                 .weight(1f),
-                            onLoginButtonClick = { viewModel.login(onLoginSuccess) },
-                            onSignupButtonClick = { onSignUp() },
+                            onLoginButtonClick = { viewModel.login() },
+                            onSignupButtonClick = { viewModel.navigateSignUp() },
                             loginbuttonloading = viewModel.isLoading,
                             usernameFocusRequester = usernameFocusRequester,
                             passwordFocusRequester = passwordFocusRequester,

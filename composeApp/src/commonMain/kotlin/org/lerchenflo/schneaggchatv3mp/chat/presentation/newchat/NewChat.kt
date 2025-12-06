@@ -55,8 +55,6 @@ import schneaggchatv3mp.composeapp.generated.resources.settings
 @OptIn(InternalResourceApi::class)
 @Composable
 fun NewChat(
-    onBackClick: () -> Unit = {},
-    onGroupCreator: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .safeContentPadding()
@@ -72,7 +70,9 @@ fun NewChat(
         // da text mit am backbutton oba
         ActivityTitle(
             title = stringResource(Res.string.new_chat),
-            onBackClick = onBackClick
+            onBackClick = {
+                viewModel.onBackClick()
+            }
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -82,7 +82,7 @@ fun NewChat(
             text = stringResource(Res.string.new_group),
             icon = Icons.Default.GroupAdd,
             onClick = {
-                onGroupCreator()
+                viewModel.onGroupCreatorClick()
             }
         )
 

@@ -92,15 +92,7 @@ class SignUpViewModel(
                     }
                 }
                 SignupAction.OnSignUpButtonPress -> {
-                    signup(
-                        {
-                            viewModelScope.launch {
-                                navigator.navigate(Route.ChatSelector){
-                                    popUpTo(Route.ChatGraph) { inclusive = true }
-                                }
-                            }
-                        }
-                    )
+                    signup()
                 }
 
                 is SignupAction.OnAgbChecked -> {
@@ -162,7 +154,7 @@ class SignUpViewModel(
 
 
 
-    fun signup(onCreateSuccess: () -> Unit) {
+    fun signup() {
         viewModelScope.launch {
             if (isInputComplete()) {
                 try {
@@ -178,7 +170,9 @@ class SignUpViewModel(
                                 if (success){
                                     //Set username
                                     updateUsername(state.usernameState.text)
-                                    onCreateSuccess()
+                                    viewModelScope.launch {
+                                        navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
+                                    }
                                 }
                             }
 
