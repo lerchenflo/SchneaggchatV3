@@ -195,9 +195,6 @@ fun SettingsScreen(
                     TextButton(onClick = {
                         showAppBrokenDialog = false
                         viewModel.deleteAllAppData()
-                        CoroutineScope(Dispatchers.IO).launch {
-                            SnackbarManager.showMessage(getString(Res.string.please_restart_app))
-                        }
 
                     }) {
                         Text(text = stringResource(Res.string.yes))

@@ -189,8 +189,18 @@ fun App() {
                                                     )
                                                 )
                                                 navigator.navigate(Route.Login, exitAllPreviousScreens = true) //Clear backstack
+                                            }else {
+                                                if (error != null){
+                                                    //TODO: Fix errors when found
+                                                    AppRepository.trySendError(
+                                                        event = AppRepository.ErrorChannel.ErrorEvent(
+                                                            errorMessage = "Login unbekannter error bitte screenshot an flo (hoffentlich gits a fehlermeldung",
+                                                            error = error,
+                                                            duration = 15000
+                                                        )
+                                                    )
+                                                }
                                             }
-                                            //TODO: Sometimes there are other errors (Not logged in but in chatselector)
 
                                         }
                                     } else {

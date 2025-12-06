@@ -111,7 +111,7 @@ class SettingsViewModel(
     fun deleteAllAppData(){
         viewModelScope.launch {
             appRepository.deleteAllAppData()
-            SnackbarManager.showMessage("App data deleted ✅")
+            navigator.navigate(Route.AutoLoginCredChecker, exitAllPreviousScreens = true)
         }
     }
 

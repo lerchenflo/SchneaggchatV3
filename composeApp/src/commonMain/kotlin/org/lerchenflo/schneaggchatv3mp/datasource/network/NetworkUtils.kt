@@ -78,11 +78,11 @@ class NetworkUtils(
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkError.Serialization(e.message))
+            NetworkResult.Error(NetworkError.Serialization(message = e.message))
         } catch (e: Exception) {
             e.printStackTrace()
             SessionCache.updateOnline(false)
-            NetworkResult.Error(NetworkError.Unknown(e.message))
+            NetworkResult.Error(NetworkError.Unknown(message = e.message))
         }
     }
 
@@ -95,7 +95,7 @@ class NetworkUtils(
             413 -> NetworkError.PayloadTooLarge()
             429 -> NetworkError.TooManyRequests()
             in 500..599 -> NetworkError.ServerError()
-            else -> NetworkError.Unknown(message)
+            else -> NetworkError.Unknown(message = message)
         }
     }
 
@@ -249,7 +249,7 @@ class NetworkUtils(
             NetworkResult.Error(NetworkError.Serialization())
         } catch (e: Exception) {
             e.printStackTrace()
-            NetworkResult.Error(NetworkError.Unknown(e.message))
+            NetworkResult.Error(NetworkError.Unknown(message = e.message))
         }
     }
 
