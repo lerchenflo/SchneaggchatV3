@@ -403,6 +403,15 @@ class AppRepository(
     }
 
 
+    var dataSyncRunning = false
+    suspend fun dataSync() {
+        if (dataSyncRunning) {
+            println("Data sync canceled, already running")
+        }
+        dataSyncRunning = true
+        userIdSync()
+        dataSyncRunning = false
+    }
 
     suspend fun userIdSync() {
         val localusers = userRepository.getuserchangeid()
@@ -556,7 +565,7 @@ class AppRepository(
         when (val success = networkUtils.sendFriendRequest(friendId)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                userIdSync()
+                dataSync()
                 return true
             }
         }
@@ -566,7 +575,7 @@ class AppRepository(
         when (val success = networkUtils.denyFriendRequest(friendId)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                userIdSync()
+                dataSync()
                 return true
             }
         }
