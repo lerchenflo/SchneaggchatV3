@@ -15,23 +15,29 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
@@ -39,6 +45,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
@@ -114,8 +121,11 @@ class AppRepository(
         NotificationManager.removeToken()
     }
 
-    fun getMessagesByUserId(userId: String, gruppe: Boolean): Flow<List<MessageWithReadersDto>> {
-        return database.messageDao().getMessagesByUserId(userId, gruppe)
+    //TODO: Move into message repository
+    fun getMessagesByUserId(userId: String, gruppe: Boolean): Flow<List<Message>> {
+        return database.messageDao().getMessagesByUserIdFlow(userId, gruppe).map { messages ->
+            messages.map { it.toMessage() }
+        }
     }
 
     fun getownUser(): Flow<User?> {
@@ -131,28 +141,27 @@ class AppRepository(
         searchTerm: String,
         filter: ChatFilter = ChatFilter.NONE
     ): Flow<List<SelectedChat>> {
-        val messagesFlow = messageRepository.getAllMessagesWithReaders()
+        val messagesFlow = messageRepository.getAllMessages()
         val usersFlow = userRepository.getallusers()
         val groupsFlow = groupRepository.getallgroupswithmembers()
 
         return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
 
-
             val loweredSearch = searchTerm.trim().lowercase()
             val ownId = SessionCache.ownId
 
             // PRE-PROCESS: Build message indexes for O(1) lookup
-            val messagesByUser = mutableMapOf<String, MutableList<MessageWithReadersDto>>()
-            val messagesByGroup = mutableMapOf<String, MutableList<MessageWithReadersDto>>()
+            val messagesByUser = mutableMapOf<String, MutableList<Message>>()
+            val messagesByGroup = mutableMapOf<String, MutableList<Message>>()
             val userIdMap = users.associateBy { it.id }
 
             // Single pass through messages to build indexes
             messages.forEach { msg ->
                 if (msg.isGroupMessage()) {
-                    messagesByGroup.getOrPut(msg.messageDto.receiverId) { mutableListOf() }.add(msg)
+                    messagesByGroup.getOrPut(msg.receiverId) { mutableListOf() }.add(msg)
                 } else {
-                    val senderId = msg.messageDto.senderId
-                    val receiverId = msg.messageDto.receiverId
+                    val senderId = msg.senderId
+                    val receiverId = msg.receiverId
 
                     if (senderId != ownId.value) {
                         messagesByUser.getOrPut(senderId) { mutableListOf() }.add(msg)
@@ -173,20 +182,21 @@ class AppRepository(
 
                     // Find last message
                     val last = userMessages.maxByOrNull { it.getSendDateAsLong() }?.apply {
-                        // Update sender name in a copy (if MessageWithReadersDto is immutable)
-                        messageDto.senderAsString =
-                            userIdMap[messageDto.senderId]?.name ?: messageDto.senderAsString
+                        this.senderAsString =
+                            userIdMap[this.senderId]?.name ?: this.senderAsString
                     }
 
-                    // Count in single pass
+                    // Count in single pass - my messages are automatically read
                     var unreadCount = 0
                     var unsentCount = 0
                     userMessages.forEach { message ->
-                        if (!message.isReadbyMe()) unreadCount++
-                        if (!message.messageDto.sent) unsentCount++
+                        // Only count as unread if it's NOT my message and NOT read by me
+                        if (!message.myMessage && !message.readByMe) {
+                            unreadCount++
+                        }
+                        if (!message.sent) unsentCount++
                     }
 
-                    // CREATE NEW IMMUTABLE OBJECT - don't mutate original user
                     user.toSelectedChat(
                         unreadCount = unreadCount,
                         unsentCount = unsentCount,
@@ -203,18 +213,21 @@ class AppRepository(
                     val groupMessages = messagesByGroup[gwm.id] ?: emptyList()
 
                     val last = groupMessages.maxByOrNull { it.getSendDateAsLong() }?.apply {
-                        messageDto.senderAsString =
-                            userIdMap[messageDto.senderId]?.name ?: "Unknown"
+                        this.senderAsString =
+                            userIdMap[this.senderId]?.name ?: "Unknown"
                     }
 
+                    // Count in single pass - my messages are automatically read
                     var unreadCount = 0
                     var unsentCount = 0
                     groupMessages.forEach { message ->
-                        if (!message.isReadbyMe()) unreadCount++
-                        if (!message.messageDto.sent) unsentCount++
+                        // Only count as unread if it's NOT my message and NOT read by me
+                        if (!message.myMessage && !message.readByMe) {
+                            unreadCount++
+                        }
+                        if (!message.sent) unsentCount++
                     }
 
-                    // CREATE NEW IMMUTABLE OBJECT - don't mutate original group
                     gwm.toSelectedChat(
                         unreadCount = unreadCount,
                         unsentCount = unsentCount,
@@ -248,7 +261,6 @@ class AppRepository(
             preferencemanager.saveOWNID(userid)
         }
 
-        println("LOGIN: Userid: $userid")
         SessionCache.updateTokenPair(tokenPair)
         SessionCache.updateOwnId(userid)
         SessionCache.updateLoggedIn(true)
@@ -266,8 +278,8 @@ class AppRepository(
 
         //Token is expired, send errormessage
         if (!tokenDateValid && tokensNotEmpty){
-            AppRepository.trySendError(
-                event = AppRepository.ErrorChannel.ErrorEvent(
+            trySendError(
+                event = ErrorEvent(
                     401,
                     errorMessageUiText = UiText.StringResourceText(Res.string.error_access_expired),
                     duration = 5000L,
@@ -379,6 +391,7 @@ class AppRepository(
             }
         }
     }
+
 
 
     suspend fun userIdSync() {
@@ -513,6 +526,7 @@ class AppRepository(
     }
 
 
+
     //Add new users
     suspend fun getAvailableUsers(searchTerm: String) : List<NetworkUtils.NewFriendsUserResponse> {
         return when (val response = networkUtils.getAvailableUsers(searchTerm)) {
@@ -520,8 +534,8 @@ class AppRepository(
                 //TODO: FABI Get available users failed (Popup??)
                 emptyList()
             }
-            is NetworkResult.Success<*> -> {
-                response.data as List<NetworkUtils.NewFriendsUserResponse>
+            is NetworkResult.Success<List<NetworkUtils.NewFriendsUserResponse>> -> {
+                response.data
             }
         }
 
@@ -549,56 +563,83 @@ class AppRepository(
     }
 
 
-    /* TODO vornazua wieder iboua
 
     /**
      * @param localpk Local pk, only pass if already in db
      *
      */
-    suspend fun sendMessage(msgtype: String, empfaenger: Long, gruppe: Boolean, content: String, answerid: Long, sendedatum: String, localpk: Long = 0){
+    suspend fun sendTextMessage(empfaenger: String, gruppe: Boolean, content: String, answerid: String?, localpk: Long = 0){
 
         var localpkintern = localpk
-
 
         if (SessionCache.getOwnIdValue() == null){
             println("Message senden abort: No OWNID")
             return
         }
 
+        val senddate = getCurrentTimeMillisString()
 
         //Interne message macha die ned alles hot
         val messageDto = MessageDto(
             localPK = localpkintern,
             id = null,
-            msgType = msgtype,
+            msgType = MessageType.TEXT,
             content = content,
-            senderId = SessionCache.getOwnIdValue() ?: 0,
+            senderId = SessionCache.getOwnIdValue()!!,
             receiverId = empfaenger,
-            sendDate = sendedatum,
-            changeDate = sendedatum,
+            sendDate = senddate,
+            changedate = senddate,
             deleted = false,
             groupMessage = gruppe,
             answerId = answerid,
-            sent = false
+            sent = false,
+            myMessage = true,
+            readByMe = true
         )
 
         //Nachricht hot scho a pk vo da db, also scho din
         if (localpkintern == 0L){
-            localpkintern = database.messageDao().insertMessage(messageDto)
+            localpkintern = database.messageDao().insertMessageDto(messageDto)
             println("LocalPK: $localpkintern")
         }
 
 
-        val serverrequest = networkUtils.sendMessageToServer(msgtype, empfaenger, gruppe, content, answerid, sendedatum)
-        serverrequest.onSuccess { headers ->
+        val serverrequest = networkUtils.sendTextMessageToServer(
+            empfaenger = empfaenger,
+            gruppe = gruppe,
+            content = content,
+            answerid = answerid
+        )
 
-            withContext(Dispatchers.IO) {
-                val msgid = headers["msgid"]?.toLong()
+        when (serverrequest){
+            is NetworkResult.Error<*> -> println("Message senden error: ${serverrequest.error}")
+            is NetworkResult.Success<MessageResponse> -> {
+                withContext(Dispatchers.IO) {
 
+                    println("Messageid returned from server: ${serverrequest.data.messageId}")
 
-                if (msgid != null){
-                    println("Message gesendet: msgid $msgid")
+                    messageRepository.upsertMessageWithoutReaders(
+                        MessageDto(
+                            localPK = localpkintern,
+                            id = serverrequest.data.messageId,
+                            msgType = serverrequest.data.msgType,
+                            content = serverrequest.data.content,
+                            senderId = serverrequest.data.senderId,
+                            receiverId = serverrequest.data.receiverId,
+                            sendDate = serverrequest.data.sendDate.toString(),
+                            changedate = serverrequest.data.lastChanged.toString(),
+                            deleted = serverrequest.data.deleted,
+                            groupMessage = serverrequest.data.groupMessage,
+                            answerId = serverrequest.data.answerId,
+                            sent = true,
+                            myMessage = true,
+                            readByMe = true
+                        )
 
+                    )
+
+                    //TODO: Message gelesen + reader
+                    /*
                     database.messageDao().markMessageAsSent( msgid, localpkintern)
 
                     database.messagereaderDao().upsertReader(MessageReaderDto(
@@ -606,17 +647,16 @@ class AppRepository(
                         readerID = SessionCache.getOwnIdValue() ?: 0,
                         readDate = messageDto.sendDate
                     ))
-                }else{
-                    println("Message senden error: Keine Msgid erhalten -----------------------------------------------------------------------")
+
+                     */
                 }
             }
+        }
 
-        }
-        serverrequest.onError {
-            println("Message senden error: $it")
-        }
     }
 
+
+    /*
 
     fun sendOfflineMessages(){
         CoroutineScope(Dispatchers.IO).launch {

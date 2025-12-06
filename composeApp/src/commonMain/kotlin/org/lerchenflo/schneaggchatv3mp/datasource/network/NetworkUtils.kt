@@ -18,6 +18,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
@@ -407,6 +408,61 @@ class NetworkUtils(
     suspend fun getProfilePicForGroupId(groupId: String) : NetworkResult<ByteArray, NetworkError> {
         return safeGet(
             endpoint = "/groups/profilepic/$groupId"
+        )
+    }
+
+
+
+
+    /*
+    **************************************************************************
+
+    Messages
+
+    **************************************************************************
+     */
+
+    @Serializable
+    data class MessageRequest(
+        val messageId: String?, //Objectid
+
+        val receiverId: String,
+        val groupMessage: Boolean,
+        val msgType: MessageType,
+        val content: String,
+        val answerId: String?,
+    )
+
+    @Serializable
+    data class MessageResponse(
+        val messageId: String, //Objectid
+        val senderId: String,
+        val receiverId: String,
+        val groupMessage: Boolean,
+        val msgType: MessageType,
+        val content: String,
+        val answerId: String?,
+
+        val sendDate: Long,
+        val lastChanged: Long,
+        val deleted: Boolean
+    )
+
+    suspend fun sendTextMessageToServer(empfaenger: String, gruppe: Boolean, content: String, answerid: String?) : NetworkResult<MessageResponse, NetworkError> {
+        val messageRequest = MessageRequest(
+            messageId = null,
+            receiverId = empfaenger,
+            groupMessage = gruppe,
+            msgType = MessageType.TEXT,
+            content = content,
+            answerId = answerid,
+        )
+
+        println("$messageRequest")
+
+        return safePost(
+            endpoint = "/messages/send/text",
+            body = messageRequest
         )
     }
 }

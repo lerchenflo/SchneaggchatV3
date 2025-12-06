@@ -1,9 +1,12 @@
-package org.lerchenflo.schneaggchatv3mp.chat.data.dtos
+package org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations
 
 import androidx.room.Embedded
 import androidx.room.Relation
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.network.PICTUREMESSAGE
 
 @Serializable
@@ -15,24 +18,17 @@ data class MessageWithReadersDto(
     )
     val readers: List<MessageReaderDto>
 ){
-    fun isReadbyMe() : Boolean{
-        return readers.any{ it.readerID == SessionCache.getOwnIdValue() }
-    }
 
     fun isReadById(id: String) : Boolean{
         return readers.any {it.readerID == id}
     }
 
     fun isPicture() : Boolean{
-        return messageDto.msgType == PICTUREMESSAGE
+        return messageDto.msgType == MessageType.IMAGE
     }
 
     fun getSendDateAsLong(): Long {
         return messageDto.sendDate.toLong()
-    }
-
-    fun isMyMessage(): Boolean {
-        return messageDto.senderId == SessionCache.getOwnIdValue()
     }
 
     fun isGroupMessage(): Boolean {
@@ -48,7 +44,7 @@ data class MessageWithReadersDto(
                 return true
             }
         }else {
-            if (isMyMessage() && messageDto.receiverId == chatID && !messageDto.groupMessage){
+            if (messageDto.myMessage && messageDto.receiverId == chatID && !messageDto.groupMessage){
                 return true
             }else if (messageDto.senderId == chatID && messageDto.receiverId == SessionCache.getOwnIdValue() && !messageDto.groupMessage){
                 return true

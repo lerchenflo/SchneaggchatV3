@@ -4,16 +4,13 @@ import android.app.Application
 import com.mmk.kmpnotifier.notification.NotifierManager
 import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfiguration
 import org.koin.android.ext.koin.androidContext
-import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
-import org.koin.core.logger.Level
 import org.lerchenflo.schneaggchatv3mp.di.androidDataStoreModule
 import org.lerchenflo.schneaggchatv3mp.di.androidHttpAuthModule
 import org.lerchenflo.schneaggchatv3mp.di.androidHttpModule
 import org.lerchenflo.schneaggchatv3mp.di.androidPictureManagerModule
 import org.lerchenflo.schneaggchatv3mp.di.androidUserDatabaseModule
 import org.lerchenflo.schneaggchatv3mp.di.androidVersionModule
-
 import org.lerchenflo.schneaggchatv3mp.di.sharedmodule
 
 class MainApp: Application() {
@@ -36,6 +33,8 @@ class MainApp: Application() {
                 androidVersionModule,
                 androidPictureManagerModule
             )
+
+
         }
 
         //Firebase init

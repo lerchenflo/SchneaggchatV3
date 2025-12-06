@@ -120,6 +120,7 @@ kotlin {
             //Image loading async
             implementation(libs.coil3.coil.compose)
 
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -147,6 +148,8 @@ kotlin {
 
 
 }
+
+
 
 
 /*
@@ -222,4 +225,6 @@ ksp {
     arg("KOIN_USE_COMPOSE_VIEWMODEL","true")
     arg("KOIN_CONFIG_CHECK","true")
 }
+
+
 

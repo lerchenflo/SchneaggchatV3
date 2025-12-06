@@ -11,10 +11,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupMemberDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupWithMembersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
 
@@ -46,30 +46,47 @@ interface UserDao {
 interface MessageDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMessage(messageDto: MessageDto): Long
+    suspend fun insertMessageDto(messageDto: MessageDto): Long
 
     @Update
-    suspend fun updateMessage(messageDto: MessageDto)
+    suspend fun updateMessageDto(messageDto: MessageDto)
 
-    @Upsert()
-    suspend fun upsertMessage(messageDto: MessageDto): Long
+    @Query("DELETE FROM messages WHERE id = :msgid")
+    suspend fun deleteMessageDtoById(msgid: String)
 
-    @Upsert
-    suspend fun upsertMessages(messageDtos: List<MessageDto>)
+    @Query("SELECT * FROM messages WHERE id = :id")
+    suspend fun getMessageById(id: String): MessageDto?
+
+    @Transaction
+    suspend fun upsertMessageDto(messageDto: MessageDto): MessageDto {
+        val existing = getMessageById(messageDto.id.orEmpty())
+        if (existing != null) {
+            updateMessageDto(messageDto.copy(localPK = existing.localPK))
+        } else {
+            insertMessageDto(messageDto)
+        }
+        // Get the message after insert/update
+        val returnedMessage = getMessageById(messageDto.id.orEmpty())
+        return returnedMessage ?: messageDto
+    }
+
+
+
+
 
 
     @Transaction
     @Query("SELECT * FROM messages WHERE id = :id")
-    fun getMessageWithReaders(id: String): Flow<MessageWithReadersDto>
+    fun getMessageWithReadersByIdFlow(id: String): Flow<MessageWithReadersDto>
 
 
     @Transaction
     @Query("SELECT * FROM messages")
-    fun getAllMessagesWithReaders(): Flow<List<MessageWithReadersDto>>
+    fun getAllMessagesWithReadersFlow(): Flow<List<MessageWithReadersDto>>
 
     @Transaction
     @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ")
-    fun getMessagesByUserId(userId: String, gruppe: Boolean): Flow<List<MessageWithReadersDto>>
+    fun getMessagesByUserIdFlow(userId: String, gruppe: Boolean): Flow<List<MessageWithReadersDto>>
 
     @Query("SELECT id, changedate FROM messages WHERE id != 0")
     suspend fun getMessageIdsWithChangeDates(): List<IdChangeDate>
@@ -81,10 +98,6 @@ interface MessageDao {
     @Transaction
     @Query("UPDATE messages SET id = :serverId, sent = 1 WHERE localPK = :localPK")
     suspend fun markMessageAsSent(serverId: String, localPK: Long)
-
-
-    @Query("SELECT * FROM messages WHERE id = :id")
-    suspend fun getMessageById(id: String): MessageDto?
 
 }
 

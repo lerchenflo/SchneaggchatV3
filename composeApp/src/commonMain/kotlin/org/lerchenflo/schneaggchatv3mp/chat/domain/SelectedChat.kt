@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 
@@ -16,7 +16,7 @@ interface SelectedChatBase {
 
     val unreadMessageCount: Int
     val unsentMessageCount: Int
-    val lastmessage: MessageWithReadersDto?
+    val lastmessage: Message?
 }
 
 data class NotSelected(
@@ -28,7 +28,7 @@ data class NotSelected(
     override val description: String? = null,
     override val unreadMessageCount: Int = 0,
     override val unsentMessageCount: Int = 0,
-    override val lastmessage: MessageWithReadersDto? = null,
+    override val lastmessage: Message? = null,
     override val friendshipStatus: NetworkUtils.FriendshipStatus? = null,
     override val requesterId: String? = null
 ) : SelectedChatBase
@@ -42,7 +42,7 @@ data class UserChat(
     override val description: String?,
     override val unreadMessageCount: Int,
     override val unsentMessageCount: Int,
-    override val lastmessage: MessageWithReadersDto?,
+    override val lastmessage: Message?,
     override val friendshipStatus: NetworkUtils.FriendshipStatus?,
     override val requesterId: String?
 ) : SelectedChatBase {
@@ -58,7 +58,7 @@ data class GroupChat(
     override val description: String?,
     override val unreadMessageCount: Int,
     override val unsentMessageCount: Int,
-    override val lastmessage: MessageWithReadersDto?,
+    override val lastmessage: Message?,
     override val friendshipStatus: NetworkUtils.FriendshipStatus? = null,
     override val requesterId: String? = null
 ) : SelectedChatBase {
@@ -72,7 +72,7 @@ typealias SelectedChat = SelectedChatBase
 fun User.toSelectedChat(
     unreadCount: Int,
     unsentCount: Int,
-    lastMessage: MessageWithReadersDto?
+    lastMessage: Message?
 ): UserChat = UserChat(
     id = this.id,
     name = this.name,
@@ -90,7 +90,7 @@ fun User.toSelectedChat(
 fun Group.toSelectedChat(
     unreadCount: Int,
     unsentCount: Int,
-    lastMessage: MessageWithReadersDto?
+    lastMessage: Message?
 ): GroupChat = GroupChat(
     id = this.id,
     name = this.name,

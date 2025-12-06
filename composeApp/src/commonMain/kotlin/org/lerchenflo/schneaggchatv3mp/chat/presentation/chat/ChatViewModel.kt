@@ -22,7 +22,8 @@ import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TEXTMESSAGE
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
@@ -40,7 +41,8 @@ class ChatViewModel(
         println("Chatviewmodel init")
         globalViewModel.viewModelScope.launch {
             CoroutineScope(Dispatchers.IO).launch {
-                messageRepository.setAllChatMessagesRead(globalViewModel.selectedChat.value.id, globalViewModel.selectedChat.value.isGroup, getCurrentTimeMillisString())
+                //TODO: Auto set to read
+                //messageRepository.setAllChatMessagesRead(globalViewModel.selectedChat.value.id, globalViewModel.selectedChat.value.isGroup, getCurrentTimeMillisString())
             }
         }
     }
@@ -60,25 +62,19 @@ class ChatViewModel(
         if (sendText == "") return
 
         //TODO: Do wechla bild und sunschwas
-        var msgtype = TEXTMESSAGE
         val content = sendText
         updatesendText("")
 
         //Im sharedviewmodel dassas ewig leabig isch
         globalViewModel.viewModelScope.launch {
 
-            /*
-            //TODO: Implement with message sending
-            appRepository.sendMessage(
-                msgtype = msgtype,
+
+            appRepository.sendTextMessage(
                 empfaenger = globalViewModel.selectedChat.value.id,
                 gruppe = globalViewModel.selectedChat.value.isGroup,
                 content = content,
-                answerid = -1, //TODO: Antworten
-                sendedatum = getCurrentTimeMillisString()
+                answerid = null, //TODO: Antworten
             )
-
-             */
         }
     }
 
@@ -86,18 +82,18 @@ class ChatViewModel(
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val messagesFlow: Flow<List<MessageWithReadersDto>> =
+    val messagesFlow: Flow<List<Message>> =
         globalViewModel.selectedChat
             .flatMapLatest { chat ->
                 appRepository.getMessagesByUserId(chat.id, chat.isGroup)
             }
             .map { list ->
-                list.sortedByDescending { it.messageDto.sendDate }
+                list.sortedByDescending { it.sendDate }
             }
             .flowOn(Dispatchers.Default)
 
     // Expose as StateFlow so UI can collect easily and get a current value
-    val messagesState: StateFlow<List<MessageWithReadersDto>> = messagesFlow
+    val messagesState: StateFlow<List<Message>> = messagesFlow
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Companion.WhileSubscribed(5_000),
