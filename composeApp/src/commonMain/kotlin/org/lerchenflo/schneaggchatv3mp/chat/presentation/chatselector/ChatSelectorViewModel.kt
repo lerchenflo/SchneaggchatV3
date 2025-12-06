@@ -120,7 +120,7 @@ class ChatSelectorViewModel(
                  */
 
                 println("Useridsync started from Chatselector refresh")
-                appRepository.userIdSync()
+                appRepository.dataSync()
             } catch (e: Exception) {
                 ensureActive()
                 e.printStackTrace()

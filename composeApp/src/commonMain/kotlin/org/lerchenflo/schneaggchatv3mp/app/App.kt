@@ -179,6 +179,7 @@ fun App() {
                                             //Autologin
 
                                             val error = appRepository.refreshTokens()
+
                                             if (error == NetworkError.Unauthorized()){
                                                 println("token refresh failed, rerouting to login")
                                                 AppRepository.trySendError(
@@ -199,6 +200,9 @@ fun App() {
                                                             duration = 15000
                                                         )
                                                     )
+                                                }else {
+                                                    //No error, execute sync
+                                                    appRepository.dataSync()
                                                 }
                                             }
 
