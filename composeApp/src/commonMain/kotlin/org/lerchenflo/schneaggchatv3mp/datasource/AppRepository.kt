@@ -450,6 +450,7 @@ class AppRepository(
                                 lastOnline = existing?.lastOnline,
                                 notisMuted = existing?.notisMuted ?: false,
                                 email = null,
+                                emailVerifiedAt = null,
                                 createdAt = null,
                                 profilePictureUrl = ""
                             ))
@@ -476,6 +477,7 @@ class AppRepository(
                                 requesterId = null,
                                 notisMuted = false,
                                 email = newUser.email,
+                                emailVerifiedAt = newUser.emailVerifiedAt,
                                 createdAt = newUser.createdAt,
                                 profilePictureUrl = ""
 
@@ -501,6 +503,7 @@ class AppRepository(
                                 notisMuted = false,
                                 birthDate = null,
                                 email = null,
+                                emailVerifiedAt = null,
                                 createdAt = null,
                                 profilePictureUrl = ""
                             ))

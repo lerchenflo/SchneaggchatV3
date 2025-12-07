@@ -49,6 +49,8 @@ data class UserDto(
     var birthDate: String? = null,
 
     var email: String? = null,
+    var emailVerifiedAt: Long?,
+
 
     var createdAt: Long?,
 
