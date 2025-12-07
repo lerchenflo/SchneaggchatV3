@@ -22,8 +22,6 @@ sealed interface Route : NavKey {
     @Serializable
     data object SignUp: Route, NavKey
 
-    @Serializable
-    data object Settings: Route, NavKey
 
     @Serializable
     data object ChatDetails: Route, NavKey
@@ -34,7 +32,17 @@ sealed interface Route : NavKey {
     @Serializable
     data object UnderConstruction: Route, NavKey
 
-    @Serializable
-    data object DeveloperSettings: Route, NavKey
 
+    @Serializable
+    data object Settings: Route, NavKey {
+        @Serializable
+        data object SettingsScreen: Route, NavKey
+
+        @Serializable
+        data object DeveloperSettings: Route, NavKey
+
+        @Serializable
+        data object UserSettings: Route, NavKey
+    }
 }
+

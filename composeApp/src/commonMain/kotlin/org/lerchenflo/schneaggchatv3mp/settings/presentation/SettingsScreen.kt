@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.settings.presentation.settings
+package org.lerchenflo.schneaggchatv3mp.settings.presentation
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Boy
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Palette
@@ -41,6 +42,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.Settings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ThemeSelector
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -58,19 +60,23 @@ import schneaggchatv3mp.composeapp.generated.resources.settings
 import schneaggchatv3mp.composeapp.generated.resources.theme
 import schneaggchatv3mp.composeapp.generated.resources.theme_sel_desc
 import schneaggchatv3mp.composeapp.generated.resources.useMarkdown
+import schneaggchatv3mp.composeapp.generated.resources.user_settings
+import schneaggchatv3mp.composeapp.generated.resources.user_settingsinfo
 import schneaggchatv3mp.composeapp.generated.resources.version
 import schneaggchatv3mp.composeapp.generated.resources.yes
 
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier
-        .fillMaxWidth()
+        .fillMaxWidth(),
+    settingsViewmodel: SettingsViewModel,
+    sharedSettingsViewmodel: SharedSettingsViewmodel
 ){
-    val viewModel = koinViewModel<SettingsViewModel>()
     val appRepository = koinInject<AppRepository>()
 
 
-    val ownuser by viewModel.getOwnuser().collectAsStateWithLifecycle(null)
+    val ownuser = sharedSettingsViewmodel.ownUser
+
 
     Column(
         modifier = modifier
@@ -79,7 +85,7 @@ fun SettingsScreen(
         ActivityTitle(
             title = stringResource(Res.string.settings),
             onBackClick = {
-                viewModel.onBackClick()
+                settingsViewmodel.onBackClick()
             }
         )
 
@@ -96,13 +102,26 @@ fun SettingsScreen(
             verticalAlignment = Alignment.CenterVertically
         ){
 
+            var profilepicpopupShown by remember { mutableStateOf(false) }
             ProfilePictureView(
                 filepath = ownuser?.profilePictureUrl ?: "",
                 modifier = Modifier
                     .size(120.dp)
-                    .clickable { SnackbarManager.showMessage("Bald kann ma profilbild ändern") }
+                    .clickable {
+                        profilepicpopupShown = true
+                    }
                     .padding(8.dp)
             )
+            if (profilepicpopupShown) {
+                ProfilePictureBigDialog(
+                    filepath = ownuser?.profilePictureUrl ?: "",
+                    onDismiss = {
+                        profilepicpopupShown = false
+                    }
+                )
+            }
+
+
 
 
             Column(
@@ -116,9 +135,6 @@ fun SettingsScreen(
 
                 Text(
                     text = ownuser?.name ?: "Username",
-                    modifier = Modifier
-                        .clickable{viewModel.changeUsername()},
-
                     autoSize = TextAutoSize.StepBased(
                         minFontSize = 10.sp,
                         maxFontSize = 30.sp
@@ -133,13 +149,24 @@ fun SettingsScreen(
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
+        SettingsOption(
+            icon = Icons.Default.Boy,
+            text = stringResource(Res.string.user_settings),
+            subtext = stringResource(Res.string.user_settingsinfo),
+            onClick = {
+                settingsViewmodel.toUserSettingsClick()
+            }
+        )
+
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
 
         // Markdown Formatting
         SettingsSwitch(
             titletext = stringResource(Res.string.useMarkdown),
             infotext = stringResource(Res.string.markdownInfo),
-            switchchecked = viewModel.markdownEnabeled,
-            onSwitchChange = { viewModel.updateMarkdownSwitch(it) },
+            switchchecked = settingsViewmodel.markdownEnabeled,
+            onSwitchChange = { settingsViewmodel.updateMarkdownSwitch(it) },
             icon = vectorResource(Res.drawable.markdown_24px) //Gibts uf da icons no ned aber uf da website scho
         )
 
@@ -158,9 +185,9 @@ fun SettingsScreen(
                 onDismiss = { themeSelDialog = false },
                 onConfirm = {
                     themeSelDialog = false
-                    viewModel.saveThemeSetting(it)
+                    settingsViewmodel.saveThemeSetting(it)
                 },
-                selectedTheme = viewModel.selectedTheme,
+                selectedTheme = settingsViewmodel.selectedTheme,
             )
         }
 
@@ -185,7 +212,7 @@ fun SettingsScreen(
                 confirmButton = {
                     TextButton(onClick = {
                         showAppBrokenDialog = false
-                        viewModel.deleteAllAppData()
+                        settingsViewmodel.deleteAllAppData()
 
                     }) {
                         Text(text = stringResource(Res.string.yes))
@@ -219,7 +246,7 @@ fun SettingsScreen(
                 confirmButton = {
                     TextButton(onClick = {
                         showLogoutDialog = false
-                        viewModel.logout()
+                        settingsViewmodel.logout()
                     }) {
                         Text(text = stringResource(Res.string.yes))
                     }
@@ -234,13 +261,13 @@ fun SettingsScreen(
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-        if(viewModel.devSettingsEnabeled){
+        if(sharedSettingsViewmodel.devSettingsEnabeled){
             SettingsOption(
                 Icons.Default.Code,
                 stringResource(Res.string.developer_settings),
                 stringResource(Res.string.developer_setting_info),
                 onClick = {
-                    viewModel.toDevSettingsClick()
+                    settingsViewmodel.toDevSettingsClick()
                 }
             )
 
@@ -263,8 +290,8 @@ fun SettingsScreen(
                     // todo snackbar oder sunsch irgend a meldung & guate zahl usdenka
 
                     if (openDevSettingsCounter > 5){ // open dev settings after x clicks
-                        viewModel.toDevSettingsClick()
-                        viewModel.updateDevSettings(true) // save in preferences
+                        settingsViewmodel.toDevSettingsClick()
+                        sharedSettingsViewmodel.updateDevSettings(true) // save in preferences
                     }
                 }
 

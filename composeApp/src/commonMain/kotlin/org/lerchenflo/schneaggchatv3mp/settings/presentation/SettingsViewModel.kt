@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.settings.presentation.settings
+package org.lerchenflo.schneaggchatv3mp.settings.presentation
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,6 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
@@ -51,31 +52,8 @@ class SettingsViewModel(
                     selectedTheme = value
                 }
         }
-        viewModelScope.launch { // Server URL
-            preferenceManager.getServerUrlFlow()
-                .catch { exception ->
-                    println("Problem getting Server URL preference: ${exception.printStackTrace()}")
-                }
-                .collect { value ->
-                    serverURL = value
-                }
-        }
-        viewModelScope.launch { // Developer Settings
-            preferenceManager.getDevSettingsFlow()
-                .catch { exception ->
-                    println("Problem getting Developer Settings preference: ${exception.printStackTrace()}")
-                }
-                .collect { value ->
-                    devSettingsEnabeled = value
-                }
-
-        }
-
-    }
 
 
-    fun getOwnuser() : Flow<User?> {
-        return appRepository.getownUser()
     }
 
 
@@ -88,9 +66,6 @@ class SettingsViewModel(
         }
     }
 
-    fun changeUsername(){
-        // todo
-    }
 
     fun logout(){
         viewModelScope.launch {
@@ -123,32 +98,6 @@ class SettingsViewModel(
         }
     }
 
-    var serverURL by mutableStateOf("")
-        private set
-
-    fun updateServerUrl(newValue: String){ //updates only the variable in the viewmodel
-        serverURL = newValue
-    }
-
-    fun saveServerUrl(){
-        CoroutineScope(Dispatchers.IO).launch { // updates the preferences
-            preferenceManager.saveServerUrl(serverURL)
-        }
-    }
-
-
-
-
-    // Developer Settings
-    var devSettingsEnabeled by mutableStateOf(false)
-        private set
-
-    fun updateDevSettings(newValue: Boolean){
-        CoroutineScope(Dispatchers.IO).launch {
-            preferenceManager.saveDevSettings(newValue)
-        }
-    }
-
 
 
     fun onBackClick(){
@@ -159,7 +108,13 @@ class SettingsViewModel(
 
     fun toDevSettingsClick() {
         viewModelScope.launch {
-            navigator.navigate(Route.DeveloperSettings)
+            navigator.navigateSettings(Route.Settings.DeveloperSettings)
+        }
+    }
+
+    fun toUserSettingsClick() {
+        viewModelScope.launch {
+            navigator.navigateSettings(Route.Settings.UserSettings)
         }
     }
 

@@ -23,7 +23,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
-import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -50,8 +49,10 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.settings_dev.DeveloperSettings
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.settings.SettingsScreen
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
 import org.lerchenflo.schneaggchatv3mp.sharedUi.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
@@ -77,7 +78,7 @@ fun App() {
 
 
         //Setup of backstack(All available routes)
-        val backStack = rememberNavBackStack(
+        val rootBackStack = rememberNavBackStack(
             configuration = SavedStateConfiguration{
                 serializersModule = SerializersModule {
                     polymorphic(NavKey::class) {
@@ -88,16 +89,34 @@ fun App() {
                         subclass(Route.NewChat::class, Route.NewChat.serializer())
                         subclass(Route.GroupCreator::class, Route.GroupCreator.serializer())
                         subclass(Route.SignUp::class, Route.SignUp.serializer())
-                        subclass(Route.Settings::class, Route.Settings.serializer())
                         subclass(Route.ChatDetails::class, Route.ChatDetails.serializer())
                         subclass(Route.Todolist::class, Route.Todolist.serializer())
                         subclass(Route.UnderConstruction::class, Route.UnderConstruction.serializer())
-                        subclass(Route.DeveloperSettings::class, Route.DeveloperSettings.serializer())
+
+                        //Subgraph for settings
+                        subclass(Route.Settings::class, Route.Settings.serializer())
+
                     }
                 }
             },
             Route.AutoLoginCredChecker //Initial activity: Autologinchecker
         )
+
+        val settingsBackStack = rememberNavBackStack(
+            configuration = SavedStateConfiguration{
+                serializersModule = SerializersModule {
+                    polymorphic(NavKey::class) {
+                        subclass(Route.Settings.SettingsScreen::class, Route.Settings.SettingsScreen.serializer())
+                        subclass(Route.Settings.DeveloperSettings::class, Route.Settings.DeveloperSettings.serializer())
+                        subclass(Route.Settings.UserSettings::class, Route.Settings.UserSettings.serializer())
+
+                    }
+                }
+            },
+            Route.Settings.SettingsScreen
+        )
+
+
 
         //Initialize navigator (TO navigate from viewmodels)
         val navigator = koinInject<Navigator>()
@@ -118,15 +137,19 @@ fun App() {
             when(action){
                 is NavigationAction.Navigate -> {
                     if (action.exitAllPreviousScreens){
-                        backStack.clear()
+                        rootBackStack.clear()
                     }
                     if (action.exitPreviousScreen){
-                        backStack.removeLast()
+                        rootBackStack.removeLast()
                     }
-                    backStack.add(action.destination)
+                    rootBackStack.add(action.destination)
                 }
                 NavigationAction.NavigateBack -> {
-                    backStack.removeLast()
+                    rootBackStack.removeLast()
+                }
+
+                is NavigationAction.NavigateSettings -> {
+                    settingsBackStack.add(action.destination)
                 }
             }
         }
@@ -157,7 +180,7 @@ fun App() {
         ) { innerpadding ->
 
             NavDisplay(
-                backStack = backStack,
+                backStack = rootBackStack,
                 modifier = Modifier
                     .padding(innerpadding),
                 entryDecorators = listOf(
@@ -256,15 +279,36 @@ fun App() {
 
                     //Settings
                     entry<Route.Settings> {
-                        SettingsScreen()
+
+                        //Initialize global settingsviewmodel which will survive as long as the settings are open
+                        val sharedSettingsViewmodel = koinViewModel<SharedSettingsViewmodel>()
+
+                        NavDisplay(
+                            backStack = settingsBackStack,
+                            entryProvider = entryProvider {
+                                entry<Route.Settings.SettingsScreen> {
+                                    SettingsScreen(
+                                        settingsViewmodel = koinInject(),
+                                        sharedSettingsViewmodel = sharedSettingsViewmodel
+                                    )
+                                }
+
+                                entry<Route.Settings.DeveloperSettings> {
+                                    DeveloperSettings(
+                                        devSettingsViewModel = koinInject(),
+                                        sharedSettingsViewmodel = sharedSettingsViewmodel
+                                    )
+                                }
+
+                                entry<Route.Settings.UserSettings> {
+                                    UserSettings(
+                                        userSettingsViewModel = koinInject(),
+                                        sharedSettingsViewmodel = sharedSettingsViewmodel
+                                    )
+                                }
+                            }
+                        )
                     }
-
-                    entry<Route.DeveloperSettings> {
-                        DeveloperSettings()
-                    }
-
-
-
 
 
                     entry<Route.Todolist> {

@@ -1,13 +1,16 @@
-package org.lerchenflo.schneaggchatv3mp.settings.presentation.settings_dev
+package org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Accessibility
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.SsidChart
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
@@ -19,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DevSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChangeDialog
@@ -28,55 +33,35 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.change_server_url
 import schneaggchatv3mp.composeapp.generated.resources.developer_setting_info
 import schneaggchatv3mp.composeapp.generated.resources.developer_settings
+import schneaggchatv3mp.composeapp.generated.resources.user_settings
 
 @Composable
-fun DeveloperSettings(
+fun UserSettings(
     modifier: Modifier = Modifier
-        .fillMaxWidth()
+        .fillMaxWidth(),
+    userSettingsViewModel: UserSettingsViewModel,
+    sharedSettingsViewmodel: SharedSettingsViewmodel
 ) {
-    val devsettingsViewModel = koinViewModel<DevSettingsViewModel>()
 
-    var showChangeServerUrlPopup by remember { mutableStateOf(false) }
+    var showChangeUsernamePopup by remember { mutableStateOf(false) }
+
+
+    //TODO: Wittabuggla
 
     Column(
         modifier = modifier
     ) {
         ActivityTitle(
-            title = stringResource(Res.string.developer_settings),
+            title = stringResource(Res.string.user_settings),
             onBackClick = {
-                devsettingsViewModel.onBackClick()
+                userSettingsViewModel.onBackClick()
             }
         )
-
         Spacer(modifier = Modifier.size(10.dp))
-
-        SettingsSwitch(
-            titletext = stringResource(Res.string.developer_settings),
-            infotext = stringResource(Res.string.developer_setting_info),
-            switchchecked = devsettingsViewModel.devSettingsEnabeled,
-            onSwitchChange = { devsettingsViewModel.updateDevSettings(it) },
-            icon = Icons.Default.Code
-        )
-
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-
-        SettingsOption(
-            icon = Icons.Default.Link,
-            text = stringResource(Res.string.change_server_url),
-            subtext = null,
-            onClick = {
-                println("change server url clicked")
-                showChangeServerUrlPopup = true
-            }
-        )
-
-
-
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
         SettingsOption(
-            icon = Icons.Default.Lightbulb,
+            icon = Icons.Default.Accessibility,
             text = "mehr Settings",
             subtext = "es gibt ned mehr dev settings",
             onClick = {
@@ -84,16 +69,23 @@ fun DeveloperSettings(
             }
         )
 
-    }
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-    if(showChangeServerUrlPopup){
-
-        UrlChangeDialog(
-            onDismiss = { showChangeServerUrlPopup = false },
-            onConfirm = { devsettingsViewModel.updateServerUrl(it) },
-            serverUrl = devsettingsViewModel.serverUrl
+        SettingsOption(
+            icon = Icons.Default.Key,
+            text = "mehr Settings",
+            subtext = "es gibt ned mehr dev settings",
+            onClick = {
+                SnackbarManager.showMessage("joo muasch da was usdenka")
+            }
         )
 
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+
+    }
+
+    if(showChangeUsernamePopup){
 
     }
 

@@ -23,4 +23,10 @@ class Navigator(
     suspend fun navigateBack(){
         _navigationActions.send(NavigationAction.NavigateBack)
     }
+
+    suspend fun navigateSettings(
+        destination: Route
+    ){
+        _navigationActions.send(NavigationAction.NavigateSettings(destination))
+    }
 }
