@@ -39,6 +39,10 @@ class LoginViewModel(
                 )
             }
         }
+
+        viewModelScope.launch {
+            serverUrl = preferenceManager.getServerUrl()
+        }
     }
 
     var username by mutableStateOf("")
@@ -69,7 +73,15 @@ class LoginViewModel(
     }
 
 
+    var serverUrl by mutableStateOf("")
+        private set
 
+    fun updateServerUrl(newValue: String) {
+        serverUrl = newValue
+        viewModelScope.launch {
+            preferenceManager.saveServerUrl(newValue)
+        }
+    }
 
     // Handle login logic
     fun login() {

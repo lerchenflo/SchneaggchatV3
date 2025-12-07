@@ -1,9 +1,8 @@
-package org.lerchenflo.schneaggchatv3mp.settings.presentation
+package org.lerchenflo.schneaggchatv3mp.settings.presentation.settings_dev
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
@@ -12,7 +11,6 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,9 +18,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChangeDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -32,11 +31,10 @@ import schneaggchatv3mp.composeapp.generated.resources.developer_settings
 
 @Composable
 fun DeveloperSettings(
-    onBackClick: () -> Unit = {}, //TODO: Not used, better navigation inside settings
     modifier: Modifier = Modifier
         .fillMaxWidth()
 ) {
-    val settingsViewModel = koinViewModel<SettingsViewModel>()
+    val devsettingsViewModel = koinViewModel<DevSettingsViewModel>()
 
     var showChangeServerUrlPopup by remember { mutableStateOf(false) }
 
@@ -45,7 +43,9 @@ fun DeveloperSettings(
     ) {
         ActivityTitle(
             title = stringResource(Res.string.developer_settings),
-            onBackClick = onBackClick
+            onBackClick = {
+                devsettingsViewModel.onBackClick()
+            }
         )
 
         Spacer(modifier = Modifier.size(10.dp))
@@ -53,8 +53,8 @@ fun DeveloperSettings(
         SettingsSwitch(
             titletext = stringResource(Res.string.developer_settings),
             infotext = stringResource(Res.string.developer_setting_info),
-            switchchecked = settingsViewModel.devSettingsEnabeled,
-            onSwitchChange = { settingsViewModel.updateDevSettings(it) },
+            switchchecked = devsettingsViewModel.devSettingsEnabeled,
+            onSwitchChange = { devsettingsViewModel.updateDevSettings(it) },
             icon = Icons.Default.Code
         )
 
@@ -87,10 +87,14 @@ fun DeveloperSettings(
     }
 
     if(showChangeServerUrlPopup){
+
         UrlChangeDialog(
-            onDismiss = {showChangeServerUrlPopup = false},
-            onConfirm = {showChangeServerUrlPopup = false}
+            onDismiss = { showChangeServerUrlPopup = false },
+            onConfirm = { devsettingsViewModel.updateServerUrl(it) },
+            serverUrl = devsettingsViewModel.serverUrl
         )
+
+
     }
 
 

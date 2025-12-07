@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.settings.presentation
+package org.lerchenflo.schneaggchatv3mp.settings.presentation.settings
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,7 +15,6 @@ import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
@@ -75,7 +74,7 @@ class SettingsViewModel(
     }
 
 
-    fun getOwnuser() : Flow<User?>{
+    fun getOwnuser() : Flow<User?> {
         return appRepository.getownUser()
     }
 

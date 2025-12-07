@@ -1,11 +1,10 @@
-package org.lerchenflo.schneaggchatv3mp.settings.presentation
+package org.lerchenflo.schneaggchatv3mp.settings.presentation.settings
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.TextAutoSize
@@ -21,7 +20,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -34,16 +32,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ThemeSelector
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -58,7 +54,6 @@ import schneaggchatv3mp.composeapp.generated.resources.logout
 import schneaggchatv3mp.composeapp.generated.resources.markdownInfo
 import schneaggchatv3mp.composeapp.generated.resources.markdown_24px
 import schneaggchatv3mp.composeapp.generated.resources.no
-import schneaggchatv3mp.composeapp.generated.resources.please_restart_app
 import schneaggchatv3mp.composeapp.generated.resources.settings
 import schneaggchatv3mp.composeapp.generated.resources.theme
 import schneaggchatv3mp.composeapp.generated.resources.theme_sel_desc
@@ -156,15 +151,15 @@ fun SettingsScreen(
             Icons.Default.Palette,
             stringResource(Res.string.theme),
             stringResource(Res.string.theme_sel_desc),
-            onClick = {themeSelDialog = true}
+            onClick = { themeSelDialog = true }
         )
         if(themeSelDialog){
             ThemeSelector(
-                onDismiss = {themeSelDialog = false},
+                onDismiss = { themeSelDialog = false },
                 onConfirm = {
                     themeSelDialog = false
                     viewModel.saveThemeSetting(it)
-                            },
+                },
                 selectedTheme = viewModel.selectedTheme,
             )
         }
@@ -178,7 +173,7 @@ fun SettingsScreen(
             Icons.Default.Delete,
             stringResource(Res.string.app_broken),
             stringResource(Res.string.app_broken_desc),
-            onClick = {showAppBrokenDialog = true}
+            onClick = { showAppBrokenDialog = true }
         )
 
         // app kaputt dialog
