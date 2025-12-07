@@ -160,7 +160,8 @@ fun App() {
             //TODO: Use this padding everywhere to fix layouts?
             NavDisplay(
                 backStack = backStack,
-                
+                modifier = Modifier
+                    .padding(innerpadding),
                 entryProvider = { key ->
                     when(key) {
 

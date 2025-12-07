@@ -103,7 +103,6 @@ import schneaggchatv3mp.composeapp.generated.resources.search_user
 fun GroupCreator(
     modifier: Modifier = Modifier
         .fillMaxWidth()
-        .safeContentPadding()
 ){
     val minMembers = 2 // Mindestens 2 Partypeople in da Partygruppe. do ändera wenn ma mehr oder weniger will
 

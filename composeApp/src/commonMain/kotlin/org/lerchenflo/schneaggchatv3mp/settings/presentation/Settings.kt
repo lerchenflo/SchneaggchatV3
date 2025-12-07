@@ -70,7 +70,6 @@ import schneaggchatv3mp.composeapp.generated.resources.yes
 fun SettingsScreen(
     modifier: Modifier = Modifier
         .fillMaxWidth()
-        .safeContentPadding()
 ){
     val viewModel = koinViewModel<SettingsViewModel>()
     val appRepository = koinInject<AppRepository>()
@@ -167,9 +166,6 @@ fun SettingsScreen(
                     viewModel.saveThemeSetting(it)
                             },
                 selectedTheme = viewModel.selectedTheme,
-
-
-
             )
         }
 

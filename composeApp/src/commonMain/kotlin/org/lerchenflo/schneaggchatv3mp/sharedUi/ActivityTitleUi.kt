@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.sharedUi
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -29,14 +30,14 @@ fun ActivityTitle(
 ){
     Row(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
     ){
         // Backbutton
         IconButton(
             onClick = onBackClick,
             modifier = Modifier
                 .padding(top = 5.dp, start = 5.dp)
-                .statusBarsPadding()
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,

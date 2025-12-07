@@ -35,7 +35,6 @@ fun DeveloperSettings(
     onBackClick: () -> Unit = {}, //TODO: Not used, better navigation inside settings
     modifier: Modifier = Modifier
         .fillMaxWidth()
-        .safeContentPadding()
 ) {
     val settingsViewModel = koinViewModel<SettingsViewModel>()
 
