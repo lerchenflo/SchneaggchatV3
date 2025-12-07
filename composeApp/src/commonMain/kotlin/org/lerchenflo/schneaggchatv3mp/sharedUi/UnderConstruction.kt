@@ -587,7 +587,7 @@ fun UnderConstruction(
                 .padding(12.dp)
         ) {
             Text(
-                text = "Coming soon... (Drag the horse or rider!)",
+                text = "Coming soon...",
                 fontSize = 14.sp,
                 color = Color.Gray
             )

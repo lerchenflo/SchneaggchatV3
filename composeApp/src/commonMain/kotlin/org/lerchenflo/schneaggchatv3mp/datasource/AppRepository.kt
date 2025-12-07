@@ -37,6 +37,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
@@ -80,28 +81,26 @@ class AppRepository(
             fun toStringComposable(): String {
                 var finalstr = ""
 
-                // Add errorCode if provided
                 if (errorCode != null){
-                    finalstr += "Errorcode: ${errorCode}\n"
+                    finalstr += "Errorcode: ${errorCode} ${errorCodeToMessage(errorCode)}\n"
                 }
 
-                // Add error.errorCode if provided (even if errorCode was also provided)
                 if (error != null) {
-                    finalstr += "Error.errorCode: ${error.errorCode}\n"
+                    finalstr += "Errorcode: ${error.errorCode} ${errorCodeToMessage(errorCode)}\n"
 
                     // Add error message from RequestError
                     if (error.message != null){
-                        finalstr += "Error.message: ${error.message}\n"
+                        finalstr += "${error.message}\n"
                     }
                 }
 
                 // Add errormessage if provided
                 if (errorMessage != null)
-                    finalstr += "ErrorMessage: ${errorMessage}\n"
+                    finalstr += "${errorMessage}\n"
 
                 // Add UI text if provided
                 if (errorMessageUiText != null)
-                    finalstr += "UiText: ${errorMessageUiText.asString()}\n"
+                    finalstr += "${errorMessageUiText.asString()}\n"
 
 
                 return finalstr

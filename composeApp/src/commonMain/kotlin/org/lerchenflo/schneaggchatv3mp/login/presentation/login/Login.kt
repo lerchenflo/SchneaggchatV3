@@ -47,7 +47,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
 fun LoginScreen(
     modifier: Modifier = Modifier
         .fillMaxSize()
-        .safeContentPadding()
 ){
     val viewModel = koinViewModel<LoginViewModel>()
 
@@ -59,7 +58,6 @@ fun LoginScreen(
         Scaffold(
             modifier = Modifier
                 .fillMaxSize(),
-            contentWindowInsets = WindowInsets.statusBars,
             floatingActionButton = {
                 IconButton(
                     onClick = {
@@ -74,7 +72,7 @@ fun LoginScreen(
                     )
                 }
             }
-        ){innerpadding ->
+        ){
 
             if(showUrlChangeDialog){
                 UrlChangeDialog(
@@ -85,7 +83,6 @@ fun LoginScreen(
 
             val rootmodifier = Modifier
                 .fillMaxSize()
-                .padding(innerpadding)
                 .clip(RoundedCornerShape(
                     topStart = 15.dp,
                     topEnd = 15.dp
@@ -94,8 +91,6 @@ fun LoginScreen(
                     horizontal = 16.dp,
                     vertical = 24.dp
                 )
-                .consumeWindowInsets(WindowInsets.navigationBars)
-
 
             val windowSizeclass = currentWindowAdaptiveInfo().windowSizeClass
             val deviceConfiguration = DeviceSizeConfiguration.fromWindowSizeClass(windowSizeclass)

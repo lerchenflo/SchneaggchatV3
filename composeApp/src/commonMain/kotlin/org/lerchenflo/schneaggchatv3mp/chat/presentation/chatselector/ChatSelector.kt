@@ -83,7 +83,6 @@ import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 @Composable
 fun Chatauswahlscreen(
     modifier: Modifier = Modifier
-        .safeContentPadding()
 ) {
 
     val viewModel = koinViewModel<ChatSelectorViewModel>()
@@ -96,10 +95,6 @@ fun Chatauswahlscreen(
     val pendingFriendPopup by viewModel.pendingFriendPopup.collectAsStateWithLifecycle()
 
     val connectionToServer = SessionCache.onlineFlow.collectAsStateWithLifecycle()
-
-    //Noti permission abfrage für ios (Machts auto on start´)
-    //val permissionUtil = NotifierManager.getPermissionUtil()
-    //permissionUtil.askNotificationPermission()
 
 
     Scaffold(

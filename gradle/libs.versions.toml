@@ -16,7 +16,7 @@ composeHotReload = "1.0.0"
 composeMultiplatform = "1.10.0-rc01"
 encoding = "2.5.0"
 foundation = "1.10.0-rc01"
-githubImagepickerkmp = "1.0.28-beta3"
+githubImagepickerkmp = "1.0.28"
 junit = "4.13.2"
 
 jwtKt = "1.2.1"

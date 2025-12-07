@@ -67,8 +67,7 @@ fun SignUpScreenRoot(){
 @Composable
 fun SignUpScreen(
     modifier: Modifier = Modifier
-        .fillMaxSize()
-        .safeContentPadding(),
+        .fillMaxSize(),
     onAction : (SignupAction) -> Unit = {},
     state: SignupState = SignupState()
 ){
@@ -77,12 +76,10 @@ fun SignUpScreen(
         //Responsive UI mit scaffold
         Scaffold(
             modifier = modifier,
-            contentWindowInsets = WindowInsets.statusBars
-        ){innerpadding ->
+        ){
 
             val rootmodifier = Modifier
                 .fillMaxSize()
-                .padding(innerpadding)
                 .clip(RoundedCornerShape(
                     topStart = 15.dp,
                     topEnd = 15.dp
@@ -91,7 +88,6 @@ fun SignUpScreen(
                     horizontal = 16.dp,
                     vertical = 24.dp
                 )
-                .consumeWindowInsets(WindowInsets.navigationBars)
 
             var showImagePickerDialog by remember { mutableStateOf(false) }
             Box(modifier = Modifier.fillMaxSize()) {
@@ -127,37 +123,6 @@ fun SignUpScreen(
                             )
                         )
                     )
-
-
-
-                    /*
-                    ImagePickerLauncher(
-                        config = ImagePickerConfig(
-                            onPhotoCaptured = {
-                                //onAction(SignupAction.OnProfilepicSelected(it))
-                                              showImagePickerDialog = false
-
-                                              },
-                            onDismiss = { showImagePickerDialog = false },
-                            onError = {},
-                            directCameraLaunch = false, //Direct camera launch on ios
-                            enableCrop = true,
-                            cameraCaptureConfig = CameraCaptureConfig(
-                                compressionLevel = CompressionLevel.HIGH,
-                                cropConfig = CropConfig(
-                                    enabled = true,
-                                    aspectRatioLocked = true,
-                                    circularCrop = true,
-                                    squareCrop = false,
-                                    freeformCrop = false
-                                )
-                            )
-                        )
-
-                    )
-
-                     */
-
 
                 }
             }
@@ -243,7 +208,6 @@ fun SignUpScreen(
 
                         Row(
                             modifier = rootmodifier
-                                .windowInsetsPadding(WindowInsets.displayCutout)
                                 .verticalScroll(rememberScrollState()),
 
                             horizontalArrangement = Arrangement.spacedBy(32.dp)

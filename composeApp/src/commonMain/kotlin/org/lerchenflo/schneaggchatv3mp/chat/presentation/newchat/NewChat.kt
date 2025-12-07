@@ -57,7 +57,6 @@ import schneaggchatv3mp.composeapp.generated.resources.settings
 fun NewChat(
     modifier: Modifier = Modifier
         .fillMaxWidth()
-        .safeContentPadding()
 ){
     val viewModel = koinViewModel<NewChatViewModel>()
     val searchterm by viewModel.searchterm.collectAsStateWithLifecycle()

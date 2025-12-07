@@ -4,6 +4,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -18,6 +19,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -155,11 +157,15 @@ fun App() {
             snackbarHost = { SnackbarHost(snackbarHostState) }
         ) { innerpadding ->
 
-            //TODO: Use this padding everywhere to fix layouts?
             NavDisplay(
                 backStack = backStack,
+                modifier = Modifier
+                    .padding(innerpadding),
                 entryProvider = { key ->
                     when(key) {
+
+
+                        //Authentication
                         is Route.AutoLoginCredChecker -> {
                             NavEntry(key) {
                                 //Content of this screen
@@ -191,7 +197,7 @@ fun App() {
                                                 )
                                                 navigator.navigate(Route.Login, exitAllPreviousScreens = true) //Clear backstack
                                             }else {
-                                                if (error != null){
+                                                if (error == NetworkError.Unknown()){
                                                     //TODO: Fix errors when found
                                                     AppRepository.trySendError(
                                                         event = AppRepository.ErrorChannel.ErrorEvent(
@@ -223,6 +229,9 @@ fun App() {
                                 SignUpScreenRoot()
                             }
                         }
+
+
+                        //Chat
                         is Route.ChatSelector -> {
                             NavEntry(key) {
                                 Chatauswahlscreen()
@@ -243,37 +252,38 @@ fun App() {
                                 GroupCreator()
                             }
                         }
-
                         is Route.ChatDetails -> {
                             NavEntry(key) {
                                 ChatDetails()
                             }
                         }
+
+
+                        //Settings
+                        is Route.Settings -> {
+                            NavEntry(key) {
+                                SettingsScreen()
+                            }
+                        }
+                        is Route.DeveloperSettings -> {
+                            NavEntry(key) {
+                                DeveloperSettings()
+                            }
+                        }
+
+
+
+                        //Optional
                         is Route.Todolist -> {
                             NavEntry(key) {
                                 TodolistScreen()
                             }
                         }
 
-
-                        is Route.DeveloperSettings -> {
-                            NavEntry(key) {
-                                DeveloperSettings()
-                            }
-                        }
-                        is Route.Settings -> {
-                            NavEntry(key) {
-                                SettingsScreen()
-                            }
-                        }
-
-
-
+                        //??
                         is Route.UnderConstruction -> {
                             NavEntry(key) {
-                                UnderConstruction(
-
-                                )
+                                UnderConstruction()
                             }
                         }
 

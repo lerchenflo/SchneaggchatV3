@@ -39,7 +39,6 @@ import schneaggchatv3mp.composeapp.generated.resources.todolist
 fun TodolistScreen(
     modifier: Modifier = Modifier
         .fillMaxSize()
-        .safeContentPadding()
 ){
 
     val viewModel = koinViewModel<TodolistViewModel>()

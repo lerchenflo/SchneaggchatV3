@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -40,10 +40,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -51,12 +47,9 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.ErrorEvent
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.sendErrorSuspend
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DayDivider
 import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
-import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -74,168 +67,161 @@ import kotlin.time.ExperimentalTime
 fun ChatScreen(
     modifier: Modifier = Modifier
         .fillMaxSize()
-        .safeContentPadding()
 ){
     val globalViewModel = koinInject<GlobalViewModel>()
     val viewModel = koinViewModel<ChatViewModel>()
     val messages by viewModel.messagesState.collectAsStateWithLifecycle()
 
-
-    SchneaggchatTheme{ // theme wida setza
-        Column(
-            modifier = modifier
+    Column(
+        modifier = modifier
+    ){
+        // Obere Zeile (Backbutton, profilbild, name, ...)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp, 0.dp, 10.dp, 16.dp)
         ){
-            // Obere Zeile (Backbutton, profilbild, name, ...)
-            Row(
+
+            // Backbutton
+            IconButton(
+                onClick = {
+                    viewModel.onBackClick()
+                },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(10.dp, 0.dp, 10.dp, 16.dp)
-            ){
-
-                // Backbutton
-                IconButton(
-                    onClick = {
-                        viewModel.onBackClick()
-                    },
-                    modifier = Modifier
-                        .padding(top = 5.dp, start = 5.dp)
-                        .statusBarsPadding()
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(Res.string.go_back),
-                    )
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    UserButton(
-                        selectedChat = globalViewModel.selectedChat.value,
-                        onClickGes = {
-                            viewModel.onChatDetailsClick()
-                        },
-                    )
-                }
-            }
-
-
-            // Messages
-            val listState = rememberLazyListState()
-
-            //Wenn sich die letzt nachricht ändert denn abescrollen TODO: Testa ob des automatisch abescrollt
-            if (messages.isNotEmpty()){
-                LaunchedEffect(messages.first()) {
-                    listState.animateScrollToItem(0, scrollOffset = 2)
-                }
-            }
-
-            //TODO: Lag fixen do isch iwas falsch
-            LazyColumn(
-                contentPadding = PaddingValues(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                reverseLayout = true,
-                state = listState
+                    .padding(top = 5.dp, start = 5.dp)
             ) {
-                itemsIndexed(messages, key = { _, msg ->
-                    msg.localPK
-                })  { index, message ->
-                    val currentDateMillis = message.sendDate.toLongOrNull()
-                    val currentDate = currentDateMillis?.toLocalDate()
-                    val nextDate =
-                        messages.getOrNull(index + 1)?.sendDate?.toLongOrNull()
-                            ?.toLocalDate()
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(Res.string.go_back),
+                )
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                UserButton(
+                    selectedChat = globalViewModel.selectedChat.value,
+                    onClickGes = {
+                        viewModel.onChatDetailsClick()
+                    },
+                )
+            }
+        }
+
+
+        // Messages
+        val listState = rememberLazyListState()
+
+        //Wenn sich die letzt nachricht ändert denn abescrollen TODO: Testa ob des automatisch abescrollt
+        if (messages.isNotEmpty()){
+            LaunchedEffect(messages.first()) {
+                listState.animateScrollToItem(0, scrollOffset = 2)
+            }
+        }
+
+        //TODO: Lag fixen do isch iwas falsch
+        LazyColumn(
+            contentPadding = PaddingValues(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            reverseLayout = true,
+            state = listState
+        ) {
+            itemsIndexed(messages, key = { _, msg ->
+                msg.localPK
+            })  { index, message ->
+                val currentDateMillis = message.sendDate.toLongOrNull()
+                val currentDate = currentDateMillis?.toLocalDate()
+                val nextDate =
+                    messages.getOrNull(index + 1)?.sendDate?.toLongOrNull()
+                        ?.toLocalDate()
 
 
 
-                    MessageView(
-                        useMD = viewModel.markdownEnabled,
-                        selectedChatId = globalViewModel.selectedChat.value.id,
-                        message = message,
-                        modifier = Modifier
+                MessageView(
+                    useMD = viewModel.markdownEnabled,
+                    selectedChatId = globalViewModel.selectedChat.value.id,
+                    message = message,
+                    modifier = Modifier
+                )
+                // Show divider only if this message starts a new day
+                if (currentDate != nextDate && currentDate != null) {
+                    DayDivider(currentDateMillis)
+                }
+            }
+        }
+
+
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            // button zum züg addden
+            var addMediaDropdownExpanded by remember { mutableStateOf(false) }
+
+            IconButton(
+                onClick = {addMediaDropdownExpanded = true},
+                modifier = Modifier
+                    .padding(top = 5.dp, start = 5.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AttachFile,
+                    contentDescription = stringResource(Res.string.add),
+
                     )
-                    // Show divider only if this message starts a new day
-                    if (currentDate != nextDate && currentDate != null) {
-                        DayDivider(currentDateMillis)
+            }
+            if(addMediaDropdownExpanded){
+                DropdownMenu(
+                    expanded = addMediaDropdownExpanded,
+                    onDismissRequest = { addMediaDropdownExpanded = false }
+                ) {
+                    AddMediaOptions.entries.forEach { option ->
+                        DropdownMenuItem(
+                            text = {
+                                Row{
+                                    Icon(
+                                        imageVector = option.getIcon(),
+                                        contentDescription = option.toUiText().asString(),
+                                    )
+                                    Spacer(Modifier.width(5.dp))
+                                    Text(
+                                        text = option.toUiText().asString()
+                                    )
+                                }
+                            },
+                            onClick = {
+                                addMediaDropdownExpanded = false
+                                option.getAction()
+                            }
+                        )
                     }
                 }
             }
 
+            OutlinedTextField(
+                value = viewModel.sendText,
+                onValueChange = { newValue ->
+                    viewModel.updatesendText(newValue)
+                },
+                modifier = Modifier.weight(1f),
+                placeholder = { Text(stringResource(Res.string.message) + " ...") }
+            )
 
-
-            Row(
+            // send button
+            IconButton(
+                onClick = {viewModel.sendMessage()},
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp) // optional spacing
-                    .navigationBarsPadding()
-            ){
-                // button zum züg addden
-                var addMediaDropdownExpanded by remember { mutableStateOf(false) }
-
-                IconButton(
-                    onClick = {addMediaDropdownExpanded = true},
-                    modifier = Modifier
-                        .padding(top = 5.dp, start = 5.dp)
-                        .statusBarsPadding()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AttachFile,
-                        contentDescription = stringResource(Res.string.add),
-
-                    )
-                }
-                if(addMediaDropdownExpanded){
-                    DropdownMenu(
-                        expanded = addMediaDropdownExpanded,
-                        onDismissRequest = { addMediaDropdownExpanded = false }
-                    ) {
-                        AddMediaOptions.entries.forEach { option ->
-                            DropdownMenuItem(
-                                text = {
-                                    Row{
-                                        Icon(
-                                            imageVector = option.getIcon(),
-                                            contentDescription = option.toUiText().asString(),
-                                        )
-                                        Spacer(Modifier.width(5.dp))
-                                        Text(
-                                            text = option.toUiText().asString()
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    addMediaDropdownExpanded = false
-                                    option.getAction()
-                                }
-                            )
-                        }
-                    }
-                }
-
-                OutlinedTextField(
-                    value = viewModel.sendText,
-                    onValueChange = { newValue ->
-                        viewModel.updatesendText(newValue)
-                    },
-                    modifier = Modifier.weight(1f),
-                    placeholder = { Text(stringResource(Res.string.message) + " ...") }
+                    .padding(top = 5.dp, start = 5.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = stringResource(Res.string.add),
                 )
-
-                // send button
-                IconButton(
-                    onClick = {viewModel.sendMessage()},
-                    modifier = Modifier
-                        .padding(top = 5.dp, start = 5.dp)
-                        .statusBarsPadding()
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = stringResource(Res.string.add),
-                    )
-                }
-
             }
 
         }

@@ -46,7 +46,6 @@ import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 fun ChatDetails(
     modifier: Modifier = Modifier
         .fillMaxWidth()
-        .safeContentPadding()
 ) {
     val globalViewModel = koinInject<GlobalViewModel>()
 
