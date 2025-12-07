@@ -20,11 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
-import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.lerchenflo.hallenmanager.sharedUi.UnderConstruction
@@ -47,8 +49,10 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.settings_dev.DeveloperSettings
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.settings.SettingsScreen
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
 import org.lerchenflo.schneaggchatv3mp.sharedUi.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
@@ -74,7 +78,7 @@ fun App() {
 
 
         //Setup of backstack(All available routes)
-        val backStack = rememberNavBackStack(
+        val rootBackStack = rememberNavBackStack(
             configuration = SavedStateConfiguration{
                 serializersModule = SerializersModule {
                     polymorphic(NavKey::class) {
@@ -85,16 +89,34 @@ fun App() {
                         subclass(Route.NewChat::class, Route.NewChat.serializer())
                         subclass(Route.GroupCreator::class, Route.GroupCreator.serializer())
                         subclass(Route.SignUp::class, Route.SignUp.serializer())
-                        subclass(Route.Settings::class, Route.Settings.serializer())
                         subclass(Route.ChatDetails::class, Route.ChatDetails.serializer())
                         subclass(Route.Todolist::class, Route.Todolist.serializer())
                         subclass(Route.UnderConstruction::class, Route.UnderConstruction.serializer())
-                        subclass(Route.DeveloperSettings::class, Route.DeveloperSettings.serializer())
+
+                        //Subgraph for settings
+                        subclass(Route.Settings::class, Route.Settings.serializer())
+
                     }
                 }
             },
             Route.AutoLoginCredChecker //Initial activity: Autologinchecker
         )
+
+        val settingsBackStack = rememberNavBackStack(
+            configuration = SavedStateConfiguration{
+                serializersModule = SerializersModule {
+                    polymorphic(NavKey::class) {
+                        subclass(Route.Settings.SettingsScreen::class, Route.Settings.SettingsScreen.serializer())
+                        subclass(Route.Settings.DeveloperSettings::class, Route.Settings.DeveloperSettings.serializer())
+                        subclass(Route.Settings.UserSettings::class, Route.Settings.UserSettings.serializer())
+
+                    }
+                }
+            },
+            Route.Settings.SettingsScreen
+        )
+
+
 
         //Initialize navigator (TO navigate from viewmodels)
         val navigator = koinInject<Navigator>()
@@ -115,15 +137,19 @@ fun App() {
             when(action){
                 is NavigationAction.Navigate -> {
                     if (action.exitAllPreviousScreens){
-                        backStack.clear()
+                        rootBackStack.clear()
                     }
                     if (action.exitPreviousScreen){
-                        backStack.removeLast()
+                        rootBackStack.removeLast()
                     }
-                    backStack.add(action.destination)
+                    rootBackStack.add(action.destination)
                 }
                 NavigationAction.NavigateBack -> {
-                    backStack.removeLast()
+                    rootBackStack.removeLast()
+                }
+
+                is NavigationAction.NavigateSettings -> {
+                    settingsBackStack.add(action.destination)
                 }
             }
         }
@@ -154,139 +180,148 @@ fun App() {
         ) { innerpadding ->
 
             NavDisplay(
-                backStack = backStack,
+                backStack = rootBackStack,
                 modifier = Modifier
                     .padding(innerpadding),
-                entryProvider = { key ->
-                    when(key) {
+                entryDecorators = listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator()
+                ),
+                entryProvider = entryProvider {
 
-                        //Authentication
-                        is Route.AutoLoginCredChecker -> {
-                            NavEntry(key) {
-                                //Content of this screen
+                    //Authentication
+                    entry<Route.AutoLoginCredChecker> {
+                        //Content of this screen
 
-                                val globalViewModel = koinInject<GlobalViewModel>()
+                        val globalViewModel = koinInject<GlobalViewModel>()
 
-                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
 
-                                //Load initial credentials
-                                LaunchedEffect(Unit) {
-                                    val savedCreds = appRepository.loadSavedLoginConfig()
+                        //Load initial credentials
+                        LaunchedEffect(Unit) {
+                            val savedCreds = appRepository.loadSavedLoginConfig()
 
-                                    if (savedCreds) {
-                                        navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true) //Clear backstack
+                            if (savedCreds) {
+                                navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true) //Clear backstack
 
-                                        globalViewModel.viewModelScope.launch {
-                                            //Autologin
+                                globalViewModel.viewModelScope.launch {
+                                    //Autologin
 
-                                            val error = appRepository.refreshTokens()
+                                    val error = appRepository.refreshTokens()
 
-                                            if (error == NetworkError.Unauthorized()){
-                                                println("token refresh failed, rerouting to login")
-                                                AppRepository.trySendError(
-                                                    event = AppRepository.ErrorChannel.ErrorEvent(
-                                                        401,
-                                                        errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
-                                                        duration = 5000L,
-                                                    )
-                                                )
-                                                navigator.navigate(Route.Login, exitAllPreviousScreens = true) //Clear backstack
-                                            }else {
-                                                if (error == NetworkError.Unknown()){
-                                                    //TODO: Fix errors when found
-                                                    AppRepository.trySendError(
-                                                        event = AppRepository.ErrorChannel.ErrorEvent(
-                                                            errorMessage = "Login unbekannter error bitte screenshot an flo (hoffentlich gits a fehlermeldung",
-                                                            error = error,
-                                                            duration = 15000
-                                                        )
-                                                    )
-                                                }else {
-                                                    //No error, execute sync
-                                                    appRepository.dataSync()
-                                                }
-                                            }
-
-                                        }
-                                    } else {
+                                    if (error == NetworkError.Unauthorized()){
+                                        println("token refresh failed, rerouting to login")
+                                        AppRepository.trySendError(
+                                            event = AppRepository.ErrorChannel.ErrorEvent(
+                                                401,
+                                                errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
+                                                duration = 5000L,
+                                            )
+                                        )
                                         navigator.navigate(Route.Login, exitAllPreviousScreens = true) //Clear backstack
+                                    }else {
+                                        if (error == NetworkError.Unknown()){
+                                            //TODO: Fix errors when found
+                                            AppRepository.trySendError(
+                                                event = AppRepository.ErrorChannel.ErrorEvent(
+                                                    errorMessage = "Login unbekannter error bitte screenshot an flo (hoffentlich gits a fehlermeldung",
+                                                    error = error,
+                                                    duration = 15000
+                                                )
+                                            )
+                                        }else {
+                                            //No error, execute sync
+                                            appRepository.dataSync()
+                                        }
                                     }
+
+                                }
+                            } else {
+                                navigator.navigate(Route.Login, exitAllPreviousScreens = true) //Clear backstack
+                            }
+                        }
+                    }
+
+                    entry<Route.Login> {
+                        LoginScreen()
+                    }
+
+                    entry<Route.SignUp> {
+                        SignUpScreenRoot()
+                    }
+
+
+
+                    //Chat
+                    entry<Route.ChatSelector> {
+                        Chatauswahlscreen()
+                    }
+
+                    entry<Route.Chat> {
+                        ChatScreen()
+                    }
+
+                    entry<Route.ChatDetails> {
+                        ChatDetails()
+                    }
+
+
+                    //New chat
+                    entry<Route.NewChat> {
+                        NewChat()
+                    }
+
+                    entry<Route.GroupCreator> {
+                        GroupCreator()
+                    }
+
+
+
+                    //Settings
+                    entry<Route.Settings> {
+
+                        //Initialize global settingsviewmodel which will survive as long as the settings are open
+                        val sharedSettingsViewmodel = koinViewModel<SharedSettingsViewmodel>()
+
+                        NavDisplay(
+                            backStack = settingsBackStack,
+                            entryProvider = entryProvider {
+                                entry<Route.Settings.SettingsScreen> {
+                                    SettingsScreen(
+                                        settingsViewmodel = koinInject(),
+                                        sharedSettingsViewmodel = sharedSettingsViewmodel
+                                    )
+                                }
+
+                                entry<Route.Settings.DeveloperSettings> {
+                                    DeveloperSettings(
+                                        devSettingsViewModel = koinInject(),
+                                        sharedSettingsViewmodel = sharedSettingsViewmodel
+                                    )
+                                }
+
+                                entry<Route.Settings.UserSettings> {
+                                    UserSettings(
+                                        userSettingsViewModel = koinInject(),
+                                        sharedSettingsViewmodel = sharedSettingsViewmodel
+                                    )
                                 }
                             }
-                        }
-                        is Route.Login -> {
-                            NavEntry(key) {
-                                LoginScreen()
-                            }
-                        }
-                        is Route.SignUp -> {
-                            NavEntry(key) {
-                                SignUpScreenRoot()
-                            }
-                        }
+                        )
+                    }
 
 
-                        //Chat
-                        is Route.ChatSelector -> {
-                            NavEntry(key) {
-                                Chatauswahlscreen()
-                            }
-                        }
-                        is Route.Chat -> {
-                            NavEntry(key) {
-                                ChatScreen()
-                            }
-                        }
-                        is Route.NewChat -> {
-                            NavEntry(key) {
-                                NewChat()
-                            }
-                        }
-                        is Route.GroupCreator -> {
-                            NavEntry(key) {
-                                GroupCreator()
-                            }
-                        }
-                        is Route.ChatDetails -> {
-                            NavEntry(key) {
-                                ChatDetails()
-                            }
-                        }
+                    entry<Route.Todolist> {
+                        TodolistScreen()
+
+                    }
 
 
-                        //Settings
-                        is Route.Settings -> {
-                            NavEntry(key) {
-                                SettingsScreen()
-                            }
-                        }
-                        is Route.DeveloperSettings -> {
-                            NavEntry(key) {
-                                DeveloperSettings()
-                            }
-                        }
-
-
-
-                        //Optional
-                        is Route.Todolist -> {
-                            NavEntry(key) {
-                                TodolistScreen()
-                            }
-                        }
-
-                        //??
-                        is Route.UnderConstruction -> {
-                            NavEntry(key) {
-                                UnderConstruction()
-                            }
-                        }
-
-
-
-                        else -> error("Unknown navkey: $key")
+                    entry<Route.UnderConstruction> {
+                        UnderConstruction()
                     }
                 }
+
             )
 
         }

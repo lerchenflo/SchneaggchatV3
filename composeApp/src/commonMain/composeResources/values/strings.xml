@@ -165,5 +165,8 @@
     <string name="server_not_reachable">Could not establish a connection to the server</string>
 
 
+    <string name="user_settings">account settings</string>
+    <string name="user_settingsinfo">Make changes to your profile</string>
+
 
 </resources>

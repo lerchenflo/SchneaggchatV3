@@ -9,6 +9,10 @@ sealed interface NavigationAction{
     data class Navigate(
         val destination: Route,
         val exitPreviousScreen: Boolean = false,
-        val exitAllPreviousScreens: Boolean = false
+        val exitAllPreviousScreens: Boolean = false,
+    ) : NavigationAction
+
+    data class NavigateSettings(
+        val destination: Route,
     ) : NavigationAction
 }
