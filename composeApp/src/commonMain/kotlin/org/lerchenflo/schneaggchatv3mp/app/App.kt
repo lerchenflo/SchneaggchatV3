@@ -157,7 +157,6 @@ fun App() {
             snackbarHost = { SnackbarHost(snackbarHostState) }
         ) { innerpadding ->
 
-            //TODO: Use this padding everywhere to fix layouts?
             NavDisplay(
                 backStack = backStack,
                 modifier = Modifier
