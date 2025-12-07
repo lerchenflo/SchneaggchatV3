@@ -54,3 +54,17 @@ sealed class NetworkError : RequestError {
         override val message: String? = null
     ) : NetworkError()
 }
+
+
+fun errorCodeToMessage(code: Int?): String = when (code) {
+    401 -> "Access denied (invalid credentials)"
+    408 -> "Request timed out"
+    409 -> "Conflict (resource already exists or invalid state)"
+    413 -> "Payload too large"
+    429 -> "Too many requests (rate limit exceeded)"
+    500 -> "Server error (internal server issue)"
+    0   -> "No internet connection"
+    -1  -> "Serialization error"
+    -2  -> "Unknown error"
+    else -> ""
+}
