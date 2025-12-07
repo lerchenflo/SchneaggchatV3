@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.settings.presentation
+package org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
@@ -14,12 +14,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -33,7 +32,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -43,8 +44,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import io.ktor.websocket.FrameType.Companion.get
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -97,7 +98,7 @@ fun ConfirmSlider(
                         scope.launch {
                             if (progress >= completedThreshold) {
                                 offset.animateTo(maxOffset, animationSpec = tween(150))
-                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 onConfirm()
                                 if (autoResetMillis != null) {
                                     delay(autoResetMillis)
@@ -110,7 +111,7 @@ fun ConfirmSlider(
                     },
                     onDrag = { change, dragAmount ->
                         change.consume()
-                        val dx = if (layoutDirection == androidx.compose.ui.unit.LayoutDirection.Ltr) dragAmount.x else -dragAmount.x
+                        val dx = if (layoutDirection == LayoutDirection.Ltr) dragAmount.x else -dragAmount.x
                         val new = (offset.value + dx).coerceIn(0f, maxOffset)
                         scope.launch { offset.snapTo(new) }
                     }
@@ -137,11 +138,11 @@ fun ConfirmSlider(
 
         // trailing icon (end of track)
         val iconPadding = thumbSize / 2 + 8.dp // keep it away from the very edge and thumb
-        val endAlignment = if (layoutDirection == androidx.compose.ui.unit.LayoutDirection.Ltr) Alignment.CenterEnd else Alignment.CenterStart
+        val endAlignment = if (layoutDirection == LayoutDirection.Ltr) Alignment.CenterEnd else Alignment.CenterStart
 
         // animate icon tint between onSurface and progressColor based on progress
         val iconTint by animateColorAsState(
-            targetValue = androidx.compose.ui.graphics.lerp(
+            targetValue = lerp(
                 MaterialTheme.colorScheme.onSurface,
                 progressColor,
                 progress
@@ -152,8 +153,8 @@ fun ConfirmSlider(
             Box(
                 modifier = Modifier
                     .align(endAlignment)
-                    .padding(end = if (layoutDirection == androidx.compose.ui.unit.LayoutDirection.Ltr) iconPadding else 0.dp,
-                        start = if (layoutDirection != androidx.compose.ui.unit.LayoutDirection.Ltr) iconPadding else 0.dp)
+                    .padding(end = if (layoutDirection == LayoutDirection.Ltr) iconPadding else 0.dp,
+                        start = if (layoutDirection != LayoutDirection.Ltr) iconPadding else 0.dp)
                     .size(height),
                 contentAlignment = Alignment.Center
             ) {
@@ -166,13 +167,13 @@ fun ConfirmSlider(
             Box(
                 modifier = Modifier
                     .align(endAlignment)
-                    .padding(end = if (layoutDirection == androidx.compose.ui.unit.LayoutDirection.Ltr) iconPadding else 0.dp,
-                        start = if (layoutDirection != androidx.compose.ui.unit.LayoutDirection.Ltr) iconPadding else 0.dp)
+                    .padding(end = if (layoutDirection == LayoutDirection.Ltr) iconPadding else 0.dp,
+                        start = if (layoutDirection != LayoutDirection.Ltr) iconPadding else 0.dp)
                     .size(height),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Default.Check,
+                    imageVector = Icons.Default.Check,
                     contentDescription = null,
                     tint = iconTint
                 )

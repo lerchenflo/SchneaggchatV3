@@ -1,7 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.app
 
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -19,13 +17,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
-import androidx.navigation.compose.composable
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -51,8 +47,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.DeveloperSettings
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.settings_dev.DeveloperSettings
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.settings.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.sharedUi.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
@@ -119,7 +115,7 @@ fun App() {
             when(action){
                 is NavigationAction.Navigate -> {
                     if (action.exitAllPreviousScreens){
-                        backStack.clear() //TODO: DOES THIS WORK??
+                        backStack.clear()
                     }
                     if (action.exitPreviousScreen){
                         backStack.removeLast()
@@ -163,7 +159,6 @@ fun App() {
                     .padding(innerpadding),
                 entryProvider = { key ->
                     when(key) {
-
 
                         //Authentication
                         is Route.AutoLoginCredChecker -> {

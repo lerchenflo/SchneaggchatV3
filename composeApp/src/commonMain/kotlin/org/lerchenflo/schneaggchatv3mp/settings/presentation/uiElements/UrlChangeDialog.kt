@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.settings.presentation
+package org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,38 +13,59 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.change_server_url
-import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.save
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UrlChangeDialog (
     onDismiss: ()-> Unit,
-    onConfirm: ()-> Unit
+    onConfirm: (String)-> Unit,
+    serverUrl: String
 ){
-    val settingsViewModel = koinViewModel<SettingsViewModel>()
-
-
+    var internalServerUrl by remember(serverUrl) {
+        mutableStateOf(serverUrl)
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(text = stringResource(Res.string.change_server_url)) },
         text = {
-            Contents(settingsViewModel)
+            Column(){
+                OutlinedTextField(
+                    value = internalServerUrl,
+                    singleLine = true,
+                    onValueChange = { internalServerUrl = it },
+                    placeholder = { Text( text ="https://schneaggchatv3.lerchenflo.eu") },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Link,
+                            contentDescription = stringResource(Res.string.change_server_url)
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Uri
+                    ),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = Color.Transparent
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         },
         confirmButton = {
             TextButton(onClick ={
-                onConfirm()
-                settingsViewModel.saveServerUrl()
+                onConfirm(internalServerUrl)
             }) {
                 Text(text = stringResource(Res.string.save))
             }
@@ -55,32 +76,4 @@ fun UrlChangeDialog (
             }
         }
     )
-}
-
-@Composable
-private fun Contents(
-    viewModel: SettingsViewModel
-){
-    Column(){
-        OutlinedTextField(
-            value = viewModel.serverURL,
-            singleLine = true,
-            onValueChange = { viewModel.updateServerUrl(it) },
-            placeholder = { Text( text ="https://example.com:1234") }, // todo: evtl in da strings oder die default url. oder todo löscha des goht o
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Link,
-                    contentDescription = stringResource(Res.string.change_server_url)
-                )
-            },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Uri
-            ),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.Transparent
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
-
 }

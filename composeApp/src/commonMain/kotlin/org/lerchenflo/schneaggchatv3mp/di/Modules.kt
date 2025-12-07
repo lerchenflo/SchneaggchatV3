@@ -24,7 +24,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsViewModel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.settings.SettingsViewModel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.settings_dev.DevSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
@@ -66,8 +67,6 @@ val sharedmodule = module{
 
 
     //Alle viewmodels mit factory für desktop
-    viewModelOf(::SettingsViewModel)
-    factory { SettingsViewModel(get(), get(), get()) } // factory -> new instance each injection
 
     viewModelOf(::ChatSelectorViewModel)
     factory { ChatSelectorViewModel(get(), get(), get()) }
@@ -92,4 +91,13 @@ val sharedmodule = module{
 
     viewModelOf(::TodolistViewModel)
     factory { TodolistViewModel(get(), get(), get()) }
+
+
+
+    //Settings
+    viewModelOf(::SettingsViewModel)
+    factory { SettingsViewModel(get(), get(), get()) } // factory -> new instance each injection
+
+    viewModelOf(::DevSettingsViewModel)
+    factory { DevSettingsViewModel(get(), get()) } // factory -> new instance each injection
 }
