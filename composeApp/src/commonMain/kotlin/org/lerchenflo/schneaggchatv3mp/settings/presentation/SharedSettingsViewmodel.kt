@@ -26,7 +26,7 @@ class SharedSettingsViewmodel(
                     println("Problem getting Developer Settings preference: ${exception.printStackTrace()}")
                 }
                 .collect { value ->
-                    devSettingsEnabeled = value
+                    devSettingsEnabled = value
                 }
         }
 
@@ -41,15 +41,14 @@ class SharedSettingsViewmodel(
         }
 
         viewModelScope.launch { // Server URL
-            appRepository.getownUser().collect { value ->
+            appRepository.getOwnUserFlow().collect { value ->
                 ownUser = value
-                println(ownUser.toString())
             }
         }
     }
 
     // Developer Settings
-    var devSettingsEnabeled by mutableStateOf(false)
+    var devSettingsEnabled by mutableStateOf(false)
         private set
 
     fun updateDevSettings(newValue: Boolean){

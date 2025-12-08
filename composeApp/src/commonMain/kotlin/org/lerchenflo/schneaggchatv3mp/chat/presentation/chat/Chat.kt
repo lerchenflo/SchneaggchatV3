@@ -79,7 +79,9 @@ fun ChatScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp, 0.dp, 10.dp, 16.dp)
+                .padding(10.dp, 0.dp, 10.dp, 16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ){
 
             // Backbutton
@@ -88,7 +90,7 @@ fun ChatScreen(
                     viewModel.onBackClick()
                 },
                 modifier = Modifier
-                    .padding(top = 5.dp, start = 5.dp)
+                    .padding(start = 5.dp)
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -96,16 +98,12 @@ fun ChatScreen(
                 )
             }
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                UserButton(
-                    selectedChat = globalViewModel.selectedChat.value,
-                    onClickGes = {
-                        viewModel.onChatDetailsClick()
-                    },
-                )
-            }
+            UserButton(
+                selectedChat = globalViewModel.selectedChat.value,
+                onClickGes = {
+                    viewModel.onChatDetailsClick()
+                },
+            )
         }
 
 

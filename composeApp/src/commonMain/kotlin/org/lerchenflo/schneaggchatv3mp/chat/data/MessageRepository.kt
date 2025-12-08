@@ -8,6 +8,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
@@ -15,42 +17,75 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 class MessageRepository(
     private val database: AppDatabase,
-    private val networkUtils: NetworkUtils,
 ) {
 
-    suspend fun upsertMessageWithoutReaders(messageDto: MessageDto){
-        database.messageDao().upsertMessageDto(messageDto)
+    suspend fun upsertMessage(message: Message){
+        val messageWithReadersDto = message.toDto()
+        upsertMessageWithReaders(messageWithReadersDto)
     }
 
-    @Transaction
-    suspend fun upsertMessagesWithoutReaders(messageDtos: List<MessageDto>){
-        messageDtos.forEach { messageDto ->
-            upsertMessageWithoutReaders(messageDto)
+    suspend fun deleteMessage(id: String){
+        deleteReadersForMessage(id)
+        deleteMessageDto(id)
+    }
+
+    private suspend fun setMessageRead(msgId: String, timestamp: String) {
+        val message = database.messageDao().getMessageById(msgId)?.toMessage()
+
+        if (message != null){
+            val newReaders = message.readers + MessageReader(
+                messageId = msgId, readerId = SessionCache.getOwnIdValue()!!, readDate = timestamp)
+
+            val newmessage = message.copy(
+                readByMe = true,
+                readers = newReaders,
+                changeDate = timestamp
+            )
+            upsertMessage(newmessage)
+
         }
     }
 
-    @Transaction
-    suspend fun upsertMessagesWithReaders(batch: List<MessageWithReadersDto>) {
-        for (mwr in batch) {
-            // upsert the message first (message.id must exist in JSON or be assigned)
-            upsertMessageWithoutReaders(mwr.messageDto)
 
-            // normalize readers to ensure messageId matches message.id
-            val readers = mwr.readers.map {
-                it.copy(messageId = mwr.messageDto.id!!)
-            }
-            if (readers.isNotEmpty()) insertReaders(readers)
+    fun getMessagesByUserIdFlow(userId: String, gruppe: Boolean): Flow<List<Message>> {
+        return database.messageDao().getMessagesByUserIdFlow(userId, gruppe).map { messages ->
+            messages.map { it.toMessage() }
         }
     }
 
-    @Transaction
-    suspend fun upsertMessageWithReaders(message: MessageWithReadersDto) {
-        upsertMessageWithoutReaders(message.messageDto)
 
-        // normalize readers to ensure messageId matches message.id
-        val readers = message.readers.map { it.copy(messageId = message.messageDto.id!!) }
-        if (readers.isNotEmpty()) insertReaders(readers)
+    /**
+     * Update a message in the database
+     */
+    @Transaction
+    private suspend fun upsertMessageWithReaders(message: MessageWithReadersDto) {
+        //Upsert the message dto without readers
+        val upserted = database.messageDao().upsertMessageDto(message.messageDto)
+
+        //if the readers are not empty, remove all existing an re - insert
+        if (message.readers.isNotEmpty() && upserted.id != null){
+            deleteReadersForMessage(upserted.id!!)
+
+            val readers = message.readers.map { it.copy(messageId = upserted.id!!) }
+            insertReaders(readers)
+        }
     }
+
+    /**
+     * Delete all readers of a message
+     */
+    private suspend fun deleteReadersForMessage(messageId: String){
+        database.messagereaderDao().deleteReadersForMessage(messageId)
+    }
+
+    /**
+     * Insert new readers for a message
+     */
+    private suspend fun insertReaders(readers: List<MessageReaderDto>){
+        database.messagereaderDao().upsertReaders(readers)
+    }
+
+
 
     @Transaction
     fun getAllMessages(): Flow<List<Message>>{
@@ -66,28 +101,21 @@ class MessageRepository(
         return database.messageDao().getMessageIdsWithChangeDates()
     }
 
-    suspend fun insertReader(reader: MessageReaderDto) {
-        database.messagereaderDao().upsertReader(reader)
+
+    private suspend fun deleteMessageDto(messageId: String) {
+        database.messageDao().deleteMessageDtoById(messageId)
     }
 
 
-    suspend fun insertReaders(readers: List<MessageReaderDto>){
-        database.messagereaderDao().upsertReaders(readers)
-    }
-
-    suspend fun deleteReadersForMessage(messageId: String){
-        database.messagereaderDao().deleteReadersForMessage(messageId)
-    }
 
     @Transaction
     suspend fun setAllChatMessagesRead(chatid: String, gruppe: Boolean, timestamp: String) {
-        //networkUtils.setAllChatMessagesRead(chatid, gruppe, timestamp)TODO Messages
 
-        database.messageDao().getMessagesByUserIdFlow(chatid, gruppe).collect { messagelist ->
-            for (message in messagelist){
-                if (!message.messageDto.readByMe){
-                    database.messagereaderDao().upsertReader(MessageReaderDto(messageId = message.messageDto.id!!, readerID = SessionCache.getOwnIdValue()!!, readDate = timestamp))
-                }
+        val messages = database.messageDao().getMessagesByUserId(chatid, gruppe)
+
+        messages.forEach { message ->
+            if (!message.messageDto.readByMe && message.messageDto.id != null){
+                setMessageRead(message.messageDto.id!!, timestamp)
             }
         }
     }

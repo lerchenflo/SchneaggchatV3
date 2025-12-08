@@ -18,12 +18,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChangeDialog
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DevSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -36,7 +34,8 @@ fun DeveloperSettings(
     modifier: Modifier = Modifier
         .fillMaxWidth(),
     devSettingsViewModel: DevSettingsViewModel,
-    sharedSettingsViewmodel: SharedSettingsViewmodel
+    sharedSettingsViewmodel: SharedSettingsViewmodel,
+    onBackClick: () -> Unit
 ) {
 
     var showChangeServerUrlPopup by remember { mutableStateOf(false) }
@@ -46,9 +45,7 @@ fun DeveloperSettings(
     ) {
         ActivityTitle(
             title = stringResource(Res.string.developer_settings),
-            onBackClick = {
-                devSettingsViewModel.onBackClick()
-            }
+            onBackClick = onBackClick
         )
 
         Spacer(modifier = Modifier.size(10.dp))
@@ -56,7 +53,7 @@ fun DeveloperSettings(
         SettingsSwitch(
             titletext = stringResource(Res.string.developer_settings),
             infotext = stringResource(Res.string.developer_setting_info),
-            switchchecked = sharedSettingsViewmodel.devSettingsEnabeled,
+            switchchecked = sharedSettingsViewmodel.devSettingsEnabled,
             onSwitchChange = { sharedSettingsViewmodel.updateDevSettings(it) },
             icon = Icons.Default.Code
         )

@@ -26,6 +26,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsViewModel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DevSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
@@ -42,9 +43,7 @@ val sharedmodule = module{
     single <HttpClient>(named("auth")) { createHttpClient(get(), get(), false) }
 
 
-    single<Navigator> {
-        Navigator(Route.AutoLoginCredChecker)
-    }
+    singleOf(::Navigator)
 
 
 
@@ -74,7 +73,7 @@ val sharedmodule = module{
     factory { ChatSelectorViewModel(get(), get(), get()) }
 
     viewModelOf(::ChatViewModel)
-    factory { ChatViewModel(get(), get(), get()) }
+    factory { ChatViewModel(get(), get(), get(), get()) }
 
     viewModelOf(::ChatDetailsViewmodel)
     factory { ChatDetailsViewmodel(get(), get()) }
@@ -102,11 +101,14 @@ val sharedmodule = module{
 
 
     viewModelOf(::SettingsViewModel)
-    factory { SettingsViewModel(get(), get(), get()) } // factory -> new instance each injection
+    factory { SettingsViewModel(get(), get()) } // factory -> new instance each injection
 
     viewModelOf(::DevSettingsViewModel)
-    factory { DevSettingsViewModel(get()) }
+    factory { DevSettingsViewModel() }
 
     viewModelOf(::UserSettingsViewModel)
-    factory { UserSettingsViewModel(get()) }
+    factory { UserSettingsViewModel(get(), get(), get()) }
+
+    viewModelOf(::AppearanceSettingsViewModel)
+    factory { AppearanceSettingsViewModel(get()) }
 }

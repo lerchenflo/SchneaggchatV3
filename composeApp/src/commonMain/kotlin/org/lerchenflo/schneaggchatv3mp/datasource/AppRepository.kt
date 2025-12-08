@@ -3,7 +3,6 @@
 package org.lerchenflo.schneaggchatv3mp.datasource
 
 import androidx.compose.runtime.Composable
-import io.ktor.http.cio.Request
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -22,13 +21,12 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
@@ -38,7 +36,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageRe
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
@@ -49,7 +46,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
-import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 import schneaggchatv3mp.composeapp.generated.resources.error_invalid_credentials
 import kotlin.time.ExperimentalTime
 
@@ -122,30 +118,65 @@ class AppRepository(
     }
 
 
+    /*
+    **************************************************************************
 
+    Common
 
+    **************************************************************************
+     */
 
+    /**
+     * Delete all app data (for example on appdatadelete or logout)
+     */
     suspend fun deleteAllAppData(){
         database.allDatabaseDao().clearAll()
         NotificationManager.removeToken()
     }
 
-    //TODO: Move into message repository
-    fun getMessagesByUserId(userId: String, gruppe: Boolean): Flow<List<Message>> {
-        return database.messageDao().getMessagesByUserIdFlow(userId, gruppe).map { messages ->
-            messages.map { it.toMessage() }
+    /**
+     * Test the currently saved endpoint
+     */
+    suspend fun testServer() : Boolean {
+        return when(val response = networkUtils.test()){
+            is NetworkResult.Error<*> -> false
+            is NetworkResult.Success<*> -> true
         }
     }
 
-    fun getownUser(): Flow<User?> {
+
+    var dataSyncRunning = false
+    suspend fun dataSync() {
+        if (dataSyncRunning) {
+            println("Data sync canceled, already running")
+            return
+        }
+        dataSyncRunning = true
+        userIdSync()
+        messageIdSync()
+        dataSyncRunning = false
+    }
+
+    /*
+    **************************************************************************
+
+    Reusable flows
+
+    **************************************************************************
+     */
+    /**
+     * Get the currently logged in user as flow
+     */
+    fun getOwnUserFlow(): Flow<User?> {
         return database.userDao().getUserbyIdFlow(SessionCache.getOwnIdValue()).map { user ->
             user?.toUser()
         }
     }
 
 
-
-    //Get main screen available items as flow
+    /**
+     * Get main screen available items as flow
+     */
     fun getChatSelectorFlow(
         searchTerm: String,
         filter: ChatFilter = ChatFilter.NONE
@@ -260,6 +291,17 @@ class AppRepository(
     }
 
 
+    /*
+    **************************************************************************
+
+    Auth
+
+    **************************************************************************
+     */
+
+    /**
+     * Actions to execute when the tokenpair is updated
+     */
     fun onNewTokenPair(tokenPair: NetworkUtils.TokenPair){
 
         //Parse the token to get the user id
@@ -278,6 +320,38 @@ class AppRepository(
     }
 
 
+    var refreshTokenRequestRunning = false //Stop concurrent requests
+    /**
+     * Function to refresh the tokens
+     */
+    suspend fun refreshTokens() : RequestError? {
+        if (refreshTokenRequestRunning){
+            return null
+        }
+        refreshTokenRequestRunning = true
+
+        val tokens = preferencemanager.getTokens()
+
+        println("Token refresh networktask starting: $tokens")
+        return when(val result = networkUtils.refresh(tokens.refreshToken)){
+            is NetworkResult.Error<*> -> {
+                println("Refreshing tokens failed: ${result.error}")
+                refreshTokenRequestRunning = false
+                result.error
+            }
+            is NetworkResult.Success<NetworkUtils.TokenPair> -> {
+                preferencemanager.saveTokens(result.data)
+                println("Tokenpair refresh successful")
+                onNewTokenPair(result.data)
+                refreshTokenRequestRunning = false
+                null
+            }
+        }
+    }
+
+    /**
+     * Function to load all initial data on app start
+     */
     suspend fun loadSavedLoginConfig(): Boolean{
         val tokens = preferencemanager.getTokens()
 
@@ -306,14 +380,6 @@ class AppRepository(
         }
 
         return credsSaved
-    }
-
-
-    suspend fun testServer() : Boolean {
-        return when(val response = networkUtils.test()){
-            is NetworkResult.Error<*> -> false
-            is NetworkResult.Success<*> -> true
-        }
     }
 
 
@@ -375,43 +441,17 @@ class AppRepository(
     }
 
 
-    var refreshTokenRequestRunning = false //Stop concurrent requests
-    suspend fun refreshTokens() : RequestError? {
-        if (refreshTokenRequestRunning){
-            return null
-        }
-        refreshTokenRequestRunning = true
+    /*
+    **************************************************************************
 
-        val tokens = preferencemanager.getTokens()
+    User
 
-        println("Token refresh networktask starting: $tokens")
-        return when(val result = networkUtils.refresh(tokens.refreshToken)){
-            is NetworkResult.Error<*> -> {
-                println("Refreshing tokens failed: ${result.error}")
-                refreshTokenRequestRunning = false
-                result.error
-            }
-            is NetworkResult.Success<NetworkUtils.TokenPair> -> {
-                preferencemanager.saveTokens(result.data)
-                println("Tokenpair refresh successful")
-                onNewTokenPair(result.data)
-                refreshTokenRequestRunning = false
-                null
-            }
-        }
-    }
+    **************************************************************************
+     */
 
-
-    var dataSyncRunning = false
-    suspend fun dataSync() {
-        if (dataSyncRunning) {
-            println("Data sync canceled, already running")
-        }
-        dataSyncRunning = true
-        userIdSync()
-        dataSyncRunning = false
-    }
-
+    /**
+     * Execute a useridsync
+     */
     suspend fun userIdSync() {
         val localusers = userRepository.getuserchangeid()
 
@@ -524,13 +564,14 @@ class AppRepository(
                 }
             }
         }
-
-
         //println("profilepics to get count: ${profilePicsToGet.size}")
 
         getProfilePicturesForUserIds(profilePicsToGet)
     }
 
+    /**
+     * Get the profile pics for all passed user ids from the server
+     */
     private suspend fun getProfilePicturesForUserIds(userIds: List<String>){
         userIds.forEach { userId ->
             val savefilename = userId + USERPROFILEPICTURE_FILE_NAME
@@ -542,17 +583,20 @@ class AppRepository(
                     userRepository.updateUserProfilePicUrl(userId, filepath)
                 }
             }
-
         }
     }
 
 
-
-    //Add new users
+    /**
+     * Get all availavble users from the server
+     * @param searchTerm the searchterm which the user entered
+     */
     suspend fun getAvailableUsers(searchTerm: String) : List<NetworkUtils.NewFriendsUserResponse> {
         return when (val response = networkUtils.getAvailableUsers(searchTerm)) {
-            is NetworkResult.Error<*> -> {
-                //TODO: FABI Get available users failed (Popup??)
+            is NetworkResult.Error<RequestError> -> {
+                sendErrorSuspend(ErrorEvent(
+                    error = response.error
+                ))
                 emptyList()
             }
             is NetworkResult.Success<List<NetworkUtils.NewFriendsUserResponse>> -> {
@@ -562,7 +606,9 @@ class AppRepository(
 
     }
 
-    //Send or accept friend request
+    /**
+     * Send or accept friend request from / to an userid
+     */
     suspend fun sendFriendRequest(friendId: String) : Boolean {
         when (val success = networkUtils.sendFriendRequest(friendId)){
             is NetworkResult.Error<*> -> return false
@@ -573,6 +619,9 @@ class AppRepository(
         }
     }
 
+    /**
+     * deny a friendrequest from an userid
+     */
     suspend fun denyFriendRequest(friendId: String) : Boolean {
         when (val success = networkUtils.denyFriendRequest(friendId)){
             is NetworkResult.Error<*> -> return false
@@ -582,6 +631,15 @@ class AppRepository(
             }
         }
     }
+
+    /*
+        **************************************************************************
+
+        Messages
+
+        **************************************************************************
+    */
+
 
 
 
@@ -639,8 +697,8 @@ class AppRepository(
 
                     println("Messageid returned from server: ${serverrequest.data.messageId}")
 
-                    messageRepository.upsertMessageWithoutReaders(
-                        MessageDto(
+                    messageRepository.upsertMessage(
+                        Message(
                             localPK = localpkintern,
                             id = serverrequest.data.messageId,
                             msgType = serverrequest.data.msgType,
@@ -648,13 +706,21 @@ class AppRepository(
                             senderId = serverrequest.data.senderId,
                             receiverId = serverrequest.data.receiverId,
                             sendDate = serverrequest.data.sendDate.toString(),
-                            changedate = serverrequest.data.lastChanged.toString(),
+                            changeDate = serverrequest.data.lastChanged.toString(),
                             deleted = serverrequest.data.deleted,
                             groupMessage = serverrequest.data.groupMessage,
                             answerId = serverrequest.data.answerId,
                             sent = true,
                             myMessage = true,
-                            readByMe = true
+                            readByMe = true,
+                            readers = serverrequest.data.readers.map {
+                                MessageReader(
+                                    readerEntryId = 0L,
+                                    messageId = serverrequest.data.messageId,
+                                    readerId = it.userId,
+                                    readDate = it.readAt.toString()
+                                )
+                            }
                         )
 
                     )
@@ -674,6 +740,103 @@ class AppRepository(
             }
         }
 
+    }
+
+    /**
+     * Execute a message sync
+     */
+    suspend fun messageIdSync() {
+
+        val localmessages = messageRepository.getmessagechangeid()
+        val imagesToGet = mutableListOf<String>()
+
+        var currentPage = 0
+        var moreMessages = true
+
+        while (moreMessages) {
+
+            val messageSyncResponse = networkUtils.messageSync(
+                messageIds = localmessages.map { NetworkUtils.IdTimeStamp(it.id, it.changedate) },
+                page = currentPage
+            )
+
+            when (messageSyncResponse) {
+                is NetworkResult.Error<*> -> {
+                    println("messageid sync error")
+                    break // Stop on error
+                }
+
+                is NetworkResult.Success<NetworkUtils.MessageSyncResponse> -> {
+                    val updatedMessages = messageSyncResponse.data.updatedMessages
+                    val deletedMessages = messageSyncResponse.data.deletedMessages
+                    moreMessages = messageSyncResponse.data.moreMessages
+
+                    updatedMessages.forEach { messageResponse ->
+                        when (messageResponse.msgType) {
+                            MessageType.IMAGE -> {
+                                imagesToGet += messageResponse.messageId
+                            }
+
+                            MessageType.TEXT -> {
+                                val existing = database.messageDao().getMessageDtoById(messageResponse.messageId)
+                                messageRepository.upsertMessage(
+                                    Message(
+                                        localPK = existing?.localPK ?: 0L,
+                                        id = messageResponse.messageId,
+                                        msgType = messageResponse.msgType,
+                                        content = messageResponse.content,
+                                        senderId = messageResponse.senderId,
+                                        receiverId = messageResponse.receiverId,
+                                        sendDate = messageResponse.sendDate.toString(),
+                                        changeDate = messageResponse.lastChanged.toString(),
+                                        deleted = messageResponse.deleted,
+                                        groupMessage = messageResponse.groupMessage,
+                                        answerId = messageResponse.answerId,
+                                        sent = true,
+                                        myMessage = messageResponse.senderId == SessionCache.ownId.value,
+                                        readByMe = messageResponse.readers.any { it.userId == SessionCache.ownId.value },
+                                        senderAsString = "",
+                                        senderColor = 0,
+                                        readers = messageResponse.readers.map {
+                                            MessageReader(
+                                                readerEntryId = 0L,
+                                                messageId = messageResponse.messageId,
+                                                readerId = it.userId,
+                                                readDate = it.readAt.toString()
+                                            )
+                                        }
+                                    )
+                                )
+                            }
+
+                            else -> { /* Handle other message types if needed */ }
+                        }
+                    }
+
+                    // Delete all non-existing messages
+                    deletedMessages.forEach { id ->
+                        messageRepository.deleteMessage(id)
+                    }
+                }
+            }
+
+            currentPage++
+        }
+
+        println("Messagesync completed. Total pages: $currentPage")
+
+        //TODO: Get all images
+        if (imagesToGet.isNotEmpty()) {
+            println("Images to fetch: ${imagesToGet.size}")
+            // fetchImages(imagesToGet)
+        }
+    }
+
+
+    suspend fun setAllChatMessagesRead(chatid: String, gruppe: Boolean, timestamp: String){
+        messageRepository.setAllChatMessagesRead(chatid, gruppe, timestamp)
+
+        networkUtils.setMessagesRead(chatid, gruppe, timestamp.toLong())
     }
 
 
