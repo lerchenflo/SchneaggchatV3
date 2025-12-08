@@ -53,7 +53,8 @@ fun UserSettings(
     modifier: Modifier = Modifier
         .fillMaxWidth(),
     userSettingsViewModel: UserSettingsViewModel,
-    sharedSettingsViewmodel: SharedSettingsViewmodel
+    sharedSettingsViewmodel: SharedSettingsViewmodel,
+    onBackClick : () -> Unit
 ) {
 
     val ownuser = sharedSettingsViewmodel.ownUser
@@ -68,9 +69,7 @@ fun UserSettings(
     ) {
         ActivityTitle(
             title = stringResource(Res.string.user_settings),
-            onBackClick = {
-                userSettingsViewModel.onBackClick()
-            }
+            onBackClick = onBackClick
         )
         Spacer(modifier = Modifier.size(10.dp))
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)

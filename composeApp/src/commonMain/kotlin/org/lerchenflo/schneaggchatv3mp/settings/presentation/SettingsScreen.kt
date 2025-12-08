@@ -67,7 +67,10 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
         .fillMaxWidth(),
     settingsViewmodel: SettingsViewModel,
-    sharedSettingsViewmodel: SharedSettingsViewmodel
+    sharedSettingsViewmodel: SharedSettingsViewmodel,
+    onBackClick: () -> Unit,
+    navigateUserSettings: () -> Unit,
+    navigateDevSettings: () -> Unit
 ){
     val appRepository = koinInject<AppRepository>()
 
@@ -81,9 +84,7 @@ fun SettingsScreen(
     ){
         ActivityTitle(
             title = stringResource(Res.string.settings),
-            onBackClick = {
-                settingsViewmodel.onBackClick()
-            }
+            onBackClick = onBackClick
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -150,9 +151,7 @@ fun SettingsScreen(
             icon = Icons.Default.Boy,
             text = stringResource(Res.string.user_settings),
             subtext = stringResource(Res.string.user_settingsinfo),
-            onClick = {
-                settingsViewmodel.toUserSettingsClick()
-            }
+            onClick = navigateUserSettings
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -263,9 +262,7 @@ fun SettingsScreen(
                 Icons.Default.Code,
                 stringResource(Res.string.developer_settings),
                 stringResource(Res.string.developer_setting_info),
-                onClick = {
-                    settingsViewmodel.toDevSettingsClick()
-                }
+                onClick = navigateDevSettings
             )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -287,8 +284,8 @@ fun SettingsScreen(
                     // todo snackbar oder sunsch irgend a meldung & guate zahl usdenka
 
                     if (openDevSettingsCounter > 5){ // open dev settings after x clicks
-                        settingsViewmodel.toDevSettingsClick()
                         sharedSettingsViewmodel.updateDevSettings(true) // save in preferences
+                        navigateDevSettings()
                     }
                 }
 

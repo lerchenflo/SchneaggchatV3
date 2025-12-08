@@ -42,9 +42,7 @@ val sharedmodule = module{
     single <HttpClient>(named("auth")) { createHttpClient(get(), get(), false) }
 
 
-    single<Navigator> {
-        Navigator(Route.AutoLoginCredChecker)
-    }
+    singleOf(::Navigator)
 
 
 
@@ -105,8 +103,8 @@ val sharedmodule = module{
     factory { SettingsViewModel(get(), get(), get()) } // factory -> new instance each injection
 
     viewModelOf(::DevSettingsViewModel)
-    factory { DevSettingsViewModel(get()) }
+    factory { DevSettingsViewModel() }
 
     viewModelOf(::UserSettingsViewModel)
-    factory { UserSettingsViewModel(get()) }
+    factory { UserSettingsViewModel() }
 }

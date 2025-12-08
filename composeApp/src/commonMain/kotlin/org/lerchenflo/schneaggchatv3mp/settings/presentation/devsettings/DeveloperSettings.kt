@@ -34,7 +34,8 @@ fun DeveloperSettings(
     modifier: Modifier = Modifier
         .fillMaxWidth(),
     devSettingsViewModel: DevSettingsViewModel,
-    sharedSettingsViewmodel: SharedSettingsViewmodel
+    sharedSettingsViewmodel: SharedSettingsViewmodel,
+    onBackClick: () -> Unit
 ) {
 
     var showChangeServerUrlPopup by remember { mutableStateOf(false) }
@@ -44,9 +45,7 @@ fun DeveloperSettings(
     ) {
         ActivityTitle(
             title = stringResource(Res.string.developer_settings),
-            onBackClick = {
-                devSettingsViewModel.onBackClick()
-            }
+            onBackClick = onBackClick
         )
 
         Spacer(modifier = Modifier.size(10.dp))

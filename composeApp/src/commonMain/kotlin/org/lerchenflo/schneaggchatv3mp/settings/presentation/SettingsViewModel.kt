@@ -98,24 +98,4 @@ class SettingsViewModel(
         }
     }
 
-
-
-    fun onBackClick(){
-        viewModelScope.launch {
-            navigator.navigateBack()
-        }
-    }
-
-    fun toDevSettingsClick() {
-        viewModelScope.launch {
-            navigator.navigateSettings(Route.Settings.DeveloperSettings)
-        }
-    }
-
-    fun toUserSettingsClick() {
-        viewModelScope.launch {
-            navigator.navigateSettings(Route.Settings.UserSettings)
-        }
-    }
-
 }

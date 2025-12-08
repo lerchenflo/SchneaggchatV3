@@ -6,9 +6,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 
-class Navigator(
-    val startDestination: Route,
-) {
+class Navigator {
     private val _navigationActions = Channel<NavigationAction>()
     val navigationActions = _navigationActions.receiveAsFlow()
 
@@ -22,11 +20,5 @@ class Navigator(
 
     suspend fun navigateBack(){
         _navigationActions.send(NavigationAction.NavigateBack)
-    }
-
-    suspend fun navigateSettings(
-        destination: Route
-    ){
-        _navigationActions.send(NavigationAction.NavigateSettings(destination))
     }
 }

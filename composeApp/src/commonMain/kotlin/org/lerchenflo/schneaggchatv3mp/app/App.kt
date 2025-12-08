@@ -151,10 +151,6 @@ fun App() {
                         rootBackStack.removeAt(rootBackStack.size - 1) //Removelast not working on older android
                     }
                 }
-
-                is NavigationAction.NavigateSettings -> {
-                    settingsBackStack.add(action.destination)
-                }
             }
         }
 
@@ -297,21 +293,39 @@ fun App() {
                                 entry<Route.Settings.SettingsScreen> {
                                     SettingsScreen(
                                         settingsViewmodel = koinInject(),
-                                        sharedSettingsViewmodel = sharedSettingsViewmodel
+                                        sharedSettingsViewmodel = sharedSettingsViewmodel,
+                                        onBackClick = {
+                                            //settingsBackStack.clear()
+                                            scope.launch {
+                                                navigator.navigateBack()
+                                            }
+                                        },
+                                        navigateUserSettings = {settingsBackStack.add(Route.Settings.UserSettings)},
+                                        navigateDevSettings = {settingsBackStack.add(Route.Settings.DeveloperSettings)},
                                     )
                                 }
 
                                 entry<Route.Settings.DeveloperSettings> {
                                     DeveloperSettings(
                                         devSettingsViewModel = koinInject(),
-                                        sharedSettingsViewmodel = sharedSettingsViewmodel
+                                        sharedSettingsViewmodel = sharedSettingsViewmodel,
+                                        onBackClick = {
+                                            if (settingsBackStack.size > 1){
+                                                settingsBackStack.removeAt(settingsBackStack.size - 1)
+                                            }
+                                        }
                                     )
                                 }
 
                                 entry<Route.Settings.UserSettings> {
                                     UserSettings(
                                         userSettingsViewModel = koinInject(),
-                                        sharedSettingsViewmodel = sharedSettingsViewmodel
+                                        sharedSettingsViewmodel = sharedSettingsViewmodel,
+                                        onBackClick = {
+                                            if (settingsBackStack.size > 1){
+                                                settingsBackStack.removeAt(settingsBackStack.size - 1)
+                                            }
+                                        }
                                     )
                                 }
                             }

@@ -5,14 +5,8 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 
-class DevSettingsViewModel(
-    private val navigator: Navigator,
-): ViewModel() {
+class DevSettingsViewModel(): ViewModel() {
 
-    fun onBackClick(){
-        viewModelScope.launch {
-            navigator.navigateBack()
-        }
-    }
+
 
 }
