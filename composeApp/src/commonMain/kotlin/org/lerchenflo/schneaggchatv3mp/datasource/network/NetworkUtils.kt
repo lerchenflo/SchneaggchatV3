@@ -443,7 +443,14 @@ class NetworkUtils(
 
         val sendDate: Long,
         val lastChanged: Long,
-        val deleted: Boolean
+        val deleted: Boolean,
+        val readers: List<ReaderResponse>
+    )
+
+    @Serializable
+    data class ReaderResponse(
+        val userId: String,
+        val readAt: Long
     )
 
     suspend fun sendTextMessageToServer(empfaenger: String, gruppe: Boolean, content: String, answerid: String?) : NetworkResult<MessageResponse, NetworkError> {

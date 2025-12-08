@@ -32,6 +32,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 
 class ChatViewModel(
     private val appRepository: AppRepository,
+    private val messageRepository: MessageRepository,
     private val settingsRepository: SettingsRepository,
     private val navigator: Navigator
 ): ViewModel() {
@@ -102,7 +103,7 @@ class ChatViewModel(
     val messagesFlow: Flow<List<Message>> =
         globalViewModel.selectedChat
             .flatMapLatest { chat ->
-                appRepository.getMessagesByUserId(chat.id, chat.isGroup)
+                messageRepository.getMessagesByUserIdFlow(chat.id, chat.isGroup)
             }
             .map { list ->
                 list.sortedByDescending { it.sendDate }

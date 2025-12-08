@@ -140,12 +140,16 @@ fun App() {
                         rootBackStack.clear()
                     }
                     if (action.exitPreviousScreen){
-                        rootBackStack.removeLast()
+                        if (rootBackStack.size > 1){
+                            rootBackStack.removeAt(rootBackStack.size - 1) //Removelast not working on older android
+                        }
                     }
                     rootBackStack.add(action.destination)
                 }
                 NavigationAction.NavigateBack -> {
-                    rootBackStack.removeLast()
+                    if (rootBackStack.size > 1){
+                        rootBackStack.removeAt(rootBackStack.size - 1) //Removelast not working on older android
+                    }
                 }
 
                 is NavigationAction.NavigateSettings -> {
