@@ -43,6 +43,7 @@ class SharedSettingsViewmodel(
         viewModelScope.launch { // Server URL
             appRepository.getownUser().collect { value ->
                 ownUser = value
+                println(ownUser.toString())
             }
         }
     }

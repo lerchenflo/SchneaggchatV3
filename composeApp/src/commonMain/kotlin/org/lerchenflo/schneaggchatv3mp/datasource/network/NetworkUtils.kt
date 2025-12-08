@@ -353,10 +353,8 @@ class NetworkUtils(
 
             //Custom to own user response:
             val email: String,
+            val emailVerifiedAt: Long?,
             val createdAt: Long,
-
-
-            //TODO: User profile pic privacy settings??
 
 
         ) : UserResponse

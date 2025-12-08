@@ -21,7 +21,10 @@ data class User(
     override val requesterId: String? = null,
     val notisMuted: Boolean = false,
     val birthDate: String? = null,
+
     val email: String? = null,
+    val emailVerifiedAt: Long?,
+
     val createdAt: Long?,
 
     //Not in db
@@ -31,6 +34,40 @@ data class User(
 ) : SelectedChat {
     override val isGroup: Boolean
         get() = false
+
+    fun isEmailVerified() : Boolean {
+        return emailVerifiedAt != null
+    }
+
+    override fun toString(): String {
+        return """
+        User(
+            id='$id',
+            lastChanged=$lastChanged,
+            name='$name',
+            description=$description,
+            status=$status,
+            locationLat=$locationLat,
+            locationLong=$locationLong,
+            locationDate=$locationDate,
+            locationShared=$locationShared,
+            wakeupEnabled=$wakeupEnabled,
+            profilePictureUrl='$profilePictureUrl',
+            lastOnline=$lastOnline,
+            friendshipStatus=$friendshipStatus,
+            requesterId=$requesterId,
+            notisMuted=$notisMuted,
+            birthDate=$birthDate,
+            email=$email,
+            emailVerifiedAt=$emailVerifiedAt,
+            createdAt=$createdAt,
+            unreadMessageCount=$unreadMessageCount,
+            unsentMessageCount=$unsentMessageCount,
+            lastmessage=$lastmessage,
+            isGroup=$isGroup
+        )
+    """.trimIndent()
+    }
 }
 
 fun UserDto.toUser(): User = User(
@@ -49,6 +86,7 @@ fun UserDto.toUser(): User = User(
     notisMuted = this.notisMuted,
     birthDate = this.birthDate,
     email = this.email,
+    emailVerifiedAt = this.emailVerifiedAt,
     createdAt = this.createdAt,
     friendshipStatus = this.frienshipStatus,
     profilePictureUrl = this.profilePictureUrl,
@@ -71,6 +109,7 @@ fun User.toDto(): UserDto = UserDto(
     notisMuted = this.notisMuted,
     birthDate = this.birthDate,
     email = this.email,
+    emailVerifiedAt = this.emailVerifiedAt,
     frienshipStatus = this.friendshipStatus,
     createdAt = this.createdAt,
     profilePictureUrl = this.profilePictureUrl,
