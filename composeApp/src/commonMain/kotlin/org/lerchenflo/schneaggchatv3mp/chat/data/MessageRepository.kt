@@ -8,6 +8,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
@@ -17,6 +18,19 @@ class MessageRepository(
     private val database: AppDatabase,
     private val networkUtils: NetworkUtils,
 ) {
+
+    suspend fun upsertMessage(message: Message){
+
+        val messageWithReadersDto = message.toDto()
+        upsertMessageWithReaders(messageWithReadersDto)
+    }
+
+    suspend fun deleteMessage(id: String){
+        deleteMessageDto(id)
+        deleteReadersForMessage(id)
+    }
+
+
 
     suspend fun upsertMessageWithoutReaders(messageDto: MessageDto){
         database.messageDao().upsertMessageDto(messageDto)
@@ -48,6 +62,8 @@ class MessageRepository(
         upsertMessageWithoutReaders(message.messageDto)
 
         // normalize readers to ensure messageId matches message.id
+        deleteReadersForMessage(message.messageDto.id!!)
+
         val readers = message.readers.map { it.copy(messageId = message.messageDto.id!!) }
         if (readers.isNotEmpty()) insertReaders(readers)
     }
@@ -75,6 +91,10 @@ class MessageRepository(
         database.messagereaderDao().upsertReaders(readers)
     }
 
+
+    suspend fun deleteMessageDto(messageId: String) {
+        database.messageDao().deleteMessageDtoById(messageId)
+    }
     suspend fun deleteReadersForMessage(messageId: String){
         database.messagereaderDao().deleteReadersForMessage(messageId)
     }

@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import kotlin.time.ExperimentalTime
 
@@ -360,7 +361,6 @@ class NetworkUtils(
         ) : UserResponse
     }
 
-
     suspend fun userIdSync(userIds: List<IdTimeStamp>) : NetworkResult<UserSyncResponse, NetworkError> {
         return safePost(
             endpoint = "/users/sync",
@@ -456,11 +456,26 @@ class NetworkUtils(
             answerId = answerid,
         )
 
-        println("$messageRequest")
+        println("MessageRequest: $messageRequest")
 
         return safePost(
             endpoint = "/messages/send/text",
             body = messageRequest
         )
     }
+
+    @Serializable
+    data class MessageSyncResponse(
+        val updatedMessages: List<MessageResponse>,
+        val deletedMessages: List<String>,
+        val moreMessages: Boolean
+    )
+
+    suspend fun messageSync(messageIds: List<IdTimeStamp>, page: Int) : NetworkResult<MessageSyncResponse, RequestError>{
+        return safePost(
+            endpoint = "/messages/sync?page=$page&page_size=400",
+            body = messageIds
+        )
+    }
+
 }
