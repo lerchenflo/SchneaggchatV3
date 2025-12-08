@@ -778,7 +778,7 @@ class AppRepository(
                             }
 
                             MessageType.TEXT -> {
-                                val existing = database.messageDao().getMessageById(messageResponse.messageId)
+                                val existing = database.messageDao().getMessageDtoById(messageResponse.messageId)
                                 messageRepository.upsertMessage(
                                     Message(
                                         localPK = existing?.localPK ?: 0L,
@@ -836,7 +836,7 @@ class AppRepository(
     suspend fun setAllChatMessagesRead(chatid: String, gruppe: Boolean, timestamp: String){
         messageRepository.setAllChatMessagesRead(chatid, gruppe, timestamp)
 
-        //TODO: Networking
+        networkUtils.setMessagesRead(chatid, gruppe, timestamp.toLong())
     }
 
 

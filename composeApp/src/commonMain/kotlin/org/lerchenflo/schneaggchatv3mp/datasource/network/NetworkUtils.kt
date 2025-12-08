@@ -480,8 +480,15 @@ class NetworkUtils(
 
     suspend fun messageSync(messageIds: List<IdTimeStamp>, page: Int) : NetworkResult<MessageSyncResponse, RequestError>{
         return safePost(
-            endpoint = "/messages/sync?page=$page&page_size=1",
+            endpoint = "/messages/sync?page=$page&page_size=400",
             body = messageIds
+        )
+    }
+
+    suspend fun setMessagesRead(chatId: String, group: Boolean, timeStamp: Long) : NetworkResult<String, RequestError>{
+        return safePost(
+            endpoint = "/messages/setread?userid=$chatId&group=$group&timestamp=$timeStamp",
+            body = "",
         )
     }
 

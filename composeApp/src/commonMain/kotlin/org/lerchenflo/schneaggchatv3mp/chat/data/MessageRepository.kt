@@ -8,6 +8,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
@@ -26,6 +27,23 @@ class MessageRepository(
     suspend fun deleteMessage(id: String){
         deleteReadersForMessage(id)
         deleteMessageDto(id)
+    }
+
+    private suspend fun setMessageRead(msgId: String, timestamp: String) {
+        val message = database.messageDao().getMessageById(msgId)?.toMessage()
+
+        if (message != null){
+            val newReaders = message.readers + MessageReader(
+                messageId = msgId, readerId = SessionCache.getOwnIdValue()!!, readDate = timestamp)
+
+            val newmessage = message.copy(
+                readByMe = true,
+                readers = newReaders,
+                changeDate = timestamp
+            )
+            upsertMessage(newmessage)
+
+        }
     }
 
 
@@ -92,11 +110,12 @@ class MessageRepository(
 
     @Transaction
     suspend fun setAllChatMessagesRead(chatid: String, gruppe: Boolean, timestamp: String) {
-        database.messageDao().getMessagesByUserIdFlow(chatid, gruppe).collect { messagelist ->
-            for (message in messagelist){
-                if (!message.messageDto.readByMe){
-                    database.messagereaderDao().upsertReader(MessageReaderDto(messageId = message.messageDto.id!!, readerID = SessionCache.getOwnIdValue()!!, readDate = timestamp))
-                }
+
+        val messages = database.messageDao().getMessagesByUserId(chatid, gruppe)
+
+        messages.forEach { message ->
+            if (!message.messageDto.readByMe && message.messageDto.id != null){
+                setMessageRead(message.messageDto.id!!, timestamp)
             }
         }
     }

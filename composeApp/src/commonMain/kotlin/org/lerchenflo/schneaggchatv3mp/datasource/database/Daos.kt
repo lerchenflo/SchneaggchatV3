@@ -55,23 +55,20 @@ interface MessageDao {
     suspend fun deleteMessageDtoById(msgid: String)
 
     @Query("SELECT * FROM messages WHERE id = :id")
-    suspend fun getMessageById(id: String): MessageDto?
+    suspend fun getMessageDtoById(id: String): MessageDto?
 
     @Transaction
     suspend fun upsertMessageDto(messageDto: MessageDto): MessageDto {
-        val existing = getMessageById(messageDto.id.orEmpty())
+        val existing = getMessageDtoById(messageDto.id.orEmpty())
         if (existing != null) {
             updateMessageDto(messageDto.copy(localPK = existing.localPK))
         } else {
             insertMessageDto(messageDto)
         }
         // Get the message after insert/update
-        val returnedMessage = getMessageById(messageDto.id.orEmpty())
+        val returnedMessage = getMessageDtoById(messageDto.id.orEmpty())
         return returnedMessage ?: messageDto
     }
-
-
-
 
 
 
@@ -87,6 +84,14 @@ interface MessageDao {
     @Transaction
     @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ")
     fun getMessagesByUserIdFlow(userId: String, gruppe: Boolean): Flow<List<MessageWithReadersDto>>
+
+    @Transaction
+    @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ")
+    fun getMessagesByUserId(userId: String, gruppe: Boolean): List<MessageWithReadersDto>
+
+    @Transaction
+    @Query("SELECT * FROM messages WHERE id = :Id")
+    fun getMessageById(Id: String): MessageWithReadersDto?
 
     @Query("SELECT id, changedate FROM messages WHERE id != 0")
     suspend fun getMessageIdsWithChangeDates(): List<IdChangeDate>

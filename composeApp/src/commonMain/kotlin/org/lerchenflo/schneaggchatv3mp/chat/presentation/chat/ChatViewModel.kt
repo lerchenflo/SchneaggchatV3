@@ -43,13 +43,8 @@ class ChatViewModel(
     init {
         initPrefs()
 
-        println("Chatviewmodel init")
-        globalViewModel.viewModelScope.launch {
-            CoroutineScope(Dispatchers.IO).launch {
-
-                //TODO: Auto set to read
-                //messageRepository.setAllChatMessagesRead(globalViewModel.selectedChat.value.id, globalViewModel.selectedChat.value.isGroup, getCurrentTimeMillisString())
-            }
+        CoroutineScope(Dispatchers.IO).launch {
+            appRepository.setAllChatMessagesRead(globalViewModel.selectedChat.value.id, globalViewModel.selectedChat.value.isGroup, getCurrentTimeMillisString())
         }
     }
 
