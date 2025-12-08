@@ -27,74 +27,13 @@ import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
 
 class SettingsViewModel(
     private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager,
     private val navigator: Navigator
 ): ViewModel() {
-
-
-    init {
-        viewModelScope.launch { // Markdown
-            preferenceManager.getUseMdFlow()
-                .catch { exception ->
-                    println("Problem getting MD preference: ${exception.printStackTrace()}")
-                }
-                .collect { value ->
-                    markdownEnabeled = value
-                }
-
-        }
-        viewModelScope.launch { // Theme
-            preferenceManager.getThemeFlow()
-                .catch { exception ->
-                    println("Problem getting Theme setting: ${exception.printStackTrace()}")
-                }
-                .collect { value ->
-                    selectedTheme = value
-                }
-        }
-
-
-    }
-
-
-    var markdownEnabeled by mutableStateOf(false)
-        private set
-
-    fun updateMarkdownSwitch(newValue: Boolean){
-        CoroutineScope(Dispatchers.IO).launch {
-            preferenceManager.saveUseMd(newValue)
-        }
-    }
-
-
-    fun logout(){
-        viewModelScope.launch {
-            appRepository.deleteAllAppData() // delete all app data when logging out
-            preferenceManager.saveTokens(tokenPair = NetworkUtils.TokenPair(accessToken = "", refreshToken = "")) // override credentials with empty string
-            SessionCache.clear() //Alle variabla löscja
-            SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
-
-            viewModelScope.launch {
-                navigator.navigate(Route.Login, exitAllPreviousScreens = true)
-            }
-        }
-    }
-
-
 
     fun deleteAllAppData(){
         viewModelScope.launch {
             appRepository.deleteAllAppData()
             navigator.navigate(Route.AutoLoginCredChecker, exitAllPreviousScreens = true)
-        }
-    }
-
-    var selectedTheme by mutableStateOf(ThemeSetting.SYSTEM)
-        private set
-
-    fun saveThemeSetting(theme: ThemeSetting){
-        CoroutineScope(Dispatchers.IO).launch {
-            preferenceManager.saveThemeSetting(theme = theme)
         }
     }
 

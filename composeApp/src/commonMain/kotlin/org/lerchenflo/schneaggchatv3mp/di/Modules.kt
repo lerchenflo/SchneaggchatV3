@@ -26,6 +26,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsViewModel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DevSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
@@ -100,11 +101,14 @@ val sharedmodule = module{
 
 
     viewModelOf(::SettingsViewModel)
-    factory { SettingsViewModel(get(), get(), get()) } // factory -> new instance each injection
+    factory { SettingsViewModel(get(), get()) } // factory -> new instance each injection
 
     viewModelOf(::DevSettingsViewModel)
     factory { DevSettingsViewModel() }
 
     viewModelOf(::UserSettingsViewModel)
-    factory { UserSettingsViewModel() }
+    factory { UserSettingsViewModel(get(), get(), get()) }
+
+    viewModelOf(::AppearanceSettingsViewModel)
+    factory { AppearanceSettingsViewModel(get()) }
 }

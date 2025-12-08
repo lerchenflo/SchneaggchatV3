@@ -43,6 +43,9 @@ sealed interface Route : NavKey {
 
         @Serializable
         data object UserSettings: Route, NavKey
+
+        @Serializable
+        data object AppearanceSettings: Route, NavKey
     }
 }
 

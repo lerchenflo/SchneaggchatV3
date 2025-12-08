@@ -52,6 +52,7 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoo
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
 import org.lerchenflo.schneaggchatv3mp.sharedUi.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
@@ -109,6 +110,7 @@ fun App() {
                         subclass(Route.Settings.SettingsScreen::class, Route.Settings.SettingsScreen.serializer())
                         subclass(Route.Settings.DeveloperSettings::class, Route.Settings.DeveloperSettings.serializer())
                         subclass(Route.Settings.UserSettings::class, Route.Settings.UserSettings.serializer())
+                        subclass(Route.Settings.AppearanceSettings::class, Route.Settings.AppearanceSettings.serializer())
 
                     }
                 }
@@ -295,13 +297,13 @@ fun App() {
                                         settingsViewmodel = koinInject(),
                                         sharedSettingsViewmodel = sharedSettingsViewmodel,
                                         onBackClick = {
-                                            //settingsBackStack.clear()
                                             scope.launch {
-                                                navigator.navigateBack()
+                                                navigator.navigateBack() //Settings backstack gets cleared automatically
                                             }
                                         },
                                         navigateUserSettings = {settingsBackStack.add(Route.Settings.UserSettings)},
                                         navigateDevSettings = {settingsBackStack.add(Route.Settings.DeveloperSettings)},
+                                        navigateAppearanceSettings = {settingsBackStack.add(Route.Settings.AppearanceSettings)}
                                     )
                                 }
 
@@ -320,6 +322,18 @@ fun App() {
                                 entry<Route.Settings.UserSettings> {
                                     UserSettings(
                                         userSettingsViewModel = koinInject(),
+                                        sharedSettingsViewmodel = sharedSettingsViewmodel,
+                                        onBackClick = {
+                                            if (settingsBackStack.size > 1){
+                                                settingsBackStack.removeAt(settingsBackStack.size - 1)
+                                            }
+                                        }
+                                    )
+                                }
+
+                                entry<Route.Settings.AppearanceSettings> {
+                                    AppearanceSettings(
+                                        appearanceSettingsViewModel = koinInject(),
                                         sharedSettingsViewmodel = sharedSettingsViewmodel,
                                         onBackClick = {
                                             if (settingsBackStack.size > 1){

@@ -151,7 +151,7 @@
     <string name="poll">poll</string>
 
     <string name="change_server_url">change server URL</string>
-    <string name="developer_settings">developer settings</string>
+    <string name="developer_settings">Developer</string>
     <string name="steps_until_developer">in %1$s you are a developer</string>
     <string name="you_are_now_developer">you are now a developer</string>
     <string name="you_are_already_developer">you are already are a developer</string>
@@ -165,10 +165,14 @@
     <string name="server_not_reachable">Could not establish a connection to the server</string>
 
 
-    <string name="user_settings">Account settings</string>
+    <string name="user_settings">Account</string>
     <string name="user_settingsinfo">Make changes to your profile</string>
     <string name="emailinfo">Change your email address</string>
     <string name="emailinfo_unverified">Verify your email address</string>
+
+    <string name="appearance_settings">Appearance</string>
+    <string name="appearance_settings_info">Change the appearance of your app</string>
+
 
 
 </resources>

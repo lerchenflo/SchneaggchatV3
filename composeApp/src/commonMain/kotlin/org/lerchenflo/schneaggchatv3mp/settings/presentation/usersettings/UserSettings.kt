@@ -1,10 +1,15 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Accessibility
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Error
@@ -18,35 +23,51 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Verified
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
+import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
+import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
+import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
+import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignupAction
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DevSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChangeDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.are_you_sure_you_want_to_logout
 import schneaggchatv3mp.composeapp.generated.resources.change_server_url
 import schneaggchatv3mp.composeapp.generated.resources.developer_setting_info
 import schneaggchatv3mp.composeapp.generated.resources.developer_settings
 import schneaggchatv3mp.composeapp.generated.resources.email
 import schneaggchatv3mp.composeapp.generated.resources.emailinfo
 import schneaggchatv3mp.composeapp.generated.resources.emailinfo_unverified
+import schneaggchatv3mp.composeapp.generated.resources.logout
+import schneaggchatv3mp.composeapp.generated.resources.no
 import schneaggchatv3mp.composeapp.generated.resources.user_settings
+import schneaggchatv3mp.composeapp.generated.resources.yes
 
 @Composable
 fun UserSettings(
@@ -61,7 +82,43 @@ fun UserSettings(
 
     var showChangeUsernamePopup by remember { mutableStateOf(false) }
 
+    var showImagePickerDialog by remember { mutableStateOf(false) }
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (showImagePickerDialog ) {
 
+            //TODO: Fix all strings
+            GalleryPickerLauncher(
+                onPhotosSelected = {
+                    userSettingsViewModel.changeProfilePicture(it.first())
+                    showImagePickerDialog = false
+                },
+                onError = {
+                    showImagePickerDialog = false
+                },
+                onDismiss = {
+                    showImagePickerDialog = false
+                },
+                selectionLimit = 1,
+                enableCrop = true,
+                cameraCaptureConfig = CameraCaptureConfig(
+                    compressionLevel = CompressionLevel.HIGH,
+                    preference = CapturePhotoPreference.FAST, //No flash
+                    cropConfig = CropConfig(
+                        enabled = true,
+                        aspectRatioLocked = true,
+                        circularCrop = true,
+                        squareCrop = false,
+                        freeformCrop = false
+                    ),
+                    galleryConfig = GalleryConfig(
+                        allowMultiple = false,
+                        selectionLimit = 1,
+                    )
+                )
+            )
+
+        }
+    }
     //TODO: Wittabuggla
 
     Column(
@@ -72,6 +129,20 @@ fun UserSettings(
             onBackClick = onBackClick
         )
         Spacer(modifier = Modifier.size(10.dp))
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+        ProfilePictureView(
+            filepath = ownuser?.profilePictureUrl ?: "",
+            modifier = Modifier
+                .padding(horizontal = 60.dp)
+                .fillMaxWidth()
+                .clickable {
+                    showImagePickerDialog = true
+                }
+                .padding(16.dp)
+        )
+
+
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
         //Username?
@@ -126,6 +197,40 @@ fun UserSettings(
                 }
             },
         )
+
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+
+        var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
+        SettingsOption(
+            icon = Icons.AutoMirrored.Default.ExitToApp,
+            text = stringResource(Res.string.logout),
+            onClick = {
+                showLogoutDialog = true
+            }
+        )
+
+        //Logoutdialog
+        if (showLogoutDialog) {
+            AlertDialog(
+                onDismissRequest = { showLogoutDialog = false },
+                title = { Text(text = stringResource(Res.string.logout)) },
+                text = { Text(text = stringResource(Res.string.are_you_sure_you_want_to_logout)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showLogoutDialog = false
+                        userSettingsViewModel.logout()
+                    }) {
+                        Text(text = stringResource(Res.string.yes))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showLogoutDialog = false }) {
+                        Text(text = stringResource(Res.string.no))
+                    }
+                }
+            )
+        }
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 

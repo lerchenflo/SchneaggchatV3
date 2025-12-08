@@ -33,12 +33,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ThemeSelector
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
@@ -46,17 +43,14 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.app_broken
 import schneaggchatv3mp.composeapp.generated.resources.app_broken_are_you_sure
 import schneaggchatv3mp.composeapp.generated.resources.app_broken_desc
+import schneaggchatv3mp.composeapp.generated.resources.appearance_settings
+import schneaggchatv3mp.composeapp.generated.resources.appearance_settings_info
 import schneaggchatv3mp.composeapp.generated.resources.are_you_sure_you_want_to_logout
 import schneaggchatv3mp.composeapp.generated.resources.developer_setting_info
 import schneaggchatv3mp.composeapp.generated.resources.developer_settings
 import schneaggchatv3mp.composeapp.generated.resources.logout
-import schneaggchatv3mp.composeapp.generated.resources.markdownInfo
-import schneaggchatv3mp.composeapp.generated.resources.markdown_24px
 import schneaggchatv3mp.composeapp.generated.resources.no
 import schneaggchatv3mp.composeapp.generated.resources.settings
-import schneaggchatv3mp.composeapp.generated.resources.theme
-import schneaggchatv3mp.composeapp.generated.resources.theme_sel_desc
-import schneaggchatv3mp.composeapp.generated.resources.useMarkdown
 import schneaggchatv3mp.composeapp.generated.resources.user_settings
 import schneaggchatv3mp.composeapp.generated.resources.user_settingsinfo
 import schneaggchatv3mp.composeapp.generated.resources.version
@@ -70,7 +64,8 @@ fun SettingsScreen(
     sharedSettingsViewmodel: SharedSettingsViewmodel,
     onBackClick: () -> Unit,
     navigateUserSettings: () -> Unit,
-    navigateDevSettings: () -> Unit
+    navigateDevSettings: () -> Unit,
+    navigateAppearanceSettings: () -> Unit
 ){
     val appRepository = koinInject<AppRepository>()
 
@@ -156,40 +151,27 @@ fun SettingsScreen(
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-
-        // Markdown Formatting
-        SettingsSwitch(
-            titletext = stringResource(Res.string.useMarkdown),
-            infotext = stringResource(Res.string.markdownInfo),
-            switchchecked = settingsViewmodel.markdownEnabeled,
-            onSwitchChange = { settingsViewmodel.updateMarkdownSwitch(it) },
-            icon = vectorResource(Res.drawable.markdown_24px) //Gibts uf da icons no ned aber uf da website scho
-        )
-
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-        var themeSelDialog by remember{mutableStateOf(false)}
-        // Theme selector
         SettingsOption(
             Icons.Default.Palette,
-            stringResource(Res.string.theme),
-            stringResource(Res.string.theme_sel_desc),
-            onClick = { themeSelDialog = true }
+            stringResource(Res.string.appearance_settings),
+            stringResource(Res.string.appearance_settings_info),
+            onClick = navigateAppearanceSettings
         )
-        if(themeSelDialog){
-            ThemeSelector(
-                onDismiss = { themeSelDialog = false },
-                onConfirm = {
-                    themeSelDialog = false
-                    settingsViewmodel.saveThemeSetting(it)
-                },
-                selectedTheme = settingsViewmodel.selectedTheme,
-            )
-        }
+
 
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
+        if(sharedSettingsViewmodel.devSettingsEnabled){
+            SettingsOption(
+                Icons.Default.Code,
+                stringResource(Res.string.developer_settings),
+                stringResource(Res.string.developer_setting_info),
+                onClick = navigateDevSettings
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+        }
 
         var showAppBrokenDialog by rememberSaveable { mutableStateOf(false) }
         SettingsOption(
@@ -198,7 +180,6 @@ fun SettingsScreen(
             stringResource(Res.string.app_broken_desc),
             onClick = { showAppBrokenDialog = true }
         )
-
         // app kaputt dialog
         if (showAppBrokenDialog) {
             AlertDialog(
@@ -223,50 +204,6 @@ fun SettingsScreen(
         }
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-        var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
-        SettingsOption(
-            icon = Icons.AutoMirrored.Default.ExitToApp,
-            text = stringResource(Res.string.logout),
-            onClick = {
-                showLogoutDialog = true
-            }
-        )
-
-        //Logoutdialog
-        if (showLogoutDialog) {
-            AlertDialog(
-                onDismissRequest = { showLogoutDialog = false },
-                title = { Text(text = stringResource(Res.string.logout)) },
-                text = { Text(text = stringResource(Res.string.are_you_sure_you_want_to_logout)) },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showLogoutDialog = false
-                        settingsViewmodel.logout()
-                    }) {
-                        Text(text = stringResource(Res.string.yes))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showLogoutDialog = false }) {
-                        Text(text = stringResource(Res.string.no))
-                    }
-                }
-            )
-        }
-
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-        if(sharedSettingsViewmodel.devSettingsEnabled){
-            SettingsOption(
-                Icons.Default.Code,
-                stringResource(Res.string.developer_settings),
-                stringResource(Res.string.developer_setting_info),
-                onClick = navigateDevSettings
-            )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-        }
 
 
         var openDevSettingsCounter by mutableIntStateOf(0)
