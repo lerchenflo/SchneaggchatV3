@@ -32,11 +32,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
@@ -44,7 +42,6 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ThemeSel
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.app_broken
 import schneaggchatv3mp.composeapp.generated.resources.app_broken_are_you_sure
@@ -261,7 +258,7 @@ fun SettingsScreen(
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-        if(sharedSettingsViewmodel.devSettingsEnabeled){
+        if(sharedSettingsViewmodel.devSettingsEnabled){
             SettingsOption(
                 Icons.Default.Code,
                 stringResource(Res.string.developer_settings),

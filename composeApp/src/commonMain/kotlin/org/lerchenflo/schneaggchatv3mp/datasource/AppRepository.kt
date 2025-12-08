@@ -406,6 +406,7 @@ class AppRepository(
     suspend fun dataSync() {
         if (dataSyncRunning) {
             println("Data sync canceled, already running")
+            return
         }
         dataSyncRunning = true
         userIdSync()
@@ -675,73 +676,86 @@ class AppRepository(
     }
 
 
-    suspend fun messageIdSync(page: Int = 0) {
+    suspend fun messageIdSync() {
+        println("MESSAGEIDSYNC CALLED START START START")
+
         val localmessages = messageRepository.getmessagechangeid()
+        val imagesToGet = mutableListOf<String>()
 
-        val messageSyncResponse = networkUtils.messageSync(
-            messageIds = localmessages.map { NetworkUtils.IdTimeStamp(it.id, it.changedate) },
-            page = page
-        )
+        var currentPage = 0
+        var moreMessages = true
 
-        val imagesToGet = emptyList<String>().toMutableList()
-        var moreMessages = false
+        while (moreMessages) {
+            println("Start messagesync part ${currentPage + 1}")
 
-        when (messageSyncResponse) {
-            is NetworkResult.Error<*> -> {println("messageid sync error")}
-            is NetworkResult.Success<NetworkUtils.MessageSyncResponse> -> {
-                //println("Messageid sync response: ${messageSyncResponse.data.toString()}")
+            val messageSyncResponse = networkUtils.messageSync(
+                messageIds = localmessages.map { NetworkUtils.IdTimeStamp(it.id, it.changedate) },
+                page = currentPage
+            )
 
-                val updatedMessages = messageSyncResponse.data.updatedMessages
-                val deletedMessages = messageSyncResponse.data.deletedMessages
-                moreMessages = messageSyncResponse.data.moreMessages
-
-                updatedMessages.forEach { messageResponse ->
-                    if (messageResponse.msgType == MessageType.IMAGE) {
-                        imagesToGet += messageResponse.messageId
-                    }
-
-                    else if (messageResponse.msgType == MessageType.TEXT) {
-                        val existing = database.messageDao().getMessageById(messageResponse.messageId)
-                        messageRepository.upsertMessage(
-                            Message(
-                                localPK = existing?.localPK ?: 0L,
-                                id = messageResponse.messageId,
-                                msgType = messageResponse.msgType,
-                                content = messageResponse.content,
-                                senderId = messageResponse.senderId,
-                                receiverId = messageResponse.receiverId,
-                                sendDate = messageResponse.sendDate.toString(),
-                                changeDate = messageResponse.lastChanged.toString(),
-                                deleted = messageResponse.deleted,
-                                groupMessage = messageResponse.groupMessage,
-                                answerId = messageResponse.answerId,
-                                sent = true,
-                                myMessage = messageResponse.senderId == SessionCache.ownId.value,
-                                readByMe = true, //TODO readerlist
-                                senderAsString = "",
-                                senderColor = 0,
-                                readers = emptyList() //TODO
-                            )
-                        )
-                    }
+            when (messageSyncResponse) {
+                is NetworkResult.Error<*> -> {
+                    println("messageid sync error")
+                    break // Stop on error
                 }
 
-                //Delete all non existing users
-                deletedMessages.forEach { id ->
-                    messageRepository.deleteMessage(id)
+                is NetworkResult.Success<NetworkUtils.MessageSyncResponse> -> {
+                    val updatedMessages = messageSyncResponse.data.updatedMessages
+                    val deletedMessages = messageSyncResponse.data.deletedMessages
+                    moreMessages = messageSyncResponse.data.moreMessages
+
+                    updatedMessages.forEach { messageResponse ->
+                        when (messageResponse.msgType) {
+                            MessageType.IMAGE -> {
+                                imagesToGet += messageResponse.messageId
+                            }
+
+                            MessageType.TEXT -> {
+                                val existing = database.messageDao().getMessageById(messageResponse.messageId)
+                                messageRepository.upsertMessage(
+                                    Message(
+                                        localPK = existing?.localPK ?: 0L,
+                                        id = messageResponse.messageId,
+                                        msgType = messageResponse.msgType,
+                                        content = messageResponse.content,
+                                        senderId = messageResponse.senderId,
+                                        receiverId = messageResponse.receiverId,
+                                        sendDate = messageResponse.sendDate.toString(),
+                                        changeDate = messageResponse.lastChanged.toString(),
+                                        deleted = messageResponse.deleted,
+                                        groupMessage = messageResponse.groupMessage,
+                                        answerId = messageResponse.answerId,
+                                        sent = true,
+                                        myMessage = messageResponse.senderId == SessionCache.ownId.value,
+                                        readByMe = true, //TODO readerlist
+                                        senderAsString = "",
+                                        senderColor = 0,
+                                        readers = emptyList() //TODO
+                                    )
+                                )
+                            }
+
+                            else -> { /* Handle other message types if needed */ }
+                        }
+                    }
+
+                    // Delete all non-existing messages
+                    deletedMessages.forEach { id ->
+                        messageRepository.deleteMessage(id)
+                    }
                 }
-
-
             }
+
+            currentPage++
         }
 
-        //Recursive call this function //TODO: TEST
-        if (moreMessages){
-            println("Start messagesync part ${page+1}")
-            messageIdSync(page = page + 1)
-        }
+        println("Messagesync completed. Total pages: $currentPage")
 
         //TODO: Get all images
+        if (imagesToGet.isNotEmpty()) {
+            println("Images to fetch: ${imagesToGet.size}")
+            // fetchImages(imagesToGet)
+        }
     }
 
 
