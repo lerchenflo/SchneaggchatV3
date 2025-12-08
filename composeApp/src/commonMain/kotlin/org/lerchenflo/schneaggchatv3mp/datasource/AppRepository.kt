@@ -684,15 +684,16 @@ class AppRepository(
         )
 
         val imagesToGet = emptyList<String>().toMutableList()
+        var moreMessages = false
 
         when (messageSyncResponse) {
             is NetworkResult.Error<*> -> {println("messageid sync error")}
             is NetworkResult.Success<NetworkUtils.MessageSyncResponse> -> {
-                println("Messageid sync response: ${messageSyncResponse.data.toString()}")
+                //println("Messageid sync response: ${messageSyncResponse.data.toString()}")
 
                 val updatedMessages = messageSyncResponse.data.updatedMessages
                 val deletedMessages = messageSyncResponse.data.deletedMessages
-                val moreMessages = messageSyncResponse.data.moreMessages
+                moreMessages = messageSyncResponse.data.moreMessages
 
                 updatedMessages.forEach { messageResponse ->
                     if (messageResponse.msgType == MessageType.IMAGE) {
@@ -730,14 +731,17 @@ class AppRepository(
                     messageRepository.deleteMessage(id)
                 }
 
-                //Recursive call this function //TODO: TEST
-                if (moreMessages){
-                    messageIdSync(page = page + 1)
-                }
+
             }
         }
 
-        //TODO: Get images
+        //Recursive call this function //TODO: TEST
+        if (moreMessages){
+            println("Start messagesync part ${page+1}")
+            messageIdSync(page = page + 1)
+        }
+
+        //TODO: Get all images
     }
 
 

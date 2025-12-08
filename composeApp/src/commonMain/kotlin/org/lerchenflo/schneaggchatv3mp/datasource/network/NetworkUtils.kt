@@ -473,7 +473,7 @@ class NetworkUtils(
 
     suspend fun messageSync(messageIds: List<IdTimeStamp>, page: Int) : NetworkResult<MessageSyncResponse, RequestError>{
         return safePost(
-            endpoint = "/messages/sync?page=$page&page_size=400",
+            endpoint = "/messages/sync?page=$page&page_size=1",
             body = messageIds
         )
     }

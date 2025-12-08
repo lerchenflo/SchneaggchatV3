@@ -229,10 +229,14 @@ fun App() {
                                                     duration = 15000
                                                 )
                                             )
-                                        }else {
-                                            //No error, execute sync
-                                            appRepository.dataSync()
                                         }
+                                    }
+                                    if (error == null){
+                                        //No error, execute sync
+                                        appRepository.dataSync()
+                                    }else {
+                                        navigator.navigate(Route.Login, exitAllPreviousScreens = true) //Clear backstack
+
                                     }
 
                                 }
