@@ -19,7 +19,7 @@ import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
 class UserSettingsViewModel(
     private val appRepository: AppRepository,
     private val preferenceManager: Preferencemanager,
-    private val navigator: Navigator
+    private val navigator: Navigator,
 ): ViewModel() {
 
 
@@ -34,13 +34,23 @@ class UserSettingsViewModel(
         //TODO: Update profile pic local and server
     }
 
+    fun sendEmailVerify(){
+        viewModelScope.launch {
+            appRepository.sendEmailVerify()
+        }
+
+        //TODO: Stringressource
+        SnackbarManager.showMessage("Verification email sent")
+    }
+
+    fun changeEmail(newEmail: String){
+        //TODO: Change email
+    }
+
+
     fun logout(){
         viewModelScope.launch {
-            appRepository.deleteAllAppData() // delete all app data when logging out
-            preferenceManager.saveTokens(tokenPair = NetworkUtils.TokenPair(accessToken = "", refreshToken = "")) // override credentials with empty string
-            SessionCache.clear() //Alle variabla löscja
-            SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
-
+            appRepository.logout()
             viewModelScope.launch {
                 navigator.navigate(Route.Login, exitAllPreviousScreens = true)
             }

@@ -3,6 +3,7 @@
 package org.lerchenflo.schneaggchatv3mp.datasource
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -15,8 +16,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
@@ -42,11 +45,13 @@ import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
 import schneaggchatv3mp.composeapp.generated.resources.error_invalid_credentials
+import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
 import kotlin.time.ExperimentalTime
 
 class AppRepository(
@@ -126,12 +131,24 @@ class AppRepository(
     **************************************************************************
      */
 
+    suspend fun sendEmailVerify(){
+        networkUtils.sendEmailVerify()
+    }
+
+
     /**
      * Delete all app data (for example on appdatadelete or logout)
      */
     suspend fun deleteAllAppData(){
         database.allDatabaseDao().clearAll()
         NotificationManager.removeToken()
+    }
+
+    suspend fun logout(){
+        deleteAllAppData() // delete all app data when logging out
+        preferencemanager.saveTokens(tokenPair = NetworkUtils.TokenPair(accessToken = "", refreshToken = "")) // override credentials with empty string
+        SessionCache.clear() //Alle variabla löscja
+        SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
     }
 
     /**

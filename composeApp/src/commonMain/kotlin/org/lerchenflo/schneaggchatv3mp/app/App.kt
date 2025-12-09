@@ -47,6 +47,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreator
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
@@ -210,6 +211,7 @@ fun App() {
                                     //Autologin
 
                                     val error = appRepository.refreshTokens()
+                                    println("Refresh token in autologin finished, error: $error")
 
                                     if (error == NetworkError.Unauthorized()){
                                         println("token refresh failed, rerouting to login")
@@ -220,6 +222,7 @@ fun App() {
                                                 duration = 5000L,
                                             )
                                         )
+                                        appRepository.logout()
                                         navigator.navigate(Route.Login, exitAllPreviousScreens = true) //Clear backstack
                                     }else {
                                         if (error == NetworkError.Unknown()){
@@ -236,7 +239,7 @@ fun App() {
                                     if (error == null){
                                         //No error, execute sync
                                         appRepository.dataSync()
-                                    }else {
+                                    }else if (!error.isConnectionError()) { //If it is not a connection error, but another (Access denied etc)
                                         navigator.navigate(Route.Login, exitAllPreviousScreens = true) //Clear backstack
 
                                     }

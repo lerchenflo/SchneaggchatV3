@@ -1,6 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -8,6 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Accessibility
@@ -36,6 +41,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -123,6 +129,7 @@ fun UserSettings(
 
     Column(
         modifier = modifier
+            .verticalScroll(rememberScrollState())
     ) {
         ActivityTitle(
             title = stringResource(Res.string.user_settings),
@@ -135,11 +142,13 @@ fun UserSettings(
             filepath = ownuser?.profilePictureUrl ?: "",
             modifier = Modifier
                 .padding(horizontal = 60.dp)
+                .widthIn(max = 250.dp) //Max width for desktop
                 .fillMaxWidth()
                 .clickable {
                     showImagePickerDialog = true
                 }
                 .padding(16.dp)
+                .align(Alignment.CenterHorizontally)
         )
 
 
@@ -172,9 +181,13 @@ fun UserSettings(
         SettingsOption(
             icon = Icons.Default.Mail,
             text = stringResource(Res.string.email),
-            subtext = if (ownuser?.isEmailVerified() == true) stringResource(Res.string.emailinfo) else stringResource(Res.string.emailinfo_unverified),
+            subtext = if (ownuser?.isEmailVerified() == true) stringResource(Res.string.emailinfo) else stringResource(Res.string.emailinfo_unverified) + "\n" + ownuser?.email,
             onClick = {
-                SnackbarManager.showMessage("joo muasch da was usdenka")
+                if (ownuser?.isEmailVerified() == true){
+                    //TODO: Email Change popup
+                }else {
+                    userSettingsViewModel.sendEmailVerify()
+                }
             },
             rightSideIcon = {
                 if (ownuser != null){

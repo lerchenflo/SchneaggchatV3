@@ -90,12 +90,12 @@ class NetworkUtils(
     // Helper function to map HTTP status codes to NetworkError
     private fun mapHttpStatusToError(statusCode: Int, message: String?): NetworkError {
         return when (statusCode) {
-            401 -> NetworkError.Unauthorized()
-            408 -> NetworkError.RequestTimeout()
-            409 -> NetworkError.Conflict()
-            413 -> NetworkError.PayloadTooLarge()
-            429 -> NetworkError.TooManyRequests()
-            in 500..599 -> NetworkError.ServerError()
+            401 -> NetworkError.Unauthorized(message = message)
+            408 -> NetworkError.RequestTimeout(message = message)
+            409 -> NetworkError.Conflict(message = message)
+            413 -> NetworkError.PayloadTooLarge(message = message)
+            429 -> NetworkError.TooManyRequests(message = message)
+            in 500..599 -> NetworkError.ServerError(message = message)
             else -> NetworkError.Unknown(message = message)
         }
     }
@@ -253,6 +253,14 @@ class NetworkUtils(
             NetworkResult.Error(NetworkError.Unknown(message = e.message))
         }
     }
+
+    suspend fun sendEmailVerify(){
+        safePost<Any, Any>(
+            endpoint = "/users/verificationemail",
+            body = ""
+        )
+    }
+
 
     @Serializable
     data class RefreshRequest(
