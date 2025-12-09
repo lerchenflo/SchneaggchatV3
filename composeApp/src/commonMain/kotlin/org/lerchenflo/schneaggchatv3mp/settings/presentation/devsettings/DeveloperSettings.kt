@@ -71,7 +71,6 @@ fun DeveloperSettings(
             text = stringResource(Res.string.change_server_url),
             subtext = null,
             onClick = {
-                println("change server url clicked")
                 showChangeServerUrlPopup = true
             }
         )
@@ -95,7 +94,10 @@ fun DeveloperSettings(
 
         UrlChangeDialog(
             onDismiss = { showChangeServerUrlPopup = false },
-            onConfirm = { sharedSettingsViewmodel.updateServerUrl(it) },
+            onConfirm = {
+                sharedSettingsViewmodel.updateServerUrl(it)
+                showChangeServerUrlPopup = false
+                        },
             serverUrl = sharedSettingsViewmodel.serverUrl
         )
 

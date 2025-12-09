@@ -181,9 +181,13 @@ fun UserSettings(
         SettingsOption(
             icon = Icons.Default.Mail,
             text = stringResource(Res.string.email),
-            subtext = if (ownuser?.isEmailVerified() == true) stringResource(Res.string.emailinfo) else stringResource(Res.string.emailinfo_unverified),
+            subtext = if (ownuser?.isEmailVerified() == true) stringResource(Res.string.emailinfo) else stringResource(Res.string.emailinfo_unverified) + "\n" + ownuser?.email,
             onClick = {
-                SnackbarManager.showMessage("joo muasch da was usdenka")
+                if (ownuser?.isEmailVerified() == true){
+                    //TODO: Email Change popup
+                }else {
+                    userSettingsViewModel.sendEmailVerify()
+                }
             },
             rightSideIcon = {
                 if (ownuser != null){

@@ -211,6 +211,7 @@ fun App() {
                                     //Autologin
 
                                     val error = appRepository.refreshTokens()
+                                    println("Refresh token in autologin finished, error: $error")
 
                                     if (error == NetworkError.Unauthorized()){
                                         println("token refresh failed, rerouting to login")
@@ -221,6 +222,7 @@ fun App() {
                                                 duration = 5000L,
                                             )
                                         )
+                                        appRepository.logout()
                                         navigator.navigate(Route.Login, exitAllPreviousScreens = true) //Clear backstack
                                     }else {
                                         if (error == NetworkError.Unknown()){
