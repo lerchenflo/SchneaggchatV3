@@ -19,6 +19,11 @@ sealed class NetworkError : RequestError {
         override val message: String? = null
     ) : NetworkError()
 
+    data class NotFound(
+        override val errorCode: Int = 404,
+        override val message: String? = null
+    ) : NetworkError()
+
     data class Conflict(
         override val errorCode: Int = 409,
         override val message: String? = null
