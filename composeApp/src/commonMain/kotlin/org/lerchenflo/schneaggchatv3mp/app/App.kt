@@ -47,6 +47,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreator
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
@@ -236,7 +237,7 @@ fun App() {
                                     if (error == null){
                                         //No error, execute sync
                                         appRepository.dataSync()
-                                    }else {
+                                    }else if (!error.isConnectionError()) { //If it is not a connection error, but another (Access denied etc)
                                         navigator.navigate(Route.Login, exitAllPreviousScreens = true) //Clear backstack
 
                                     }

@@ -1,9 +1,13 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings
 
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Lightbulb
@@ -42,6 +46,7 @@ fun DeveloperSettings(
 
     Column(
         modifier = modifier
+            .verticalScroll(rememberScrollState())
     ) {
         ActivityTitle(
             title = stringResource(Res.string.developer_settings),

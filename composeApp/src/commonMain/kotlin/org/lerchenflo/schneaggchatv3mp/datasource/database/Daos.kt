@@ -87,11 +87,11 @@ interface MessageDao {
 
     @Transaction
     @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ")
-    fun getMessagesByUserId(userId: String, gruppe: Boolean): List<MessageWithReadersDto>
+    suspend fun getMessagesByUserId(userId: String, gruppe: Boolean): List<MessageWithReadersDto>
 
     @Transaction
-    @Query("SELECT * FROM messages WHERE id = :Id")
-    fun getMessageById(Id: String): MessageWithReadersDto?
+    @Query("SELECT * FROM messages WHERE id = :msgid")
+    suspend fun getMessageById(msgid: String): MessageWithReadersDto?
 
     @Query("SELECT id, changedate FROM messages WHERE id != 0")
     suspend fun getMessageIdsWithChangeDates(): List<IdChangeDate>

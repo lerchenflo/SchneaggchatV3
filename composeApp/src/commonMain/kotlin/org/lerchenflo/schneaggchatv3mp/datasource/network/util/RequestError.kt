@@ -53,8 +53,16 @@ sealed class NetworkError : RequestError {
         override val errorCode: Int = -2,
         override val message: String? = null
     ) : NetworkError()
+
+
 }
 
+fun RequestError.isConnectionError(): Boolean {
+    return this is NetworkError.NoInternet ||
+            this is NetworkError.RequestTimeout ||
+            (this is NetworkError && this.errorCode == 0) ||
+            (this is NetworkError && this.errorCode == 408)
+}
 
 fun errorCodeToMessage(code: Int?): String = when (code) {
     401 -> "Access denied (invalid credentials)"
