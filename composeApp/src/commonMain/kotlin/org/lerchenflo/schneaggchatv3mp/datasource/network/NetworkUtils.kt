@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.request.*
@@ -78,6 +79,9 @@ class NetworkUtils(
         } catch (e: SocketTimeoutException) {
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.RequestTimeout())
+        } catch (e: ConnectTimeoutException) {
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: SerializationException) {
             NetworkResult.Error(NetworkError.Serialization(message = e.message))
         } catch (e: Exception) {
@@ -91,6 +95,7 @@ class NetworkUtils(
     private fun mapHttpStatusToError(statusCode: Int, message: String?): NetworkError {
         return when (statusCode) {
             401 -> NetworkError.Unauthorized(message = message)
+            404 -> NetworkError.NotFound(message = message)
             408 -> NetworkError.RequestTimeout(message = message)
             409 -> NetworkError.Conflict(message = message)
             413 -> NetworkError.PayloadTooLarge(message = message)

@@ -202,51 +202,70 @@ fun App() {
 
                         //Load initial credentials
                         LaunchedEffect(Unit) {
-                            val savedCreds = appRepository.loadSavedLoginConfig()
+                            //Load saved credentials (Tokens, Userid)
+                            val savedCreds = appRepository.loadSavedLoginConfig() //Returns boolean
 
-                            if (savedCreds) {
-                                navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true) //Clear backstack
+                            if (!savedCreds){
+                                //No tokens are saved, we navigate to the login
+                                navigator.navigate(Route.Login, exitAllPreviousScreens = true)
+                            }
 
-                                globalViewModel.viewModelScope.launch {
-                                    //Autologin
+                            //At this point there were credentials loaded from storage
 
-                                    val error = appRepository.refreshTokens()
-                                    println("Refresh token in autologin finished, error: $error")
+                            //Navigate to the chat
+                            navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
 
-                                    if (error == NetworkError.Unauthorized()){
-                                        println("token refresh failed, rerouting to login")
-                                        AppRepository.trySendError(
-                                            event = AppRepository.ErrorChannel.ErrorEvent(
-                                                401,
-                                                errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
-                                                duration = 5000L,
-                                            )
-                                        )
-                                        appRepository.logout()
-                                        navigator.navigate(Route.Login, exitAllPreviousScreens = true) //Clear backstack
-                                    }else {
-                                        if (error == NetworkError.Unknown()){
-                                            //TODO: Fix errors when found
-                                            AppRepository.trySendError(
-                                                event = AppRepository.ErrorChannel.ErrorEvent(
-                                                    errorMessage = "Login unbekannter error bitte screenshot an flo (hoffentlich gits a fehlermeldung",
-                                                    error = error,
-                                                    duration = 15000
-                                                )
-                                            )
-                                        }
-                                    }
-                                    if (error == null){
-                                        //No error, execute sync
-                                        appRepository.dataSync()
-                                    }else if (!error.isConnectionError()) { //If it is not a connection error, but another (Access denied etc)
-                                        navigator.navigate(Route.Login, exitAllPreviousScreens = true) //Clear backstack
+                            //Launch a token refresh async
+                            globalViewModel.viewModelScope.launch {
 
-                                    }
+                                //Refresh the tokens (If there is an error which is not a network error (Access denied, tokens invalidated) we need to log out again)
+                                val error = appRepository.refreshTokens()
 
+                                //If no error happenend, sync all data with the server and return
+                                if (error == null) {
+                                    appRepository.dataSync()
+                                    return@launch
                                 }
-                            } else {
-                                navigator.navigate(Route.Login, exitAllPreviousScreens = true) //Clear backstack
+
+                                //At this point an error happened during token refresh
+                                println("Autologin token refresh error: $error")
+
+                                //Is the error a connection error (Connection to the server could not be established)
+                                if (error.isConnectionError()){
+                                    println("Autologin connection error")
+
+                                    //No sense to sync data, return
+                                    return@launch
+                                }
+
+
+                                //Now there should only be real server errors left
+                                if (error == NetworkError.Unauthorized()){
+                                    println("Autologin not permitted by server, rerouting to login")
+
+                                    //Throwing an error message for the user
+                                    AppRepository.trySendError(
+                                        event = AppRepository.ErrorChannel.ErrorEvent(
+                                            401,
+                                            errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
+                                            duration = 5000L,
+                                        )
+                                    )
+
+                                    //deleting all saved credentials, they will be invalid on next app start too
+                                    appRepository.logout()
+
+                                    //Navigate back to the loginscreen
+                                    navigator.navigate(Route.Login, exitAllPreviousScreens = true)
+                                }else {
+                                    //Log any other error which might occur
+                                    AppRepository.trySendError(
+                                        event = AppRepository.ErrorChannel.ErrorEvent(
+                                            error = error,
+                                            duration = 15000
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
@@ -269,7 +288,6 @@ fun App() {
                     entry<Route.Chat> {
                         ChatScreen()
                     }
-
                     entry<Route.ChatDetails> {
                         ChatDetails()
                     }
