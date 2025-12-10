@@ -85,19 +85,28 @@ fun createHttpClient(
                         }
 
                         val rawBody = response.body<String>()
-                        println("Raw response body: $rawBody")
+                        println("Httpclient tokenrefresh raw body: $rawBody")
 
-                        val responseTokens = Json.decodeFromString<NetworkUtils.TokenPair>(rawBody)
 
-                        println("Parsed tokens: $responseTokens")
+                        try {
+                            val responseTokens = Json.decodeFromString<NetworkUtils.TokenPair>(rawBody)
 
-                        // Save new tokens
-                        preferenceManager.saveTokens(responseTokens)
+                            println("httpclient saving tokens: $responseTokens")
+                            // Save new tokens
+                            preferenceManager.saveTokens(responseTokens)
 
-                        BearerTokens(
-                            accessToken = responseTokens.accessToken,
-                            refreshToken = responseTokens.refreshToken
-                        )
+                            BearerTokens(
+                                accessToken = responseTokens.accessToken,
+                                refreshToken = responseTokens.refreshToken
+                            )
+                        }catch (e: Exception){
+                            println("Httpclient token refresh error:")
+                            e.printStackTrace()
+                            null
+                        }
+
+
+
                     }
 
                     /*

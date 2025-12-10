@@ -126,24 +126,4 @@ object SessionCache {
         }
     }
 
-    // Alternative: More detailed version with token info
-    fun toDetailedString(): String {
-        return buildString {
-            appendLine("SessionCache {")
-            appendLine("  tokens: ${tokens?.let { "TokenPair(accessToken=${it.accessToken.take(20)}..., refreshToken=${it.refreshToken.take(20)}...)" } ?: "null"}")
-            appendLine("  ownId: ${ownId.value ?: "null"}")
-            appendLine("  developer: $developer")
-            appendLine("  username: $username")
-            appendLine("  loggedIn: $loggedIn")
-            appendLine("  online: ${onlineFlow.value}")
-            append("}")
-        }
-    }
-
-    // Alternative: Compact single-line version
-    fun toCompactString(): String {
-        return "SessionCache(ownId=${ownId.value}, username=$username, loggedIn=$loggedIn, online=${onlineFlow.value}, developer=$developer, hasTokens=${tokens != null})"
-    }
-
-
 }

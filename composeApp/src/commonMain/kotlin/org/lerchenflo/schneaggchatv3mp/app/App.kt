@@ -240,7 +240,7 @@ fun App() {
 
 
                                 //Now there should only be real server errors left
-                                if (error == NetworkError.Unauthorized()){
+                                if (error is NetworkError.Unauthorized){
                                     println("Autologin not permitted by server, rerouting to login")
 
                                     //Throwing an error message for the user
