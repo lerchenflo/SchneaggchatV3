@@ -333,7 +333,7 @@ class AppRepository(
         SessionCache.updateOwnId(userid)
         SessionCache.updateLoggedIn(true)
         SessionCache.updateOnline(true)
-        println("Sessioncache: ${SessionCache.toDetailedString()}")
+        println(SessionCache.toString())
     }
 
 
@@ -349,7 +349,7 @@ class AppRepository(
 
         val tokens = preferencemanager.getTokens()
 
-        println("Token refresh networktask starting: $tokens")
+        //println("Token refresh networktask starting: $tokens")
         return when(val result = networkUtils.refresh(tokens.refreshToken)){
             is NetworkResult.Error<*> -> {
                 println("Refreshing tokens failed: ${result.error}")
