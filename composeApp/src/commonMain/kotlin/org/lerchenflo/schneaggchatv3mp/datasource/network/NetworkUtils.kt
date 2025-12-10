@@ -171,7 +171,7 @@ class NetworkUtils(
 
     suspend fun test() : NetworkResult<String, NetworkError> {
         return safeAuthGet<Any, String>(
-            endpoint = "/test",
+            endpoint = "/public/test",
             body = ""
         )
 
