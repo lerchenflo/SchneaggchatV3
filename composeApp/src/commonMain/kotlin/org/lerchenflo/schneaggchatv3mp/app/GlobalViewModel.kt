@@ -26,6 +26,8 @@ class GlobalViewModel(
         //println("SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT")
 
 
+        NotificationManager.initialize()
+
         //TODO: Sync alle 10 sek oda so der an login macht wenn du offline bisch und location und so
     }
 

@@ -6,78 +6,86 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
-import org.koin.compose.getKoin
-import org.koin.compose.koinInject
-import org.koin.core.component.KoinComponent
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import kotlin.random.Random
 
 object NotificationManager{
 
 
-    var initialized = false
+    private var initialized = false
+
     /**
      * Initialize the Notificationmanager (Listeners etc)
+     * Should be called once during app startup
      */
     fun initialize() {
-        if (initialized){
-           return
+        if (initialized) {
+            println("NotificationManager already initialized, skipping")
+            return
         }
-        initialized = true
-
-        val appRepository = KoinPlatform.getKoin().get<AppRepository>()
 
         try {
             NotifierManager.setLogger { message ->
-                // Log the message
-                println("KMPNotifier log: " + message)
+                println("KMPNotifier log: $message")
             }
 
-            //Token change listener
+            // Token change listener
             NotifierManager.addListener(object : NotifierManager.Listener {
                 override fun onNewToken(token: String) {
+                    println("onNewToken: $token")
 
-                    if (SessionCache.loggedIn){
-                        CoroutineScope(Dispatchers.IO).launch{
-                            appRepository.setFirebaseToken(token)
-                            println("onNewToken: $token")
+                    if (SessionCache.loggedIn) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                                appRepository.setFirebaseToken(token)
+                                println("Token successfully updated in repository")
+                            } catch (e: Exception) {
+                                println("Error updating token: ${e.message}")
+                                e.printStackTrace()
+                            }
+                        }
+                    } else {
+                        println("User not logged in, token not updated")
+                    }
+                }
+            })
+
+            // Payload data listener
+            NotifierManager.addListener(object : NotifierManager.Listener {
+                override fun onPayloadData(data: PayloadData) {
+                    println("Push Notification received with payload: $data")
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            showNotification("Neue noti", "Data: $data")
+                        } catch (e: Exception) {
+                            println("Error showing notification: ${e.message}")
+                            e.printStackTrace()
                         }
                     }
                 }
             })
 
-
-            NotifierManager.addListener(object : NotifierManager.Listener {
-                override fun onPayloadData(data: PayloadData) {
-                    println("Push Notification do-----------------------------------------") //PayloadData is just typeAlias for Map<String,*>.
-
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        println("Push Notification payloadData: $data") //PayloadData is just typeAlias for Map<String,*>.
-                        showNotification("Neue noti", "Data: $data")
-                    }
-                }
-            })
-
-
+            // Notification clicked listener
             NotifierManager.addListener(object : NotifierManager.Listener {
                 override fun onNotificationClicked(data: PayloadData) {
                     super.onNotificationClicked(data)
-                    println("Notification clicked, Notification payloadData: $data")
+                    println("Notification clicked with payload: $data")
+                    // TODO: Handle navigation or other actions
                 }
             })
 
-        }catch (e: Exception){
+            initialized = true
+            println("NotificationManager initialization completed")
+
+        } catch (e: Exception) {
+            println("Error initializing NotificationManager: ${e.message}")
             e.printStackTrace()
         }
-
-
-
-        println("Notificationmanager init fertig")
     }
 
 

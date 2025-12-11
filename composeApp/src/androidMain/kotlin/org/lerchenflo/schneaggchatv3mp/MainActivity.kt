@@ -25,8 +25,6 @@ class MainActivity : ComponentActivity() {
         permissionUtil.askNotificationPermission()
 
 
-
-
         setContent {
             App()
         }

@@ -1,7 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp
 
 import android.app.Application
+import com.mmk.kmpnotifier.extensions.onCreateOrOnNewIntent
 import com.mmk.kmpnotifier.notification.NotifierManager
+import com.mmk.kmpnotifier.notification.PayloadData
 import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfiguration
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -44,6 +46,13 @@ class MainApp: Application() {
                 showPushNotification = true
             )
         )
+
+        NotifierManager.addListener(object : NotifierManager.Listener {
+            override fun onPayloadData(data: PayloadData) {
+                println("Push Notification payloadData from android side(MainApp.kt): $data") //PayloadData is just typeAlias for Map<String,*>.
+            }
+        })
+
 
         println("Android firebase init fertig")
 

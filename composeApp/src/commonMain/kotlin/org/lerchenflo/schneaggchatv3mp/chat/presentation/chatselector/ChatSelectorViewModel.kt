@@ -66,12 +66,11 @@ class ChatSelectorViewModel(
             refresh()
         }
 
-        NotificationManager.initialize()
-
         viewModelScope.launch {
             CoroutineScope(Dispatchers.IO).launch {
-                println("Firebasetoken: ${NotificationManager.getToken()}")
-                appRepository.setFirebaseToken(NotificationManager.getToken())
+                val token = NotificationManager.getToken()
+                //println("Firebasetoken: $token")
+                appRepository.setFirebaseToken(token)
             }
         }
 
