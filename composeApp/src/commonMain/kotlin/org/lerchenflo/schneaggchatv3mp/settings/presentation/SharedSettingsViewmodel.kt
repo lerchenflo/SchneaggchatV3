@@ -73,5 +73,4 @@ class SharedSettingsViewmodel(
     var ownUser by mutableStateOf<User?>(null)
         private set
 
-
 }

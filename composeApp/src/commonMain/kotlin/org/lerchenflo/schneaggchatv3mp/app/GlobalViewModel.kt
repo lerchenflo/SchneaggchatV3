@@ -26,15 +26,6 @@ class GlobalViewModel(
         //println("SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT")
 
 
-        NotificationManager.initialize(networkUtils)
-
-        viewModelScope.launch {
-            CoroutineScope(Dispatchers.IO).launch {
-                println("Firebasetoken: ${NotificationManager.getToken()}")
-            }
-        }
-
-
         //TODO: Sync alle 10 sek oda so der an login macht wenn du offline bisch und location und so
     }
 

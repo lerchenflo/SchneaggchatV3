@@ -10,6 +10,7 @@ import org.koin.compose.getKoin
 import org.koin.compose.koinInject
 import org.koin.core.component.KoinComponent
 import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
@@ -18,10 +19,15 @@ import kotlin.random.Random
 object NotificationManager{
 
 
+    var initialized = false
     /**
      * Initialize the Notificationmanager (Listeners etc)
      */
     fun initialize() {
+        if (initialized){
+           return
+        }
+        initialized = true
 
         val appRepository = KoinPlatform.getKoin().get<AppRepository>()
 
@@ -34,9 +40,12 @@ object NotificationManager{
             //Token change listener
             NotifierManager.addListener(object : NotifierManager.Listener {
                 override fun onNewToken(token: String) {
-                    CoroutineScope(Dispatchers.IO).launch{
-                        appRepository.setFirebaseToken(token)
-                        println("onNewToken: $token")
+
+                    if (SessionCache.loggedIn){
+                        CoroutineScope(Dispatchers.IO).launch{
+                            appRepository.setFirebaseToken(token)
+                            println("onNewToken: $token")
+                        }
                     }
                 }
             })
@@ -44,34 +53,13 @@ object NotificationManager{
 
             NotifierManager.addListener(object : NotifierManager.Listener {
                 override fun onPayloadData(data: PayloadData) {
-                    println("Push Notification payloadData: $data") //PayloadData is just typeAlias for Map<String,*>.
+                    println("Push Notification do-----------------------------------------") //PayloadData is just typeAlias for Map<String,*>.
 
-                    val action = data.get("action")
 
-                    when (action) {
-                        "getmessagewithid" -> {
-                            val msgid = data.get("msgid")
-
-                            CoroutineScope(Dispatchers.IO).launch {
-                                /* TODO FIREBASE
-                                val request = networkUtils.getmessagebyid(msgid.toString().toLong())
-
-                                val json = Json {
-                                    prettyPrint = false
-                                    ignoreUnknownKeys = true
-                                }
-
-                                request.onSuccessWithBody {responseheaders, body ->
-                                    val message = json.decodeFromString<MessageDto>(body)
-                                    showNotification(message.toMessage())
-                                }
-
-                                 */
-                            }
-                        }
+                    CoroutineScope(Dispatchers.IO).launch {
+                        println("Push Notification payloadData: $data") //PayloadData is just typeAlias for Map<String,*>.
+                        showNotification("Neue noti", "Data: $data")
                     }
-
-                    showNotification("Neue noti", "Data: $data")
                 }
             })
 

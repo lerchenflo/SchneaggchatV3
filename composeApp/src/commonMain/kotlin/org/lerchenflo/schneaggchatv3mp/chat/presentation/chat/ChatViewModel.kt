@@ -39,6 +39,8 @@ class ChatViewModel(
 
     val globalViewModel: GlobalViewModel = KoinPlatform.getKoin().get()
 
+    var markdownEnabled by mutableStateOf(false)
+        private set
 
     init {
         initPrefs()
@@ -126,8 +128,7 @@ class ChatViewModel(
         }
     }
 
-    var markdownEnabled by mutableStateOf(false)
-        private set
+
 
 
 }
