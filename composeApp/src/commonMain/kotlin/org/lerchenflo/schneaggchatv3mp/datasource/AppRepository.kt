@@ -131,6 +131,10 @@ class AppRepository(
     **************************************************************************
      */
 
+    suspend fun setFirebaseToken(token: String) {
+        networkUtils.setFirebaseToken(token)
+    }
+
     suspend fun sendEmailVerify(){
         networkUtils.sendEmailVerify()
     }
@@ -148,6 +152,7 @@ class AppRepository(
         deleteAllAppData() // delete all app data when logging out
         preferencemanager.saveTokens(tokenPair = NetworkUtils.TokenPair(accessToken = "", refreshToken = "")) // override credentials with empty string
         SessionCache.clear() //Alle variabla löscja
+        NotificationManager.removeToken()
         SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
     }
 

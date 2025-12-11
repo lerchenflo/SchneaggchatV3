@@ -280,6 +280,14 @@ class NetworkUtils(
     }
 
 
+    suspend fun setFirebaseToken(token: String) : NetworkResult<Any, NetworkError> {
+        return safePost(
+            endpoint = "/users/setfirebasetoken?token=$token",
+            body = ""
+        )
+    }
+
+
 
 
 
