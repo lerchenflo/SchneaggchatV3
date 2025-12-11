@@ -6,7 +6,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import org.koin.compose.getKoin
+import org.koin.compose.koinInject
+import org.koin.core.component.KoinComponent
+import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import kotlin.random.Random
 
@@ -16,7 +21,9 @@ object NotificationManager{
     /**
      * Initialize the Notificationmanager (Listeners etc)
      */
-    fun initialize(networkUtils: NetworkUtils) {
+    fun initialize() {
+
+        val appRepository = KoinPlatform.getKoin().get<AppRepository>()
 
         try {
             NotifierManager.setLogger { message ->
@@ -28,10 +35,9 @@ object NotificationManager{
             NotifierManager.addListener(object : NotifierManager.Listener {
                 override fun onNewToken(token: String) {
                     CoroutineScope(Dispatchers.IO).launch{
-                        //TODO : Firebase
-                        //networkUtils.setFirebaseToken(token)
+                        appRepository.setFirebaseToken(token)
+                        println("onNewToken: $token")
                     }
-                    println("onNewToken: $token") //Update user token in the server if needed
                 }
             })
 
@@ -77,10 +83,6 @@ object NotificationManager{
                 }
             })
 
-            CoroutineScope(Dispatchers.IO).launch {
-                //TODO FIREBASE
-                //networkUtils.setFirebaseToken(getToken())
-            }
         }catch (e: Exception){
             e.printStackTrace()
         }
