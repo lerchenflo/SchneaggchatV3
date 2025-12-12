@@ -18,6 +18,7 @@ import io.ktor.util.network.UnresolvedAddressException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
@@ -169,12 +170,10 @@ class NetworkUtils(
 
 
 
-    suspend fun test() : NetworkResult<String, NetworkError> {
-        return safeAuthGet<Any, String>(
-            endpoint = "/public/test",
-            body = ""
-        )
-
+    suspend fun testServer(serverUrl: String) : NetworkResult<String, NetworkError> {
+        return safeCall {
+            authHttpClient.get(serverUrl + "/public/test")
+        }
     }
 
 

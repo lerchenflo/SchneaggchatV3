@@ -5,9 +5,7 @@ import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.datasource.network.PICTUREMESSAGE
 
 @Serializable
 @Entity(

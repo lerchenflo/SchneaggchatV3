@@ -175,7 +175,7 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
-        versionName = "1.0"
+        versionName = "3.0-beta"
     }
     packaging {
         resources {
@@ -201,7 +201,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "org.lerchenflo.schneaggchatv3mp"
-            packageVersion = "1.0.0"
+            packageVersion = "3.0.0"
         }
     }
 }

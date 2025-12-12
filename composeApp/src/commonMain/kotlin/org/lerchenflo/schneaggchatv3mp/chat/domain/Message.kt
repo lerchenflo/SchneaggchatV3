@@ -1,11 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
-import androidx.compose.material3.rememberTimePickerState
-import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
-import org.lerchenflo.schneaggchatv3mp.datasource.network.PICTUREMESSAGE
 
 enum class MessageType {
     TEXT,
