@@ -1,12 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp
 
-var URL_PRIVACY = "https://schneaggchat.lerchenflo.eu/privacypolicy/index.html"
+val BASE_SERVER_URL = "https://schneaggchatv3.lerchenflo.eu"
 
-var URL_INSTAGRAM =
-    "https://www.instagram.com/schneaggchat?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+var URL_PRIVACY = "$BASE_SERVER_URL/privacypolicy.html"
 
+var URL_INSTAGRAM = "https://www.instagram.com/schneaggchat?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
 
-var LOGFILE_NAME = "zzzlogs.txt"
 
 var USERPROFILEPICTURE_FILE_NAME = ".upb"
 

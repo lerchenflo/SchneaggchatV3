@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.getString
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -158,10 +159,11 @@ class AppRepository(
     }
 
     /**
-     * Test the currently saved endpoint
+     * Test the endpoint
      */
-    suspend fun testServer() : Boolean {
-        return when(val response = networkUtils.test()){
+    suspend fun testServer(serverUrl: String = BASE_SERVER_URL) : Boolean {
+        println("Testing server: $serverUrl")
+        return when(networkUtils.testServer(serverUrl)){
             is NetworkResult.Error<*> -> false
             is NetworkResult.Success<*> -> true
         }

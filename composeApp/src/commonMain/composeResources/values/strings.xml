@@ -173,6 +173,6 @@
     <string name="appearance_settings">Appearance</string>
     <string name="appearance_settings_info">Change the appearance of your app</string>
 
-
+    <string name="use_default_server">Use default server</string>
 
 </resources>

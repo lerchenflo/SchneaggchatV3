@@ -1,15 +1,11 @@
 [versions]
-agp = "8.13.1"
+agp = "8.13.2"
 android-compileSdk = "36"
 android-minSdk = "26"
 android-targetSdk = "36"
 androidx-activity = "1.12.1"
-androidx-appcompat = "1.7.1"
-androidx-core = "1.17.0"
-androidx-espresso = "3.7.0"
+
 androidx-lifecycle = "2.10.0-alpha06"
-androidx-testExt = "1.3.0"
-coilCompose = "2.7.0"
 coilComposeVersion = "3.3.0"
 componentsResources = "1.10.0-rc01"
 composeHotReload = "1.0.0"
@@ -17,7 +13,6 @@ composeMultiplatform = "1.10.0-rc01"
 encoding = "2.5.0"
 foundation = "1.10.0-rc01"
 githubImagepickerkmp = "1.0.28"
-junit = "4.13.2"
 
 jwtKt = "1.2.1"
 kotlin = "2.2.21"
@@ -32,8 +27,6 @@ runtime = "1.10.0-rc01"
 sqlite = "2.6.2"
 kotlinx-datetime = "0.7.1"
 
-navigationCompose = "2.9.1"
-kotlinSerialization = "1.9.0"
 koin-core = "4.1.1"
 koin-annotations = "2.3.1"
 ktor = "3.3.3"
@@ -42,7 +35,6 @@ datastore = "1.2.0"
 
 mikepenz-markdown = "0.38.1"
 kmpnotifier = "1.6.1"
-startupRuntime = "1.2.0"
 uiToolingPreview = "1.10.0-rc01"
 
 cmpNavigation3 = "1.0.0-alpha06"
@@ -55,15 +47,8 @@ github-imagepickerkmp = { module = "io.github.ismoy:imagepickerkmp", version.ref
 jwt-kt = { module = "com.appstractive:jwt-kt", version.ref = "jwtKt" }
 kmpnotifier = { module = "io.github.mirzemehdi:kmpnotifier", version.ref = "kmpnotifier"}
 base64 = { module = "io.matthewnelson.encoding:base64", version.ref = "encoding" }
-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 coil3-coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilComposeVersion" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
-junit = { module = "junit:junit", version.ref = "junit" }
-androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
-androidx-testExt-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-testExt" }
-androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidx-espresso" }
-androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
@@ -71,7 +56,6 @@ kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-s
 material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
-room-runtime-android = { module = "androidx.room:room-runtime-android", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "runtime" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
@@ -81,9 +65,6 @@ material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adapti
 
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin-core" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koin-core" }
-androidx-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
-jetbrains-compose-navigation = { group = "org.jetbrains.androidx.navigation", name = "navigation-compose", version.ref= "navigationCompose"}
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerialization" }
 
 jetbrains-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "cmpNavigation3" }
 jetbrains-lifecycle-viewmodel-nav3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle" }
@@ -105,11 +86,8 @@ koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin-cor
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin-core" }
 koin-compose-viewmodel-navigation = { module = "io.insert-koin:koin-compose-viewmodel-navigation", version.ref = "koin-core" }
 koin-annotations = { module = "io.insert-koin:koin-annotations", version.ref = "koin-annotations" }
-koin-ksp-compiler = { module = "io.insert-koin:koin-ksp-compiler", version.ref = "koin-annotations" }
 
-mikepenzMultiplatformMarkdown = { module = "com.mikepenz:multiplatform-markdown-renderer", version.ref = "mikepenz-markdown" }
 mikepenzMultiplatformMarkdownM3 = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "mikepenz-markdown" }
-androidx-startup-runtime = { module = "androidx.startup:startup-runtime", version.ref = "startupRuntime" }
 ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "uiToolingPreview" }
 ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "uiToolingPreview" }
 ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
