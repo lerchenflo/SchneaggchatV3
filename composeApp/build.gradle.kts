@@ -32,7 +32,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
-            export("io.github.mirzemehdi:kmpnotifier:1.6.0")
+            export("io.github.mirzemehdi:kmpnotifier:1.6.1")
         }
     }
 

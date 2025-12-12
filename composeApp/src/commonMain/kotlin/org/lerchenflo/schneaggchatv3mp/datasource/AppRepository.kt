@@ -132,6 +132,7 @@ class AppRepository(
      */
 
     suspend fun setFirebaseToken(token: String) {
+        println("Sending firebase token to server...")
         networkUtils.setFirebaseToken(token)
     }
 
