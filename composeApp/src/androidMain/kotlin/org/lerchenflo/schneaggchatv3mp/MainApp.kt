@@ -14,6 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.di.androidPictureManagerModule
 import org.lerchenflo.schneaggchatv3mp.di.androidUserDatabaseModule
 import org.lerchenflo.schneaggchatv3mp.di.androidVersionModule
 import org.lerchenflo.schneaggchatv3mp.di.sharedmodule
+import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 
 class MainApp: Application() {
 
@@ -46,6 +47,9 @@ class MainApp: Application() {
                 showPushNotification = true
             )
         )
+
+        //Initialize notificationmanager to catch payload in common code
+        NotificationManager.initialize()
 
         NotifierManager.addListener(object : NotifierManager.Listener {
             override fun onPayloadData(data: PayloadData) {
