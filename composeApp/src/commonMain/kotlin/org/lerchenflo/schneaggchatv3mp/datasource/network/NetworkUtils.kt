@@ -189,7 +189,8 @@ class NetworkUtils(
     @Serializable
     data class TokenPair(
         val accessToken: String,
-        val refreshToken: String
+        val refreshToken: String,
+        val encryptionKey: String? = null
     )
 
     @Serializable
