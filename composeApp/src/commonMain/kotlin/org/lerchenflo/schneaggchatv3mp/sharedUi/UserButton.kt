@@ -188,7 +188,7 @@ fun UserButton(
                                 } else if (lastMessage.isGroupMessage()) {
                                     lastMessage.senderAsString + ": "
                                 } else {
-                                    ""
+                                    lastMessage.senderAsString + ": "
                                 }
                                 ) + lastMessage.content,
                         style = MaterialTheme.typography.bodyMedium.copy(

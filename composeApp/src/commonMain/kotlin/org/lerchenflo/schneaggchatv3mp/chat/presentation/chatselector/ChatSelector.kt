@@ -162,6 +162,9 @@ fun Chatauswahlscreen(
                 val touchSize = 40.dp
                 val iconSize = 28.dp
                 val gap = 0.dp
+
+                /*
+
                 Box(
                     modifier = Modifier
                         .padding(2.dp)                      // smaller outer padding so icons sit closer together
@@ -180,6 +183,10 @@ fun Chatauswahlscreen(
 
                 Spacer(Modifier.width(gap))
 
+                 */
+
+
+
                 Box(
                     modifier = Modifier
                         .padding(2.dp)
@@ -195,6 +202,8 @@ fun Chatauswahlscreen(
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
+
+
 
                 Spacer(Modifier.width(gap))
 
@@ -213,6 +222,8 @@ fun Chatauswahlscreen(
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
+
+
 
 
 

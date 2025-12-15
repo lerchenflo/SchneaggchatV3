@@ -98,7 +98,7 @@ interface MessageDao {
 
     @Transaction
     @Query("SELECT * FROM messages WHERE sent = 0")
-    suspend fun getUnsentMessages(): List<MessageDto>
+    suspend fun getUnsentMessages(): List<MessageWithReadersDto>
 
     @Transaction
     @Query("UPDATE messages SET id = :serverId, sent = 1 WHERE localPK = :localPK")

@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.MarkChatUnread
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person3
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -72,6 +73,11 @@ class ChatSelectorViewModel(
                 //println("Firebasetoken: $token")
                 appRepository.setFirebaseToken(token)
             }
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            println("Sending offline messages...")
+            appRepository.sendOfflineMessages()
         }
 
         //TODO: Maybe try login every 5 sec if not logged in (No sync all 5 secs)
