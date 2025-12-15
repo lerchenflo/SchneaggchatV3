@@ -96,7 +96,7 @@ object NotificationManager{
                     println("Push Notification received with payload: $data")
 
                     //Inject preferencemanager
-                    val preferenceManager : Preferencemanager = Koin().get<Preferencemanager>()
+                    val preferenceManager = KoinPlatform.getKoin().get<Preferencemanager>()
                     CoroutineScope(Dispatchers.IO).launch {
 
                         //Load encryptionkey
