@@ -32,7 +32,7 @@ object NotificationManager{
         try {
             val msgId = data["msgId"].toString()
             val senderName = data["senderName"].toString()
-            val encodedContent = data["encodedcontent"].toString()
+            val encodedContent = data["encodedContent"].toString()
 
             return NotificationObject(
                 msgId = msgId,
@@ -101,6 +101,8 @@ object NotificationManager{
 
                         //Load encryptionkey
                         val encryptionkey = preferenceManager.getEncryptionKey()
+
+                        println("Noti encryptionkey: $encryptionkey")
 
                         //get notiobject from payload data
                         val notiObject = data.toNotificationObject()
