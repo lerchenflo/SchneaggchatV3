@@ -29,6 +29,7 @@ import schneaggchatv3mp.composeapp.generated.resources.system_theme
 enum class PreferenceKey {
     ACCESSTOKEN,
     REFRESHTOKEN,
+    ENCRYPTIONKEY,
     OWNID,
     MD_FORMAT,
     THEME,
@@ -60,6 +61,11 @@ class Preferencemanager(
 ) {
     private val dispatcher = Dispatchers.IO
 
+    suspend fun getEncryptionKey() : String{
+        val key = stringPreferencesKey(PreferenceKey.ENCRYPTIONKEY.toString())
+        val prefs = pref.data.first()
+        return prefs[key] ?: ""
+    }
 
     suspend fun saveTokens(tokenPair: NetworkUtils.TokenPair) {
         pref.edit { datastore ->
@@ -68,6 +74,11 @@ class Preferencemanager(
 
             val refreshkey = stringPreferencesKey(PreferenceKey.REFRESHTOKEN.toString())
             datastore[refreshkey] = tokenPair.refreshToken
+
+            if (tokenPair.encryptionKey!= null) {
+                val encryptionKey = stringPreferencesKey(PreferenceKey.ENCRYPTIONKEY.toString())
+                datastore[encryptionKey] = tokenPair.encryptionKey
+            }
         }
     }
 

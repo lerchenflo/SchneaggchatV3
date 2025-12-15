@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import org.koin.core.Koin
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
@@ -13,6 +14,41 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import kotlin.random.Random
 
 object NotificationManager{
+
+
+    data class NotificationObject(
+        val msgId: String,
+        val senderName: String,
+        val encodedContent: String
+    ){
+        suspend fun getDecodedContent(key: String) : String {
+            return CryptoUtil.decrypt(encodedContent, key)
+        }
+    }
+
+    private fun PayloadData.toNotificationObject(): NotificationObject {
+        val data = this
+
+        try {
+            val msgId = data["msgId"].toString()
+            val senderName = data["senderName"].toString()
+            val encodedContent = data["encodedcontent"].toString()
+
+            return NotificationObject(
+                msgId = msgId,
+                senderName = senderName,
+                encodedContent = encodedContent
+            )
+        }catch (e: Exception){
+            return NotificationObject(
+                msgId = "0",
+                senderName = "Server",
+                encodedContent = ""
+            )
+        }
+
+    }
+
 
 
     private var initialized = false
@@ -59,14 +95,30 @@ object NotificationManager{
                 override fun onPayloadData(data: PayloadData) {
                     println("Push Notification received with payload: $data")
 
+                    //Inject preferencemanager
+                    val preferenceManager : Preferencemanager = Koin().get<Preferencemanager>()
                     CoroutineScope(Dispatchers.IO).launch {
-                        try {
-                            showNotification("Neue noti", "Data: $data")
-                        } catch (e: Exception) {
-                            println("Error showing notification: ${e.message}")
-                            e.printStackTrace()
+
+                        //Load encryptionkey
+                        val encryptionkey = preferenceManager.getEncryptionKey()
+
+                        //get notiobject from payload data
+                        val notiObject = data.toNotificationObject()
+
+                        println("Notiobject: $notiObject")
+                        //show notification
+                        if (notiObject.encodedContent.isEmpty()){ //When fauled to decode
+                            showNotification("Schneaggchat", "You have new messages")
+                        }else {
+                            showNotification(
+                                titletext = notiObject.senderName,
+                                bodytext = notiObject.getDecodedContent(encryptionkey)
+                            )
                         }
+
+
                     }
+
                 }
             })
 
@@ -93,10 +145,10 @@ object NotificationManager{
     /**
      * Show a basic notification
      */
-    fun showNotification(titletext: String, bodytext: String, notiId: Int? = null) {
+    fun showNotification(titletext: String, bodytext: String) {
         val notifier = NotifierManager.getLocalNotifier()
 
-        val notiidnn = notiId ?: Random.nextInt(0, Int.MAX_VALUE)
+        val notiidnn = Random.nextInt(0, Int.MAX_VALUE)
 
 
         notifier.notify {

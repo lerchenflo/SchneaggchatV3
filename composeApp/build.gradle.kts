@@ -102,6 +102,10 @@ kotlin {
             //Jwt parsing
             implementation(libs.jwt.kt)
 
+            //Encryption
+            implementation(libs.cryptography.core)
+            implementation(libs.cryptography.provider.optimal)
+
             //DateTime
             implementation(libs.kotlinx.datetime)
 
