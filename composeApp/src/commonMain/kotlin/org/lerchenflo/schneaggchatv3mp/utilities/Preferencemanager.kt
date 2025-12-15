@@ -75,7 +75,7 @@ class Preferencemanager(
             val refreshkey = stringPreferencesKey(PreferenceKey.REFRESHTOKEN.toString())
             datastore[refreshkey] = tokenPair.refreshToken
 
-            if (tokenPair.encryptionKey!= null) {
+            if (tokenPair.encryptionKey != null) {
                 val encryptionKey = stringPreferencesKey(PreferenceKey.ENCRYPTIONKEY.toString())
                 datastore[encryptionKey] = tokenPair.encryptionKey
             }

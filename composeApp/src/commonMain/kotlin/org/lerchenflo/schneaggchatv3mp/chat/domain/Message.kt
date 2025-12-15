@@ -20,6 +20,8 @@ data class Message(
     var sendDate: String = "",
     var changeDate: String = "",
     var deleted: Boolean = false,
+    var encrypted: Boolean = false,
+
     var groupMessage: Boolean = false,
     var answerId: String? = null,
     var sent: Boolean = false,

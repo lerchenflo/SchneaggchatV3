@@ -148,6 +148,7 @@ class AppRepository(
     suspend fun deleteAllAppData(){
         database.allDatabaseDao().clearAll()
         NotificationManager.removeToken()
+        SessionCache.clear()
     }
 
     suspend fun logout(){

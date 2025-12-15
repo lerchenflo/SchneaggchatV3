@@ -450,6 +450,7 @@ class NetworkUtils(
         val msgType: MessageType,
         val content: String,
         val answerId: String?,
+        val encrypted: Boolean = false
     )
 
     @Serializable
@@ -461,6 +462,7 @@ class NetworkUtils(
         val msgType: MessageType,
         val content: String,
         val answerId: String?,
+        val encrypted: Boolean,
 
         val sendDate: Long,
         val lastChanged: Long,

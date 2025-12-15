@@ -33,6 +33,9 @@ data class MessageDto(
 
     var deleted: Boolean = false,
 
+    var encrypted: Boolean = false,
+
+
     var myMessage: Boolean, //Keep track if this is a message sent by me or not
     var readByMe: Boolean,
 
