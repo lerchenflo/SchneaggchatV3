@@ -18,7 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
 @Database(
     entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, TodoEntityDto::class],
     exportSchema = true,
-    version = 41
+    version = 43
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)

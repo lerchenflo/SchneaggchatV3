@@ -6,11 +6,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
-import org.koin.core.Koin
+import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.new_message_noti_group_title
+import schneaggchatv3mp.composeapp.generated.resources.new_message_noti_single_title
+import schneaggchatv3mp.composeapp.generated.resources.you_have_new_messages
 import kotlin.random.Random
 
 object NotificationManager{
@@ -19,6 +23,8 @@ object NotificationManager{
     data class NotificationObject(
         val msgId: String,
         val senderName: String,
+        val groupMessage: Boolean,
+        val groupName : String,
         val encodedContent: String
     ){
         suspend fun getDecodedContent(key: String) : String {
@@ -32,18 +38,25 @@ object NotificationManager{
         try {
             val msgId = data["msgId"].toString()
             val senderName = data["senderName"].toString()
-            val encodedContent = data["encodedcontent"].toString()
+            val encodedContent = data["encodedContent"].toString()
+            val groupMessage = data["groupMessage"].toString().toBoolean()
+            val groupName = data["groupName"].toString()
+
 
             return NotificationObject(
                 msgId = msgId,
                 senderName = senderName,
-                encodedContent = encodedContent
+                encodedContent = encodedContent,
+                groupMessage = groupMessage,
+                groupName = groupName
             )
         }catch (e: Exception){
             return NotificationObject(
                 msgId = "0",
                 senderName = "Server",
-                encodedContent = ""
+                encodedContent = "",
+                groupMessage = false,
+                groupName = ""
             )
         }
 
@@ -72,21 +85,6 @@ object NotificationManager{
             NotifierManager.addListener(object : NotifierManager.Listener {
                 override fun onNewToken(token: String) {
                     println("onNewToken: $token")
-
-                    if (SessionCache.loggedIn) {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            try {
-                                val appRepository = KoinPlatform.getKoin().get<AppRepository>()
-                                appRepository.setFirebaseToken(token)
-                                println("Token successfully updated in repository")
-                            } catch (e: Exception) {
-                                println("Error updating token: ${e.message}")
-                                e.printStackTrace()
-                            }
-                        }
-                    } else {
-                        println("User not logged in, token not updated")
-                    }
                 }
             })
 
@@ -102,23 +100,28 @@ object NotificationManager{
                         //Load encryptionkey
                         val encryptionkey = preferenceManager.getEncryptionKey()
 
+                        println("Noti encryptionkey: $encryptionkey")
+
                         //get notiobject from payload data
                         val notiObject = data.toNotificationObject()
 
                         println("Notiobject: $notiObject")
                         //show notification
                         if (notiObject.encodedContent.isEmpty()){ //When fauled to decode
-                            showNotification("Schneaggchat", "You have new messages")
+                            showNotification("Schneaggchat", getString(Res.string.you_have_new_messages))
                         }else {
+                            var finaltitlestr = if (notiObject.groupMessage) {
+                                getString(Res.string.new_message_noti_group_title, notiObject.senderName, notiObject.groupName)
+                            } else {
+                                getString(Res.string.new_message_noti_single_title, notiObject.senderName)
+                            }
+
                             showNotification(
-                                titletext = notiObject.senderName,
+                                titletext = finaltitlestr,
                                 bodytext = notiObject.getDecodedContent(encryptionkey)
                             )
                         }
-
-
                     }
-
                 }
             })
 

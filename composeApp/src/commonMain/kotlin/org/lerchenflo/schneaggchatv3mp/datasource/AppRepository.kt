@@ -148,6 +148,7 @@ class AppRepository(
     suspend fun deleteAllAppData(){
         database.allDatabaseDao().clearAll()
         NotificationManager.removeToken()
+        SessionCache.clear()
     }
 
     suspend fun logout(){
@@ -767,6 +768,39 @@ class AppRepository(
 
     }
 
+
+
+    fun sendOfflineMessages(){
+        CoroutineScope(Dispatchers.IO).launch {
+
+            val messages = messageRepository.getUnsentMessages()
+
+            println("Unsent message count: $messages")
+
+            //Do no parallel des loft jetzt alles seriell
+            for (m in messages){
+                if (m.isText()){
+                    try {
+                        sendTextMessage(
+                            empfaenger = m.receiverId,
+                            gruppe = m.groupMessage,
+                            content = m.content,
+                            answerid = m.answerId,
+                            localpk = m.localPK
+                        )
+                    } catch (e: Exception){
+                        println("Retry send failed for localPK=${m.localPK}: $e")
+                        // optional: increment retry counter in DB, break or continue
+                    }
+                }
+                //TODO: Offline message send for images
+            }
+        }
+
+    }
+
+
+
     /**
      * Execute a message sync
      */
@@ -866,33 +900,6 @@ class AppRepository(
 
 
     /*
-
-    fun sendOfflineMessages(){
-        CoroutineScope(Dispatchers.IO).launch {
-            val messages = database.messageDao().getUnsentMessages()
-
-            println("Unsent: $messages")
-
-            //Do no parallel des loft jetzt alles seriell
-            for (m in messages){
-                try {
-                    sendMessage(
-                        msgtype = m.msgType,
-                        empfaenger = m.receiverId,
-                        gruppe = m.groupMessage,
-                        content = m.content,
-                        answerid = m.answerId,
-                        sendedatum = m.sendDate,
-                        localpk = m.localPK
-                    )
-                } catch (e: Exception){
-                    println("Retry send failed for localPK=${m.localPK}: $e")
-                    // optional: increment retry counter in DB, break or continue
-                }
-            }
-        }
-
-    }
 
 
 

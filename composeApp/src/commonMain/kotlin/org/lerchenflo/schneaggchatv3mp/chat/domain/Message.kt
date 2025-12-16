@@ -20,6 +20,7 @@ data class Message(
     var sendDate: String = "",
     var changeDate: String = "",
     var deleted: Boolean = false,
+
     var groupMessage: Boolean = false,
     var answerId: String? = null,
     var sent: Boolean = false,
@@ -30,6 +31,8 @@ data class Message(
     var readers : List<MessageReader>
 ) {
     fun isPicture(): Boolean = msgType == MessageType.IMAGE
+
+    fun isText() : Boolean = msgType == MessageType.TEXT
 
     fun getSendDateAsLong(): Long = sendDate.toLongOrNull() ?: 0L
 

@@ -53,6 +53,12 @@ class MessageRepository(
         }
     }
 
+    suspend fun getUnsentMessages() : List<Message> {
+        return database.messageDao().getUnsentMessages().map {
+            it.toMessage()
+        }
+    }
+
 
     /**
      * Update a message in the database

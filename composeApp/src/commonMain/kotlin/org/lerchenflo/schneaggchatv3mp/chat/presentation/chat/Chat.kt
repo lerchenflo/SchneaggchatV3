@@ -156,8 +156,7 @@ fun ChatScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Bottom
         ){
             // button zum züg addden
             var addMediaDropdownExpanded by remember { mutableStateOf(false) }
@@ -165,12 +164,11 @@ fun ChatScreen(
             IconButton(
                 onClick = {addMediaDropdownExpanded = true},
                 modifier = Modifier
-                    .padding(top = 5.dp, start = 5.dp)
+                    .padding(5.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.AttachFile,
-                    contentDescription = stringResource(Res.string.add),
-
+                    contentDescription = stringResource(Res.string.add)
                     )
             }
             if(addMediaDropdownExpanded){
@@ -214,7 +212,7 @@ fun ChatScreen(
             IconButton(
                 onClick = {viewModel.sendMessage()},
                 modifier = Modifier
-                    .padding(top = 5.dp, start = 5.dp)
+                    .padding(5.dp)
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Send,
