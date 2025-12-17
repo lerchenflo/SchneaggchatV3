@@ -5,7 +5,11 @@ import com.mmk.kmpnotifier.notification.PayloadData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -32,16 +36,21 @@ object NotificationManager{
         }
     }
 
-    private fun PayloadData.toNotificationObject(): NotificationObject {
+    private fun PayloadData.toNotificationObject(): NotificationObject? {
         val data = this
 
         try {
-            val msgId = data["msgId"].toString()
-            val senderName = data["senderName"].toString()
-            val encodedContent = data["encodedContent"].toString()
-            val groupMessage = data["groupMessage"].toString().toBoolean()
-            val groupName = data["groupName"].toString()
+            val msgId = data["msgId"]?.toString() ?: ""
+            val senderName = data["senderName"]?.toString() ?: "Unknown"
+            val encodedContent = data["encodedContent"]?.toString() ?: ""
+            val groupMessage = data["groupMessage"]?.toString()?.toBoolean() ?: false
+            val groupName = data["groupName"]?.toString() ?: ""
 
+            // Validate required fields
+            if (msgId.isEmpty() || encodedContent.isEmpty()) {
+                println("[NotificationManager] ERROR: Missing required fields in payload. msgId='$msgId', encodedContent isEmpty=${encodedContent.isEmpty()}")
+                return null
+            }
 
             return NotificationObject(
                 msgId = msgId,
@@ -50,16 +59,11 @@ object NotificationManager{
                 groupMessage = groupMessage,
                 groupName = groupName
             )
-        }catch (e: Exception){
-            return NotificationObject(
-                msgId = "0",
-                senderName = "Server",
-                encodedContent = "",
-                groupMessage = false,
-                groupName = ""
-            )
+        } catch (e: Exception) {
+            println("[NotificationManager] ERROR: Failed to parse notification payload: ${e.message}")
+            e.printStackTrace()
+            return null
         }
-
     }
 
 
@@ -91,36 +95,77 @@ object NotificationManager{
             // Payload data listener
             NotifierManager.addListener(object : NotifierManager.Listener {
                 override fun onPayloadData(data: PayloadData) {
-                    println("Push Notification received with payload: $data")
+                    println("[NotificationManager] Push Notification received with payload: $data")
 
                     //Inject preferencemanager
                     val preferenceManager = KoinPlatform.getKoin().get<Preferencemanager>()
-                    CoroutineScope(Dispatchers.IO).launch {
 
-                        //Load encryptionkey
-                        val encryptionkey = preferenceManager.getEncryptionKey()
 
-                        println("Noti encryptionkey: $encryptionkey")
+                    val notiThread = CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            //Load encryptionkey (IO operation)
+                            val encryptionkey = withContext(Dispatchers.IO) {
+                                preferenceManager.getEncryptionKey()
+                            }
 
-                        //get notiobject from payload data
-                        val notiObject = data.toNotificationObject()
+                            if (encryptionkey.isEmpty()) {
+                                println("[NotificationManager] WARNING: Encryption key is empty")
+                                showNotification("Schneaggchat", "New message received (encryption key not available)")
+                                return@launch
+                            }
 
-                        println("Notiobject: $notiObject")
-                        //show notification
-                        if (notiObject.encodedContent.isEmpty()){ //When fauled to decode
-                            showNotification("Schneaggchat", getString(Res.string.you_have_new_messages))
-                        }else {
-                            var finaltitlestr = if (notiObject.groupMessage) {
+                            //get notiobject from payload data
+                            val notiObject = data.toNotificationObject()
+
+                            if (notiObject == null) {
+                                println("[NotificationManager] ERROR: Failed to parse notification payload")
+                                showNotification("Schneaggchat Error", "Failed to parse notification data")
+                                return@launch
+                            }
+
+                            println("[NotificationManager] Parsed notification: $notiObject")
+
+                            // Build title string
+                            val finaltitlestr = if (notiObject.groupMessage) {
                                 getString(Res.string.new_message_noti_group_title, notiObject.senderName, notiObject.groupName)
                             } else {
                                 getString(Res.string.new_message_noti_single_title, notiObject.senderName)
                             }
 
-                            showNotification(
-                                titletext = finaltitlestr,
-                                bodytext = notiObject.getDecodedContent(encryptionkey)
-                            )
+                            // Try to decrypt and show notification
+                            try {
+                                // Decrypt on IO thread
+                                val decryptedContent = withContext(Dispatchers.IO) {
+                                    notiObject.getDecodedContent(encryptionkey)
+                                }
+
+                                // Show notification (already on Main thread)
+                                showNotification(
+                                    titletext = finaltitlestr,
+                                    bodytext = decryptedContent
+                                )
+                            } catch (e: Exception) {
+                                println("[NotificationManager] ERROR: Decryption failed: ${e.message}")
+                                e.printStackTrace()
+
+                                // Show error notification
+                                showNotification(
+                                    titletext = "$finaltitlestr (Decryption Error)",
+                                    bodytext = "Failed to decrypt message: ${e.message}"
+                                )
+                            }
+                        } catch (e: Exception) {
+                            println("[NotificationManager] ERROR: Unexpected error in notification handler: ${e.message}")
+                            e.printStackTrace()
+
+                            // Show error notification
+                            showNotification("Schneaggchat Error", "Notification error: ${e.message}")
                         }
+                    }
+
+                    // Wait for the notification process to complete to prevent process death
+                    runBlocking {
+                        notiThread.join()
                     }
                 }
             })

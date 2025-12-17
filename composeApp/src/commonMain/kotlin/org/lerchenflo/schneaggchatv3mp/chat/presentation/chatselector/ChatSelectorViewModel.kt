@@ -68,15 +68,6 @@ class ChatSelectorViewModel(
             appRepository.setFirebaseToken(token)
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            println("Sending offline messages...")
-            appRepository.sendOfflineMessages()
-        }
-
-        CoroutineScope(Dispatchers.IO).launch {
-            appRepository.dataSync()
-        }
-
         //TODO: Maybe try login every 5 sec if not logged in (No sync all 5 secs)
         //Chat verlassen
         //globalViewModel.onLeaveChat()
@@ -120,18 +111,8 @@ class ChatSelectorViewModel(
             // at this point we're guaranteed logged in (or the condition was already true)
             try {
                 // send queued messages
-                //TODO: Messagees
-                //appRepository.sendOfflineMessages()
+                appRepository.sendOfflineMessages()
 
-                // run your sync callback
-                /*
-                appRepository.executeSync { isLoadingMessages1 ->
-                    updateIsLoadingMessages(isLoadingMessages1)
-                    println("Loading messages: $isLoadingMessages")
-                }
-                 */
-
-                println("Sync started from Chatselector refresh")
                 appRepository.dataSync()
             } catch (e: Exception) {
                 ensureActive()
