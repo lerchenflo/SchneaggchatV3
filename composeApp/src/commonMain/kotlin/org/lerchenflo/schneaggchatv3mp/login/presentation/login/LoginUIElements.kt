@@ -86,13 +86,25 @@ fun InputTextField(
         }
         fieldModifier = fieldModifier.onPreviewKeyEvent { keyEvent ->
             // desktop Tab handling
-            if ((keyEvent.key == Key.Tab || keyEvent.key == Key.Enter) && keyEvent.type == KeyEventType.KeyDown) {
-                if(imeAction == ImeAction.Next){
-                    nextFocusRequester?.requestFocus()
-                }else if(imeAction == ImeAction.Done){
-                    onDoneClick()
+            if (keyEvent.type == KeyEventType.KeyDown) {
+                when (keyEvent.key) {
+                    Key.Tab -> {
+                        nextFocusRequester?.requestFocus()
+                        true
+                    }
+                    Key.Enter -> {
+                        if(imeAction == ImeAction.Next){
+                            nextFocusRequester?.requestFocus()
+                            true
+                        }else if(imeAction == ImeAction.Done){
+                            onDoneClick()
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                    else -> false
                 }
-                true
             } else {
                 false
             }
@@ -303,25 +315,4 @@ fun LoginFormSection(
         }
 
     }
-}
-
-@Preview(
-    showBackground = true,
-    name = "Loginform",
-    widthDp = 400,
-    heightDp = 800
-)
-@Composable
-private fun Loginformpreview(){
-    LoginFormSection(
-        usernameText = "",
-        onusernameTextChange = {},
-        passwordText = "",
-        onPasswordTextChange = {},
-        onLoginButtonClick = {},
-        onSignupButtonClick = {},
-        usernameFocusRequester = FocusRequester.Default,
-        passwordFocusRequester = FocusRequester.Default,
-        loginFocusRequester = FocusRequester.Default
-    )
 }

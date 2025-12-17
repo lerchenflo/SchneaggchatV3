@@ -27,8 +27,12 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,9 +75,16 @@ fun ChatScreen(
     val globalViewModel = koinInject<GlobalViewModel>()
     val viewModel = koinViewModel<ChatViewModel>()
     val messages by viewModel.messagesState.collectAsStateWithLifecycle()
+    val focusManager = LocalFocusManager.current
 
     Column(
         modifier = modifier
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) {
+                focusManager.clearFocus()
+            }
     ){
         // Obere Zeile (Backbutton, profilbild, name, ...)
         Row(
