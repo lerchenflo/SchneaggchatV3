@@ -37,7 +37,6 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChangeDialog
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
-import org.lerchenflo.schneaggchatv3mp.utilities.clearFocusOnTap
 
 @Preview()
 @Composable

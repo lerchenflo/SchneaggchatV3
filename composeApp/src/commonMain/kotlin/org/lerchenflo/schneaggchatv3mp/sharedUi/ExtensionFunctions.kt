@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.utilities
+package org.lerchenflo.schneaggchatv3mp.sharedUi
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
