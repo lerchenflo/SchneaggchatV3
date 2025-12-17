@@ -48,6 +48,7 @@ import io.github.ismoy.imagepickerkmp.presentation.ui.components.ImagePickerLaun
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
+import org.lerchenflo.schneaggchatv3mp.utilities.clearFocusOnTap
 
 
 @Composable
