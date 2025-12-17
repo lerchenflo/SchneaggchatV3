@@ -35,19 +35,17 @@ fun NormalButton(
 ){
     var newModifier = modifier
     if (focusRequester != null) {
-        newModifier = modifier
-            .focusRequester(focusRequester)
-    }
-    else if (focusRequester != null && nextFocusRequester != null) {
-        newModifier = modifier
-            .focusRequester(focusRequester)
-            .onPreviewKeyEvent { event ->
+        newModifier = modifier.focusRequester(focusRequester)
+        
+        if (nextFocusRequester != null) {
+            newModifier = newModifier.onPreviewKeyEvent { event ->
                 // Detect TAB key press
                 if (event.key == Key.Tab && event.type == KeyEventType.KeyDown) {
-                    nextFocusRequester?.requestFocus()
+                    nextFocusRequester.requestFocus()
                     true // we handled it
                 } else false
             }
+        }
     }
     Button(
         onClick = onClick,

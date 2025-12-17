@@ -5,9 +5,11 @@ package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -31,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
@@ -43,6 +46,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -394,30 +398,37 @@ fun DatePickerDialogPopup(
     }
 }
 
-/*
-@Preview(showBackground = true)
+
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun Preview() {
     MaterialTheme {
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF5E6D3))) {
-            SignUpForm1(
-                usernameText = "",
-                onusernameTextChange = {},
-                usernameerrorText = "",
-                emailText = "",
-                onemailTextChange = {},
-                emailerrorText = "",
-                ongebidateselected = {},
-                onProfilePicClick = {},
-                onBackClick = {},
-                focus = focus,
-                selectedgebidate = null,
-                selectedProfilePic = null,
+
+        val focus = SignupFocusRequesters(
+            profilePic = remember { FocusRequester() },
+            username = remember { FocusRequester() },
+            email = remember { FocusRequester() },
+            date = remember { FocusRequester() },
+            password = remember { FocusRequester() },
+            password2 = remember { FocusRequester() },
+            terms = remember { FocusRequester() },
+            signup = remember { FocusRequester() },
+        )
+
+        SignUpForm1(
+            usernameText = "",
+            onusernameTextChange = {},
+            usernameerrorText = "",
+            emailText = "",
+            onemailTextChange = {},
+            emailerrorText = "",
+            ongebidateselected = {},
+            onProfilePicClick = {},
+            onBackClick = {},
+            focus = focus,
+            selectedgebidate = null,
+            selectedProfilePic = null,
 
             )
-        }
     }
 }
- */
