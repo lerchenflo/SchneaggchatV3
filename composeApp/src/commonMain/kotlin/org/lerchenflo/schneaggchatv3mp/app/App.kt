@@ -208,65 +208,67 @@ fun App() {
                             if (!savedCreds){
                                 //No tokens are saved, we navigate to the login
                                 navigator.navigate(Route.Login, exitAllPreviousScreens = true)
+                            }else {
+
+                                //At this point there were credentials loaded from storage
+                                //Navigate to the chat
+                                navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
+
+                                //Launch a token refresh async
+                                globalViewModel.viewModelScope.launch {
+
+                                    //Refresh the tokens (If there is an error which is not a network error (Access denied, tokens invalidated) we need to log out again)
+                                    val error = appRepository.refreshTokens()
+
+                                    //If no error happenend, sync all data with the server and return
+                                    if (error == null) {
+                                        appRepository.dataSync()
+                                        return@launch
+                                    }
+
+                                    //At this point an error happened during token refresh
+                                    println("Autologin token refresh error: $error")
+
+                                    //Is the error a connection error (Connection to the server could not be established)
+                                    if (error.isConnectionError()){
+                                        println("Autologin connection error")
+
+                                        //No sense to sync data, return
+                                        return@launch
+                                    }
+
+
+                                    //Now there should only be real server errors left
+                                    if (error is NetworkError.Unauthorized){
+                                        println("Autologin not permitted by server, rerouting to login")
+
+                                        //Throwing an error message for the user
+                                        AppRepository.trySendError(
+                                            event = AppRepository.ErrorChannel.ErrorEvent(
+                                                401,
+                                                errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
+                                                duration = 5000L,
+                                            )
+                                        )
+
+                                        //deleting all saved credentials, they will be invalid on next app start too
+                                        appRepository.logout()
+
+                                        //Navigate back to the loginscreen
+                                        navigator.navigate(Route.Login, exitAllPreviousScreens = true)
+                                    }else {
+                                        //Log any other error which might occur
+                                        AppRepository.trySendError(
+                                            event = AppRepository.ErrorChannel.ErrorEvent(
+                                                error = error,
+                                                duration = 15000
+                                            )
+                                        )
+                                    }
+                                }
                             }
 
-                            //At this point there were credentials loaded from storage
 
-                            //Navigate to the chat
-                            navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
-
-                            //Launch a token refresh async
-                            globalViewModel.viewModelScope.launch {
-
-                                //Refresh the tokens (If there is an error which is not a network error (Access denied, tokens invalidated) we need to log out again)
-                                val error = appRepository.refreshTokens()
-
-                                //If no error happenend, sync all data with the server and return
-                                if (error == null) {
-                                    appRepository.dataSync()
-                                    return@launch
-                                }
-
-                                //At this point an error happened during token refresh
-                                println("Autologin token refresh error: $error")
-
-                                //Is the error a connection error (Connection to the server could not be established)
-                                if (error.isConnectionError()){
-                                    println("Autologin connection error")
-
-                                    //No sense to sync data, return
-                                    return@launch
-                                }
-
-
-                                //Now there should only be real server errors left
-                                if (error is NetworkError.Unauthorized){
-                                    println("Autologin not permitted by server, rerouting to login")
-
-                                    //Throwing an error message for the user
-                                    AppRepository.trySendError(
-                                        event = AppRepository.ErrorChannel.ErrorEvent(
-                                            401,
-                                            errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
-                                            duration = 5000L,
-                                        )
-                                    )
-
-                                    //deleting all saved credentials, they will be invalid on next app start too
-                                    appRepository.logout()
-
-                                    //Navigate back to the loginscreen
-                                    navigator.navigate(Route.Login, exitAllPreviousScreens = true)
-                                }else {
-                                    //Log any other error which might occur
-                                    AppRepository.trySendError(
-                                        event = AppRepository.ErrorChannel.ErrorEvent(
-                                            error = error,
-                                            duration = 15000
-                                        )
-                                    )
-                                }
-                            }
                         }
                     }
 
