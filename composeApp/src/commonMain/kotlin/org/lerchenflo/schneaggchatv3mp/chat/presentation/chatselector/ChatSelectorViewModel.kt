@@ -62,22 +62,19 @@ class ChatSelectorViewModel(
 ): ViewModel() {
 
     init {
-        viewModelScope.launch {
-            delay(1000) //Login delay, else the user is offline
-            refresh()
-        }
 
         viewModelScope.launch {
-            CoroutineScope(Dispatchers.IO).launch {
-                val token = NotificationManager.getToken()
-                //println("Firebasetoken: $token")
-                appRepository.setFirebaseToken(token)
-            }
+            val token = NotificationManager.getToken()
+            appRepository.setFirebaseToken(token)
         }
 
         CoroutineScope(Dispatchers.IO).launch {
             println("Sending offline messages...")
             appRepository.sendOfflineMessages()
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            appRepository.dataSync()
         }
 
         //TODO: Maybe try login every 5 sec if not logged in (No sync all 5 secs)
