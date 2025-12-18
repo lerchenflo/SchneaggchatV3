@@ -367,7 +367,7 @@ class AppRepository(
                 result.error
             }
             is NetworkResult.Success<NetworkUtils.TokenPair> -> {
-                preferencemanager.saveTokens(result.data)
+                //preferencemanager.saveTokens(result.data)
                 println("Tokenpair refresh successful")
                 onNewTokenPair(result.data)
                 refreshTokenRequestRunning = false
