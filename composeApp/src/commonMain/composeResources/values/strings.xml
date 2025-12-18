@@ -73,6 +73,8 @@
     <string name="error_invalid_credentials">You entered wrong credentials</string>
 
     <string name="select_gebi_date">Select your birth date</string>
+    <string name="select_profile_pic">Select a profile picture</string>
+
     <string name="status">Status:</string>
     <string name="app_broken_desc">Will fix most of the errors which might occur</string>
     <string name="app_broken_are_you_sure">This will delete all the messages in the database so they will get loaded from the server correctly. Are you sure you want to continue?</string>
