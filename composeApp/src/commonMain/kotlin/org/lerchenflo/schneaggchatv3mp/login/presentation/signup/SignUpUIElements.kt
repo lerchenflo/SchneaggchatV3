@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Cake
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
@@ -30,9 +31,13 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -80,11 +85,19 @@ import schneaggchatv3mp.composeapp.generated.resources.password_again
 import schneaggchatv3mp.composeapp.generated.resources.profile_picture
 import schneaggchatv3mp.composeapp.generated.resources.select_gebi_date
 import schneaggchatv3mp.composeapp.generated.resources.select_profile_pic
+import schneaggchatv3mp.composeapp.generated.resources.tooltip_birthdate
+import schneaggchatv3mp.composeapp.generated.resources.tooltip_email
+import schneaggchatv3mp.composeapp.generated.resources.tooltip_password
+import schneaggchatv3mp.composeapp.generated.resources.tooltip_password_repeat
+import schneaggchatv3mp.composeapp.generated.resources.tooltip_profile_picture
+import schneaggchatv3mp.composeapp.generated.resources.tooltip_terms
+import schneaggchatv3mp.composeapp.generated.resources.tooltip_username
 import schneaggchatv3mp.composeapp.generated.resources.username
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 //Signup element für Username und email
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpForm1(
     usernameText: String,
@@ -171,6 +184,21 @@ fun SignUpForm1(
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary
             )
+            
+            Spacer(modifier = Modifier.height(4.dp))
+            val profilePicTooltipState = rememberTooltipState()
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                tooltip = { PlainTooltip { Text(stringResource(Res.string.tooltip_profile_picture)) } },
+                state = profilePicTooltipState
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -185,6 +213,7 @@ fun SignUpForm1(
             errortext = usernameerrorText,
             focusRequester = focus.username,
             nextFocusRequester = focus.email,
+            tooltip = stringResource(Res.string.tooltip_username),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -200,6 +229,7 @@ fun SignUpForm1(
             errortext = emailerrorText,
             focusRequester = focus.email,
             nextFocusRequester = focus.date,
+            tooltip = stringResource(Res.string.tooltip_email),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -218,14 +248,14 @@ fun SignUpForm1(
         var showDatePicker by remember { mutableStateOf(false) }
 
         Row(
-
+            verticalAlignment = Alignment.CenterVertically
         ){
             Button(
                 onClick = {
                     showDatePicker = true
                 },
                 modifier = Modifier
-                        .fillMaxWidth()
+                    .weight(1f)
                     .focusRequester(focus.date)
                     .onPreviewKeyEvent { event ->
                         // Detect TAB key press
@@ -251,6 +281,20 @@ fun SignUpForm1(
                 }
 
             }
+            Spacer(modifier = Modifier.width(8.dp))
+            val dateTooltipState = rememberTooltipState()
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                tooltip = { PlainTooltip { Text(stringResource(Res.string.tooltip_birthdate)) } },
+                state = dateTooltipState
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                )
+            }
         }
 
 
@@ -266,6 +310,7 @@ fun SignUpForm1(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpForm2(
     passwordText: String,
@@ -299,6 +344,7 @@ fun SignUpForm2(
             errortext = passworderrorText,
             focusRequester = focus.password,
             nextFocusRequester = focus.password2,
+            tooltip = stringResource(Res.string.tooltip_password),
             modifier = Modifier
                 .fillMaxWidth()
         )
@@ -315,6 +361,7 @@ fun SignUpForm2(
             errortext = password2errorText,
             focusRequester = focus.password2,
             nextFocusRequester = focus.terms,
+            tooltip = stringResource(Res.string.tooltip_password_repeat),
             modifier = Modifier
                 .fillMaxWidth()
         )
@@ -357,6 +404,20 @@ fun SignUpForm2(
                         .clickable{
                             urihandler.openUri(URL_PRIVACY)
                         }
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            val termsTooltipState = rememberTooltipState()
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                tooltip = { PlainTooltip { Text(stringResource(Res.string.tooltip_terms)) } },
+                state = termsTooltipState
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
                 )
             }
         }

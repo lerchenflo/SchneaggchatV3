@@ -181,5 +181,13 @@
     <string name="new_message_noti_single_title">New chat from %1$s</string>
     <string name="new_message_noti_group_title">New chat from %1$s in %1$s</string>
 
+    <string name="tooltip_username">Choose a unique username others will see</string>
+    <string name="tooltip_email">Used for account recovery and deletion</string>
+    <string name="tooltip_birthdate">Used to show others when your birthday is</string>
+    <string name="tooltip_password">Min. 8 characters with numbers, special chars, and upper/lower case</string>
+    <string name="tooltip_password_repeat">Type your password again to make sure it is correct</string>
+    <string name="tooltip_profile_picture">A profile picture makes it easier for friends to find you</string>
+    <string name="tooltip_terms">Accepting terms is required to use Schneaggchat</string>
+
 
 </resources>
