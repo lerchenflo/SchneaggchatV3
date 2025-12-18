@@ -41,9 +41,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.MultiChoiceSegmentedButtonRow
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -97,6 +102,9 @@ import schneaggchatv3mp.composeapp.generated.resources.info
 import schneaggchatv3mp.composeapp.generated.resources.members
 import schneaggchatv3mp.composeapp.generated.resources.new_group
 import schneaggchatv3mp.composeapp.generated.resources.search_user
+import schneaggchatv3mp.composeapp.generated.resources.tooltip_group_description
+import schneaggchatv3mp.composeapp.generated.resources.tooltip_group_name
+import schneaggchatv3mp.composeapp.generated.resources.tooltip_group_picture
 
 @Preview
 @Composable
@@ -458,7 +466,9 @@ fun GroupCreator(
                                     .padding(3.dp)
                             )
                         }
-                        Spacer(modifier = Modifier.width(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        SimpleTooltip(stringResource(Res.string.tooltip_group_picture))
+                        Spacer(modifier = Modifier.width(8.dp))
 
                         OutlinedTextField(
                             value = groupName,
@@ -474,7 +484,10 @@ fun GroupCreator(
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                             colors = OutlinedTextFieldDefaults.colors(
                                 unfocusedBorderColor = MaterialTheme.colorScheme.onSurface
-                            )
+                            ),
+                            trailingIcon = {
+                                SimpleTooltip(stringResource(Res.string.tooltip_group_name))
+                            }
                         )
                     }
 
@@ -489,7 +502,14 @@ fun GroupCreator(
                             .heightIn(min = 96.dp), // encourages multiline
                         placeholder = { Text(stringResource(Res.string.group_description)) },
                         trailingIcon = {
-                            Icon(imageVector = Icons.Default.Description, contentDescription = null)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Icon(imageVector = Icons.Default.Description, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                SimpleTooltip(stringResource(Res.string.tooltip_group_description))
+                            }
                         },
                         singleLine = false,
                         maxLines = 4,
@@ -510,4 +530,22 @@ fun GroupCreator(
         }
     }
 
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SimpleTooltip(text: String) {
+    val tooltipState = rememberTooltipState()
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+        tooltip = { PlainTooltip { Text(text) } },
+        state = tooltipState
+    ) {
+        Icon(
+            imageVector = Icons.Default.Info,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+        )
+    }
 }
