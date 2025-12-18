@@ -62,6 +62,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 
@@ -179,7 +180,9 @@ fun App() {
 
 
         Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) }
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            modifier = Modifier
+                .clearFocusOnTap()
         ) { innerpadding ->
 
             NavDisplay(

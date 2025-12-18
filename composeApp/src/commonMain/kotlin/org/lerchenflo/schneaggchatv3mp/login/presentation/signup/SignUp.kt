@@ -5,13 +5,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.statusBars
@@ -20,9 +16,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.EmojiTransportation
-import androidx.compose.material.icons.filled.TextRotationNone
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -39,13 +32,9 @@ import androidx.compose.ui.unit.dp
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
 import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
-import io.github.ismoy.imagepickerkmp.domain.config.ImagePickerConfig
-import io.github.ismoy.imagepickerkmp.domain.config.UiConfig
-import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
 import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
-import io.github.ismoy.imagepickerkmp.presentation.ui.components.ImagePickerLauncher
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
