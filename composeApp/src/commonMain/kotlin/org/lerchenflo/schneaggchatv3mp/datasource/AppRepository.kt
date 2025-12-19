@@ -417,7 +417,7 @@ class AppRepository(
     ) {
 
         CoroutineScope(Dispatchers.IO).launch {
-            when(val result = networkUtils.login(username, password)){
+            when(val result = networkUtils.login(username.trim(), password)){
                 is NetworkResult.Error<*> -> {
                     println("Error: ${result.error}")
 
