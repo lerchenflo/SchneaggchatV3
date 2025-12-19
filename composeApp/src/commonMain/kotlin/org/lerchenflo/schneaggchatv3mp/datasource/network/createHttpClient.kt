@@ -21,12 +21,15 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.logging.LogType
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 
 
 fun createHttpClient(
     engine: HttpClientEngine,
     preferenceManager: Preferencemanager,
+    loggingRepository: LoggingRepository,
     useAuth: Boolean
 
 ) : HttpClient {
@@ -61,6 +64,7 @@ fun createHttpClient(
         }
 
         if (useAuth){
+            println("HTTPCLIENT WITH AUTH INIT")
             install(Auth){
                 bearer {
 
@@ -75,6 +79,8 @@ fun createHttpClient(
                     }
 
                     refreshTokens {
+
+                        loggingRepository.log("HttpClient refreshing tokens; OldTokens: Access: ${oldTokens?.accessToken} Refresh: ${oldTokens?.refreshToken}", LogType.DEBUG)
 
                         val refreshRequest = NetworkUtils.RefreshRequest(oldTokens?.refreshToken ?: "")
 

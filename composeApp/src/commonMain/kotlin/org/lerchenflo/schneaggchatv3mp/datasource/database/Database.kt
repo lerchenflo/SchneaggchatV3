@@ -7,6 +7,8 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import androidx.room.TypeConverters
+import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
+import org.lerchenflo.schneaggchatv3mp.app.logging.LogTypeConverter
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupMemberDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
@@ -16,12 +18,13 @@ import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
 
 
 @Database(
-    entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, TodoEntityDto::class],
+    entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, TodoEntityDto::class, LogEntry::class],
     exportSchema = true,
-    version = 43
+    version = 44
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)
+@TypeConverters(LogTypeConverter::class)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun userDao(): UserDao
 
@@ -32,6 +35,8 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun groupDao(): GroupDao
 
     abstract fun todolistdao(): TodolistDao
+
+    abstract fun logDao(): LogDao
 
     abstract fun allDatabaseDao(): AllDatabaseDao
 

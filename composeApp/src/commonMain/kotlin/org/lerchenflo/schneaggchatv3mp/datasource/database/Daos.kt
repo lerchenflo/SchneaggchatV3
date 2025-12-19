@@ -9,6 +9,7 @@ import androidx.room.Update
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupMemberDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembersDto
@@ -168,6 +169,16 @@ interface TodolistDao{
     @Query("SELECT * FROM todoentitydto WHERE id = :id")
     suspend fun getTodoById(id: String) : TodoEntityDto?
 }
+
+@Dao
+interface LogDao {
+    @Upsert
+    suspend fun upsertLog(logEntry: LogEntry)
+
+    @Query("DELETE FROM logentry")
+    suspend fun clearLogs()
+}
+
 
 
 @Dao
