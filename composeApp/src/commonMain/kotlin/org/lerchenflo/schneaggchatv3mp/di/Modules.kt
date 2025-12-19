@@ -106,7 +106,7 @@ val sharedmodule = module{
     factory { SettingsViewModel(get(), get()) } // factory -> new instance each injection
 
     viewModelOf(::DevSettingsViewModel)
-    factory { DevSettingsViewModel() }
+    factory { DevSettingsViewModel(get()) }
 
     viewModelOf(::UserSettingsViewModel)
     factory { UserSettingsViewModel(get(), get(), get()) }

@@ -175,6 +175,9 @@ interface LogDao {
     @Upsert
     suspend fun upsertLog(logEntry: LogEntry)
 
+    @Query("SELECT * FROM logentry")
+    fun getLogs() : Flow<List<LogEntry>>
+
     @Query("DELETE FROM logentry")
     suspend fun clearLogs()
 }
