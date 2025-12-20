@@ -105,6 +105,12 @@ interface MessageDao {
     @Query("UPDATE messages SET id = :serverId, sent = 1 WHERE localPK = :localPK")
     suspend fun markMessageAsSent(serverId: String, localPK: Long)
 
+    @Query("UPDATE messages SET readByMe = 1, changeDate = :timestamp WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe AND readByMe = 0")
+    suspend fun markAllChatMessagesRead(userId: String, gruppe: Boolean, timestamp: String)
+
+    @Query("INSERT OR REPLACE INTO message_readers (messageId, readerID, readDate) SELECT m.id, :ownId, :timestamp FROM messages m WHERE (m.senderId = :userId OR m.receiverId = :userId) AND m.groupMessage = :gruppe AND m.readByMe = 0 AND m.id != ''")
+    suspend fun addMessageReadersForChat(userId: String, gruppe: Boolean, ownId: String, timestamp: String)
+
 }
 
 @Dao

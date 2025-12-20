@@ -108,8 +108,8 @@ fun MessageView(
                         )
 
                         // gelesen haken
-                        // Calculate read state once
-                        val readState = remember(message.sent, message.isReadById(selectedChatId), mymessage) {
+                        // Cache expensive read state calculation
+                        val readState = remember(message.sent, message.readers, selectedChatId, mymessage) {
                             when {
                                 !mymessage -> ReadState.None
                                 !message.sent -> ReadState.NotSent
@@ -202,11 +202,15 @@ fun TextMessage(
     myMessage: Boolean,
     modifier: Modifier = Modifier
 ){
-    SelectionContainer { // damit ma text markiera und kopiera kann (künnt evnt. mit am onLongClick in zukunft interferrieren oder so)
+    SelectionContainer { // damit ma text markiera und kopira kann (künnt evnt. mit am onLongClick in zukunft interferrieren oder so)
         // ma künnt es chatViewmodel o do instanzieren aber denn würd des für jede message einzeln passiera des isch glob ned des wahre
         if(useMD){ // get setting if if md is enabled
+            // Cache markdown rendering to avoid re-parsing on every recomposition
+            val content = remember(messageWithReaders.content) {
+                messageWithReaders.content
+            }
             Markdown(
-                content = messageWithReaders.content,
+                content = content,
                 modifier = modifier
             )
         }else{

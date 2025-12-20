@@ -140,13 +140,18 @@ fun ChatScreen(
             itemsIndexed(messages, key = { _, msg ->
                 msg.localPK
             })  { index, message ->
-                val currentDateMillis = message.sendDate.toLongOrNull()
-                val currentDate = currentDateMillis?.toLocalDate()
-                val nextDate =
-                    messages.getOrNull(index + 1)?.sendDate?.toLongOrNull()
-                        ?.toLocalDate()
-
-
+                // Cache date calculations to avoid repeated conversions
+                val currentDate = remember(message.sendDate) {
+                    val millis = message.sendDate.toLongOrNull()
+                    millis?.toLocalDate()
+                }
+                val nextDate = remember(index, messages) {
+                    if (index + 1 < messages.size) {
+                        messages[index + 1].sendDate.toLongOrNull()?.toLocalDate()
+                    } else {
+                        null
+                    }
+                }
 
                 MessageView(
                     useMD = viewModel.markdownEnabled,
@@ -156,7 +161,10 @@ fun ChatScreen(
                 )
                 // Show divider only if this message starts a new day
                 if (currentDate != nextDate && currentDate != null) {
-                    DayDivider(currentDateMillis)
+                    val currentDateMillis = remember(message.sendDate) {
+                        message.sendDate.toLongOrNull()
+                    }
+                    currentDateMillis?.let { DayDivider(it) }
                 }
             }
         }
