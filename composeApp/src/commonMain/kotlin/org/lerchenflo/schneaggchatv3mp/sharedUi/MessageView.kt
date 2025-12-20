@@ -1,13 +1,18 @@
 package org.lerchenflo.schneaggchatv3mp.sharedUi
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -16,19 +21,29 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.Reply
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mikepenz.markdown.m3.Markdown
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
@@ -40,17 +55,106 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.check
 import schneaggchatv3mp.composeapp.generated.resources.read
 import schneaggchatv3mp.composeapp.generated.resources.something_wrong_message
+import kotlin.math.roundToInt
 
 @Composable
 fun MessageView(
     useMD: Boolean = false,
     selectedChatId: String = "",
     message: Message,
+    onReplyCall: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
 ){
-    val mymessage = message.myMessage
 
+
+    var contextMenuWidth by remember {
+        mutableFloatStateOf(0f)
+    }
+
+    val offset = remember {
+        Animatable(initialValue = 0f)
+    }
+
+    val scope = rememberCoroutineScope()
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+    ){
+        Row(
+            modifier = Modifier
+                .onSizeChanged {
+                    contextMenuWidth = it.width.toFloat()
+                },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ReplyArrow()
+        }
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .offset { IntOffset(offset.value.roundToInt(), 0) }
+                .pointerInput(contextMenuWidth) {
+                    detectHorizontalDragGestures(
+                        onHorizontalDrag = { _, dragAmount ->
+                            scope.launch {
+                                val newOffset = (offset.value + dragAmount)
+                                    .coerceIn(0f, contextMenuWidth)
+                                offset.snapTo(newOffset)
+                            }
+                        },
+                        onDragEnd = {
+                            if(offset.value > contextMenuWidth * 0.9) onReplyCall() // call Reply when swiped 90% of the way
+
+                            scope.launch {
+                                offset.animateTo(0f)
+                            }
+                        }
+                    )
+                }
+        ) {
+            MessageBox(
+                modifier = Modifier,
+                message = message,
+                useMD = useMD,
+                selectedChatId = selectedChatId
+            )
+        }
+    }
+}
+
+
+@Composable
+private fun ReplyArrow(
+    modifier: Modifier = Modifier.fillMaxHeight()
+){
+    Box(
+        modifier = modifier
+    ){
+        Icon(
+            imageVector = Icons.Default.Reply,
+            contentDescription = "reply", // todo strings
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(
+                    start = 16.dp,
+                    end = 20.dp
+                )
+        )
+    }
+}
+
+@Composable
+private fun MessageBox(
+    modifier: Modifier,
+    message: Message,
+    useMD: Boolean = false,
+    selectedChatId: String,
+)
+{
+
+    val mymessage = message.myMessage
     //Ganze breite
     Row(
         modifier = modifier
