@@ -13,6 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetailsViewmodel
@@ -22,6 +23,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
@@ -38,9 +40,11 @@ val sharedmodule = module{
     //Database
     single <AppDatabase> { CreateAppDatabase(get()).getDatabase() }
 
-    single <HttpClient>(named("api")) { createHttpClient(get(), get(), true) }
+    singleOf(::TokenManager)
 
-    single <HttpClient>(named("auth")) { createHttpClient(get(), get(), false) }
+    single <HttpClient>(named("api")) { createHttpClient(get(), get(), get(), get(), true) }
+
+    single <HttpClient>(named("auth")) { createHttpClient(get(), get(), get(), get(), false) }
 
 
     singleOf(::Navigator)
@@ -54,6 +58,7 @@ val sharedmodule = module{
     singleOf(::UserRepository)
     singleOf(::MessageRepository)
     singleOf(::TodoRepository)
+    singleOf(::LoggingRepository)
 
 
     single<NetworkUtils> {
@@ -104,7 +109,7 @@ val sharedmodule = module{
     factory { SettingsViewModel(get(), get()) } // factory -> new instance each injection
 
     viewModelOf(::DevSettingsViewModel)
-    factory { DevSettingsViewModel() }
+    factory { DevSettingsViewModel(get()) }
 
     viewModelOf(::UserSettingsViewModel)
     factory { UserSettingsViewModel(get(), get(), get()) }

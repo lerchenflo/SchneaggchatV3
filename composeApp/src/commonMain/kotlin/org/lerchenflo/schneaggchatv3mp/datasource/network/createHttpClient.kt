@@ -11,22 +11,23 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
+import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.util.AttributeKey
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
-
+import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 
 fun createHttpClient(
     engine: HttpClientEngine,
     preferenceManager: Preferencemanager,
+    loggingRepository: LoggingRepository,
+    tokenManager: TokenManager,
     useAuth: Boolean
 
 ) : HttpClient {
@@ -65,58 +66,12 @@ fun createHttpClient(
                 bearer {
 
                     loadTokens {
-                        val tokens = preferenceManager.getTokens()
-
-                        if (tokens.refreshToken == ""){
-                            null
-                        } else {
-                            BearerTokens(tokens.accessToken, tokens.refreshToken)
-                        }
+                        tokenManager.loadBearerTokens()
                     }
 
                     refreshTokens {
-
-                        val refreshRequest = NetworkUtils.RefreshRequest(oldTokens?.refreshToken ?: "")
-
-                        val response = client.post(preferenceManager.buildServerUrl("/auth/refresh")) {
-                            contentType(ContentType.Application.Json)
-                            setBody(refreshRequest)
-                            markAsRefreshTokenRequest()
-                        }
-
-                        val rawBody = response.body<String>()
-                        println("Httpclient tokenrefresh raw body: $rawBody")
-
-
-                        try {
-                            val responseTokens = Json.decodeFromString<NetworkUtils.TokenPair>(rawBody)
-
-                            println("httpclient saving tokens: $responseTokens")
-                            // Save new tokens
-                            preferenceManager.saveTokens(responseTokens)
-
-                            BearerTokens(
-                                accessToken = responseTokens.accessToken,
-                                refreshToken = responseTokens.refreshToken
-                            )
-                        }catch (e: Exception){
-                            println("Httpclient token refresh error:")
-                            e.printStackTrace()
-                            null
-                        }
-
-
-
+                        tokenManager.refreshBearerTokens(client, oldTokens)
                     }
-
-                    /*
-                    sendWithoutRequest { request ->
-                        val tokens = SessionCache.tokens
-                        tokens != null
-                    }
-
-                     */
-
 
                 }
             }
@@ -130,4 +85,10 @@ fun createHttpClient(
             socketTimeoutMillis = 30000   // 30 seconds between TCP packets
         }
     }
+}
+
+private val RefreshTokenRequestAttributeKey = AttributeKey<Unit>("RefreshTokenRequest")
+
+fun HttpRequestBuilder.markAsRefreshTokenRequest() {
+    attributes.put(RefreshTokenRequestAttributeKey, Unit)
 }

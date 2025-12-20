@@ -8,16 +8,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -27,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import com.mikepenz.markdown.m3.Markdown
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
@@ -103,12 +108,20 @@ fun MessageView(
                         )
 
                         // gelesen haken
-                        if(message.isReadById(selectedChatId) && mymessage){
-                            Icon(
-                                painter = painterResource(Res.drawable.check),
-                                contentDescription = stringResource(Res.string.read),
+                        // Cache expensive read state calculation
+                        val readState = remember(message.sent, message.readers, selectedChatId, mymessage) {
+                            when {
+                                !mymessage -> ReadState.None
+                                !message.sent -> ReadState.NotSent
+                                message.isReadById(selectedChatId) -> ReadState.Read
+                                else -> ReadState.Sent
+                            }
+                        }
+
+                        if (readState != ReadState.None) {
+                            ReadIndicator(
+                                state = readState,
                                 modifier = Modifier
-                                    .size(14.dp)
                                     .padding(start = 2.dp)
                                     .align(Alignment.CenterVertically)
                             )
@@ -120,6 +133,68 @@ fun MessageView(
     }
 }
 
+private enum class ReadState {
+    None,      // Not your message
+    NotSent,   // Message failed to send
+    Sent,      // One grey check - sent but not read
+    Read       // Two blue/primary checks - read
+}
+
+
+@Composable
+private fun ReadIndicator(
+    state: ReadState,
+    modifier: Modifier = Modifier
+) {
+    when (state) {
+        ReadState.None -> { /* Don't show anything */ }
+
+        ReadState.NotSent -> {
+            // Cloud off icon for not sent
+            Icon(
+                imageVector = Icons.Default.CloudOff,
+                contentDescription = "Not sent",
+                modifier = modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.error
+            )
+        }
+
+        ReadState.Sent -> {
+            // Single grey check - sent but not read
+            Icon(
+                painter = painterResource(Res.drawable.check),
+                contentDescription = "Sent",
+                modifier = modifier.size(14.dp),
+                tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
+            )
+        }
+
+        ReadState.Read -> {
+            // Double checks - read (use onPrimaryContainer for better contrast)
+            Box(modifier = modifier.size(14.dp)) {
+                Icon(
+                    painter = painterResource(Res.drawable.check),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(14.dp)
+                        .offset(x = (-2).dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
+                )
+                Icon(
+                    painter = painterResource(Res.drawable.check),
+                    contentDescription = "Read",
+                    modifier = Modifier
+                        .size(14.dp)
+                        .offset(x = 2.dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
+                )
+            }
+        }
+    }
+}
+
+
+
 @Composable
 fun TextMessage(
     useMD: Boolean = false,
@@ -127,11 +202,15 @@ fun TextMessage(
     myMessage: Boolean,
     modifier: Modifier = Modifier
 ){
-    SelectionContainer { // damit ma text markiera und kopiera kann (künnt evnt. mit am onLongClick in zukunft interferrieren oder so)
+    SelectionContainer { // damit ma text markiera und kopira kann (künnt evnt. mit am onLongClick in zukunft interferrieren oder so)
         // ma künnt es chatViewmodel o do instanzieren aber denn würd des für jede message einzeln passiera des isch glob ned des wahre
         if(useMD){ // get setting if if md is enabled
+            // Cache markdown rendering to avoid re-parsing on every recomposition
+            val content = remember(messageWithReaders.content) {
+                messageWithReaders.content
+            }
             Markdown(
-                content = messageWithReaders.content,
+                content = content,
                 modifier = modifier
             )
         }else{

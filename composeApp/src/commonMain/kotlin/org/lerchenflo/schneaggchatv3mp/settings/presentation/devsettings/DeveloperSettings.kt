@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
@@ -21,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
@@ -79,19 +82,33 @@ fun DeveloperSettings(
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
+        var showLogsDialog by remember { mutableStateOf(false) }
         SettingsOption(
-            icon = Icons.Default.Lightbulb,
-            text = "mehr Settings",
-            subtext = "es gibt ned mehr dev settings",
+            icon = Icons.AutoMirrored.Filled.List,
+            text = "Logs",
+            subtext = "show logs",
             onClick = {
-                SnackbarManager.showMessage("joo muasch da was usdenka")
+                showLogsDialog = true
             }
         )
+        if (showLogsDialog) {
+            LogsDialog(
+                logs = devSettingsViewModel.logs,
+                onDismiss = {
+                    showLogsDialog = false
+                },
+                onClearLogs = {
+                    devSettingsViewModel.onClearLogs()
+                }
+            )
+        }
+
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
 
     }
 
     if(showChangeServerUrlPopup){
-
         UrlChangeDialog(
             onDismiss = { showChangeServerUrlPopup = false },
             onConfirm = {
@@ -100,9 +117,9 @@ fun DeveloperSettings(
                         },
             serverUrl = sharedSettingsViewmodel.serverUrl
         )
-
-
     }
+
+
 
 
 }

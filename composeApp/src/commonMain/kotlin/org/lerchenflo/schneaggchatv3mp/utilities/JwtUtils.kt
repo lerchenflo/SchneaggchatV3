@@ -11,9 +11,11 @@ import kotlin.time.ExperimentalTime
 
 object JwtUtils {
     fun getUserIdFromToken(token: String) : String {
-        val jwt = JWT.from(token)
-        val userid = jwt.subject!! //Subject of this jwt token is the users id
-        return userid
+        if (token.isBlank()) return ""
+        return runCatching {
+            val jwt = JWT.from(token)
+            jwt.subject.orEmpty() //Subject of this jwt token is the users id
+        }.getOrDefault("")
     }
 
     fun isTokenDateValid(token: String) : Boolean {
