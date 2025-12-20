@@ -142,8 +142,6 @@ object NotificationManager{
 
                                 // Check if app is open before showing notification
                                 if (AppLifecycleManager.isAppOpen()) {
-                                    val appRepository = KoinPlatform.getKoin().get<AppRepository>()
-                                    appRepository.dataSync()
                                     println("[NotificationManager] App is open, skipping notification display")
                                     return@launch
                                 }
@@ -153,6 +151,10 @@ object NotificationManager{
                                     titletext = finaltitlestr,
                                     bodytext = decryptedContent
                                 )
+
+                                //Start datasync (May get cancelled but we dont care)
+                                val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                                appRepository.dataSync()
                             } catch (e: Exception) {
                                 println("[NotificationManager] ERROR: Decryption failed: ${e.message}")
                                 e.printStackTrace()

@@ -43,11 +43,14 @@ class ChatViewModel(
     init {
         initPrefs()
 
+        setAllMessagesRead()
+    }
+
+    fun setAllMessagesRead() {
         CoroutineScope(Dispatchers.IO).launch {
             appRepository.setAllChatMessagesRead(globalViewModel.selectedChat.value.id, globalViewModel.selectedChat.value.isGroup, getCurrentTimeMillisString())
         }
     }
-
 
     //TODO: Null check ob an selectegegner gwählt isch (Oder einfach id und bool gruppe übergia denn hot ma des clean grichtet und sharedviewmodel selected bruchts num)
     //Sharedviewmodel bruchama trotzdem für networktasks
@@ -109,7 +112,7 @@ class ChatViewModel(
     val messagesState: StateFlow<List<Message>> = messagesFlow
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Companion.WhileSubscribed(5_000),
+            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
 
