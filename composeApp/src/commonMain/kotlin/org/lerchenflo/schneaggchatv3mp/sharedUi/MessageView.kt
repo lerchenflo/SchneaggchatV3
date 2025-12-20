@@ -62,6 +62,8 @@ fun MessageViewWithActions(
     useMD: Boolean = false,
     selectedChatId: String = "",
     message: Message,
+    replyMessage: Message? = null,
+    replyMessageOnClick: () -> Unit = {},
     onReplyCall: (message: Message) -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
@@ -117,7 +119,9 @@ fun MessageViewWithActions(
             MessageView(
                 message = message,
                 useMD = useMD,
-                selectedChatId = selectedChatId
+                selectedChatId = selectedChatId,
+                replyMessage = replyMessage,
+                replyMessageOnClick = replyMessageOnClick
             )
         }
     }
@@ -150,6 +154,8 @@ private fun MessageView(
     message: Message,
     useMD: Boolean = false,
     selectedChatId: String,
+    replyMessage: Message? = null,
+    replyMessageOnClick: () -> Unit = {},
 )
 {
 
@@ -160,29 +166,49 @@ private fun MessageView(
             .fillMaxWidth(), // Make sure this is here
         horizontalArrangement = if (mymessage) Arrangement.End else Arrangement.Start
     ) {
-        MessageContent(
-            modifier = Modifier
-                .padding(
-                    start = if (mymessage) 40.dp else 0.dp,
-                    end = if (mymessage) 0.dp else 40.dp,
-                    top = 5.dp,
-                    bottom = 5.dp
-                )
-                //.wrapContentSize()
-                .background(
-                    color = if (mymessage){MaterialTheme.colorScheme.primaryContainer}else {MaterialTheme.colorScheme.secondaryContainer},
-                    shape = RoundedCornerShape(15.dp)
-                )
-                .clickable{
-                    println(message)
+        Column() {
+            if (replyMessage != null) {
+                Row(
+                    modifier = Modifier
+                        .clickable {
+                            replyMessageOnClick()
+                        }
+                ) {
+                    Text("Replying to: ${replyMessage.content}") // todo shüa macha
                 }
-                .padding(6.dp),
-            message = message,
-            useMD = useMD,
-            mymessage = mymessage,
-            selectedChatId = selectedChatId
 
-        )
+            }
+            Row() {
+                MessageContent(
+                    modifier = Modifier
+                        .padding(
+                            start = if (mymessage) 40.dp else 0.dp,
+                            end = if (mymessage) 0.dp else 40.dp,
+                            top = 5.dp,
+                            bottom = 5.dp
+                        )
+                        //.wrapContentSize()
+                        .background(
+                            color = if (mymessage) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.secondaryContainer
+                            },
+                            shape = RoundedCornerShape(15.dp)
+                        )
+                        .clickable {
+                            println(message)
+                        }
+                        .padding(6.dp),
+                    message = message,
+                    useMD = useMD,
+                    mymessage = mymessage,
+                    selectedChatId = selectedChatId
+
+                )
+            }
+        }
+
 
     }
 }

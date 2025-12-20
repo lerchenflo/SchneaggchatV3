@@ -57,6 +57,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DayDivider
 import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageContent
 import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageViewWithActions
@@ -161,11 +162,17 @@ fun ChatScreen(
                     }
                 }
 
+                var answerMessage: Message? = null
+                if(message.answerId !=null){
+                    answerMessage = messages.find { it.id == message.answerId }
+                }
+
                 MessageViewWithActions(
                     useMD = viewModel.markdownEnabled,
                     selectedChatId = globalViewModel.selectedChat.value.id,
                     message = message,
                     modifier = Modifier,
+                    replyMessage = answerMessage,
                     onReplyCall = {
                         viewModel.updateReplyMessage(it)
                     }
