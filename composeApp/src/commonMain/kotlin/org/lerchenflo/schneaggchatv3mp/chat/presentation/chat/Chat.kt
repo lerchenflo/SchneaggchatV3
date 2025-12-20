@@ -128,7 +128,6 @@ fun ChatScreen(
             }
         }
 
-        //TODO: Lag fixen do isch iwas falsch
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
             modifier = Modifier
