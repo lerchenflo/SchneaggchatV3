@@ -15,6 +15,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.util.network.UnresolvedAddressException
+import kotlinx.io.IOException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -69,7 +70,7 @@ class NetworkUtils(
             if (response.status.isSuccess()) {
                 NetworkResult.Success(response.body())
             } else {
-                NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body()))
+                NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
             }
         } catch (e: UnresolvedAddressException) {
             SessionCache.updateOnline(false)
@@ -85,6 +86,9 @@ class NetworkUtils(
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: SerializationException) {
             NetworkResult.Error(NetworkError.Serialization(message = e.message))
+        }catch (e: IOException) { // This catches UnknownHostException too
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: Exception) {
             e.printStackTrace()
             SessionCache.updateOnline(false)
@@ -172,7 +176,7 @@ class NetworkUtils(
 
     suspend fun testServer(serverUrl: String) : NetworkResult<String, NetworkError> {
         return safeCall {
-            authHttpClient.get(serverUrl + "/public/test")
+            authHttpClient.get("$serverUrl/public/test")
         }
     }
 
@@ -243,7 +247,7 @@ class NetworkUtils(
             if (response.status.isSuccess()) {
                 NetworkResult.Success(Unit)
             } else {
-                NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body()))
+                NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
             }
         } catch (e: UnresolvedAddressException) {
             NetworkResult.Error(NetworkError.NoInternet())
@@ -253,7 +257,10 @@ class NetworkUtils(
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: SerializationException) {
             NetworkResult.Error(NetworkError.Serialization())
-        } catch (e: Exception) {
+        } catch (e: IOException) { // This catches UnknownHostException too
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.NoInternet())
+        }catch (e: Exception) {
             e.printStackTrace()
             NetworkResult.Error(NetworkError.Unknown(message = e.message))
         }

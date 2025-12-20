@@ -180,9 +180,12 @@ class AppRepository(
             return
         }
         dataSyncRunning = true
-        userIdSync()
-        messageIdSync()
-        dataSyncRunning = false
+        try {
+            userIdSync()
+            messageIdSync()
+        } finally {
+            dataSyncRunning = false
+        }
     }
 
     /*
@@ -428,6 +431,10 @@ class AppRepository(
                 is NetworkResult.Success<NetworkUtils.TokenPair> -> {
                     onNewTokenPair(result.data)
                     onResult(true)
+
+                    launch {
+                        dataSync()
+                    }
                 }
             }
 
