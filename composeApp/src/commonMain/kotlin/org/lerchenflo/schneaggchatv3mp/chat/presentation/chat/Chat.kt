@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -33,6 +34,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +44,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -52,19 +58,22 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DayDivider
-import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageContent
+import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageViewWithActions
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.audio
+import schneaggchatv3mp.composeapp.generated.resources.close
 import schneaggchatv3mp.composeapp.generated.resources.go_back
 import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.message
 import schneaggchatv3mp.composeapp.generated.resources.poll
 import schneaggchatv3mp.composeapp.generated.resources.unknown_error
 import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 @Preview()
 @Composable
@@ -152,11 +161,14 @@ fun ChatScreen(
                     }
                 }
 
-                MessageView(
+                MessageViewWithActions(
                     useMD = viewModel.markdownEnabled,
                     selectedChatId = globalViewModel.selectedChat.value.id,
                     message = message,
-                    modifier = Modifier
+                    modifier = Modifier,
+                    onReplyCall = {
+                        viewModel.updateReplyMessage(it)
+                    }
                 )
                 // Show divider only if this message starts a new day
                 if (currentDate != nextDate && currentDate != null) {
@@ -168,7 +180,55 @@ fun ChatScreen(
             }
         }
 
+        // Reply view
+        if(viewModel.replyMessage != null){
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.Bottom
+            ){
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                ){
+                    val alphaValue = 0.8f
+                    MessageContent(
+                        modifier = Modifier
+                            //.wrapContentSize()
+                            .background(
+                                color = if (viewModel.replyMessage!!.myMessage) {
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = alphaValue)
+                                } else {
+                                    MaterialTheme.colorScheme.secondaryContainer.copy(alpha = alphaValue)
+                                },
+                                shape = RoundedCornerShape(15.dp)
+                            )
+                            .padding(6.dp),
+                        message = viewModel.replyMessage!!,
+                        useMD = viewModel.markdownEnabled,
+                        selectedChatId = globalViewModel.selectedChat.value.id
+                    )
+                }
+                Column(
 
+                ){
+                    IconButton(
+                        onClick = {
+                            viewModel.updateReplyMessage(null)
+                        },
+                        modifier = Modifier
+                    ){
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(Res.string.close)
+                        )
+                    }
+                }
+
+
+            }
+        }
 
         Row(
             modifier = Modifier
@@ -245,7 +305,7 @@ fun ChatScreen(
 
 @OptIn(ExperimentalTime::class)
 fun Long.toLocalDate(): LocalDate {
-    val instant = kotlin.time.Instant.fromEpochMilliseconds(this)
+    val instant = Instant.fromEpochMilliseconds(this)
     return instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
 }
 

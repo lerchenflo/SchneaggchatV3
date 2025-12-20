@@ -58,11 +58,11 @@ import schneaggchatv3mp.composeapp.generated.resources.something_wrong_message
 import kotlin.math.roundToInt
 
 @Composable
-fun MessageView(
+fun MessageViewWithActions(
     useMD: Boolean = false,
     selectedChatId: String = "",
     message: Message,
-    onReplyCall: () -> Unit = {},
+    onReplyCall: (message: Message) -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
 ){
@@ -105,7 +105,7 @@ fun MessageView(
                             }
                         },
                         onDragEnd = {
-                            if(offset.value > contextMenuWidth * 0.9) onReplyCall() // call Reply when swiped 90% of the way
+                            if(offset.value > contextMenuWidth * 0.9) onReplyCall(message) // call Reply when swiped 90% of the way
 
                             scope.launch {
                                 offset.animateTo(0f)
@@ -114,8 +114,7 @@ fun MessageView(
                     )
                 }
         ) {
-            MessageBox(
-                modifier = Modifier,
+            MessageView(
                 message = message,
                 useMD = useMD,
                 selectedChatId = selectedChatId
@@ -146,8 +145,8 @@ private fun ReplyArrow(
 }
 
 @Composable
-private fun MessageBox(
-    modifier: Modifier,
+private fun MessageView(
+    modifier: Modifier = Modifier,
     message: Message,
     useMD: Boolean = false,
     selectedChatId: String,
@@ -161,8 +160,7 @@ private fun MessageBox(
             .fillMaxWidth(), // Make sure this is here
         horizontalArrangement = if (mymessage) Arrangement.End else Arrangement.Start
     ) {
-        //Farbiger kasten
-        Box(
+        MessageContent(
             modifier = Modifier
                 .padding(
                     start = if (mymessage) 40.dp else 0.dp,
@@ -178,58 +176,79 @@ private fun MessageBox(
                 .clickable{
                     println(message)
                 }
-                .padding(6.dp)
+                .padding(6.dp),
+            message = message,
+            useMD = useMD,
+            mymessage = mymessage,
+            selectedChatId = selectedChatId
 
+        )
+
+    }
+}
+
+@Composable
+fun MessageContent(
+    modifier: Modifier = Modifier,
+    message: Message,
+    useMD: Boolean = false,
+    mymessage: Boolean = false,
+    selectedChatId: String
+){
+    //Farbiger kasten
+    Box(
+        modifier = modifier
+
+    ){
+        //Contentbox gesammt
+        Column(
+            modifier = Modifier // Remove the modifier parameter here
         ){
-            //Contentbox gesammt
-            Column(
-                modifier = Modifier // Remove the modifier parameter here
-            ){
-                //Contentrow
-                Row {
-                    when(message.msgType){
-                        MessageType.TEXT -> TextMessage(
-                            useMD = useMD,
-                            messageWithReaders = message,
-                            myMessage = mymessage
-                        )
-                        else -> ErrorMessage()
-                    }
+            // todo show name for groups
+            //Contentrow
+            Row {
+                when(message.msgType){
+                    MessageType.TEXT -> TextMessage(
+                        useMD = useMD,
+                        messageWithReaders = message,
+                        myMessage = mymessage
+                    )
+                    else -> ErrorMessage()
                 }
+            }
 
-                //Sendedatum / Gelesen row
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .padding(end = 6.dp)
-                ) {
-                    Row(){
-                        //zit
-                        Text(
-                            text = millisToString(message.sendDate.toLong(), format = "HH:mm"),
-                            textAlign = TextAlign.End,
-                            fontSize = 12.sp,
+            //Sendedatum / Gelesen row
+            Box(
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(end = 6.dp)
+            ) {
+                Row(){
+                    //zit
+                    Text(
+                        text = millisToString(message.sendDate.toLong(), format = "HH:mm"),
+                        textAlign = TextAlign.End,
+                        fontSize = 12.sp,
+                    )
+
+                    // gelesen haken
+                    // Cache expensive read state calculation
+                    val readState = remember(message.sent, message.readers, selectedChatId, mymessage) {
+                        when {
+                            !mymessage -> ReadState.None
+                            !message.sent -> ReadState.NotSent
+                            message.isReadById(selectedChatId) -> ReadState.Read
+                            else -> ReadState.Sent
+                        }
+                    }
+
+                    if (readState != ReadState.None) {
+                        ReadIndicator(
+                            state = readState,
+                            modifier = Modifier
+                                .padding(start = 2.dp)
+                                .align(Alignment.CenterVertically)
                         )
-
-                        // gelesen haken
-                        // Cache expensive read state calculation
-                        val readState = remember(message.sent, message.readers, selectedChatId, mymessage) {
-                            when {
-                                !mymessage -> ReadState.None
-                                !message.sent -> ReadState.NotSent
-                                message.isReadById(selectedChatId) -> ReadState.Read
-                                else -> ReadState.Sent
-                            }
-                        }
-
-                        if (readState != ReadState.None) {
-                            ReadIndicator(
-                                state = readState,
-                                modifier = Modifier
-                                    .padding(start = 2.dp)
-                                    .align(Alignment.CenterVertically)
-                            )
-                        }
                     }
                 }
             }
@@ -416,10 +435,10 @@ private fun messagepreview(){
             .padding(16.dp)
     ) {
         for (i in 1..12) {
-            MessageView(
+            MessageViewWithActions(
                 message = mymessage
             )
-            MessageView(
+            MessageViewWithActions(
                 message = othermessage
             )
         }
