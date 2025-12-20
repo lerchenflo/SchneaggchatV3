@@ -37,6 +37,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
@@ -58,6 +59,7 @@ import kotlin.time.ExperimentalTime
 class AppRepository(
     private val database: AppDatabase,
     private val networkUtils: NetworkUtils,
+    private val tokenManager: TokenManager,
     private val preferencemanager: Preferencemanager,
     private val pictureManager: PictureManager,
 
@@ -67,7 +69,6 @@ class AppRepository(
     private val todoRepository: TodoRepository,
 
     val appVersion: AppVersion, //Appversion, uf des darf jeder zugriefa
-
 ) {
     //Errorchannel for global error events (Show in every screen)
     companion object ErrorChannel{
@@ -357,23 +358,19 @@ class AppRepository(
         }
         refreshTokenRequestRunning = true
 
-        val tokens = preferencemanager.getTokens()
+        println("Tokenmanager refreshing tokenbs")
+        val error = tokenManager.refreshTokenPairLocked(networkUtils)
 
-        //println("Token refresh networktask starting: $tokens")
-        return when(val result = networkUtils.refresh(tokens.refreshToken)){
-            is NetworkResult.Error<*> -> {
-                println("Refreshing tokens failed: ${result.error}")
-                refreshTokenRequestRunning = false
-                result.error
-            }
-            is NetworkResult.Success<NetworkUtils.TokenPair> -> {
-                //preferencemanager.saveTokens(result.data)
-                println("Tokenpair refresh successful")
-                onNewTokenPair(result.data)
-                refreshTokenRequestRunning = false
-                null
-            }
+        if (error == null) {
+            println("Tokenpair refresh successful")
+            SessionCache.updateLoggedIn(true)
+            SessionCache.updateOnline(true)
+        } else {
+            println("Refreshing tokens failed: $error")
         }
+
+        refreshTokenRequestRunning = false
+        return error
     }
 
     /**

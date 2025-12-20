@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +53,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -338,7 +340,8 @@ fun LoginFormSection(
 @Composable
 fun TooltipIconButton(tooltip: String) {
     val tooltipState = rememberTooltipState()
-    
+    val scope = rememberCoroutineScope()
+
     TooltipBox(
         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
         tooltip = {
@@ -352,7 +355,14 @@ fun TooltipIconButton(tooltip: String) {
             imageVector = Icons.Default.Info,
             contentDescription = "Tooltip",
             modifier = Modifier
-                .size(16.dp),
+                .size(16.dp)
+                .clickable {
+                    scope.launch {
+                        if (tooltipState.isVisible) {
+                            tooltipState.dismiss()
+                        }else tooltipState.show()
+                    }
+                },
             tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
         )
     }

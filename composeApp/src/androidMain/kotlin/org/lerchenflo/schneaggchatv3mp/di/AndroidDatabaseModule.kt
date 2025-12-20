@@ -22,6 +22,7 @@ val androidHttpModule = module {
     single<HttpClient>(named("api")) {createHttpClient(
         engine = OkHttp.create(),
         preferenceManager = get(),
+        tokenManager = get(),
         useAuth = true,
         loggingRepository = get()
     )}
@@ -31,6 +32,7 @@ val androidHttpAuthModule = module {
     single<HttpClient>(named("auth")) { createHttpClient(
         engine = OkHttp.create(),
         preferenceManager = get(),
+        tokenManager = get(),
         loggingRepository = get(),
         useAuth = false
     ) }

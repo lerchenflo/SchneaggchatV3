@@ -23,6 +23,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
@@ -39,9 +40,11 @@ val sharedmodule = module{
     //Database
     single <AppDatabase> { CreateAppDatabase(get()).getDatabase() }
 
-    single <HttpClient>(named("api")) { createHttpClient(get(), get(), get(),true) }
+    singleOf(::TokenManager)
 
-    single <HttpClient>(named("auth")) { createHttpClient(get(), get(), get(), false) }
+    single <HttpClient>(named("api")) { createHttpClient(get(), get(), get(), get(), true) }
+
+    single <HttpClient>(named("auth")) { createHttpClient(get(), get(), get(), get(), false) }
 
 
     singleOf(::Navigator)
