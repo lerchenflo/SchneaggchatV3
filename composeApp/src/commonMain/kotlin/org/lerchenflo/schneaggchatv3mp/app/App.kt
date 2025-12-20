@@ -73,6 +73,9 @@ fun App() {
     val preferenceManager = koinInject<Preferencemanager>()
     val themeSetting by preferenceManager.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
 
+    // Track app lifecycle for notification handling
+    AppLifecycleTracker()
+
     SchneaggchatTheme(
         themeSetting = themeSetting
     ) {
