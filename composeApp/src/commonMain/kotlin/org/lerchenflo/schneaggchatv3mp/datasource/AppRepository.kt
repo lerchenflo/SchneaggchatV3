@@ -410,40 +410,36 @@ class AppRepository(
     }
 
 
-    fun login(
+    suspend fun login(
         username: String,
         password: String,
         onResult: (Boolean) -> Unit
     ) {
+        when(val result = networkUtils.login(username.trim(), password)){
+            is NetworkResult.Error<*> -> {
+                println("Error: ${result.error}")
 
-        CoroutineScope(Dispatchers.IO).launch {
-            when(val result = networkUtils.login(username.trim(), password)){
-                is NetworkResult.Error<*> -> {
-                    println("Error: ${result.error}")
+                sendErrorSuspend(ErrorEvent(
+                    errorMessageUiText = UiText.StringResourceText(Res.string.error_invalid_credentials),
+                    duration = 5000L
+                ))
 
-                    sendErrorSuspend(ErrorEvent(
-                        errorMessageUiText = UiText.StringResourceText(Res.string.error_invalid_credentials),
-                        duration = 5000L
-                    ))
+                onResult(false)
+            }
+            is NetworkResult.Success<NetworkUtils.TokenPair> -> {
+                onNewTokenPair(result.data)
+                onResult(true)
 
-                    onResult(false)
-                }
-                is NetworkResult.Success<NetworkUtils.TokenPair> -> {
-                    onNewTokenPair(result.data)
-                    onResult(true)
-
-                    launch {
-                        dataSync()
-                    }
+                //New coroutine to persist when this function exits
+                CoroutineScope(Dispatchers.IO).launch {
+                    dataSync()
                 }
             }
-
         }
-
     }
 
 
-    fun createAccount(
+    suspend fun createAccount(
         username: String,
         email: String,
         password: String,
@@ -451,22 +447,20 @@ class AppRepository(
         profilePic: ByteArray,
         onResult: (Boolean) -> Unit
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            when(val response = networkUtils.register(username, password, email, birthdate, profilePic)){
-                is NetworkResult.Error -> {
-                    println("Error: ${response.error}")
+        when(val response = networkUtils.register(username, password, email, birthdate, profilePic)){
+            is NetworkResult.Error -> {
+                println("Error: ${response.error}")
 
 
-                    sendErrorSuspend(ErrorEvent(
-                        error = response.error,
-                        duration = 5000L
-                    ))
+                sendErrorSuspend(ErrorEvent(
+                    error = response.error,
+                    duration = 5000L
+                ))
 
-                    onResult(false)
-                }
-                is NetworkResult.Success<*> -> {
-                    onResult(true)
-                }
+                onResult(false)
+            }
+            is NetworkResult.Success<*> -> {
+                onResult(true)
             }
         }
     }
@@ -824,6 +818,12 @@ class AppRepository(
                 page = currentPage
             )
 
+            if (SessionCache.getOwnIdValue() == null) {
+                println("MESSAGEIDSYNC ABORT -- Ownid")
+                return //Exit the sync when the own id is not set (Prevent messages from getting inserted with myMessage bool wrong)
+            }
+
+
             when (messageSyncResponse) {
                 is NetworkResult.Error<*> -> {
                     println("messageid sync error")
@@ -857,7 +857,7 @@ class AppRepository(
                                         groupMessage = messageResponse.groupMessage,
                                         answerId = messageResponse.answerId,
                                         sent = true,
-                                        myMessage = messageResponse.senderId == SessionCache.ownId.value,
+                                        myMessage = messageResponse.senderId == SessionCache.getOwnIdValue(),
                                         readByMe = messageResponse.readers.any { it.userId == SessionCache.ownId.value },
                                         senderAsString = "",
                                         senderColor = 0,
