@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
@@ -16,10 +17,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 
 class GlobalViewModel(
-
+    private val appRepository: AppRepository,
     private val networkUtils: NetworkUtils
-
-
 ): ViewModel() {
 
     init {
@@ -27,6 +26,17 @@ class GlobalViewModel(
 
 
         NotificationManager.initialize()
+
+        // Sync when app is resumed
+        viewModelScope.launch {
+            AppLifecycleManager.appResumedEvent.collectLatest {
+                println("App resumed, triggering sync...")
+                if (SessionCache.isLoggedInValue()) {
+                    appRepository.dataSync()
+                    appRepository.sendOfflineMessages()
+                }
+            }
+        }
 
         //TODO: Sync alle 10 sek oda so der an login macht wenn du offline bisch und location und so
     }

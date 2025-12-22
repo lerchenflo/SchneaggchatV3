@@ -10,12 +10,22 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 /**
  * Manages app lifecycle state to determine if the app is in foreground/background
  */
 object AppLifecycleManager {
     private var _isAppInForeground = mutableStateOf(false)
+    
+    private val _appResumedEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    
+    /**
+     * SharedFlow that emits an event every time the app comes into the foreground (ON_RESUME)
+     */
+    val appResumedEvent: SharedFlow<Unit> = _appResumedEvent.asSharedFlow()
     
     /**
      * Whether the app is currently in foreground (visible to user)
@@ -28,6 +38,13 @@ object AppLifecycleManager {
      */
     internal fun updateAppForegroundState(isInForeground: Boolean) {
         _isAppInForeground.value = isInForeground
+    }
+
+    /**
+     * Notify that the app has resumed
+     */
+    internal fun notifyAppResumed() {
+        _appResumedEvent.tryEmit(Unit)
     }
     
     /**
@@ -62,6 +79,7 @@ fun AppLifecycleTracker() {
                 Lifecycle.Event.ON_RESUME -> {
                     lifecycleState = Lifecycle.State.RESUMED
                     AppLifecycleManager.updateAppForegroundState(true)
+                    AppLifecycleManager.notifyAppResumed()
                 }
                 Lifecycle.Event.ON_PAUSE -> {
                     lifecycleState = Lifecycle.State.CREATED
