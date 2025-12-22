@@ -127,131 +127,134 @@ fun UserSettings(
     }
     //TODO: Wittabuggla
 
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-    ) {
-        ActivityTitle(
-            title = stringResource(Res.string.user_settings),
-            onBackClick = onBackClick
-        )
-        Spacer(modifier = Modifier.size(10.dp))
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+    if (!showImagePickerDialog){
+        Column(
+            modifier = modifier
+                .verticalScroll(rememberScrollState())
+        ) {
+            ActivityTitle(
+                title = stringResource(Res.string.user_settings),
+                onBackClick = onBackClick
+            )
+            Spacer(modifier = Modifier.size(10.dp))
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-        ProfilePictureView(
-            filepath = ownuser?.profilePictureUrl ?: "",
-            modifier = Modifier
-                .padding(horizontal = 60.dp)
-                .widthIn(max = 250.dp) //Max width for desktop
-                .fillMaxWidth()
-                .clickable {
-                    showImagePickerDialog = true
-                }
-                .padding(16.dp)
-                .align(Alignment.CenterHorizontally)
-        )
-
-
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-        //Username?
-        SettingsOption(
-            icon = Icons.Default.Accessibility,
-            text = "mehr Settings",
-            subtext = "es gibt ned mehr dev settings",
-            onClick = {
-                SnackbarManager.showMessage("joo muasch da was usdenka")
-            }
-        )
-
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-        //passwort
-        SettingsOption(
-            icon = Icons.Default.Key,
-            text = "mehr Settings",
-            subtext = "es gibt ned mehr dev settings",
-            onClick = {
-                SnackbarManager.showMessage("joo muasch da was usdenka")
-            }
-        )
-
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-        SettingsOption(
-            icon = Icons.Default.Mail,
-            text = stringResource(Res.string.email),
-            subtext = (if (ownuser?.isEmailVerified() == true) stringResource(Res.string.emailinfo) else stringResource(Res.string.emailinfo_unverified)) + "\n" + ownuser?.email,
-            onClick = {
-                if (ownuser?.isEmailVerified() == true){
-                    //TODO: Email Change popup
-                }else {
-                    userSettingsViewModel.sendEmailVerify()
-                }
-            },
-            rightSideIcon = {
-                if (ownuser != null){
-                    if (ownuser.isEmailVerified()) {
-                        Icon(
-                            imageVector = Icons.Outlined.Verified,
-                            contentDescription = "Email is verified",
-                            modifier = Modifier.size(30.dp),
-                            tint = Color(red = 0, green = 255, blue = 0)
-                        )
-                    }else {
-                        Icon(
-                            imageVector = Icons.Rounded.Warning,
-                            contentDescription = "Email not verified",
-                            modifier = Modifier.size(30.dp),
-                            tint = Color(red = 255, green = 165, blue = 0) //orange
-
-                        )
+            ProfilePictureView(
+                filepath = ownuser?.profilePictureUrl ?: "",
+                modifier = Modifier
+                    .padding(horizontal = 60.dp)
+                    .widthIn(max = 250.dp) //Max width for desktop
+                    .fillMaxWidth()
+                    .clickable {
+                        showImagePickerDialog = true
                     }
-                }
-            },
-        )
-
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                    .padding(16.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
 
 
-        var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
-        SettingsOption(
-            icon = Icons.AutoMirrored.Default.ExitToApp,
-            text = stringResource(Res.string.logout),
-            onClick = {
-                showLogoutDialog = true
-            }
-        )
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-        //Logoutdialog
-        if (showLogoutDialog) {
-            AlertDialog(
-                onDismissRequest = { showLogoutDialog = false },
-                title = { Text(text = stringResource(Res.string.logout)) },
-                text = { Text(text = stringResource(Res.string.are_you_sure_you_want_to_logout)) },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showLogoutDialog = false
-                        userSettingsViewModel.logout()
-                    }) {
-                        Text(text = stringResource(Res.string.yes))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showLogoutDialog = false }) {
-                        Text(text = stringResource(Res.string.no))
-                    }
+            //Username?
+            SettingsOption(
+                icon = Icons.Default.Accessibility,
+                text = "mehr Settings",
+                subtext = "es gibt ned mehr dev settings",
+                onClick = {
+                    SnackbarManager.showMessage("joo muasch da was usdenka")
                 }
             )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            //passwort
+            SettingsOption(
+                icon = Icons.Default.Key,
+                text = "mehr Settings",
+                subtext = "es gibt ned mehr dev settings",
+                onClick = {
+                    SnackbarManager.showMessage("joo muasch da was usdenka")
+                }
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            SettingsOption(
+                icon = Icons.Default.Mail,
+                text = stringResource(Res.string.email),
+                subtext = (if (ownuser?.isEmailVerified() == true) stringResource(Res.string.emailinfo) else stringResource(Res.string.emailinfo_unverified)) + "\n" + ownuser?.email,
+                onClick = {
+                    if (ownuser?.isEmailVerified() == true){
+                        //TODO: Email Change popup
+                    }else {
+                        userSettingsViewModel.sendEmailVerify()
+                    }
+                },
+                rightSideIcon = {
+                    if (ownuser != null){
+                        if (ownuser.isEmailVerified()) {
+                            Icon(
+                                imageVector = Icons.Outlined.Verified,
+                                contentDescription = "Email is verified",
+                                modifier = Modifier.size(30.dp),
+                                tint = Color(red = 0, green = 255, blue = 0)
+                            )
+                        }else {
+                            Icon(
+                                imageVector = Icons.Rounded.Warning,
+                                contentDescription = "Email not verified",
+                                modifier = Modifier.size(30.dp),
+                                tint = Color(red = 255, green = 165, blue = 0) //orange
+
+                            )
+                        }
+                    }
+                },
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+
+            var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
+            SettingsOption(
+                icon = Icons.AutoMirrored.Default.ExitToApp,
+                text = stringResource(Res.string.logout),
+                onClick = {
+                    showLogoutDialog = true
+                }
+            )
+
+            //Logoutdialog
+            if (showLogoutDialog) {
+                AlertDialog(
+                    onDismissRequest = { showLogoutDialog = false },
+                    title = { Text(text = stringResource(Res.string.logout)) },
+                    text = { Text(text = stringResource(Res.string.are_you_sure_you_want_to_logout)) },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showLogoutDialog = false
+                            userSettingsViewModel.logout()
+                        }) {
+                            Text(text = stringResource(Res.string.yes))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showLogoutDialog = false }) {
+                            Text(text = stringResource(Res.string.no))
+                        }
+                    }
+                )
+            }
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+
         }
-
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-
     }
 
-    if(showChangeUsernamePopup){
 
+    if(showChangeUsernamePopup){
+        //TODO username change popup
     }
 
 
