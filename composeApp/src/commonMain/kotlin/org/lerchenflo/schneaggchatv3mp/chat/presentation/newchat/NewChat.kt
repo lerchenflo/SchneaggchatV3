@@ -168,26 +168,26 @@ fun Option(
     icon: ImageVector,
     onClick: () -> Unit = {},
     modifier: Modifier = Modifier
+        .clickable{onClick()}
         .fillMaxWidth()
         .padding(
             start = 16.dp,
             end = 16.dp,
-            top = 7.dp,
-            bottom = 7.dp
+            top = 8.dp,
+            bottom = 8.dp
         )
-        .clickable{onClick()}
+
 ){
     Box(
         modifier = modifier
-
     ){
         Row(
             verticalAlignment = Alignment.CenterVertically
         ){
             Icon(
                 contentDescription = text,
-                modifier = Modifier.size(35.dp),
-                tint = MaterialTheme.colorScheme.primary.copy(),
+                modifier = Modifier.size(50.dp),
+                tint = MaterialTheme.colorScheme.primary,
                 imageVector = icon
             )
             Spacer(modifier = Modifier.width(24.dp))

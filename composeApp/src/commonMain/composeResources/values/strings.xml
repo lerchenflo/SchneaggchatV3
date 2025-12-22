@@ -188,9 +188,15 @@
     <string name="tooltip_password_repeat">Type your password again to make sure it is correct</string>
     <string name="tooltip_profile_picture">A profile picture makes it easier for friends to find you</string>
     <string name="tooltip_terms">Accepting terms is required to use Schneaggchat</string>
-    <string name="tooltip_group_name">Choose a name for your group</string>
-    <string name="tooltip_group_description">Add a description for your group</string>
+    <string name="tooltip_group_name">Choose a name for your group. It can be changed later on</string>
+    <string name="tooltip_group_description">Add a description for your group. It can be changed later on</string>
     <string name="tooltip_group_picture">Select a group picture</string>
 
+
+    <string name="swipecardview_left">← Previous</string>
+    <string name="swipecardview_right">Next →</string>
+    <string name="swipecardview_finish">Finish ✓</string>
+
+    <string name="name_too_long">Name too long</string>
 
 </resources>

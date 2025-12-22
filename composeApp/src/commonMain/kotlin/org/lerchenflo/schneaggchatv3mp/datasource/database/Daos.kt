@@ -83,7 +83,7 @@ interface MessageDao {
     fun getAllMessagesWithReadersFlow(): Flow<List<MessageWithReadersDto>>
 
     @Transaction
-    @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ")
+    @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ORDER BY sendDate DESC")
     fun getMessagesByUserIdFlow(userId: String, gruppe: Boolean): Flow<List<MessageWithReadersDto>>
 
     @Transaction

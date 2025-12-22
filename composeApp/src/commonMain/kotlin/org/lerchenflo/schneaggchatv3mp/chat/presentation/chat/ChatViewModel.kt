@@ -41,7 +41,16 @@ class ChatViewModel(
         private set
 
     init {
-        initPrefs()
+        viewModelScope.launch {
+            settingsRepository.getUsemd()
+                .catch { exception ->
+                    println("Problem getting MD preference: ${exception.printStackTrace()}")
+                }
+                .collect { value ->
+                    markdownEnabled = value
+                }
+
+        }
 
         setAllMessagesRead()
     }
@@ -78,14 +87,14 @@ class ChatViewModel(
 
         //Im sharedviewmodel dassas ewig leabig isch
         globalViewModel.viewModelScope.launch {
-
-
             appRepository.sendTextMessage(
                 empfaenger = globalViewModel.selectedChat.value.id,
                 gruppe = globalViewModel.selectedChat.value.isGroup,
                 content = content,
                 answerid = replyMessage?.id,
             )
+
+            replyMessage = null
         }
     }
 
@@ -110,9 +119,6 @@ class ChatViewModel(
             .flatMapLatest { chat ->
                 messageRepository.getMessagesByUserIdFlow(chat.id, chat.isGroup)
             }
-            .map { list ->
-                list.sortedByDescending { it.sendDate }
-            }
             .flowOn(Dispatchers.Default)
 
     // Expose as StateFlow so UI can collect easily and get a current value
@@ -123,18 +129,7 @@ class ChatViewModel(
             initialValue = emptyList()
         )
 
-    fun initPrefs(){
-        viewModelScope.launch {
-            settingsRepository.getUsemd()
-                .catch { exception ->
-                    println("Problem getting MD preference: ${exception.printStackTrace()}")
-                }
-                .collect { value ->
-                    markdownEnabled = value
-                }
 
-        }
-    }
 
 
 
