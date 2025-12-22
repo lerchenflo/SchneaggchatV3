@@ -193,4 +193,8 @@
     <string name="tooltip_group_picture">Select a group picture</string>
 
 
+    <string name="swipecardview_left">← Previous</string>
+    <string name="swipecardview_right">Next →</string>
+    <string name="swipecardview_finish">Finish ✓</string>
+
 </resources>
