@@ -62,6 +62,7 @@ import schneaggchatv3mp.composeapp.generated.resources.loginsubtitle
 import schneaggchatv3mp.composeapp.generated.resources.password
 import schneaggchatv3mp.composeapp.generated.resources.sign_up
 import schneaggchatv3mp.composeapp.generated.resources.username
+import kotlin.math.sin
 
 @Composable
 fun InputTextField(
@@ -76,7 +77,8 @@ fun InputTextField(
     focusRequester: FocusRequester? = null,
     nextFocusRequester: FocusRequester? = null,
     tooltip: String? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    maxLines: Int = 100
 ) {
     var isPasswordVisible by remember {
         mutableStateOf(false)
@@ -133,6 +135,8 @@ fun InputTextField(
         OutlinedTextField(
             modifier = fieldModifier,
             value = text,
+            maxLines = maxLines,
+            singleLine = (maxLines == 1),
             onValueChange = onValueChange,
             visualTransformation = if (keyboardType == KeyboardType.Password){
                 if (!isPasswordVisible){
@@ -191,15 +195,16 @@ fun InputTextField(
                 }
             }
         )
+
+        if (errortext != null){
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = errortext,
+                color = Color.Red
+            )
+        }
     }
 
-    if (errortext != null){
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            text = errortext,
-            color = Color.Red
-        )
-    }
 }
 
 

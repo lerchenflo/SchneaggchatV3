@@ -15,7 +15,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
-import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetailsViewmodel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChatViewModel

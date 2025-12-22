@@ -1,11 +1,31 @@
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -14,12 +34,18 @@ import schneaggchatv3mp.composeapp.generated.resources.swipecardview_finish
 import schneaggchatv3mp.composeapp.generated.resources.swipecardview_left
 import schneaggchatv3mp.composeapp.generated.resources.swipecardview_right
 
+/**
+ * Swipeable card view for Account creation etc
+ */
 @Composable
 fun SwipeableCardView(
     onFinished: () -> Unit,
     modifier: Modifier = Modifier,
+    contentAlignment: Alignment.Vertical = Alignment.CenterVertically,
+    cardElevation: Dp = 16.dp,
     content: @Composable CardContainerScope.() -> Unit
 ) {
+
     val scope = remember { CardContainerScopeImpl() }
 
     // Collect cards
@@ -29,19 +55,38 @@ fun SwipeableCardView(
     val coroutineScope = rememberCoroutineScope()
 
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
     ) {
         // Content - Display current card
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth()
+                .fillMaxSize(),
+            verticalAlignment = contentAlignment
         ) { page ->
-            Box(modifier = Modifier.padding(16.dp)) {
-                scope.cards[page]()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                val item = scope.cards[page]
+
+                Card(
+                    modifier = Modifier.fillMaxWidth().then(item.modifier),
+                    elevation = CardDefaults.cardElevation(defaultElevation = cardElevation),
+                    shape = MaterialTheme.shapes.large
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        scope.cards[page].content()
+                    }
+                }
             }
         }
+
 
         Surface(
             modifier = Modifier.fillMaxWidth(),
@@ -93,18 +138,25 @@ fun SwipeableCardView(
 interface CardContainerScope {
     @Composable
     fun CardItem(
+        modifier: Modifier = Modifier,
         content: @Composable () -> Unit
     )
 }
 
+private data class CardItemData(
+    val modifier: Modifier,
+    val content: @Composable () -> Unit
+)
+
 private class CardContainerScopeImpl : CardContainerScope {
-    val cards = mutableListOf<@Composable () -> Unit>()
+    val cards = mutableListOf<CardItemData>()
 
     @Composable
     override fun CardItem(
+        modifier: Modifier,
         content: @Composable () -> Unit
     ) {
-        cards.add(content)
+        cards.add(CardItemData(modifier, content))
     }
 }
 
