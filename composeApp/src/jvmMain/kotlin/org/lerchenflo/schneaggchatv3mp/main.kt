@@ -48,7 +48,7 @@ fun main() = application {
 
     ) {
         window.setSize(1600, 1000)
-        window.minimumSize = Dimension(1000, 400)
+        window.minimumSize = Dimension(400, 400)
         App()
     }
 }

@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,12 +32,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChangeDialog
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.version
 
 @Preview()
 @Composable
@@ -45,6 +52,7 @@ fun LoginScreen(
         .fillMaxSize()
 ){
     val viewModel = koinViewModel<LoginViewModel>()
+    val appRepository = koinInject<AppRepository>()
 
     SchneaggchatTheme {
 
@@ -129,41 +137,49 @@ fun LoginScreen(
                             passwordFocusRequester = passwordFocusRequester,
                             loginFocusRequester = loginFocusRequester
                         )
+
+                        VersionText(appRepository)
                     }
 
                 }
                 DeviceSizeConfiguration.MOBILE_LANDSCAPE -> {
-                    Row(
-                        modifier = rootmodifier
-                            .windowInsetsPadding(WindowInsets.displayCutout)
-                            .padding(
-                                horizontal = 32.dp
-                            )
-                            .verticalScroll(rememberScrollState()),
-
-                        horizontalArrangement = Arrangement.spacedBy(32.dp)
-                    ){
-                        LoginHeaderText(
-                            modifier = Modifier
-                                .weight(1f)
-                        )
-
-                        LoginFormSection(
-                            usernameText = viewModel.username,
-                            onusernameTextChange = { viewModel.updateUsername(it) },
-                            passwordText = viewModel.password,
-                            onPasswordTextChange = { viewModel.updatePassword(it) },
-                            passwordTextError = viewModel.errorMessage,
-                            loginbuttondisabled = viewModel.loginButtonDisabled,
-                            modifier = Modifier
+                    Column(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Row(
+                            modifier = rootmodifier
+                                .windowInsetsPadding(WindowInsets.displayCutout)
+                                .padding(
+                                    horizontal = 32.dp
+                                )
+                                .verticalScroll(rememberScrollState())
                                 .weight(1f),
-                            onLoginButtonClick = { viewModel.login() },
-                            onSignupButtonClick = { viewModel.navigateSignUp() },
-                            loginbuttonloading = viewModel.isLoading,
-                            usernameFocusRequester = usernameFocusRequester,
-                            passwordFocusRequester = passwordFocusRequester,
-                            loginFocusRequester = loginFocusRequester
-                        )
+
+                            horizontalArrangement = Arrangement.spacedBy(32.dp)
+                        ){
+                            LoginHeaderText(
+                                modifier = Modifier
+                                    .weight(1f)
+                            )
+
+                            LoginFormSection(
+                                usernameText = viewModel.username,
+                                onusernameTextChange = { viewModel.updateUsername(it) },
+                                passwordText = viewModel.password,
+                                onPasswordTextChange = { viewModel.updatePassword(it) },
+                                passwordTextError = viewModel.errorMessage,
+                                loginbuttondisabled = viewModel.loginButtonDisabled,
+                                modifier = Modifier
+                                    .weight(1f),
+                                onLoginButtonClick = { viewModel.login() },
+                                onSignupButtonClick = { viewModel.navigateSignUp() },
+                                loginbuttonloading = viewModel.isLoading,
+                                usernameFocusRequester = usernameFocusRequester,
+                                passwordFocusRequester = passwordFocusRequester,
+                                loginFocusRequester = loginFocusRequester
+                            )
+                        }
+                        VersionText(appRepository)
                     }
                 }
                 DeviceSizeConfiguration.TABLET_PORTRAIT,
@@ -192,7 +208,7 @@ fun LoginScreen(
                             passwordTextError = viewModel.errorMessage,
                             loginbuttondisabled = viewModel.loginButtonDisabled,
                             modifier = Modifier
-                                .weight(1f),
+                                .widthIn(max = 540.dp),
                             onLoginButtonClick = { viewModel.login() },
                             onSignupButtonClick = { viewModel.navigateSignUp() },
                             loginbuttonloading = viewModel.isLoading,
@@ -200,6 +216,8 @@ fun LoginScreen(
                             passwordFocusRequester = passwordFocusRequester,
                             loginFocusRequester = loginFocusRequester
                         )
+
+                        VersionText(appRepository)
                     }
                 }
             }
@@ -207,4 +225,17 @@ fun LoginScreen(
         }
     }
 
+}
+
+@Composable
+fun VersionText(appRepository: AppRepository) {
+    Text(
+        text = stringResource(Res.string.version, appRepository.appVersion.getVersionName()) + " Buildnr: " + appRepository.appVersion.getVersionCode(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+        textAlign = TextAlign.Center,
+        style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+        color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+    )
 }
