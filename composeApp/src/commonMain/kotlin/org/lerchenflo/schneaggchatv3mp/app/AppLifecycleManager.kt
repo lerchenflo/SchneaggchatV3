@@ -6,10 +6,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -72,28 +71,35 @@ fun AppLifecycleTracker() {
                     lifecycleState = Lifecycle.State.CREATED
                     AppLifecycleManager.updateAppForegroundState(false)
                 }
+
                 Lifecycle.Event.ON_START -> {
                     lifecycleState = Lifecycle.State.STARTED
                     AppLifecycleManager.updateAppForegroundState(true)
                 }
+
                 Lifecycle.Event.ON_RESUME -> {
                     lifecycleState = Lifecycle.State.RESUMED
                     AppLifecycleManager.updateAppForegroundState(true)
                     AppLifecycleManager.notifyAppResumed()
                 }
+
                 Lifecycle.Event.ON_PAUSE -> {
                     lifecycleState = Lifecycle.State.CREATED
                     AppLifecycleManager.updateAppForegroundState(false)
                 }
+
                 Lifecycle.Event.ON_STOP -> {
                     lifecycleState = Lifecycle.State.CREATED
                     AppLifecycleManager.updateAppForegroundState(false)
                 }
+
                 Lifecycle.Event.ON_DESTROY -> {
                     lifecycleState = Lifecycle.State.DESTROYED
                     AppLifecycleManager.updateAppForegroundState(false)
                 }
-                else -> { /* Handle other events if needed */ }
+
+                else -> { /* Handle other events if needed */
+                }
             }
         }
         
