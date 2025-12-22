@@ -61,6 +61,13 @@ class ChatViewModel(
         sendText = newValue
     }
 
+    var replyMessage by mutableStateOf<Message?>(null)
+        private set
+
+    fun updateReplyMessage(newValue: Message?) {
+        replyMessage = newValue
+    }
+
     fun sendMessage(){
 
         if (sendText == "") return
@@ -77,7 +84,7 @@ class ChatViewModel(
                 empfaenger = globalViewModel.selectedChat.value.id,
                 gruppe = globalViewModel.selectedChat.value.isGroup,
                 content = content,
-                answerid = null, //TODO: Antworten
+                answerid = replyMessage?.id,
             )
         }
     }

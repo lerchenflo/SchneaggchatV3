@@ -1,13 +1,18 @@
 package org.lerchenflo.schneaggchatv3mp.sharedUi
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -16,19 +21,29 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.Reply
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mikepenz.markdown.m3.Markdown
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
@@ -40,92 +55,226 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.check
 import schneaggchatv3mp.composeapp.generated.resources.read
 import schneaggchatv3mp.composeapp.generated.resources.something_wrong_message
+import kotlin.math.roundToInt
 
 @Composable
-fun MessageView(
+fun MessageViewWithActions(
     useMD: Boolean = false,
     selectedChatId: String = "",
     message: Message,
+    replyMessage: Message? = null,
+    replyMessageOnClick: () -> Unit = {},
+    onReplyCall: (message: Message) -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
 ){
-    val mymessage = message.myMessage
 
+
+    var contextMenuWidth by remember {
+        mutableFloatStateOf(0f)
+    }
+
+    val offset = remember {
+        Animatable(initialValue = 0f)
+    }
+
+    val scope = rememberCoroutineScope()
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+    ){
+        Row(
+            modifier = Modifier
+                .onSizeChanged {
+                    contextMenuWidth = it.width.toFloat()
+                },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ReplyArrow()
+        }
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .offset { IntOffset(offset.value.roundToInt(), 0) }
+                .pointerInput(contextMenuWidth) {
+                    detectHorizontalDragGestures(
+                        onHorizontalDrag = { _, dragAmount ->
+                            scope.launch {
+                                val newOffset = (offset.value + dragAmount)
+                                    .coerceIn(0f, contextMenuWidth)
+                                offset.snapTo(newOffset)
+                            }
+                        },
+                        onDragEnd = {
+                            if(offset.value > contextMenuWidth * 0.9) onReplyCall(message) // call Reply when swiped 90% of the way
+
+                            scope.launch {
+                                offset.animateTo(0f)
+                            }
+                        }
+                    )
+                }
+        ) {
+            MessageView(
+                message = message,
+                useMD = useMD,
+                selectedChatId = selectedChatId,
+                replyMessage = replyMessage,
+                replyMessageOnClick = replyMessageOnClick
+            )
+        }
+    }
+}
+
+
+@Composable
+private fun ReplyArrow(
+    modifier: Modifier = Modifier.fillMaxHeight()
+){
+    Box(
+        modifier = modifier
+    ){
+        Icon(
+            imageVector = Icons.Default.Reply,
+            contentDescription = "reply", // todo strings
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(
+                    start = 16.dp,
+                    end = 20.dp
+                )
+        )
+    }
+}
+
+@Composable
+private fun MessageView(
+    modifier: Modifier = Modifier,
+    message: Message,
+    useMD: Boolean = false,
+    selectedChatId: String,
+    replyMessage: Message? = null,
+    replyMessageOnClick: () -> Unit = {},
+)
+{
+
+    val mymessage = message.myMessage
     //Ganze breite
     Row(
         modifier = modifier
             .fillMaxWidth(), // Make sure this is here
         horizontalArrangement = if (mymessage) Arrangement.End else Arrangement.Start
     ) {
-        //Farbiger kasten
-        Box(
-            modifier = Modifier
-                .padding(
-                    start = if (mymessage) 40.dp else 0.dp,
-                    end = if (mymessage) 0.dp else 40.dp,
-                    top = 5.dp,
-                    bottom = 5.dp
-                )
-                //.wrapContentSize()
-                .background(
-                    color = if (mymessage){MaterialTheme.colorScheme.primaryContainer}else {MaterialTheme.colorScheme.secondaryContainer},
-                    shape = RoundedCornerShape(15.dp)
-                )
-                .clickable{
-                    println(message)
-                }
-                .padding(6.dp)
-
-        ){
-            //Contentbox gesammt
-            Column(
-                modifier = Modifier // Remove the modifier parameter here
-            ){
-                //Contentrow
-                Row {
-                    when(message.msgType){
-                        MessageType.TEXT -> TextMessage(
-                            useMD = useMD,
-                            messageWithReaders = message,
-                            myMessage = mymessage
-                        )
-                        else -> ErrorMessage()
-                    }
-                }
-
-                //Sendedatum / Gelesen row
-                Box(
+        Column() {
+            if (replyMessage != null) {
+                Row(
                     modifier = Modifier
-                        .align(Alignment.End)
-                        .padding(end = 6.dp)
+                        .clickable {
+                            replyMessageOnClick()
+                        }
                 ) {
-                    Row(){
-                        //zit
-                        Text(
-                            text = millisToString(message.sendDate.toLong(), format = "HH:mm"),
-                            textAlign = TextAlign.End,
-                            fontSize = 12.sp,
+                    Text("Replying to: ${replyMessage.content}") // todo shüa macha
+                }
+
+            }
+            Row() {
+                MessageContent(
+                    modifier = Modifier
+                        .padding(
+                            start = if (mymessage) 40.dp else 0.dp,
+                            end = if (mymessage) 0.dp else 40.dp,
+                            top = 5.dp,
+                            bottom = 5.dp
                         )
-
-                        // gelesen haken
-                        // Cache expensive read state calculation
-                        val readState = remember(message.sent, message.readers, selectedChatId, mymessage) {
-                            when {
-                                !mymessage -> ReadState.None
-                                !message.sent -> ReadState.NotSent
-                                message.isReadById(selectedChatId) -> ReadState.Read
-                                else -> ReadState.Sent
-                            }
+                        //.wrapContentSize()
+                        .background(
+                            color = if (mymessage) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.secondaryContainer
+                            },
+                            shape = RoundedCornerShape(15.dp)
+                        )
+                        .clickable {
+                            println(message)
                         }
+                        .padding(6.dp),
+                    message = message,
+                    useMD = useMD,
+                    mymessage = mymessage,
+                    selectedChatId = selectedChatId
 
-                        if (readState != ReadState.None) {
-                            ReadIndicator(
-                                state = readState,
-                                modifier = Modifier
-                                    .padding(start = 2.dp)
-                                    .align(Alignment.CenterVertically)
-                            )
+                )
+            }
+        }
+
+
+    }
+}
+
+@Composable
+fun MessageContent(
+    modifier: Modifier = Modifier,
+    message: Message,
+    useMD: Boolean = false,
+    mymessage: Boolean = false,
+    selectedChatId: String
+){
+    //Farbiger kasten
+    Box(
+        modifier = modifier
+
+    ){
+        //Contentbox gesammt
+        Column(
+            modifier = Modifier // Remove the modifier parameter here
+        ){
+            // todo show name for groups
+            //Contentrow
+            Row {
+                when(message.msgType){
+                    MessageType.TEXT -> TextMessage(
+                        useMD = useMD,
+                        messageWithReaders = message,
+                        myMessage = mymessage
+                    )
+                    else -> ErrorMessage()
+                }
+            }
+
+            //Sendedatum / Gelesen row
+            Box(
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(end = 6.dp)
+            ) {
+                Row(){
+                    //zit
+                    Text(
+                        text = millisToString(message.sendDate.toLong(), format = "HH:mm"),
+                        textAlign = TextAlign.End,
+                        fontSize = 12.sp,
+                    )
+
+                    // gelesen haken
+                    // Cache expensive read state calculation
+                    val readState = remember(message.sent, message.readers, selectedChatId, mymessage) {
+                        when {
+                            !mymessage -> ReadState.None
+                            !message.sent -> ReadState.NotSent
+                            message.isReadById(selectedChatId) -> ReadState.Read
+                            else -> ReadState.Sent
                         }
+                    }
+
+                    if (readState != ReadState.None) {
+                        ReadIndicator(
+                            state = readState,
+                            modifier = Modifier
+                                .padding(start = 2.dp)
+                                .align(Alignment.CenterVertically)
+                        )
                     }
                 }
             }
@@ -312,10 +461,10 @@ private fun messagepreview(){
             .padding(16.dp)
     ) {
         for (i in 1..12) {
-            MessageView(
+            MessageViewWithActions(
                 message = mymessage
             )
-            MessageView(
+            MessageViewWithActions(
                 message = othermessage
             )
         }
