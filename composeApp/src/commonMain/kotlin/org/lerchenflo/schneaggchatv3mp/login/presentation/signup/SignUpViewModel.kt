@@ -156,28 +156,32 @@ class SignUpViewModel(
 
     fun signup() {
         viewModelScope.launch {
-            if (isInputComplete()) {
+            if (isInputComplete() && !state.isLoading) {
                 try {
                     state = state.copy(
                         isLoading = true
                     )
 
+                    var accCreationSuccessful = false
                     appRepository.createAccount(state.usernameState.text, state.emailState.text, state.passwordState.text, state.gebiDate.toString(), state.profilePic!!) { success ->
                         if (success) {
+                            accCreationSuccessful = true
                             println("Account erstellen erfolgreich")
-
-                            appRepository.login(state.usernameState.text, state.passwordState.text) { success ->
-                                if (success){
-                                    //Set username
-                                    updateUsername(state.usernameState.text)
-                                    viewModelScope.launch {
-                                        navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
-                                    }
-                                }
-                            }
-
                         }
                     }
+
+                    if (accCreationSuccessful){
+                        appRepository.login(state.usernameState.text, state.passwordState.text) { success ->
+                            if (success){
+                                //Set username
+                                updateUsername(state.usernameState.text)
+                                viewModelScope.launch {
+                                    navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
+                                }
+                            }
+                        }
+                    }
+
 
                 } catch (e: Exception) {
                     e.printStackTrace()

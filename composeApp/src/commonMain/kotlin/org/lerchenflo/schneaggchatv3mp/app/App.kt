@@ -1,5 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp.app
 
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -72,6 +78,9 @@ import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitte
 fun App() {
     val preferenceManager = koinInject<Preferencemanager>()
     val themeSetting by preferenceManager.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
+
+    // Track app lifecycle for notification handling
+    AppLifecycleTracker()
 
     SchneaggchatTheme(
         themeSetting = themeSetting

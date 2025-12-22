@@ -85,23 +85,27 @@ class LoginViewModel(
 
     // Handle login logic
     fun login() {
-        try {
+        if (!isLoading) {
             isLoading = true
+            viewModelScope.launch {
+                try {
 
-            // Use the sharedViewModel's login function with a callback
-            appRepository.login(username, password) { success ->
-                if (success) {
-                    println("Login erfolgreich")
-                    viewModelScope.launch {
-                        navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
+                    // Use the sharedViewModel's login function with a callback
+                    appRepository.login(username, password) { success ->
+                        if (success) {
+                            println("Login erfolgreich")
+                            viewModelScope.launch {
+                                navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
+                            }
+                        }
                     }
+
+                } catch (e: Exception) {
+                    errorMessage = "Connection error: ${e.message}"
+                } finally {
+                    isLoading = false
                 }
             }
-
-        } catch (e: Exception) {
-            errorMessage = "Connection error: ${e.message}"
-        } finally {
-            isLoading = false
         }
     }
 

@@ -12,6 +12,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -139,11 +140,21 @@ object NotificationManager{
                                     notiObject.getDecodedContent(encryptionkey)
                                 }
 
+                                // Check if app is open before showing notification
+                                if (AppLifecycleManager.isAppOpen()) {
+                                    println("[NotificationManager] App is open, skipping notification display")
+                                    return@launch
+                                }
+
                                 // Show notification (already on Main thread)
                                 showNotification(
                                     titletext = finaltitlestr,
                                     bodytext = decryptedContent
                                 )
+
+                                //Start datasync (May get cancelled but we dont care)
+                                val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                                appRepository.dataSync()
                             } catch (e: Exception) {
                                 println("[NotificationManager] ERROR: Decryption failed: ${e.message}")
                                 e.printStackTrace()
@@ -208,6 +219,12 @@ object NotificationManager{
 
 
     fun showNotification(message: Message) {
+        // Check if app is open before showing notification
+        if (AppLifecycleManager.isAppOpen()) {
+            println("[NotificationManager] App is open, skipping message notification display")
+            return
+        }
+        
         val senderstring = message.senderAsString
         val content = if (message.isPicture()) "Pic" else message.content
 
