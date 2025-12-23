@@ -85,14 +85,6 @@ fun NewChat(
             }
         )
 
-        // invite Friend
-        Option(
-            text = stringResource(Res.string.invite_friend),
-            icon = Icons.Default.ContactMail,
-            onClick = {
-                SnackbarManager.showMessage("Freund einladen noch nicht implementiert")
-            }
-        )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
@@ -157,6 +149,15 @@ fun NewChat(
                 )
             }
         }
+
+        // invite Friend
+        Option(
+            text = stringResource(Res.string.invite_friend),
+            icon = Icons.Default.ContactMail,
+            onClick = {
+                SnackbarManager.showMessage("Freund einladen noch nicht implementiert")
+            }
+        )
 
     }
 }

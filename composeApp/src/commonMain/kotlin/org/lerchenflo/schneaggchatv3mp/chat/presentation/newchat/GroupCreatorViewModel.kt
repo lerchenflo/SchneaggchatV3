@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -21,8 +22,10 @@ import kotlinx.coroutines.launch
 import org.koin.viewmodel.emptyState
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import kotlin.emptyArray
 
 class GroupCreatorViewModel (
@@ -54,6 +57,12 @@ class GroupCreatorViewModel (
     val usersFlow: Flow<List<SelectedChat>> = _searchTerm
         .flatMapLatest { term ->
             appRepository.getChatSelectorFlow(term)
+        }
+        .map { list ->
+            list.filter {
+                //Only show friends
+                it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED
+            }
         }
         .flowOn(Dispatchers.Default)
 
