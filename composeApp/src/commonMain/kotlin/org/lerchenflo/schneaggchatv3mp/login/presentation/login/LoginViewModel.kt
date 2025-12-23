@@ -118,8 +118,6 @@ class LoginViewModel(
     private fun clearError() {
         errorMessage = null
 
-        if (username.isNotBlank() && password.isNotBlank()){
-            loginButtonDisabled = false
-        }
+        loginButtonDisabled = !(username.isNotBlank() && password.isNotBlank())
     }
 }
