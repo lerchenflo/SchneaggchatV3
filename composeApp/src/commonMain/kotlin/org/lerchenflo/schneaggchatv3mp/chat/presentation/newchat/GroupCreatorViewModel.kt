@@ -97,7 +97,7 @@ class GroupCreatorViewModel (
 
     fun onCreateGroup() {
 
-        //TODO: Check nulls
+        //TODO: Check nulls & Valodation
 
         viewModelScope.launch {
             val groupId = appRepository.createGroup(

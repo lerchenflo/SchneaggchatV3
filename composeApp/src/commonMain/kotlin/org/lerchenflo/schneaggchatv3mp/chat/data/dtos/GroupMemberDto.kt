@@ -10,27 +10,15 @@ import kotlinx.serialization.Serializable
 @Entity(tableName = "group_members")
 data class GroupMemberDto(
 
-    @PrimaryKey(autoGenerate = false)
-    @ColumnInfo(name = "entryid")
-    val id: String,
+    @PrimaryKey(autoGenerate = true)
+    val localPk: Long = 0L,
 
-    @ColumnInfo(name = "group_id")
-    val gid: String,
+    val groupId: String,
 
-    @SerialName("_id")
-    @ColumnInfo(name = "user_id")
-    val uid: String,
+    val userId: String,
 
-    @SerialName("_color")
-    @ColumnInfo(name = "color")
-    val color: Int,
-
-    @SerialName("_joindate")
-    @ColumnInfo(name = "join_date")
     val joinDate: String,
 
-    @SerialName("_isadmin")
-    @ColumnInfo(name = "is_admin")
     val isAdmin: Boolean
 
 

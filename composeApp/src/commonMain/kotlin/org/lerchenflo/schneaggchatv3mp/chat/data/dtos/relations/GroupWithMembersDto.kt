@@ -11,7 +11,7 @@ data class GroupWithMembersDto(
     @Embedded val group: GroupDto,
     @Relation(
         parentColumn = "id",
-        entityColumn = "group_id"
+        entityColumn = "groupId"
     )
     val members: List<GroupMemberDto>
 )

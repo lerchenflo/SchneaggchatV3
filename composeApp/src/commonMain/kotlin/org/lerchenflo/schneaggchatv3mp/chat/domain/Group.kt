@@ -6,22 +6,22 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembers
 data class Group(
     val id: String,
     val name: String,
-    val profilePicture: String,
+    val profilePictureUrl: String,
     val description: String,
     val createDate: String? = null,
     val changedate: String? = null,
-    val muted: Boolean = false,
+    val notisMuted: Boolean = false,
     val members: List<GroupMember>
 )
 
 fun GroupWithMembersDto.toGroup(): Group = Group(
     id = this.group.id,
     name = this.group.name,
-    profilePicture = this.group.profilePicture,
+    profilePictureUrl = this.group.profilePictureUrl,
     description = this.group.description,
     createDate = this.group.createDate,
     changedate = this.group.changedate,
-    muted = this.group.muted,
+    notisMuted = this.group.notisMuted,
     members = this.members.map { groupMemberDto ->
         groupMemberDto.toGroupMember()
     }
@@ -32,11 +32,11 @@ fun Group.toDto(): GroupWithMembersDto = GroupWithMembersDto(
     group = GroupDto(
         id = this.id,
         name = this.name,
-        profilePicture = this.profilePicture,
+        profilePictureUrl = this.profilePictureUrl,
         description = this.description,
         createDate = this.createDate,
         changedate = this.changedate,
-        muted = this.muted
+        notisMuted = this.notisMuted
     ),
     members = this.members.map { member ->
         member.toDto()

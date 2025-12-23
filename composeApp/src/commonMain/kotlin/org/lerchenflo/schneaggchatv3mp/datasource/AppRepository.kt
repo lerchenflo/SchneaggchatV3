@@ -3,7 +3,6 @@
 package org.lerchenflo.schneaggchatv3mp.datasource
 
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -16,17 +15,18 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
+import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
@@ -184,6 +184,7 @@ class AppRepository(
         try {
             userIdSync()
             messageIdSync()
+            groupIdSync()
         } finally {
             dataSyncRunning = false
         }
@@ -947,6 +948,72 @@ class AppRepository(
     }
 
 
+    suspend fun groupIdSync() {
+
+        val localgroups = groupRepository.getgroupchangeid()
+        val profilepicsToGet = mutableListOf<String>()
+
+        val groupSyncResponse = networkUtils.groupIdSync(
+            groupIds = localgroups.map {
+                NetworkUtils.IdTimeStamp(it.id, it.changedate)
+            }
+        )
+
+
+        when (groupSyncResponse) {
+            is NetworkResult.Error<*> -> {
+                println("groupid sync error")
+            }
+
+            is NetworkResult.Success<NetworkUtils.GroupSyncResponse> -> {
+
+                groupSyncResponse.data.updatedGroups.forEach { groupResponse ->
+                    groupRepository.upsertGroup(Group(
+                        id = groupResponse.id,
+                        name = groupResponse.name,
+                        profilePictureUrl = "",
+                        description = groupResponse.description,
+                        createDate = groupResponse.createdAt,
+                        changedate = groupResponse.updatedAt,
+                        notisMuted = false,
+                        members = groupResponse.members.map { groupMemberresp ->
+                            GroupMember(
+                                groupId = groupResponse.id,
+                                userId = groupMemberresp.userid,
+                                joinDate = groupMemberresp.joinedAt,
+                                isAdmin = groupMemberresp.admin,
+                            )
+                        }
+                    ))
+
+                    profilepicsToGet += groupResponse.id
+                }
+
+
+                groupSyncResponse.data.deletedGroups.forEach { id ->
+                    groupRepository.deleteGroup(id)
+                }
+            }
+        }
+
+        if (profilepicsToGet.isNotEmpty()) {
+            getProfilePicturesForGroupIds(profilepicsToGet)
+        }
+    }
+
+    private suspend fun getProfilePicturesForGroupIds(groupIds: List<String>){
+        groupIds.forEach { groupId ->
+            val savefilename = groupId + GROUPPROFILEPICTURE_FILE_NAME
+            when (val picture = networkUtils.getProfilePicForGroupId(groupId)) {
+                is NetworkResult.Error<*> -> {println("Profilepic error for groupid $groupId")}
+                is NetworkResult.Success<ByteArray> -> {
+                    val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
+
+                    groupRepository.updateGroupProfilePicUrl(groupId, filepath)
+                }
+            }
+        }
+    }
 
 
     /*

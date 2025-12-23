@@ -38,6 +38,15 @@ class GroupRepository(
         database.groupDao().deleteGroup(groupid)
     }
 
+    suspend fun updateGroupProfilePicUrl(groupId: String, newUrl: String) {
+        val dbGroup = database.groupDao().getGroupById(groupId)
+        if (dbGroup != null){
+            database.groupDao().upsertGroup(dbGroup.copy(
+                profilePictureUrl = newUrl
+            ))
+        }
+    }
+
 
     /*
     //TODO: Rebuild + Rebuild the dtos, all server synced
