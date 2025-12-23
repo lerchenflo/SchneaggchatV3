@@ -8,6 +8,7 @@ import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -95,7 +96,28 @@ class GroupCreatorViewModel (
     }
 
     fun onCreateGroup() {
-        //TODO: Create group
+
+        //TODO: Check nulls
+
+        viewModelScope.launch {
+            val groupId = appRepository.createGroup(
+                name = groupName.value,
+                description = groupDescription.value,
+                memberIds = selectedUsers.map { member ->
+                    member.id
+                },
+                profilePic = profilePic.value!!
+            )
+
+            println("Group created: groupid: $groupId")
+
+            //Launch sync
+            CoroutineScope(Dispatchers.IO).launch {
+                appRepository.dataSync()
+            }
+
+            //TODO: Navigate to chat (When new selectedchat implemented)
+        }
     }
 
 }

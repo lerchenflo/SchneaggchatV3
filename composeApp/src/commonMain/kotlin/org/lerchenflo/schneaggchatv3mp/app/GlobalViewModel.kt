@@ -30,8 +30,8 @@ class GlobalViewModel(
         // Sync when app is resumed
         viewModelScope.launch {
             AppLifecycleManager.appResumedEvent.collectLatest {
-                println("App resumed, triggering sync...")
                 if (SessionCache.isLoggedInValue()) {
+                    println("App resumed and logged in, triggering sync...")
                     appRepository.dataSync()
                     appRepository.sendOfflineMessages()
                 }

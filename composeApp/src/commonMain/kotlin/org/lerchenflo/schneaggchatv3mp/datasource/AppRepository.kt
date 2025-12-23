@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
@@ -902,6 +903,50 @@ class AppRepository(
 
         networkUtils.setMessagesRead(chatid, gruppe, timestamp.toLong())
     }
+
+
+
+
+    /*
+    **************************************************************************
+
+    Groups
+
+    **************************************************************************
+*/
+
+
+
+    /**
+     * Create a group
+     * @return the id of the created group to directly open the chat
+     */
+    suspend fun createGroup(
+        name: String,
+        description: String,
+        memberIds: List<String>,
+        profilePic: ByteArray
+    ) : String? {
+        val response = networkUtils.createGroup(
+            name = name,
+            description = description,
+            memberIds = memberIds,
+            profilePicBytes = profilePic
+        )
+
+        return when (response){
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorEvent(error = response.error))
+                null
+            }
+            is NetworkResult.Success<NetworkUtils.GroupResponse> -> {
+                //TODO: Upsert group locally
+                response.data.id
+            }
+        }
+    }
+
+
 
 
     /*

@@ -22,6 +22,7 @@ import kotlinx.serialization.SerializationException
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
@@ -431,11 +432,74 @@ class NetworkUtils(
      */
 
 
+    //TODO: Implement on server?
     suspend fun getProfilePicForGroupId(groupId: String) : NetworkResult<ByteArray, NetworkError> {
         return safeGet(
             endpoint = "/groups/profilepic/$groupId"
         )
     }
+
+    @Serializable
+    data class GroupResponse(
+        val id: String,
+        val name: String,
+        val description: String,
+
+        val updatedAt: String,
+
+        val createdAt: String,
+        val creatorId: String,
+        val members: List<GroupMemberResponse>
+    )
+
+    @Serializable
+    data class GroupMemberResponse(
+        val userid: String,
+        val joinedAt: String,
+        val isAdmin: Boolean
+    )
+
+    suspend fun createGroup(
+        name: String,
+        description: String,
+        memberIds: List<String>, //Userids
+        profilePicBytes: ByteArray,
+    ): NetworkResult<GroupResponse, NetworkError> {
+        return try {
+            val response = authHttpClient.submitFormWithBinaryData(
+                url = preferenceManager.buildServerUrl("/groups/create"),
+                formData = formData {
+                    append("name", name)
+                    append("description", description)
+                    append("memberlist[]", memberIds)
+                    append("profilepic", profilePicBytes, Headers.build {
+                        append(HttpHeaders.ContentType, "image/jpeg")
+                    })
+                }
+            )
+
+            if (response.status.isSuccess()) {
+                NetworkResult.Success(response.body())
+            } else {
+                NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
+            }
+        } catch (e: UnresolvedAddressException) {
+            NetworkResult.Error(NetworkError.NoInternet())
+        } catch (e: HttpRequestTimeoutException) {
+            NetworkResult.Error(NetworkError.RequestTimeout())
+        } catch (e: SocketTimeoutException) {
+            NetworkResult.Error(NetworkError.RequestTimeout())
+        } catch (e: SerializationException) {
+            NetworkResult.Error(NetworkError.Serialization())
+        } catch (e: IOException) { // This catches UnknownHostException too
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.NoInternet())
+        }catch (e: Exception) {
+            e.printStackTrace()
+            NetworkResult.Error(NetworkError.Unknown(message = e.message))
+        }
+    }
+
 
 
 
