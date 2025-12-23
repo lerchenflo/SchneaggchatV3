@@ -204,7 +204,7 @@ fun GroupCreator() {
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Default.Search,
-                                    contentDescription = "Search"
+                                    contentDescription = "search"
                                 )
                             },
                             colors = OutlinedTextFieldDefaults.colors(

@@ -456,7 +456,7 @@ class NetworkUtils(
     data class GroupMemberResponse(
         val userid: String,
         val joinedAt: String,
-        val isAdmin: Boolean
+        val admin: Boolean
     )
 
     suspend fun createGroup(
@@ -465,8 +465,9 @@ class NetworkUtils(
         memberIds: List<String>, //Userids
         profilePicBytes: ByteArray,
     ): NetworkResult<GroupResponse, NetworkError> {
+        val fileName = "image.png"
         return try {
-            val response = authHttpClient.submitFormWithBinaryData(
+            val response = httpClient.submitFormWithBinaryData(
                 url = preferenceManager.buildServerUrl("/groups/create"),
                 formData = formData {
                     append("name", name)
@@ -474,9 +475,11 @@ class NetworkUtils(
                     append("memberlist[]", memberIds)
                     append("profilepic", profilePicBytes, Headers.build {
                         append(HttpHeaders.ContentType, "image/jpeg")
+                        append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
                     })
                 }
             )
+            println("Response string: ${response.body<String>()}")
 
             if (response.status.isSuccess()) {
                 NetworkResult.Success(response.body())
@@ -500,8 +503,18 @@ class NetworkUtils(
         }
     }
 
+    @Serializable
+    data class GroupSyncResponse(
+        val updatedGroups: List<GroupResponse>,
+        val deletedGroups: List<String>
+    )
 
-
+    suspend fun groupIdSync(groupIds: List<IdTimeStamp>) : NetworkResult<GroupSyncResponse, NetworkError> {
+        return safePost(
+            endpoint = "/groups/sync",
+            body = groupIds
+        )
+    }
 
 
     /*

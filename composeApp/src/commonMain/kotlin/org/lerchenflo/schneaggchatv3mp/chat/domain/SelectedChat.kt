@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 
@@ -94,7 +93,7 @@ fun Group.toSelectedChat(
 ): GroupChat = GroupChat(
     id = this.id,
     name = this.name,
-    profilePictureUrl = this.profilePicture,
+    profilePictureUrl = this.profilePictureUrl,
     status = null,
     description = this.description,
     unreadMessageCount = unreadCount,

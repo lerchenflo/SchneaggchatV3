@@ -146,8 +146,11 @@ interface GroupDao {
     @Upsert
     suspend fun upsertMembers(members: List<GroupMemberDto>): List<Long>
 
-    @Query("DELETE FROM group_members WHERE group_id = :groupId")
+    @Query("DELETE FROM group_members WHERE groupId = :groupId")
     suspend fun deleteMembersForGroup(groupId: String)
+
+    @Query("SELECT * FROM `groups` WHERE id = :groupid")
+    suspend fun getGroupById(groupid: String?): GroupDto?
 }
 
 

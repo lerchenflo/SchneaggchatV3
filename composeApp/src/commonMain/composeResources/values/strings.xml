@@ -179,7 +179,7 @@
 
     <string name="you_have_new_messages">You have new messages</string>
     <string name="new_message_noti_single_title">New chat from %1$s</string>
-    <string name="new_message_noti_group_title">New chat from %1$s in %1$s</string>
+    <string name="new_message_noti_group_title">New chat from %1$s in %2$s</string>
 
     <string name="tooltip_username">Choose a unique username others will see</string>
     <string name="tooltip_email">Used for account recovery and deletion</string>
