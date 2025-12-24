@@ -32,10 +32,10 @@ class ChatViewModel(
     private val appRepository: AppRepository,
     private val messageRepository: MessageRepository,
     private val settingsRepository: SettingsRepository,
+    private val globalViewModel: GlobalViewModel,
     private val navigator: Navigator
 ): ViewModel() {
 
-    val globalViewModel: GlobalViewModel = KoinPlatform.getKoin().get()
 
     var markdownEnabled by mutableStateOf(false)
         private set
@@ -61,8 +61,6 @@ class ChatViewModel(
         }
     }
 
-    //TODO: Null check ob an selectegegner gwählt isch (Oder einfach id und bool gruppe übergia denn hot ma des clean grichtet und sharedviewmodel selected bruchts num)
-    //Sharedviewmodel bruchama trotzdem für networktasks
 
     var sendText by mutableStateOf("")
         private set

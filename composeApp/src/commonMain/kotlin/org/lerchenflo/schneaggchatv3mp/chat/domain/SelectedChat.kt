@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
+import io.ktor.util.reflect.instanceOf
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 
@@ -66,6 +67,9 @@ data class GroupChat(
 
 // Type alias for convenience
 typealias SelectedChat = SelectedChatBase
+
+fun SelectedChat.isNotSelected(): Boolean = this is NotSelected
+
 
 // Extension function to convert User to UserChat
 fun User.toSelectedChat(

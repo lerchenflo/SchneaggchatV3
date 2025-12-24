@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,11 +23,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChatBase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
@@ -47,20 +53,26 @@ fun ChatDetails(
     modifier: Modifier = Modifier
         .fillMaxWidth()
 ) {
-    val globalViewModel = koinInject<GlobalViewModel>()
 
     val chatdetailsViewmodel = koinViewModel<ChatDetailsViewmodel>()
 
-    //TODO: Pass selectedchat when navigating to Chatdetails, do not use globalviewmodel
-    val selectedChatName = globalViewModel.selectedChat.value.name
-    val group = globalViewModel.selectedChat.value.isGroup
+    val selectedChat by chatdetailsViewmodel.selectedChat.collectAsStateWithLifecycle()
+    val group = selectedChat.isGroup
+
+
+    if (selectedChat.isNotSelected()){
+        println("Chat not selected, navigating back")
+        chatdetailsViewmodel.onBackClick()
+    }
+
+
     var profilePictureDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
     ){
         ActivityTitle(
-            title = selectedChatName,
+            title = selectedChat.name,
             onBackClick = {
                 chatdetailsViewmodel.onBackClick()
             }
@@ -74,7 +86,7 @@ fun ChatDetails(
         ){
 
             ProfilePictureView(
-                filepath = globalViewModel.selectedChat.value.profilePictureUrl,
+                filepath = selectedChat.profilePictureUrl,
                 modifier = Modifier
                     .size(200.dp) // Use square aspect ratio
                     .padding(bottom = 10.dp)
@@ -94,7 +106,7 @@ fun ChatDetails(
                 .wrapContentWidth(Alignment.CenterHorizontally)
         ){
             Text(
-                text = "id: ${globalViewModel.selectedChat.value?.id }"
+                text = "id: ${selectedChat.id }"
             )
         }
 
@@ -122,7 +134,7 @@ fun ChatDetails(
 
                     )
                     Text(
-                        text = globalViewModel.selectedChat.value.status
+                        text = selectedChat.status
                             .takeIf { !it.isNullOrBlank() }
                             ?.replace("\\n", "\n")
                             ?: stringResource(Res.string.no_status),
@@ -148,13 +160,12 @@ fun ChatDetails(
         ){
             Column(){
                 Text(
-                    text = stringResource(Res.string.others_say_about, selectedChatName),
+                    text = stringResource(Res.string.others_say_about, selectedChat.name),
                     modifier = Modifier
 
                 )
                 Text(
-                    text = globalViewModel.selectedChat.value
-                        .description
+                    text = selectedChat.description
                         .takeIf { !it.isNullOrBlank() }
                         ?.replace("\\n", "\n")
                         ?: stringResource(Res.string.no_description),
@@ -191,7 +202,7 @@ fun ChatDetails(
         if(profilePictureDialog){
             ProfilePictureBigDialog(
                 onDismiss = {profilePictureDialog = false},
-                filepath = globalViewModel.selectedChat.value.profilePictureUrl
+                filepath = selectedChat.profilePictureUrl
             )
         }
 

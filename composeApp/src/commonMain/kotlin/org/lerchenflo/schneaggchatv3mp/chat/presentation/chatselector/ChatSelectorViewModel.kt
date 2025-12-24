@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -39,6 +40,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -71,7 +73,12 @@ class ChatSelectorViewModel(
 
         //TODO: Maybe try login every 5 sec if not logged in (No sync all 5 secs)
         //Chat verlassen
-        //globalViewModel.onLeaveChat()
+    }
+
+    fun clearChat(){
+        viewModelScope.launch {
+            globalViewModel.onLeaveChat()
+        }
     }
 
     private var refreshJob: Job? = null
@@ -204,6 +211,8 @@ class ChatSelectorViewModel(
         }
         dismissPendingFriendDialog()
     }
+
+
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
