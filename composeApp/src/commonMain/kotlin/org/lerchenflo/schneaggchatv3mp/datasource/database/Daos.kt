@@ -151,6 +151,22 @@ interface GroupDao {
 
     @Query("SELECT * FROM `groups` WHERE id = :groupid")
     suspend fun getGroupById(groupid: String?): GroupDto?
+
+    @Transaction
+    @Query("SELECT * FROM `groups` WHERE id = :groupId")
+    suspend fun getGroupWithMembersById(groupId: String): GroupWithMembersDto?
+
+    @Transaction
+    @Query("""
+        SELECT * FROM `groups`
+        WHERE id IN (
+            SELECT groupId FROM group_members WHERE userId = :memberId1
+        )
+        AND id IN (
+            SELECT groupId FROM group_members WHERE userId = :memberId2
+        )
+    """)
+    suspend fun getCommonGroupsWithMembers(memberId1: String, memberId2: String): List<GroupWithMembersDto>
 }
 
 

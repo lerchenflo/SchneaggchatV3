@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
+import androidx.collection.emptyObjectList
 import io.ktor.util.reflect.instanceOf
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
@@ -44,7 +45,9 @@ data class UserChat(
     override val unsentMessageCount: Int,
     override val lastmessage: Message?,
     override val friendshipStatus: NetworkUtils.FriendshipStatus?,
-    override val requesterId: String?
+    override val requesterId: String?,
+
+    var commonGroups : List<Group> = emptyList()
 ) : SelectedChatBase {
     override val isGroup: Boolean = false
 }
@@ -60,7 +63,9 @@ data class GroupChat(
     override val unsentMessageCount: Int,
     override val lastmessage: Message?,
     override val friendshipStatus: NetworkUtils.FriendshipStatus? = null,
-    override val requesterId: String? = null
+    override val requesterId: String? = null,
+
+    var groupMembers : List<GroupMember> = emptyList()
 ) : SelectedChatBase {
     override val isGroup: Boolean = true
 }
@@ -104,3 +109,9 @@ fun Group.toSelectedChat(
     unsentMessageCount = unsentCount,
     lastmessage = lastMessage
 )
+
+fun SelectedChat.toGroup(): GroupChat? =
+    this as? GroupChat
+
+fun SelectedChat.toUser(): UserChat? =
+    this as? UserChat

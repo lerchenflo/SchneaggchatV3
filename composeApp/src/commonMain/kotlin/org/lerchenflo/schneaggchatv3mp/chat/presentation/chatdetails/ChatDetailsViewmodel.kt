@@ -12,13 +12,16 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChatBase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 
 class ChatDetailsViewmodel(
-    private val appRepository : AppRepository,
+    private val groupRepository: GroupRepository,
     private val globalViewModel: GlobalViewModel,
     private val navigator: Navigator
 ) : ViewModel() {
@@ -37,8 +40,14 @@ class ChatDetailsViewmodel(
         viewModelScope.launch {
             globalViewModel.selectedChat.collect { chat ->
                 _selectedChat.value = chat
+
+                println("Groupmembers: ${groupRepository.getGroupMembers(chat.id)}")
+
             }
         }
+
+
     }
+
 
 }
