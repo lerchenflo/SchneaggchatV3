@@ -4,6 +4,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -97,6 +98,18 @@ fun MessageViewWithActions(
             modifier = Modifier
                 .fillMaxSize()
                 .offset { IntOffset(offset.value.roundToInt(), 0) }
+                .pointerInput(Unit) {
+                    // This handles the long click
+                    detectTapGestures(
+                        onLongPress = {
+                            // Your long click logic here (e.g., show context menu)
+                            println("Long pressed on message: ${message.id}")
+                        },
+                        onTap = {
+                            // Optional: Handle regular taps here if needed
+                        }
+                    )
+                }
                 .pointerInput(contextMenuWidth) {
                     detectHorizontalDragGestures(
                         onHorizontalDrag = { _, dragAmount ->
@@ -196,9 +209,7 @@ private fun MessageView(
                             },
                             shape = RoundedCornerShape(15.dp)
                         )
-                        .clickable {
-                            println(message)
-                        }
+                        //.clickable {println(message)}
                         .padding(6.dp),
                     message = message,
                     useMD = useMD,
