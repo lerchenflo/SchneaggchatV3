@@ -3,75 +3,95 @@ package org.lerchenflo.schneaggchatv3mp.chat.data
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 class GroupRepository(
-    private val database: AppDatabase,
-    private val networkUtils: NetworkUtils,
-    private val pictureManager: PictureManager
+    private val database: AppDatabase
 ) {
-    suspend fun upsertGroup(group: Group){
-        database.groupDao().upsertGroup(group.toDto().group)
+
+    /**
+     * Upsert group and fully replace its members (same pattern as Message + Readers)
+     */
+    @Transaction
+    suspend fun upsertGroup(group: Group) {
+        val groupWithMembersDto = group.toDto()
+
+        // 1️⃣ Upsert group first
+        database.groupDao().upsertGroup(groupWithMembersDto.group)
+
+        // 2️⃣ Delete all existing members for this group
+        database.groupDao().deleteMembersForGroup(groupWithMembersDto.group.id)
+
+        // 3️⃣ Re-insert members (if any)
+        if (groupWithMembersDto.members.isNotEmpty()) {
+            database.groupDao().upsertMembers(
+                groupWithMembersDto.members.map {
+                    it.copy(groupId = groupWithMembersDto.group.id)
+                }
+            )
+        }
     }
 
     @Transaction
-    suspend fun getgroupchangeid(): List<IdChangeDate>{
+    suspend fun getgroupchangeid(): List<IdChangeDate> {
         return database.groupDao().getGroupIdsWithChangeDates()
     }
 
     @Transaction
     fun getallgroupswithmembers(): Flow<List<Group>> {
         return database.groupDao().getAllGroupsWithMembers().map { list ->
-            list.map {
-                it.toGroup()
-            }
+            list.map { it.toGroup() }
         }
     }
 
-    suspend fun deleteGroup(groupid: String){
+    suspend fun deleteGroup(groupid: String) {
+        database.groupDao().deleteMembersForGroup(groupid)
         database.groupDao().deleteGroup(groupid)
     }
 
     suspend fun updateGroupProfilePicUrl(groupId: String, newUrl: String) {
         val dbGroup = database.groupDao().getGroupById(groupId)
-        if (dbGroup != null){
-            database.groupDao().upsertGroup(dbGroup.copy(
-                profilePictureUrl = newUrl
-            ))
+        if (dbGroup != null) {
+            database.groupDao().upsertGroup(
+                dbGroup.copy(profilePictureUrl = newUrl)
+            )
         }
     }
 
 
-    /*
-    //TODO: Rebuild + Rebuild the dtos, all server synced
-    @Transaction
-    suspend fun upsertGroupWithMembers(gwm: GroupWithMembersDto) {
-        // 1) upsert the group
-        val savefilename = gwm.group.id.toString() + GROUPPROFILEPICTURE_FILE_NAME
-        val path = pictureManager.savePictureToStorage(gwm.group.profilePicture, savefilename)
-        gwm.group.profilePicture = path
-
-        database.groupDao().upsertGroup(gwm.group)
-
-        // 3) replace membership rows for this group
-        // delete old members for the group
-        database.groupDao().deleteMembersForGroup(gwm.group.id)
-
-        // create new join rows and insert
-        val joinRows = gwm.members.map { member ->
-            //GroupMemberDto(0, gwm.group.id, member.id, member.color, member.joinDate, member.isAdmin)
-        }
-
-        if (joinRows.isNotEmpty()) {
-            database.groupDao().upsertMembers(joinRows)
-        }
-    }
-
+    /**
+     * Return the members of a group as domain objects (empty list when not found).
+     * Caller example:
+     *   chat.toGroup()?.groupMembers = groupRepository.getGroupMembers(chat.id)
      */
+    @Transaction
+    suspend fun getGroupMembers(groupId: String): List<GroupMember> {
+        val gwm: GroupWithMembersDto? = database.groupDao().getGroupWithMembersById(groupId)
+        // toGroup() maps the DTO relation to a domain Group which carries members
+        return gwm?.toGroup()?.members ?: emptyList()
+    }
+
+    /**
+     * Return all groups (domain objects) that are common between the current user and the provided userId.
+     * Caller example:
+     *   chat.toUser()?.commonGroups = groupRepository.getCommonGroups(chat.id) // Together with own id
+     */
+    @Transaction
+    suspend fun getCommonGroups(otherUserId: String): List<Group> {
+        val ownId = SessionCache.getOwnIdValue()
+        if (ownId.isNullOrBlank()) return emptyList()
+
+        val commonDtos = database.groupDao().getCommonGroupsWithMembers(ownId, otherUserId)
+        return commonDtos.map { it.toGroup() }
+    }
+
+
+
 }

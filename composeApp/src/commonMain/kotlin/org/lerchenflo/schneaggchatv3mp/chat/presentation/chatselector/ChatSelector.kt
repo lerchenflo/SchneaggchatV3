@@ -39,6 +39,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -96,6 +97,11 @@ fun Chatauswahlscreen(
 
     val connectionToServer = SessionCache.onlineFlow.collectAsStateWithLifecycle()
 
+    //Clear chat when this screen comes to the foreground
+    DisposableEffect(Unit) {
+        viewModel.clearChat()
+        onDispose { }
+    }
 
     Scaffold(
         modifier = modifier,

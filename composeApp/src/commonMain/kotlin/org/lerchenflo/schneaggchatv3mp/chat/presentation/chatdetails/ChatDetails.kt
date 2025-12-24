@@ -5,10 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,15 +16,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import coil3.compose.AsyncImage
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
@@ -39,32 +34,41 @@ import schneaggchatv3mp.composeapp.generated.resources.others_say_about
 import schneaggchatv3mp.composeapp.generated.resources.remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.status
 import schneaggchatv3mp.composeapp.generated.resources.status_info
-import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 
 @Composable
-@Preview
 fun ChatDetails(
     modifier: Modifier = Modifier
         .fillMaxWidth()
 ) {
-    val globalViewModel = koinInject<GlobalViewModel>()
 
     val chatdetailsViewmodel = koinViewModel<ChatDetailsViewmodel>()
 
-    //TODO: Pass selectedchat when navigating to Chatdetails, do not use globalviewmodel
-    val selectedChatName = globalViewModel.selectedChat.value.name
-    val group = globalViewModel.selectedChat.value.isGroup
-    var profilePictureDialog by remember { mutableStateOf(false) }
+    val selectedChat by chatdetailsViewmodel.selectedChat.collectAsStateWithLifecycle()
+    val group = selectedChat.isGroup
+
+
+    if (selectedChat.isNotSelected()){
+        println("Chat not selected, navigating back")
+        chatdetailsViewmodel.onBackClick()
+    }
+
+    var profilePictureDialogShown by remember { mutableStateOf(false) }
+
+
+
 
     Column(
         modifier = modifier
+            .padding(horizontal = 16.dp)
     ){
+
         ActivityTitle(
-            title = selectedChatName,
+            title = selectedChat.name,
             onBackClick = {
                 chatdetailsViewmodel.onBackClick()
             }
         )
+
         HorizontalDivider()
         // Profile picture
         Row(
@@ -74,12 +78,12 @@ fun ChatDetails(
         ){
 
             ProfilePictureView(
-                filepath = globalViewModel.selectedChat.value.profilePictureUrl,
+                filepath = selectedChat.profilePictureUrl,
                 modifier = Modifier
                     .size(200.dp) // Use square aspect ratio
                     .padding(bottom = 10.dp)
                     .clickable {
-                        profilePictureDialog = true
+                        profilePictureDialogShown = true
                     }
             )
 
@@ -94,7 +98,7 @@ fun ChatDetails(
                 .wrapContentWidth(Alignment.CenterHorizontally)
         ){
             Text(
-                text = "id: ${globalViewModel.selectedChat.value?.id }"
+                text = "id: ${selectedChat.id }"
             )
         }
 
@@ -122,7 +126,7 @@ fun ChatDetails(
 
                     )
                     Text(
-                        text = globalViewModel.selectedChat.value.status
+                        text = selectedChat.status
                             .takeIf { !it.isNullOrBlank() }
                             ?.replace("\\n", "\n")
                             ?: stringResource(Res.string.no_status),
@@ -148,13 +152,12 @@ fun ChatDetails(
         ){
             Column(){
                 Text(
-                    text = stringResource(Res.string.others_say_about, selectedChatName),
+                    text = stringResource(Res.string.others_say_about, selectedChat.name),
                     modifier = Modifier
 
                 )
                 Text(
-                    text = globalViewModel.selectedChat.value
-                        .description
+                    text = selectedChat.description
                         .takeIf { !it.isNullOrBlank() }
                         ?.replace("\\n", "\n")
                         ?: stringResource(Res.string.no_description),
@@ -169,6 +172,7 @@ fun ChatDetails(
 
         if(group){
             // todo show users from group
+            println("Groupmembers: ${selectedChat.toGroup()?.groupMembers}")
 
         }else{
             // todo show gemeinsame gruppen
@@ -188,10 +192,10 @@ fun ChatDetails(
         )
 
         // Profilbild größer azoaga
-        if(profilePictureDialog){
+        if(profilePictureDialogShown){
             ProfilePictureBigDialog(
-                onDismiss = {profilePictureDialog = false},
-                filepath = globalViewModel.selectedChat.value.profilePictureUrl
+                onDismiss = {profilePictureDialogShown = false},
+                filepath = selectedChat.profilePictureUrl
             )
         }
 
