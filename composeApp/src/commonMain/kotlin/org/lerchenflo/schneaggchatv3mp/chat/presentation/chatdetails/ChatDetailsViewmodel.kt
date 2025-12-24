@@ -41,7 +41,16 @@ class ChatDetailsViewmodel(
             globalViewModel.selectedChat.collect { chat ->
                 _selectedChat.value = chat
 
-                println("Groupmembers: ${groupRepository.getGroupMembers(chat.id)}")
+                //TODO Fabi: Wittamacha??
+                //I hob o scho in selectedchat die values inegmacht:
+                chat.toGroup()!!.groupMembers //Etc aber die groupmembers musch do setza sunsch wird z viel gschaffat in da gegnerauswahl
+                if (chat.isGroup) {
+                    println("Groupmembers: ${groupRepository.getGroupMembers(chat.id)}")
+                }else {
+                    println("Common groups: ${groupRepository.getCommonGroups(chat.id)}")
+                }
+
+
 
             }
         }
