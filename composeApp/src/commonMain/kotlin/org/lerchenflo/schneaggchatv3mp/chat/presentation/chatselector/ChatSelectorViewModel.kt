@@ -140,14 +140,14 @@ class ChatSelectorViewModel(
     fun onChatSelected(selectedChat: SelectedChat) {
         viewModelScope.launch {
             //TODO: Maybe when trough all possibilities and show different popups?
+
+            //You are friends with this person, open chat
             if (selectedChat.friendshipStatus != NetworkUtils.FriendshipStatus.PENDING) {
                 globalViewModel.onSelectChat(selectedChat)
                 navigator.navigate(Route.Chat)
             }else {
-                if (selectedChat.requesterId!! != SessionCache.getOwnIdValue()){ //Only when the other user sent the request
-                    _pendingFriendPopup.value = selectedChat
-
-                }
+                //Friendshipstatus pending
+                _pendingFriendPopup.value = selectedChat
             }
 
         }

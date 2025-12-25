@@ -29,23 +29,6 @@ class MessageRepository(
         deleteMessageDto(id)
     }
 
-    private suspend fun setMessageRead(msgId: String, timestamp: String) {
-        val message = database.messageDao().getMessageById(msgId)?.toMessage()
-
-        if (message != null){
-            val newReaders = message.readers + MessageReader(
-                messageId = msgId, readerId = SessionCache.getOwnIdValue()!!, readDate = timestamp)
-
-            val newmessage = message.copy(
-                readByMe = true,
-                readers = newReaders,
-                changeDate = timestamp
-            )
-            upsertMessage(newmessage)
-
-        }
-    }
-
 
     fun getMessagesByUserIdFlow(userId: String, gruppe: Boolean): Flow<List<Message>> {
         return database.messageDao().getMessagesByUserIdFlow(userId, gruppe).map { messages ->

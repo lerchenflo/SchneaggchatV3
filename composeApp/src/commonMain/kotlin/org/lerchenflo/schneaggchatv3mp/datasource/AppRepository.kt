@@ -647,7 +647,7 @@ class AppRepository(
     }
 
     /**
-     * deny a friendrequest from an userid
+     * deny a friendrequest from an userid / cancel an outgoing friend request to an userid
      */
     suspend fun denyFriendRequest(friendId: String) : Boolean {
         when (val success = networkUtils.denyFriendRequest(friendId)){

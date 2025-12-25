@@ -160,13 +160,16 @@
     <string name="you_are_already_developer">you are already are a developer</string>
     <string name="developer_setting_info">Be careful with the developer settings. Make sure you know what you are doing.</string>
 
-    <string name="friend_request_title">Do you want to accept the friend request?</string>
+    <string name="friend_request_title">Do you want to accept this friend request?</string>
+    <string name="friend_request_cancel_title">Do you want to cancel this friend request?</string>
+
     <string name="friend_request_accept">Accept</string>
     <string name="friend_request_deny">Deny</string>
+    <string name="friend_request_cancel">Cancel Friend Request</string>
     <string name="friend_request_block">Block</string>
 
     <string name="send_friend_request">Send friend request</string>
-    <string name="send_friend_request_description">Do you want to add this %1$s as a friend?</string>
+    <string name="send_friend_request_description">Do you want to add %1$s as a friend?</string>
     <string name="friend_request_sent">✔ Friend request sent</string>
     <string name="error_friend_request">❌ Error while sending friend request</string>
 
