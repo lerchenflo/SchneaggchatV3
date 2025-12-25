@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 import androidx.collection.emptyObjectList
 import io.ktor.util.reflect.instanceOf
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.GroupMemberWithUser
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 
@@ -47,7 +48,7 @@ data class UserChat(
     override val friendshipStatus: NetworkUtils.FriendshipStatus?,
     override val requesterId: String?,
 
-    var commonGroups : List<Group> = emptyList()
+    val commonGroups : List<Group> = emptyList()
 ) : SelectedChatBase {
     override val isGroup: Boolean = false
 }
@@ -65,7 +66,7 @@ data class GroupChat(
     override val friendshipStatus: NetworkUtils.FriendshipStatus? = null,
     override val requesterId: String? = null,
 
-    var groupMembers : List<GroupMember> = emptyList()
+    val groupMembersWithUsers : List<GroupMemberWithUser> = emptyList() //For chat details
 ) : SelectedChatBase {
     override val isGroup: Boolean = true
 }

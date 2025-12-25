@@ -40,6 +40,11 @@ class UserRepository(
         return database.userDao().getUserIdsWithChangeDates()
     }
 
+    suspend fun getUserById(id: String) : User? {
+        return database.userDao().getUserbyId(id)?.toUser()
+    }
+
+
     suspend fun updateUserProfilePicUrl(userId: String, newUrl: String) {
         val dbUser = database.userDao().getUserbyId(userId)
         if (dbUser != null){

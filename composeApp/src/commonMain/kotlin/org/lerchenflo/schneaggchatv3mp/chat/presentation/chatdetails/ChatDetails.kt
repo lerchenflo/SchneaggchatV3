@@ -22,6 +22,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
@@ -43,19 +44,20 @@ fun ChatDetails(
 
     val chatdetailsViewmodel = koinViewModel<ChatDetailsViewmodel>()
 
-    val selectedChat by chatdetailsViewmodel.selectedChat.collectAsStateWithLifecycle()
-    val group = selectedChat.isGroup
-
-
-    if (selectedChat.isNotSelected()){
+    val chatDetails by chatdetailsViewmodel.chatDetails.collectAsStateWithLifecycle()
+    
+    // Early return if chat not selected - don't render anything
+    /*
+    if (chatDetails.isNotSelected()){
         println("Chat not selected, navigating back")
         chatdetailsViewmodel.onBackClick()
+        return
     }
 
+     */
+
+    val group = chatDetails.isGroup
     var profilePictureDialogShown by remember { mutableStateOf(false) }
-
-
-
 
     Column(
         modifier = modifier
@@ -63,7 +65,7 @@ fun ChatDetails(
     ){
 
         ActivityTitle(
-            title = selectedChat.name,
+            title = chatDetails.name,
             onBackClick = {
                 chatdetailsViewmodel.onBackClick()
             }
@@ -78,7 +80,7 @@ fun ChatDetails(
         ){
 
             ProfilePictureView(
-                filepath = selectedChat.profilePictureUrl,
+                filepath = chatDetails.profilePictureUrl,
                 modifier = Modifier
                     .size(200.dp) // Use square aspect ratio
                     .padding(bottom = 10.dp)
@@ -98,7 +100,7 @@ fun ChatDetails(
                 .wrapContentWidth(Alignment.CenterHorizontally)
         ){
             Text(
-                text = "id: ${selectedChat.id }"
+                text = "id: ${chatDetails.id }"
             )
         }
 
@@ -126,7 +128,7 @@ fun ChatDetails(
 
                     )
                     Text(
-                        text = selectedChat.status
+                        text = chatDetails.status
                             .takeIf { !it.isNullOrBlank() }
                             ?.replace("\\n", "\n")
                             ?: stringResource(Res.string.no_status),
@@ -152,12 +154,12 @@ fun ChatDetails(
         ){
             Column(){
                 Text(
-                    text = stringResource(Res.string.others_say_about, selectedChat.name),
+                    text = stringResource(Res.string.others_say_about, chatDetails.name),
                     modifier = Modifier
 
                 )
                 Text(
-                    text = selectedChat.description
+                    text = chatDetails.description
                         .takeIf { !it.isNullOrBlank() }
                         ?.replace("\\n", "\n")
                         ?: stringResource(Res.string.no_description),
@@ -171,12 +173,20 @@ fun ChatDetails(
         HorizontalDivider()
 
         if(group){
-            // todo show users from group
-            println("Groupmembers: ${selectedChat.toGroup()?.groupMembers}")
-
+            // Show group members - data is already populated!
+            chatDetails.toGroup()?.let { groupChat ->
+                GroupMembersView(
+                    members = groupChat.groupMembersWithUsers,
+                    onUserClick = {
+                        //TODO: Open chat with user
+                    }
+                )
+            }
         }else{
-            // todo show gemeinsame gruppen
-
+            // Show common groups - data is already populated!
+            chatDetails.toUser()?.let { userChat ->
+                //TODO: Cooles composable macha wie oba
+            }
         }
 
         HorizontalDivider()
@@ -195,7 +205,7 @@ fun ChatDetails(
         if(profilePictureDialogShown){
             ProfilePictureBigDialog(
                 onDismiss = {profilePictureDialogShown = false},
-                filepath = selectedChat.profilePictureUrl
+                filepath = chatDetails.profilePictureUrl
             )
         }
 
