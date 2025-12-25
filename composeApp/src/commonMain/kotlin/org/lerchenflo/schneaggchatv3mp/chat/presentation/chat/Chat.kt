@@ -152,6 +152,7 @@ fun ChatScreen(
         bottomBar = {
 
         },
+        contentWindowInsets = WindowInsets.ime
     ) {innerPadding ->
         // The innerPadding contains the height of the topBar
         Column(
