@@ -2,6 +2,8 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,10 +50,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -100,11 +110,8 @@ fun ChatScreen(
 
     Column(
         modifier = modifier
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            ) {
-                focusManager.clearFocus()
+            .pointerInput(Unit) {
+                detectTapGestures { focusManager.clearFocus() } // only pointer taps
             }
     ){
         // Obere Zeile (Backbutton, profilbild, name, ...)
@@ -341,7 +348,36 @@ fun ChatScreen(
                 onValueChange = { newValue ->
                     viewModel.updatesendText(newValue)
                 },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .onPreviewKeyEvent { event ->
+                        // Check if the key is 'Enter' and it's a 'KeyDown' event
+                        if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
+                            if (event.isShiftPressed) {
+                                // ACTION: Shift + Enter
+                                // add a newline
+                                val newValue = viewModel.sendText.text.replaceRange(
+                                    viewModel.sendText.selection.min,
+                                    viewModel.sendText.selection.max,
+                                    "\n"
+                                )
+                                val newCursorPos = viewModel.sendText.selection.min + 1
+                                viewModel.updatesendText(
+                                    viewModel.sendText.copy(
+                                        text = newValue,
+                                        selection = TextRange(newCursorPos)
+                                    )
+                                )
+                                return@onPreviewKeyEvent false // Let the system handle the newline
+                            } else {
+                                // ACTION: Enter (only)
+                                // Send the message
+                                viewModel.sendMessage()
+                                return@onPreviewKeyEvent true // Consume the event (no newline added)
+                            }
+                        }
+                        false // Pass all other events (letters, backspace, etc.) to the TextField
+                    },
                 placeholder = { Text(stringResource(Res.string.message) + " ...") }
             )
 

@@ -1,6 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +32,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.isSecondaryPressed
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -216,17 +221,25 @@ fun SettingsScreen(
                     top = 16.dp
                 )
                 .fillMaxWidth()
-                .clickable{ // clickable for developer settings
-                    openDevSettingsCounter ++
-                    // todo snackbar oder sunsch irgend a meldung & guate zahl usdenka
+                .pointerInput(Unit) {// clickable for developer settings
+                    // manual pointer handling for non consuming tap
+                    awaitEachGesture {
+                        // Do NOT require unconsumed → we don't consume either
+                        val down = awaitFirstDown(requireUnconsumed = false)
 
-                    if (openDevSettingsCounter > 5){ // open dev settings after x clicks
-                        sharedSettingsViewmodel.updateDevSettings(true) // save in preferences
-                        navigateDevSettings()
+                        val up = waitForUpOrCancellation()
+                        if (up != null) {
+                            // Tap detected, but NOT consumed
+                            openDevSettingsCounter ++
+                            // todo snackbar oder sunsch irgend a meldung & guate zahl usdenka
+
+                            if (openDevSettingsCounter > 5){ // open dev settings after x clicks
+                                sharedSettingsViewmodel.updateDevSettings(true) // save in preferences
+                                navigateDevSettings()
+                            }
+                        }
                     }
                 }
-
         )
-
     }
 }

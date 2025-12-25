@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
@@ -62,9 +63,9 @@ class ChatViewModel(
     }
 
 
-    var sendText by mutableStateOf("")
+    var sendText by mutableStateOf(TextFieldValue(""))
         private set
-    fun updatesendText(newValue: String) {
+    fun updatesendText(newValue: TextFieldValue) {
         sendText = newValue
     }
 
@@ -77,11 +78,11 @@ class ChatViewModel(
 
     fun sendMessage(){
 
-        if (sendText == "") return
+        if (sendText.text.isEmpty()) return
 
         //TODO: Do wechla bild und sunschwas
-        val content = sendText
-        updatesendText("")
+        val content = sendText.text
+        updatesendText(TextFieldValue(""))
 
         //Im sharedviewmodel dassas ewig leabig isch
         globalViewModel.viewModelScope.launch {
