@@ -3,8 +3,11 @@ package org.lerchenflo.schneaggchatv3mp.sharedUi
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
@@ -66,6 +70,7 @@ fun MessageViewWithActions(
     replyMessage: Message? = null,
     replyMessageOnClick: () -> Unit = {},
     onReplyCall: (message: Message) -> Unit = {},
+    onLongPress: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
 ){
@@ -99,18 +104,25 @@ fun MessageViewWithActions(
                 .fillMaxSize()
                 .offset { IntOffset(offset.value.roundToInt(), 0) }
                 .pointerInput(Unit) {
-                    // This handles the long click
-                    detectTapGestures(
-                        onLongPress = {
-                            // Your long click logic here (e.g., show context menu)
-                            println("Long pressed on message: ${message.id}")
-                        },
-                        onTap = {
-                            // Optional: Handle regular taps here if needed
+                    // custom tap logic to only consume long press
+                    awaitEachGesture {
+                        val viewConfig = this@pointerInput.viewConfiguration
+                        val down = awaitFirstDown(requireUnconsumed = false)
+
+                        val longPress = withTimeoutOrNull(viewConfig.longPressTimeoutMillis) {
+                            waitForUpOrCancellation()
+                            false
                         }
-                    )
+
+                        if (longPress == null) {
+                            // Long press detected → consume
+                            onLongPress() // call callback
+                            down.consume()
+                        }
+                    }
                 }
                 .pointerInput(contextMenuWidth) {
+                    // detect swipe for reply
                     detectHorizontalDragGestures(
                         onHorizontalDrag = { _, dragAmount ->
                             scope.launch {
@@ -173,54 +185,54 @@ private fun MessageView(
 {
 
     val mymessage = message.myMessage
-    //Ganze breite
-    Row(
-        modifier = modifier
-            .fillMaxWidth(), // Make sure this is here
-        horizontalArrangement = if (mymessage) Arrangement.End else Arrangement.Start
-    ) {
-        Column() {
-            if (replyMessage != null) {
-                Row(
-                    modifier = Modifier
-                        .clickable {
-                            replyMessageOnClick()
-                        }
-                ) {
-                    Text("Replying to: ${replyMessage.content}") // todo shüa macha
-                }
 
+    Column(){
+        if (replyMessage != null) {
+            Row(
+                modifier = Modifier
+                    .clickable {
+                        replyMessageOnClick()
+                    }
+            ) {
+                Text("Replying to: ${replyMessage.content}") // todo schüa macha
             }
-            Row() {
-                MessageContent(
-                    modifier = Modifier
-                        .padding(
-                            start = if (mymessage) 40.dp else 0.dp,
-                            end = if (mymessage) 0.dp else 40.dp,
-                            top = 5.dp,
-                            bottom = 5.dp
-                        )
-                        //.wrapContentSize()
-                        .background(
-                            color = if (mymessage) {
-                                MaterialTheme.colorScheme.primaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.secondaryContainer
-                            },
-                            shape = RoundedCornerShape(15.dp)
-                        )
-                        //.clickable {println(message)}
-                        .padding(6.dp),
-                    message = message,
-                    useMD = useMD,
-                    mymessage = mymessage,
-                    selectedChatId = selectedChatId
 
-                )
-            }
         }
 
+        //Ganze breite
+        Row(
+            modifier = modifier
+                .fillMaxWidth(), // Make sure this is here
+            horizontalArrangement = if (mymessage) Arrangement.End else Arrangement.Start
+        ) {
 
+            MessageContent(
+                modifier = Modifier
+                    .padding(
+                        start = if (mymessage) 40.dp else 0.dp,
+                        end = if (mymessage) 0.dp else 40.dp,
+                        top = 5.dp,
+                        bottom = 5.dp
+                    )
+                    //.wrapContentSize()
+                    .background(
+                        color = if (mymessage) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.secondaryContainer
+                        },
+                        shape = RoundedCornerShape(15.dp)
+                    )
+                    //.clickable {println(message)}
+                    .padding(6.dp),
+                message = message,
+                useMD = useMD,
+                mymessage = mymessage,
+                selectedChatId = selectedChatId
+
+            )
+
+        }
     }
 }
 
@@ -362,23 +374,23 @@ fun TextMessage(
     myMessage: Boolean,
     modifier: Modifier = Modifier
 ){
-    SelectionContainer { // damit ma text markiera und kopira kann (künnt evnt. mit am onLongClick in zukunft interferrieren oder so)
-        // ma künnt es chatViewmodel o do instanzieren aber denn würd des für jede message einzeln passiera des isch glob ned des wahre
-        if(useMD){ // get setting if if md is enabled
-            // Cache markdown rendering to avoid re-parsing on every recomposition
-            val content = remember(messageWithReaders.content) {
-                messageWithReaders.content
-            }
-            Markdown(
-                content = content,
-                modifier = modifier
-            )
-        }else{
-            Text(
-                text = messageWithReaders.content
-            )
+
+    // ma künnt es chatViewmodel o do instanzieren aber denn würd des für jede message einzeln passiera des isch glob ned des wahre
+    if(useMD){ // get setting if if md is enabled
+        // Cache markdown rendering to avoid re-parsing on every recomposition
+        val content = remember(messageWithReaders.content) {
+            messageWithReaders.content
         }
+        Markdown(
+            content = content,
+            modifier = modifier
+        )
+    }else{
+        Text(
+            text = messageWithReaders.content
+        )
     }
+
 
 
 }
