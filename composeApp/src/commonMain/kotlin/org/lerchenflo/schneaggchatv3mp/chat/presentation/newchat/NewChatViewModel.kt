@@ -23,6 +23,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -32,6 +34,9 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.error_friend_request
+import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 
 class NewChatViewModel (
     private val appRepository: AppRepository,
@@ -77,7 +82,7 @@ class NewChatViewModel (
         CoroutineScope(Dispatchers.IO).launch { //Launch in coroutinescope to not access the db on main thread
             val success = appRepository.sendFriendRequest(friendId)
             SnackbarManager.showMessage(
-                if (success) "✔" else "Error" //TODO: Fabi bitte fixen i hobs ned im griff
+                if (success) getString(Res.string.friend_request_sent) else getString(Res.string.error_friend_request)
             )
         }
     }

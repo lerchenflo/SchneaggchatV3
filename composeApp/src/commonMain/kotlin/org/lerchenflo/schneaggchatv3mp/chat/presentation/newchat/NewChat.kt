@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,48 +21,44 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ContactMail
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DividerDefaults
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.InternalResourceApi
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
-import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
+import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.common_friends
+import schneaggchatv3mp.composeapp.generated.resources.enter_username
 import schneaggchatv3mp.composeapp.generated.resources.invite_friend
 import schneaggchatv3mp.composeapp.generated.resources.new_chat
 import schneaggchatv3mp.composeapp.generated.resources.new_group
-import schneaggchatv3mp.composeapp.generated.resources.search_friend
 import schneaggchatv3mp.composeapp.generated.resources.search_user
-import schneaggchatv3mp.composeapp.generated.resources.settings
+import schneaggchatv3mp.composeapp.generated.resources.send_friend_request
+import schneaggchatv3mp.composeapp.generated.resources.send_friend_request_description
 
 @OptIn(InternalResourceApi::class)
 @Composable
@@ -135,11 +130,11 @@ fun NewChat(
                     maxLines = 1,
                     onValueChange = { viewModel.updateSearchterm(it) },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Enter username...") },
+                    placeholder = { Text(stringResource(Res.string.enter_username)) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Search,
-                            contentDescription = "Search"
+                            contentDescription = stringResource(Res.string.search_user)
                         )
                     },
                     shape = RoundedCornerShape(12.dp),
@@ -159,6 +154,9 @@ fun NewChat(
                 )
             }
 
+
+
+
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -170,16 +168,36 @@ fun NewChat(
                 ),
             ) {
                 items(newChats) { user ->
+
+                    var showFriendRequestAlert by remember { mutableStateOf(false) }
+
                     UserResultCard(
                         username = user.username,
                         commonFriendCount = user.commonFriendCount,
                         onClick = {
-                            viewModel.addFriend(user.id)
+                            showFriendRequestAlert = true
                         }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
+
+                    if(showFriendRequestAlert){
+                        FriendRequestAlert(
+                            onDismiss = {
+                                showFriendRequestAlert = false
+                            },
+                            onConfirm = {
+                                showFriendRequestAlert = false
+                                viewModel.addFriend(user.id)
+                            },
+                            friendName = user.username
+                        )
+                    }
                 }
             }
+
+
+
+
         }
     }
 }
@@ -314,4 +332,36 @@ fun UserResultCard(
             }
         }
     }
+}
+
+@Composable
+fun FriendRequestAlert(
+    friendName:String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+){
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = {
+            Text(text = stringResource(Res.string.send_friend_request))
+        },
+        text = {
+            Text(text = stringResource(Res.string.send_friend_request_description, friendName))
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm
+            ) {
+                Text(stringResource(Res.string.add))
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss
+            ) {
+                Text(stringResource(Res.string.cancel))
+            }
+        }
+    )
+
 }
