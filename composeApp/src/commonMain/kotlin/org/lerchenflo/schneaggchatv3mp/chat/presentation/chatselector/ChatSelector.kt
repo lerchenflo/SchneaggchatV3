@@ -68,8 +68,12 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.app_name
+import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.close
 import schneaggchatv3mp.composeapp.generated.resources.filter
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_accept
+import schneaggchatv3mp.composeapp.generated.resources.friend_request_cancel
+import schneaggchatv3mp.composeapp.generated.resources.friend_request_cancel_title
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_deny
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_title
 import schneaggchatv3mp.composeapp.generated.resources.loadinginfo_messages
@@ -379,38 +383,86 @@ fun Chatauswahlscreen(
         }
 
         pendingFriendPopup?.let { selectedChat->
-            AlertDialog(
-                onDismissRequest = {
-                    viewModel.dismissPendingFriendDialog()
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            viewModel.acceptFriend(selectedChat.id)
-                        },
-                    ) {
+
+            //Popup to accept friend request / cancel outgoing friend request
+
+            //You are no friends with this person, but he sent you a friend request, you can accept it
+            //selectedChat.requesterId!! != SessionCache.getOwnIdValue()
+            val incomingRequest = selectedChat.requesterId!! != SessionCache.getOwnIdValue()
+
+
+            //You sent the friend request to this user, and it is still pending, you can cancel it
+            //selectedChat.requesterId!! == SessionCache.getOwnIdValue())
+
+            if (incomingRequest){
+                AlertDialog(
+                    onDismissRequest = {
+                        viewModel.dismissPendingFriendDialog()
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                viewModel.acceptFriend(selectedChat.id)
+                            },
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.friend_request_accept)
+                            )
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                viewModel.denyFriend(selectedChat.id)
+                            },
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.friend_request_deny)
+                            )
+                        }
+                    },
+                    title = {
                         Text(
-                            text = stringResource(Res.string.friend_request_accept)
+                            text = stringResource(Res.string.friend_request_title),
                         )
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            viewModel.denyFriend(selectedChat.id)
-                        },
-                    ) {
+                    },
+                )
+            } else {
+                //Outgoing request, cancelable
+                AlertDialog(
+                    onDismissRequest = {
+                        viewModel.dismissPendingFriendDialog()
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                viewModel.denyFriend(selectedChat.id)
+                            },
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.friend_request_cancel)
+                            )
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                viewModel.dismissPendingFriendDialog()
+                            },
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.close)
+                            )
+                        }
+                    },
+                    title = {
                         Text(
-                            text = stringResource(Res.string.friend_request_deny)
+                            text = stringResource(Res.string.friend_request_cancel_title)
                         )
-                    }
-                },
-                title = {
-                    Text(
-                        text = stringResource(Res.string.friend_request_title),
-                        )
-                },
-            )
+                    },
+                )
+            }
+
         }
 
     }
