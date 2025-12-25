@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,17 +17,22 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Poll
+import androidx.compose.material.icons.filled.Reply
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,7 +48,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -65,6 +74,10 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.audio
 import schneaggchatv3mp.composeapp.generated.resources.close
+import schneaggchatv3mp.composeapp.generated.resources.copied_to_clipboard
+import schneaggchatv3mp.composeapp.generated.resources.copy
+import schneaggchatv3mp.composeapp.generated.resources.delete
+import schneaggchatv3mp.composeapp.generated.resources.edit
 import schneaggchatv3mp.composeapp.generated.resources.go_back
 import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.message
@@ -83,6 +96,7 @@ fun ChatScreen(
     val viewModel = koinViewModel<ChatViewModel>()
     val messages by viewModel.messagesState.collectAsStateWithLifecycle()
     val focusManager = LocalFocusManager.current
+    val clipboardManager = LocalClipboardManager.current
 
     Column(
         modifier = modifier
@@ -165,24 +179,56 @@ fun ChatScreen(
                     answerMessage = messages.find { it.id == message.answerId }
                 }
 
-                MessageViewWithActions(
-                    useMD = viewModel.markdownEnabled,
-                    selectedChatId = globalViewModel.selectedChat.value.id,
-                    message = message,
-                    modifier = Modifier,
-                    replyMessage = answerMessage,
-                    replyMessageOnClick = {
-                        val targetIndex = messages.indexOfFirst { it.id == message.answerId }
-                        if (targetIndex != -1) {
-                            scope.launch {
-                                listState.animateScrollToItem(targetIndex)
+                var showMessageOptionPopup by remember { mutableStateOf(false) }
+
+                Box {
+
+                    MessageViewWithActions(
+                        useMD = viewModel.markdownEnabled,
+                        selectedChatId = globalViewModel.selectedChat.value.id,
+                        message = message,
+                        modifier = Modifier,
+                        replyMessage = answerMessage,
+                        replyMessageOnClick = {
+                            val targetIndex = messages.indexOfFirst { it.id == message.answerId }
+                            if (targetIndex != -1) {
+                                scope.launch {
+                                    listState.animateScrollToItem(targetIndex)
+                                }
                             }
+                        },
+                        onReplyCall = {
+                            viewModel.updateReplyMessage(message)
+                        },
+                        onLongPress = {
+                            showMessageOptionPopup = true
                         }
-                    },
-                    onReplyCall = {
-                        viewModel.updateReplyMessage(it)
-                    }
-                )
+                    )
+
+
+                    val copiedToClipboardString = stringResource(Res.string.copied_to_clipboard)
+                    MessageOptionPopup(
+                        expanded = showMessageOptionPopup,
+                        myMessage = message.myMessage,
+                        onDismissRequest = { showMessageOptionPopup = false },
+                        onReply = {viewModel.updateReplyMessage(message)},
+                        onCopy = {
+                            copyToClipboard(message.content, clipboardManager)
+                            SnackbarManager.showMessage(copiedToClipboardString)
+                            showMessageOptionPopup = false
+                        },
+                        onDelete = {
+                            SnackbarManager.showMessage("todo")
+                            showMessageOptionPopup = false
+                        },
+                        onEdit = {
+                            SnackbarManager.showMessage("todo")
+                            showMessageOptionPopup = false
+                        },
+                        modifier = Modifier
+                    )
+                }
+
                 // Show divider only if this message starts a new day
                 if (currentDate != nextDate && currentDate != null) {
                     val currentDateMillis = remember(message.sendDate) {
@@ -316,6 +362,86 @@ fun ChatScreen(
     }
 }
 
+@Composable
+fun MessageOptionPopup(
+    expanded: Boolean,
+    myMessage: Boolean,
+    onDismissRequest: () -> Unit,
+    onReply: () -> Unit,
+    onCopy: () -> Unit,
+    onDelete: () -> Unit,
+    onEdit: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        modifier = modifier
+    ) {
+        DropdownMenuItem(
+            text = { Text("Reply") },
+            onClick = {
+                onReply()
+                onDismissRequest()
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Reply,
+                    contentDescription = null
+                )
+            }
+        )
+
+        DropdownMenuItem(
+            text = { Text(stringResource(Res.string.copy)) },
+            onClick = {
+                onCopy()
+                onDismissRequest()
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.ContentCopy,
+                    contentDescription = null
+                )
+            }
+        )
+
+        if(myMessage) {
+
+            DropdownMenuItem(
+                text = { Text(stringResource(Res.string.edit)) },
+                onClick = {
+                    onEdit()
+                    onDismissRequest()
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = null
+                    )
+                }
+            )
+
+            DropdownMenuItem(
+                text = { Text(stringResource(Res.string.delete)) },
+                onClick = {
+                    onDelete()
+                    onDismissRequest()
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null
+                    )
+                }
+            )
+        }
+    }
+}
+
+fun copyToClipboard(text: String, clipboardManager: ClipboardManager) {
+    clipboardManager.setText(AnnotatedString(text))
+}
 @OptIn(ExperimentalTime::class)
 fun Long.toLocalDate(): LocalDate {
     val instant = Instant.fromEpochMilliseconds(this)

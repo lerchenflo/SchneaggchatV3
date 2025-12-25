@@ -205,4 +205,9 @@
 
     <string name="name_too_long">Name too long</string>
 
+    <string name="copied_to_clipboard">Copied to clipboard</string>
+    <string name="copy">Copy</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+
 </resources>

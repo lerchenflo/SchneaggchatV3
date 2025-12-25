@@ -39,6 +39,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.ViewConfiguration
@@ -69,7 +71,7 @@ fun MessageViewWithActions(
     message: Message,
     replyMessage: Message? = null,
     replyMessageOnClick: () -> Unit = {},
-    onReplyCall: (message: Message) -> Unit = {},
+    onReplyCall: () -> Unit = {},
     onLongPress: () -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
@@ -109,16 +111,26 @@ fun MessageViewWithActions(
                         val viewConfig = this@pointerInput.viewConfiguration
                         val down = awaitFirstDown(requireUnconsumed = false)
 
-                        val longPress = withTimeoutOrNull(viewConfig.longPressTimeoutMillis) {
-                            waitForUpOrCancellation()
-                            false
+                        // Check for Desktop Right Click (Secondary Button)
+                        if (currentEvent.buttons.isSecondaryPressed) { // doesn't work on my machine but does not affect other functionality
+                            //println("right click")
+                            onLongPress()
+                            down.consume()
+                        } else {
+                            // Handle Long Press for Touch/Left Click
+                            val longPress = withTimeoutOrNull(viewConfig.longPressTimeoutMillis) {
+                                waitForUpOrCancellation()
+                                false
+                            }
+
+                            if (longPress == null) {
+                                // Long press detected → consume
+                                onLongPress() // call callback
+                                down.consume()
+                            }
                         }
 
-                        if (longPress == null) {
-                            // Long press detected → consume
-                            onLongPress() // call callback
-                            down.consume()
-                        }
+
                     }
                 }
                 .pointerInput(contextMenuWidth) {
@@ -132,7 +144,7 @@ fun MessageViewWithActions(
                             }
                         },
                         onDragEnd = {
-                            if(offset.value > contextMenuWidth * 0.9) onReplyCall(message) // call Reply when swiped 90% of the way
+                            if(offset.value > contextMenuWidth * 0.9) onReplyCall() // call Reply when swiped 90% of the way
 
                             scope.launch {
                                 offset.animateTo(0f)
