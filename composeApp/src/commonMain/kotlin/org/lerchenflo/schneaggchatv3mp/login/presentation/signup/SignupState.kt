@@ -16,7 +16,39 @@ data class SignupState(
     val profilePic: ByteArray? = null,
     val agbsAccepted: Boolean = false
 
-    )
+    ) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as SignupState
+
+        if (createButtonDisabled != other.createButtonDisabled) return false
+        if (isLoading != other.isLoading) return false
+        if (agbsAccepted != other.agbsAccepted) return false
+        if (usernameState != other.usernameState) return false
+        if (passwordState != other.passwordState) return false
+        if (passwordRetypeState != other.passwordRetypeState) return false
+        if (emailState != other.emailState) return false
+        if (gebiDate != other.gebiDate) return false
+        if (!profilePic.contentEquals(other.profilePic)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = createButtonDisabled.hashCode()
+        result = 31 * result + isLoading.hashCode()
+        result = 31 * result + agbsAccepted.hashCode()
+        result = 31 * result + usernameState.hashCode()
+        result = 31 * result + passwordState.hashCode()
+        result = 31 * result + passwordRetypeState.hashCode()
+        result = 31 * result + emailState.hashCode()
+        result = 31 * result + (gebiDate?.hashCode() ?: 0)
+        result = 31 * result + (profilePic?.contentHashCode() ?: 0)
+        return result
+    }
+}
 
 data class InputfieldState(
     val text: String = "",

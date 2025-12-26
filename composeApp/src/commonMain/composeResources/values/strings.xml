@@ -205,8 +205,12 @@
     <string name="swipecardview_left">← Previous</string>
     <string name="swipecardview_right">Next →</string>
     <string name="swipecardview_finish">Finish ✓</string>
+    <string name="swipecardview_back">← Back</string>
+
 
     <string name="name_too_long">Name too long</string>
+    <string name="name_too_short">Name too short</string>
+
 
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="copy">Copy</string>

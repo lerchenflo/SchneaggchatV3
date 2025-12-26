@@ -49,7 +49,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.Chatauswahlscreen
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreator
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
@@ -313,7 +313,7 @@ fun App() {
                     }
 
                     entry<Route.GroupCreator> {
-                        GroupCreator()
+                        GroupCreatorScreenRoot()
                     }
 
 

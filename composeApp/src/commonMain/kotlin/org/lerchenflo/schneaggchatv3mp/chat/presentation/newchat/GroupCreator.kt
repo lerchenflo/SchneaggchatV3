@@ -77,23 +77,30 @@ import schneaggchatv3mp.composeapp.generated.resources.group_name
 import schneaggchatv3mp.composeapp.generated.resources.group_picture
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 import schneaggchatv3mp.composeapp.generated.resources.name_too_long
+import schneaggchatv3mp.composeapp.generated.resources.name_too_short
 import schneaggchatv3mp.composeapp.generated.resources.new_group
 import schneaggchatv3mp.composeapp.generated.resources.profile_picture
 import schneaggchatv3mp.composeapp.generated.resources.search_user
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_group_description
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_group_name
 
+@Composable
+fun GroupCreatorScreenRoot(
+
+){
+    val viewModel = koinViewModel<GroupCreatorViewModel>()
+    GroupCreatorScreen(
+        onAction = viewModel::onAction,
+        state = viewModel.state,
+    )
+}
+
 
 @Composable
-fun GroupCreator() {
-
-    val viewModel = koinViewModel<GroupCreatorViewModel>()
-
-    val searchTerm by viewModel.searchterm.collectAsStateWithLifecycle()
-    val groupName by viewModel.groupName.collectAsStateWithLifecycle()
-    val groupDescription by viewModel.groupDescription.collectAsStateWithLifecycle()
-    val users by viewModel.groupCreatorState.collectAsStateWithLifecycle(emptyList())
-    val profilePic by viewModel.profilePic.collectAsStateWithLifecycle()
+private fun GroupCreatorScreen(
+    onAction: (GroupCreatorAction) -> Unit,
+    state: GroupCreatorState
+) {
 
     var showImagePickerDialog by remember { mutableStateOf(false) }
 
@@ -104,16 +111,19 @@ fun GroupCreator() {
         ActivityTitle(
             title = stringResource(Res.string.new_group),
             onBackClick = {
-                viewModel.onBackClick()
+                onAction(GroupCreatorAction.navigateBack)
             }
         )
 
         SwipeableCardView(
             onFinished = {
-                viewModel.onCreateGroup()
+                onAction(GroupCreatorAction.createGroup)
             },
             contentAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            onBack = { onAction(GroupCreatorAction.navigateBack) },
+            finishEnabled = state.creationPermitted,
+            backEnabled = true,
         ){
             //User selection card
             CardItem(
@@ -133,16 +143,16 @@ fun GroupCreator() {
 
                     ) {
                         // durch die selected users durchgo und azoaga
-                        viewModel.selectedUsers.forEach { user ->
+                        state.selectedUsers.forEach { user ->
                             Column(
                                 modifier = Modifier
                                     .padding(end = 5.dp)
                                     .clickable {
-                                        viewModel.selectedUsers.remove(user)
+                                        onAction(GroupCreatorAction.addGroupMember(user))
                                     }
 
                             ) {
-                                var size = 70.dp
+                                val size = 70.dp
                                 Box(
                                     modifier = Modifier.size(size)
                                 ) {
@@ -195,9 +205,9 @@ fun GroupCreator() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         OutlinedTextField(
-                            value = searchTerm,
+                            value = state.searchterm,
                             maxLines = 1,
-                            onValueChange = { viewModel.updateSearchterm(it) },
+                            onValueChange = { onAction(GroupCreatorAction.updateSearchterm(it)) },
                             modifier = Modifier
                                 .weight(1f),
                             placeholder = { Text(stringResource(Res.string.search_user)) },
@@ -215,7 +225,7 @@ fun GroupCreator() {
                             modifier = Modifier
                                 .height(40.dp)
                                 .aspectRatio(1f)
-                                .clickable { viewModel.updateSearchterm("") },
+                                .clickable { onAction(GroupCreatorAction.updateSearchterm("")) },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -239,8 +249,8 @@ fun GroupCreator() {
                             bottom = 16.dp
                         ),
                     ) {
-                        items(users) { user ->
-                            val selected = viewModel.selectedUsers.contains(user)
+                        items(state.availableUsers) { user ->
+                            val selected = state.selectedUsers.contains(user)
 
                             UserButton(
                                 selectedChat = user,
@@ -250,9 +260,9 @@ fun GroupCreator() {
                                 selected = selected,
                                 onClickGes = {
                                     if (selected) {
-                                        viewModel.selectedUsers.remove(user)
+                                        onAction(GroupCreatorAction.removeGroupMember(user))
                                     } else {
-                                        viewModel.selectedUsers.add(user)
+                                        onAction(GroupCreatorAction.addGroupMember(user))
                                     }
 
                                 }
@@ -277,19 +287,19 @@ fun GroupCreator() {
 
                     //Login inputtextfields
                     InputTextField(
-                        text = groupName,
-                        onValueChange = {viewModel.updateGroupName(it)},
+                        text = state.groupname.text,
+                        onValueChange = {onAction(GroupCreatorAction.updateGroupname(it))},
                         label = stringResource(Res.string.group_name),
                         hint = stringResource(Res.string.group_name),
-                        errortext = if (groupName.length > 25) stringResource(Res.string.name_too_long) else null,
+                        errortext = state.groupname.errorMessage,
                         tooltip = stringResource(Res.string.tooltip_group_name),
                         imeAction = ImeAction.Next,
                         maxLines = 1
                     )
 
                     InputTextField(
-                        text = groupDescription,
-                        onValueChange = { viewModel.updateGroupDescription(it) },
+                        text = state.groupdescription.text,
+                        onValueChange = { onAction(GroupCreatorAction.updateGroupdescription(it)) },
                         label = stringResource(Res.string.group_description),
                         hint = stringResource(Res.string.group_description),
                         tooltip = stringResource(Res.string.tooltip_group_description),
@@ -318,7 +328,7 @@ fun GroupCreator() {
 
                         Box(modifier = Modifier.size(200.dp)) {
                             Image(
-                                painter = if (profilePic != null) BitmapPainter(profilePic!!.decodeToImageBitmap()) else painterResource(Res.drawable.icon_nutzer),
+                                painter = if (state.profilepic != null) BitmapPainter(state.profilepic.decodeToImageBitmap()) else painterResource(Res.drawable.icon_nutzer),
                                 contentDescription = stringResource(Res.string.profile_picture),
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -328,7 +338,7 @@ fun GroupCreator() {
                                     }
                             )
 
-                            if (profilePic == null) {
+                            if (state.profilepic == null) {
                                 // small edit icon overlay
                                 Icon(
                                     imageVector = Icons.Default.Edit,
@@ -358,7 +368,7 @@ fun GroupCreator() {
         if (showImagePickerDialog) {
             GalleryPickerLauncher(
                 onPhotosSelected = {
-                    viewModel.updateProfilepic(it.first())
+                    onAction(GroupCreatorAction.updateProfilePic(it.first()))
                     showImagePickerDialog = false
                 },
                 onError = {

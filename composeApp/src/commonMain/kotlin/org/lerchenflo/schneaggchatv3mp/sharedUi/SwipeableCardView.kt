@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.swipecardview_back
 import schneaggchatv3mp.composeapp.generated.resources.swipecardview_finish
 import schneaggchatv3mp.composeapp.generated.resources.swipecardview_left
 import schneaggchatv3mp.composeapp.generated.resources.swipecardview_right
@@ -40,6 +41,9 @@ import schneaggchatv3mp.composeapp.generated.resources.swipecardview_right
 @Composable
 fun SwipeableCardView(
     onFinished: () -> Unit,
+    onBack: () -> Unit,
+    finishEnabled: Boolean,
+    backEnabled: Boolean,
     modifier: Modifier = Modifier,
     contentAlignment: Alignment.Vertical = Alignment.CenterVertically,
     cardElevation: Dp = 16.dp,
@@ -63,7 +67,8 @@ fun SwipeableCardView(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxSize(),
-            verticalAlignment = contentAlignment
+            verticalAlignment = contentAlignment,
+            userScrollEnabled = true // Allow swiping between cards
         ) { page ->
             Box(
                 modifier = Modifier
@@ -87,7 +92,6 @@ fun SwipeableCardView(
             }
         }
 
-
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shadowElevation = 8.dp
@@ -98,35 +102,60 @@ fun SwipeableCardView(
                     .padding(24.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                // Left Button - "Back" on first page, "Previous" on other pages
                 TextButton(
                     onClick = {
-                        coroutineScope.launch {
-                            if (pagerState.currentPage > 0) {
+                        if (pagerState.currentPage > 0) {
+                            // Navigate to previous card
+                            coroutineScope.launch {
                                 pagerState.animateScrollToPage(pagerState.currentPage - 1)
                             }
+                        } else {
+                            // On first page, trigger onBack callback
+                            onBack()
                         }
                     },
-                    enabled = pagerState.currentPage > 0
+                    enabled = if (pagerState.currentPage > 0) {
+                        true // Always enabled for previous navigation
+                    } else {
+                        backEnabled // Use backEnabled parameter for first page
+                    }
                 ) {
                     Text(
-                        text = stringResource(Res.string.swipecardview_left),
+                        text = if (pagerState.currentPage > 0) {
+                            stringResource(Res.string.swipecardview_left)
+                        } else {
+                            stringResource(Res.string.swipecardview_back)
+                        },
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
 
+                // Right Button - "Next" on middle pages, "Finish" on last page
                 TextButton(
                     onClick = {
                         coroutineScope.launch {
                             if (pagerState.currentPage < scope.cards.size - 1) {
+                                // Navigate to next card
                                 pagerState.animateScrollToPage(pagerState.currentPage + 1)
                             } else {
+                                // On last page, trigger onFinished callback
                                 onFinished()
                             }
                         }
+                    },
+                    enabled = if (pagerState.currentPage == scope.cards.size - 1) {
+                        finishEnabled // Use finishEnabled parameter on last page
+                    } else {
+                        true // Always enabled for next navigation
                     }
                 ) {
                     Text(
-                        text = if (pagerState.currentPage == scope.cards.size - 1) stringResource(Res.string.swipecardview_finish) else stringResource(Res.string.swipecardview_right),
+                        text = if (pagerState.currentPage == scope.cards.size - 1) {
+                            stringResource(Res.string.swipecardview_finish)
+                        } else {
+                            stringResource(Res.string.swipecardview_right)
+                        },
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
@@ -163,57 +192,71 @@ private class CardContainerScopeImpl : CardContainerScope {
 @Preview
 @Composable
 private fun ExampleScreen() {
+    var canFinish by remember { mutableStateOf(false) }
+
     SwipeableCardView(
-        onFinished = { /* Navigate away */ },
-        modifier = Modifier,
+        onFinished = {
+            println("Finished!")
+            /* Navigate away */
+        },
+        onBack = {
+            println("Back pressed from first page!")
+            /* Navigate back */
+        },
+        finishEnabled = canFinish, // Control when finish button is enabled
+        backEnabled = true, // Control when back button is enabled on first page
+        modifier = Modifier.fillMaxSize(),
         content = {
             CardItem(
                 content = {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text("First Card", style = MaterialTheme.typography.titleLarge)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("This is the first card content")
-                        }
+                    Column {
+                        Text("First Card", style = MaterialTheme.typography.titleLarge)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("This is the first card content")
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Try pressing 'Back' - it will call onBack()")
                     }
                 }
             )
 
             CardItem(
                 content = {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Second Card", style = MaterialTheme.typography.titleLarge)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            var text by remember { mutableStateOf("") }
-                            OutlinedTextField(
-                                value = text,
-                                onValueChange = { text = it },
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text("Enter text") }
+                    Column {
+                        Text("Second Card", style = MaterialTheme.typography.titleLarge)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        var text by remember { mutableStateOf("") }
+                        OutlinedTextField(
+                            value = text,
+                            onValueChange = { text = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            label = { Text("Enter text") }
+                        )
+                    }
+                }
+            )
+
+            CardItem(
+                content = {
+                    Column {
+                        Text("Final Card", style = MaterialTheme.typography.titleLarge)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("You're all done!")
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Example: Enable finish button when checkbox is checked
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            androidx.compose.material3.Checkbox(
+                                checked = canFinish,
+                                onCheckedChange = { canFinish = it }
                             )
+                            Text("I agree to terms and conditions")
                         }
-                    }
-                }
-            )
-
-            CardItem(
-                content = {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Final Card", style = MaterialTheme.typography.titleLarge)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("You're all done!")
-                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = if (canFinish) "Finish button is enabled!" else "Check the box to enable Finish",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (canFinish) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                        )
                     }
                 }
             )
