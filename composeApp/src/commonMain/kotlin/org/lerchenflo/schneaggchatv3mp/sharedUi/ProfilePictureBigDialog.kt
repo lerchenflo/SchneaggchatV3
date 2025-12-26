@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -36,14 +37,14 @@ fun ProfilePictureBigDialog(
             Row(
                 modifier = Modifier
                     .padding(16.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(CircleShape)
             ) {
                 AsyncImage(
                     model = filepath,
                     contentDescription = "Profile picture big",
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(CircleShape)
                 )
             }
             Row(

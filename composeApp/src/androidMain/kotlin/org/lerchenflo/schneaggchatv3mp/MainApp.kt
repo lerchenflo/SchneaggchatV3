@@ -43,7 +43,7 @@ class MainApp: Application() {
         //Firebase init
         NotifierManager.initialize(
             configuration = NotificationPlatformConfiguration.Android(
-                notificationIconResId = R.drawable.ic_launcher_foreground,
+                notificationIconResId = R.drawable.ic_schneaggcchat_v3,
                 showPushNotification = true
             )
         )
