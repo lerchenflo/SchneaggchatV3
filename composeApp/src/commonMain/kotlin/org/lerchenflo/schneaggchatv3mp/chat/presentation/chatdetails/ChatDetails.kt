@@ -185,6 +185,10 @@ fun ChatDetails(
         }else{
             // Show common groups - data is already populated!
             chatDetails.toUser()?.let { userChat ->
+                CommonGroupsView(
+                    groups = userChat.commonGroups
+
+                )
                 //TODO: Cooles composable macha wie oba
             }
         }
