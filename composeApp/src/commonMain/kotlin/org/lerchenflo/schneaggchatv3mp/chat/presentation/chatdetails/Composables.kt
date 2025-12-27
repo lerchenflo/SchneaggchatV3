@@ -47,7 +47,7 @@ fun GroupMembersView(
             ChatButtonView(
                 profilePictureFilePath = user?.profilePictureUrl ?: "",
                 name = user?.name ?: stringResource(Res.string.unknown_user),
-                isAdmin = groupMember.isAdmin,
+                isAdmin = groupMember.admin,
                 onClickText = {
                     // todo dropdown with make admin, open chat, typ ussewerfa, etc.
                 },
