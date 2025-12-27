@@ -191,7 +191,7 @@ fun ChatScreen(
 
                             var showMessageOptionPopup by remember { mutableStateOf(false) }
 
-                            Box {
+                            Box(modifier = Modifier.fillMaxWidth()){
                                 MessageViewWithActions(
                                     useMD = viewModel.markdownEnabled,
                                     selectedChatId = globalViewModel.selectedChat.value.id,
@@ -238,7 +238,9 @@ fun ChatScreen(
                                         SnackbarManager.showMessage("todo")
                                         showMessageOptionPopup = false
                                     },
-                                    modifier = Modifier
+                                    modifier = Modifier.align(
+                                        if (message.myMessage) Alignment.TopEnd else Alignment.TopStart
+                                    )
                                 )
                             }
                         }
@@ -426,68 +428,73 @@ fun MessageOptionPopup(
     onEdit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = onDismissRequest,
-        modifier = modifier
+    Box(
+        modifier = modifier,
+        // contentAlignment = if (myMessage) Alignment.TopEnd else Alignment.TopStart
     ) {
-        DropdownMenuItem(
-            text = { Text("Reply") },
-            onClick = {
-                onReply()
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Reply,
-                    contentDescription = null
-                )
-            }
-        )
-
-        DropdownMenuItem(
-            text = { Text(stringResource(Res.string.copy)) },
-            onClick = {
-                onCopy()
-                onDismissRequest()
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.ContentCopy,
-                    contentDescription = null
-                )
-            }
-        )
-
-        if(myMessage) {
-
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = onDismissRequest,
+            modifier = modifier
+        ) {
             DropdownMenuItem(
-                text = { Text(stringResource(Res.string.edit)) },
+                text = { Text("Reply") },
                 onClick = {
-                    onEdit()
+                    onReply()
                     onDismissRequest()
                 },
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.Default.Edit,
+                        imageVector = Icons.AutoMirrored.Filled.Reply,
                         contentDescription = null
                     )
                 }
             )
 
             DropdownMenuItem(
-                text = { Text(stringResource(Res.string.delete)) },
+                text = { Text(stringResource(Res.string.copy)) },
                 onClick = {
-                    onDelete()
+                    onCopy()
                     onDismissRequest()
                 },
                 leadingIcon = {
                     Icon(
-                        imageVector = Icons.Default.Delete,
+                        imageVector = Icons.Default.ContentCopy,
                         contentDescription = null
                     )
                 }
             )
+
+            if (myMessage) {
+
+                DropdownMenuItem(
+                    text = { Text(stringResource(Res.string.edit)) },
+                    onClick = {
+                        onEdit()
+                        onDismissRequest()
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = null
+                        )
+                    }
+                )
+
+                DropdownMenuItem(
+                    text = { Text(stringResource(Res.string.delete)) },
+                    onClick = {
+                        onDelete()
+                        onDismissRequest()
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = null
+                        )
+                    }
+                )
+            }
         }
     }
 }
