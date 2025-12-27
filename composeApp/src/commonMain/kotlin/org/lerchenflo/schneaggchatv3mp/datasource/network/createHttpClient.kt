@@ -80,9 +80,9 @@ fun createHttpClient(
 
 
         install(HttpTimeout) {
-            requestTimeoutMillis = 20000  // 30 seconds for the entire request
-            connectTimeoutMillis = 3000  // 10 seconds to establish connection
-            socketTimeoutMillis = 30000   // 30 seconds between TCP packets
+            requestTimeoutMillis = 10000
+            connectTimeoutMillis = 3000
+            socketTimeoutMillis = 30000
         }
     }
 }

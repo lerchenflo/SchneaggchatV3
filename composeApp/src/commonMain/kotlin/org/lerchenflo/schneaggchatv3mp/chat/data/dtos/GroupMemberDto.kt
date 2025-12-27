@@ -19,7 +19,9 @@ data class GroupMemberDto(
 
     val joinDate: String,
 
-    val isAdmin: Boolean
+    val admin: Boolean,
+
+    val color: Int
 
 
 )

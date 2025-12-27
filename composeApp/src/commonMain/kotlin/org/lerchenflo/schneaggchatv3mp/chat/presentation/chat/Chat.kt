@@ -1,10 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,14 +12,12 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Reply
@@ -36,8 +31,8 @@ import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Poll
-import androidx.compose.material.icons.filled.Reply
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -78,6 +73,7 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DayDivider
 import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageContent
 import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageViewWithActions
@@ -108,7 +104,7 @@ fun ChatScreen(
 ){
     val globalViewModel = koinInject<GlobalViewModel>()
     val viewModel = koinViewModel<ChatViewModel>()
-    val messages by viewModel.messagesState.collectAsStateWithLifecycle()
+    val displayItems by viewModel.messageDisplayState.collectAsStateWithLifecycle()
     val focusManager = LocalFocusManager.current
     val clipboardManager = LocalClipboardManager.current
 
@@ -163,9 +159,9 @@ fun ChatScreen(
             // Messages
             val listState = rememberLazyListState()
 
-            //Wenn sich die letzt nachricht ändert denn abescrollen TODO: Testa ob des automatisch abescrollt
-            if (messages.isNotEmpty()) {
-                LaunchedEffect(messages.first()) {
+            //Wenn sich die letzte nachricht ändert denn abescrollen
+            if (displayItems.isNotEmpty()) {
+                LaunchedEffect(displayItems.first()) {
                     listState.animateScrollToItem(0, scrollOffset = 2)
                 }
             }
@@ -179,84 +175,78 @@ fun ChatScreen(
                 reverseLayout = true,
                 state = listState
             ) {
-                itemsIndexed(messages, key = { _, msg ->
-                    msg.localPK
-                }) { index, message ->
-                    // Cache date calculations to avoid repeated conversions
-                    val currentDate = remember(message.sendDate) {
-                        val millis = message.sendDate.toLongOrNull()
-                        millis?.toLocalDate()
-                    }
-                    val nextDate = remember(index, messages) {
-                        if (index + 1 < messages.size) {
-                            messages[index + 1].sendDate.toLongOrNull()?.toLocalDate()
-                        } else {
-                            null
-                        }
-                    }
+                items(displayItems, key = { it.id }) { item ->
+                    when (item) {
+                        is MessageDisplayItem.MessageItem -> {
+                            val message = item.message
 
-                    var answerMessage: Message? = null
-                    if (message.answerId != null) {
-                        answerMessage = messages.find { it.id == message.answerId }
-                    }
-
-                    var showMessageOptionPopup by remember { mutableStateOf(false) }
-
-                    Box {
-
-                        MessageViewWithActions(
-                            useMD = viewModel.markdownEnabled,
-                            selectedChatId = globalViewModel.selectedChat.value.id,
-                            message = message,
-                            modifier = Modifier,
-                            replyMessage = answerMessage,
-                            replyMessageOnClick = {
-                                val targetIndex =
-                                    messages.indexOfFirst { it.id == message.answerId }
-                                if (targetIndex != -1) {
-                                    scope.launch {
-                                        listState.animateScrollToItem(targetIndex)
-                                    }
-                                }
-                            },
-                            onReplyCall = {
-                                viewModel.updateReplyMessage(message)
-                            },
-                            onLongPress = {
-                                showMessageOptionPopup = true
+                            var answerMessage: Message? = null
+                            if (message.answerId != null) {
+                                // Find answer message from display items
+                                answerMessage = displayItems
+                                    .filterIsInstance<MessageDisplayItem.MessageItem>()
+                                    .firstOrNull { it.message.id == message.answerId }
+                                    ?.message
                             }
-                        )
 
+                            var showMessageOptionPopup by remember { mutableStateOf(false) }
 
-                        val copiedToClipboardString = stringResource(Res.string.copied_to_clipboard)
-                        MessageOptionPopup(
-                            expanded = showMessageOptionPopup,
-                            myMessage = message.myMessage,
-                            onDismissRequest = { showMessageOptionPopup = false },
-                            onReply = { viewModel.updateReplyMessage(message) },
-                            onCopy = {
-                                copyToClipboard(message.content, clipboardManager)
-                                SnackbarManager.showMessage(copiedToClipboardString)
-                                showMessageOptionPopup = false
-                            },
-                            onDelete = {
-                                SnackbarManager.showMessage("todo")
-                                showMessageOptionPopup = false
-                            },
-                            onEdit = {
-                                SnackbarManager.showMessage("todo")
-                                showMessageOptionPopup = false
-                            },
-                            modifier = Modifier
-                        )
-                    }
+                            Box {
+                                MessageViewWithActions(
+                                    useMD = viewModel.markdownEnabled,
+                                    selectedChatId = globalViewModel.selectedChat.value.id,
+                                    message = message,
+                                    senderName = item.senderName,  // Pre-resolved sender name!
+                                    senderColor = item.senderColor, // Pre-resolved sender color!
+                                    modifier = Modifier,
+                                    replyMessage = answerMessage,
+                                    replyMessageOnClick = {
+                                        val targetIndex =
+                                            displayItems.indexOfFirst {
+                                                it is MessageDisplayItem.MessageItem && it.message.id == message.answerId
+                                            }
+                                        if (targetIndex != -1) {
+                                            scope.launch {
+                                                listState.animateScrollToItem(targetIndex)
+                                            }
+                                        }
+                                    },
+                                    onReplyCall = {
+                                        viewModel.updateReplyMessage(message)
+                                    },
+                                    onLongPress = {
+                                        showMessageOptionPopup = true
+                                    }
+                                )
 
-                    // Show divider only if this message starts a new day
-                    if (currentDate != nextDate && currentDate != null) {
-                        val currentDateMillis = remember(message.sendDate) {
-                            message.sendDate.toLongOrNull()
+                                val copiedToClipboardString = stringResource(Res.string.copied_to_clipboard)
+                                MessageOptionPopup(
+                                    expanded = showMessageOptionPopup,
+                                    myMessage = message.myMessage,
+                                    onDismissRequest = { showMessageOptionPopup = false },
+                                    onReply = { viewModel.updateReplyMessage(message) },
+                                    onCopy = {
+                                        copyToClipboard(message.content, clipboardManager)
+                                        SnackbarManager.showMessage(copiedToClipboardString)
+                                        showMessageOptionPopup = false
+                                    },
+                                    onDelete = {
+                                        SnackbarManager.showMessage("todo")
+                                        showMessageOptionPopup = false
+                                    },
+                                    onEdit = {
+                                        SnackbarManager.showMessage("todo")
+                                        showMessageOptionPopup = false
+                                    },
+                                    modifier = Modifier
+                                )
+                            }
                         }
-                        currentDateMillis?.let { DayDivider(it) }
+                        is MessageDisplayItem.DateDivider -> {
+                            // Render date divider using pre-formatted string
+                            DayDivider(item.dateMillis)
+                        }
+
                     }
                 }
             }
@@ -401,7 +391,8 @@ fun ReplyPreview(viewModel: ChatViewModel, globalViewModel: GlobalViewModel){
                     .padding(6.dp),
                 message = viewModel.replyMessage!!,
                 useMD = viewModel.markdownEnabled,
-                selectedChatId = globalViewModel.selectedChat.value.id
+                selectedChatId = globalViewModel.selectedChat.value.id,
+                senderColor = viewModel.replyMessage!!.senderColor
             )
         }
         Column(

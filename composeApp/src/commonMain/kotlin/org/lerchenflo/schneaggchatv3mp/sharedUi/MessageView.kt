@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
@@ -69,6 +70,8 @@ fun MessageViewWithActions(
     useMD: Boolean = false,
     selectedChatId: String = "",
     message: Message,
+    senderName: String? = null,
+    senderColor: Int = 0,
     replyMessage: Message? = null,
     replyMessageOnClick: () -> Unit = {},
     onReplyCall: () -> Unit = {},
@@ -157,6 +160,8 @@ fun MessageViewWithActions(
                 message = message,
                 useMD = useMD,
                 selectedChatId = selectedChatId,
+                senderName = senderName,
+                senderColor = senderColor,
                 replyMessage = replyMessage,
                 replyMessageOnClick = replyMessageOnClick
             )
@@ -191,6 +196,8 @@ private fun MessageView(
     message: Message,
     useMD: Boolean = false,
     selectedChatId: String,
+    senderName: String? = null,
+    senderColor: Int = 0,
     replyMessage: Message? = null,
     replyMessageOnClick: () -> Unit = {},
 )
@@ -240,7 +247,9 @@ private fun MessageView(
                 message = message,
                 useMD = useMD,
                 mymessage = mymessage,
-                selectedChatId = selectedChatId
+                selectedChatId = selectedChatId,
+                senderName = senderName,
+                senderColor = senderColor
 
             )
 
@@ -254,7 +263,9 @@ fun MessageContent(
     message: Message,
     useMD: Boolean = false,
     mymessage: Boolean = false,
-    selectedChatId: String
+    selectedChatId: String,
+    senderName: String? = null,
+    senderColor: Int = 0
 ){
     //Farbiger kasten
     Box(
@@ -265,7 +276,14 @@ fun MessageContent(
         Column(
             modifier = Modifier // Remove the modifier parameter here
         ){
-            // todo show name for groups
+            // Show name for groups/other senders
+            if (!mymessage && senderName != null && message.groupMessage) {
+                Text(
+                    text = senderName,
+                    color = if (senderColor == 0) Color.Red else Color(senderColor.toLong() and 0xFFFFFFFFL),
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+            }
             //Contentrow
             Row {
                 when(message.msgType){

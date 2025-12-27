@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,24 +15,34 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.koin.mp.KoinPlatform
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 class ChatViewModel(
     private val appRepository: AppRepository,
     private val messageRepository: MessageRepository,
+    private val userRepository: UserRepository,
+    private val groupRepository: GroupRepository,
     private val settingsRepository: SettingsRepository,
     private val globalViewModel: GlobalViewModel,
     private val navigator: Navigator
@@ -40,6 +51,19 @@ class ChatViewModel(
 
     var markdownEnabled by mutableStateOf(false)
         private set
+
+    var sendText by mutableStateOf(TextFieldValue(""))
+        private set
+    fun updatesendText(newValue: TextFieldValue) {
+        sendText = newValue
+    }
+
+    var replyMessage by mutableStateOf<Message?>(null)
+        private set
+
+    fun updateReplyMessage(newValue: Message?) {
+        replyMessage = newValue
+    }
 
     init {
         viewModelScope.launch {
@@ -63,18 +87,6 @@ class ChatViewModel(
     }
 
 
-    var sendText by mutableStateOf(TextFieldValue(""))
-        private set
-    fun updatesendText(newValue: TextFieldValue) {
-        sendText = newValue
-    }
-
-    var replyMessage by mutableStateOf<Message?>(null)
-        private set
-
-    fun updateReplyMessage(newValue: Message?) {
-        replyMessage = newValue
-    }
 
     fun sendMessage(){
 
@@ -111,7 +123,101 @@ class ChatViewModel(
     }
 
 
+    /**
+     * Helper function to format a date for display.
+     */
+    private fun formatDate(date: LocalDate): String {
+        return "${date.dayOfMonth}.${date.monthNumber}.${date.year}"
+    }
 
+    /**
+     * Extension function to convert milliseconds to LocalDate.
+     */
+    @OptIn(ExperimentalTime::class)
+    private fun Long.toLocalDate(): LocalDate {
+        val instant = Instant.fromEpochMilliseconds(this)
+        return instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
+    }
+
+    /**
+     * Transform message flow to display items with pre-resolved sender names.
+     * This uses combine() similar to ChatSelector's pattern for efficient data access.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val messageDisplayItemsFlow: Flow<List<MessageDisplayItem>> =
+        globalViewModel.selectedChat
+            .flatMapLatest { chat ->
+                // Combine messages with users and optionally group members
+                combine(
+                    messageRepository.getMessagesByUserIdFlow(chat.id, chat.isGroup),
+                    userRepository.getallusers(),
+                    // Only load group members if this is a group chat
+                    if (chat.isGroup) {
+                        flowOf(groupRepository.getGroupMembers(chat.id))
+                    } else {
+                        flowOf(emptyList())
+                    }
+                ) { messages, users, groupMembers ->
+                    // Build user lookup map (O(1) access) - similar to ChatSelector pattern
+                    val userMap = users.associateBy { it.id }
+                    val groupMap = groupMembers.associateBy { it.userId }
+
+                    // Transform messages to display items
+                    val displayItems = mutableListOf<MessageDisplayItem>()
+
+                    // Process messages in order (Newest -> Oldest)
+                    messages.forEachIndexed { index, message ->
+                        val currentDate = message.sendDate.toLongOrNull()?.toLocalDate()
+                        val nextDate = if (index + 1 < messages.size) {
+                            messages[index + 1].sendDate.toLongOrNull()?.toLocalDate()
+                        } else null
+
+                        // Resolve sender name from user map
+                        val senderName = userMap[message.senderId]?.name
+
+                        // 1. Add message display item first (lower index = closer to bottom)
+                        val resolvedColor = groupMap[message.senderId]?.color ?: 0
+                        message.senderColor = resolvedColor // Set on message too for reply previews
+                        
+                        displayItems.add(
+                            MessageDisplayItem.MessageItem(
+                                id = "msg_${message.localPK}",
+                                message = message,
+                                senderName = senderName,
+                                senderColor = resolvedColor
+                            )
+                        )
+
+                        // 2. Add date divider if we've crossed into a new day (or it's the last message)
+                        // Higher index = closer to top
+                        if (currentDate != nextDate && currentDate != null) {
+                            displayItems.add(
+                                MessageDisplayItem.DateDivider(
+                                    id = "divider_${currentDate}",
+                                    dateMillis = message.sendDate.toLong(),
+                                    dateString = formatDate(currentDate)
+                                )
+                            )
+                        }
+                    }
+
+                    displayItems
+                }
+            }
+            .flowOn(Dispatchers.Default)
+
+    /**
+     * Expose as StateFlow so UI can collect easily and get a current value.
+     * This replaces the old messagesState.
+     */
+    val messageDisplayState: StateFlow<List<MessageDisplayItem>> = messageDisplayItemsFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
+
+    // Keep the old messagesState for backward compatibility during transition
     @OptIn(ExperimentalCoroutinesApi::class)
     val messagesFlow: Flow<List<Message>> =
         globalViewModel.selectedChat
@@ -127,8 +233,6 @@ class ChatViewModel(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
-
-
 
 
 

@@ -981,7 +981,8 @@ class AppRepository(
                                 groupId = groupResponse.id,
                                 userId = groupMemberresp.userid,
                                 joinDate = groupMemberresp.joinedAt,
-                                isAdmin = groupMemberresp.admin,
+                                admin = groupMemberresp.admin,
+                                color = groupMemberresp.color,
                             )
                         }
                     ))
