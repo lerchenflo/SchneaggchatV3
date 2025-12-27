@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -200,14 +201,18 @@ private fun MessageView(
 
     Column(){
         if (replyMessage != null) {
-            Row(
+
+            ReplyPreview(
+                message = replyMessage,
+                onClick = replyMessageOnClick,
                 modifier = Modifier
-                    .clickable {
-                        replyMessageOnClick()
-                    }
-            ) {
-                Text("Replying to: ${replyMessage.content}") // todo schüa macha
-            }
+                    .padding(
+                        start = if (mymessage) 40.dp else 0.dp,
+                        end = if (mymessage) 0.dp else 40.dp,
+                        top = 0.dp,
+                        bottom = 0.dp
+                    )
+            )
 
         }
 
@@ -223,7 +228,7 @@ private fun MessageView(
                     .padding(
                         start = if (mymessage) 40.dp else 0.dp,
                         end = if (mymessage) 0.dp else 40.dp,
-                        top = 5.dp,
+                        top = 0.dp,
                         bottom = 5.dp
                     )
                     //.wrapContentSize()
@@ -312,6 +317,63 @@ fun MessageContent(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReplyPreview(
+    message: Message,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        onClick = onClick,
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        shape = RoundedCornerShape(8.dp),
+        modifier = modifier
+            .padding(bottom = 4.dp)
+            .fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.height(IntrinsicSize.Min) // Matches bar height to text height
+        ) {
+            // Vertical accent bar
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(4.dp)
+                    .background(
+                        color = if (message.myMessage) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.secondaryContainer
+                        },
+                        shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp)
+                    )
+            )
+
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                /* // todo show names
+                Text(
+                    text = if (message.myMessage) "You" else "Contact", // Replace with actual name if available
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1
+                )
+
+                 */
+                Text(
+                    text = message.content,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
             }
         }
     }
