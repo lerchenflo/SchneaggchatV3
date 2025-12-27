@@ -203,9 +203,13 @@ compose.desktop {
         mainClass = "org.lerchenflo.schneaggchatv3mp.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "org.lerchenflo.schneaggchatv3mp"
             packageVersion = "3.0.0"
+            linux {
+                shortcut = true
+                menuGroup = "Chat"
+            }
         }
     }
 }
@@ -231,6 +235,3 @@ ksp {
     arg("KOIN_USE_COMPOSE_VIEWMODEL","true")
     arg("KOIN_CONFIG_CHECK","true")
 }
-
-
-
