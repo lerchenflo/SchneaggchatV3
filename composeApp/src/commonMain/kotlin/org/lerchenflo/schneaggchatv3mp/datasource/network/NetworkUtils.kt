@@ -456,7 +456,8 @@ class NetworkUtils(
     data class GroupMemberResponse(
         val userid: String,
         val joinedAt: String,
-        val admin: Boolean
+        val admin: Boolean,
+        val color: Int
     )
 
     suspend fun createGroup(
