@@ -260,8 +260,12 @@ fun ChatScreen(
                                     DeleteMessageAlert(
                                         onDismiss = { showDeleteAlert = false },
                                         onConfirm = {
-                                            // todo take action in viewmodel
-                                            SnackbarManager.showMessage("Missing Server Backend (flo schaffa schaffa)")
+
+                                            if (item.message.id != null){
+                                                viewModel.deleteMessage(item.message.id!!)
+                                            }
+                                            //TODO FABI: Ungesendete nachrichten ned bearbeita künna
+
                                             showDeleteAlert = false
                                         },
                                         message = message,
@@ -405,8 +409,8 @@ fun InputFieldRow(viewModel: ChatViewModel){
             }
             IconButton(
                 onClick = {
-                    // todo call viewmodel to edit message
-                    viewModel.sendMessage()
+                    viewModel.editMessage()
+
                 },
                 modifier = Modifier
                     .padding(5.dp)
@@ -416,7 +420,7 @@ fun InputFieldRow(viewModel: ChatViewModel){
                     contentDescription = stringResource(Res.string.edit),
                 )
             }
-            // todo
+            // mdtodo
         }
 
 
