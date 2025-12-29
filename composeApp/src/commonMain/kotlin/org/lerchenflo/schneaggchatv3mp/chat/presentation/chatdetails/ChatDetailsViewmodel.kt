@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
@@ -23,6 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChatBase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 
 
@@ -84,7 +86,22 @@ class ChatDetailsViewmodel(
             val user = userRepository.getUserById(member.userId)
             if (user != null) {
                 GroupMemberWithUser(member, user)
-            } else null
+            } else {
+                // todo was tuat ma mit lüt in ana gruppe wo ned in da userdatenbank sind?
+                GroupMemberWithUser(member, null)
+            }
+        }
+    }
+
+    fun navigateToChat(user: User){
+        viewModelScope.launch {
+            globalViewModel.onSelectChat(user.toSelectedChat(
+                unreadCount = 0,
+                unsentCount = 0,
+                lastMessage = null
+            ))
+            // Exit all previous screen weil ma jo da selectedgegner im globalviewmodel gändert hot und denn ind chatdetails vo deam typ kummt
+            navigator.navigate(Route.Chat, exitPreviousScreen = true) // todo ma kummt nur ind chatauswahl mit 2 mol zruck
         }
     }
 

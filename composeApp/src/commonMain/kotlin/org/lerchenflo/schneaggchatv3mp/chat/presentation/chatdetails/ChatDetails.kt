@@ -1,13 +1,22 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Reply
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,6 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache.ownId
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
@@ -29,9 +42,15 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.copy
+import schneaggchatv3mp.composeapp.generated.resources.delete
+import schneaggchatv3mp.composeapp.generated.resources.edit
+import schneaggchatv3mp.composeapp.generated.resources.make_admin
 import schneaggchatv3mp.composeapp.generated.resources.no_description
 import schneaggchatv3mp.composeapp.generated.resources.no_status
+import schneaggchatv3mp.composeapp.generated.resources.open_chat
 import schneaggchatv3mp.composeapp.generated.resources.others_say_about
+import schneaggchatv3mp.composeapp.generated.resources.remove_admin_status
 import schneaggchatv3mp.composeapp.generated.resources.remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.status
 import schneaggchatv3mp.composeapp.generated.resources.status_info
@@ -57,6 +76,9 @@ fun ChatDetails(
      */
 
     val group = chatDetails.isGroup
+    //val ownid = SessionCache.getOwnIdValue()
+    //val iAmAdmin = chatDetails.toGroup()?.groupMembersWithUsers?.find { it.groupMember.userId.equals(ownid) }?.groupMember?.admin == true
+
     var profilePictureDialogShown by remember { mutableStateOf(false) }
 
     Column(
@@ -175,12 +197,17 @@ fun ChatDetails(
         if(group){
             // Show group members - data is already populated!
             chatDetails.toGroup()?.let { groupChat ->
+
+
+
+
                 GroupMembersView(
                     members = groupChat.groupMembersWithUsers,
-                    onUserClick = {
-                        //TODO: Open chat with user
-                    }
+                    viewmodel = chatdetailsViewmodel,
+                    //iAmAdmin = iAmAdmin,
                 )
+
+
             }
         }else{
             // Show common groups - data is already populated!

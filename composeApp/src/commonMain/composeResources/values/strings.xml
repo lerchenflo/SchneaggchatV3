@@ -214,6 +214,7 @@
 
 
     <string name="copied_to_clipboard">Copied to clipboard</string>
+    <string name="reply">Reply</string>
     <string name="copy">Copy</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
@@ -225,6 +226,11 @@
     <string name="no_friends_found_search">Friend not found?</string>
 
     <string name="message_delete_info">Do you really want to delete this message?</string>
+    <string name="open_chat">Open chat</string>
+    <string name="make_admin">Make Admin</string>
+    <string name="remove_admin_status">remove admin status</string>
+    <string name="remove_from_group">remove from group</string>
+    <string name="you_with_brackets">(you)</string>
 
 
 </resources>
