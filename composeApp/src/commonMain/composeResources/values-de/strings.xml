@@ -1,9 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!--default language: en-->
-<resources>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><resources>
     <string name="app_name">SchneaggchatV3</string>
+    
+    
     <string name="profile_picture">Profilbild</string>
-
     <string name="schneaggmap">Schneaggmap</string>
     <string name="settings">Einstellungen</string>
     <string name="tools_and_games">Tools und Spiele</string>
@@ -62,5 +61,169 @@
     <string name="markdownInfo">Damit wird die Markdown-formatierung von Nachrichten aktiviert. Dies kann jedoch das Scrollen im Chat verlangsamen</string>
     <string name="something_wrong_message">Bei dieser Nachricht stimmt etwas nicht.</string>
     <string name="log_out_successfully">Erfolgreich ausgeloggt</string>
+    <string name="accept_agb_pt1">Ich akzeptiere die</string>
+    <string name="accept_agb_pt2">Nutzungsbedingungen und die Datenschutzerklärung</string>
+
+    
+
+    <string name="requirement_lowercase">Mindestens ein Kleinbuchstabe</string>
+    <string name="requirement_uppercase">Mindestens ein Großbuchstabe</string>
+
+    <string name="error_access_not_permitted">Deine gespeicherte Sitzung ist ungültig. Bitte logge dich erneut ein.</string>
+    <string name="error_access_expired">Deine gespeicherte Sitzung abgelaufen. Bitte logge dich erneut ein.</string>
+    <string name="error_invalid_credentials">Die von dir eingegebenen Daten sind falsch</string>
+
+    <string name="select_gebi_date">Wähle dein Geburtsdatum aus</string>
+    <string name="select_profile_pic">Wähle dein Profilbild aus</string>
+
+    <string name="status">Status:</string>
+    <string name="app_broken_desc">Behebt die meisten gängigen Fehler mit der App</string>
+    <string name="app_broken_are_you_sure">Dies wird die Lokale Datenbank löschen und erneut alle Daten vom Server herunterladen.
+Bist du sicher dass du fortfahren willst?</string>
+    <string name="please_restart_app">Bitte starte die App neu</string>
+    <string name="others_say_about">Andere User haben über %1$s geschrieben:</string>
+    <string name="status_info">Dieser Text wurde vom User verfasst</string>
+    <!--<string name="description_info">All friends of %1$s can edit this text, but %1$s cannot.</string>-->
+    <string name="no_description">Keine Beschreibung</string>
+    <string name="remove_friend">Freund entfernen</string>
+    <string name="save">Speichern</string>
+    <string name="close">Schliessen</string>
     <string name="you_sender">Du</string>
+
+    <string name="theme">Theme</string>
+    <string name="theme_sel_desc">Ändere das Aussehen deiner App</string>
+
+
+    <!-- Todoliste -->
+    <string name="todolist">Todos</string>
+    <string name="not_assigned">Nicht zugewiesen</string>
+    <string name="assignedto">Zugewiesen zu</string>
+    <string name="bugplatform">Plattform</string>
+    <string name="bugtype">Typ</string>
+    <string name="bugstatus_unfinished">Nicht erledigt</string>
+    <string name="bugstatus_in_progress">In bearbeitung</string>
+    <string name="bugstatus_finished">Abgeschlossen</string>
+    <string name="bugpriority_low">Schwach</string>
+    <string name="bugpriority_normal">Normal</string>
+    <string name="bugpriority_high">Hoch</string>
+    <string name="bugpriority_extreme">Extrem</string>
+
+    <string name="bugpriority">Priorität</string>
+    <string name="enteredby">Hinzugefügt von</string>
+    <string name="bugstatus">Status</string>
+    <string name="buglastchanged">Zuletzt geändert</string>
+
+    <string name="bug_sort_all">Alle</string>
+    <string name="bug_sort_mine">Meine</string>
+    <string name="bug_sort_unfinished">Nicht fertig</string>
+    <string name="bug_sort_important">Wichtig</string>
+    <string name="bug_sort_bug">Fehler</string>
+    <string name="bug_sort_feature">Features</string>
+    <string name="bug_sort_todo">Todos</string>
+    <string name="bug_sort_assigned_to_me">Mir zugewiesen</string>
+
+    <string name="new_chat">Neuer Chat</string>
+    <string name="new_group">Gruppe erstellen</string>
+    <string name="invite_friend">Freund einladen</string>
+    <string name="search_user">User finden</string>
+    <string name="enter_username">Benutzername eingeben</string>
+
+    <string name="system_theme">Systemdesign</string>
+    <string name="dark_theme">Dunkles Design</string>
+    <string name="light_theme">Helles Design</string>
+    <string name="ph_theme">Ph Theme</string>
+
+    <string name="common_friends">gemeinsame Freunde: %1$s</string>
+    <string name="create_group">Gruppe erstellen</string>
+
+    <string name="members">Mitglieder</string>
+    <string name="info">Info</string>
+    <string name="at_least_members">Du benötigst mindestens %1$s Mitglieder in der Gruppe</string>
+    <string name="group_name_missing">Bitte gib einen Gruppennamen ein</string>
+
+    <string name="none">Alle</string>
+    <string name="persons">Personen</string>
+    <string name="groups">Gruppen</string>
+    <string name="unread">Ungelesen</string>
+
+    <string name="group_picture">Gruppenprofilbild</string>
+    <string name="group_name">Gruppenname</string>
+    <string name="group_description">Gruppenbeschreibung</string>
+
+    <string name="image">Bild</string>
+    <string name="video">Video</string>
+    <string name="audio">Audio</string>
+    <string name="poll">Umfrage</string>
+
+    <string name="change_server_url">Server URL ändern</string>
+    <string name="developer_settings">Entwickler</string>
+    <string name="steps_until_developer">in %1$s Schritten bist du Entwickler</string>
+    <string name="you_are_now_developer">Du bist nun Entwickler</string>
+    <string name="you_are_already_developer">Du bist schon ein Entwickler</string>
+    <string name="developer_setting_info">Sei vorsichtig mit den Entwickleroptionen. Sei dir bewusst was du tust.</string>
+
+    <string name="friend_request_title">Willst du diese Freundschaftsanfrage akzeptieren?</string>
+    <string name="friend_request_cancel_title">Willst du diese Freundschafstanfrage abbrechen?</string>
+
+    <string name="friend_request_accept">Akzeptieren</string>
+    <string name="friend_request_deny">Ablehnen</string>
+    <string name="friend_request_cancel">Freundschaftsanfrage abbrechen</string>
+    <string name="friend_request_block">Blockieren</string>
+
+    <string name="send_friend_request">Freundschaftsanfrage senden</string>
+    <string name="send_friend_request_description">Willst du %1$s eine Freundschaftsanfrage senden?</string>
+    <string name="friend_request_sent">✔ Freunschaftsanfrage gesendet</string>
+    <string name="error_friend_request">❌ Fehler beim senden der Freundschaftsanfrage</string>
+
+    <string name="server_not_reachable">Verbindung zum Server konnte nicht hergestellt werden.</string>
+
+
+    <string name="user_settings">Account</string>
+    <string name="user_settingsinfo">Ändere dein Profil</string>
+    <string name="emailinfo">Ändere deine Email</string>
+    <string name="emailinfo_unverified">Verifiziere deine Email</string>
+
+    <string name="appearance_settings">Darstellung</string>
+    <string name="appearance_settings_info">Ändere die Darstellung deiner App</string>
+
+    <string name="use_default_server">Standardserver verwenden</string>
+
+    <string name="you_have_new_messages">Du hast neue Nachrichten</string>
+    <string name="new_message_noti_single_title">Neuer Chat von %1$s</string>
+    <string name="new_message_noti_group_title">Neuer Chat von %1$s in %2$s</string>
+
+    <string name="tooltip_username">Wähle einen Benutzernamen den andere Benutzer sehen</string>
+    <string name="tooltip_email">Wird zum wiederherstellen der Zugangsdaten und zur Löschung des Accounts verwendet</string>
+    <string name="tooltip_birthdate">Wird benutzt, um deine Freunde zu informieren, wenn du Geburtstag hast</string>
+    <string name="tooltip_password">Mindestens 8 Zeichen mit Nummern, Sonderzeichen und Groß - und Kleinbuchstabe</string>
+    <string name="tooltip_password_repeat">Gib dein Passwort erneut ein, um sicher zu gehen, dass es richtig ist.</string>
+    <string name="tooltip_profile_picture">Ein Profilbild, das deine Freunde sehen können</string>
+    <string name="tooltip_terms">Das akzeptieren der Bedingungen ist nötig für die Verwendung von Schneaggchat</string>
+    <string name="tooltip_group_name">Wähle einen Namen für deine Gruppe. Du kannst ihn später ändern</string>
+    <string name="tooltip_group_description">[Optional] Schreibe eine Beschreibung für diese Gruppe. Sie kann später geändert werden</string>
+    <string name="tooltip_group_picture">Wähle ein Gruppenprofilbild</string>
+
+
+    <string name="swipecardview_left">← Vorherige Seite</string>
+    <string name="swipecardview_right">Nächste Seite →</string>
+    <string name="swipecardview_finish">Fertigstellen ✓</string>
+    <string name="swipecardview_back">← Zurück</string>
+
+
+    <string name="name_too_long">Name zu lang</string>
+    <string name="name_too_short">Name zu kurz</string>
+
+
+    <string name="copied_to_clipboard">In die Zwischenablage kopiert</string>
+    <string name="copy">Kopieren</string>
+    <string name="edit">Bearbeiten</string>
+    <string name="delete">Löschen</string>
+
+    <string name="admin">Admin</string>
+
+
+    <string name="pending_friend_requests">%1$s ausstehende Freundschaftsanfragen</string>
+    <string name="no_friends_found_search">Freund nicht gefunden?</string>
+
+
 </resources>

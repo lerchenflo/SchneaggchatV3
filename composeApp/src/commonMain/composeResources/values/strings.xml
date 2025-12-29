@@ -1,6 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<resources>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><resources>
     <string name="app_name">SchneaggchatV3</string>
+    
+    
     <string name="profile_picture">profile picture</string>
     <string name="schneaggmap">schneaggmap</string>
     <string name="settings">settings</string>
@@ -63,7 +64,7 @@
     <string name="accept_agb_pt1">I agree to the </string>
     <string name="accept_agb_pt2">Terms and Conditions and the Privacy Policy</string>
 
-    <!-- bis hier auf deutsch übersetzt -->
+    
 
     <string name="requirement_lowercase">At least one lowercase character</string>
     <string name="requirement_uppercase">At least one uppercase character</string>
@@ -76,8 +77,8 @@
     <string name="select_profile_pic">Select a profile picture</string>
 
     <string name="status">Status:</string>
-    <string name="app_broken_desc">Will fix most of the errors which might occur</string>
-    <string name="app_broken_are_you_sure">This will delete all the messages in the database so they will get loaded from the server correctly. Are you sure you want to continue?</string>
+    <string name="app_broken_desc">Will fix most of the errors</string>
+    <string name="app_broken_are_you_sure">This will delete the local database and fetch all data from the server again. Are you sure you want to continue?</string>
     <string name="please_restart_app">Please restart the app</string>
     <string name="others_say_about">others wrote about %1$s:</string>
     <string name="status_info">This Text is written by the user himself</string>
@@ -129,7 +130,7 @@
     <string name="system_theme">system theme</string>
     <string name="dark_theme">dark theme</string>
     <string name="light_theme">light theme</string>
-    <string name="ph_theme">PH theme</string>
+    <string name="ph_theme">Ph theme</string>
 
     <string name="common_friends">common friends: %1$s</string>
     <string name="create_group">Create Group</string>
@@ -139,7 +140,7 @@
     <string name="at_least_members">you need at least %1$s members in your group</string>
     <string name="group_name_missing">Please Provide a group name</string>
 
-    <string name="none">none</string>
+    <string name="none">all</string>
     <string name="persons">persons</string>
     <string name="groups">groups</string>
     <string name="unread">unread</string>
@@ -155,7 +156,7 @@
 
     <string name="change_server_url">change server URL</string>
     <string name="developer_settings">Developer</string>
-    <string name="steps_until_developer">in %1$s you are a developer</string>
+    <string name="steps_until_developer">in %1$s steps you are a developer</string>
     <string name="you_are_now_developer">you are now a developer</string>
     <string name="you_are_already_developer">you are already are a developer</string>
     <string name="developer_setting_info">Be careful with the developer settings. Make sure you know what you are doing.</string>
@@ -195,10 +196,10 @@
     <string name="tooltip_birthdate">Used to show others when your birthday is</string>
     <string name="tooltip_password">Min. 8 characters with numbers, special chars, and upper/lower case</string>
     <string name="tooltip_password_repeat">Type your password again to make sure it is correct</string>
-    <string name="tooltip_profile_picture">A profile picture makes it easier for friends to find you</string>
+    <string name="tooltip_profile_picture">A profile picture to show your friends how you look</string>
     <string name="tooltip_terms">Accepting terms is required to use Schneaggchat</string>
     <string name="tooltip_group_name">Choose a name for your group. It can be changed later on</string>
-    <string name="tooltip_group_description">Add a description for your group. It can be changed later on</string>
+    <string name="tooltip_group_description">[optional] Add a description for your group. It can be changed later on</string>
     <string name="tooltip_group_picture">Select a group picture</string>
 
 
