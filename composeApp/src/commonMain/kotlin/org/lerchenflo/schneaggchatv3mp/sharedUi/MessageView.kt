@@ -317,6 +317,7 @@ fun MessageContent(
 
                     // gelesen haken
                     // Cache expensive read state calculation
+
                     val readState = remember(message.sent, message.readers, selectedChatId, mymessage) {
                         when {
                             !mymessage -> ReadState.None

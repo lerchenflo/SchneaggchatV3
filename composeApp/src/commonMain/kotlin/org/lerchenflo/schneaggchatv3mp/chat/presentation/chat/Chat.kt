@@ -17,7 +17,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Reply
@@ -31,6 +35,8 @@ import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Poll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults.textContentColor
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -39,6 +45,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,6 +66,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.tooling.preview.Preview
@@ -74,15 +82,18 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DayDivider
 import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageContent
 import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageViewWithActions
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.audio
+import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.close
 import schneaggchatv3mp.composeapp.generated.resources.copied_to_clipboard
 import schneaggchatv3mp.composeapp.generated.resources.copy
@@ -91,8 +102,12 @@ import schneaggchatv3mp.composeapp.generated.resources.edit
 import schneaggchatv3mp.composeapp.generated.resources.go_back
 import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.message
+import schneaggchatv3mp.composeapp.generated.resources.message_delete_info
+import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.poll
+import schneaggchatv3mp.composeapp.generated.resources.theme
 import schneaggchatv3mp.composeapp.generated.resources.unknown_error
+import schneaggchatv3mp.composeapp.generated.resources.yes
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -220,9 +235,12 @@ fun ChatScreen(
                                 )
 
                                 val copiedToClipboardString = stringResource(Res.string.copied_to_clipboard)
+
+                                var showDeleteAlert by remember { mutableStateOf(false) }
+
                                 MessageOptionPopup(
                                     expanded = showMessageOptionPopup,
-                                    myMessage = message.myMessage,
+                                    message = message,
                                     onDismissRequest = { showMessageOptionPopup = false },
                                     onReply = { viewModel.updateReplyMessage(message) },
                                     onCopy = {
@@ -231,7 +249,8 @@ fun ChatScreen(
                                         showMessageOptionPopup = false
                                     },
                                     onDelete = {
-                                        SnackbarManager.showMessage("todo")
+
+                                        showDeleteAlert = true
                                         showMessageOptionPopup = false
                                     },
                                     onEdit = {
@@ -242,6 +261,19 @@ fun ChatScreen(
                                         if (message.myMessage) Alignment.TopEnd else Alignment.TopStart
                                     )
                                 )
+
+                                if(showDeleteAlert) {
+                                    DeleteMessageAlert(
+                                        onDismiss = { showDeleteAlert = false },
+                                        onConfirm = {
+                                            // todo take action in viewmodel
+                                            SnackbarManager.showMessage("Missing Server Backend (flo schaffa schaffa)")
+                                            showDeleteAlert = false
+                                        },
+                                        message = message,
+                                        selectedChatId = globalViewModel.selectedChat.value.id
+                                    )
+                                }
                             }
                         }
                         is MessageDisplayItem.DateDivider -> {
@@ -420,7 +452,7 @@ fun ReplyPreview(viewModel: ChatViewModel, globalViewModel: GlobalViewModel){
 @Composable
 fun MessageOptionPopup(
     expanded: Boolean,
-    myMessage: Boolean,
+    message: Message,
     onDismissRequest: () -> Unit,
     onReply: () -> Unit,
     onCopy: () -> Unit,
@@ -465,7 +497,7 @@ fun MessageOptionPopup(
                 }
             )
 
-            if (myMessage) {
+            if (message.myMessage) {
 
                 DropdownMenuItem(
                     text = { Text(stringResource(Res.string.edit)) },
@@ -497,6 +529,55 @@ fun MessageOptionPopup(
             }
         }
     }
+}
+
+@Composable
+fun DeleteMessageAlert(
+    onDismiss:() -> Unit,
+    onConfirm:() -> Unit,
+    message: Message,
+    selectedChatId: String,
+){
+    AlertDialog(
+        onDismissRequest = {onDismiss()},
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm
+            ) {
+                Text(stringResource(Res.string.yes))
+            }
+        },
+        dismissButton =
+            {
+                TextButton(
+                    onClick = onDismiss
+                ) {
+                    Text(stringResource(Res.string.cancel))
+                }
+            },
+        //icon = { Icon(Icons.Default.Palette, contentDescription = null) },
+        title = { Text(text = stringResource(Res.string.message_delete_info)) },
+        text = {
+            val alphaValue = 0.8f
+            MessageContent(
+                modifier = Modifier
+                    //.wrapContentSize()
+                    .background(
+                        color = if (message.myMessage) {
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = alphaValue)
+                        } else {
+                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = alphaValue)
+                        },
+                        shape = RoundedCornerShape(15.dp)
+                    )
+                    .padding(6.dp),
+                message = message,
+                useMD = false, // fertig mit markdown
+                selectedChatId = selectedChatId
+            )
+        },
+        shape = MaterialTheme.shapes.large,
+    )
 }
 
 fun copyToClipboard(text: String, clipboardManager: ClipboardManager) {
