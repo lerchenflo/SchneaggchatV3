@@ -3,7 +3,6 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -34,6 +33,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -51,6 +51,8 @@ class ChatViewModel(
 
     var markdownEnabled by mutableStateOf(false)
         private set
+
+    var editMessageId by mutableStateOf<String?>(null)
 
     var sendText by mutableStateOf(TextFieldValue(""))
         private set
@@ -92,20 +94,27 @@ class ChatViewModel(
 
         if (sendText.text.isEmpty()) return
 
-        //TODO: Do wechla bild und sunschwas
-        val content = sendText.text
-        updatesendText(TextFieldValue(""))
+        if(editMessageId == null) {
+            //TODO: Do wechla bild und sunschwas
+            val content = sendText.text
+            updatesendText(TextFieldValue(""))
 
-        //Im sharedviewmodel dassas ewig leabig isch
-        globalViewModel.viewModelScope.launch {
-            appRepository.sendTextMessage(
-                empfaenger = globalViewModel.selectedChat.value.id,
-                gruppe = globalViewModel.selectedChat.value.isGroup,
-                content = content,
-                answerid = replyMessage?.id,
-            )
+            //Im sharedviewmodel dassas ewig leabig isch
+            globalViewModel.viewModelScope.launch {
+                appRepository.sendTextMessage(
+                    empfaenger = globalViewModel.selectedChat.value.id,
+                    gruppe = globalViewModel.selectedChat.value.isGroup,
+                    content = content,
+                    answerid = replyMessage?.id,
+                )
 
-            replyMessage = null
+                replyMessage = null
+            }
+        }else {
+            // todo backend for editing
+            SnackbarManager.showMessage("todo: edit backend missing")
+            updatesendText(TextFieldValue(""))
+            editMessageId = null
         }
     }
 

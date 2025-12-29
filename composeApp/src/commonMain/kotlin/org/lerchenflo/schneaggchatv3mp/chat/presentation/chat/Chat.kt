@@ -17,16 +17,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
@@ -36,7 +33,6 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AlertDialogDefaults.textContentColor
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -66,9 +62,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -82,13 +78,11 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DayDivider
 import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageContent
 import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageViewWithActions
 import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
@@ -103,9 +97,7 @@ import schneaggchatv3mp.composeapp.generated.resources.go_back
 import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.message
 import schneaggchatv3mp.composeapp.generated.resources.message_delete_info
-import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.poll
-import schneaggchatv3mp.composeapp.generated.resources.theme
 import schneaggchatv3mp.composeapp.generated.resources.unknown_error
 import schneaggchatv3mp.composeapp.generated.resources.yes
 import kotlin.time.ExperimentalTime
@@ -254,7 +246,8 @@ fun ChatScreen(
                                         showMessageOptionPopup = false
                                     },
                                     onEdit = {
-                                        SnackbarManager.showMessage("todo")
+                                        viewModel.editMessageId = message.id
+                                        viewModel.updatesendText(TextFieldValue(message.content))
                                         showMessageOptionPopup = false
                                     },
                                     modifier = Modifier.align(
@@ -383,17 +376,49 @@ fun InputFieldRow(viewModel: ChatViewModel){
             placeholder = { Text(stringResource(Res.string.message) + " ...") }
         )
 
-        // send button
-        IconButton(
-            onClick = { viewModel.sendMessage() },
-            modifier = Modifier
-                .padding(5.dp)
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.Send,
-                contentDescription = stringResource(Res.string.add),
-            )
+        if(viewModel.editMessageId == null){ // schoua ob mir gad a nachricht bearbeitend
+            // send button
+            IconButton(
+                onClick = { viewModel.sendMessage() },
+                modifier = Modifier
+                    .padding(5.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Send,
+                    contentDescription = stringResource(Res.string.add),
+                )
+            }
+        }else{
+            IconButton(
+                onClick = {
+                    viewModel.editMessageId = null
+                    viewModel.updatesendText(TextFieldValue(""))
+                },
+                modifier = Modifier
+                    .padding(5.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Cancel,
+                    contentDescription = stringResource(Res.string.cancel),
+                )
+            }
+            IconButton(
+                onClick = {
+                    // todo call viewmodel to edit message
+                    viewModel.sendMessage()
+                },
+                modifier = Modifier
+                    .padding(5.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = stringResource(Res.string.edit),
+                )
+            }
+            // todo
         }
+
+
 
     }
 }
