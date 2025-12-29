@@ -1,27 +1,19 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Reply
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,11 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache.ownId
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
@@ -42,15 +29,9 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.copy
-import schneaggchatv3mp.composeapp.generated.resources.delete
-import schneaggchatv3mp.composeapp.generated.resources.edit
-import schneaggchatv3mp.composeapp.generated.resources.make_admin
 import schneaggchatv3mp.composeapp.generated.resources.no_description
 import schneaggchatv3mp.composeapp.generated.resources.no_status
-import schneaggchatv3mp.composeapp.generated.resources.open_chat
 import schneaggchatv3mp.composeapp.generated.resources.others_say_about
-import schneaggchatv3mp.composeapp.generated.resources.remove_admin_status
 import schneaggchatv3mp.composeapp.generated.resources.remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.status
 import schneaggchatv3mp.composeapp.generated.resources.status_info
@@ -115,6 +96,7 @@ fun ChatDetails(
 
         //TODO: Augenkrebs die activity buggla buggla
 
+        /* Fertig mit Id dia isch hässlich
         // Id azoaga
         Row(
             modifier = Modifier
@@ -125,6 +107,8 @@ fun ChatDetails(
                 text = "id: ${chatDetails.id }"
             )
         }
+
+         */
 
         // nur für user Status azoaga
         if(!group){
@@ -163,6 +147,8 @@ fun ChatDetails(
         }
         HorizontalDivider()
         // description
+        var showDescriptionChangeDialog by retain { mutableStateOf(false) } // retain dass ma es handy dräha kann (neue compose ding)
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -171,7 +157,7 @@ fun ChatDetails(
                     end = 10.dp,
                 )
                 .clickable{
-                    // todo popup to change text
+                    showDescriptionChangeDialog = true
                 }
         ){
             Column(){
@@ -192,31 +178,33 @@ fun ChatDetails(
             }
 
         }
+        if(showDescriptionChangeDialog){
+            ChangeDescription(
+                onDismiss = {showDescriptionChangeDialog = false},
+                viewModel = chatdetailsViewmodel,
+                selectedChat = chatDetails
+            )
+        }
+
+
         HorizontalDivider()
 
         if(group){
             // Show group members - data is already populated!
             chatDetails.toGroup()?.let { groupChat ->
-
-
-
-
                 GroupMembersView(
                     members = groupChat.groupMembersWithUsers,
                     viewmodel = chatdetailsViewmodel,
                     //iAmAdmin = iAmAdmin,
                 )
-
-
             }
         }else{
             // Show common groups - data is already populated!
             chatDetails.toUser()?.let { userChat ->
                 CommonGroupsView(
-                    groups = userChat.commonGroups
-
+                    groups = userChat.commonGroups,
+                    viewmodel = chatdetailsViewmodel
                 )
-                //TODO: Cooles composable macha wie oba
             }
         }
 
@@ -241,4 +229,6 @@ fun ChatDetails(
         }
 
     }
+
+
 }

@@ -230,7 +230,9 @@
     <string name="make_admin">Make Admin</string>
     <string name="remove_admin_status">remove admin status</string>
     <string name="remove_from_group">remove from group</string>
-    <string name="you_with_brackets">(you)</string>
+    <string name="you_with_brackets"> (you)</string>
+    <string name="add_description_placeholder">add a description ...</string>
+    <string name="change">change</string>
 
 
 </resources>

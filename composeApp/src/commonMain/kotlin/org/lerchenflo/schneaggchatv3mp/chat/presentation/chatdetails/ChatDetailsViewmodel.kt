@@ -2,6 +2,10 @@
 
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,6 +30,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 
 
 data class GroupMemberWithUser(
@@ -44,6 +49,12 @@ class ChatDetailsViewmodel(
         viewModelScope.launch {
             navigator.navigateBack()
         }
+    }
+
+    var descriptionText by mutableStateOf(TextFieldValue(""))
+        private set
+    fun updateDescriptionText(newValue: TextFieldValue) {
+        descriptionText = newValue
     }
 
     /**
@@ -93,16 +104,18 @@ class ChatDetailsViewmodel(
         }
     }
 
-    fun navigateToChat(user: User){
+    fun navigateToChat(selectedChat: SelectedChatBase){
         viewModelScope.launch {
-            globalViewModel.onSelectChat(user.toSelectedChat(
-                unreadCount = 0,
-                unsentCount = 0,
-                lastMessage = null
-            ))
+            globalViewModel.onSelectChat(selectedChat)
             // Exit all previous screen weil ma jo da selectedgegner im globalviewmodel gändert hot und denn ind chatdetails vo deam typ kummt
             navigator.navigate(Route.Chat, exitPreviousScreen = true) // todo ma kummt nur ind chatauswahl mit 2 mol zruck
         }
+    }
+
+    fun updateDescription(selectedChat: SelectedChatBase){
+        // todo send "descriptionText" to server
+        SnackbarManager.showMessage("todo: update description")
+
     }
 
 

@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,14 +15,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.AddModerator
 import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.RemoveModerator
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,20 +35,39 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChatBase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.add_description_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.admin
+import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.change
+import schneaggchatv3mp.composeapp.generated.resources.friend_request_title
 import schneaggchatv3mp.composeapp.generated.resources.make_admin
 import schneaggchatv3mp.composeapp.generated.resources.open_chat
 import schneaggchatv3mp.composeapp.generated.resources.remove_admin_status
+import schneaggchatv3mp.composeapp.generated.resources.remove_from_group
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 import schneaggchatv3mp.composeapp.generated.resources.you_with_brackets
 
@@ -93,12 +118,18 @@ fun GroupMembersView(
                 user = user,
                 onDismissRequest = { userOptionPopupExpanded = false },
                 onOpenChat = {
-                    if(user != null) viewmodel.navigateToChat(user)
+                    if(user != null) viewmodel.navigateToChat(user.toSelectedChat(
+                        unreadCount = 0,
+                        unsentCount = 0,
+                        lastMessage = null
+                    ))
                 },
                 onAdminStatusChange = {
+                    SnackbarManager.showMessage("todo: admin status change")
                     // todo
                 },
                 onRemoveUser = {
+                    SnackbarManager.showMessage("todo: remove user")
                     // todo
                 },
             )
@@ -111,7 +142,8 @@ fun GroupMembersView(
 
 @Composable
 fun CommonGroupsView(
-    groups: List<Group>
+    groups: List<Group>,
+    viewmodel: ChatDetailsViewmodel
 ){
     Column {
         groups.forEach { group ->
@@ -121,10 +153,14 @@ fun CommonGroupsView(
                 profilePictureFilePath = group.profilePictureUrl,
                 name = group.name,
                 onClickText = {
-
+                    viewmodel.navigateToChat(group.toSelectedChat(
+                        unreadCount = 0,
+                        unsentCount = 0,
+                        lastMessage = null
+                    ))
                 },
                 onClickImage = {
-                    profilePictureDialogShown
+                    profilePictureDialogShown = true
                 }
             )
 
@@ -208,9 +244,6 @@ fun UserOptionPopup(
     onRemoveUser: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-
-
-
     Box(
         modifier = modifier,
         // contentAlignment = if (myMessage) Alignment.TopEnd else Alignment.TopStart
@@ -265,8 +298,103 @@ fun UserOptionPopup(
 
                     }
                 )
-            }
 
+                DropdownMenuItem(
+                    text = {
+                        Text(stringResource(Res.string.remove_from_group))
+                    },
+                    onClick = {
+                        onRemoveUser()
+                        onDismissRequest()
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.PersonRemove,
+                            contentDescription = stringResource(Res.string.remove_from_group)
+                        )
+                    }
+                )
+            }
         }
     }
+}
+
+@Composable
+fun ChangeDescription(
+    onDismiss: () -> Unit,
+    viewModel: ChatDetailsViewmodel,
+    selectedChat: SelectedChatBase
+){
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current // Also helpful to hide keyboard
+
+    LaunchedEffect(selectedChat) {
+        viewModel.updateDescriptionText(TextFieldValue(selectedChat.description ?: ""))
+    }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    viewModel.updateDescription(selectedChat)
+                    onDismiss()
+                },
+            ) {
+                Text(
+                    text = stringResource(Res.string.change)
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+            ) {
+                Text(
+                    text = stringResource(Res.string.cancel)
+                )
+            }
+        },
+        title = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .pointerInput(Unit) { // sorry iphone user aber ihr dürfen ned zu viel Zeilen macha. I krigs ned zum richta
+                        detectTapGestures(onTap = {
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                        })
+                    }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(Res.string.friend_request_title),
+                    )
+                    OutlinedTextField(
+                        value = viewModel.descriptionText,
+                        textStyle = MaterialTheme.typography.bodySmall.copy(
+                            fontSize = 14.sp // You can adjust this value as needed
+                        ),
+                        maxLines = 5,
+                        onValueChange = { newValue ->
+                            viewModel.updateDescriptionText(newValue)
+                        },
+                        modifier = Modifier
+                            .onPreviewKeyEvent { event ->
+                                // Check if the key is 'Escape' and it's a 'KeyDown' event
+                                if (event.key == Key.Escape && event.type == KeyEventType.KeyDown) {
+                                    onDismiss()
+                                }
+                                false // Pass all other events (letters, backspace, etc.) to the TextField
+                            },
+                        placeholder = { Text(stringResource(Res.string.add_description_placeholder)) }
+                    )
+
+                }
+            }
+
+        },
+    )
 }
