@@ -98,6 +98,7 @@ import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.message
 import schneaggchatv3mp.composeapp.generated.resources.message_delete_info
 import schneaggchatv3mp.composeapp.generated.resources.poll
+import schneaggchatv3mp.composeapp.generated.resources.reply
 import schneaggchatv3mp.composeapp.generated.resources.unknown_error
 import schneaggchatv3mp.composeapp.generated.resources.yes
 import kotlin.time.ExperimentalTime
@@ -495,7 +496,7 @@ fun MessageOptionPopup(
             modifier = modifier
         ) {
             DropdownMenuItem(
-                text = { Text("Reply") },
+                text = { Text(stringResource(Res.string.reply)) },
                 onClick = {
                     onReply()
                     onDismissRequest()

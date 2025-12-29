@@ -302,7 +302,7 @@ class NetworkUtils(
     /*
     **************************************************************************
 
-    User sync
+    User
 
     **************************************************************************
      */
@@ -419,6 +419,29 @@ class NetworkUtils(
     suspend fun denyFriendRequest(friendId: String) : NetworkResult<Any, NetworkError> {
         return safeGet(
             endpoint = "/users/denyfriend/$friendId"
+        )
+    }
+
+    suspend fun changeUsername(newUsername: String) : NetworkResult<Any, NetworkError> {
+        return safePost(
+            endpoint = "/users/changeusername",
+            body = newUsername
+        )
+    }
+
+    @Serializable
+    data class PasswordChangeRequest(
+        val oldPassword: String,
+        val newPassword: String
+    )
+
+    suspend fun changePassword(oldPassword: String, newPassword: String) : NetworkResult<Any, NetworkError> {
+        return safePost(
+            endpoint = "/users/changepassword",
+            body = PasswordChangeRequest(
+                oldPassword = oldPassword,
+                newPassword = newPassword
+            )
         )
     }
 
@@ -595,6 +618,29 @@ class NetworkUtils(
         return safePost(
             endpoint = "/messages/setread?userid=$chatId&group=$group&timestamp=$timeStamp",
             body = "",
+        )
+    }
+
+
+    @Serializable
+    data class EditMessageRequest(
+        val messageId: String,
+        val newContent: String,
+    )
+
+    suspend fun editMessage(messageId: String, newContent: String): NetworkResult<MessageResponse, RequestError> {
+        return safePost(
+            endpoint = "/messages/edit",
+            body = EditMessageRequest(
+                messageId = messageId,
+                newContent = newContent
+            )
+        )
+    }
+
+    suspend fun deleteMessage(messageId: String): NetworkResult<Any, RequestError> {
+        return safeDelete(
+            endpoint = "/messages/delete?messageid=$messageId"
         )
     }
 
