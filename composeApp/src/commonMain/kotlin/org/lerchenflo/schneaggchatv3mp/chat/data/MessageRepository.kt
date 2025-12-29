@@ -42,6 +42,10 @@ class MessageRepository(
         }
     }
 
+    suspend fun getMessageById(id: String) : Message? {
+        return database.messageDao().getMessageById(id)?.toMessage()
+    }
+
 
     /**
      * Update a message in the database
