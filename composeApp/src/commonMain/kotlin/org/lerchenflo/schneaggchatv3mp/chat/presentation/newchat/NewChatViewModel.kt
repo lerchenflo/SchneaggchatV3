@@ -53,6 +53,10 @@ class NewChatViewModel (
     private val _availableChats = MutableStateFlow<List<NetworkUtils.NewFriendsUserResponse>>(emptyList())
     val availableChats: StateFlow<List<NetworkUtils.NewFriendsUserResponse>> = _availableChats.asStateFlow()
 
+
+    private val _pendingFriends = MutableStateFlow<List<SelectedChat>>(emptyList())
+    val pendingFriends: StateFlow<List<SelectedChat>> = _pendingFriends.asStateFlow()
+
     init {
         // Kombiniere searchTerm mit einem Flow der die Daten lädt
         viewModelScope.launch {
@@ -61,6 +65,15 @@ class NewChatViewModel (
                 .distinctUntilChanged() // Nur wenn sich der Wert ändert
                 .collectLatest { term ->
                     loadAvailableUsers(term)
+                }
+        }
+
+        viewModelScope.launch {
+            searchterm
+                .collectLatest {
+                    appRepository.getPendingFriends(it).collectLatest { pendingfriendsList ->
+                        _pendingFriends.value = pendingfriendsList
+                    }
                 }
         }
     }
@@ -86,6 +99,45 @@ class NewChatViewModel (
             )
         }
     }
+
+
+
+
+
+
+    //Friend accept / Deny
+    private val _pendingFriendPopup = MutableStateFlow<SelectedChat?>(null)
+    val pendingFriendPopup: StateFlow<SelectedChat?> = _pendingFriendPopup.asStateFlow()
+
+    fun dismissPendingFriendDialog() {
+        _pendingFriendPopup.value = null
+    }
+
+    fun acceptFriend(friendId: String){
+        viewModelScope.launch {
+            appRepository.sendFriendRequest(friendId)
+        }
+        dismissPendingFriendDialog()
+    }
+
+    fun denyFriend(friendId: String){
+        viewModelScope.launch {
+            appRepository.denyFriendRequest(friendId)
+        }
+        dismissPendingFriendDialog()
+    }
+
+    fun onPendingFriendRequestClick(selectedChat: SelectedChat) {
+        //You are friends with this person, open chat
+        if (selectedChat.friendshipStatus != NetworkUtils.FriendshipStatus.PENDING) {
+
+        }else {
+            //Friendshipstatus pending
+            _pendingFriendPopup.value = selectedChat
+        }
+    }
+
+
 
 
     fun onBackClick() {

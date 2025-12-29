@@ -6,7 +6,7 @@
     <string name="settings">settings</string>
     <string name="tools_and_games">tools and games</string>
     <string name="filter">filter</string>
-    <string name="search_friend">search Friend ...</string>
+    <string name="search_friend">search your Friends ...</string>
     <string name="no_status">no status</string>
     <string name="unknown_user">unknown user</string>
     <string name="notification_bell">notification bell</string>
@@ -121,7 +121,7 @@
     <string name="bug_sort_assigned_to_me">Assigned to me</string>
 
     <string name="new_chat">new chat</string>
-    <string name="new_group">new group</string>
+    <string name="new_group">create group</string>
     <string name="invite_friend">invite friend</string>
     <string name="search_user">search user</string>
     <string name="enter_username">Enter username ...</string>
@@ -218,6 +218,10 @@
     <string name="delete">Delete</string>
 
     <string name="admin">Admin</string>
+
+
+    <string name="pending_friend_requests">%1$s pending friend requests</string>
+    <string name="no_friends_found_search">Friend not found?</string>
 
 
 </resources>

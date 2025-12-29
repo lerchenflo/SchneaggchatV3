@@ -138,9 +138,7 @@ class GroupCreatorViewModel (
                     appRepository.getChatSelectorFlow(searchTerm)
                 }
                 .map { chats ->
-                    // Filter to only show accepted friends who are not groups
                     chats.filter { chat ->
-                        chat.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED &&
                                 !chat.isGroup
                     }
                 }

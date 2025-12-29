@@ -10,6 +10,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -206,6 +207,15 @@ class AppRepository(
         }
     }
 
+    fun getPendingFriends(searchTerm: String): Flow<List<SelectedChat>> {
+        return userRepository.getallusers(searchTerm)
+            .map { list ->
+                list.filter {
+                    it.friendshipStatus == NetworkUtils.FriendshipStatus.PENDING
+                }
+            }
+    }
+
 
     /**
      * Get main screen available items as flow
@@ -249,6 +259,7 @@ class AppRepository(
             val userItems = users
                 .asSequence()
                 .filter { it.id != ownId.value }
+                .filter { it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED }
                 .filter { loweredSearch.isEmpty() || it.name.lowercase().contains(loweredSearch) }
                 .map { user ->
                     val userMessages = messagesByUser[user.id] ?: emptyList()
