@@ -48,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,7 +59,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
@@ -69,6 +72,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.app_name
 import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.chat_add_on_24px
 import schneaggchatv3mp.composeapp.generated.resources.close
 import schneaggchatv3mp.composeapp.generated.resources.filter
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_accept
@@ -78,6 +82,7 @@ import schneaggchatv3mp.composeapp.generated.resources.friend_request_deny
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_title
 import schneaggchatv3mp.composeapp.generated.resources.loadinginfo_messages
 import schneaggchatv3mp.composeapp.generated.resources.loadinginfo_offline
+import schneaggchatv3mp.composeapp.generated.resources.no_friends_found_search
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap
 import schneaggchatv3mp.composeapp.generated.resources.search_friend
 import schneaggchatv3mp.composeapp.generated.resources.settings
@@ -97,7 +102,6 @@ fun Chatauswahlscreen(
     var profilePictureDialogShown by remember { mutableStateOf(false) }
     var profilePictureFilePathTemp by remember { mutableStateOf("") }
 
-    val pendingFriendPopup by viewModel.pendingFriendPopup.collectAsStateWithLifecycle()
 
     val connectionToServer = SessionCache.onlineFlow.collectAsStateWithLifecycle()
 
@@ -113,7 +117,7 @@ fun Chatauswahlscreen(
             FloatingActionButton(
                 onClick = { viewModel.onNewChatClick() }) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.Chat,
+                    imageVector = vectorResource(Res.drawable.chat_add_on_24px),
                     contentDescription = stringResource(Res.string.add),
 
                 )
@@ -368,6 +372,30 @@ fun Chatauswahlscreen(
                             )
                         }
                     }
+
+                if (availablegegners.isEmpty()){
+                    //Add friend if list is empty
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .clickable{
+                                    viewModel.onNewChatClick()
+                                }
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            text = stringResource(Res.string.no_friends_found_search),
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }
+
+
             }
         }
 
@@ -382,88 +410,7 @@ fun Chatauswahlscreen(
             )
         }
 
-        pendingFriendPopup?.let { selectedChat->
 
-            //Popup to accept friend request / cancel outgoing friend request
-
-            //You are no friends with this person, but he sent you a friend request, you can accept it
-            //selectedChat.requesterId!! != SessionCache.getOwnIdValue()
-            val incomingRequest = selectedChat.requesterId!! != SessionCache.getOwnIdValue()
-
-
-            //You sent the friend request to this user, and it is still pending, you can cancel it
-            //selectedChat.requesterId!! == SessionCache.getOwnIdValue())
-
-            if (incomingRequest){
-                AlertDialog(
-                    onDismissRequest = {
-                        viewModel.dismissPendingFriendDialog()
-                    },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                viewModel.acceptFriend(selectedChat.id)
-                            },
-                        ) {
-                            Text(
-                                text = stringResource(Res.string.friend_request_accept)
-                            )
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(
-                            onClick = {
-                                viewModel.denyFriend(selectedChat.id)
-                            },
-                        ) {
-                            Text(
-                                text = stringResource(Res.string.friend_request_deny)
-                            )
-                        }
-                    },
-                    title = {
-                        Text(
-                            text = stringResource(Res.string.friend_request_title),
-                        )
-                    },
-                )
-            } else {
-                //Outgoing request, cancelable
-                AlertDialog(
-                    onDismissRequest = {
-                        viewModel.dismissPendingFriendDialog()
-                    },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                viewModel.denyFriend(selectedChat.id)
-                            },
-                        ) {
-                            Text(
-                                text = stringResource(Res.string.friend_request_cancel)
-                            )
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(
-                            onClick = {
-                                viewModel.dismissPendingFriendDialog()
-                            },
-                        ) {
-                            Text(
-                                text = stringResource(Res.string.close)
-                            )
-                        }
-                    },
-                    title = {
-                        Text(
-                            text = stringResource(Res.string.friend_request_cancel_title)
-                        )
-                    },
-                )
-            }
-
-        }
 
     }
 

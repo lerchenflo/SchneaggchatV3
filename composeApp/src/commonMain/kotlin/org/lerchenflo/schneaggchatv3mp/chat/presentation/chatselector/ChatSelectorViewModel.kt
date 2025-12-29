@@ -139,19 +139,12 @@ class ChatSelectorViewModel(
     //Navigation
     fun onChatSelected(selectedChat: SelectedChat) {
         viewModelScope.launch {
-            //TODO: Maybe when trough all possibilities and show different popups?
 
-            //You are friends with this person, open chat
-            if (selectedChat.friendshipStatus != NetworkUtils.FriendshipStatus.PENDING) {
-                globalViewModel.onSelectChat(selectedChat)
-                navigator.navigate(Route.Chat)
-            }else {
-                //Friendshipstatus pending
-                _pendingFriendPopup.value = selectedChat
-            }
-
+            globalViewModel.onSelectChat(selectedChat)
+            navigator.navigate(Route.Chat)
         }
     }
+
     fun onNewChatClick(){
         viewModelScope.launch {
             navigator.navigate(Route.NewChat)
@@ -190,27 +183,7 @@ class ChatSelectorViewModel(
     }
 
 
-    //Friend accept / Deny
-    private val _pendingFriendPopup = MutableStateFlow<SelectedChat?>(null)
-    val pendingFriendPopup: StateFlow<SelectedChat?> = _pendingFriendPopup.asStateFlow()
 
-    fun dismissPendingFriendDialog() {
-        _pendingFriendPopup.value = null
-    }
-
-    fun acceptFriend(friendId: String){
-        viewModelScope.launch {
-            appRepository.sendFriendRequest(friendId)
-        }
-        dismissPendingFriendDialog()
-    }
-
-    fun denyFriend(friendId: String){
-        viewModelScope.launch {
-            appRepository.denyFriendRequest(friendId)
-        }
-        dismissPendingFriendDialog()
-    }
 
 
 
