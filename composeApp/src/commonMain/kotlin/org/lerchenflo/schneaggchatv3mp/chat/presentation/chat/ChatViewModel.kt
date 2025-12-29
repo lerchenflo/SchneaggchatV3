@@ -119,6 +119,21 @@ class ChatViewModel(
     }
 
 
+    fun deleteMessage(messageId: String) {
+        viewModelScope.launch {
+            appRepository.deleteMessage(messageId)
+        }
+    }
+
+    fun editMessage() {
+        viewModelScope.launch {
+            appRepository.editMessage(
+                messageId = editMessageId!!,
+                newContent = sendText.text
+            )
+        }
+    }
+
     fun onBackClick() {
         viewModelScope.launch {
             navigator.navigateBack()

@@ -233,6 +233,7 @@
     <string name="you_with_brackets"> (you)</string>
     <string name="add_description_placeholder">add a description ...</string>
     <string name="change">change</string>
+    <string name="reply">Reply</string>
 
 
 </resources>

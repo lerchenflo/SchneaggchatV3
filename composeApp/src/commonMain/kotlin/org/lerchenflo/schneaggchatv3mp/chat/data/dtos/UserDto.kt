@@ -40,8 +40,6 @@ data class UserDto(
 
     var wakeupEnabled: Boolean = false,
 
-
-    //TODO implement later
     var lastOnline: Long? = null,
 
     var notisMuted: Boolean = false,

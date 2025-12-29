@@ -670,6 +670,9 @@ class AppRepository(
         }
     }
 
+    //TODO: change username & chane password FLO
+
+
     /*
         **************************************************************************
 
@@ -917,6 +920,44 @@ class AppRepository(
     }
 
 
+    suspend fun editMessage(messageId: String, newContent: String) {
+        val request = networkUtils.editMessage(
+            messageId = messageId,
+            newContent = newContent
+        )
+
+        when (request) {
+            is NetworkResult.Error<RequestError> ->  {
+                sendErrorSuspend(ErrorEvent(error = request.error))
+            }
+            is NetworkResult.Success<MessageResponse> -> {
+                val existing = messageRepository.getMessageById(request.data.messageId)
+                if (existing != null) {
+                    messageRepository.upsertMessage(existing.copy(
+                        content = request.data.content,
+                        changeDate = request.data.lastChanged.toString(),
+                    ))
+                }
+
+            }
+        }
+    }
+
+    suspend fun deleteMessage(messageId: String){
+        val request = networkUtils.deleteMessage(
+            messageId = messageId
+        )
+
+        when (request) {
+            is NetworkResult.Error<RequestError> ->  {
+                sendErrorSuspend(ErrorEvent(error = request.error))
+            }
+            is NetworkResult.Success<*> -> {
+                messageRepository.deleteMessage(messageId)
+            }
+
+        }
+    }
 
 
     /*
