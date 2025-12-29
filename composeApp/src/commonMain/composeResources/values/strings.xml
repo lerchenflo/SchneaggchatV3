@@ -224,6 +224,7 @@
     <string name="pending_friend_requests">%1$s pending friend requests</string>
     <string name="no_friends_found_search">Friend not found?</string>
 
+    <string name="message_delete_info">Do you really want to delete this message?</string>
     <string name="reply">Reply</string>
 
 
