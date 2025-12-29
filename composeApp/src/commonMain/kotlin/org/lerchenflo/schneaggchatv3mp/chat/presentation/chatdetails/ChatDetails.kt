@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
@@ -57,6 +57,9 @@ fun ChatDetails(
      */
 
     val group = chatDetails.isGroup
+    //val ownid = SessionCache.getOwnIdValue()
+    //val iAmAdmin = chatDetails.toGroup()?.groupMembersWithUsers?.find { it.groupMember.userId.equals(ownid) }?.groupMember?.admin == true
+
     var profilePictureDialogShown by remember { mutableStateOf(false) }
 
     Column(
@@ -93,6 +96,7 @@ fun ChatDetails(
 
         //TODO: Augenkrebs die activity buggla buggla
 
+        /* Fertig mit Id dia isch hässlich
         // Id azoaga
         Row(
             modifier = Modifier
@@ -103,6 +107,8 @@ fun ChatDetails(
                 text = "id: ${chatDetails.id }"
             )
         }
+
+         */
 
         // nur für user Status azoaga
         if(!group){
@@ -141,6 +147,8 @@ fun ChatDetails(
         }
         HorizontalDivider()
         // description
+        var showDescriptionChangeDialog by retain { mutableStateOf(false) } // retain dass ma es handy dräha kann (neue compose ding)
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -149,7 +157,7 @@ fun ChatDetails(
                     end = 10.dp,
                 )
                 .clickable{
-                    // todo popup to change text
+                    showDescriptionChangeDialog = true
                 }
         ){
             Column(){
@@ -170,6 +178,15 @@ fun ChatDetails(
             }
 
         }
+        if(showDescriptionChangeDialog){
+            ChangeDescription(
+                onDismiss = {showDescriptionChangeDialog = false},
+                viewModel = chatdetailsViewmodel,
+                selectedChat = chatDetails
+            )
+        }
+
+
         HorizontalDivider()
 
         if(group){
@@ -177,19 +194,17 @@ fun ChatDetails(
             chatDetails.toGroup()?.let { groupChat ->
                 GroupMembersView(
                     members = groupChat.groupMembersWithUsers,
-                    onUserClick = {
-                        //TODO: Open chat with user
-                    }
+                    viewmodel = chatdetailsViewmodel,
+                    //iAmAdmin = iAmAdmin,
                 )
             }
         }else{
             // Show common groups - data is already populated!
             chatDetails.toUser()?.let { userChat ->
                 CommonGroupsView(
-                    groups = userChat.commonGroups
-
+                    groups = userChat.commonGroups,
+                    viewmodel = chatdetailsViewmodel
                 )
-                //TODO: Cooles composable macha wie oba
             }
         }
 
@@ -214,4 +229,6 @@ fun ChatDetails(
         }
 
     }
+
+
 }

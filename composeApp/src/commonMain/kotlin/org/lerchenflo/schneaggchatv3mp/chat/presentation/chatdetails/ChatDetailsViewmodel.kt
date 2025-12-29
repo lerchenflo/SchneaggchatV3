@@ -2,6 +2,10 @@
 
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -15,6 +19,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
@@ -23,7 +28,9 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChatBase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 
 
 data class GroupMemberWithUser(
@@ -42,6 +49,12 @@ class ChatDetailsViewmodel(
         viewModelScope.launch {
             navigator.navigateBack()
         }
+    }
+
+    var descriptionText by mutableStateOf(TextFieldValue(""))
+        private set
+    fun updateDescriptionText(newValue: TextFieldValue) {
+        descriptionText = newValue
     }
 
     /**
@@ -84,8 +97,25 @@ class ChatDetailsViewmodel(
             val user = userRepository.getUserById(member.userId)
             if (user != null) {
                 GroupMemberWithUser(member, user)
-            } else null
+            } else {
+                // todo was tuat ma mit lüt in ana gruppe wo ned in da userdatenbank sind?
+                GroupMemberWithUser(member, null)
+            }
         }
+    }
+
+    fun navigateToChat(selectedChat: SelectedChatBase){
+        viewModelScope.launch {
+            globalViewModel.onSelectChat(selectedChat)
+            // Exit all previous screen weil ma jo da selectedgegner im globalviewmodel gändert hot und denn ind chatdetails vo deam typ kummt
+            navigator.navigate(Route.Chat, exitPreviousScreen = true) // todo ma kummt nur ind chatauswahl mit 2 mol zruck
+        }
+    }
+
+    fun updateDescription(selectedChat: SelectedChatBase){
+        // todo send "descriptionText" to server
+        SnackbarManager.showMessage("todo: update description")
+
     }
 
 
