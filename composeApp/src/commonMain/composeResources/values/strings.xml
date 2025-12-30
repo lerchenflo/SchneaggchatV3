@@ -234,6 +234,7 @@
     <string name="add_description_placeholder">add a description ...</string>
     <string name="change">change</string>
     <string name="reply">Reply</string>
+    <string name="search_results">Search Results (%1$s)</string>
 
 
 </resources>
