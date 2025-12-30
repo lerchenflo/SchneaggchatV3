@@ -671,7 +671,52 @@ class AppRepository(
         }
     }
 
-    //TODO: change username & chane password FLO
+
+    suspend fun changeUsername(newUsername: String) : Boolean {
+        when (val success = networkUtils.changeUsername(newUsername)){
+            is NetworkResult.Error<*> -> return false
+            is NetworkResult.Success<*> -> {
+                dataSync()
+                return true
+            }
+        }
+    }
+
+
+    suspend fun changePassword(oldPassword: String, newPassword: String) : Boolean {
+        when (val success = networkUtils.changePassword(oldPassword, newPassword)){
+            is NetworkResult.Error<*> -> return false
+            is NetworkResult.Success<*> -> {
+                return true
+            }
+        }
+    }
+
+
+    suspend fun changeProfilePic(newPic: ByteArray) : Boolean {
+        when (val success = networkUtils.changeProfilePic(newPic)){
+            is NetworkResult.Error<*> -> return false
+            is NetworkResult.Success<*> -> {
+                dataSync()
+                return true
+            }
+        }
+    }
+
+
+    /**
+     * Change status and description. if userid = self then only status, else only description
+     */
+    suspend fun changeUserStatusDescription(newStatus: String?, newDescription: String?, userId: String) : Boolean {
+        when (val success = networkUtils.changeProfile(newStatus, newDescription, userId)){
+            is NetworkResult.Error<*> -> return false
+            is NetworkResult.Success<*> -> {
+                dataSync()
+                return true
+            }
+        }
+    }
+
 
 
     /*

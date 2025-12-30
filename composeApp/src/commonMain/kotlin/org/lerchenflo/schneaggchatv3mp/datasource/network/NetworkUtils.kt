@@ -445,6 +445,32 @@ class NetworkUtils(
         )
     }
 
+    //TODO: Funktioniert des so oda musses wie beim register gmacht werra
+    suspend fun changeProfilePic(newProfilePic: ByteArray) : NetworkResult<Any, NetworkError>  {
+        return safePost(
+            endpoint = "/users/setprofilepic",
+            body = newProfilePic
+        )
+    }
+
+    @Serializable
+    data class UserRequest(
+        val userId: String,
+        val newDescription: String?,
+        val newStatus: String?,
+    )
+    
+    suspend fun changeProfile(newStatus: String?, newDescription: String?, userId: String): NetworkResult<Any, NetworkError> {
+        return safePost(
+            endpoint = "/users/changeprofile",
+            body = UserRequest(
+                userId = userId,
+                newDescription = newDescription,
+                newStatus = newStatus
+            )
+        )
+    }
+
 
     /*
     **************************************************************************
