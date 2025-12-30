@@ -73,7 +73,21 @@ class ChatSelectorViewModel(
 
         //TODO: Maybe try login every 5 sec if not logged in (No sync all 5 secs)
         //Chat verlassen
+
+        viewModelScope.launch {
+            appRepository.getPendingFriends("").collectLatest { list ->
+                val size = list.filter {
+                    it.requesterId != SessionCache.getOwnIdValue()
+                }.size
+
+                _pendingFriendCount.value = size
+            }
+        }
     }
+
+    private val _pendingFriendCount = MutableStateFlow(0)
+    val pendingFriendCount: StateFlow<Int> = _pendingFriendCount.asStateFlow()
+
 
     fun clearChat(){
         viewModelScope.launch {
@@ -181,8 +195,6 @@ class ChatSelectorViewModel(
     fun updateFilter(newValue: ChatFilter) {
         _filter.value = newValue
     }
-
-
 
 
 

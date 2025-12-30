@@ -25,6 +25,8 @@ import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Checklist
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -99,6 +101,8 @@ fun Chatauswahlscreen(
     val availablegegners by viewModel.chatSelectorState.collectAsStateWithLifecycle(emptyList())
     val searchterm by viewModel.searchterm.collectAsStateWithLifecycle()
 
+    val pendingFriendCount by viewModel.pendingFriendCount.collectAsStateWithLifecycle()
+
     var profilePictureDialogShown by remember { mutableStateOf(false) }
     var profilePictureFilePathTemp by remember { mutableStateOf("") }
 
@@ -114,13 +118,23 @@ fun Chatauswahlscreen(
     Scaffold(
         modifier = modifier,
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { viewModel.onNewChatClick() }) {
-                Icon(
-                    imageVector = vectorResource(Res.drawable.chat_add_on_24px),
-                    contentDescription = stringResource(Res.string.add),
-
-                )
+            BadgedBox(
+                badge = {
+                    if (pendingFriendCount != 0){
+                        Badge {
+                            Text(text = pendingFriendCount.toString())
+                        }
+                    }
+                }
+            ) {
+                FloatingActionButton(
+                    onClick = { viewModel.onNewChatClick() }
+                ) {
+                    Icon(
+                        imageVector = vectorResource(Res.drawable.chat_add_on_24px),
+                        contentDescription = stringResource(Res.string.add),
+                    )
+                }
             }
         },
         floatingActionButtonPosition = FabPosition.End
