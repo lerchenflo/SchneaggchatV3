@@ -214,7 +214,7 @@ fun ChatDetails(
         NormalButton(
             text = stringResource(Res.string.remove_friend),
             onClick = {
-                // todo
+                // todo remove friend
             },
             modifier = Modifier
                 .fillMaxWidth()

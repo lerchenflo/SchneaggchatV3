@@ -1115,6 +1115,27 @@ class AppRepository(
     }
 
 
+    suspend fun changeGroupProfilePic(groupId: String, newPic: ByteArray) : Boolean {
+        when (val success = networkUtils.changeGroupProfilePic(newPic, groupId)){
+            is NetworkResult.Error<*> -> return false
+            is NetworkResult.Success<*> -> {
+                dataSync()
+                return true
+            }
+        }
+    }
+
+    suspend fun changeGroupDescription(groupId: String, newDescription: String) : Boolean {
+        when (val success = networkUtils.changeGroupDescription(newDescription, groupId)){
+            is NetworkResult.Error<*> -> return false
+            is NetworkResult.Success<*> -> {
+                dataSync()
+                return true
+            }
+        }
+    }
+
+
     /*
 
 
