@@ -69,6 +69,7 @@ import schneaggchatv3mp.composeapp.generated.resources.invite_friend
 import schneaggchatv3mp.composeapp.generated.resources.new_chat
 import schneaggchatv3mp.composeapp.generated.resources.new_group
 import schneaggchatv3mp.composeapp.generated.resources.pending_friend_requests
+import schneaggchatv3mp.composeapp.generated.resources.search_results
 import schneaggchatv3mp.composeapp.generated.resources.search_user
 import schneaggchatv3mp.composeapp.generated.resources.send_friend_request
 import schneaggchatv3mp.composeapp.generated.resources.send_friend_request_description
@@ -203,7 +204,7 @@ fun NewChat(
             // Results Text
             if (newChats.isNotEmpty()) {
                 Text(
-                    text = "Search Results (${newChats.size})",
+                    text = stringResource(Res.string.search_results, newChats.size),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)

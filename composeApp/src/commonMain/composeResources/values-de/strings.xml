@@ -79,7 +79,7 @@
     <string name="status">Status:</string>
     <string name="app_broken_desc">Behebt die meisten gängigen Fehler mit der App</string>
     <string name="app_broken_are_you_sure">Dies wird die Lokale Datenbank löschen und erneut alle Daten vom Server herunterladen.
-Bist du sicher dass du fortfahren willst?</string>
+        Bist du sicher dass du fortfahren willst?</string>
     <string name="please_restart_app">Bitte starte die App neu</string>
     <string name="others_say_about">Andere User haben über %1$s geschrieben:</string>
     <string name="status_info">Dieser Text wurde vom User verfasst</string>
@@ -224,6 +224,9 @@ Bist du sicher dass du fortfahren willst?</string>
 
     <string name="pending_friend_requests">%1$s ausstehende Freundschaftsanfragen</string>
     <string name="no_friends_found_search">Freund nicht gefunden?</string>
+
+    <string name="reply">Antworten</string>
+    <string name="search_results">Suchergebnisse (%1$s)</string>
 
 
 </resources>

@@ -225,6 +225,7 @@
     <string name="no_friends_found_search">Friend not found?</string>
 
     <string name="reply">Reply</string>
+    <string name="search_results">Search Results (%1$s)</string>
 
 
 </resources>
