@@ -30,6 +30,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 
 
@@ -42,7 +43,8 @@ class ChatDetailsViewmodel(
     private val groupRepository: GroupRepository,
     private val globalViewModel: GlobalViewModel,
     private val navigator: Navigator,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val appRepository: AppRepository
 ) : ViewModel() {
 
     fun onBackClick(){
@@ -113,9 +115,9 @@ class ChatDetailsViewmodel(
     }
 
     fun updateDescription(selectedChat: SelectedChatBase){
-        // todo send "descriptionText" to server
-        SnackbarManager.showMessage("todo: update description")
-
+        viewModelScope.launch {
+            appRepository.changeUserStatusDescription(null, descriptionText.text, selectedChat.id)
+        }
     }
 
 

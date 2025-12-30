@@ -445,6 +445,32 @@ class NetworkUtils(
         )
     }
 
+    //TODO: Funktioniert des so oda musses wie beim register gmacht werra
+    suspend fun changeProfilePic(newProfilePic: ByteArray) : NetworkResult<Any, NetworkError>  {
+        return safePost(
+            endpoint = "/users/setprofilepic",
+            body = newProfilePic
+        )
+    }
+
+    @Serializable
+    data class UserRequest(
+        val userId: String,
+        val newDescription: String?,
+        val newStatus: String?,
+    )
+    
+    suspend fun changeProfile(newStatus: String?, newDescription: String?, userId: String): NetworkResult<Any, NetworkError> {
+        return safePost(
+            endpoint = "/users/changeprofile",
+            body = UserRequest(
+                userId = userId,
+                newDescription = newDescription,
+                newStatus = newStatus
+            )
+        )
+    }
+
 
     /*
     **************************************************************************
@@ -455,7 +481,6 @@ class NetworkUtils(
      */
 
 
-    //TODO: Implement on server?
     suspend fun getProfilePicForGroupId(groupId: String) : NetworkResult<ByteArray, NetworkError> {
         return safeGet(
             endpoint = "/groups/profilepic/$groupId"
@@ -537,6 +562,21 @@ class NetworkUtils(
         return safePost(
             endpoint = "/groups/sync",
             body = groupIds
+        )
+    }
+
+
+    suspend fun changeGroupProfilePic(newProfilePic: ByteArray, groupId: String) : NetworkResult<Any, NetworkError>  {
+        return safePost(
+            endpoint = "/groups/setprofilepic?groupid=$groupId",
+            body = newProfilePic
+        )
+    }
+
+    suspend fun changeGroupDescription(newDescription: String, groupId: String) :  NetworkResult<Any, NetworkError> {
+        return safePost(
+            endpoint = "/groups/setdescription?groupid=$groupId",
+            body = newDescription
         )
     }
 
