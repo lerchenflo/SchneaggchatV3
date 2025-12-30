@@ -111,8 +111,7 @@ class ChatViewModel(
                 replyMessage = null
             }
         }else {
-            // todo backend for editing
-            SnackbarManager.showMessage("todo: edit backend missing")
+            editMessage()
             updatesendText(TextFieldValue(""))
             editMessageId = null
         }
