@@ -78,6 +78,10 @@ class GroupRepository(
         return gwm?.toGroup()?.members ?: emptyList()
     }
 
+    fun getGroupFlow(id: String): Flow<Group?> {
+        return database.groupDao().getGroupWithMembersByIdFlow(id).map { it?.toGroup() }
+    }
+
     /**
      * Return all groups (domain objects) that are common between the current user and the provided userId.
      * Caller example:

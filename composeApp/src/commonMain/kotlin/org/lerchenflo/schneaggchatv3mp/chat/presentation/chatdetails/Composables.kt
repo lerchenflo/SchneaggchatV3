@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -45,6 +46,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
@@ -63,11 +65,15 @@ import schneaggchatv3mp.composeapp.generated.resources.add_description_placehold
 import schneaggchatv3mp.composeapp.generated.resources.admin
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.change
+import schneaggchatv3mp.composeapp.generated.resources.common_groups
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_title
+import schneaggchatv3mp.composeapp.generated.resources.groupmembers
 import schneaggchatv3mp.composeapp.generated.resources.make_admin
+import schneaggchatv3mp.composeapp.generated.resources.no_status
 import schneaggchatv3mp.composeapp.generated.resources.open_chat
 import schneaggchatv3mp.composeapp.generated.resources.remove_admin_status
 import schneaggchatv3mp.composeapp.generated.resources.remove_from_group
+import schneaggchatv3mp.composeapp.generated.resources.status
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 import schneaggchatv3mp.composeapp.generated.resources.you_with_brackets
 
@@ -78,8 +84,22 @@ fun GroupMembersView(
     //iAmAdmin: Boolean,
 ) {
     val ownid = SessionCache.getOwnIdValue().toString()
-    val iAmAdmin = members.find { it.groupMember.userId.equals(ownid) }?.groupMember?.admin == true
-    Column {
+    val iAmAdmin = members.find { it.groupMember.userId == ownid }?.groupMember?.admin == true
+
+
+    Column(
+        modifier = Modifier.padding(16.dp)
+    ) {
+
+        if (members.isNotEmpty()) {
+            Text(
+                text = stringResource(Res.string.groupmembers, members.size),
+                )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+
         members.forEach { (groupMember, user) ->
             var profilePictureDialogShown by remember { mutableStateOf(false) }
 
@@ -145,7 +165,19 @@ fun CommonGroupsView(
     groups: List<Group>,
     viewmodel: ChatDetailsViewmodel
 ){
-    Column {
+    Column(
+        modifier = Modifier.padding(16.dp)
+    ) {
+
+        if (groups.isNotEmpty()) {
+            Text(
+                text = stringResource(Res.string.common_groups, groups.size),
+
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         groups.forEach { group ->
 
             var profilePictureDialogShown by remember { mutableStateOf(false) }
@@ -331,6 +363,7 @@ fun ChangeDescription(
     LaunchedEffect(selectedChat) {
         viewModel.updateDescriptionText(TextFieldValue(selectedChat.description ?: ""))
     }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -397,4 +430,36 @@ fun ChangeDescription(
 
         },
     )
+}
+
+@Composable
+fun DescriptionStatusRow(
+    onClick: () -> Unit,
+    titleText: String,
+    bodyText: String,
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable{
+                onClick()
+            }
+            .padding(
+                16.dp
+            )
+
+    ){
+        Column(){
+            Text(
+                text = titleText,
+                modifier = Modifier
+            )
+            Text(
+                text = bodyText,
+                softWrap = true,
+                maxLines = 20
+            )
+        }
+
+    }
 }
