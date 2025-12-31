@@ -9,12 +9,11 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
@@ -31,7 +30,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 
 
 data class GroupMemberWithUser(
@@ -69,18 +67,25 @@ class ChatDetailsViewmodel(
         .flatMapLatest { chat ->
             when {
                 chat.isGroup -> {
-                    flow {
+                    groupRepository.getGroupFlow(chat.id).map { updatedGroup ->
                         val membersWithUsers = getGroupMembersWithUsers(chat.id)
-                        emit(chat.toGroup()!!.copy(
+                        updatedGroup?.toSelectedChat(
+                            unreadCount = chat.unreadMessageCount,
+                            unsentCount = chat.unsentMessageCount,
+                            lastMessage = chat.lastmessage
+                        )?.toGroup()?.copy(
                             groupMembersWithUsers = membersWithUsers
-                        ))
+                        ) ?: chat
                     }
                 }
                 !chat.isNotSelected() -> {
-                    // Fetch common groups and create enriched UserChat
-                    flow {
+                    userRepository.getUserFlow(chat.id).map { updatedUser ->
                         val commonGroups = groupRepository.getCommonGroups(chat.id)
-                        emit(chat.toUser()!!.copy(commonGroups = commonGroups))
+                        updatedUser?.toSelectedChat(
+                            unreadCount = chat.unreadMessageCount,
+                            unsentCount = chat.unsentMessageCount,
+                            lastMessage = chat.lastmessage
+                        )?.toUser()?.copy(commonGroups = commonGroups) ?: chat
                     }
                 }
                 else -> flow { emit(chat) } // NotSelected - pass through
@@ -116,7 +121,12 @@ class ChatDetailsViewmodel(
 
     fun updateDescription(selectedChat: SelectedChatBase){
         viewModelScope.launch {
-            appRepository.changeUserStatusDescription(null, descriptionText.text, selectedChat.id)
+            if (selectedChat.isGroup) {
+                appRepository.changeGroupDescription(selectedChat.id, descriptionText.text)
+            }else {
+                appRepository.changeUserStatusDescription(null, descriptionText.text, selectedChat.id)
+
+            }
         }
     }
 

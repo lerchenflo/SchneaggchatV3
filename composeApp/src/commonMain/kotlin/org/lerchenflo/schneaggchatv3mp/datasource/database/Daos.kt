@@ -157,6 +157,10 @@ interface GroupDao {
     suspend fun getGroupWithMembersById(groupId: String): GroupWithMembersDto?
 
     @Transaction
+    @Query("SELECT * FROM `groups` WHERE id = :groupId")
+    fun getGroupWithMembersByIdFlow(groupId: String): Flow<GroupWithMembersDto?>
+
+    @Transaction
     @Query("""
         SELECT * FROM `groups`
         WHERE id IN (

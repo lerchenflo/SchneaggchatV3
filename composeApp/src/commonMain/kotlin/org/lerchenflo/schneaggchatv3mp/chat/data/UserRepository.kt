@@ -44,6 +44,10 @@ class UserRepository(
         return database.userDao().getUserbyId(id)?.toUser()
     }
 
+    fun getUserFlow(id: String): Flow<User?> {
+        return database.userDao().getUserbyIdFlow(id).map { it?.toUser() }
+    }
+
 
     suspend fun updateUserProfilePicUrl(userId: String, newUrl: String) {
         val dbUser = database.userDao().getUserbyId(userId)
