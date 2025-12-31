@@ -39,6 +39,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
@@ -1127,6 +1128,20 @@ class AppRepository(
 
     suspend fun changeGroupDescription(groupId: String, newDescription: String) : Boolean {
         when (val success = networkUtils.changeGroupDescription(newDescription, groupId)){
+            is NetworkResult.Error<*> -> return false
+            is NetworkResult.Success<*> -> {
+                dataSync()
+                return true
+            }
+        }
+    }
+
+    suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String) : Boolean {
+        when (val success = networkUtils.changeGroupMembers(
+            action = action,
+            memberId = memberId,
+            groupId = groupId
+        )){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
                 dataSync()

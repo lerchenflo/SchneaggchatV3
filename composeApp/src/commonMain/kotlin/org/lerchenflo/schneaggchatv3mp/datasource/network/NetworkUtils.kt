@@ -573,10 +573,36 @@ class NetworkUtils(
         )
     }
 
-    suspend fun changeGroupDescription(newDescription: String, groupId: String) :  NetworkResult<Any, NetworkError> {
+    suspend fun changeGroupDescription(newDescription: String, groupId: String) : NetworkResult<Any, NetworkError> {
         return safePost(
             endpoint = "/groups/setdescription?groupid=$groupId",
             body = newDescription
+        )
+    }
+
+
+    enum class GroupMemberAction {
+        ADD_USER,
+        REMOVE_USER,
+        MAKE_ADMIN,
+        REMOVE_ADMIN
+    }
+
+    @Serializable
+    data class GroupActionRequest(
+        val action: GroupMemberAction,
+        val groupMemberId: String,
+        val groupId: String
+    )
+    
+    suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String): NetworkResult<Any, NetworkError> {
+        return safePost(
+            endpoint = "/groups/changemembers",
+            body = GroupActionRequest(
+                action = action,
+                groupMemberId = memberId,
+                groupId = groupId
+            )
         )
     }
 
