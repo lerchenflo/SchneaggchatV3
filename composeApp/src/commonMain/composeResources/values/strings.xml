@@ -72,6 +72,8 @@
     <string name="error_access_not_permitted">Your saved session was invalidated. Please login again.</string>
     <string name="error_access_expired">Your saved session expired after 30 days. Please login again</string>
     <string name="error_invalid_credentials">You entered wrong credentials</string>
+    <string name="error_cannot_be_the_same_username">The new username must differ from the current username</string>
+    <string name="error_username_must_not_be_empty">The new username must not be empty</string>
 
     <string name="select_gebi_date">Select your birth date</string>
     <string name="select_profile_pic">Select a profile picture</string>
@@ -234,6 +236,9 @@
     <string name="add_description_placeholder">add a description ...</string>
     <string name="change">change</string>
     <string name="search_results">Search Results (%1$s)</string>
+    <string name="change_username">Change username</string>
+    <string name="change_username_description">Change your username. The new username will be shown to others and used for login</string>
+    <string name="change_username_placeholder">new username ...</string>
 
 
 </resources>
