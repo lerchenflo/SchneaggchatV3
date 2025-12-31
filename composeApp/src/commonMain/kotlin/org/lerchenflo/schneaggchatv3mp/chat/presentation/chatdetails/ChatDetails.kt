@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +38,7 @@ import schneaggchatv3mp.composeapp.generated.resources.remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.status
 import schneaggchatv3mp.composeapp.generated.resources.status_info
 
+
 @Composable
 fun ChatDetails(
     modifier: Modifier = Modifier
@@ -57,14 +60,13 @@ fun ChatDetails(
      */
 
     val group = chatDetails.isGroup
-    //val ownid = SessionCache.getOwnIdValue()
-    //val iAmAdmin = chatDetails.toGroup()?.groupMembersWithUsers?.find { it.groupMember.userId.equals(ownid) }?.groupMember?.admin == true
 
     var profilePictureDialogShown by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
             .padding(horizontal = 16.dp)
+            .verticalScroll(rememberScrollState())
     ){
 
         ActivityTitle(
@@ -94,8 +96,6 @@ fun ChatDetails(
 
         }
 
-        //TODO: Augenkrebs die activity buggla buggla
-
         /* Fertig mit Id dia isch hässlich
         // Id azoaga
         Row(
@@ -119,9 +119,7 @@ fun ChatDetails(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
-                        start = 10.dp,
-                        end = 10.dp,
-                        bottom = 10.dp
+                        16.dp
                     )
                     .clickable{
                         SnackbarManager.showMessage(statusInfoString)
@@ -131,7 +129,6 @@ fun ChatDetails(
                     Text(
                         text = stringResource(Res.string.status),
                         modifier = Modifier
-
                     )
                     Text(
                         text = chatDetails.status
@@ -153,8 +150,7 @@ fun ChatDetails(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    start = 10.dp,
-                    end = 10.dp,
+                    16.dp
                 )
                 .clickable{
                     showDescriptionChangeDialog = true
@@ -214,7 +210,8 @@ fun ChatDetails(
         NormalButton(
             text = stringResource(Res.string.remove_friend),
             onClick = {
-                // todo remove friend
+                //TODO: Popup & Group leave
+                chatdetailsViewmodel.removeFriend()
             },
             modifier = Modifier
                 .fillMaxWidth()

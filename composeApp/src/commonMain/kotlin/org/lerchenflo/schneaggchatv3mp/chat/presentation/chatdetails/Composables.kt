@@ -45,6 +45,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
@@ -331,6 +332,7 @@ fun ChangeDescription(
     LaunchedEffect(selectedChat) {
         viewModel.updateDescriptionText(TextFieldValue(selectedChat.description ?: ""))
     }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -397,4 +399,14 @@ fun ChangeDescription(
 
         },
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DescriptionStatusRow(
+    onClick: () -> Unit,
+    titleText: String,
+    bodyText: String
+){
+
 }

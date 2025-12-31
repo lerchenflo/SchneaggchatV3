@@ -130,5 +130,15 @@ class ChatDetailsViewmodel(
         }
     }
 
+    fun removeFriend() {
+        if (!chatDetails.value.isGroup) {
+            viewModelScope.launch {
+                if(appRepository.removeFriend(chatDetails.value.id)){
+                    navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
+                }
+            }
+        }
+    }
+
 
 }
