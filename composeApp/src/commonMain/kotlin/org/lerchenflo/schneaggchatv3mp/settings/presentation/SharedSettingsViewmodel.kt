@@ -19,6 +19,15 @@ class SharedSettingsViewmodel(
     private val preferenceManager: Preferencemanager,
 ) : ViewModel() {
 
+    var serverUrl by mutableStateOf("")
+        private set
+
+    var devSettingsEnabled by mutableStateOf(false)
+        private set
+
+    var ownUser by mutableStateOf<User?>(null)
+        private set
+
     init {
         viewModelScope.launch { // Developer Settings
             preferenceManager.getDevSettingsFlow()
@@ -40,7 +49,7 @@ class SharedSettingsViewmodel(
                 }
         }
 
-        viewModelScope.launch { // Server URL
+        viewModelScope.launch { // Own user
             appRepository.getOwnUserFlow().collect { value ->
                 ownUser = value
             }
@@ -48,8 +57,6 @@ class SharedSettingsViewmodel(
     }
 
     // Developer Settings
-    var devSettingsEnabled by mutableStateOf(false)
-        private set
 
     fun updateDevSettings(newValue: Boolean){
         CoroutineScope(Dispatchers.IO).launch {
@@ -58,10 +65,6 @@ class SharedSettingsViewmodel(
     }
 
 
-
-    var serverUrl by mutableStateOf("")
-        private set
-
     fun updateServerUrl(newValue: String) {
         serverUrl = newValue
         viewModelScope.launch {
@@ -69,8 +72,5 @@ class SharedSettingsViewmodel(
         }
     }
 
-
-    var ownUser by mutableStateOf<User?>(null)
-        private set
 
 }

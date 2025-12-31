@@ -2,6 +2,10 @@
 
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
@@ -11,12 +15,13 @@ import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
+import schneaggchatv3mp.composeapp.generated.resources.error_cannot_be_the_same_username
+import schneaggchatv3mp.composeapp.generated.resources.error_username_must_not_be_empty
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
@@ -30,15 +35,34 @@ class UserSettingsViewModel(
 
     var lastEmailVerificationTime: Instant = Instant.DISTANT_PAST
 
-    fun updateUsername(newValue: String) {
-        //Todo: networktask
+    var newUsername by mutableStateOf(TextFieldValue(""))
+        private set
+
+    fun updateNewUsernameText(newValue: TextFieldValue) {
+        newUsername = newValue
     }
+
+    var ownUser by mutableStateOf<User?>(null)
+        private set
+
+    init {
+        viewModelScope.launch { // Own user
+            appRepository.getOwnUserFlow().collect { value ->
+                ownUser = value
+                newUsername = TextFieldValue(value?.name ?: "")
+            }
+        }
+    }
+
 
     fun changeProfilePicture(newImage: GalleryPhotoResult){
         val bytearray = newImage
             .loadBytes()
-
+        viewModelScope.launch {
+            appRepository.changeProfilePic(bytearray)
+        }
         //TODO: Update profile pic local and server
+        // wird des ned eif wida vom server gholt?
     }
 
     fun sendEmailVerify(){
@@ -54,6 +78,26 @@ class UserSettingsViewModel(
 
         //TODO: Stringressource
         SnackbarManager.showMessage("Verification email sent")
+    }
+
+    fun updateUsernameOnSever(){
+        val username = newUsername.text
+        if(username == ownUser?.name){ // check if its the same as the old username
+            viewModelScope.launch {
+                SnackbarManager.showMessage(getString(Res.string.error_cannot_be_the_same_username))
+            }
+            return
+        }
+        if(username.isEmpty()){ // check if username is not empty
+            viewModelScope.launch {
+                SnackbarManager.showMessage(getString(Res.string.error_username_must_not_be_empty))
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            appRepository.changeUsername(username)
+        }
     }
 
     fun changeEmail(newEmail: String){
