@@ -240,5 +240,9 @@
     <string name="change_username_description">Change your username. The new username will be shown to others and used for login</string>
     <string name="change_username_placeholder">new username ...</string>
 
+    <string name="common_groups">Common groups (%1$s)</string>
+    <string name="groupmembers">Group members (%1$s)</string>
+
+
 
 </resources>

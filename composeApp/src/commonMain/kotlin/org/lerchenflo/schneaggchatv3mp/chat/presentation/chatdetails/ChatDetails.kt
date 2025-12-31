@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -63,10 +64,17 @@ fun ChatDetails(
 
     var profilePictureDialogShown by remember { mutableStateOf(false) }
 
+    // Profilbild größer azoaga
+    if(profilePictureDialogShown){
+        ProfilePictureBigDialog(
+            onDismiss = {profilePictureDialogShown = false},
+            filepath = chatDetails.profilePictureUrl
+        )
+    }
+
     Column(
         modifier = modifier
             .padding(horizontal = 16.dp)
-            .verticalScroll(rememberScrollState())
     ){
 
         ActivityTitle(
@@ -77,153 +85,106 @@ fun ChatDetails(
         )
 
         HorizontalDivider()
-        // Profile picture
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentWidth(Alignment.CenterHorizontally)
-        ){
 
-            ProfilePictureView(
-                filepath = chatDetails.profilePictureUrl,
-                modifier = Modifier
-                    .size(200.dp) // Use square aspect ratio
-                    .padding(bottom = 10.dp)
-                    .clickable {
-                        profilePictureDialogShown = true
-                    }
-            )
-
-        }
-
-        /* Fertig mit Id dia isch hässlich
-        // Id azoaga
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentWidth(Alignment.CenterHorizontally)
-        ){
-            Text(
-                text = "id: ${chatDetails.id }"
-            )
-        }
-
-         */
-
-        // nur für user Status azoaga
-        if(!group){
-            HorizontalDivider()
-            // Status
-            val statusInfoString = stringResource(Res.string.status_info)
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState())
+        ) {
+            // Profile picture
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(
-                        16.dp
-                    )
-                    .clickable{
-                        SnackbarManager.showMessage(statusInfoString)
-                    }
+                    .wrapContentWidth(Alignment.CenterHorizontally)
             ){
-                Column(){
-                    Text(
-                        text = stringResource(Res.string.status),
-                        modifier = Modifier
-                    )
-                    Text(
-                        text = chatDetails.status
-                            .takeIf { !it.isNullOrBlank() }
-                            ?.replace("\\n", "\n")
-                            ?: stringResource(Res.string.no_status),
-                        softWrap = true,
-                        maxLines = 20
-                    )
-                }
+
+                ProfilePictureView(
+                    filepath = chatDetails.profilePictureUrl,
+                    modifier = Modifier
+                        .size(200.dp) // Use square aspect ratio
+                        .padding(bottom = 10.dp)
+                        .clickable {
+                            profilePictureDialogShown = true
+                        }
+                )
 
             }
-        }
-        HorizontalDivider()
-        // description
-        var showDescriptionChangeDialog by retain { mutableStateOf(false) } // retain dass ma es handy dräha kann (neue compose ding)
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    16.dp
-                )
-                .clickable{
-                    showDescriptionChangeDialog = true
-                }
-        ){
-            Column(){
-                Text(
-                    text = stringResource(Res.string.others_say_about, chatDetails.name),
-                    modifier = Modifier
+            // Status only for user
+            if(!group){
+                HorizontalDivider()
+                // Status
+                val statusInfoString = stringResource(Res.string.status_info)
 
-                )
-                Text(
-                    text = chatDetails.description
+                DescriptionStatusRow(
+                    onClick = {
+                        SnackbarManager.showMessage(statusInfoString)
+                    },
+                    titleText = stringResource(Res.string.status),
+                    bodyText = chatDetails.status
                         .takeIf { !it.isNullOrBlank() }
                         ?.replace("\\n", "\n")
-                        ?: stringResource(Res.string.no_description),
-                    softWrap = true,
-                    maxLines = 20
+                        ?: stringResource(Res.string.no_status)
                 )
 
             }
 
-        }
-        if(showDescriptionChangeDialog){
-            ChangeDescription(
-                onDismiss = {showDescriptionChangeDialog = false},
-                viewModel = chatdetailsViewmodel,
-                selectedChat = chatDetails
+            HorizontalDivider()
+
+
+            // description for group and user
+            var showDescriptionChangeDialog by retain { mutableStateOf(false) } // retain dass ma es handy dräha kann (neue compose ding)
+
+            if(showDescriptionChangeDialog){
+                ChangeDescription(
+                    onDismiss = {showDescriptionChangeDialog = false},
+                    viewModel = chatdetailsViewmodel,
+                    selectedChat = chatDetails
+                )
+            }
+
+            DescriptionStatusRow(
+                onClick = { showDescriptionChangeDialog = true },
+                titleText = stringResource(Res.string.others_say_about, chatDetails.name),
+                bodyText = chatDetails.description
+                    .takeIf { !it.isNullOrBlank() }
+                    ?.replace("\\n", "\n")
+                    ?: stringResource(Res.string.no_description)
+            )
+
+            HorizontalDivider()
+
+            //Common groups / Common friends
+            if(group){
+                chatDetails.toGroup()?.let { groupChat ->
+                    GroupMembersView(
+                        members = groupChat.groupMembersWithUsers,
+                        viewmodel = chatdetailsViewmodel,
+                    )
+                }
+            }else{
+                chatDetails.toUser()?.let { userChat ->
+                    CommonGroupsView(
+                        groups = userChat.commonGroups,
+                        viewmodel = chatdetailsViewmodel
+                    )
+                }
+            }
+
+            HorizontalDivider()
+
+            // remove friend / todo Leave group
+
+            //TODO: Andra button vlt?
+            NormalButton(
+                text = stringResource(Res.string.remove_friend),
+                onClick = {
+                    //TODO: Popup & Group leave
+                    chatdetailsViewmodel.removeFriend()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
             )
         }
 
-
-        HorizontalDivider()
-
-        if(group){
-            // Show group members - data is already populated!
-            chatDetails.toGroup()?.let { groupChat ->
-                GroupMembersView(
-                    members = groupChat.groupMembersWithUsers,
-                    viewmodel = chatdetailsViewmodel,
-                    //iAmAdmin = iAmAdmin,
-                )
-            }
-        }else{
-            // Show common groups - data is already populated!
-            chatDetails.toUser()?.let { userChat ->
-                CommonGroupsView(
-                    groups = userChat.commonGroups,
-                    viewmodel = chatdetailsViewmodel
-                )
-            }
-        }
-
-        HorizontalDivider()
-
-        // remove friend
-        NormalButton(
-            text = stringResource(Res.string.remove_friend),
-            onClick = {
-                //TODO: Popup & Group leave
-                chatdetailsViewmodel.removeFriend()
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-        )
-
-        // Profilbild größer azoaga
-        if(profilePictureDialogShown){
-            ProfilePictureBigDialog(
-                onDismiss = {profilePictureDialogShown = false},
-                filepath = chatDetails.profilePictureUrl
-            )
-        }
 
     }
 
