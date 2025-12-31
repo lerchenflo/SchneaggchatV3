@@ -673,6 +673,17 @@ class AppRepository(
     }
 
 
+    suspend fun removeFriend(friendId: String) : Boolean {
+        when (val success = networkUtils.removeFriend(friendId)){
+            is NetworkResult.Error<*> -> return false
+            is NetworkResult.Success<*> -> {
+                dataSync()
+                return true
+            }
+        }
+    }
+
+
     suspend fun changeUsername(newUsername: String) : Boolean {
         when (val success = networkUtils.changeUsername(newUsername)){
             is NetworkResult.Error<*> -> return false
@@ -1040,7 +1051,6 @@ class AppRepository(
                 null
             }
             is NetworkResult.Success<NetworkUtils.GroupResponse> -> {
-                //TODO: Upsert group locally
                 response.data.id
             }
         }
