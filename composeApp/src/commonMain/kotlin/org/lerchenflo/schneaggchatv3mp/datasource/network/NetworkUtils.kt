@@ -422,6 +422,12 @@ class NetworkUtils(
         )
     }
 
+    suspend fun removeFriend(friendId: String) : NetworkResult<Any, NetworkError> {
+        return safeGet(
+            endpoint = "/users/removefriend/$friendId"
+        )
+    }
+
     suspend fun changeUsername(newUsername: String) : NetworkResult<Any, NetworkError> {
         return safePost(
             endpoint = "/users/changeusername",

@@ -236,6 +236,7 @@ class GroupCreatorViewModel (
                 appRepository.dataSync()
             }
 
+            //TODO: Navigate directly to group chat?
             navigator.navigate(Route.ChatSelector, exitPreviousScreen = true)
         }
     }
