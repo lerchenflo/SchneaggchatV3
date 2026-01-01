@@ -28,11 +28,16 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
             Messaging.messaging().apnsToken = deviceToken
-        }
+
+            let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+            print("APNs Token: \(token)")
+    }
         
         
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any]) async -> UIBackgroundFetchResult {
-            NotifierManager.shared.onApplicationDidReceiveRemoteNotification(userInfo: userInfo)
+        print("IOS Notification recieved")
+
+        NotifierManager.shared.onApplicationDidReceiveRemoteNotification(userInfo: userInfo)
             return UIBackgroundFetchResult.newData
         }
 
