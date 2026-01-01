@@ -51,13 +51,6 @@ class MainApp: Application() {
         //Initialize notificationmanager to catch payload in common code
         NotificationManager.initialize()
 
-        NotifierManager.addListener(object : NotifierManager.Listener {
-            override fun onPayloadData(data: PayloadData) {
-                println("Push Notification payloadData from android side(MainApp.kt): $data") //PayloadData is just typeAlias for Map<String,*>.
-            }
-        })
-
-
         println("Android firebase init fertig")
 
 

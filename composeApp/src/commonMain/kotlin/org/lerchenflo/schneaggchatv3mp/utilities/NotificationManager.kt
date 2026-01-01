@@ -89,7 +89,7 @@ object NotificationManager{
             // Token change listener
             NotifierManager.addListener(object : NotifierManager.Listener {
                 override fun onNewToken(token: String) {
-                    //println("onNewToken: $token")
+                    println("🔔 FCM Token received: $token")
                 }
             })
 
