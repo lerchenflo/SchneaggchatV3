@@ -56,7 +56,7 @@ kotlin {
 
             //App update
             implementation(libs.app.update.ktx)
-            implementation(libs.core.ktx)
+            //implementation(libs.core.ktx)
 
         }
 
