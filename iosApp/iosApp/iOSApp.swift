@@ -20,17 +20,34 @@ class AppDelegate: NSObject, UIApplicationDelegate {
           )
       )
 
+      // Initialize custom notification manager for encrypted payload processing
+      NotificationManager.shared.initialize()
+
     return true
   }
 
-   func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any]) async -> UIBackgroundFetchResult {
-        NotifierManager.shared.onApplicationDidReceiveRemoteNotification(userInfo: userInfo)
-        return UIBackgroundFetchResult.newData
-   }
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+            Messaging.messaging().apnsToken = deviceToken
 
-  func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        Messaging.messaging().apnsToken = deviceToken
-  }
+            let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+            print("APNs Token: \(token)")
+
+            Messaging.messaging().token { token, error in
+                if let error = error {
+                    print("Error fetching FCM token: \(error)")
+                } else if let token = token {
+                    print("FCM Token: \(token)")
+                }
+            }
+    }
+        
+        
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any]) async -> UIBackgroundFetchResult {
+        print("IOS Notification received")
+
+        NotifierManager.shared.onApplicationDidReceiveRemoteNotification(userInfo: userInfo)
+            return UIBackgroundFetchResult.newData
+        }
 
 }
 

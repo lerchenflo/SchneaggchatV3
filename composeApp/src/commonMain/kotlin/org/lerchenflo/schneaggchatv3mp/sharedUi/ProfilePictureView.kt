@@ -21,7 +21,7 @@ fun ProfilePictureView(
         .clip(CircleShape) // Circular image
 
 ) {
-    println("Filepath profilepic: $filepath")
+    //println("Filepath profilepic: $filepath")
 
 
     AsyncImage(

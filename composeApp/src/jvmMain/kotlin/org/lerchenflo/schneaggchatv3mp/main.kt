@@ -39,6 +39,9 @@ fun main() = application {
         )
     )
 
+    // Initialize custom notification manager for encrypted payload processing
+    //NotificationManager.initialize()
+
     //AppInitializer.onApplicationStart()
 
 
