@@ -10,12 +10,19 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.decodeFromJsonElement
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.new_message_noti_group_title
 import schneaggchatv3mp.composeapp.generated.resources.new_message_noti_single_title
@@ -25,45 +32,98 @@ import kotlin.random.Random
 object NotificationManager{
 
 
-    data class NotificationObject(
-        val msgId: String,
-        val senderName: String,
-        val groupMessage: Boolean,
-        val groupName : String,
-        val encodedContent: String
-    ){
-        suspend fun getDecodedContent(key: String) : String {
-            return CryptoUtil.decrypt(encodedContent, key)
+    sealed interface NotificationObject {
+        
+        data class MessageNotification(
+            val msgId: String,
+            val senderName: String,
+            val groupMessage: Boolean,
+            val groupName: String,
+            val encodedContent: String
+        ) : NotificationObject {
+            suspend fun getDecodedContent(key: String): String {
+                return CryptoUtil.decrypt(encodedContent, key)
+            }
         }
+
+        data class FriendRequestNotification(
+            val requesterId: String,
+            val requesterName: String
+        ) : NotificationObject
+
+        data class SystemNotification(
+            val title: String,
+            val message: String
+        ) : NotificationObject
     }
 
     private fun PayloadData.toNotificationObject(): NotificationObject? {
-        val data = this
-
-        try {
-            val msgId = data["msgId"]?.toString() ?: ""
-            val senderName = data["senderName"]?.toString() ?: "Unknown"
-            val encodedContent = data["encodedContent"]?.toString() ?: ""
-            val groupMessage = data["groupMessage"]?.toString()?.toBoolean() ?: false
-            val groupName = data["groupName"]?.toString() ?: ""
-
-            // Validate required fields
-            if (msgId.isEmpty() || encodedContent.isEmpty()) {
-                println("[NotificationManager] ERROR: Missing required fields in payload. msgId='$msgId', encodedContent isEmpty=${encodedContent.isEmpty()}")
-                return null
-            }
-
-            return NotificationObject(
-                msgId = msgId,
-                senderName = senderName,
-                encodedContent = encodedContent,
-                groupMessage = groupMessage,
-                groupName = groupName
-            )
+        return try {
+            // Convert PayloadData (Map) to NotificationResponse using the server's response type
+            val notificationResponse = this.toNotificationResponse()
+            
+            // Convert NotificationResponse to local NotificationObject
+            notificationResponse?.toNotificationObject()
         } catch (e: Exception) {
             println("[NotificationManager] ERROR: Failed to parse notification payload: ${e.message}")
             e.printStackTrace()
-            return null
+            null
+        }
+    }
+
+    private fun PayloadData.toNotificationResponse(): NetworkUtils.NotificationResponse? {
+        val data = this
+        
+        return try {
+            // Use kotlinx.serialization to deserialize from map
+            val jsonElement = JsonObject(
+                data.mapValues { (_, value) ->
+                    when (value) {
+                        is String -> JsonPrimitive(value)
+                        is Boolean -> JsonPrimitive(value)
+                        is Number -> JsonPrimitive(value)
+                        null -> JsonNull
+                        else -> JsonPrimitive(value.toString())
+                    }
+                }
+            )
+            
+            val json = Json {
+                ignoreUnknownKeys = true
+                classDiscriminator = "type"
+            }
+            
+            json.decodeFromJsonElement<NetworkUtils.NotificationResponse>(jsonElement)
+        } catch (e: Exception) {
+            println("[NotificationManager] ERROR: Failed to deserialize notification: ${e.message}")
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private fun NetworkUtils.NotificationResponse.toNotificationObject(): NotificationObject {
+        return when (this) {
+            is NetworkUtils.NotificationResponse.MessageNotificationResponse -> {
+                NotificationObject.MessageNotification(
+                    msgId = this.msgId,
+                    senderName = this.senderName,
+                    groupMessage = this.groupMessage,
+                    groupName = this.groupName,
+                    encodedContent = this.encodedContent
+                )
+            }
+            is NetworkUtils.NotificationResponse.FriendRequestNotificationResponse -> {
+                NotificationObject.FriendRequestNotification(
+                    requesterId = this.requesterId,
+                    requesterName = this.requesterName,
+                )
+            }
+            is NetworkUtils.NotificationResponse.SystemNotificationResponse -> {
+                NotificationObject.SystemNotification(
+                    title = this.title,
+                    message = this.message,
+                )
+            }
         }
     }
 
@@ -102,19 +162,9 @@ object NotificationManager{
                     val preferenceManager = KoinPlatform.getKoin().get<Preferencemanager>()
 
 
+
                     val notiThread = CoroutineScope(Dispatchers.IO).launch {
                         try {
-                            //Load encryptionkey (IO operation)
-                            val encryptionkey = withContext(Dispatchers.IO) {
-                                preferenceManager.getEncryptionKey()
-                            }
-
-                            if (encryptionkey.isEmpty()) {
-                                println("[NotificationManager] WARNING: Encryption key is empty")
-                                showNotification("Schneaggchat", "New message received (encryption key not available)")
-                                return@launch
-                            }
-
                             //get notiobject from payload data
                             val notiObject = data.toNotificationObject()
 
@@ -126,44 +176,80 @@ object NotificationManager{
 
                             println("[NotificationManager] Parsed notification: $notiObject")
 
-                            // Build title string
-                            val finaltitlestr = if (notiObject.groupMessage) {
-                                getString(Res.string.new_message_noti_group_title, notiObject.senderName, notiObject.groupName)
-                            } else {
-                                getString(Res.string.new_message_noti_single_title, notiObject.senderName)
+                            // Check if app is open before showing notification
+                            if (AppLifecycleManager.isAppOpen()) {
+                                println("[NotificationManager] App is open, skipping notification display")
+                                return@launch
                             }
 
-                            // Try to decrypt and show notification
-                            try {
-                                // Decrypt on IO thread
-                                val decryptedContent = withContext(Dispatchers.IO) {
-                                    notiObject.getDecodedContent(encryptionkey)
+                            // Handle different notification types
+                            when (notiObject) {
+                                is NotificationObject.MessageNotification -> {
+                                    // Load encryption key for message decryption
+                                    val encryptionkey = withContext(Dispatchers.IO) {
+                                        preferenceManager.getEncryptionKey()
+                                    }
+
+                                    if (encryptionkey.isEmpty()) {
+                                        println("[NotificationManager] WARNING: Encryption key is empty")
+                                        showNotification("Schneaggchat", "New message received (encryption key not available)")
+                                        return@launch
+                                    }
+
+                                    // Build title string for message notifications
+                                    val finaltitlestr = if (notiObject.groupMessage) {
+                                        getString(Res.string.new_message_noti_group_title, notiObject.senderName, notiObject.groupName)
+                                    } else {
+                                        getString(Res.string.new_message_noti_single_title, notiObject.senderName)
+                                    }
+
+                                    // Try to decrypt and show notification
+                                    try {
+                                        // Decrypt on IO thread
+                                        val decryptedContent = withContext(Dispatchers.IO) {
+                                            notiObject.getDecodedContent(encryptionkey)
+                                        }
+
+                                        // Show notification
+                                        showNotification(
+                                            titletext = finaltitlestr,
+                                            bodytext = decryptedContent
+                                        )
+
+                                        //Start datasync (May get cancelled but we dont care)
+                                        val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                                        appRepository.dataSync()
+                                    } catch (e: Exception) {
+                                        println("[NotificationManager] ERROR: Decryption failed: ${e.message}")
+                                        e.printStackTrace()
+
+                                        // Show error notification
+                                        showNotification(
+                                            titletext = "$finaltitlestr (Decryption Error)",
+                                            bodytext = "Failed to decrypt message: ${e.message}"
+                                        )
+                                    }
                                 }
 
-                                // Check if app is open before showing notification
-                                if (AppLifecycleManager.isAppOpen()) {
-                                    println("[NotificationManager] App is open, skipping notification display")
-                                    return@launch
+                                is NotificationObject.FriendRequestNotification -> {
+                                    // Handle friend request notification
+                                    showNotification(
+                                        titletext = "Friend Request",
+                                        bodytext = "${notiObject.requesterName} sent you a friend request"
+                                    )
+
+                                    // Trigger data sync to update friend requests
+                                    val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                                    appRepository.dataSync()
                                 }
 
-                                // Show notification (already on Main thread)
-                                showNotification(
-                                    titletext = finaltitlestr,
-                                    bodytext = decryptedContent
-                                )
-
-                                //Start datasync (May get cancelled but we dont care)
-                                val appRepository = KoinPlatform.getKoin().get<AppRepository>()
-                                appRepository.dataSync()
-                            } catch (e: Exception) {
-                                println("[NotificationManager] ERROR: Decryption failed: ${e.message}")
-                                e.printStackTrace()
-
-                                // Show error notification
-                                showNotification(
-                                    titletext = "$finaltitlestr (Decryption Error)",
-                                    bodytext = "Failed to decrypt message: ${e.message}"
-                                )
+                                is NotificationObject.SystemNotification -> {
+                                    // Handle system notification
+                                    showNotification(
+                                        titletext = notiObject.title,
+                                        bodytext = notiObject.message
+                                    )
+                                }
                             }
                         } catch (e: Exception) {
                             println("[NotificationManager] ERROR: Unexpected error in notification handler: ${e.message}")
