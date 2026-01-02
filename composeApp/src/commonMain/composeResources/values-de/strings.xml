@@ -72,6 +72,8 @@
     <string name="error_access_not_permitted">Deine gespeicherte Sitzung ist ungültig. Bitte logge dich erneut ein.</string>
     <string name="error_access_expired">Deine gespeicherte Sitzung abgelaufen. Bitte logge dich erneut ein.</string>
     <string name="error_invalid_credentials">Die von dir eingegebenen Daten sind falsch</string>
+    <string name="error_cannot_be_the_same_username">Der neue Benutzername darf nicht der alte sein</string>
+    <string name="error_username_must_not_be_empty">Der neue Benutzername darf nicht leer sein</string>
 
     <string name="select_gebi_date">Wähle dein Geburtsdatum aus</string>
     <string name="select_profile_pic">Wähle dein Profilbild aus</string>
@@ -192,6 +194,9 @@
     <string name="new_message_noti_single_title">Neuer Chat von %1$s</string>
     <string name="new_message_noti_group_title">Neuer Chat von %1$s in %2$s</string>
 
+    <string name="new_friend_request_noti">Freundschaftsanfrage von %1$s</string>
+    <string name="new_friend_request_noti_body">%1$s will dein Freund sein</string>
+
     <string name="tooltip_username">Wähle einen Benutzernamen den andere Benutzer sehen</string>
     <string name="tooltip_email">Wird zum wiederherstellen der Zugangsdaten und zur Löschung des Accounts verwendet</string>
     <string name="tooltip_birthdate">Wird benutzt, um deine Freunde zu informieren, wenn du Geburtstag hast</string>
@@ -215,6 +220,7 @@
 
 
     <string name="copied_to_clipboard">In die Zwischenablage kopiert</string>
+    <string name="reply">Antworten</string>
     <string name="copy">Kopieren</string>
     <string name="edit">Bearbeiten</string>
     <string name="delete">Löschen</string>
@@ -225,8 +231,22 @@
     <string name="pending_friend_requests">%1$s ausstehende Freundschaftsanfragen</string>
     <string name="no_friends_found_search">Freund nicht gefunden?</string>
 
-    <string name="reply">Antworten</string>
+    <string name="message_delete_info">Willst du diese Nachricht wirklich löschen?</string>
+    <string name="open_chat">Chat öffnen</string>
+    <string name="make_admin">Zum Admin machen</string>
+    <string name="remove_admin_status">Adminstatus entfernen</string>
+    <string name="remove_from_group">aus Gruppe entfernen</string>
+    <string name="you_with_brackets">(Du)</string>
+    <string name="add_description_placeholder">füge eine Beschreibung hinzu...</string>
+    <string name="change">ändern</string>
     <string name="search_results">Suchergebnisse (%1$s)</string>
+    <string name="change_username">Benutzername ändern</string>
+    <string name="change_username_description">Ändere deinen Usernamen. Er wird anderen angezeigt und wird fürs Einloggen gebraucht</string>
+    <string name="change_username_placeholder">neuer Benutzername ...</string>
+
+    <string name="common_groups">Gemeinsame Gruppen (%1$s)</string>
+    <string name="groupmembers">Gruppenmitglieder (%1$s)</string>
+
 
 
 </resources>
