@@ -41,9 +41,9 @@ val sharedmodule = module{
 
     singleOf(::TokenManager)
 
-    single <HttpClient>(named("api")) { createHttpClient(get(), get(), get(), get(), true) }
+    single <HttpClient>(named("api")) { createHttpClient(get(), get(), true) }
 
-    single <HttpClient>(named("auth")) { createHttpClient(get(), get(), get(), get(), false) }
+    single <HttpClient>(named("auth")) { createHttpClient(get(), get(), false) }
 
 
     singleOf(::Navigator)

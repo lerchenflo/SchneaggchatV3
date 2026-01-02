@@ -25,11 +25,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 
 fun createHttpClient(
     engine: HttpClientEngine,
-    preferenceManager: Preferencemanager,
-    loggingRepository: LoggingRepository,
     tokenManager: TokenManager,
     useAuth: Boolean
-
 ) : HttpClient {
 
     return HttpClient(engine) {
@@ -55,6 +52,12 @@ fun createHttpClient(
                             subclass(NetworkUtils.UserResponse.SimpleUserResponse::class)
                             subclass(NetworkUtils.UserResponse.FriendUserResponse::class)
                             subclass(NetworkUtils.UserResponse.SelfUserResponse::class)
+                        }
+
+                        polymorphic(NetworkUtils.NotificationResponse::class) {
+                            subclass(NetworkUtils.NotificationResponse.MessageNotificationResponse::class)
+                            subclass(NetworkUtils.NotificationResponse.FriendRequestNotificationResponse::class)
+                            subclass(NetworkUtils.NotificationResponse.SystemNotificationResponse::class)
                         }
                     }
                 }

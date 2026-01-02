@@ -54,6 +54,10 @@ kotlin {
             //Netzwerk
             implementation(libs.ktor.client.okhttp)
 
+            //App update
+            implementation(libs.app.update.ktx)
+            //implementation(libs.core.ktx)
+
         }
 
 

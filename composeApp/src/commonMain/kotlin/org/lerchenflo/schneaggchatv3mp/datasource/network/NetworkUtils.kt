@@ -481,6 +481,47 @@ class NetworkUtils(
     /*
     **************************************************************************
 
+    Notifications
+
+    **************************************************************************
+     */
+
+    @Serializable
+    sealed interface NotificationResponse {
+
+        @Serializable
+        @SerialName("message")
+        data class MessageNotificationResponse(
+            val msgId: String,
+            val senderName: String,
+            val groupMessage: Boolean,
+            val groupName: String,
+            val encodedContent: String
+        ) : NotificationResponse
+
+        //Response for a friend request notification
+        @Serializable
+        @SerialName("friend_request")
+        data class FriendRequestNotificationResponse(
+            val requesterId: String,
+            val requesterName: String,
+            val requestId: String
+        ) : NotificationResponse
+
+        //Response for a system notification
+        @Serializable
+        @SerialName("system")
+        data class SystemNotificationResponse(
+            val title: String,
+            val message: String,
+            val priority: String = "normal"
+        ) : NotificationResponse
+    }
+
+
+    /*
+    **************************************************************************
+
     Group sync
 
     **************************************************************************

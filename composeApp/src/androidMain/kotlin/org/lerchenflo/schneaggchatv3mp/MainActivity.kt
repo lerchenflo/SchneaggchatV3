@@ -5,6 +5,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.appupdate.AppUpdateOptions
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.UpdateAvailability
 import com.mmk.kmpnotifier.extensions.onCreateOrOnNewIntent
 import com.mmk.kmpnotifier.notification.NotifierManager
 import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfiguration
@@ -17,8 +21,33 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-
         NotifierManager.onCreateOrOnNewIntent(intent)
+
+
+        val appUpdateManager = AppUpdateManagerFactory.create(this)
+
+        // Check for updates
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+        appUpdateInfoTask
+            .addOnSuccessListener { appUpdateInfo ->
+                if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
+                    appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)
+                ) {
+                    try {
+                        val options = AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE)
+                            .build()
+
+                        appUpdateManager.startUpdateFlow(
+                            appUpdateInfo,
+                            this@MainActivity,
+                            options
+                        )
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+
 
         //Noti permission
         val permissionUtil by permissionUtil()

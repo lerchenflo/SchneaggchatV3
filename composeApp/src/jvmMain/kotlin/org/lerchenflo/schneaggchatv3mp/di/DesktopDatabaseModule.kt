@@ -19,11 +19,11 @@ val desktopAppDatabaseModule = module {
 }
 
 val desktopHttpModule = module {
-    single<HttpClient>(named("api")) {createHttpClient(OkHttp.create(), get(), get(), get(),true)}
+    single<HttpClient>(named("api")) {createHttpClient(OkHttp.create(), get(),true)}
 }
 
 val desktopHttpAuthModule = module {
-    single<HttpClient>(named("auth")) {createHttpClient(OkHttp.create(), get(), get(), get(),false)}
+    single<HttpClient>(named("auth")) {createHttpClient(OkHttp.create(), get(),false)}
 }
 
 val desktopDataStoreModule = module {
