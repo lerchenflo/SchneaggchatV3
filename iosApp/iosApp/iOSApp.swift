@@ -31,11 +31,19 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
             let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
             print("APNs Token: \(token)")
+
+            Messaging.messaging().token { token, error in
+                if let error = error {
+                    print("Error fetching FCM token: \(error)")
+                } else if let token = token {
+                    print("FCM Token: \(token)")
+                }
+            }
     }
         
         
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any]) async -> UIBackgroundFetchResult {
-        print("IOS Notification recieved")
+        print("IOS Notification received")
 
         NotifierManager.shared.onApplicationDidReceiveRemoteNotification(userInfo: userInfo)
             return UIBackgroundFetchResult.newData
