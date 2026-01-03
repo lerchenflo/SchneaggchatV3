@@ -1,5 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,6 +37,7 @@ import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -42,7 +46,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -56,6 +63,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.ocr.AnimatedProgressBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -355,8 +363,47 @@ fun Chatauswahlscreen(
             PullToRefreshBox( // needs experimental opt in
                 isRefreshing = false,
                 onRefresh = { viewModel.refresh() }, // Trigger refresh
-                indicator = {},
+                indicator = {}
                 ) {
+
+                    //Refresh loading indicator
+                    var showProgress by remember { mutableStateOf(false) }
+                    var progress by remember { mutableFloatStateOf(0f) }
+                    var animationTrigger by remember { mutableIntStateOf(0) }
+                    LaunchedEffect(viewModel.isLoadingMessages) {
+                        if (viewModel.isLoadingMessages && !showProgress) {
+                            animationTrigger++
+                        }
+                    }
+                    LaunchedEffect(animationTrigger) {
+                        if (animationTrigger > 0) {
+                            showProgress = true
+                            progress = 0f
+
+                            // Animate progress over 800ms
+                            animate(
+                                initialValue = 0f,
+                                targetValue = 1f,
+                                animationSpec = tween(durationMillis = 200, easing = LinearEasing)
+                            ) { value, _ ->
+                                progress = value
+                            }
+
+                            showProgress = false
+                        }
+                    }
+
+                    if (showProgress) {
+                        LinearProgressIndicator(
+                            progress = {progress},
+                            modifier = Modifier.fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            drawStopIndicator = {}
+                        )
+                    }
+
+
+
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize(),
