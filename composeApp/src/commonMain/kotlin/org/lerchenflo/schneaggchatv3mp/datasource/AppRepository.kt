@@ -6,8 +6,11 @@ import androidx.compose.runtime.Composable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -184,10 +187,48 @@ class AppRepository(
             return
         }
         dataSyncRunning = true
+
         try {
-            userIdSync()
-            messageIdSync()
-            groupIdSync()
+            coroutineScope {
+                // Launch all sync operations concurrently
+                val userJob = async {
+                    try {
+                        userIdSync()
+                        println("User sync completed successfully")
+                    } catch (e: Exception) {
+                        println("User sync failed: ${e.message}")
+                        e.printStackTrace()
+                        // Don't rethrow - let other operations continue
+                    }
+                }
+
+                val messageJob = async {
+                    try {
+                        messageIdSync()
+                        println("Message sync completed successfully")
+                    } catch (e: Exception) {
+                        println("Message sync failed: ${e.message}")
+                        e.printStackTrace()
+                        // Don't rethrow - let other operations continue
+                    }
+                }
+
+                val groupJob = async {
+                    try {
+                        groupIdSync()
+                        println("Group sync completed successfully")
+                    } catch (e: Exception) {
+                        println("Group sync failed: ${e.message}")
+                        e.printStackTrace()
+                        // Don't rethrow - let other operations continue
+                    }
+                }
+
+                // Wait for all to complete (errors are already handled)
+                awaitAll(userJob, messageJob, groupJob)
+            }
+
+            println("Data sync completed")
         } finally {
             dataSyncRunning = false
         }
