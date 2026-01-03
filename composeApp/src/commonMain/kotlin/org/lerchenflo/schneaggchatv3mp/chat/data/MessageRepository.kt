@@ -36,6 +36,12 @@ class MessageRepository(
         }
     }
 
+    fun getMessagesByUserIdFlowPaged(userId: String, gruppe: Boolean, pageSize: Int, offset: Int): Flow<List<Message>> {
+        return database.messageDao().getMessagesByUserIdFlowPaged(userId, gruppe, pageSize, offset).map { messages ->
+            messages.map { it.toMessage() }
+        }
+    }
+
     suspend fun getUnsentMessages() : List<Message> {
         return database.messageDao().getUnsentMessages().map {
             it.toMessage()
