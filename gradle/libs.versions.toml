@@ -40,9 +40,13 @@ uiToolingPreview = "1.10.0-rc02"
 
 cmpNavigation3 = "1.0.0-alpha06"
 appUpdateKtx = "2.1.0"
-#coreKtx = "1.8.1"
+#coreKtx = "1.8.1
+maps = "0.12.1"
 
 [libraries]
+
+maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maps" }
+
 
 components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "componentsResources" }
 cryptography-core = { module = "dev.whyoleg.cryptography:cryptography-core", version.ref = "cryptographyProviderOptimal" }
