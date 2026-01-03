@@ -379,12 +379,10 @@ fun Chatauswahlscreen(
                         if (animationTrigger > 0) {
                             showProgress = true
                             progress = 0f
-
-                            // Animate progress over 800ms
                             animate(
                                 initialValue = 0f,
                                 targetValue = 1f,
-                                animationSpec = tween(durationMillis = 200, easing = LinearEasing)
+                                animationSpec = tween(durationMillis = 300, easing = LinearEasing)
                             ) { value, _ ->
                                 progress = value
                             }
