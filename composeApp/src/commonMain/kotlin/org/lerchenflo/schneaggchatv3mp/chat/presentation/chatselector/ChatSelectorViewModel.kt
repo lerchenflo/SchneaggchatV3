@@ -85,6 +85,7 @@ class ChatSelectorViewModel(
         }
     }
 
+
     private var refreshJob: Job? = null
 
     fun refresh() {
@@ -93,8 +94,11 @@ class ChatSelectorViewModel(
         // if a refresh is already running, do nothing
         if (refreshJob?.isActive == true) {
             println("Refreshjob already running, abort")
+
             return
         }
+        updateIsLoadingMessages(true)
+
 
         println("refreshjob starting")
 
@@ -130,6 +134,8 @@ class ChatSelectorViewModel(
                 ensureActive()
                 e.printStackTrace()
             }
+
+            updateIsLoadingMessages(false)
         }
     }
 
