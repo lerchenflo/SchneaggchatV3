@@ -27,13 +27,15 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 class NetworkUtils(
     private val httpClient: HttpClient,
     private val authHttpClient: HttpClient, //For auth without the bearer
-    private val preferenceManager: Preferencemanager
+    private val preferenceManager: Preferencemanager,
+    private val loggingRepository: LoggingRepository
 ) {
 
 
@@ -91,7 +93,7 @@ class NetworkUtils(
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: Exception) {
-            e.printStackTrace()
+            loggingRepository.logWarning("NetworkUtils safeCall failed: ${e.message}")
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.Unknown(message = e.message))
         }
@@ -262,7 +264,7 @@ class NetworkUtils(
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.NoInternet())
         }catch (e: Exception) {
-            e.printStackTrace()
+            loggingRepository.logWarning("NetworkUtils register failed: ${e.message}")
             NetworkResult.Error(NetworkError.Unknown(message = e.message))
         }
     }
@@ -594,7 +596,7 @@ class NetworkUtils(
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.NoInternet())
         }catch (e: Exception) {
-            e.printStackTrace()
+            loggingRepository.logWarning("NetworkUtils createGroup failed: ${e.message}")
             NetworkResult.Error(NetworkError.Unknown(message = e.message))
         }
     }

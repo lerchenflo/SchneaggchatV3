@@ -15,6 +15,11 @@ class LoggingRepository(
         ))
     }
 
+    suspend fun logWarning(message: String) = log(message, LogType.WARNING)
+    suspend fun logError(message: String) = log(message, LogType.ERROR)
+    suspend fun logInfo(message: String) = log(message, LogType.INFO)
+    suspend fun logDebug(message: String) = log(message, LogType.DEBUG)
+
     fun getLogs(): Flow<List<LogEntry>> {
         return database.logDao().getLogs()
     }
