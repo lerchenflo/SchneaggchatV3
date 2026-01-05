@@ -5,8 +5,16 @@ import com.mmk.kmpnotifier.extensions.onCreateOrOnNewIntent
 import com.mmk.kmpnotifier.notification.NotifierManager
 import com.mmk.kmpnotifier.notification.PayloadData
 import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfiguration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
+import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.app.logging.LogType
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.di.androidDataStoreModule
 import org.lerchenflo.schneaggchatv3mp.di.androidHttpAuthModule
 import org.lerchenflo.schneaggchatv3mp.di.androidHttpModule
@@ -15,6 +23,8 @@ import org.lerchenflo.schneaggchatv3mp.di.androidUserDatabaseModule
 import org.lerchenflo.schneaggchatv3mp.di.androidVersionModule
 import org.lerchenflo.schneaggchatv3mp.di.sharedmodule
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
+import java.io.PrintWriter
+import java.io.StringWriter
 
 class MainApp: Application() {
 
@@ -36,9 +46,26 @@ class MainApp: Application() {
                 androidVersionModule,
                 androidPictureManagerModule
             )
-
-
         }
+
+        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
+
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+
+            val loggingRepository = KoinPlatform.getKoin().get<LoggingRepository>()
+            runBlocking {
+                loggingRepository.log(
+                    message = getFullStackTrace(throwable),
+                    logType = LogType.ERROR
+                )
+            }
+
+
+
+
+            defaultHandler?.uncaughtException(thread, throwable)
+        }
+
 
         //Firebase init
         NotifierManager.initialize(
@@ -52,9 +79,34 @@ class MainApp: Application() {
         NotificationManager.initialize()
 
         println("Android firebase init fertig")
-
-
-
-
     }
+
+    private fun getFullStackTrace(throwable: Throwable): String {
+        val sw = StringWriter()
+        val pw = PrintWriter(sw)
+
+        // Print this throwable
+        throwable.printStackTrace(pw)
+
+        // Walk through causes
+        var cause = throwable.cause
+        while (cause != null) {
+            pw.println("Caused by:")
+            cause.printStackTrace(pw)
+            cause = cause.cause
+        }
+
+        // Include suppressed
+        val suppressed = throwable.suppressed
+        if (suppressed.isNotEmpty()) {
+            pw.println("Suppressed exceptions:")
+            for (sup in suppressed) {
+                sup.printStackTrace(pw)
+            }
+        }
+
+        pw.flush()
+        return sw.toString()
+    }
+
 }
