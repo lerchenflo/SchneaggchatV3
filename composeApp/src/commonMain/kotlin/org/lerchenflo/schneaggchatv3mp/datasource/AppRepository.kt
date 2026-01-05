@@ -456,6 +456,7 @@ class AppRepository(
             SessionCache.updateOwnId(JwtUtils.getUserIdFromToken(tokens.refreshToken))
             SessionCache.updateTokenPair(tokens)
             SessionCache.updateLoggedIn(true)
+            SessionCache.setDeveloperValue(preferencemanager.getDevSettings())
         }
 
         return credsSaved

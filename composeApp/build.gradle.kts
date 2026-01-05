@@ -1,6 +1,12 @@
+@file:OptIn(ExperimentalSpmForKmpFeature::class)
+
+import com.android.build.gradle.internal.tasks.UnstrippedLibs.add
+import io.github.frankois944.spmForKmp.swiftPackageConfig
+import io.github.frankois944.spmForKmp.utils.ExperimentalSpmForKmpFeature
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.net.URI
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -12,6 +18,25 @@ plugins {
     alias(libs.plugins.room)
     alias(libs.plugins.jetbrains.kotlin.serialization)
     id("com.google.gms.google-services")
+    id("io.github.frankois944.spmForKmp")
+}
+
+
+fun detectTarget(): String {
+    val hostOs = when (val os = System.getProperty("os.name").lowercase()) {
+        "mac os x" -> "macos"
+        else -> os.split(" ").first()
+    }
+    val hostArch = when (val arch = System.getProperty("os.arch").lowercase()) {
+        "x86_64" -> "amd64"
+        "arm64" -> "aarch64"
+        else -> arch
+    }
+    val renderer = when (hostOs) {
+        "macos" -> "metal"
+        else -> "opengl"
+    }
+    return "${hostOs}-${hostArch}-${renderer}"
 }
 
 
@@ -29,12 +54,29 @@ kotlin {
         iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
+
+        iosTarget.swiftPackageConfig(cinteropName = "spmMaplibre") {
+            dependency {
+                remotePackageVersion(
+                    url = URI("https://github.com/maplibre/maplibre-gl-native-distribution.git"),
+                    products = { add("MapLibre") },
+                    version = "6.17.1",
+                )
+
+            }
+
+        }
+
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
             export("io.github.mirzemehdi:kmpnotifier:1.6.1")
+
         }
+
+
     }
+
 
     jvm()
 
@@ -130,6 +172,9 @@ kotlin {
             //Image loading async
             implementation(libs.coil3.coil.compose)
 
+            //maps
+            implementation(libs.maplibre.compose)
+
 
         }
         commonTest.dependencies {
@@ -146,6 +191,7 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.okhttp)
+
         }
     }
 

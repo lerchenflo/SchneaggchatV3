@@ -56,6 +56,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
@@ -103,7 +104,7 @@ fun App() {
                         subclass(Route.SignUp::class, Route.SignUp.serializer())
                         subclass(Route.ChatDetails::class, Route.ChatDetails.serializer())
                         subclass(Route.Todolist::class, Route.Todolist.serializer())
-                        subclass(Route.UnderConstruction::class, Route.UnderConstruction.serializer())
+                        subclass(Route.Schneaggmap::class, Route.Schneaggmap.serializer())
 
                         //Subgraph for settings
                         subclass(Route.Settings::class, Route.Settings.serializer())
@@ -388,8 +389,8 @@ fun App() {
                     }
 
 
-                    entry<Route.UnderConstruction> {
-                        UnderConstruction()
+                    entry<Route.Schneaggmap> {
+                        SchneaggmapScreenRoot()
                     }
                 }
 

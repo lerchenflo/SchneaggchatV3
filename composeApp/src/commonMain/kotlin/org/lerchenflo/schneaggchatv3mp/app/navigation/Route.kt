@@ -30,7 +30,7 @@ sealed interface Route : NavKey {
     data object Todolist: Route, NavKey
 
     @Serializable
-    data object UnderConstruction: Route, NavKey
+    data object Schneaggmap: Route, NavKey
 
 
     @Serializable
