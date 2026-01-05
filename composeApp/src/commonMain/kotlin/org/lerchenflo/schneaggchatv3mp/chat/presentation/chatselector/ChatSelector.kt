@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -52,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,6 +69,7 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
@@ -207,27 +210,56 @@ fun Chatauswahlscreen(
 
                  */
 
-
-
+                //Website link
+                val uriHandler = LocalUriHandler.current
                 Box(
                     modifier = Modifier
                         .padding(2.dp)
                         .size(touchSize)
                         .clip(CircleShape)
-                        .clickable { viewModel.onMapClick()},
+                        .clickable {
+                            uriHandler.openUri(BASE_SERVER_URL)
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Map,
-                        contentDescription = stringResource(Res.string.schneaggmap),
+                        imageVector = Icons.Default.Language,
+                        contentDescription = "website",
                         modifier = Modifier.size(iconSize),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
 
-
                 Spacer(Modifier.width(gap))
+
+
+                //Schneaggmap beta feature
+                if (SessionCache.developer){
+                    Box(
+                        modifier = Modifier
+                            .padding(2.dp)
+                            .size(touchSize)
+                            .clip(CircleShape)
+                            .clickable { viewModel.onMapClick()},
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Map,
+                            contentDescription = stringResource(Res.string.schneaggmap),
+                            modifier = Modifier.size(iconSize),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    Spacer(Modifier.width(gap))
+
+                }
+
+
+
+
+
 
                 Box(
                     modifier = Modifier

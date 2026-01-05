@@ -129,6 +129,8 @@ class Preferencemanager(
         prefs[booleanPreferencesKey(mdFormatKey)] ?: false
     }.flowOn(Dispatchers.IO)
 
+
+
     // Theme methods
     suspend fun saveThemeSetting(theme: ThemeSetting) {
         pref.edit { datastore ->
@@ -191,6 +193,14 @@ class Preferencemanager(
         pref.edit { datastore ->
             val key = booleanPreferencesKey(PreferenceKey.DEVELOPERSETTINGS.toString())
             datastore[key] = value
+        }
+    }
+
+    suspend fun getDevSettings(): Boolean {
+        return with(dispatcher) {
+            val key = booleanPreferencesKey(PreferenceKey.DEVELOPERSETTINGS.toString())
+            val prefs = pref.data.first()
+            prefs[key] ?: false
         }
     }
 
