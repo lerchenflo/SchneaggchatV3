@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache.updateUsername
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -37,7 +38,8 @@ import schneaggchatv3mp.composeapp.generated.resources.requirement_uppercase
 
 class SignUpViewModel(
     private val appRepository: AppRepository,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val loggingRepository: LoggingRepository
 ): ViewModel() {
 
     var state by mutableStateOf(SignupState())
@@ -184,7 +186,7 @@ class SignUpViewModel(
 
 
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    loggingRepository.logWarning("Signup failed: ${e.message}")
                 } finally {
                     state = state.copy(
                         isLoading = false

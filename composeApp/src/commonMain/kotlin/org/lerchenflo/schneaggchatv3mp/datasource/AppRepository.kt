@@ -25,6 +25,7 @@ import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
@@ -75,7 +76,8 @@ class AppRepository(
     private val messageRepository: MessageRepository,
     private val todoRepository: TodoRepository,
 
-    val appVersion: AppVersion, //Appversion, uf des darf jeder zugriefa
+    val appVersion: AppVersion,
+    private val loggingRepository: LoggingRepository,
 ) {
     //Errorchannel for global error events (Show in every screen)
     companion object ErrorChannel{
@@ -196,9 +198,7 @@ class AppRepository(
                         userIdSync()
                         println("User sync completed successfully")
                     } catch (e: Exception) {
-                        println("User sync failed: ${e.message}")
-                        e.printStackTrace()
-                        // Don't rethrow - let other operations continue
+                        loggingRepository.logWarning("User sync failed: ${e.message}")
                     }
                 }
 
@@ -207,9 +207,7 @@ class AppRepository(
                         messageIdSync()
                         println("Message sync completed successfully")
                     } catch (e: Exception) {
-                        println("Message sync failed: ${e.message}")
-                        e.printStackTrace()
-                        // Don't rethrow - let other operations continue
+                        loggingRepository.logWarning("Message sync failed: ${e.message}")
                     }
                 }
 
@@ -218,9 +216,7 @@ class AppRepository(
                         groupIdSync()
                         println("Group sync completed successfully")
                     } catch (e: Exception) {
-                        println("Group sync failed: ${e.message}")
-                        e.printStackTrace()
-                        // Don't rethrow - let other operations continue
+                        loggingRepository.logWarning("Group sync failed: ${e.message}")
                     }
                 }
 
@@ -1211,7 +1207,7 @@ class AppRepository(
     fun executeSync(onLoadingStateChange: (Boolean) -> Unit) {
         // global handler for uncaught exceptions inside the scope
         val handler = CoroutineExceptionHandler { _, throwable ->
-            throwable.printStackTrace()
+            loggingRepository.logError("WorkManager failed: ${throwable.message}")
         }
 
         // consider making this a long-lived scope on the repository to avoid leaks;
@@ -1225,7 +1221,7 @@ class AppRepository(
                             // pass a no-op loading lambda because repository manages loading state
                             networkUtils.executeMsgIDSync(messageRepository = messageRepository, onLoadingStateChange = {})
                         } catch (e: Exception) {
-                            e.printStackTrace()
+                            loggingRepository.logWarning("Delayed action failed: ${e.message}")
                         }
                     }
 
@@ -1233,7 +1229,7 @@ class AppRepository(
                         try {
                             networkUtils.executeUserIDSync(userRepository = userRepository)
                         } catch (e: Exception) {
-                            e.printStackTrace()
+                            loggingRepository.logWarning("Delayed action failed: ${e.message}")
                         }
                     }
 
@@ -1241,7 +1237,7 @@ class AppRepository(
                         try {
                             networkUtils.executeGroupIDSync(groupRepository = groupRepository)
                         } catch (e: Exception) {
-                            e.printStackTrace()
+                            loggingRepository.logWarning("Delayed action failed: ${e.message}")
                         }
                     }
 
@@ -1249,7 +1245,7 @@ class AppRepository(
                         try {
                             networkUtils.executeTodoIDSync(todoRepository = todoRepository)
                         } catch (e: Exception) {
-                            e.printStackTrace()
+                            loggingRepository.logWarning("Delayed action failed: ${e.message}")
                         }
                     }
 

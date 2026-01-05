@@ -28,6 +28,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
@@ -40,7 +41,8 @@ import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 
 class NewChatViewModel (
     private val appRepository: AppRepository,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val loggingRepository: LoggingRepository
 ): ViewModel() {
 
     private val _searchTerm = MutableStateFlow("")
@@ -86,7 +88,7 @@ class NewChatViewModel (
                 .sortedByDescending { it.commonFriendCount }
         } catch (e: Exception) {
             // Handle error
-            e.printStackTrace()
+            loggingRepository.logWarning("NewChat loadAvailableUsers failed: ${e.message}")
             _availableChats.value = emptyList()
         }
     }

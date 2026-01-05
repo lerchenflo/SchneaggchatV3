@@ -51,7 +51,9 @@ val sharedmodule = module{
 
 
     //Repository
-    singleOf(::AppRepository)
+    single {
+        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
+    }
     singleOf(::SettingsRepository)
     singleOf(::GroupRepository)
     singleOf(::UserRepository)
@@ -61,7 +63,7 @@ val sharedmodule = module{
 
 
     single<NetworkUtils> {
-        NetworkUtils(get(named("api")), get(named("auth")), get())
+        NetworkUtils(get(named("api")), get(named("auth")), get(), get())
     }
 
     //Preferences
@@ -74,16 +76,16 @@ val sharedmodule = module{
     //Alle viewmodels mit factory für desktop
 
     viewModelOf(::ChatSelectorViewModel)
-    factory { ChatSelectorViewModel(get(), get(), get()) }
+    factory { ChatSelectorViewModel(get(), get(), get(), get()) }
 
     viewModelOf(::ChatViewModel)
-    factory { ChatViewModel(get(), get(), get(), get(), get(), get(), get()) }
+    factory { ChatViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
 
     viewModelOf(::ChatDetailsViewmodel)
     factory { ChatDetailsViewmodel(get(), get(), get(), get(), get()) }
 
     viewModelOf(::NewChatViewModel)
-    factory { NewChatViewModel(get(), get()) }
+    factory { NewChatViewModel(get(), get(), get()) }
 
     viewModelOf(::GroupCreatorViewModel)
     factory { GroupCreatorViewModel(get(), get()) }
@@ -92,7 +94,7 @@ val sharedmodule = module{
     factory { LoginViewModel(get(), get(), get()) }
 
     viewModelOf(::SignUpViewModel)
-    factory { SignUpViewModel(get(), get()) }
+    factory { SignUpViewModel(get(), get(), get()) }
 
     viewModelOf(::TodolistViewModel)
     factory { TodolistViewModel(get(), get(), get()) }
@@ -101,7 +103,7 @@ val sharedmodule = module{
 
     //Settings
     viewModelOf(::SharedSettingsViewmodel)
-    factory { SharedSettingsViewmodel(get(), get()) }
+    factory { SharedSettingsViewmodel(get(), get(), get()) }
 
 
     viewModelOf(::SettingsViewModel)
@@ -114,5 +116,5 @@ val sharedmodule = module{
     factory { UserSettingsViewModel(get(), get(), get()) }
 
     viewModelOf(::AppearanceSettingsViewModel)
-    factory { AppearanceSettingsViewModel(get()) }
+    factory { AppearanceSettingsViewModel(get(), get()) }
 }

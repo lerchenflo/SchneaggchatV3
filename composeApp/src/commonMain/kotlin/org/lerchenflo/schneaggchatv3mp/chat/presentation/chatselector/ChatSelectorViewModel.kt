@@ -43,6 +43,7 @@ import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
@@ -60,7 +61,8 @@ import schneaggchatv3mp.composeapp.generated.resources.unread
 class ChatSelectorViewModel(
     private val appRepository: AppRepository,
     private val navigator: Navigator,
-    private val globalViewModel: GlobalViewModel
+    private val globalViewModel: GlobalViewModel,
+    private val loggingRepository: LoggingRepository
 ): ViewModel() {
 
     init {
@@ -142,7 +144,7 @@ class ChatSelectorViewModel(
                 appRepository.dataSync()
             } catch (e: Exception) {
                 ensureActive()
-                e.printStackTrace()
+                loggingRepository.logWarning("ChatSelector refresh failed: ${e.message}")
             }
 
             updateIsLoadingMessages(false)

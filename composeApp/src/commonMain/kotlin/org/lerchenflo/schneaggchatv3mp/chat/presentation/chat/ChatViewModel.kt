@@ -38,6 +38,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 
 class ChatViewModel(
     private val appRepository: AppRepository,
@@ -46,7 +47,8 @@ class ChatViewModel(
     private val groupRepository: GroupRepository,
     private val settingsRepository: SettingsRepository,
     private val globalViewModel: GlobalViewModel,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val loggingRepository: LoggingRepository
 ): ViewModel() {
 
     companion object {
@@ -83,7 +85,7 @@ class ChatViewModel(
         viewModelScope.launch {
             settingsRepository.getUsemd()
                 .catch { exception ->
-                    println("Problem getting MD preference: ${exception.printStackTrace()}")
+                    loggingRepository.logWarning("ChatViewModel: Problem getting MD preference: ${exception.message}")
                 }
                 .collect { value ->
                     markdownEnabled = value

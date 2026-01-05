@@ -19,7 +19,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 
 class TokenManager(
     private val preferenceManager: Preferencemanager,
-    private val loggingRepository: LoggingRepository,
 ) {
     private val refreshMutex = Mutex()
 
@@ -38,11 +37,6 @@ class TokenManager(
             if (current != null && oldTokens != null && current.refreshToken != oldTokens.refreshToken) {
                 return@withLock current
             }
-
-            loggingRepository.log(
-                "HttpClient refreshing tokens; OldTokens: Access: ${oldTokens?.accessToken} Refresh: ${oldTokens?.refreshToken}",
-                LogType.DEBUG
-            )
 
             val refreshRequest = NetworkUtils.RefreshRequest(oldTokens?.refreshToken ?: "")
 

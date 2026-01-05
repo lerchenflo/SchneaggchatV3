@@ -11,11 +11,13 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
 
 class AppearanceSettingsViewModel(
-    private val preferenceManager: Preferencemanager
+    private val preferenceManager: Preferencemanager,
+    private val loggingRepository: LoggingRepository
 ): ViewModel() {
 
 
@@ -23,7 +25,7 @@ class AppearanceSettingsViewModel(
         viewModelScope.launch { // Markdown
             preferenceManager.getUseMdFlow()
                 .catch { exception ->
-                    println("Problem getting MD preference: ${exception.printStackTrace()}")
+                    loggingRepository.logWarning("Problem getting MD preference: ${exception.message}")
                 }
                 .collect { value ->
                     markdownEnabeled = value
@@ -33,7 +35,7 @@ class AppearanceSettingsViewModel(
         viewModelScope.launch { // Theme
             preferenceManager.getThemeFlow()
                 .catch { exception ->
-                    println("Problem getting Theme setting: ${exception.printStackTrace()}")
+                    loggingRepository.logWarning("Problem getting Theme setting: ${exception.message}")
                 }
                 .collect { value ->
                     selectedTheme = value

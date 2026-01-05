@@ -20,6 +20,7 @@ import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
@@ -67,8 +68,9 @@ object NotificationManager{
             // Convert NotificationResponse to local NotificationObject
             notificationResponse?.toNotificationObject()
         } catch (e: Exception) {
-            println("[NotificationManager] ERROR: Failed to parse notification payload: ${e.message}")
-            e.printStackTrace()
+            runBlocking {
+                KoinPlatform.getKoin().get<LoggingRepository>().logWarning("[NotificationManager] Failed to parse notification payload: ${e.message}")
+            }
             null
         }
     }
@@ -97,8 +99,10 @@ object NotificationManager{
             
             json.decodeFromJsonElement<NetworkUtils.NotificationResponse>(jsonElement)
         } catch (e: Exception) {
-            println("[NotificationManager] ERROR: Failed to deserialize notification: ${e.message}")
-            e.printStackTrace()
+            runBlocking {
+                KoinPlatform.getKoin().get<LoggingRepository>().logWarning("[NotificationManager] Failed to deserialize notification: ${e.message}")
+
+            }
             null
         }
     }
@@ -222,8 +226,7 @@ object NotificationManager{
                                         val appRepository = KoinPlatform.getKoin().get<AppRepository>()
                                         appRepository.dataSync()
                                     } catch (e: Exception) {
-                                        println("[NotificationManager] ERROR: Decryption failed: ${e.message}")
-                                        e.printStackTrace()
+                                        KoinPlatform.getKoin().get<LoggingRepository>().logWarning("[NotificationManager] Decryption failed: ${e.message}")
 
                                         // Show error notification
                                         showNotification(
@@ -254,8 +257,7 @@ object NotificationManager{
                                 }
                             }
                         } catch (e: Exception) {
-                            println("[NotificationManager] ERROR: Unexpected error in notification handler: ${e.message}")
-                            e.printStackTrace()
+                            KoinPlatform.getKoin().get<LoggingRepository>().logError("[NotificationManager] Unexpected error in notification handler: ${e.message}")
 
                             // Show error notification
                             showNotification("Schneaggchat Error", "Notification error: ${e.message}")
@@ -282,8 +284,9 @@ object NotificationManager{
             println("NotificationManager initialization completed")
 
         } catch (e: Exception) {
-            println("Error initializing NotificationManager: ${e.message}")
-            e.printStackTrace()
+            runBlocking {
+                KoinPlatform.getKoin().get<LoggingRepository>().logError("Error initializing NotificationManager: ${e.message}")
+            }
         }
     }
 
