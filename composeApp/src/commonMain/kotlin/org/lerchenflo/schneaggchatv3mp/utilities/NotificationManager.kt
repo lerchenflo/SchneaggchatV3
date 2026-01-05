@@ -24,6 +24,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti
+import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.new_message_noti_group_title
 import schneaggchatv3mp.composeapp.generated.resources.new_message_noti_single_title
 import schneaggchatv3mp.composeapp.generated.resources.you_have_new_messages
@@ -149,7 +151,7 @@ object NotificationManager{
             // Token change listener
             NotifierManager.addListener(object : NotifierManager.Listener {
                 override fun onNewToken(token: String) {
-                    //println("onNewToken: $token")
+                    println("🔔 FCM Token received: $token")
                 }
             })
 
@@ -234,8 +236,8 @@ object NotificationManager{
                                 is NotificationObject.FriendRequestNotification -> {
                                     // Handle friend request notification
                                     showNotification(
-                                        titletext = "Friend Request",
-                                        bodytext = "${notiObject.requesterName} sent you a friend request"
+                                        titletext = getString(Res.string.new_friend_request_noti, notiObject.requesterName),
+                                        bodytext = getString(Res.string.new_friend_request_noti_body, notiObject.requesterName)
                                     )
 
                                     // Trigger data sync to update friend requests

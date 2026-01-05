@@ -18,11 +18,11 @@ val IosDatabaseModule = module {
 }
 
 val IosHttpModule = module {
-    single<HttpClient>(named("api")) {createHttpClient(Darwin.create(), get(), get(), get(), true)}
+    single<HttpClient>(named("api")) {createHttpClient(Darwin.create(), get(), true)}
 }
 
 val IosHttpAuthModule = module {
-    single<HttpClient>(named("auth")) {createHttpClient(Darwin.create(), get(), get(), get(), false)}
+    single<HttpClient>(named("auth")) {createHttpClient(Darwin.create(), get(), false)}
 }
 
 val IosDatastoreModule = module {

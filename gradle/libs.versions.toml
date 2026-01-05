@@ -40,7 +40,7 @@ uiToolingPreview = "1.10.0-rc02"
 
 cmpNavigation3 = "1.0.0-alpha06"
 appUpdateKtx = "2.1.0"
-coreKtx = "1.10.3"
+#coreKtx = "1.8.1"
 
 [libraries]
 
@@ -97,7 +97,7 @@ ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "uiToolingPreview" 
 ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "uiToolingPreview" }
 ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
 app-update-ktx = { group = "com.google.android.play", name = "app-update-ktx", version.ref = "appUpdateKtx" }
-core-ktx = { group = "com.google.android.play", name = "core-ktx", version.ref = "coreKtx" }
+#core-ktx = { group = "com.google.android.play", name = "core-ktx", version.ref = "coreKtx" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
