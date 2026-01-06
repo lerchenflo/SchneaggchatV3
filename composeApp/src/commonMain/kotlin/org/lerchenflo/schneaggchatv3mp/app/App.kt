@@ -7,7 +7,9 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
@@ -24,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -34,8 +37,10 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import androidx.room.util.TableInfo
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.lerchenflo.hallenmanager.sharedUi.UnderConstruction
+import io.ktor.client.plugins.sse.SSEBufferPolicy
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.modules.SerializersModule
@@ -63,6 +68,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
 import org.lerchenflo.schneaggchatv3mp.sharedUi.AutoFadePopup
+import org.lerchenflo.schneaggchatv3mp.sharedUi.OfflineBar
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
@@ -195,206 +201,222 @@ fun App() {
                 .clearFocusOnTap()
         ) { innerpadding ->
 
-            NavDisplay(
-                backStack = rootBackStack,
+            Column(
                 modifier = Modifier
                     .padding(innerpadding),
-                entryDecorators = listOf(
-                    rememberSaveableStateHolderNavEntryDecorator(),
-                    rememberViewModelStoreNavEntryDecorator()
-                ),
-                entryProvider = entryProvider {
+            ) {
 
-                    //Authentication
-                    entry<Route.AutoLoginCredChecker> {
-                        //Content of this screen
-
-                        val globalViewModel = koinInject<GlobalViewModel>()
-
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-
-                        //Load initial credentials
-                        LaunchedEffect(Unit) {
-                            //Load saved credentials (Tokens, Userid)
-                            val savedCreds = appRepository.loadSavedLoginConfig() //Returns boolean
-
-                            if (!savedCreds){
-                                //No tokens are saved, we navigate to the login
-                                navigator.navigate(Route.Login, exitAllPreviousScreens = true)
-                            }else {
-
-                                //At this point there were credentials loaded from storage
-                                //Navigate to the chat
-                                navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
-
-                                //Launch a token refresh async
-                                globalViewModel.viewModelScope.launch {
-
-                                    //Refresh the tokens (If there is an error which is not a network error (Access denied, tokens invalidated) we need to log out again)
-                                    val error = appRepository.refreshTokens()
-
-                                    //If no error happenend, sync all data with the server and return
-                                    if (error == null) {
-                                        appRepository.dataSync()
-                                        return@launch
-                                    }
-
-                                    //At this point an error happened during token refresh
-                                    println("Autologin token refresh error: $error")
-
-                                    //Is the error a connection error (Connection to the server could not be established)
-                                    if (error.isConnectionError()){
-                                        println("Autologin connection error")
-
-                                        //No sense to sync data, return
-                                        return@launch
-                                    }
+                //Show when offline
+                if (!SessionCache.online) {
+                    OfflineBar(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                }
 
 
-                                    //Now there should only be real server errors left
-                                    if (error is NetworkError.Unauthorized){
-                                        println("Autologin not permitted by server, rerouting to login")
 
-                                        //Throwing an error message for the user
-                                        AppRepository.trySendError(
-                                            event = AppRepository.ErrorChannel.ErrorEvent(
-                                                401,
-                                                errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
-                                                duration = 5000L,
+                //Main content
+                NavDisplay(
+                    backStack = rootBackStack,
+                    entryDecorators = listOf(
+                        rememberSaveableStateHolderNavEntryDecorator(),
+                        rememberViewModelStoreNavEntryDecorator()
+                    ),
+                    entryProvider = entryProvider {
+
+                        //Authentication
+                        entry<Route.AutoLoginCredChecker> {
+                            //Content of this screen
+
+                            val globalViewModel = koinInject<GlobalViewModel>()
+
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+
+                            //Load initial credentials
+                            LaunchedEffect(Unit) {
+                                //Load saved credentials (Tokens, Userid)
+                                val savedCreds = appRepository.loadSavedLoginConfig() //Returns boolean
+
+                                if (!savedCreds){
+                                    //No tokens are saved, we navigate to the login
+                                    navigator.navigate(Route.Login, exitAllPreviousScreens = true)
+                                }else {
+
+                                    //At this point there were credentials loaded from storage
+                                    //Navigate to the chat
+                                    navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
+
+                                    //Launch a token refresh async
+                                    globalViewModel.viewModelScope.launch {
+
+                                        //Refresh the tokens (If there is an error which is not a network error (Access denied, tokens invalidated) we need to log out again)
+                                        val error = appRepository.refreshTokens()
+
+                                        //If no error happenend, sync all data with the server and return
+                                        if (error == null) {
+                                            appRepository.dataSync()
+                                            return@launch
+                                        }
+
+                                        //At this point an error happened during token refresh
+                                        println("Autologin token refresh error: $error")
+
+                                        //Is the error a connection error (Connection to the server could not be established)
+                                        if (error.isConnectionError()){
+                                            println("Autologin connection error")
+
+                                            //No sense to sync data, return
+                                            return@launch
+                                        }
+
+
+                                        //Now there should only be real server errors left
+                                        if (error is NetworkError.Unauthorized){
+                                            println("Autologin not permitted by server, rerouting to login")
+
+                                            //Throwing an error message for the user
+                                            AppRepository.trySendError(
+                                                event = AppRepository.ErrorChannel.ErrorEvent(
+                                                    401,
+                                                    errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
+                                                    duration = 5000L,
+                                                )
                                             )
+
+                                            //deleting all saved credentials, they will be invalid on next app start too
+                                            appRepository.logout()
+
+                                            //Navigate back to the loginscreen
+                                            navigator.navigate(Route.Login, exitAllPreviousScreens = true)
+                                        }else {
+                                            //Log any other error which might occur
+                                            AppRepository.trySendError(
+                                                event = AppRepository.ErrorChannel.ErrorEvent(
+                                                    error = error,
+                                                    duration = 15000
+                                                )
+                                            )
+                                        }
+                                    }
+                                }
+
+
+                            }
+                        }
+
+                        entry<Route.Login> {
+                            LoginScreen()
+                        }
+
+                        entry<Route.SignUp> {
+                            SignUpScreenRoot()
+                        }
+
+
+
+                        //Chat
+                        entry<Route.ChatSelector> {
+                            Chatauswahlscreen()
+                        }
+
+                        entry<Route.Chat> {
+                            ChatScreen()
+                        }
+                        entry<Route.ChatDetails> {
+                            ChatDetails()
+                        }
+
+
+                        //New chat
+                        entry<Route.NewChat> {
+                            NewChat()
+                        }
+
+                        entry<Route.GroupCreator> {
+                            GroupCreatorScreenRoot()
+                        }
+
+
+
+                        //Settings
+                        entry<Route.Settings> {
+
+                            //Initialize global settingsviewmodel which will survive as long as the settings are open
+                            val sharedSettingsViewmodel = koinViewModel<SharedSettingsViewmodel>()
+
+                            NavDisplay(
+                                backStack = settingsBackStack,
+                                entryProvider = entryProvider {
+                                    entry<Route.Settings.SettingsScreen> {
+                                        SettingsScreen(
+                                            settingsViewmodel = koinInject(),
+                                            sharedSettingsViewmodel = sharedSettingsViewmodel,
+                                            onBackClick = {
+                                                scope.launch {
+                                                    navigator.navigateBack() //Settings backstack gets cleared automatically
+                                                }
+                                            },
+                                            navigateUserSettings = {settingsBackStack.add(Route.Settings.UserSettings)},
+                                            navigateDevSettings = {settingsBackStack.add(Route.Settings.DeveloperSettings)},
+                                            navigateAppearanceSettings = {settingsBackStack.add(Route.Settings.AppearanceSettings)}
                                         )
+                                    }
 
-                                        //deleting all saved credentials, they will be invalid on next app start too
-                                        appRepository.logout()
+                                    entry<Route.Settings.DeveloperSettings> {
+                                        DeveloperSettings(
+                                            devSettingsViewModel = koinInject(),
+                                            sharedSettingsViewmodel = sharedSettingsViewmodel,
+                                            onBackClick = {
+                                                if (settingsBackStack.size > 1){
+                                                    settingsBackStack.removeAt(settingsBackStack.size - 1)
+                                                }
+                                            }
+                                        )
+                                    }
 
-                                        //Navigate back to the loginscreen
-                                        navigator.navigate(Route.Login, exitAllPreviousScreens = true)
-                                    }else {
-                                        //Log any other error which might occur
-                                        AppRepository.trySendError(
-                                            event = AppRepository.ErrorChannel.ErrorEvent(
-                                                error = error,
-                                                duration = 15000
-                                            )
+                                    entry<Route.Settings.UserSettings> {
+                                        UserSettings(
+                                            userSettingsViewModel = koinInject(),
+                                            sharedSettingsViewmodel = sharedSettingsViewmodel,
+                                            onBackClick = {
+                                                if (settingsBackStack.size > 1){
+                                                    settingsBackStack.removeAt(settingsBackStack.size - 1)
+                                                }
+                                            }
+                                        )
+                                    }
+
+                                    entry<Route.Settings.AppearanceSettings> {
+                                        AppearanceSettings(
+                                            appearanceSettingsViewModel = koinInject(),
+                                            sharedSettingsViewmodel = sharedSettingsViewmodel,
+                                            onBackClick = {
+                                                if (settingsBackStack.size > 1){
+                                                    settingsBackStack.removeAt(settingsBackStack.size - 1)
+                                                }
+                                            }
                                         )
                                     }
                                 }
-                            }
+                            )
+                        }
 
 
+                        entry<Route.Todolist> {
+                            TodolistScreen()
+
+                        }
+
+
+                        entry<Route.Schneaggmap> {
+                            SchneaggmapScreenRoot()
                         }
                     }
 
-                    entry<Route.Login> {
-                        LoginScreen()
-                    }
+                )
 
-                    entry<Route.SignUp> {
-                        SignUpScreenRoot()
-                    }
-
-
-
-                    //Chat
-                    entry<Route.ChatSelector> {
-                        Chatauswahlscreen()
-                    }
-
-                    entry<Route.Chat> {
-                        ChatScreen()
-                    }
-                    entry<Route.ChatDetails> {
-                        ChatDetails()
-                    }
-
-
-                    //New chat
-                    entry<Route.NewChat> {
-                        NewChat()
-                    }
-
-                    entry<Route.GroupCreator> {
-                        GroupCreatorScreenRoot()
-                    }
-
-
-
-                    //Settings
-                    entry<Route.Settings> {
-
-                        //Initialize global settingsviewmodel which will survive as long as the settings are open
-                        val sharedSettingsViewmodel = koinViewModel<SharedSettingsViewmodel>()
-
-                        NavDisplay(
-                            backStack = settingsBackStack,
-                            entryProvider = entryProvider {
-                                entry<Route.Settings.SettingsScreen> {
-                                    SettingsScreen(
-                                        settingsViewmodel = koinInject(),
-                                        sharedSettingsViewmodel = sharedSettingsViewmodel,
-                                        onBackClick = {
-                                            scope.launch {
-                                                navigator.navigateBack() //Settings backstack gets cleared automatically
-                                            }
-                                        },
-                                        navigateUserSettings = {settingsBackStack.add(Route.Settings.UserSettings)},
-                                        navigateDevSettings = {settingsBackStack.add(Route.Settings.DeveloperSettings)},
-                                        navigateAppearanceSettings = {settingsBackStack.add(Route.Settings.AppearanceSettings)}
-                                    )
-                                }
-
-                                entry<Route.Settings.DeveloperSettings> {
-                                    DeveloperSettings(
-                                        devSettingsViewModel = koinInject(),
-                                        sharedSettingsViewmodel = sharedSettingsViewmodel,
-                                        onBackClick = {
-                                            if (settingsBackStack.size > 1){
-                                                settingsBackStack.removeAt(settingsBackStack.size - 1)
-                                            }
-                                        }
-                                    )
-                                }
-
-                                entry<Route.Settings.UserSettings> {
-                                    UserSettings(
-                                        userSettingsViewModel = koinInject(),
-                                        sharedSettingsViewmodel = sharedSettingsViewmodel,
-                                        onBackClick = {
-                                            if (settingsBackStack.size > 1){
-                                                settingsBackStack.removeAt(settingsBackStack.size - 1)
-                                            }
-                                        }
-                                    )
-                                }
-
-                                entry<Route.Settings.AppearanceSettings> {
-                                    AppearanceSettings(
-                                        appearanceSettingsViewModel = koinInject(),
-                                        sharedSettingsViewmodel = sharedSettingsViewmodel,
-                                        onBackClick = {
-                                            if (settingsBackStack.size > 1){
-                                                settingsBackStack.removeAt(settingsBackStack.size - 1)
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                        )
-                    }
-
-
-                    entry<Route.Todolist> {
-                        TodolistScreen()
-
-                    }
-
-
-                    entry<Route.Schneaggmap> {
-                        SchneaggmapScreenRoot()
-                    }
-                }
-
-            )
+            }
 
         }
 

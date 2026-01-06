@@ -80,7 +80,7 @@
 
     <string name="status">Status:</string>
     <string name="app_broken_desc">Will fix most of the errors</string>
-    <string name="app_broken_are_you_sure">This will delete the local database and fetch all data from the server again. Are you sure you want to continue?</string>
+    <string name="app_broken_are_you_sure">This will delete the local database and fetch all data from the server again.\nAre you sure you want to continue?</string>
     <string name="please_restart_app">Please restart the app</string>
     <string name="others_say_about">others wrote about %1$s:</string>
     <string name="status_info">This Text is written by the user himself</string>
