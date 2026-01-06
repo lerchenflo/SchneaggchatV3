@@ -67,6 +67,7 @@ import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.change
 import schneaggchatv3mp.composeapp.generated.resources.common_groups
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_title
+import schneaggchatv3mp.composeapp.generated.resources.group_description
 import schneaggchatv3mp.composeapp.generated.resources.groupmembers
 import schneaggchatv3mp.composeapp.generated.resources.make_admin
 import schneaggchatv3mp.composeapp.generated.resources.no_status
@@ -403,7 +404,7 @@ fun ChangeDescription(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = stringResource(Res.string.friend_request_title),
+                        text = stringResource(Res.string.group_description),
                     )
                     OutlinedTextField(
                         value = viewModel.descriptionText,
