@@ -80,8 +80,7 @@
 
     <string name="status">Status:</string>
     <string name="app_broken_desc">Behebt die meisten gängigen Fehler mit der App</string>
-    <string name="app_broken_are_you_sure">Dies wird die Lokale Datenbank löschen und erneut alle Daten vom Server herunterladen.
-        Bist du sicher dass du fortfahren willst?</string>
+    <string name="app_broken_are_you_sure">Dies wird die Lokale Datenbank löschen und erneut alle Daten vom Server herunterladen.\nBist du sicher dass du fortfahren willst?</string>
     <string name="please_restart_app">Bitte starte die App neu</string>
     <string name="others_say_about">Andere User haben über %1$s geschrieben:</string>
     <string name="status_info">Dieser Text wurde vom User verfasst</string>

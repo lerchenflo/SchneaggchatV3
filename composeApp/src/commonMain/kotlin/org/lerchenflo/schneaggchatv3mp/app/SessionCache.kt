@@ -90,8 +90,12 @@ object SessionCache {
     private val _onlineFlow = MutableStateFlow(true)
     val onlineFlow: StateFlow<Boolean> = _onlineFlow.asStateFlow()
 
+    var online: Boolean by mutableStateOf(true)
+        private set
+
     fun updateOnline(newValue: Boolean) {
         _onlineFlow.value = newValue
+        online = newValue
     }
 
     // synchronous, non-colliding helper

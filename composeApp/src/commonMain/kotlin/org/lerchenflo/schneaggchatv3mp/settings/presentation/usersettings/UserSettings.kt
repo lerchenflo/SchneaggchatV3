@@ -29,9 +29,11 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -53,12 +55,16 @@ import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
 import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.maplibre.compose.expressions.dsl.image
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.are_you_sure_you_want_to_logout
 import schneaggchatv3mp.composeapp.generated.resources.cancel
@@ -69,10 +75,12 @@ import schneaggchatv3mp.composeapp.generated.resources.change_username_placehold
 import schneaggchatv3mp.composeapp.generated.resources.email
 import schneaggchatv3mp.composeapp.generated.resources.emailinfo
 import schneaggchatv3mp.composeapp.generated.resources.emailinfo_unverified
+import schneaggchatv3mp.composeapp.generated.resources.error_cannot_be_the_same_username
 import schneaggchatv3mp.composeapp.generated.resources.logout
 import schneaggchatv3mp.composeapp.generated.resources.no
 import schneaggchatv3mp.composeapp.generated.resources.user_settings
 import schneaggchatv3mp.composeapp.generated.resources.yes
+import kotlin.coroutines.coroutineContext
 
 @Composable
 fun UserSettings(
@@ -124,7 +132,7 @@ fun UserSettings(
 
         }
     }
-    //TODO: Wittabuggla
+
 
     if (!showImagePickerDialog){
         Column(
@@ -137,6 +145,7 @@ fun UserSettings(
             )
             Spacer(modifier = Modifier.size(10.dp))
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
 
             ProfilePictureView(
                 filepath = ownuser?.profilePictureUrl ?: "",
@@ -154,7 +163,7 @@ fun UserSettings(
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-            //Username?
+            //Username
             SettingsOption(
                 icon = Icons.Default.EditNote,
                 text = stringResource(Res.string.change_username),
@@ -255,7 +264,10 @@ fun UserSettings(
     if(showChangeUsernamePopup){
         ChangeUsernameAlert(
             onDismiss = { showChangeUsernamePopup = false },
-            viewModel = userSettingsViewModel
+            onSave = {
+                userSettingsViewModel.updateUsernameOnSever(it)
+            },
+            oldUsername = sharedSettingsViewmodel.ownUser?.name ?: "",
         )
     }
 
@@ -265,19 +277,32 @@ fun UserSettings(
 @Composable
 fun ChangeUsernameAlert(
     onDismiss: () -> Unit,
-    viewModel: UserSettingsViewModel,
+    onSave: (String) -> Unit,
+    oldUsername: String
 
 ){
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current // Also helpful to hide keyboard
+
+    var newUsername by remember {
+        mutableStateOf(oldUsername)
+    }
+    val scope = rememberCoroutineScope()
 
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(
                 onClick = {
-                    viewModel.updateUsernameOnSever()
-                    onDismiss()
+                    if (newUsername == oldUsername) {
+                        scope.launch {
+                            SnackbarManager.showMessage(getString(Res.string.error_cannot_be_the_same_username))
+                        }
+                    } else {
+                        onSave(newUsername)
+                        onDismiss()
+                    }
+
                 },
             ) {
                 Text(
@@ -313,13 +338,13 @@ fun ChangeUsernameAlert(
                         text = stringResource(Res.string.change_username),
                     )
                     OutlinedTextField(
-                        value = viewModel.newUsername,
+                        value = newUsername,
                         textStyle = MaterialTheme.typography.bodySmall.copy(
                             fontSize = 14.sp // You can adjust this value as needed
                         ),
                         singleLine = true,
                         onValueChange = { newValue ->
-                            viewModel.updateNewUsernameText(newValue)
+                            newUsername = newValue
                         },
                         modifier = Modifier
                             .onPreviewKeyEvent { event ->

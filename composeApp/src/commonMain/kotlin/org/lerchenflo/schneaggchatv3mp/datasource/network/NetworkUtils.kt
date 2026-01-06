@@ -453,12 +453,44 @@ class NetworkUtils(
         )
     }
 
-    //TODO: Funktioniert des so oda musses wie beim register gmacht werra
-    suspend fun changeProfilePic(newProfilePic: ByteArray) : NetworkResult<Any, NetworkError>  {
-        return safePost(
-            endpoint = "/users/setprofilepic",
-            body = newProfilePic
-        )
+    suspend fun changeProfilePic(newProfilePic: ByteArray, fileName: String = "profile.jpg"): NetworkResult<Any, NetworkError> {
+        return try {
+            val response = httpClient.submitFormWithBinaryData(
+                url = preferenceManager.buildServerUrl("/users/setprofilepic"),
+                formData = formData {
+                    append("profilepic", newProfilePic, Headers.build {
+                        append(HttpHeaders.ContentType, "image/jpeg")
+                        append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+                    })
+                }
+            )
+
+            if (response.status.isSuccess()) {
+                NetworkResult.Success(Unit)
+            } else {
+                NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
+            }
+        } catch (e: UnresolvedAddressException) {
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.NoInternet())
+        } catch (e: HttpRequestTimeoutException) {
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.RequestTimeout())
+        } catch (e: SocketTimeoutException) {
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.RequestTimeout())
+        } catch (e: ConnectTimeoutException) {
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.RequestTimeout())
+        } catch (e: SerializationException) {
+            NetworkResult.Error(NetworkError.Serialization(message = e.message))
+        } catch (e: IOException) {
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.NoInternet())
+        } catch (e: Exception) {
+            loggingRepository.logWarning("NetworkUtils changeProfilePic failed: ${e.message}")
+            NetworkResult.Error(NetworkError.Unknown(message = e.message))
+        }
     }
 
     @Serializable
@@ -615,11 +647,44 @@ class NetworkUtils(
     }
 
 
-    suspend fun changeGroupProfilePic(newProfilePic: ByteArray, groupId: String) : NetworkResult<Any, NetworkError>  {
-        return safePost(
-            endpoint = "/groups/setprofilepic?groupid=$groupId",
-            body = newProfilePic
-        )
+    suspend fun changeGroupProfilePic(newProfilePic: ByteArray, groupId: String, fileName: String = "profile.jpg"): NetworkResult<Any, NetworkError> {
+        return try {
+            val response = httpClient.submitFormWithBinaryData(
+                url = preferenceManager.buildServerUrl("/groups/setprofilepic?groupid=$groupId"),
+                formData = formData {
+                    append("profilepic", newProfilePic, Headers.build {
+                        append(HttpHeaders.ContentType, "image/jpeg")
+                        append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+                    })
+                }
+            )
+
+            if (response.status.isSuccess()) {
+                NetworkResult.Success(Unit)
+            } else {
+                NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
+            }
+        } catch (e: UnresolvedAddressException) {
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.NoInternet())
+        } catch (e: HttpRequestTimeoutException) {
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.RequestTimeout())
+        } catch (e: SocketTimeoutException) {
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.RequestTimeout())
+        } catch (e: ConnectTimeoutException) {
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.RequestTimeout())
+        } catch (e: SerializationException) {
+            NetworkResult.Error(NetworkError.Serialization(message = e.message))
+        } catch (e: IOException) {
+            SessionCache.updateOnline(false)
+            NetworkResult.Error(NetworkError.NoInternet())
+        } catch (e: Exception) {
+            loggingRepository.logWarning("NetworkUtils changeGroupProfilePic failed: ${e.message}")
+            NetworkResult.Error(NetworkError.Unknown(message = e.message))
+        }
     }
 
     suspend fun changeGroupDescription(newDescription: String, groupId: String) : NetworkResult<Any, NetworkError> {

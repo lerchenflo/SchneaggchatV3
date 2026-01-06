@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -38,7 +39,19 @@ class GlobalViewModel(
             }
         }
 
-        //TODO: Sync alle 10 sek oda so der an login macht wenn du offline bisch und location und so
+        viewModelScope.launch {
+            while (true) {
+                if (SessionCache.isLoggedInValue() && !SessionCache.isOnlineValue()) {
+                    //You are logged in, but there is no connection to the server
+
+                    //Ping server
+                    appRepository.testServer() //If online will automatically set the online bool
+                }
+
+                delay(5000)
+            }
+        }
+
     }
 
 
