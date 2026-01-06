@@ -748,7 +748,6 @@ class AppRepository(
         when (val success = networkUtils.changeProfilePic(newPic)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                delay(500)
                 dataSync()
                 return true
             }
@@ -1170,7 +1169,6 @@ class AppRepository(
         when (val success = networkUtils.changeGroupProfilePic(newPic, groupId)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                delay(500)
                 dataSync()
                 return true
             }

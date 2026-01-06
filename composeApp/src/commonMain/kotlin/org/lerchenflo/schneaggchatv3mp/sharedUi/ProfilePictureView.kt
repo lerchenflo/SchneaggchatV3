@@ -14,23 +14,17 @@ import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 
 @Composable
 fun ProfilePictureView(
-    filepath: String, //ABsolute filepath
-    modifier : Modifier = Modifier
-        .size(40.dp) // Use square aspect ratio
-        .padding(end = 8.dp) // Right padding only
-        .clip(CircleShape) // Circular image
-
+    filepath: String, //Absolute filepath
+    modifier: Modifier = Modifier
+        .size(40.dp)
+        .padding(end = 8.dp)
+        .clip(CircleShape)
 ) {
-    //println("Filepath profilepic: $filepath")
-
 
     AsyncImage(
         model = filepath,
         contentDescription = "Profile picture",
         error = painterResource(Res.drawable.icon_nutzer),
-        modifier = modifier
-            .clip(CircleShape)
+        modifier = modifier.clip(CircleShape)
     )
 }
-
-
