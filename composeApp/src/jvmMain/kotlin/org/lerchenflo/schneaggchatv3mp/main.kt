@@ -12,6 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.di.desktopDataStoreModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopHttpAuthModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopHttpModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopPictureManagerModule
+import org.lerchenflo.schneaggchatv3mp.di.desktopShareUtilsModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopVersionModule
 import org.lerchenflo.schneaggchatv3mp.di.sharedmodule
 import java.awt.Dimension
@@ -27,7 +28,8 @@ fun main() = application {
             desktopHttpAuthModule,
             desktopDataStoreModule,
             desktopVersionModule,
-            desktopPictureManagerModule
+            desktopPictureManagerModule,
+            desktopShareUtilsModule
         )
     }
 
