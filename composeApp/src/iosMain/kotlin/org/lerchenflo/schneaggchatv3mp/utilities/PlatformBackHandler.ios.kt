@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
-@androidx.compose.runtime.Composable
+import androidx.compose.runtime.Composable
+
+@Composable
 actual fun PlatformBackHandler(enabled: Boolean, onBack: () -> Unit) {
 }

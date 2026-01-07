@@ -26,6 +26,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
@@ -34,15 +35,20 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.copied_to_clipboard
 import schneaggchatv3mp.composeapp.generated.resources.error_friend_request
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
+import schneaggchatv3mp.composeapp.generated.resources.invitation_text
 
 class NewChatViewModel (
     private val appRepository: AppRepository,
     private val navigator: Navigator,
-    private val loggingRepository: LoggingRepository
+    private val loggingRepository: LoggingRepository,
+    private val shareUtils: ShareUtils
 ): ViewModel() {
 
     private val _searchTerm = MutableStateFlow("")
@@ -151,6 +157,17 @@ class NewChatViewModel (
     fun onGroupCreatorClick() {
         viewModelScope.launch {
             navigator.navigate(Route.GroupCreator)
+        }
+    }
+
+    fun onInviteFriendClick() {
+
+        viewModelScope.launch {
+            shareUtils.shareString(getString(Res.string.invitation_text) + "\n$BASE_SERVER_URL")
+
+            if (appRepository.appVersion.isDesktop()) {
+                SnackbarManager.showMessage(getString(Res.string.copied_to_clipboard))
+            }
         }
     }
 

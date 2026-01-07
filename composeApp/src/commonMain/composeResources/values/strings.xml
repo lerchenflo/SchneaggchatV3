@@ -248,5 +248,7 @@
 
 
     <string name="delete_account">Delete account</string>
+    <string name="invitation_text">You do not use Schneaggchat? Join now:</string>
+
 
 </resources>

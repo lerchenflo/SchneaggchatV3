@@ -2,7 +2,7 @@ package org.lerchenflo.schneaggchatv3mp
 
 val BASE_SERVER_URL = "https://schneaggchatv3.lerchenflo.eu"
 
-var URL_PRIVACY = "$BASE_SERVER_URL/privacypolicy.html"
+val URL_PRIVACY = "$BASE_SERVER_URL/privacypolicy.html"
 
 val URL_DEL_ACC = "$BASE_SERVER_URL/delete_account.html"
 
@@ -17,13 +17,6 @@ var GROUPPROFILEPICTURE_FILE_NAME = ".gpb"
 var PICTURE_FILE_NAME = "_bild.drawable"
 
 var VOICEMSG_FILE_NAME = "_voicemsg.m4a"
-
-
-
-
-var GROUPPROFILEPICTURE = ""
-
-var PROFILEPICTURE = ""
 
 
 
