@@ -246,6 +246,7 @@
     <string name="common_groups">Gemeinsame Gruppen (%1$s)</string>
     <string name="groupmembers">Gruppenmitglieder (%1$s)</string>
 
+    <string name="invitation_text">Du verwendest kein Schneaggchat? Tritt jetzt bei:</string>
 
 
 </resources>

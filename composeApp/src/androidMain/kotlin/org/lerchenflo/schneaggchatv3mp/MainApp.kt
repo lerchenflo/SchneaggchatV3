@@ -19,6 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.di.androidDataStoreModule
 import org.lerchenflo.schneaggchatv3mp.di.androidHttpAuthModule
 import org.lerchenflo.schneaggchatv3mp.di.androidHttpModule
 import org.lerchenflo.schneaggchatv3mp.di.androidPictureManagerModule
+import org.lerchenflo.schneaggchatv3mp.di.androidShareUtilsModule
 import org.lerchenflo.schneaggchatv3mp.di.androidUserDatabaseModule
 import org.lerchenflo.schneaggchatv3mp.di.androidVersionModule
 import org.lerchenflo.schneaggchatv3mp.di.sharedmodule
@@ -44,7 +45,8 @@ class MainApp: Application() {
                 androidHttpAuthModule,
                 androidDataStoreModule,
                 androidVersionModule,
-                androidPictureManagerModule
+                androidPictureManagerModule,
+                androidShareUtilsModule
             )
         }
 

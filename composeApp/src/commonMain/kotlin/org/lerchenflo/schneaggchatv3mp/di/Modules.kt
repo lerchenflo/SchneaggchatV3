@@ -34,6 +34,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSe
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 
 val sharedmodule = module{
 
@@ -48,7 +49,6 @@ val sharedmodule = module{
 
 
     singleOf(::Navigator)
-
 
 
     //Repository
@@ -86,7 +86,7 @@ val sharedmodule = module{
     factory { ChatDetailsViewmodel(get(), get(), get(), get(), get()) }
 
     viewModelOf(::NewChatViewModel)
-    factory { NewChatViewModel(get(), get(), get()) }
+    factory { NewChatViewModel(get(), get(), get(),get()) }
 
     viewModelOf(::GroupCreatorViewModel)
     factory { GroupCreatorViewModel(get(), get()) }

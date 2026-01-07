@@ -120,7 +120,7 @@ fun NewChat(
                     text = stringResource(Res.string.invite_friend),
                     icon = Icons.Default.ContactMail,
                     onClick = {
-                        SnackbarManager.showMessage("Freund einladen noch nicht implementiert")
+                        viewModel.onInviteFriendClick()
                     },
                     modifier = Modifier.weight(1f)
                 )
