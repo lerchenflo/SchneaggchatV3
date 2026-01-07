@@ -247,5 +247,7 @@
     <string name="groupmembers">Gruppenmitglieder (%1$s)</string>
 
 
+    <string name="delete_account">Account löschen</string>
+
 
 </resources>

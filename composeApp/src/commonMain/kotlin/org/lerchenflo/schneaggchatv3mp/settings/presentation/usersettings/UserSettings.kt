@@ -47,6 +47,9 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
@@ -59,6 +62,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.URL_DEL_ACC
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
@@ -72,6 +76,7 @@ import schneaggchatv3mp.composeapp.generated.resources.change
 import schneaggchatv3mp.composeapp.generated.resources.change_username
 import schneaggchatv3mp.composeapp.generated.resources.change_username_description
 import schneaggchatv3mp.composeapp.generated.resources.change_username_placeholder
+import schneaggchatv3mp.composeapp.generated.resources.delete_account
 import schneaggchatv3mp.composeapp.generated.resources.email
 import schneaggchatv3mp.composeapp.generated.resources.emailinfo
 import schneaggchatv3mp.composeapp.generated.resources.emailinfo_unverified
@@ -255,6 +260,22 @@ fun UserSettings(
             }
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            val uriHandler = LocalUriHandler.current
+            Text(
+                text = stringResource(Res.string.delete_account),
+                modifier = Modifier
+                    .padding(top = 8.dp,
+                        bottom = 4.dp,
+                        start = 4.dp,
+                        end = 4.dp)
+                    .clickable{
+                        uriHandler.openUri(URL_DEL_ACC)
+                    }
+                    .fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.error,
+            )
 
 
         }
