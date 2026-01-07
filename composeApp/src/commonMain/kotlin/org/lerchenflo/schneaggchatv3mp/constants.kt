@@ -4,7 +4,9 @@ val BASE_SERVER_URL = "https://schneaggchatv3.lerchenflo.eu"
 
 val URL_PRIVACY = "$BASE_SERVER_URL/privacypolicy.html"
 
-val URL_INSTAGRAM = "https://www.instagram.com/schneaggchat?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+val URL_DEL_ACC = "$BASE_SERVER_URL/delete_account.html"
+
+var URL_INSTAGRAM = "https://www.instagram.com/schneaggchat?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
 
 
 var USERPROFILEPICTURE_FILE_NAME = ".upb"
