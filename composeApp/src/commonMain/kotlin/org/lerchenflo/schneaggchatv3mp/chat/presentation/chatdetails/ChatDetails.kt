@@ -1,7 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
@@ -32,6 +31,8 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
+import schneaggchatv3mp.composeapp.generated.resources.leave_group
 import schneaggchatv3mp.composeapp.generated.resources.no_description
 import schneaggchatv3mp.composeapp.generated.resources.no_status
 import schneaggchatv3mp.composeapp.generated.resources.others_say_about
@@ -136,8 +137,10 @@ fun ChatDetails(
             if(showDescriptionChangeDialog){
                 ChangeDescription(
                     onDismiss = {showDescriptionChangeDialog = false},
-                    viewModel = chatdetailsViewmodel,
-                    selectedChat = chatDetails
+                    selectedChat = chatDetails,
+                    descriptionText = chatdetailsViewmodel.descriptionText,
+                    updateDescriptionText = chatdetailsViewmodel::updateDescriptionText,
+                    updateDescription = chatdetailsViewmodel::updateDescription
                 )
             }
 
@@ -157,7 +160,9 @@ fun ChatDetails(
                 chatDetails.toGroup()?.let { groupChat ->
                     GroupMembersView(
                         members = groupChat.groupMembersWithUsers,
-                        viewmodel = chatdetailsViewmodel,
+                        navigateToChat = chatdetailsViewmodel::navigateToChat,
+                        changeAdminStatus = chatdetailsViewmodel::changeAdminStatus,
+                        removeMember = chatdetailsViewmodel::removeMember
                     )
                 }
             }else{
@@ -171,18 +176,49 @@ fun ChatDetails(
 
             HorizontalDivider()
 
-            // remove friend / todo Leave group
 
-            //TODO: Andra button vlt?
-            NormalButton(
-                text = stringResource(Res.string.remove_friend),
-                onClick = {
-                    //TODO: Popup & Group leave
-                    chatdetailsViewmodel.removeFriend()
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
+            if(group){
+                val ownid = SessionCache.getOwnIdValue().toString()
+                val iAmAdmin = chatDetails.toGroup()?.groupMembersWithUsers?.find { it.groupMember.userId == ownid }?.groupMember?.admin == true
+
+                if(iAmAdmin) {
+                    // add partypeople
+                    NormalButton(
+                        text = stringResource(Res.string.add_users_to_group),
+                        onClick = {
+                            //TODO: Popup?
+                            SnackbarManager.showMessage("todo")
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    )
+                }
+
+                // Leave group
+                NormalButton(
+                    text = stringResource(Res.string.leave_group),
+                    onClick = {
+                        //TODO: Popup?
+                        chatdetailsViewmodel.removeMember(SessionCache.getOwnIdValue().toString())
+                        chatdetailsViewmodel.navigateChatSelExitAllPrevious() // go back and delete backtrace
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+            }else{
+                // remove friend
+                //TODO: Andra button vlt?
+                NormalButton(
+                    text = stringResource(Res.string.remove_friend),
+                    onClick = {
+                        //TODO: Popup
+                        chatdetailsViewmodel.removeFriend()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+            }
+
         }
 
 

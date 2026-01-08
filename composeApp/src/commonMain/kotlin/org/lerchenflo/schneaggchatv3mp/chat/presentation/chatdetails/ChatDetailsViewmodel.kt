@@ -30,6 +30,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 
 data class GroupMemberWithUser(
@@ -137,6 +138,42 @@ class ChatDetailsViewmodel(
                     navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
                 }
             }
+        }
+    }
+
+    fun changeAdminStatus(member: GroupMember){
+        viewModelScope.launch{
+            appRepository.changeGroupMembers(
+                action = if(member.admin) NetworkUtils.GroupMemberAction.REMOVE_ADMIN else NetworkUtils.GroupMemberAction.MAKE_ADMIN,
+                memberId = member.userId,
+                groupId = member.groupId
+            )
+        }
+    }
+
+    fun addMember(userId: String){
+        viewModelScope.launch {
+            appRepository.changeGroupMembers(
+                action = NetworkUtils.GroupMemberAction.ADD_USER,
+                memberId = userId,
+                groupId = chatDetails.value.id
+            )
+        }
+    }
+
+    fun removeMember(memberId: String){
+        viewModelScope.launch {
+            appRepository.changeGroupMembers(
+                action = NetworkUtils.GroupMemberAction.REMOVE_USER,
+                memberId = memberId,
+                groupId = chatDetails.value.id
+            )
+        }
+    }
+
+    fun navigateChatSelExitAllPrevious(){
+        viewModelScope.launch {
+            navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
         }
     }
 
