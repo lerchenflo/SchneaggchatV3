@@ -27,6 +27,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cannot_be_empty
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
+import schneaggchatv3mp.composeapp.generated.resources.must_be_accepted
 import schneaggchatv3mp.composeapp.generated.resources.password_needs_to_be_the_same
 import schneaggchatv3mp.composeapp.generated.resources.requirement_digit
 import schneaggchatv3mp.composeapp.generated.resources.requirement_forbidden
@@ -93,26 +94,20 @@ class SignUpViewModel(
                         )
                     }
                 }
-                SignupAction.OnSignUpButtonPress -> {
-                    signup()
-                }
 
                 is SignupAction.OnAgbChecked -> {
                     state = state.copy(
-                        agbsAccepted = action.checked
+                        agbsAccepted = action.checked,
+                        agbsErrorText = if (action.checked) null else getString(Res.string.must_be_accepted)
                     )
+
                 }
 
                 is SignupAction.OnGebiDateChange -> {
                     state = state.copy(
-                        gebiDate = action.newDate
+                        gebiDate = action.newDate,
+                        gebiErrorText = null
                     )
-                }
-
-                SignupAction.OnBackClicked -> {
-                    viewModelScope.launch {
-                        navigator.navigate(Route.Login)
-                    }
                 }
 
                 is SignupAction.OnProfilepicSelected -> {
@@ -121,26 +116,71 @@ class SignUpViewModel(
                             .loadBytes()
 
                         state = state.copy(
-                            profilePic = bytearray
+                            profilePic = bytearray,
+                            profilePicErrorText = null
                         )
-                        checkenableCreateButton()
 
                     }
+                }
 
+
+                SignupAction.OnSignUpButtonPress -> {
+                    signup()
+                }
+
+                SignupAction.OnBackClicked -> {
+                    viewModelScope.launch {
+                        navigator.navigate(Route.Login)
+                    }
                 }
             }
         }
 
-        checkenableCreateButton()
     }
 
-    private fun checkenableCreateButton(){
-        val enablebutton = isInputComplete()
-        if (enablebutton) {
+    private suspend fun checkenableCreateButton() : Boolean{
+        if (isInputComplete()) return true
+
+        //Show the user what fields he is missing
+        //if to show all missing fields at the same time
+
+        if (!state.usernameState.isCorrect()) {
+            state = state.copy(usernameState = state.usernameState.copy(
+                errorMessage = getString(Res.string.cannot_be_empty)
+            ))
+        }
+
+        if (!state.passwordState.isCorrect()) {
+            state = state.copy(passwordState = state.passwordState.copy(
+                errorMessage = getString(Res.string.cannot_be_empty)
+            ))
+        }
+
+        if (!state.emailState.isCorrect()) {
+            state = state.copy(emailState = state.emailState.copy(
+                errorMessage = getString(Res.string.cannot_be_empty)
+            ))
+        }
+
+        if (state.gebiDate == null) {
             state = state.copy(
-                createButtonDisabled = !enablebutton
+                gebiErrorText = getString(Res.string.cannot_be_empty)
             )
         }
+
+        if (state.profilePic == null) {
+            state = state.copy(
+                profilePicErrorText = getString(Res.string.cannot_be_empty)
+            )
+        }
+
+        if (!state.agbsAccepted) {
+            state = state.copy(
+                agbsErrorText = getString(Res.string.must_be_accepted)
+            )
+        }
+
+        return false
     }
 
     fun isInputComplete() : Boolean{
@@ -149,15 +189,22 @@ class SignUpViewModel(
                 && state.passwordRetypeState.isCorrect()
                 && state.emailState.isCorrect()
                 && state.gebiDate != null
+                && state.gebiErrorText == null
                 && state.profilePic != null
+                && state.profilePicErrorText == null
                 && state.agbsAccepted
+                && state.agbsErrorText == null
                 && state.passwordState.text == state.passwordRetypeState.text
     }
 
 
 
     fun signup() {
+
+
         viewModelScope.launch {
+            if (!checkenableCreateButton()) return@launch
+
             if (isInputComplete() && !state.isLoading) {
                 try {
                     state = state.copy(

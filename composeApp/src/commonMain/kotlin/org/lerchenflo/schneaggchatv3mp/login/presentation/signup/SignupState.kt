@@ -5,16 +5,21 @@ import io.github.ismoy.imagepickerkmp.domain.models.PhotoResult
 import kotlinx.datetime.LocalDate
 
 data class SignupState(
-    val createButtonDisabled: Boolean = true,
     val isLoading: Boolean = false,
 
     val usernameState: InputfieldState = InputfieldState(),
     val passwordState: InputfieldState = InputfieldState(),
     val passwordRetypeState: InputfieldState = InputfieldState(),
     val emailState: InputfieldState = InputfieldState(),
+
     val gebiDate: LocalDate? = null, //"1994-5-25", //Year month day
+    val gebiErrorText: String? = null,
+
     val profilePic: ByteArray? = null,
-    val agbsAccepted: Boolean = false
+    val profilePicErrorText: String? = null,
+
+    val agbsAccepted: Boolean = false,
+    val agbsErrorText: String? = null
 
     ) {
     override fun equals(other: Any?): Boolean {
@@ -23,7 +28,6 @@ data class SignupState(
 
         other as SignupState
 
-        if (createButtonDisabled != other.createButtonDisabled) return false
         if (isLoading != other.isLoading) return false
         if (agbsAccepted != other.agbsAccepted) return false
         if (usernameState != other.usernameState) return false
@@ -37,7 +41,7 @@ data class SignupState(
     }
 
     override fun hashCode(): Int {
-        var result = createButtonDisabled.hashCode()
+        var result = 0
         result = 31 * result + isLoading.hashCode()
         result = 31 * result + agbsAccepted.hashCode()
         result = 31 * result + usernameState.hashCode()
