@@ -150,6 +150,8 @@
     <string name="group_picture">group picture</string>
     <string name="group_name">group name</string>
     <string name="group_description">group description</string>
+    <string name="leave_group">leave Group</string>
+    <string name="add_users_to_group">add users</string>
 
     <string name="image">image</string>
     <string name="video">video</string>

@@ -161,13 +161,19 @@ class ChatDetailsViewmodel(
         }
     }
 
-    fun removeMember(member: GroupMember){
+    fun removeMember(memberId: String){
         viewModelScope.launch {
             appRepository.changeGroupMembers(
                 action = NetworkUtils.GroupMemberAction.REMOVE_USER,
-                memberId = member.userId,
-                groupId = member.groupId
+                memberId = memberId,
+                groupId = chatDetails.value.id
             )
+        }
+    }
+
+    fun navigateChatSelExitAllPrevious(){
+        viewModelScope.launch {
+            navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
         }
     }
 
