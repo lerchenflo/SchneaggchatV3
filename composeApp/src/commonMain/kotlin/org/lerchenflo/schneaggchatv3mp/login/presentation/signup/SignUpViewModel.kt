@@ -35,6 +35,7 @@ import schneaggchatv3mp.composeapp.generated.resources.requirement_length
 import schneaggchatv3mp.composeapp.generated.resources.requirement_lowercase
 import schneaggchatv3mp.composeapp.generated.resources.requirement_special
 import schneaggchatv3mp.composeapp.generated.resources.requirement_uppercase
+import schneaggchatv3mp.composeapp.generated.resources.you_need_to_select_a_profilepicture
 
 
 class SignUpViewModel(
@@ -141,44 +142,39 @@ class SignUpViewModel(
     private suspend fun checkenableCreateButton() : Boolean{
         if (isInputComplete()) return true
 
-        //Show the user what fields he is missing
-        //if to show all missing fields at the same time
+        // Load error strings once
+        val cannotBeEmptyError = getString(Res.string.cannot_be_empty)
+        val mustBeAcceptedError = getString(Res.string.must_be_accepted)
+        val mustSetProfilepicError = getString(Res.string.you_need_to_select_a_profilepicture)
 
-        if (!state.usernameState.isCorrect()) {
-            state = state.copy(usernameState = state.usernameState.copy(
-                errorMessage = getString(Res.string.cannot_be_empty)
-            ))
-        }
+        // Update all errors in a single state copy
+        state = state.copy(
+            usernameState = if (!state.usernameState.isCorrect()) {
+                state.usernameState.copy(errorMessage = cannotBeEmptyError)
+            } else {
+                state.usernameState
+            },
+            passwordState = if (!state.passwordState.isCorrect()) {
+                state.passwordState.copy(errorMessage = cannotBeEmptyError)
+            } else {
+                state.passwordState
+            },
+            passwordRetypeState = if (!state.passwordRetypeState.isCorrect()) {
+                state.passwordRetypeState.copy(errorMessage = cannotBeEmptyError)
+            } else {
+                state.passwordRetypeState
+            },
+            emailState = if (!state.emailState.isCorrect()) {
+                state.emailState.copy(errorMessage = cannotBeEmptyError)
+            } else {
+                state.emailState
+            },
+            gebiErrorText = if (state.gebiDate == null) cannotBeEmptyError else state.gebiErrorText,
+            profilePicErrorText = if (state.profilePic == null) mustSetProfilepicError else state.profilePicErrorText,
+            agbsErrorText = if (!state.agbsAccepted) mustBeAcceptedError else state.agbsErrorText
+        )
 
-        if (!state.passwordState.isCorrect()) {
-            state = state.copy(passwordState = state.passwordState.copy(
-                errorMessage = getString(Res.string.cannot_be_empty)
-            ))
-        }
-
-        if (!state.emailState.isCorrect()) {
-            state = state.copy(emailState = state.emailState.copy(
-                errorMessage = getString(Res.string.cannot_be_empty)
-            ))
-        }
-
-        if (state.gebiDate == null) {
-            state = state.copy(
-                gebiErrorText = getString(Res.string.cannot_be_empty)
-            )
-        }
-
-        if (state.profilePic == null) {
-            state = state.copy(
-                profilePicErrorText = getString(Res.string.cannot_be_empty)
-            )
-        }
-
-        if (!state.agbsAccepted) {
-            state = state.copy(
-                agbsErrorText = getString(Res.string.must_be_accepted)
-            )
-        }
+        println(state.toString())
 
         return false
     }
@@ -200,7 +196,6 @@ class SignUpViewModel(
 
 
     fun signup() {
-
 
         viewModelScope.launch {
             if (!checkenableCreateButton()) return@launch

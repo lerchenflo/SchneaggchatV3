@@ -9,10 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -66,7 +62,7 @@ fun SignUpScreen(
         //Responsive UI mit scaffold
         Scaffold(
             modifier = modifier,
-        ){
+        ){ innerPadding ->
 
             val rootmodifier = Modifier
                 .fillMaxSize()
@@ -135,7 +131,6 @@ fun SignUpScreen(
                 val deviceConfiguration = DeviceSizeConfiguration.fromWindowSizeClass(windowSizeclass)
                 when (deviceConfiguration){
                     DeviceSizeConfiguration.MOBILE_PORTRAIT -> {
-                        println("Mobile Portrait")
                         Column(
                             modifier = rootmodifier
                                 .verticalScroll(rememberScrollState()),
@@ -150,8 +145,10 @@ fun SignUpScreen(
                                 emailerrorText = state.emailState.errorMessage,
                                 ongebidateselected = { onAction(SignupAction.OnGebiDateChange(it!!)) },
                                 selectedgebidate = state.gebiDate,
+                                gebiErrorText = state.gebiErrorText,
                                 onBackClick = { onAction(SignupAction.OnBackClicked) },
                                 selectedProfilePic = state.profilePic,
+                                profilePicErrorText = state.profilePicErrorText,
                                 onProfilePicClick = {showImagePickerDialog = true},
                                 focus = focus,
                                 modifier = Modifier.fillMaxWidth(),
@@ -182,19 +179,18 @@ fun SignUpScreen(
                                 },
                                 password2errorText = state.passwordRetypeState.errorMessage,
                                 onSignupButtonClick = { onAction(SignupAction.OnSignUpButtonPress) },
-                                signupbuttondisabled = state.createButtonDisabled,
                                 signupbuttonloading = state.isLoading,
                                 onCheckBoxCheckedChange = { onAction(SignupAction.OnAgbChecked(it)) },
                                 checkboxChecked = state.agbsAccepted,
+                                agbErrorText = state.agbsErrorText,
                                 modifier = Modifier.fillMaxWidth(),
-                                focus = focus
-
-                                )
+                                focus = focus,
+                                signupbuttondisabled = false
+                            )
                         }
 
                     }
                     DeviceSizeConfiguration.MOBILE_LANDSCAPE -> {
-                        println("Mobile Landscape")
 
                         Row(
                             modifier = rootmodifier
@@ -213,8 +209,10 @@ fun SignUpScreen(
                                 emailerrorText = state.emailState.errorMessage,
                                 ongebidateselected = { onAction(SignupAction.OnGebiDateChange(it!!)) },
                                 selectedgebidate = state.gebiDate,
+                                gebiErrorText = state.gebiErrorText,
                                 onBackClick = {onAction(SignupAction.OnBackClicked)},
                                 selectedProfilePic = state.profilePic,
+                                profilePicErrorText = state.profilePicErrorText,
                                 onProfilePicClick = {showImagePickerDialog = true},
                                 focus = focus,
                                 modifier = Modifier.weight(1f),
@@ -228,10 +226,11 @@ fun SignUpScreen(
                                 onpassword2TextChange = { onAction(SignupAction.OnPasswordTextChange(it, true)) },
                                 password2errorText = state.passwordRetypeState.errorMessage,
                                 onSignupButtonClick = { onAction(SignupAction.OnSignUpButtonPress)},
-                                signupbuttondisabled = state.createButtonDisabled,
+                                signupbuttondisabled = false,
                                 signupbuttonloading = state.isLoading,
                                 onCheckBoxCheckedChange = { onAction(SignupAction.OnAgbChecked(it)) },
                                 checkboxChecked = state.agbsAccepted,
+                                agbErrorText = state.agbsErrorText,
                                 modifier = Modifier.weight(1f),
                                 focus = focus
 
@@ -241,7 +240,6 @@ fun SignUpScreen(
                     DeviceSizeConfiguration.TABLET_PORTRAIT,
                     DeviceSizeConfiguration.TABLET_LANDSCAPE,
                     DeviceSizeConfiguration.DESKTOP -> {
-                        println("Desktop")
 
                         Column(
                             modifier = rootmodifier
@@ -259,8 +257,10 @@ fun SignUpScreen(
                                 ongebidateselected = { onAction(SignupAction.OnGebiDateChange(it!!)) },
                                 onBackClick = {onAction(SignupAction.OnBackClicked)},
                                 selectedProfilePic = state.profilePic,
+                                profilePicErrorText = state.profilePicErrorText,
                                 onProfilePicClick = {showImagePickerDialog = true},
                                 selectedgebidate = state.gebiDate,
+                                gebiErrorText = state.gebiErrorText,
                                 focus = focus,
                             )
 
@@ -274,9 +274,10 @@ fun SignUpScreen(
                                 onpassword2TextChange = { onAction(SignupAction.OnPasswordTextChange(it, true)) },
                                 password2errorText = state.passwordRetypeState.errorMessage,
                                 onSignupButtonClick = { onAction(SignupAction.OnSignUpButtonPress)},
-                                signupbuttondisabled = state.createButtonDisabled,
+                                signupbuttondisabled = false,
                                 onCheckBoxCheckedChange = { onAction(SignupAction.OnAgbChecked(it)) },
                                 checkboxChecked = state.agbsAccepted,
+                                agbErrorText = state.agbsErrorText,
                                 signupbuttonloading = state.isLoading,
                                 focus = focus
                             )

@@ -8,11 +8,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -38,6 +35,7 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTooltipState
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -108,7 +106,9 @@ fun SignUpForm1(
     emailerrorText: String?,
     ongebidateselected: (LocalDate?) -> Unit,
     selectedgebidate: LocalDate?,
+    gebiErrorText: String?,
     selectedProfilePic: ByteArray?,
+    profilePicErrorText: String?,
     onProfilePicClick: () -> Unit,
     onBackClick: () -> Unit,
     focus: SignupFocusRequesters,
@@ -178,25 +178,38 @@ fun SignUpForm1(
             }
             
             Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = stringResource(Res.string.select_profile_pic),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
-            
-            Spacer(modifier = Modifier.height(4.dp))
-            val profilePicTooltipState = rememberTooltipState()
-            TooltipBox(
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                tooltip = { PlainTooltip { Text(stringResource(Res.string.tooltip_profile_picture)) } },
-                state = profilePicTooltipState
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                Text(
+                    text = stringResource(Res.string.select_profile_pic),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.width(4.dp))
+                val profilePicTooltipState = rememberTooltipState()
+                TooltipBox(
+                    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                    tooltip = { PlainTooltip { Text(stringResource(Res.string.tooltip_profile_picture)) } },
+                    state = profilePicTooltipState
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                    )
+                }
+            }
+
+            if (profilePicErrorText != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                println("Profilepic missing text shown")
+                Text(
+                    text = profilePicErrorText,
+                    color = Color.Red,
                 )
             }
         }
@@ -296,6 +309,13 @@ fun SignUpForm1(
                 )
             }
         }
+        if (gebiErrorText != null) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = gebiErrorText,
+                color = Color.Red,
+            )
+        }
 
 
         if (showDatePicker) {
@@ -324,9 +344,8 @@ fun SignUpForm2(
     signupbuttonloading: Boolean = false,
     onCheckBoxCheckedChange: (Boolean) -> Unit,
     checkboxChecked: Boolean,
+    agbErrorText: String?,
     focus: SignupFocusRequesters,
-    
-    
     modifier: Modifier = Modifier
 ){
     Column(
@@ -422,6 +441,15 @@ fun SignUpForm2(
             }
         }
 
+        if (agbErrorText != null) {
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = agbErrorText,
+                color = Color.Red,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
         NormalButton(
@@ -429,12 +457,9 @@ fun SignUpForm2(
             onClick = onSignupButtonClick,
             disabled = signupbuttondisabled,
             isLoading = signupbuttonloading,
-            focusRequester = focus.signup,
             modifier = Modifier
                 .fillMaxWidth()
         )
-
-
     }
 }
 
@@ -533,7 +558,9 @@ private fun Preview() {
             onBackClick = {},
             focus = focus,
             selectedgebidate = null,
+            gebiErrorText = null,
             selectedProfilePic = null,
+            profilePicErrorText = null
 
             )
     }

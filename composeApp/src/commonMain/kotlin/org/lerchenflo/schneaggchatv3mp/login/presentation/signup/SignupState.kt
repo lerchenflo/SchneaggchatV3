@@ -52,6 +52,25 @@ data class SignupState(
         result = 31 * result + (profilePic?.contentHashCode() ?: 0)
         return result
     }
+
+    override fun toString(): String {
+        return """
+            |SignupState(
+            |  isLoading=$isLoading
+            |  usernameState=$usernameState
+            |  passwordState=${passwordState.copy(text = "***")} 
+            |  passwordRetypeState=${passwordRetypeState.copy(text = "***")}
+            |  emailState=$emailState
+            |  gebiDate=$gebiDate
+            |  gebiErrorText=$gebiErrorText
+            |  profilePic=${if (profilePic != null) "[${profilePic.size} bytes]" else "null"}
+            |  profilePicErrorText=$profilePicErrorText
+            |  agbsAccepted=$agbsAccepted
+            |  agbsErrorText=$agbsErrorText
+            |)
+        """.trimMargin()
+    }
+
 }
 
 data class InputfieldState(

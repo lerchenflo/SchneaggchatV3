@@ -249,6 +249,9 @@
 
     <string name="delete_account">Delete account</string>
     <string name="invitation_text">You do not use Schneaggchat? Join now:</string>
+
     <string name="must_be_accepted">You need to accept this</string>
+    <string name="you_need_to_select_a_profilepicture">You need to select a profilepicture</string>
+
 
 </resources>
