@@ -81,7 +81,9 @@ import schneaggchatv3mp.composeapp.generated.resources.you_with_brackets
 @Composable
 fun GroupMembersView(
     members: List<GroupMemberWithUser>,
-    viewmodel: ChatDetailsViewmodel,
+    navigateToChat:(selectedChat: SelectedChatBase)-> Unit,
+    changeAdminStatus:(groupMember: GroupMember)-> Unit,
+    removeMember: (groupMember: GroupMember)-> Unit,
     //iAmAdmin: Boolean,
 ) {
     val ownid = SessionCache.getOwnIdValue().toString()
@@ -132,26 +134,28 @@ fun GroupMembersView(
                 )
             }
 
-            UserOptionPopup(
+                UserOptionPopup(
                 expanded = userOptionPopupExpanded,
                 iAmAdmin = iAmAdmin,
                 groupMember = groupMember,
                 user = user,
                 onDismissRequest = { userOptionPopupExpanded = false },
                 onOpenChat = {
-                    if(user != null) viewmodel.navigateToChat(user.toSelectedChat(
+                    if(user != null) navigateToChat(user.toSelectedChat(
                         unreadCount = 0,
                         unsentCount = 0,
                         lastMessage = null
                     ))
                 },
                 onAdminStatusChange = {
-                    SnackbarManager.showMessage("todo: admin status change")
-                    // todo
+                    // todo i hoff es isch an serverfehler aber es sind zmol 2 user 1 Admin und 1 nicht Admin
+                    // todo a coole meldung
+                    changeAdminStatus(groupMember)
                 },
                 onRemoveUser = {
-                    SnackbarManager.showMessage("todo: remove user")
-                    // todo
+                    SnackbarManager.showMessage("funktioniert es? denn bitte dia snackbar weck")
+                    removeMember(groupMember)
+                    // todo Testen und a coole Meldung
                 },
             )
 
@@ -355,14 +359,16 @@ fun UserOptionPopup(
 @Composable
 fun ChangeDescription(
     onDismiss: () -> Unit,
-    viewModel: ChatDetailsViewmodel,
+    descriptionText: TextFieldValue = TextFieldValue(""),
+    updateDescription:(selectedChat: SelectedChatBase) -> Unit = {},
+    updateDescriptionText:(value: TextFieldValue) -> Unit = {},
     selectedChat: SelectedChatBase
 ){
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current // Also helpful to hide keyboard
 
     LaunchedEffect(selectedChat) {
-        viewModel.updateDescriptionText(TextFieldValue(selectedChat.description ?: ""))
+        updateDescriptionText(TextFieldValue(selectedChat.description ?: ""))
     }
 
     AlertDialog(
@@ -370,7 +376,7 @@ fun ChangeDescription(
         confirmButton = {
             TextButton(
                 onClick = {
-                    viewModel.updateDescription(selectedChat)
+                    updateDescription(selectedChat)
                     onDismiss()
                 },
             ) {
@@ -407,13 +413,13 @@ fun ChangeDescription(
                         text = stringResource(Res.string.group_description),
                     )
                     OutlinedTextField(
-                        value = viewModel.descriptionText,
+                        value = descriptionText,
                         textStyle = MaterialTheme.typography.bodySmall.copy(
                             fontSize = 14.sp // You can adjust this value as needed
                         ),
                         maxLines = 5,
                         onValueChange = { newValue ->
-                            viewModel.updateDescriptionText(newValue)
+                            updateDescriptionText(newValue)
                         },
                         modifier = Modifier
                             .onPreviewKeyEvent { event ->

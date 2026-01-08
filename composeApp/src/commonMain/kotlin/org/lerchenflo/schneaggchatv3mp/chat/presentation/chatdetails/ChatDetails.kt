@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
@@ -136,8 +137,10 @@ fun ChatDetails(
             if(showDescriptionChangeDialog){
                 ChangeDescription(
                     onDismiss = {showDescriptionChangeDialog = false},
-                    viewModel = chatdetailsViewmodel,
-                    selectedChat = chatDetails
+                    selectedChat = chatDetails,
+                    descriptionText = chatdetailsViewmodel.descriptionText,
+                    updateDescriptionText = chatdetailsViewmodel::updateDescriptionText,
+                    updateDescription = chatdetailsViewmodel::updateDescription
                 )
             }
 
@@ -157,7 +160,9 @@ fun ChatDetails(
                 chatDetails.toGroup()?.let { groupChat ->
                     GroupMembersView(
                         members = groupChat.groupMembersWithUsers,
-                        viewmodel = chatdetailsViewmodel,
+                        navigateToChat = chatdetailsViewmodel::navigateToChat,
+                        changeAdminStatus = chatdetailsViewmodel::changeAdminStatus,
+                        removeMember = chatdetailsViewmodel::removeMember
                     )
                 }
             }else{
