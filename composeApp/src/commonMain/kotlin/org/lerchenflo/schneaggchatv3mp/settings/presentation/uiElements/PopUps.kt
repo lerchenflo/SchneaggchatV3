@@ -64,7 +64,7 @@ fun ThemeSelector(
             Column(
                 modifier = Modifier.selectableGroup()
             ) {
-                ThemeSetting.values().forEach { theme ->
+                ThemeSetting.entries.forEach { theme ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()

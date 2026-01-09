@@ -40,19 +40,19 @@ enum class PreferenceKey {
 enum class ThemeSetting {
     SYSTEM,     // Follow system setting
     LIGHT,      // Always light
-    DARK,       // Always dark
-    PHTHEME;    // Anderes Theme ganz sicher ned klaut
+    DARK;       // Always dark
+    //PHTHEME;    // Anderes Theme ganz sicher ned klaut
     fun toUiText(): UiText = when (this) {
         SYSTEM -> UiText.StringResourceText(Res.string.system_theme)
         LIGHT -> UiText.StringResourceText(Res.string.light_theme)
         DARK   -> UiText.StringResourceText(Res.string.dark_theme)
-        PHTHEME -> UiText.StringResourceText(Res.string.ph_theme)
+        //PHTHEME -> UiText.StringResourceText(Res.string.ph_theme)
     }
     fun getIcon(): ImageVector = when (this) {
         SYSTEM -> Icons.Default.Contrast
         LIGHT -> Icons.Default.LightMode
         DARK   -> Icons.Default.DarkMode
-        PHTHEME -> Icons.Default.Male
+        //PHTHEME -> Icons.Default.Male
     }
 }
 

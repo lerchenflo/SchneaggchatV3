@@ -71,10 +71,6 @@ fun AppearanceSettings(
     onBackClick : () -> Unit
 ) {
 
-    val ownuser = sharedSettingsViewmodel.ownUser
-
-
-
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
