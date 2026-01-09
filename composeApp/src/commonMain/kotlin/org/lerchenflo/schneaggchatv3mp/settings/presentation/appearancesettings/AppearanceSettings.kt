@@ -106,9 +106,9 @@ fun AppearanceSettings(
                 onDismiss = { themeSelDialog = false },
                 onConfirm = {
                     themeSelDialog = false
-                    appearanceSettingsViewModel.saveThemeSetting(it)
                 },
                 selectedTheme = appearanceSettingsViewModel.selectedTheme,
+                onThemeSelected = {appearanceSettingsViewModel.saveThemeSetting(it)}
             )
         }
 
