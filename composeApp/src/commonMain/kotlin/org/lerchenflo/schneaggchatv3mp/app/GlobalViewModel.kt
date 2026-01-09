@@ -35,6 +35,8 @@ class GlobalViewModel(
                     println("App resumed and logged in, triggering sync...")
                     appRepository.dataSync()
                     appRepository.sendOfflineMessages()
+
+                    NotificationManager.removeNotification()
                 }
             }
         }
