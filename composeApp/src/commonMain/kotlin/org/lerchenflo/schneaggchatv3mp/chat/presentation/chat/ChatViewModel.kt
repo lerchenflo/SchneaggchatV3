@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -25,7 +26,9 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
@@ -39,6 +42,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 
 class ChatViewModel(
     private val appRepository: AppRepository,
@@ -92,7 +96,7 @@ class ChatViewModel(
                 }
         }
 
-        setAllMessagesRead()
+
 
         // Trigger background loading after a short delay
         viewModelScope.launch {
@@ -100,6 +104,18 @@ class ChatViewModel(
             _isLoadingOlderMessages.value = true
             _shouldLoadAllMessages.value = true
             println("loading all messages")
+        }
+
+
+        //Set messages read
+        setAllMessagesRead()
+
+        viewModelScope.launch {
+            AppLifecycleManager.appResumedEvent.collectLatest {
+                if (SessionCache.isLoggedInValue()) {
+                    setAllMessagesRead()
+                }
+            }
         }
     }
 
