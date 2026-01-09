@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Cake
@@ -54,9 +55,12 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.LocalDate
@@ -411,20 +415,42 @@ fun SignUpForm2(
             val text1 = stringResource(Res.string.accept_agb_pt1)
             val text2 = stringResource(Res.string.accept_agb_pt2)
 
-            Row{
-                Text(
-                    text = text1
+            val annotatedString = buildAnnotatedString {
+                withStyle(
+                    style = SpanStyle(
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                ) {
+                    append(text1)
+                }
+
+                pushStringAnnotation(
+                    tag = "URL",
+                    annotation = URL_PRIVACY
                 )
-                Text(
-                    text = text2,
-                    color = MaterialTheme.colorScheme.primary,
-                    textDecoration = TextDecoration.Underline,
-                    modifier = Modifier
-                        .clickable{
-                            urihandler.openUri(URL_PRIVACY)
-                        }
-                )
+                withStyle(
+                    style = SpanStyle(
+                        color = MaterialTheme.colorScheme.primary,
+                        textDecoration = TextDecoration.Underline
+                    )
+                ) {
+                    append(text2)
+                }
+                pop()
             }
+
+            ClickableText(
+                text = annotatedString,
+                onClick = { offset ->
+                    annotatedString.getStringAnnotations(
+                        tag = "URL",
+                        start = offset,
+                        end = offset
+                    ).firstOrNull()?.let { annotation ->
+                        urihandler.openUri(annotation.item)
+                    }
+                }
+            )
             Spacer(modifier = Modifier.width(8.dp))
             val termsTooltipState = rememberTooltipState()
             TooltipBox(

@@ -141,50 +141,51 @@ class SignUpViewModel(
 
     }
 
-    private fun checkenableCreateButton() : Boolean{
+    private suspend fun checkenableCreateButton(): Boolean {
         if (isInputComplete()) return true
 
-        runBlocking {
+        // Load error strings once
+        val cannotBeEmptyError = getString(Res.string.cannot_be_empty)
+        val mustBeAcceptedError = getString(Res.string.must_be_accepted)
+        val mustSetProfilepicError = getString(Res.string.you_need_to_select_a_profilepicture)
 
-            // Load error strings once
-            val cannotBeEmptyError = getString(Res.string.cannot_be_empty)
-            val mustBeAcceptedError = getString(Res.string.must_be_accepted)
-            val mustSetProfilepicError = getString(Res.string.you_need_to_select_a_profilepicture)
+        println("Gebidate null: ${state.gebiDate == null}\ngebidate error: ${state.gebiErrorText}")
 
-            println("Gebidate null: ${state.gebiDate == null}\ngebidate error: ${state.gebiErrorText}")
+        // Update all errors in a single state copy - REMOVED runBlocking
+        state = state.copy(
+            usernameState = if (!state.usernameState.isCorrect()) {
+                state.usernameState.copy(errorMessage = cannotBeEmptyError)
+            } else {
+                state.usernameState
+            },
+            passwordState = if (!state.passwordState.isCorrect()) {
+                state.passwordState.copy(errorMessage = cannotBeEmptyError)
+            } else {
+                state.passwordState
+            },
+            passwordRetypeState = if (!state.passwordRetypeState.isCorrect()) {
+                state.passwordRetypeState.copy(errorMessage = cannotBeEmptyError)
+            } else {
+                state.passwordRetypeState
+            },
+            emailState = if (!state.emailState.isCorrect()) {
+                state.emailState.copy(errorMessage = cannotBeEmptyError)
+            } else {
+                state.emailState
+            },
+            // Fix: Always set error if gebiDate is null, clear if not
+            gebiErrorText = if (state.gebiDate == null) cannotBeEmptyError else null,
+            // Fix: Always set error if profilePic is null, clear if not
+            profilePicErrorText = if (state.profilePic == null) mustSetProfilepicError else null,
+            // Fix: Always set error if agbs not accepted, clear if accepted
+            agbsErrorText = if (!state.agbsAccepted) mustBeAcceptedError else null
+        )
 
-            // Update all errors in a single state copy
-            state = state.copy(
-                usernameState = if (!state.usernameState.isCorrect()) {
-                    state.usernameState.copy(errorMessage = cannotBeEmptyError)
-                } else {
-                    state.usernameState
-                },
-                passwordState = if (!state.passwordState.isCorrect()) {
-                    state.passwordState.copy(errorMessage = cannotBeEmptyError)
-                } else {
-                    state.passwordState
-                },
-                passwordRetypeState = if (!state.passwordRetypeState.isCorrect()) {
-                    state.passwordRetypeState.copy(errorMessage = cannotBeEmptyError)
-                } else {
-                    state.passwordRetypeState
-                },
-                emailState = if (!state.emailState.isCorrect()) {
-                    state.emailState.copy(errorMessage = cannotBeEmptyError)
-                } else {
-                    state.emailState
-                },
-                gebiErrorText = if (state.gebiDate == null) cannotBeEmptyError else state.gebiErrorText,
-                profilePicErrorText = if (state.profilePic == null) mustSetProfilepicError else state.profilePicErrorText,
-                agbsErrorText = if (!state.agbsAccepted) mustBeAcceptedError else state.agbsErrorText
-            )
+        println("Setting errors finished: $state")
 
-            println("Setting errors finished: " + state.toString())
-        }
         return false
-
     }
+
 
     fun isInputComplete() : Boolean{
         return state.usernameState.isCorrect()
