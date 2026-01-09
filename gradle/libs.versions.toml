@@ -40,7 +40,6 @@ uiToolingPreview = "1.10.0-rc02"
 
 cmpNavigation3 = "1.0.0-alpha06"
 appUpdateKtx = "2.1.0"
-#coreKtx = "1.8.1
 maps = "0.12.1"
 
 [libraries]

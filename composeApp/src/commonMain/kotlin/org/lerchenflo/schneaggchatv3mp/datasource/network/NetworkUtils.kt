@@ -528,8 +528,7 @@ class NetworkUtils(
         @SerialName("friend_request")
         data class FriendRequestNotificationResponse(
             val requesterId: String,
-            val requesterName: String,
-            val requestId: String
+            val requesterName: String
         ) : NotificationResponse
 
         //Response for a system notification
