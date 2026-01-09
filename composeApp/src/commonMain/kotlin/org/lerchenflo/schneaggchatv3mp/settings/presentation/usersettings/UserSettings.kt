@@ -180,6 +180,8 @@ fun UserSettings(
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
+            /*
+            //TODO: Change passwort
             //passwort
             SettingsOption(
                 icon = Icons.Default.Key,
@@ -191,6 +193,8 @@ fun UserSettings(
             )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+             */
 
             SettingsOption(
                 icon = Icons.Default.Mail,

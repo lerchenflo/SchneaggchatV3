@@ -32,6 +32,7 @@ import schneaggchatv3mp.composeapp.generated.resources.theme
 @Composable
 fun ThemeSelector(
     onConfirm:(ThemeSetting) -> Unit,
+    onThemeSelected : (ThemeSetting) -> Unit,
     onDismiss:() -> Unit,
     selectedTheme:ThemeSetting
 ){
@@ -64,13 +65,16 @@ fun ThemeSelector(
             Column(
                 modifier = Modifier.selectableGroup()
             ) {
-                ThemeSetting.values().forEach { theme ->
+                ThemeSetting.entries.forEach { theme ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .selectable(
                                 selected = (theme == tempSelection),
-                                onClick = { tempSelection = theme},
+                                onClick = {
+                                    tempSelection = theme
+                                          onThemeSelected(theme)
+                                          },
                                 role = Role.RadioButton
                             )
                             .padding(vertical = 8.dp),

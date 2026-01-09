@@ -136,9 +136,11 @@ fun SchneaggchatTheme(
       }
   }else if(themeSetting == ThemeSetting.DARK){
       darkScheme
-  }else if(themeSetting == ThemeSetting.PHTHEME){
+  }
+  /*else if(themeSetting == ThemeSetting.PHTHEME){
       phTheme
-  }else{
+  }*/
+  else{
       lightScheme
   }
 
