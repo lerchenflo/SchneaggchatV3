@@ -61,7 +61,7 @@
     <string name="markdownInfo">Damit wird die Markdown-formatierung von Nachrichten aktiviert. Dies kann jedoch das Scrollen im Chat verlangsamen</string>
     <string name="something_wrong_message">Bei dieser Nachricht stimmt etwas nicht.</string>
     <string name="log_out_successfully">Erfolgreich ausgeloggt</string>
-    <string name="accept_agb_pt1">Ich akzeptiere die</string>
+    <string name="accept_agb_pt1">Ich akzeptiere die </string>
     <string name="accept_agb_pt2">Nutzungsbedingungen und die Datenschutzerklärung</string>
 
     
@@ -252,5 +252,8 @@
 
     <string name="must_be_accepted">Du musst akzeptieren</string>
     <string name="you_need_to_select_a_profilepicture">Du musst ein Profilbild auswählen</string>
+
+    <string name="user_since">dabei seit %1$s</string>
+
 
 </resources>

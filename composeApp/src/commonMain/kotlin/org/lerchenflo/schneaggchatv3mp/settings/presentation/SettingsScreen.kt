@@ -6,7 +6,9 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -21,6 +23,7 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -45,6 +48,8 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.app_broken
 import schneaggchatv3mp.composeapp.generated.resources.app_broken_are_you_sure
@@ -59,8 +64,10 @@ import schneaggchatv3mp.composeapp.generated.resources.no
 import schneaggchatv3mp.composeapp.generated.resources.settings
 import schneaggchatv3mp.composeapp.generated.resources.user_settings
 import schneaggchatv3mp.composeapp.generated.resources.user_settingsinfo
+import schneaggchatv3mp.composeapp.generated.resources.user_since
 import schneaggchatv3mp.composeapp.generated.resources.version
 import schneaggchatv3mp.composeapp.generated.resources.yes
+import kotlin.time.Instant
 
 @Composable
 fun SettingsScreen(
@@ -137,12 +144,19 @@ fun SettingsScreen(
                     autoSize = TextAutoSize.StepBased(
                         minFontSize = 10.sp,
                         maxFontSize = 30.sp
-                    ),
+                    )
+                )
 
-                )
-                Text(
-                    text = "Userid : ${ownuser?.id}"
-                )
+                Spacer(modifier = Modifier.height(4.dp))
+
+                if (ownuser != null && ownuser.createdAt != null) {
+                    Text(
+                        text = stringResource(Res.string.user_since,
+                            millisToTimeDateOrYesterday(ownuser.createdAt)
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
             }
         }
 
@@ -217,6 +231,7 @@ fun SettingsScreen(
         Text(
             text = stringResource(Res.string.version, appRepository.appVersion.getVersionName()) + " Buildnr: " + appRepository.appVersion.getVersionCode(),
             textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             modifier = Modifier
                 .padding(
                     top = 16.dp
