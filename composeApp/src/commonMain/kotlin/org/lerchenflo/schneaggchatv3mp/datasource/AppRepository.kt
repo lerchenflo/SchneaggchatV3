@@ -505,7 +505,6 @@ class AppRepository(
             is NetworkResult.Error -> {
                 println("Error: ${response.error}")
 
-
                 sendErrorSuspend(ErrorEvent(
                     error = response.error,
                     duration = 5000L

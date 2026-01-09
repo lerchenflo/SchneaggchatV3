@@ -250,6 +250,7 @@ class NetworkUtils(
             if (response.status.isSuccess()) {
                 NetworkResult.Success(Unit)
             } else {
+                println("Create response body: ${response.body<String>()}")
                 NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
             }
         } catch (e: UnresolvedAddressException) {

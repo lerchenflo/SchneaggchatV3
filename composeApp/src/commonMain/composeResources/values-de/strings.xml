@@ -250,5 +250,7 @@
 
     <string name="delete_account">Account löschen</string>
 
+    <string name="must_be_accepted">Du musst akzeptieren</string>
+    <string name="you_need_to_select_a_profilepicture">Du musst ein Profilbild auswählen</string>
 
 </resources>

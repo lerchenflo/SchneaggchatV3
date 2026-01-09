@@ -179,7 +179,7 @@ fun App() {
         var currentError by remember { mutableStateOf<AppRepository.ErrorChannel.ErrorEvent?>(null) }
         LaunchedEffect(Unit) {
             AppRepository.errors.collect { error ->
-                println("Error popup thrown: $error")
+                //println("Error popup thrown: $error")
                 currentError = error
                 delay(error.duration)
                 currentError = null
