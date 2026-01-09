@@ -255,5 +255,9 @@
 
     <string name="user_since">dabei seit %1$s</string>
 
+    <string name="pending">Ausstehend</string>
+    <string name="accepted">Akzeptiert</string>
+    <string name="declined">Abgelehnt</string>
+    <string name="blocked">Blockiert</string>
 
 </resources>

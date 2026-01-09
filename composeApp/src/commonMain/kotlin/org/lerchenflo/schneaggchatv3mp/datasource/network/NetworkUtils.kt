@@ -28,6 +28,19 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus.Finished
+import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus.InProgress
+import org.lerchenflo.schneaggchatv3mp.todolist.domain.BugStatus.Unfinished
+import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.UiText.*
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.accepted
+import schneaggchatv3mp.composeapp.generated.resources.blocked
+import schneaggchatv3mp.composeapp.generated.resources.bugstatus_finished
+import schneaggchatv3mp.composeapp.generated.resources.bugstatus_in_progress
+import schneaggchatv3mp.composeapp.generated.resources.bugstatus_unfinished
+import schneaggchatv3mp.composeapp.generated.resources.declined
+import schneaggchatv3mp.composeapp.generated.resources.pending
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -312,7 +325,19 @@ class NetworkUtils(
     data class UserSyncResponse(val updatedUsers: List<UserResponse>, val deletedUsers: List<String>)
 
     @Serializable
-    enum class FriendshipStatus { PENDING, ACCEPTED, DECLINED, BLOCKED }
+    enum class FriendshipStatus {
+        PENDING,
+        ACCEPTED,
+        DECLINED,
+        BLOCKED;
+
+        fun toUiText(): UiText = when (this) {
+            PENDING -> StringResourceText(Res.string.pending)
+            ACCEPTED -> StringResourceText(Res.string.accepted)
+            DECLINED -> StringResourceText(Res.string.declined)
+            BLOCKED -> StringResourceText(Res.string.blocked)
+        }
+    }
 
 
     @Serializable

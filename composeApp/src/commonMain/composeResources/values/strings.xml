@@ -257,5 +257,10 @@
 
     <string name="user_since">since %1$s</string>
 
-    
+    <string name="pending">Pending</string>
+    <string name="accepted">Accepted</string>
+    <string name="declined">Declined</string>
+    <string name="blocked">Blocked</string>
+
+
 </resources>

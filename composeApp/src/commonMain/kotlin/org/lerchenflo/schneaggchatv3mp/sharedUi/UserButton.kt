@@ -2,9 +2,11 @@ package org.lerchenflo.schneaggchatv3mp.sharedUi
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,10 +16,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.CallReceived
+import androidx.compose.material.icons.automirrored.outlined.CallMade
+import androidx.compose.material.icons.filled.CallReceived
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
+import androidx.compose.material.icons.outlined.CallMade
+import androidx.compose.material.icons.outlined.MoveDown
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,9 +40,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorAction
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -212,12 +224,37 @@ fun UserButton(
 
             // Bottom Text (status ...)
             if (selectedChat.friendshipStatus == NetworkUtils.FriendshipStatus.PENDING){
-                Text(
-                    // ALSO get requesterid (Who made the request (If i made it the other can accept it)) selectedChat.requesterId
-                    text = selectedChat.friendshipStatus!!.toString(), //TODO: FABI override tostring with uitext please
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        // ALSO get requesterid (Who made the request (If i made it the other can accept it)) selectedChat.requesterId
+                        text = selectedChat.friendshipStatus!!.toUiText().asString(),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (selectedChat.requesterId == SessionCache.getOwnIdValue()) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Outlined.CallMade,
+                                contentDescription = "Incomming",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.CallReceived,
+                                contentDescription = "outgoing",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            )
+                        }
+                    }
+                }
             }else {
                 if(bottomTextOverride == null || !bottomTextOverride.isEmpty()){
 
