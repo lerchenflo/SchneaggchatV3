@@ -305,6 +305,8 @@ fun InputFieldRow(viewModel: ChatViewModel){
         // button zum züg addden
         var addMediaDropdownExpanded by remember { mutableStateOf(false) }
 
+/*
+
         IconButton(
             onClick = { addMediaDropdownExpanded = true },
             modifier = Modifier
@@ -315,6 +317,8 @@ fun InputFieldRow(viewModel: ChatViewModel){
                 contentDescription = stringResource(Res.string.add)
             )
         }
+
+ */
         if (addMediaDropdownExpanded) {
             DropdownMenu(
                 expanded = addMediaDropdownExpanded,
