@@ -26,7 +26,6 @@ class LoginViewModel(
     init {
 
         viewModelScope.launch {
-            //TODO: Test server again if serverurl is changed
             val online =  appRepository.testServer()
             if (!online){
                 AppRepository.sendErrorSuspend(

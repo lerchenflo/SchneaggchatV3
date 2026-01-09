@@ -180,7 +180,7 @@ private fun ReplyArrow(
     ){
         Icon(
             imageVector = Icons.Default.Reply,
-            contentDescription = "reply", // todo strings
+            contentDescription = "reply",
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .padding(
@@ -377,15 +377,14 @@ private fun ReplyPreview(
                 modifier = Modifier
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
-                /* // todo show names
+                /* todo show names
                 Text(
                     text = if (message.myMessage) "You" else "Contact", // Replace with actual name if available
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary,
                     maxLines = 1
-                )
+                )*/
 
-                 */
                 Text(
                     text = message.content,
                     style = MaterialTheme.typography.bodySmall,
