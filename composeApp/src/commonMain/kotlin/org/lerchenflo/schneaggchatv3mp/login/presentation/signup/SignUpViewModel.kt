@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache.updateUsername
@@ -105,6 +106,7 @@ class SignUpViewModel(
                 }
 
                 is SignupAction.OnGebiDateChange -> {
+                    println("On gebi date change")
                     state = state.copy(
                         gebiDate = action.newDate,
                         gebiErrorText = null
@@ -139,44 +141,49 @@ class SignUpViewModel(
 
     }
 
-    private suspend fun checkenableCreateButton() : Boolean{
+    private fun checkenableCreateButton() : Boolean{
         if (isInputComplete()) return true
 
-        // Load error strings once
-        val cannotBeEmptyError = getString(Res.string.cannot_be_empty)
-        val mustBeAcceptedError = getString(Res.string.must_be_accepted)
-        val mustSetProfilepicError = getString(Res.string.you_need_to_select_a_profilepicture)
+        runBlocking {
 
-        // Update all errors in a single state copy
-        state = state.copy(
-            usernameState = if (!state.usernameState.isCorrect()) {
-                state.usernameState.copy(errorMessage = cannotBeEmptyError)
-            } else {
-                state.usernameState
-            },
-            passwordState = if (!state.passwordState.isCorrect()) {
-                state.passwordState.copy(errorMessage = cannotBeEmptyError)
-            } else {
-                state.passwordState
-            },
-            passwordRetypeState = if (!state.passwordRetypeState.isCorrect()) {
-                state.passwordRetypeState.copy(errorMessage = cannotBeEmptyError)
-            } else {
-                state.passwordRetypeState
-            },
-            emailState = if (!state.emailState.isCorrect()) {
-                state.emailState.copy(errorMessage = cannotBeEmptyError)
-            } else {
-                state.emailState
-            },
-            gebiErrorText = if (state.gebiDate == null) cannotBeEmptyError else state.gebiErrorText,
-            profilePicErrorText = if (state.profilePic == null) mustSetProfilepicError else state.profilePicErrorText,
-            agbsErrorText = if (!state.agbsAccepted) mustBeAcceptedError else state.agbsErrorText
-        )
+            // Load error strings once
+            val cannotBeEmptyError = getString(Res.string.cannot_be_empty)
+            val mustBeAcceptedError = getString(Res.string.must_be_accepted)
+            val mustSetProfilepicError = getString(Res.string.you_need_to_select_a_profilepicture)
 
-        println(state.toString())
+            println("Gebidate null: ${state.gebiDate == null}\ngebidate error: ${state.gebiErrorText}")
 
+            // Update all errors in a single state copy
+            state = state.copy(
+                usernameState = if (!state.usernameState.isCorrect()) {
+                    state.usernameState.copy(errorMessage = cannotBeEmptyError)
+                } else {
+                    state.usernameState
+                },
+                passwordState = if (!state.passwordState.isCorrect()) {
+                    state.passwordState.copy(errorMessage = cannotBeEmptyError)
+                } else {
+                    state.passwordState
+                },
+                passwordRetypeState = if (!state.passwordRetypeState.isCorrect()) {
+                    state.passwordRetypeState.copy(errorMessage = cannotBeEmptyError)
+                } else {
+                    state.passwordRetypeState
+                },
+                emailState = if (!state.emailState.isCorrect()) {
+                    state.emailState.copy(errorMessage = cannotBeEmptyError)
+                } else {
+                    state.emailState
+                },
+                gebiErrorText = if (state.gebiDate == null) cannotBeEmptyError else state.gebiErrorText,
+                profilePicErrorText = if (state.profilePic == null) mustSetProfilepicError else state.profilePicErrorText,
+                agbsErrorText = if (!state.agbsAccepted) mustBeAcceptedError else state.agbsErrorText
+            )
+
+            println("Setting errors finished: " + state.toString())
+        }
         return false
+
     }
 
     fun isInputComplete() : Boolean{
@@ -245,23 +252,23 @@ class SignUpViewModel(
         // More comprehensive RFC 5322 compliant regex
         val emailRegex = "^[a-zA-Z0-9.!#\$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\$"
 
-        println("Validating email: $email")
+        //println("Validating email: $email")
 
         // Additional checks beyond regex
         if (email.isEmpty()) {
-            println("Email validation failed: Email is empty")
+            //println("Email validation failed: Email is empty")
             return false
         }
 
         if (email.length > 254) {
-            println("Email validation failed: Email exceeds maximum length of 254 characters")
+            //println("Email validation failed: Email exceeds maximum length of 254 characters")
             return false
         }
 
         // Check for exactly one @ symbol
         val atCount = email.count { it == '@' }
         if (atCount != 1) {
-            println("Email validation failed: Email must contain exactly one @ symbol (found $atCount)")
+            //println("Email validation failed: Email must contain exactly one @ symbol (found $atCount)")
             return false
         }
 
@@ -272,24 +279,24 @@ class SignUpViewModel(
 
         // Check local part length (max 64 chars per RFC)
         if (localPart.isEmpty()) {
-            println("Email validation failed: Local part (before @) is empty")
+            //println("Email validation failed: Local part (before @) is empty")
             return false
         }
 
         if (localPart.length > 64) {
-            println("Email validation failed: Local part exceeds maximum length of 64 characters")
+            //println("Email validation failed: Local part exceeds maximum length of 64 characters")
             return false
         }
 
         // Check domain part
         if (domainPart.isEmpty()) {
-            println("Email validation failed: Domain part (after @) is empty")
+            //println("Email validation failed: Domain part (after @) is empty")
             return false
         }
 
         // Check domain part has at least one dot
         if (!domainPart.contains('.')) {
-            println("Email validation failed: Domain part must contain at least one dot")
+            //println("Email validation failed: Domain part must contain at least one dot")
             return false
         }
 
@@ -297,22 +304,22 @@ class SignUpViewModel(
         val domainSegments = domainPart.split('.')
         for (segment in domainSegments) {
             if (segment.isEmpty()) {
-                println("Email validation failed: Domain contains empty segment")
+                //println("Email validation failed: Domain contains empty segment")
                 return false
             }
             if (segment.length > 63) {
-                println("Email validation failed: Domain segment '$segment' exceeds maximum length of 63 characters")
+                //println("Email validation failed: Domain segment '$segment' exceeds maximum length of 63 characters")
                 return false
             }
         }
 
         // Final regex check
         if (!email.matches(emailRegex.toRegex())) {
-            println("Email validation failed: Email format doesn't match RFC 5322 standard")
+            //println("Email validation failed: Email format doesn't match RFC 5322 standard")
             return false
         }
 
-        println("Email validation passed: $email")
+        //println("Email validation passed: $email")
         return true
     }
 
