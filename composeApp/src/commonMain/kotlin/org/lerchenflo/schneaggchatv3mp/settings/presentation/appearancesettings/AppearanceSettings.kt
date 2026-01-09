@@ -47,6 +47,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChang
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.appearance_settings
 import schneaggchatv3mp.composeapp.generated.resources.change_server_url
@@ -94,17 +95,25 @@ fun AppearanceSettings(
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
         var themeSelDialog by remember{mutableStateOf(false)}
+        var previousTheme by remember { mutableStateOf(ThemeSetting.SYSTEM) }
         // Theme selector
         SettingsOption(
             Icons.Default.Palette,
             stringResource(Res.string.theme),
             stringResource(Res.string.theme_sel_desc),
-            onClick = { themeSelDialog = true }
+            onClick = {
+                previousTheme = appearanceSettingsViewModel.selectedTheme
+                themeSelDialog = true
+            }
         )
         if(themeSelDialog){
             ThemeSelector(
-                onDismiss = { themeSelDialog = false },
+                onDismiss = {
+                    themeSelDialog = false
+                    appearanceSettingsViewModel.saveThemeSetting(previousTheme)
+                            },
                 onConfirm = {
+                    previousTheme = it
                     themeSelDialog = false
                 },
                 selectedTheme = appearanceSettingsViewModel.selectedTheme,
