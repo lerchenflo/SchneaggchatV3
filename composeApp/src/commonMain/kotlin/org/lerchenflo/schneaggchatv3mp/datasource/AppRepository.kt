@@ -861,18 +861,6 @@ class AppRepository(
                         )
 
                     )
-
-                    //TODO: Message gelesen + reader
-                    /*
-                    database.messageDao().markMessageAsSent( msgid, localpkintern)
-
-                    database.messagereaderDao().upsertReader(MessageReaderDto(
-                        messageId = msgid,
-                        readerID = SessionCache.getOwnIdValue() ?: 0,
-                        readDate = messageDto.sendDate
-                    ))
-
-                     */
                 }
             }
         }

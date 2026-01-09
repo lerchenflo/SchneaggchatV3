@@ -44,6 +44,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.Settings
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.app_broken
 import schneaggchatv3mp.composeapp.generated.resources.app_broken_are_you_sure
@@ -227,15 +228,45 @@ fun SettingsScreen(
                         // Do NOT require unconsumed → we don't consume either
                         val down = awaitFirstDown(requireUnconsumed = false)
 
+                        val requiredClicks = 8
+
+
                         val up = waitForUpOrCancellation()
                         if (up != null) {
-                            // Tap detected, but NOT consumed
-                            openDevSettingsCounter ++
-                            // todo snackbar oder sunsch irgend a meldung & guate zahl usdenka
 
-                            if (openDevSettingsCounter > 5){ // open dev settings after x clicks
-                                sharedSettingsViewmodel.updateDevSettings(true) // save in preferences
-                                navigateDevSettings()
+                            // Tap detected, but NOT consumed
+                            openDevSettingsCounter++
+
+                            when {
+                                // Still counting down
+                                openDevSettingsCounter < requiredClicks -> {
+                                    val stepsRemaining = requiredClicks - openDevSettingsCounter
+
+                                    //Show popup after x clicks
+                                    if (stepsRemaining < requiredClicks - 4) {
+                                        SnackbarManager.showMessage(
+                                            if (stepsRemaining == 1) {
+                                                "You are now 1 step away from being a developer"
+                                            } else {
+                                                "You are now $stepsRemaining steps away from being a developer"
+                                            }
+                                        )
+                                    }
+                                }
+
+                                // Exactly at the threshold - activate dev mode
+                                openDevSettingsCounter == requiredClicks -> {
+                                    SnackbarManager.showMessage("You are now a developer!")
+                                    sharedSettingsViewmodel.updateDevSettings(true) // save in preferences
+                                    openDevSettingsCounter = 0
+                                    navigateDevSettings()
+                                }
+
+                                // Already a developer (shouldn't normally happen, but just in case)
+                                else -> {
+                                    SnackbarManager.showMessage("You are already a developer")
+                                    openDevSettingsCounter = 0
+                                }
                             }
                         }
                     }

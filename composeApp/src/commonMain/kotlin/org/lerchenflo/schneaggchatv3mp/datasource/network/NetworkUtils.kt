@@ -213,17 +213,6 @@ class NetworkUtils(
         )
     }
 
-
-
-    //TODO Add profilepicture after picture selection implemented
-    @Serializable
-    data class RegisterRequest(
-        val username: String,
-        val password: String,
-        val email: String,
-        val birthDate: String,
-    )
-
     suspend fun register(
         username: String,
         password: String,

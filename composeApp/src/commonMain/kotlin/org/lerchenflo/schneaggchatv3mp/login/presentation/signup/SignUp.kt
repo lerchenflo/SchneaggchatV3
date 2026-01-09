@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
 import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
+import io.github.ismoy.imagepickerkmp.domain.config.PermissionAndConfirmationConfig
+import io.github.ismoy.imagepickerkmp.domain.config.UiConfig
 import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
 import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
@@ -79,7 +81,6 @@ fun SignUpScreen(
             Box(modifier = Modifier.fillMaxSize()) {
                 if (showImagePickerDialog ) {
 
-                    //TODO: Fix all strings
                     GalleryPickerLauncher(
                         onPhotosSelected = {
                             onAction(SignupAction.OnProfilepicSelected(it.first()))
@@ -106,7 +107,8 @@ fun SignUpScreen(
                             galleryConfig = GalleryConfig(
                                 allowMultiple = false,
                                 selectionLimit = 1,
-                            )
+                            ),
+
                         )
                     )
 
