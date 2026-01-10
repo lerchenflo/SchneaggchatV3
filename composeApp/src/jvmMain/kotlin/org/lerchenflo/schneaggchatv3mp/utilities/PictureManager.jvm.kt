@@ -80,4 +80,8 @@ actual class PictureManager {
 
         return getPath(filename)
     }
+
+    actual fun checkImageExists(filePath: String): Boolean {
+        return File(filePath).exists()
+    }
 }

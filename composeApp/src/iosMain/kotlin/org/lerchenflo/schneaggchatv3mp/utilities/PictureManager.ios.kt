@@ -117,4 +117,9 @@ actual class PictureManager {
 
         return "$basePath/$filename"
     }
+
+    actual fun checkImageExists(filePath: String): Boolean {
+        val fileManager = NSFileManager.defaultManager
+        return fileManager.fileExistsAtPath(filePath)
+    }
 }

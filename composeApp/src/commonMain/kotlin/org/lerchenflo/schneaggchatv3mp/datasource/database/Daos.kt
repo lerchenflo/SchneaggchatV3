@@ -29,7 +29,10 @@ interface UserDao {
     suspend fun delete(userid: String)
 
     @Query("SELECT * FROM users WHERE name LIKE '%' || :searchterm || '%'")
-    fun getallusers(searchterm: String = ""): Flow<List<UserDto>>
+    fun getAllUsersFlow(searchterm: String = ""): Flow<List<UserDto>>
+
+    @Query("SELECT * FROM users")
+    suspend fun getAllUsers() : List<UserDto>
 
     @Query("SELECT * FROM users WHERE id = :userid")
     fun getUserbyIdFlow(userid: String?): Flow<UserDto?>
@@ -145,7 +148,10 @@ interface GroupDao {
 
     @Transaction
     @Query("SELECT * FROM `groups`")
-    fun getAllGroupsWithMembers(): Flow<List<GroupWithMembersDto>>
+    fun getAllGroupsWithMembersFlow(): Flow<List<GroupWithMembersDto>>
+
+    @Query("SELECT * FROM `groups`")
+    suspend fun getAllGroupsWithMembers(): List<GroupWithMembersDto>
 
     @Upsert
     suspend fun upsertMembers(members: List<GroupMemberDto>): List<Long>
