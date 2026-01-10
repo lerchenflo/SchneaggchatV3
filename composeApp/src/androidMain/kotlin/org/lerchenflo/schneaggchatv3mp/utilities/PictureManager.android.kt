@@ -69,4 +69,9 @@ actual class PictureManager(private val context: Context) {
 
         return File(context.filesDir, filename).absolutePath
     }
+
+    actual fun checkImageExists(filePath: String): Boolean {
+        val file = File(filePath)
+        return file.exists()
+    }
 }

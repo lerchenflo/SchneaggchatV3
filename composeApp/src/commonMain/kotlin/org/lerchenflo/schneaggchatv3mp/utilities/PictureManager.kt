@@ -25,6 +25,13 @@ expect class PictureManager {
      */
     suspend fun deletePicture(filename: String): Boolean
 
-
+    /**
+     * Get the filepath for a picture
+     */
     fun getProfilePicFilePath(id: Long, gruppe: Boolean) : String
+
+    /**
+     * Check if a image with this name is in the storage
+     */
+    fun checkImageExists(filePath: String) : Boolean
 }

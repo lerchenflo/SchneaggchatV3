@@ -241,14 +241,14 @@ fun UserButton(
                         if (selectedChat.requesterId == SessionCache.getOwnIdValue()) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.CallMade,
-                                contentDescription = "Incomming",
+                                contentDescription = "outgoing friend request",
                                 modifier = Modifier
                                     .fillMaxSize()
                             )
                         } else {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.CallReceived,
-                                contentDescription = "outgoing",
+                                contentDescription = "incomming friend request",
                                 modifier = Modifier
                                     .fillMaxSize()
                             )

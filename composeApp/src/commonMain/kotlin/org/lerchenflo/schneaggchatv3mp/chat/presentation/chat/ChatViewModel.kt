@@ -42,7 +42,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
-import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 
 class ChatViewModel(
     private val appRepository: AppRepository,
@@ -201,7 +200,7 @@ class ChatViewModel(
                 // Combine the load-all trigger with messages
                 combine(
                     _shouldLoadAllMessages,
-                    userRepository.getallusers(),
+                    userRepository.getAllUsersFlow(),
                     if (chat.isGroup) {
                         flowOf(groupRepository.getGroupMembers(chat.id))
                     } else {

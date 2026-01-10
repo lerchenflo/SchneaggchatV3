@@ -11,11 +11,8 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -223,6 +220,11 @@ class AppRepository(
 
                 // Wait for all to complete (errors are already handled)
                 awaitAll(userJob, messageJob, groupJob)
+
+                val errorProfilePicJob = async {
+                    getMissingPics()
+                }
+                awaitAll(errorProfilePicJob)
             }
 
             println("Data sync completed")
@@ -230,6 +232,43 @@ class AppRepository(
             dataSyncRunning = false
         }
     }
+
+    /**
+     * Get missing profile pics (On ios after update installation, there are no more pictures)
+     */
+    suspend fun getMissingPics() {
+
+        //Check user profile pics
+        val users = userRepository.getAllUsers()
+        var missingPpUserIds: List<String> = emptyList()
+
+        users.forEach { user ->
+            val exists = pictureManager.checkImageExists(user.profilePictureUrl)
+            if (!exists) {
+                println("Profilepic for ${user.name} does not exist: ${user.profilePictureUrl}, getting")
+                missingPpUserIds = missingPpUserIds + user.id
+            }
+        }
+        getProfilePicturesForUserIds(missingPpUserIds)
+
+
+
+        val groups = groupRepository.getAllGroups()
+        var missingPpGroupIds: List<String> = emptyList()
+
+        groups.forEach { group ->
+            val exists = pictureManager.checkImageExists(group.profilePictureUrl)
+            if (!exists) {
+                println("Profilepic for ${group.name} does not exist: ${group.profilePictureUrl}, getting")
+                missingPpGroupIds = missingPpGroupIds + group.id
+            }
+        }
+        getProfilePicturesForGroupIds(missingPpGroupIds)
+
+        //TODO: Add image messages if implemented
+
+    }
+
 
     /*
     **************************************************************************
@@ -248,7 +287,7 @@ class AppRepository(
     }
 
     fun getPendingFriends(searchTerm: String): Flow<List<SelectedChat>> {
-        return userRepository.getallusers(searchTerm)
+        return userRepository.getAllUsersFlow(searchTerm)
             .map { list ->
                 list.filter {
                     it.friendshipStatus == NetworkUtils.FriendshipStatus.PENDING
@@ -265,8 +304,8 @@ class AppRepository(
         filter: ChatFilter = ChatFilter.NONE
     ): Flow<List<SelectedChat>> {
         val messagesFlow = messageRepository.getAllMessages()
-        val usersFlow = userRepository.getallusers()
-        val groupsFlow = groupRepository.getallgroupswithmembers()
+        val usersFlow = userRepository.getAllUsersFlow()
+        val groupsFlow = groupRepository.getAllGroupswithMembersFlow()
 
         return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
 

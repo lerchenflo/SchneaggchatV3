@@ -45,9 +45,15 @@ class GroupRepository(
     }
 
     @Transaction
-    fun getallgroupswithmembers(): Flow<List<Group>> {
-        return database.groupDao().getAllGroupsWithMembers().map { list ->
+    fun getAllGroupswithMembersFlow(): Flow<List<Group>> {
+        return database.groupDao().getAllGroupsWithMembersFlow().map { list ->
             list.map { it.toGroup() }
+        }
+    }
+
+    suspend fun getAllGroups() : List<Group> {
+        return database.groupDao().getAllGroupsWithMembers().map {
+            it.toGroup()
         }
     }
 
