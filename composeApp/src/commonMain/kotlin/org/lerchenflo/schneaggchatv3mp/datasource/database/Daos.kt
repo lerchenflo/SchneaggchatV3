@@ -150,6 +150,7 @@ interface GroupDao {
     @Query("SELECT * FROM `groups`")
     fun getAllGroupsWithMembersFlow(): Flow<List<GroupWithMembersDto>>
 
+    @Transaction
     @Query("SELECT * FROM `groups`")
     suspend fun getAllGroupsWithMembers(): List<GroupWithMembersDto>
 
