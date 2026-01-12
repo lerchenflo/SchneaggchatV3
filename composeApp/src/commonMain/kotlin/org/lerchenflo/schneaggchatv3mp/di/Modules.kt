@@ -24,7 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
-import org.lerchenflo.schneaggchatv3mp.games.dartcounter.DartCounterViewmodel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
@@ -35,7 +35,6 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSe
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 
 val sharedmodule = module{
 
@@ -118,8 +117,8 @@ val sharedmodule = module{
     viewModelOf(::DevSettingsViewModel)
     factory { DevSettingsViewModel(get(), get()) }
 
-    viewModelOf(::DartCounterViewmodel)
-    factory { DartCounterViewmodel() }
+    viewModelOf(::DartCounterViewModel)
+    factory { DartCounterViewModel() }
 
 
     viewModelOf(::UserSettingsViewModel)
