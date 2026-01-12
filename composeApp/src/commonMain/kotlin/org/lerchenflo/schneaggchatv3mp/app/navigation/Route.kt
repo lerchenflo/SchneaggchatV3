@@ -47,5 +47,15 @@ sealed interface Route : NavKey {
         @Serializable
         data object AppearanceSettings: Route, NavKey
     }
+
+
+    @Serializable
+    data object Games: Route, NavKey {
+        @Serializable
+        data object GamesSelector: Route, NavKey
+
+        @Serializable
+        data object DartCounter: Route, NavKey
+    }
 }
 

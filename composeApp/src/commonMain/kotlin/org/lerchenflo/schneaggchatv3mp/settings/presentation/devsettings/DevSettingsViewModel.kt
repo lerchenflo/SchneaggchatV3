@@ -9,11 +9,13 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import kotlin.collections.emptyList
 import kotlin.math.log
 
 class DevSettingsViewModel(
-    private val loggingRepository: LoggingRepository
+    private val loggingRepository: LoggingRepository,
+    private val navigator: Navigator
 ): ViewModel() {
 
     var logs by mutableStateOf<List<LogEntry>>(emptyList())
@@ -30,6 +32,13 @@ class DevSettingsViewModel(
     fun onClearLogs() {
         viewModelScope.launch {
             loggingRepository.clearLogs()
+        }
+    }
+
+
+    fun navigateGames() {
+        viewModelScope.launch {
+            navigator.navigate(Route.Games)
         }
     }
 
