@@ -101,7 +101,7 @@ class ChatDetailsViewmodel(
 
     private suspend fun getGroupMembersWithUsers(groupId: String): List<GroupMemberWithUser> {
         val members = groupRepository.getGroupMembers(groupId)
-        return members.mapNotNull { member ->
+        return members.map { member ->
             val user = userRepository.getUserById(member.userId)
             if (user != null) {
                 GroupMemberWithUser(member, user)
@@ -116,7 +116,7 @@ class ChatDetailsViewmodel(
         viewModelScope.launch {
             globalViewModel.onSelectChat(selectedChat)
             // Exit all previous screen weil ma jo da selectedgegner im globalviewmodel gändert hot und denn ind chatdetails vo deam typ kummt
-            navigator.navigate(Route.Chat, exitPreviousScreen = true) // todo ma kummt nur ind chatauswahl mit 2 mol zruck
+            navigator.navigate(Route.Chat, exitPreviousScreen = true)
         }
     }
 
