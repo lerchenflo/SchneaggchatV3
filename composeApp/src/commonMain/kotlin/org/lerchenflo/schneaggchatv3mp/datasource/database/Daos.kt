@@ -58,6 +58,9 @@ interface MessageDao {
     @Query("DELETE FROM messages WHERE id = :msgid")
     suspend fun deleteMessageDtoById(msgid: String)
 
+    @Query("DELETE FROM messages WHERE localPK = :pk")
+    suspend fun deleteMessageDtoByPk(pk: Long)
+
     @Query("SELECT * FROM messages WHERE id = :id")
     suspend fun getMessageDtoById(id: String): MessageDto?
 
