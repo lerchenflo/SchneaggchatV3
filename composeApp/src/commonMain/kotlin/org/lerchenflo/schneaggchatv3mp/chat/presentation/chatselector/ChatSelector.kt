@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
@@ -419,6 +420,15 @@ fun Chatauswahlscreen(
                     }
 
 
+                    val liststate = rememberLazyListState()
+
+
+
+                    LaunchedEffect(availablegegners) {
+                        if (liststate.firstVisibleItemIndex < 3) { //Only when the user is nearly at the top
+                            liststate.animateScrollToItem(0)
+                        }
+                    }
 
                     LazyColumn(
                         modifier = Modifier
@@ -428,6 +438,7 @@ fun Chatauswahlscreen(
                             end = 16.dp,
                             bottom = 16.dp
                         ),
+                        state = liststate
                     ) {
                         items(
                             items = availablegegners,
