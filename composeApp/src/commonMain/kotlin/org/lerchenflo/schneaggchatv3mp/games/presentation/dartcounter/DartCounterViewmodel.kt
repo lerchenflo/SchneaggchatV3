@@ -14,7 +14,8 @@ class DartCounterViewModel() : ViewModel() {
         val playerNames: List<String>
     ) {
         val playerList: MutableList<Player> = mutableListOf()
-        var currentPlayerIndex = 0
+        var currentPlayerIndex by mutableStateOf(0)
+        private set
         var gameStarted = false
         var gameOver = false
         private var turnStartScore = 0
@@ -22,6 +23,10 @@ class DartCounterViewModel() : ViewModel() {
         init {
             for(name in playerNames){
                 playerList.add(Player(name, countdown))
+            }
+            // Initialize turn start score for first player
+            if (playerList.isNotEmpty()) {
+                turnStartScore = playerList[0].score
             }
         }
         
@@ -50,8 +55,16 @@ class DartCounterViewModel() : ViewModel() {
                             currentPlayer.score = newScore
                             true
                         }
+                        newScore == 1 -> {
+                            // Bust: score of 1 is impossible in double out
+                            false
+                        }
+                        newScore < 0 -> {
+                            // Bust: negative score
+                            false
+                        }
                         else -> {
-                            // Bust: score would be 0 without double, 1 (impossible in double out), or negative
+                            // Bust: score would be 0 without double
                             false
                         }
                     }
@@ -128,6 +141,9 @@ class DartCounterViewModel() : ViewModel() {
         private set
     var gameStarted by mutableStateOf(false)
         private set
+    
+    var currentPlayerName by mutableStateOf("")
+        private set
 
     fun addPlayerName(name: String) {
         if (name.isNotBlank() && name !in playerNames) {
@@ -147,6 +163,7 @@ class DartCounterViewModel() : ViewModel() {
                 playerNames = playerNames
             )
             gameManager?.startTurn() // Initialize first player's turn
+            updateCurrentPlayerName() // Update current player display
             showPlayerSetup = false
             showGameConfig = false
             resetThrow()
@@ -180,6 +197,9 @@ class DartCounterViewModel() : ViewModel() {
     
     fun throwDart(score: Int, isDouble: Boolean = false, isTriple: Boolean = false) {
         gameManager?.let { game ->
+            val currentPlayer = game.getCurrentPlayer()
+            val originalScore = currentPlayer.score
+            
             if (game.subtractScore(score, isDouble, isTriple)) {
                 val actualScore = if (isTriple) score * 3 else if (isDouble) score * 2 else score
                 currentThrow += actualScore
@@ -191,6 +211,7 @@ class DartCounterViewModel() : ViewModel() {
                 if (throwCount >= 3) {
                     if (!game.gameOver) {
                         game.nextPlayer()
+                        updateCurrentPlayerName()
                     }
                     resetThrow()
                 }
@@ -200,8 +221,15 @@ class DartCounterViewModel() : ViewModel() {
                 resetThrow()
                 if (!game.gameOver) {
                     game.nextPlayer()
+                    updateCurrentPlayerName()
                 }
             }
+        }
+    }
+    
+    private fun updateCurrentPlayerName() {
+        gameManager?.let { game ->
+            currentPlayerName = game.getCurrentPlayer().name
         }
     }
     
