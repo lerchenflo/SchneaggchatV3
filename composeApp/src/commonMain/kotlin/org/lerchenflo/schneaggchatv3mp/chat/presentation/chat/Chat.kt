@@ -261,11 +261,7 @@ fun ChatScreen(
                                         onDismiss = { showDeleteAlert = false },
                                         onConfirm = {
 
-                                            if (item.message.id != null){
-                                                viewModel.deleteMessage(item.message.id!!)
-                                            }
-                                            //TODO FABI: Ungesendete nachrichten ned bearbeita künna
-
+                                            viewModel.deleteMessage(item.message)
                                             showDeleteAlert = false
                                         },
                                         message = message,

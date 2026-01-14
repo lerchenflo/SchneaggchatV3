@@ -1066,6 +1066,10 @@ class AppRepository(
         }
     }
 
+    suspend fun deleteLocalMessage(localpk: Long) {
+        messageRepository.deleteMessage(localpk)
+    }
+
     suspend fun deleteMessage(messageId: String){
         val request = networkUtils.deleteMessage(
             messageId = messageId

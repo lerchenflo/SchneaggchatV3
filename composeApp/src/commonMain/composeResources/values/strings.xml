@@ -84,7 +84,9 @@
     <string name="please_restart_app">Please restart the app</string>
     <string name="others_say_about">others wrote about %1$s:</string>
     <string name="status_info">This Text is written by the user himself</string>
-    <!--<string name="description_info">All friends of %1$s can edit this text, but %1$s cannot.</string>-->
+    <string name="description_info_user">All friends of %1$s can edit this text, but %1$s cannot.</string>
+    <string name="description_info_group">Change the description of this Group</string>
+
     <string name="no_description">No description</string>
     <string name="remove_friend">remove friend</string>
     <string name="save">save</string>
@@ -150,6 +152,7 @@
     <string name="group_picture">group picture</string>
     <string name="group_name">group name</string>
     <string name="group_description">group description</string>
+    <string name="user_description">Userbeschreibung</string>
     <string name="leave_group">leave Group</string>
     <string name="add_users_to_group">add users</string>
 

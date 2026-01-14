@@ -84,7 +84,7 @@
     <string name="please_restart_app">Bitte starte die App neu</string>
     <string name="others_say_about">Andere User haben über %1$s geschrieben:</string>
     <string name="status_info">Dieser Text wurde vom User verfasst</string>
-    <!--<string name="description_info">All friends of %1$s can edit this text, but %1$s cannot.</string>-->
+    <string name="description_info_user">All friends of %1$s can edit this text, but %1$s cannot.</string>
     <string name="no_description">Keine Beschreibung</string>
     <string name="remove_friend">Freund entfernen</string>
     <string name="save">Speichern</string>
@@ -150,6 +150,8 @@
     <string name="group_picture">Gruppenprofilbild</string>
     <string name="group_name">Gruppenname</string>
     <string name="group_description">Gruppenbeschreibung</string>
+    <string name="user_description">Userbeschreibung</string>
+
 
     <string name="image">Bild</string>
     <string name="video">Video</string>

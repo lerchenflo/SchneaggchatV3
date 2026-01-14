@@ -167,9 +167,23 @@ fun App() {
                     rootBackStack.add(action.destination)
                 }
                 NavigationAction.NavigateBack -> {
+
+                    //Duplicate check for exiting chat after navigating from chatdetails
                     if (rootBackStack.size > 1){
-                        rootBackStack.removeAt(rootBackStack.size - 1) //Removelast not working on older android
+                        val currentScreen = rootBackStack[rootBackStack.size - 1]
+                        val previousScreen = rootBackStack[rootBackStack.size - 2]
+
+                        // Check if the last two items are of the same type
+                        if (currentScreen::class == previousScreen::class) {
+                            // Remove both - current and previous
+                            rootBackStack.removeAt(rootBackStack.size - 1) // Remove current
+                            rootBackStack.removeAt(rootBackStack.size - 1) // Remove previous (now last)
+                        } else {
+                            // Normal back navigation - just remove current
+                            rootBackStack.removeAt(rootBackStack.size - 1)
+                        }
                     }
+
                 }
             }
         }

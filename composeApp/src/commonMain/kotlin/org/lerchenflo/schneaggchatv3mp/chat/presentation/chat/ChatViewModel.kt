@@ -152,9 +152,15 @@ class ChatViewModel(
         }
     }
 
-    fun deleteMessage(messageId: String) {
+    fun deleteMessage(message: Message) {
         viewModelScope.launch {
-            appRepository.deleteMessage(messageId)
+            if (message.id == null) {
+                appRepository.deleteLocalMessage(message.localPK)
+                println("Offline message deleted")
+            } else {
+                appRepository.deleteMessage(message.id!!)
+                println("Remote message deleted")
+            }
         }
     }
 
