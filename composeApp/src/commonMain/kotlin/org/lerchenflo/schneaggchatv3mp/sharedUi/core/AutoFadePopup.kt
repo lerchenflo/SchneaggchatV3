@@ -1,6 +1,6 @@
 @file:OptIn( ExperimentalTime::class)
 
-package org.lerchenflo.schneaggchatv3mp.sharedUi
+package org.lerchenflo.schneaggchatv3mp.sharedUi.core
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeOut
@@ -20,10 +20,7 @@ import androidx.compose.ui.window.Popup
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.window.PopupProperties
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.util.trace
 import kotlinx.coroutines.isActive
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime

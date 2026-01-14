@@ -14,9 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Accessibility
 import androidx.compose.material.icons.filled.EditNote
-import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.outlined.Verified
 import androidx.compose.material.icons.rounded.Warning
@@ -29,7 +27,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,8 +45,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.platform.UriHandler
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
@@ -58,17 +53,16 @@ import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
 import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.URL_DEL_ACC
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
-import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import org.maplibre.compose.expressions.dsl.image
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.are_you_sure_you_want_to_logout
 import schneaggchatv3mp.composeapp.generated.resources.cancel
@@ -85,7 +79,6 @@ import schneaggchatv3mp.composeapp.generated.resources.logout
 import schneaggchatv3mp.composeapp.generated.resources.no
 import schneaggchatv3mp.composeapp.generated.resources.user_settings
 import schneaggchatv3mp.composeapp.generated.resources.yes
-import kotlin.coroutines.coroutineContext
 
 @Composable
 fun UserSettings(
@@ -266,21 +259,20 @@ fun UserSettings(
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
             val uriHandler = LocalUriHandler.current
-            Text(
+
+            DeleteButton(
                 text = stringResource(Res.string.delete_account),
+                onClick = {
+                    uriHandler.openUri(URL_DEL_ACC)
+                },
                 modifier = Modifier
                     .padding(top = 8.dp,
                         bottom = 4.dp,
                         start = 4.dp,
                         end = 4.dp)
-                    .clickable{
-                        uriHandler.openUri(URL_DEL_ACC)
-                    }
-                    .fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.error,
-            )
 
+                    .fillMaxWidth(),
+            )
 
         }
     }

@@ -51,18 +51,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.login
 import schneaggchatv3mp.composeapp.generated.resources.loginsubtitle
 import schneaggchatv3mp.composeapp.generated.resources.password
 import schneaggchatv3mp.composeapp.generated.resources.sign_up
 import schneaggchatv3mp.composeapp.generated.resources.username
-import kotlin.math.sin
 
 @Composable
 fun InputTextField(

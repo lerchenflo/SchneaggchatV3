@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.sharedUi
+package org.lerchenflo.schneaggchatv3mp.sharedUi.buttons
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
@@ -12,15 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.stringResource
-import schneaggchatv3mp.composeapp.generated.resources.Res
 
 @Composable
 fun NormalButton(

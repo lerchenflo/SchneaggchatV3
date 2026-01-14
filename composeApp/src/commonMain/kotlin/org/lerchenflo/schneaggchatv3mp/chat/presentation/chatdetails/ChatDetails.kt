@@ -25,10 +25,11 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
-import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
@@ -172,10 +173,12 @@ fun ChatDetails(
                 }
             }else{
                 chatDetails.toUser()?.let { userChat ->
-                    CommonGroupsView(
-                        groups = userChat.commonGroups,
-                        viewmodel = chatdetailsViewmodel
-                    )
+                    if (userChat.commonGroups.isNotEmpty()) {
+                        CommonGroupsView(
+                            groups = userChat.commonGroups,
+                            viewmodel = chatdetailsViewmodel
+                        )
+                    }
                 }
             }
 
@@ -212,11 +215,9 @@ fun ChatDetails(
                 )
             }else{
                 // remove friend
-                //TODO: Andra button vlt?
-                NormalButton(
+                DeleteButton(
                     text = stringResource(Res.string.remove_friend),
                     onClick = {
-                        //TODO: Popup
                         chatdetailsViewmodel.removeFriend()
                     },
                     modifier = Modifier

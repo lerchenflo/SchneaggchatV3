@@ -19,6 +19,7 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
+import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
@@ -180,25 +181,43 @@ object NotificationManager{
                                 return@launch
                             }
 
-                            println("[NotificationManager] Parsed notification: $notiObject")
+                            //println("[NotificationManager] Parsed notification: $notiObject")
 
                             // Check if app is open before showing notification
                             if (AppLifecycleManager.isAppOpen()) {
-                                println("[NotificationManager] App is open, skipping notification display")
-                                return@launch
+                                //println("[NotificationManager] App is open, skipping notification display")
+                                //return@launch
                             }
+
+
 
                             // Handle different notification types
                             when (notiObject) {
                                 is NotificationObject.MessageNotification -> {
+
+                                    if (AppLifecycleManager.isAppOpen()) {
+                                        //println("[NotificationManager] App is open, skipping notification display")
+                                        //return@launch
+
+                                        val globalviewmodel = KoinPlatform.getKoin().get<GlobalViewModel>()
+
+                                        //No notification in current chat
+                                        //TODO: Fix notification and pass senderid to compare
+                                        if (globalviewmodel.selectedChat.value.name == notiObject.senderName && globalviewmodel.selectedChat.value.isGroup == notiObject.groupMessage){
+                                            return@launch
+                                        }
+                                    }
+
+
+
                                     // Load encryption key for message decryption
                                     val encryptionkey = withContext(Dispatchers.IO) {
                                         preferenceManager.getEncryptionKey()
                                     }
 
                                     if (encryptionkey.isEmpty()) {
-                                        println("[NotificationManager] WARNING: Encryption key is empty")
-                                        showNotification("Schneaggchat", "New message received (encryption key not available)")
+                                        println("[NotificationManager] WARNING: Decryption key is empty")
+                                        showNotification("Schneaggchat", "New message received (decryption key not available)")
                                         return@launch
                                     }
 
@@ -242,10 +261,6 @@ object NotificationManager{
                                         titletext = getString(Res.string.new_friend_request_noti, notiObject.requesterName),
                                         bodytext = getString(Res.string.new_friend_request_noti_body, notiObject.requesterName)
                                     )
-
-                                    // Trigger data sync to update friend requests
-                                    val appRepository = KoinPlatform.getKoin().get<AppRepository>()
-                                    appRepository.dataSync()
                                 }
 
                                 is NotificationObject.SystemNotification -> {
@@ -267,6 +282,12 @@ object NotificationManager{
                     // Wait for the notification process to complete to prevent process death
                     runBlocking {
                         notiThread.join()
+                    }
+
+                    // Sync data (Ignore if app is open or not etc)
+                    val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                    CoroutineScope(Dispatchers.IO).launch {
+                        appRepository.dataSync()
                     }
                 }
             })
