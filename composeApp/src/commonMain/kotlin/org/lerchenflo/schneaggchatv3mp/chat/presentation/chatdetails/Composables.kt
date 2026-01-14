@@ -53,7 +53,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChatBase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
@@ -64,7 +64,6 @@ import schneaggchatv3mp.composeapp.generated.resources.add_description_placehold
 import schneaggchatv3mp.composeapp.generated.resources.admin
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.change
-import schneaggchatv3mp.composeapp.generated.resources.change_username_description
 import schneaggchatv3mp.composeapp.generated.resources.common_groups
 import schneaggchatv3mp.composeapp.generated.resources.group_description
 import schneaggchatv3mp.composeapp.generated.resources.groupmembers
@@ -79,7 +78,7 @@ import schneaggchatv3mp.composeapp.generated.resources.you_with_brackets
 @Composable
 fun GroupMembersView(
     members: List<GroupMemberWithUser>,
-    navigateToChat:(selectedChat: SelectedChatBase)-> Unit,
+    navigateToChat:(selectedChat: SelectedChat)-> Unit,
     changeAdminStatus:(groupMember: GroupMember)-> Unit,
     removeMember: (memberId: String)-> Unit,
     //iAmAdmin: Boolean,
@@ -354,9 +353,9 @@ fun UserOptionPopup(
 fun ChangeDescription(
     onDismiss: () -> Unit,
     descriptionText: TextFieldValue = TextFieldValue(""),
-    updateDescription:(selectedChat: SelectedChatBase) -> Unit = {},
+    updateDescription:(selectedChat: SelectedChat) -> Unit = {},
     updateDescriptionText:(value: TextFieldValue) -> Unit = {},
-    selectedChat: SelectedChatBase,
+    selectedChat: SelectedChat,
     isGroup: Boolean
 ){
     val focusManager = LocalFocusManager.current

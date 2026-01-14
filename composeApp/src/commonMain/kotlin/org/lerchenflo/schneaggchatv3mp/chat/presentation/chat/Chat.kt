@@ -44,6 +44,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -76,8 +77,15 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DayDivider
 import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageContent
 import org.lerchenflo.schneaggchatv3mp.sharedUi.MessageViewWithActions
@@ -145,8 +153,19 @@ fun ChatScreen(
                     )
                 }
 
+                val selectedChat by globalViewModel.selectedChat.collectAsStateWithLifecycle()
+                val userButtonselectedChat by derivedStateOf {
+                    when (val chat = selectedChat) {
+                        is UserChat -> chat.copy(unreadMessageCount = 0, unsentMessageCount = 0)
+                        is GroupChat -> chat.copy(unreadMessageCount = 0, unsentMessageCount = 0)
+                        is NotSelected -> chat.copy(unreadMessageCount = 0, unsentMessageCount = 0)
+                        else -> chat
+                    }
+
+                }
+
                 UserButton(
-                    selectedChat = globalViewModel.selectedChat.value,
+                    selectedChat = userButtonselectedChat,
                     onClickGes = {
                         viewModel.onChatDetailsClick()
                     },

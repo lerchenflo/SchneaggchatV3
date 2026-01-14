@@ -202,7 +202,7 @@ object NotificationManager{
                                         val globalviewmodel = KoinPlatform.getKoin().get<GlobalViewModel>()
 
                                         //No notification in current chat
-                                        //TODO: Fix notification and pass senderid
+                                        //TODO: Fix notification and pass senderid to compare
                                         if (globalviewmodel.selectedChat.value.name == notiObject.senderName && globalviewmodel.selectedChat.value.isGroup == notiObject.groupMessage){
                                             return@launch
                                         }

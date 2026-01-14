@@ -23,7 +23,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChatBase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
@@ -64,7 +64,7 @@ class ChatDetailsViewmodel(
      * - For groups: groupMembers list
      * - For users: commonGroups list
      */
-    val chatDetails: StateFlow<SelectedChatBase> = globalViewModel.selectedChat
+    val chatDetails: StateFlow<SelectedChat> = globalViewModel.selectedChat
         .flatMapLatest { chat ->
             when {
                 chat.isGroup -> {
@@ -112,7 +112,7 @@ class ChatDetailsViewmodel(
         }
     }
 
-    fun navigateToChat(selectedChat: SelectedChatBase){
+    fun navigateToChat(selectedChat: SelectedChat){
         viewModelScope.launch {
             globalViewModel.onSelectChat(selectedChat)
             // Exit all previous screen weil ma jo da selectedgegner im globalviewmodel gändert hot und denn ind chatdetails vo deam typ kummt
@@ -120,7 +120,7 @@ class ChatDetailsViewmodel(
         }
     }
 
-    fun updateDescription(selectedChat: SelectedChatBase){
+    fun updateDescription(selectedChat: SelectedChat){
         viewModelScope.launch {
             if (selectedChat.isGroup) {
                 appRepository.changeGroupDescription(selectedChat.id, descriptionText.text)
