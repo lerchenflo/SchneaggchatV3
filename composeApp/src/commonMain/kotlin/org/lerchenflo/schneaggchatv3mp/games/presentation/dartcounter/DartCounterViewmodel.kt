@@ -6,7 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 
 class DartCounterViewModel() : ViewModel() {
-    data class Player(val name: String, var score: Int, var throws: MutableList<Int> = mutableListOf(), var totalDartsThrown: Int = 0)
+    data class Player(val name: String, var score: Int, var throws: MutableList<Int> = mutableListOf(), var totalDartsThrown: Int = 0, var isFinished: Boolean = false)
 
     data class GameManager(
         val doubleOut: Boolean = false,
@@ -17,6 +17,7 @@ class DartCounterViewModel() : ViewModel() {
         var currentPlayerIndex = 0
         var gameStarted = false
         var gameOver = false
+        private var turnStartScore = 0
         
         init {
             for(name in playerNames){
@@ -24,45 +25,80 @@ class DartCounterViewModel() : ViewModel() {
             }
         }
         
+        fun startTurn() {
+            turnStartScore = getCurrentPlayer().score
+        }
+        
         fun subtractScore(score: Int, isDouble: Boolean = false, isTriple: Boolean = false): Boolean {
             val currentPlayer = playerList[currentPlayerIndex]
+            if (currentPlayer.isFinished) return false
+            
             val actualScore = if (isTriple) score * 3 else if (isDouble) score * 2 else score
+            val newScore = currentPlayer.score - actualScore
             
             return when {
                 gameOver -> false
                 doubleOut -> {
                     when {
-                        currentPlayer.score == actualScore && isDouble -> {
+                        newScore == 0 && isDouble -> {
                             currentPlayer.score = 0
-                            gameOver = true
+                            currentPlayer.isFinished = true
+                            checkIfAllPlayersFinished()
                             true
                         }
-                        currentPlayer.score > actualScore -> {
-                            currentPlayer.score -= actualScore
+                        newScore > 1 -> {
+                            currentPlayer.score = newScore
                             true
                         }
-                        else -> false
+                        else -> {
+                            // Bust: score would be 0 without double, 1 (impossible in double out), or negative
+                            false
+                        }
                     }
                 }
                 else -> {
-                    if (currentPlayer.score >= actualScore) {
-                        currentPlayer.score -= actualScore
-                        if (currentPlayer.score == 0) {
-                            gameOver = true
+                    when {
+                        newScore >= 0 -> {
+                            currentPlayer.score = newScore
+                            if (currentPlayer.score == 0) {
+                                currentPlayer.isFinished = true
+                                checkIfAllPlayersFinished()
+                            }
+                            true
                         }
-                        true
-                    } else false
+                        else -> {
+                            // Bust: score would be negative
+                            false
+                        }
+                    }
                 }
             }
+        }
+        
+        fun bust() {
+            val currentPlayer = playerList[currentPlayerIndex]
+            currentPlayer.score = turnStartScore
+        }
+        
+        private fun checkIfAllPlayersFinished() {
+            gameOver = playerList.all { it.isFinished }
         }
         
         fun nextPlayer() {
             if (!gameOver) {
-                currentPlayerIndex = (currentPlayerIndex + 1) % playerList.size
+                // Skip finished players
+                var attempts = 0
+                do {
+                    currentPlayerIndex = (currentPlayerIndex + 1) % playerList.size
+                    attempts++
+                } while (playerList[currentPlayerIndex].isFinished && attempts < playerList.size)
+                startTurn() // Initialize turn start score for next player
             }
         }
         
         fun getCurrentPlayer(): Player = playerList[currentPlayerIndex]
+        
+        fun getWinners(): List<Player> = playerList.filter { it.isFinished }
     }
 
     var gameManager by mutableStateOf<GameManager?>(null)
@@ -110,6 +146,7 @@ class DartCounterViewModel() : ViewModel() {
                 countdown = selectedCountdown,
                 playerNames = playerNames
             )
+            gameManager?.startTurn() // Initialize first player's turn
             showPlayerSetup = false
             showGameConfig = false
             resetThrow()
@@ -151,11 +188,18 @@ class DartCounterViewModel() : ViewModel() {
                 // Track darts thrown for current player
                 game.getCurrentPlayer().totalDartsThrown++
                 
-                if (throwCount >= 3 || game.gameOver) {
+                if (throwCount >= 3) {
                     if (!game.gameOver) {
                         game.nextPlayer()
                     }
                     resetThrow()
+                }
+            } else {
+                // Bust occurred - reset score to turn start and move to next player
+                game.bust()
+                resetThrow()
+                if (!game.gameOver) {
+                    game.nextPlayer()
                 }
             }
         }

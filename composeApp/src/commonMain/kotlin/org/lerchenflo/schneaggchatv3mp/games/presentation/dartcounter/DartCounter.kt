@@ -156,9 +156,9 @@ fun DartBoard(viewmodel: DartCounterViewModel) {
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            val numbers = (1..20).toList() + listOf(25, 50)
+            val numbers = (1..20).toList() + listOf(25, 50, 21)
             items(numbers.size) { index ->
-                val number = numbers[index]
+                var number = numbers[index]
                 val isBullseye = number == 25 || number == 50
                 val isMultiplierSelected = selectedMultiplier == "Double" || selectedMultiplier == "Triple"
                 val isDisabled = isBullseye && isMultiplierSelected
@@ -170,6 +170,9 @@ fun DartBoard(viewmodel: DartCounterViewModel) {
                     onClick = {
                         val isDouble = selectedMultiplier == "Double"
                         val isTriple = selectedMultiplier == "Triple"
+                        if (number==21){
+                            number = 0
+                        }
                         viewmodel.throwDart(number, isDouble, isTriple)
                         // Auto-reset to Single after throwing
                         selectedMultiplier = "Single"
@@ -183,15 +186,22 @@ fun DartBoard(viewmodel: DartCounterViewModel) {
                         }
                     )
                 ) {
-                    Text(
-                        text = number.toString(),
-                        fontSize = 16.sp,
-                        color = if (isDisabled) {
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                        } else {
-                            MaterialTheme.colorScheme.onPrimary
-                        }
-                    )
+                    if (number == 21) {
+                        Text(
+                            text = "Miss"
+                        )
+
+                    } else {
+                        Text(
+                            text = number.toString(),
+                            fontSize = 16.sp,
+                            color = if (isDisabled) {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                            } else {
+                                MaterialTheme.colorScheme.onPrimary
+                            }
+                        )
+                }
                 }
             }
         }
@@ -208,12 +218,20 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
         Column(
             modifier = Modifier.padding(15.dp)
         ) {
-            if (game.gameOver) {
+            val winners = game.getWinners()
+            
+            if (winners.isNotEmpty()) {
                 Text(
-                    text = "Game Over! Winner: ${game.getCurrentPlayer().name}",
+                    text = "Winners: ${winners.joinToString(", ") { it.name }}",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
+                )
+            } else if (!game.getCurrentPlayer().isFinished) {
+                Text(
+                    text = "Current Player: ${game.getCurrentPlayer().name}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
@@ -229,13 +247,23 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
                             .fillMaxWidth()
                             .padding(7.dp)
                             .let { modifier ->
-                                if (player == game.getCurrentPlayer() && !game.gameOver) {
-                                    modifier.border(
-                                        width = 2.dp,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        shape = MaterialTheme.shapes.small
-                                    )
-                                } else modifier
+                                when {
+                                    player.isFinished -> {
+                                        modifier.border(
+                                            width = 2.dp,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            shape = MaterialTheme.shapes.small
+                                        )
+                                    }
+                                    player == game.getCurrentPlayer() && !player.isFinished && !game.gameOver -> {
+                                        modifier.border(
+                                            width = 2.dp,
+                                            color = MaterialTheme.colorScheme.secondary,
+                                            shape = MaterialTheme.shapes.small
+                                        )
+                                    }
+                                    else -> modifier
+                                }
                             }
                             .padding(8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -243,15 +271,23 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
                     ) {
                         Column {
                             Text(
-                                text = "${player.name}: ${player.score}",
+                                text = "${player.name}: ${player.score}${if (player.isFinished) " ✓" else ""}",
                                 fontSize = 22.sp,
-                                fontWeight = if (player == game.getCurrentPlayer() && !game.gameOver) FontWeight.Bold else FontWeight.Normal,
-                                color = if (player == game.getCurrentPlayer() && !game.gameOver) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                fontWeight = when {
+                                    player.isFinished -> FontWeight.Bold
+                                    player == game.getCurrentPlayer() && !game.gameOver -> FontWeight.Bold
+                                    else -> FontWeight.Normal
+                                },
+                                color = when {
+                                    player.isFinished -> MaterialTheme.colorScheme.primary
+                                    player == game.getCurrentPlayer() && !game.gameOver -> MaterialTheme.colorScheme.secondary
+                                    else -> MaterialTheme.colorScheme.onSurface
+                                }
                             )
                         }
                         
                         // Three dart average calculation
-                        val dartsThrown = player.totalDartsThrown + if (player == game.getCurrentPlayer()) viewmodel.throwCount else 0
+                        val dartsThrown = player.totalDartsThrown + if (player == game.getCurrentPlayer() && !player.isFinished) viewmodel.throwCount else 0
                         val totalScore = game.countdown - player.score
                         val average = if (dartsThrown > 0) String.format("%.1f", totalScore.toDouble() / dartsThrown * 3) else "0.0"
                         
@@ -259,13 +295,17 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
                             text = "Avg: $average",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium,
-                            color = if (player == game.getCurrentPlayer() && !game.gameOver) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            color = when {
+                                player.isFinished -> MaterialTheme.colorScheme.primary
+                                player == game.getCurrentPlayer() && !game.gameOver -> MaterialTheme.colorScheme.secondary
+                                else -> MaterialTheme.colorScheme.onSurface
+                            }
                         )
                     }
                 }
             }
 
-            if (viewmodel.currentThrow > -1) {
+            if (viewmodel.currentThrow > -1 && !game.getCurrentPlayer().isFinished) {
                 Spacer(modifier = Modifier.height(7.dp))
                 Text(
                     text = "Current Throw: ${viewmodel.currentThrow} (Dart ${viewmodel.throwCount}/3)",
