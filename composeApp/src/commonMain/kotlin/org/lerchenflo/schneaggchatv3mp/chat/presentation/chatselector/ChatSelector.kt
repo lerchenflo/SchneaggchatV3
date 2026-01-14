@@ -61,7 +61,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.ismoy.imagepickerkmp.presentation.ui.components.ocr.AnimatedProgressBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -74,7 +73,7 @@ import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
-import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
@@ -442,7 +441,7 @@ fun Chatauswahlscreen(
                     ) {
                         items(
                             items = availablegegners,
-                            key = {it.id}
+                            key = {"${it.id}_${it.isGroup}"}
                         ) { gegner ->
                             UserButton(
                                 selectedChat = gegner,
