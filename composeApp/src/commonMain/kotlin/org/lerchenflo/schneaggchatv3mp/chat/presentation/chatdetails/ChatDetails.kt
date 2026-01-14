@@ -172,10 +172,12 @@ fun ChatDetails(
                 }
             }else{
                 chatDetails.toUser()?.let { userChat ->
-                    CommonGroupsView(
-                        groups = userChat.commonGroups,
-                        viewmodel = chatdetailsViewmodel
-                    )
+                    if (userChat.commonGroups.isNotEmpty()) {
+                        CommonGroupsView(
+                            groups = userChat.commonGroups,
+                            viewmodel = chatdetailsViewmodel
+                        )
+                    }
                 }
             }
 

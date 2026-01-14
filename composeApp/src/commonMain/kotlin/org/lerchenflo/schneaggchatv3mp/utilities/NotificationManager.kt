@@ -242,10 +242,6 @@ object NotificationManager{
                                         titletext = getString(Res.string.new_friend_request_noti, notiObject.requesterName),
                                         bodytext = getString(Res.string.new_friend_request_noti_body, notiObject.requesterName)
                                     )
-
-                                    // Trigger data sync to update friend requests
-                                    val appRepository = KoinPlatform.getKoin().get<AppRepository>()
-                                    appRepository.dataSync()
                                 }
 
                                 is NotificationObject.SystemNotification -> {
@@ -267,6 +263,12 @@ object NotificationManager{
                     // Wait for the notification process to complete to prevent process death
                     runBlocking {
                         notiThread.join()
+                    }
+
+                    // Sync data (Ignore if app is open or not etc)
+                    val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                    CoroutineScope(Dispatchers.IO).launch {
+                        appRepository.dataSync()
                     }
                 }
             })
