@@ -32,6 +32,8 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
+import schneaggchatv3mp.composeapp.generated.resources.description_info_group
+import schneaggchatv3mp.composeapp.generated.resources.description_info_user
 import schneaggchatv3mp.composeapp.generated.resources.leave_group
 import schneaggchatv3mp.composeapp.generated.resources.no_description
 import schneaggchatv3mp.composeapp.generated.resources.no_status
@@ -123,7 +125,8 @@ fun ChatDetails(
                     bodyText = chatDetails.status
                         .takeIf { !it.isNullOrBlank() }
                         ?.replace("\\n", "\n")
-                        ?: stringResource(Res.string.no_status)
+                        ?: stringResource(Res.string.no_status),
+                    infoText = stringResource(Res.string.status_info)
                 )
 
             }
@@ -140,7 +143,8 @@ fun ChatDetails(
                     selectedChat = chatDetails,
                     descriptionText = chatdetailsViewmodel.descriptionText,
                     updateDescriptionText = chatdetailsViewmodel::updateDescriptionText,
-                    updateDescription = chatdetailsViewmodel::updateDescription
+                    updateDescription = chatdetailsViewmodel::updateDescription,
+                    isGroup = group
                 )
             }
 
@@ -150,7 +154,8 @@ fun ChatDetails(
                 bodyText = chatDetails.description
                     .takeIf { !it.isNullOrBlank() }
                     ?.replace("\\n", "\n")
-                    ?: stringResource(Res.string.no_description)
+                    ?: stringResource(Res.string.no_description),
+                infoText = if (group) stringResource(Res.string.description_info_group) else stringResource(Res.string.description_info_user, chatDetails.name)
             )
 
             HorizontalDivider()

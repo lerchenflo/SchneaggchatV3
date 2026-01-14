@@ -1,34 +1,24 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.AddModerator
 import androidx.compose.material.icons.filled.AdminPanelSettings
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.RemoveModerator
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -36,7 +26,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -48,7 +37,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -58,9 +46,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
@@ -70,29 +56,24 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChatBase
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorAction
+import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
-import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
-import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_description_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.admin
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.change
+import schneaggchatv3mp.composeapp.generated.resources.change_username_description
 import schneaggchatv3mp.composeapp.generated.resources.common_groups
-import schneaggchatv3mp.composeapp.generated.resources.friend_request_title
 import schneaggchatv3mp.composeapp.generated.resources.group_description
 import schneaggchatv3mp.composeapp.generated.resources.groupmembers
 import schneaggchatv3mp.composeapp.generated.resources.make_admin
-import schneaggchatv3mp.composeapp.generated.resources.no_status
 import schneaggchatv3mp.composeapp.generated.resources.open_chat
 import schneaggchatv3mp.composeapp.generated.resources.remove_admin_status
 import schneaggchatv3mp.composeapp.generated.resources.remove_from_group
-import schneaggchatv3mp.composeapp.generated.resources.search_user
-import schneaggchatv3mp.composeapp.generated.resources.status
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
+import schneaggchatv3mp.composeapp.generated.resources.user_description
 import schneaggchatv3mp.composeapp.generated.resources.you_with_brackets
 
 @Composable
@@ -165,14 +146,10 @@ fun GroupMembersView(
                     ))
                 },
                 onAdminStatusChange = {
-                    // todo i hoff es isch an serverfehler aber es sind zmol 2 user 1 Admin und 1 nicht Admin
-                    // todo a coole meldung
                     changeAdminStatus(groupMember)
                 },
                 onRemoveUser = {
-                    SnackbarManager.showMessage("funktioniert es? denn bitte dia snackbar weck")
                     removeMember(groupMember.userId)
-                    // todo Testen und a coole Meldung
                 },
             )
 
@@ -379,7 +356,8 @@ fun ChangeDescription(
     descriptionText: TextFieldValue = TextFieldValue(""),
     updateDescription:(selectedChat: SelectedChatBase) -> Unit = {},
     updateDescriptionText:(value: TextFieldValue) -> Unit = {},
-    selectedChat: SelectedChatBase
+    selectedChat: SelectedChatBase,
+    isGroup: Boolean
 ){
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current // Also helpful to hide keyboard
@@ -427,8 +405,11 @@ fun ChangeDescription(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = stringResource(Res.string.group_description),
+                        text = if (isGroup) stringResource(Res.string.group_description) else stringResource(Res.string.user_description),
                     )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     OutlinedTextField(
                         value = descriptionText,
                         textStyle = MaterialTheme.typography.bodySmall.copy(
@@ -445,7 +426,8 @@ fun ChangeDescription(
                                     onDismiss()
                                 }
                                 false // Pass all other events (letters, backspace, etc.) to the TextField
-                            },
+                            }
+                            .fillMaxWidth(),
                         placeholder = { Text(stringResource(Res.string.add_description_placeholder)) }
                     )
 
@@ -461,6 +443,7 @@ fun DescriptionStatusRow(
     onClick: () -> Unit,
     titleText: String,
     bodyText: String,
+    infoText: String
 ){
     Row(
         modifier = Modifier
@@ -471,13 +454,22 @@ fun DescriptionStatusRow(
             .padding(
                 16.dp
             )
-
     ){
         Column(){
-            Text(
-                text = titleText,
-                modifier = Modifier
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = titleText,
+                    modifier = Modifier
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                TooltipIconButton(infoText)
+            }
+
+
             Text(
                 text = bodyText,
                 softWrap = true,
