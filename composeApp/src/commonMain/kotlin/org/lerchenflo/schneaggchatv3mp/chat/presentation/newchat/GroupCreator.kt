@@ -59,6 +59,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
+import org.lerchenflo.schneaggchatv3mp.sharedUi.MemberSelector
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
@@ -114,153 +115,16 @@ private fun GroupCreatorScreen(
             backEnabled = true,
         ){
             //User selection card
-            CardItem(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Column {
-                    // der Teil oba wo die Profilbilder azoagt wörrend
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState())
-                            .padding(
-                                start = 10.dp,
-                                end = 2.dp,
-                                bottom = 10.dp
-                            )
-
-                    ) {
-                        // durch die selected users durchgo und azoaga
-                        state.selectedUsers.forEach { user ->
-                            Column(
-                                modifier = Modifier
-                                    .padding(end = 5.dp)
-                                    .clickable {
-                                        onAction(GroupCreatorAction.addGroupMember(user))
-                                    }
-
-                            ) {
-                                val size = 70.dp
-                                Box(
-                                    modifier = Modifier.size(size)
-                                ) {
-                                    // Profile picture
-                                    ProfilePictureView(
-                                        filepath = user.profilePictureUrl,
-                                        modifier = Modifier
-                                            .size(size)
-                                            .padding(8.dp)
-                                            .clip(CircleShape)
-                                    )
-
-                                    // Trash icon overlay
-                                    Icon(
-                                        imageVector = Icons.Default.Delete, // or Icons.Outlined.Delete
-                                        contentDescription = "Remove user",
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier
-                                            .align(Alignment.BottomEnd)
-                                            .size(30.dp)
-                                            .background(
-                                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.2f),
-                                                shape = CircleShape
-                                            )
-                                            .padding(2.dp)
-
-                                    )
-                                }
-                                Text(
-                                    text = user.name,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.width(size)
-                                )
-                            }
-                        }
-                    }
-
-                    // A suchfeld
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = 16.dp,
-                                end = 16.dp,
-                                top = 5.dp,
-                                bottom = 5.dp
-                            ),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OutlinedTextField(
-                            value = state.searchterm,
-                            maxLines = 1,
-                            onValueChange = { onAction(GroupCreatorAction.updateSearchterm(it)) },
-                            modifier = Modifier
-                                .weight(1f),
-                            placeholder = { Text(stringResource(Res.string.search_user)) },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = "search"
-                                )
-                            },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                unfocusedBorderColor = Color.Transparent
-                            )
-                        )
-                        Box(
-                            modifier = Modifier
-                                .height(40.dp)
-                                .aspectRatio(1f)
-                                .clickable { onAction(GroupCreatorAction.updateSearchterm("")) },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Reset Search Text",
-                                modifier = Modifier
-                                    .size(30.dp)
-
-                            )
-                        }
-
-                    }
-
-                    // die freunde azoaga zum uswähla
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        contentPadding = PaddingValues(
-                            start = 16.dp,
-                            end = 16.dp,
-                            bottom = 16.dp
-                        ),
-                    ) {
-                        items(state.availableUsers) { user ->
-                            val selected = state.selectedUsers.contains(user)
-
-                            UserButton(
-                                selectedChat = user,
-                                useOnClickGes = true,
-                                lastMessage = null,
-                                bottomTextOverride = "",
-                                selected = selected,
-                                onClickGes = {
-                                    if (selected) {
-                                        onAction(GroupCreatorAction.removeGroupMember(user))
-                                    } else {
-                                        onAction(GroupCreatorAction.addGroupMember(user))
-                                    }
-
-                                }
-                            )
-                            HorizontalDivider(
-                                thickness = 0.5.dp
-                            )
-                        }
-                    }
-                }
+            CardItem {
+                MemberSelector(
+                    availableUsers = state.availableUsers,
+                    selectedUsers = state.selectedUsers,
+                    searchTerm = state.searchterm,
+                    onSearchTermChange = {onAction(GroupCreatorAction.updateSearchterm(it))},
+                    onUserSelected = { onAction(GroupCreatorAction.addGroupMember(it)) },
+                    onUserDeselected = { onAction(GroupCreatorAction.removeGroupMember(it)) },
+                    modifier = Modifier.fillMaxSize()
+                )
             }
 
             //Gruppenname

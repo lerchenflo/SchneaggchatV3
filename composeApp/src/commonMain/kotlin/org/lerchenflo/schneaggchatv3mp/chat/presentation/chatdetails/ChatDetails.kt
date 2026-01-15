@@ -33,6 +33,8 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
+import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
+import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.description_info_group
 import schneaggchatv3mp.composeapp.generated.resources.description_info_user
 import schneaggchatv3mp.composeapp.generated.resources.group_description
@@ -68,6 +70,11 @@ fun ChatDetails(
     val group = chatDetails.isGroup
 
     var profilePictureDialogShown by remember { mutableStateOf(false) }
+    var showLeaveGroupConfirmation by remember { mutableStateOf(false) }
+    var showRemoveFriendConfirmation by remember { mutableStateOf(false) }
+
+    var showAddMemberPopup by remember { mutableStateOf(false) }
+
 
     // Profilbild größer azoaga
     if(profilePictureDialogShown){
@@ -195,11 +202,38 @@ fun ChatDetails(
                     NormalButton(
                         text = stringResource(Res.string.add_users_to_group),
                         onClick = {
-                            //TODO: Popup?
-                            SnackbarManager.showMessage("todo")
+                            showAddMemberPopup = true
                         },
                         modifier = Modifier
                             .fillMaxWidth()
+                    )
+
+                    if (showAddMemberPopup) {
+                        AddUserToGroupPopup(
+                            onDismiss = {showAddMemberPopup = false},
+                            onSuccess = {
+                                it.forEach { user ->
+                                    chatdetailsViewmodel.addMember(user.id)
+                                }
+                                showAddMemberPopup = false
+                            },
+                            availableUsers = chatdetailsViewmodel.availableNewMembers
+                        )
+                    }
+
+                }
+
+                // Confirmation dialog for leaving group
+                if (showLeaveGroupConfirmation) {
+                    ConfirmationDialog(
+                        message = stringResource(Res.string.confirm_leave_group),
+                        onConfirm = {
+                            chatdetailsViewmodel.removeMember(SessionCache.getOwnIdValue().toString())
+                            chatdetailsViewmodel.navigateChatSelExitAllPrevious()
+                        },
+                        onDismiss = {
+                            showLeaveGroupConfirmation = false
+                        }
                     )
                 }
 
@@ -207,19 +241,30 @@ fun ChatDetails(
                 DeleteButton(
                     text = stringResource(Res.string.leave_group),
                     onClick = {
-                        //TODO: Popup
-                        chatdetailsViewmodel.removeMember(SessionCache.getOwnIdValue().toString())
-                        chatdetailsViewmodel.navigateChatSelExitAllPrevious() // go back and delete backtrace
+                        showLeaveGroupConfirmation = true
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                 )
             }else{
+                // Confirmation dialog for removing friend
+                if (showRemoveFriendConfirmation) {
+                    ConfirmationDialog(
+                        message = stringResource(Res.string.confirm_remove_friend, chatDetails.name),
+                        onConfirm = {
+                            chatdetailsViewmodel.removeFriend()
+                        },
+                        onDismiss = {
+                            showRemoveFriendConfirmation = false
+                        }
+                    )
+                }
+
                 // remove friend
                 DeleteButton(
                     text = stringResource(Res.string.remove_friend),
                     onClick = {
-                        chatdetailsViewmodel.removeFriend()
+                        showRemoveFriendConfirmation = true
                     },
                     modifier = Modifier
                         .fillMaxWidth()
