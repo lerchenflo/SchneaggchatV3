@@ -85,6 +85,8 @@
     <string name="others_say_about">Andere User haben über %1$s geschrieben:</string>
     <string name="status_info">Dieser Text wurde vom User verfasst</string>
     <string name="description_info_user">All friends of %1$s can edit this text, but %1$s cannot.</string>
+    <string name="description_info_group">Ändere die Gruppenbeschreibung</string>
+
     <string name="no_description">Keine Beschreibung</string>
     <string name="remove_friend">Freund entfernen</string>
     <string name="save">Speichern</string>
@@ -151,7 +153,9 @@
     <string name="group_name">Gruppenname</string>
     <string name="group_description">Gruppenbeschreibung</string>
     <string name="user_description">Userbeschreibung</string>
-
+    <string name="leave_group">Gruppe verlassen</string>
+    <string name="add_users_to_group">Benutzer hinzufügen</string>
+    <string name="member_since">Mitglied seit %1$s</string>
 
     <string name="image">Bild</string>
     <string name="video">Video</string>
@@ -248,9 +252,9 @@
     <string name="common_groups">Gemeinsame Gruppen (%1$s)</string>
     <string name="groupmembers">Gruppenmitglieder (%1$s)</string>
 
-    <string name="invitation_text">Du verwendest kein Schneaggchat? Tritt jetzt bei:</string>
 
     <string name="delete_account">Account löschen</string>
+    <string name="invitation_text">Du verwendest kein Schneaggchat? Tritt jetzt bei:</string>
 
     <string name="must_be_accepted">Du musst akzeptieren</string>
     <string name="you_need_to_select_a_profilepicture">Du musst ein Profilbild auswählen</string>
