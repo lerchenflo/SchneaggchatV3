@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.2"
+agp = "9.0.0"
 android-compileSdk = "36"
 android-minSdk = "26"
 android-targetSdk = "36"
@@ -7,13 +7,13 @@ androidx-activity = "1.12.2"
 
 androidx-lifecycle = "2.10.0-alpha07"
 coilComposeVersion = "3.3.0"
-componentsResources = "1.10.0-rc02"
+componentsResources = "1.10.0"
 composeHotReload = "1.0.0"
-composeMultiplatform = "1.10.0-rc02"
+composeMultiplatform = "1.10.0"
 cryptographyProviderOptimal = "0.5.0"
 encoding = "2.6.0"
-foundation = "1.10.0-rc02"
-githubImagepickerkmp = "1.0.28"
+foundation = "1.10.0"
+githubImagepickerkmp = "1.0.29"
 
 jwtKt = "1.2.1"
 kotlin = "2.3.0"
@@ -24,7 +24,7 @@ material3 = "1.9.0"
 materialIconsExtended = "1.7.3"
 room = "2.8.4"
 
-runtime = "1.10.0-rc02"
+runtime = "1.10.0"
 sqlite = "2.6.2"
 kotlinx-datetime = "0.7.1"
 
@@ -34,11 +34,11 @@ ktor = "3.3.3"
 adaptive = "1.2.0"
 datastore = "1.2.0"
 
-mikepenz-markdown = "0.39.0"
+mikepenz-markdown = "0.39.1"
 kmpnotifier = "1.6.1"
-uiToolingPreview = "1.10.0-rc02"
+uiToolingPreview = "1.10.0"
 
-cmpNavigation3 = "1.0.0-alpha06"
+cmpNavigation3 = "1.1.0-alpha01"
 appUpdateKtx = "2.1.0"
 maps = "0.12.1"
 
