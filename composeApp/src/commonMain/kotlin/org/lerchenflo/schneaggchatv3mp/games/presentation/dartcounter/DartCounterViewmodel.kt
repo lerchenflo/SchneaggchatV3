@@ -26,7 +26,8 @@ class DartCounterViewModel() : ViewModel() {
         val doubleOut: Boolean = false,
         val countdown: Int,
         val playerNames: List<String>,
-        private val onDartCountChanged: (Int) -> Unit = {}
+        private val onDartCountChanged: (Int) -> Unit = {},
+        private val onThrowAdded: () -> Unit = {}
     ) {
         val playerList: MutableList<Player> = mutableListOf()
         var currentPlayerIndex by mutableStateOf(0)
@@ -36,6 +37,7 @@ class DartCounterViewModel() : ViewModel() {
         private var turnStartScore = 0
         private val turnHistory: MutableList<Turn> = mutableListOf()
         private var currentTurnDarts: MutableList<DartThrow> = mutableListOf()
+        private val allThrowsHistory: MutableList<DartThrow> = mutableListOf()
         
         init {
             for(name in playerNames){
@@ -106,8 +108,11 @@ class DartCounterViewModel() : ViewModel() {
         }
         
         fun addDartToTurn(score: Int, isDouble: Boolean, isTriple: Boolean, actualScore: Int) {
-            currentTurnDarts.add(DartThrow(score, isDouble, isTriple, actualScore))
+            val dartThrow = DartThrow(score, isDouble, isTriple, actualScore)
+            currentTurnDarts.add(dartThrow)
+            allThrowsHistory.add(dartThrow)
             onDartCountChanged(currentTurnDarts.size)
+            onThrowAdded()
         }
         
         fun completeTurn() {
@@ -124,58 +129,66 @@ class DartCounterViewModel() : ViewModel() {
             }
         }
         
-        fun canUndo(): Boolean = turnHistory.isNotEmpty()
+        fun canUndo(): Boolean = allThrowsHistory.isNotEmpty()
         
-        fun undoLastTurn(): Boolean {
-            if (turnHistory.isEmpty()) return false
-            
-            val lastTurn = turnHistory.removeAt(turnHistory.size - 1)
-            
-            // Restore player state
-            val player = playerList[lastTurn.playerIndex]
-            player.score = lastTurn.scoreAtStart
-            player.isFinished = false
-            
-            // Restore darts thrown count
-            val totalDartsInTurn = lastTurn.dartsThrown.size
-            player.totalDartsThrown -= totalDartsInTurn
-            
-            // Set current player to the player who just had their turn undone
-            currentPlayerIndex = lastTurn.playerIndex
-            turnStartScore = lastTurn.scoreAtStart
-            
-            // Check if game is still over
-            checkIfAllPlayersFinished()
-            
-            return true
-        }
-        
-        fun hasDartsInCurrentTurn(): Boolean = currentTurnDarts.isNotEmpty()
+        fun getAllThrowsHistory(): List<DartThrow> = allThrowsHistory.toList()
         
         fun getCurrentTurnDarts(): List<DartThrow> = currentTurnDarts.toList()
         
         fun undoLastThrow(): Boolean {
-            if (currentTurnDarts.isEmpty()) return false
+            if (allThrowsHistory.isEmpty()) return false
             
-            val lastDart = currentTurnDarts.removeAt(currentTurnDarts.size - 1)
-            val currentPlayer = getCurrentPlayer()
+            val lastThrow = allThrowsHistory.removeAt(allThrowsHistory.size - 1)
             
-            // Restore player score
-            currentPlayer.score += lastDart.actualScore
-            
-            // Restore finished status if needed
-            if (currentPlayer.score > 0) {
-                currentPlayer.isFinished = false
-                checkIfAllPlayersFinished()
-            }
-            
-            // Restore darts thrown count
-            currentPlayer.totalDartsThrown--
-            
-            // Notify of dart count change
-            onDartCountChanged(currentTurnDarts.size)
+            // Rebuild the entire game state from scratch using allThrowsHistory
+            rebuildGameStateFromHistory()
             
             return true
+        }
+        
+        private fun rebuildGameStateFromHistory() {
+            // Reset all players to their initial scores
+            for (player in playerList) {
+                player.score = countdown
+                player.isFinished = false
+                player.totalDartsThrown = 0
+            }
+            
+            // Clear turn history and current turn
+            turnHistory.clear()
+            currentTurnDarts.clear()
+            
+            // Reset to first player
+            currentPlayerIndex = 0
+            turnStartScore = countdown
+            
+            // Replay all throws in order
+            var throwCount = 0
+            for (dartThrow in allThrowsHistory) {
+                val currentPlayer = getCurrentPlayer()
+                
+                // Check if this is a new turn (3 darts thrown or bust occurred)
+                if (throwCount > 0 && throwCount % 3 == 0) {
+                    completeTurn()
+                    nextPlayer()
+                }
+                
+                // Apply the throw
+                val actualScore = dartThrow.actualScore
+                if (subtractScore(dartThrow.score, dartThrow.isDouble, dartThrow.isTriple)) {
+                    currentTurnDarts.add(dartThrow)
+                    currentPlayer.totalDartsThrown++
+                    throwCount++
+                } else {
+                    // Bust occurred
+                    bust()
+                    completeTurn()
+                    nextPlayer()
+                    throwCount++
+                }
+            }
+            
+            onDartCountChanged(currentTurnDarts.size)
         }
         
         fun bust() {
@@ -235,7 +248,7 @@ class DartCounterViewModel() : ViewModel() {
     var currentPlayerName by mutableStateOf("")
         private set
     
-    var currentTurnDartCount by mutableStateOf(0)
+    var totalThrowsCount by mutableStateOf(0)
         private set
 
     fun addPlayerName(name: String) {
@@ -254,7 +267,8 @@ class DartCounterViewModel() : ViewModel() {
                 doubleOut = selectedOutMode == "Double Out",
                 countdown = selectedCountdown,
                 playerNames = playerNames,
-                onDartCountChanged = { count -> currentTurnDartCount = count }
+                onDartCountChanged = { count -> /* currentTurnDartCount = count */ },
+                onThrowAdded = { totalThrowsCount++ }
             )
             gameManager?.startTurn() // Initialize first player's turn
             updateCurrentPlayerName() // Update current player display
@@ -326,16 +340,20 @@ class DartCounterViewModel() : ViewModel() {
     }
     
     fun canUndoThrow(): Boolean {
-        return gameStarted && currentTurnDartCount > 0
+        return gameStarted && totalThrowsCount > 0
     }
     
     fun undoLastThrow() {
         gameManager?.let { game ->
             if (game.undoLastThrow()) {
+                // Update total throws count
+                totalThrowsCount--
+                
                 // Update current throw display
                 val currentTurnDarts = game.getCurrentTurnDarts()
                 currentThrow = currentTurnDarts.sumOf { it.actualScore }
                 throwCount = currentTurnDarts.size
+                updateCurrentPlayerName()
             }
         }
     }
@@ -373,14 +391,5 @@ class DartCounterViewModel() : ViewModel() {
     
     fun canUndo(): Boolean {
         return gameManager?.canUndo() ?: false
-    }
-    
-    fun undoLastTurn() {
-        gameManager?.let { game ->
-            if (game.undoLastTurn()) {
-                resetThrow()
-                updateCurrentPlayerName()
-            }
-        }
     }
 }
