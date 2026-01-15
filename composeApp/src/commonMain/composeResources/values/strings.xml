@@ -265,5 +265,9 @@
     <string name="declined">Declined</string>
     <string name="blocked">Blocked</string>
 
+    <!-- Confirmation dialogs -->
+    <string name="confirm_leave_group">Are you sure you want to leave this group?</string>
+    <string name="confirm_remove_friend">Are you sure you want to remove %1$s as a friend?</string>
+    <string name="confirm_remove_member">Are you sure you want to remove %1$s from the group?</string>
 
 </resources>

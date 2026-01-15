@@ -60,6 +60,7 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButto
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_member
 import schneaggchatv3mp.composeapp.generated.resources.add_description_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.admin
 import schneaggchatv3mp.composeapp.generated.resources.cancel
@@ -73,7 +74,38 @@ import schneaggchatv3mp.composeapp.generated.resources.remove_admin_status
 import schneaggchatv3mp.composeapp.generated.resources.remove_from_group
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 import schneaggchatv3mp.composeapp.generated.resources.user_description
+import schneaggchatv3mp.composeapp.generated.resources.yes
 import schneaggchatv3mp.composeapp.generated.resources.you_with_brackets
+
+/**
+ * Reusable confirmation dialog for destructive actions.
+ */
+@Composable
+fun ConfirmationDialog(
+    message: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                onConfirm()
+                onDismiss()
+            }) {
+                Text(stringResource(Res.string.yes))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(Res.string.cancel))
+            }
+        },
+        text = {
+            Text(message)
+        }
+    )
+}
 
 @Composable
 fun GroupMembersView(
@@ -102,16 +134,17 @@ fun GroupMembersView(
 
         members.forEach { (groupMember, user) ->
             var profilePictureDialogShown by remember { mutableStateOf(false) }
-
             var userOptionPopupExpanded by remember { mutableStateOf(false) }
+            var showRemoveMemberConfirmation by remember { mutableStateOf(false) }
             val me = groupMember.userId == ownid
+            val userName = user?.name ?: stringResource(Res.string.unknown_user)
 
             ChatButtonView(
                 profilePictureFilePath = user?.profilePictureUrl ?: "",
                 name = if(me){ // if own user is displays add a hint
-                    (user?.name ?: stringResource(Res.string.unknown_user)) + stringResource(Res.string.you_with_brackets)
+                    userName + stringResource(Res.string.you_with_brackets)
                 }else{
-                    user?.name ?: stringResource(Res.string.unknown_user)
+                    userName
                 },
                 isAdmin = groupMember.admin,
                 onClickText = {
@@ -131,7 +164,20 @@ fun GroupMembersView(
                 )
             }
 
-                UserOptionPopup(
+            // Confirmation dialog for removing member
+            if (showRemoveMemberConfirmation) {
+                ConfirmationDialog(
+                    message = stringResource(Res.string.confirm_remove_member, userName),
+                    onConfirm = {
+                        removeMember(groupMember.userId)
+                    },
+                    onDismiss = {
+                        showRemoveMemberConfirmation = false
+                    }
+                )
+            }
+
+            UserOptionPopup(
                 expanded = userOptionPopupExpanded,
                 iAmAdmin = iAmAdmin,
                 groupMember = groupMember,
@@ -148,7 +194,7 @@ fun GroupMembersView(
                     changeAdminStatus(groupMember)
                 },
                 onRemoveUser = {
-                    removeMember(groupMember.userId)
+                    showRemoveMemberConfirmation = true  // Show confirmation instead of directly removing
                 },
             )
 
