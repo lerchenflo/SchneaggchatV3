@@ -35,6 +35,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
 import schneaggchatv3mp.composeapp.generated.resources.description_info_group
 import schneaggchatv3mp.composeapp.generated.resources.description_info_user
+import schneaggchatv3mp.composeapp.generated.resources.group_description
 import schneaggchatv3mp.composeapp.generated.resources.leave_group
 import schneaggchatv3mp.composeapp.generated.resources.no_description
 import schneaggchatv3mp.composeapp.generated.resources.no_status
@@ -151,7 +152,7 @@ fun ChatDetails(
 
             DescriptionStatusRow(
                 onClick = { showDescriptionChangeDialog = true },
-                titleText = stringResource(Res.string.others_say_about, chatDetails.name),
+                titleText = if (group) stringResource(Res.string.group_description) else stringResource(Res.string.others_say_about, chatDetails.name),
                 bodyText = chatDetails.description
                     .takeIf { !it.isNullOrBlank() }
                     ?.replace("\\n", "\n")
@@ -202,11 +203,11 @@ fun ChatDetails(
                     )
                 }
 
-                // Leave group
-                NormalButton(
+                // Leave group (Always there)
+                DeleteButton(
                     text = stringResource(Res.string.leave_group),
                     onClick = {
-                        //TODO: Popup?
+                        //TODO: Popup
                         chatdetailsViewmodel.removeMember(SessionCache.getOwnIdValue().toString())
                         chatdetailsViewmodel.navigateChatSelExitAllPrevious() // go back and delete backtrace
                     },
