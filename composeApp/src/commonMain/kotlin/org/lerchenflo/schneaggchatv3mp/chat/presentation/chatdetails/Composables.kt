@@ -2,11 +2,13 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -31,6 +33,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -57,8 +60,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.MemberSelector
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_member
 import schneaggchatv3mp.composeapp.generated.resources.add_description_placeholder
@@ -69,6 +74,8 @@ import schneaggchatv3mp.composeapp.generated.resources.common_groups
 import schneaggchatv3mp.composeapp.generated.resources.group_description
 import schneaggchatv3mp.composeapp.generated.resources.groupmembers
 import schneaggchatv3mp.composeapp.generated.resources.make_admin
+import schneaggchatv3mp.composeapp.generated.resources.member_since
+import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.open_chat
 import schneaggchatv3mp.composeapp.generated.resources.remove_admin_status
 import schneaggchatv3mp.composeapp.generated.resources.remove_from_group
@@ -152,7 +159,8 @@ fun GroupMembersView(
                 },
                 onClickImage = {
                     profilePictureDialogShown = true
-                }
+                },
+                joindate = groupMember.joinDate
             )
 
             if (profilePictureDialogShown) {
@@ -262,6 +270,7 @@ private fun ChatButtonView(
     isAdmin: Boolean = false,
     onClickText: () -> Unit = {},  // Add click for name + admin icon
     onClickImage: () -> Unit = {},  // Add click for image (profilepicture)
+    joindate: String? = null,
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .padding(6.dp)
@@ -282,17 +291,28 @@ private fun ChatButtonView(
 
         Row(
             modifier = Modifier
-                .fillMaxHeight()
+                .fillMaxSize()
                 .clickable{onClickText()},
             verticalAlignment = Alignment.CenterVertically
         ){
-            Text(
-                text = name,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f)
-            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+
+                if (joindate != null) {
+                    Text(
+                        text = stringResource(Res.string.member_since, millisToTimeDateOrYesterday(joindate.toLong())),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
+            }
 
             if(isAdmin){
                 Icon(
@@ -526,153 +546,47 @@ fun DescriptionStatusRow(
 }
 
 @Composable
-fun addUserView(
+fun AddUserToGroupPopup(
+    onDismiss: () -> Unit,
+    onSuccess: (List<SelectedChat>) -> Unit,
+    availableUsers: List<SelectedChat>
 
-){
-    /*
-    Column {
-        // der Teil oba wo die Profilbilder azoagt wörrend
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(
-                    start = 10.dp,
-                    end = 2.dp,
-                    bottom = 10.dp
-                )
+) {
 
-        ) {
-            // durch die selected users durchgo und azoaga
-            state.selectedUsers.forEach { user ->
-                Column(
-                    modifier = Modifier
-                        .padding(end = 5.dp)
-                        .clickable {
-                            onAction(GroupCreatorAction.addGroupMember(user))
-                        }
-
-                ) {
-                    val size = 70.dp
-                    Box(
-                        modifier = Modifier.size(size)
-                    ) {
-                        // Profile picture
-                        ProfilePictureView(
-                            filepath = user.profilePictureUrl,
-                            modifier = Modifier
-                                .size(size)
-                                .padding(8.dp)
-                                .clip(CircleShape)
-                        )
-
-                        // Trash icon overlay
-                        Icon(
-                            imageVector = Icons.Default.Delete, // or Icons.Outlined.Delete
-                            contentDescription = "Remove user",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .size(30.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.2f),
-                                    shape = CircleShape
-                                )
-                                .padding(2.dp)
-
-                        )
-                    }
-                    Text(
-                        text = user.name,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.width(size)
-                    )
-                }
-            }
-        }
-
-        // A suchfeld
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 5.dp,
-                    bottom = 5.dp
-                ),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            OutlinedTextField(
-                value = state.searchterm,
-                maxLines = 1,
-                onValueChange = { onAction(GroupCreatorAction.updateSearchterm(it)) },
-                modifier = Modifier
-                    .weight(1f),
-                placeholder = { Text(stringResource(Res.string.search_user)) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "search"
-                    )
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color.Transparent
-                )
-            )
-            Box(
-                modifier = Modifier
-                    .height(40.dp)
-                    .aspectRatio(1f)
-                    .clickable { onAction(GroupCreatorAction.updateSearchterm("")) },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Reset Search Text",
-                    modifier = Modifier
-                        .size(30.dp)
-
-                )
-            }
-
-        }
-
-        // die freunde azoaga zum uswähla
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth(),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                bottom = 16.dp
-            ),
-        ) {
-            items(state.availableUsers) { user ->
-                val selected = state.selectedUsers.contains(user)
-
-                UserButton(
-                    selectedChat = user,
-                    useOnClickGes = true,
-                    lastMessage = null,
-                    bottomTextOverride = "",
-                    selected = selected,
-                    onClickGes = {
-                        if (selected) {
-                            onAction(GroupCreatorAction.removeGroupMember(user))
-                        } else {
-                            onAction(GroupCreatorAction.addGroupMember(user))
-                        }
-
-                    }
-                )
-                HorizontalDivider(
-                    thickness = 0.5.dp
-                )
-            }
-        }
+    val selectedUsers = remember {
+        mutableStateListOf<SelectedChat>()
     }
-}*/
+
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                onSuccess(selectedUsers)
+            }) {
+                Text(stringResource(Res.string.ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = {
+                onDismiss()
+            }) {
+                Text(stringResource(Res.string.cancel))
+            }
+        },
+        text = {
+            var searchterm by remember {
+                mutableStateOf("")
+            }
+
+            MemberSelector(
+                availableUsers = availableUsers,
+                selectedUsers = selectedUsers,
+                searchTerm = searchterm,
+                onSearchTermChange = {searchterm = it},
+                onUserSelected = {selectedUsers += it},
+                onUserDeselected = {selectedUsers -= it}
+            )
+        }
+    )
 }

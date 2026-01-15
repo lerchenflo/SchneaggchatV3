@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -46,6 +47,24 @@ class ChatDetailsViewmodel(
     private val appRepository: AppRepository
 ) : ViewModel() {
 
+    var availableNewMembers by mutableStateOf<List<User>>(emptyList())
+
+
+    init {
+        if (globalViewModel.selectedChat.value.isGroup) {
+            viewModelScope.launch {
+                appRepository.getFriendsFlow("").collectLatest { allFriends ->
+                    val members = groupRepository.getGroupMembers(globalViewModel.selectedChat.value.id)
+                    availableNewMembers = allFriends.filter { friend ->
+                        !members.any { member -> member.userId == friend.id }
+                    }                }
+            }
+        }
+    }
+
+
+
+
     fun onBackClick(){
         viewModelScope.launch {
             navigator.navigateBack()
@@ -57,6 +76,7 @@ class ChatDetailsViewmodel(
     fun updateDescriptionText(newValue: TextFieldValue) {
         descriptionText = newValue
     }
+
 
     /**
      * Enriched chat details with group members or common groups populated.

@@ -155,6 +155,7 @@
     <string name="user_description">Userbeschreibung</string>
     <string name="leave_group">leave Group</string>
     <string name="add_users_to_group">add users</string>
+    <string name="member_since">member since %1$s</string>
 
     <string name="image">image</string>
     <string name="video">video</string>

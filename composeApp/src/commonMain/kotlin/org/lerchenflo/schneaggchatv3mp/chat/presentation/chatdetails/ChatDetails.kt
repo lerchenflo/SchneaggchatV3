@@ -73,6 +73,9 @@ fun ChatDetails(
     var showLeaveGroupConfirmation by remember { mutableStateOf(false) }
     var showRemoveFriendConfirmation by remember { mutableStateOf(false) }
 
+    var showAddMemberPopup by remember { mutableStateOf(false) }
+
+
     // Profilbild größer azoaga
     if(profilePictureDialogShown){
         ProfilePictureBigDialog(
@@ -199,12 +202,25 @@ fun ChatDetails(
                     NormalButton(
                         text = stringResource(Res.string.add_users_to_group),
                         onClick = {
-                            //TODO: Popup?
-                            SnackbarManager.showMessage("todo")
+                            showAddMemberPopup = true
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                     )
+
+                    if (showAddMemberPopup) {
+                        AddUserToGroupPopup(
+                            onDismiss = {showAddMemberPopup = false},
+                            onSuccess = {
+                                it.forEach { user ->
+                                    chatdetailsViewmodel.addMember(user.id)
+                                }
+                                showAddMemberPopup = false
+                            },
+                            availableUsers = chatdetailsViewmodel.availableNewMembers
+                        )
+                    }
+
                 }
 
                 // Confirmation dialog for leaving group
