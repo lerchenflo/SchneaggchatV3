@@ -201,12 +201,32 @@ fun DartBoard(viewmodel: DartCounterViewModel) {
                                 MaterialTheme.colorScheme.onPrimary
                             }
                         )
+                    }
                 }
+            }
+            
+            // Undo button as last item in grid
+            item {
+                Button(
+                    modifier = Modifier
+                        .padding(2.dp)
+                        .height(60.dp),
+                    enabled = viewmodel.canUndoThrow(),
+                    onClick = { viewmodel.undoLastThrow() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(
+                        text = "Undo",
+                        color = MaterialTheme.colorScheme.onError
+                    )
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCounterViewModel) {
@@ -308,7 +328,7 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
             if (viewmodel.currentThrow > -1 && !game.getCurrentPlayer().isFinished) {
                 Spacer(modifier = Modifier.height(7.dp))
                 Text(
-                    text = "Current Throw: ${viewmodel.currentThrow} (Dart ${viewmodel.throwCount}/3)",
+                    text = "Dart: ${viewmodel.currentThrow} (Dart ${viewmodel.throwCount}/3)",
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
