@@ -52,6 +52,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
+import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
@@ -139,6 +140,8 @@ fun App() {
                     polymorphic(NavKey::class) {
                         subclass(Route.Games.GamesSelector::class, Route.Games.GamesSelector.serializer())
                         subclass(Route.Games.DartCounter::class, Route.Games.DartCounter.serializer())
+
+                        subclass(Route.Games.Undercover::class, Route.Games.Undercover.serializer())
 
 
                     }
@@ -444,11 +447,27 @@ fun App() {
                                                     text = "Dartcounter"
                                                 )
                                             }
+
+                                            Button(
+                                                onClick = {
+                                                    scope.launch {
+                                                        gamesBackStack.add(Route.Games.Undercover)
+                                                    }
+                                                }
+                                            ){
+                                                Text(
+                                                    text = "Undercover"
+                                                )
+                                            }
                                         }
                                     }
 
                                     entry <Route.Games.DartCounter> {
                                         DartCounter()
+                                    }
+
+                                    entry <Route.Games.Undercover> {
+                                        Undercover()
                                     }
                                 }
                             )
