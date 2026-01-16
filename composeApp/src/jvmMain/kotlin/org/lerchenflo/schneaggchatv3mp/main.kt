@@ -11,6 +11,7 @@ import org.lerchenflo.schneaggchatv3mp.di.desktopAppDatabaseModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopDataStoreModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopHttpAuthModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopHttpModule
+import org.lerchenflo.schneaggchatv3mp.di.desktopLanguageManagerModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopPictureManagerModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopShareUtilsModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopVersionModule
@@ -29,7 +30,8 @@ fun main() = application {
             desktopDataStoreModule,
             desktopVersionModule,
             desktopPictureManagerModule,
-            desktopShareUtilsModule
+            desktopShareUtilsModule,
+            desktopLanguageManagerModule
         )
     }
 

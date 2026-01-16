@@ -35,6 +35,8 @@ import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
 
 val sharedmodule = module{
 
@@ -69,6 +71,9 @@ val sharedmodule = module{
 
     //Preferences
     singleOf(::Preferencemanager)
+    
+    //Language
+    singleOf(::LanguageService)
 
     //View model
     singleOf(::GlobalViewModel)
@@ -120,5 +125,5 @@ val sharedmodule = module{
     factory { UserSettingsViewModel(get(), get(), get()) }
 
     viewModelOf(::AppearanceSettingsViewModel)
-    factory { AppearanceSettingsViewModel(get(), get()) }
+    factory { AppearanceSettingsViewModel(get(), get(), get()) }
 }

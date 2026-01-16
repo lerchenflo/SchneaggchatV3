@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.utilities
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.Palette
@@ -22,9 +23,13 @@ import kotlinx.coroutines.flow.map
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.dark_theme
+import schneaggchatv3mp.composeapp.generated.resources.english_language
+import schneaggchatv3mp.composeapp.generated.resources.german_language
 import schneaggchatv3mp.composeapp.generated.resources.light_theme
 import schneaggchatv3mp.composeapp.generated.resources.ph_theme
+import schneaggchatv3mp.composeapp.generated.resources.system_language
 import schneaggchatv3mp.composeapp.generated.resources.system_theme
+import schneaggchatv3mp.composeapp.generated.resources.vori_language
 
 enum class PreferenceKey {
     ACCESSTOKEN,
@@ -33,6 +38,7 @@ enum class PreferenceKey {
     OWNID,
     MD_FORMAT,
     THEME,
+    LANGUAGE,
     SERVERURL,
     DEVELOPERSETTINGS
 }
@@ -53,6 +59,34 @@ enum class ThemeSetting {
         LIGHT -> Icons.Default.LightMode
         DARK   -> Icons.Default.DarkMode
         //PHTHEME -> Icons.Default.Male
+    }
+}
+
+enum class LanguageSetting {
+    SYSTEM,     // Follow system setting
+    GERMAN,     // German language
+    ENGLISH,    // English language
+    VORI;       // Vori language
+    
+    fun toUiText(): UiText = when (this) {
+        SYSTEM -> UiText.StringResourceText(Res.string.system_language)
+        GERMAN -> UiText.StringResourceText(Res.string.german_language)
+        ENGLISH -> UiText.StringResourceText(Res.string.english_language)
+        VORI -> UiText.StringResourceText(Res.string.vori_language)
+    }
+    
+    fun getIcon(): ImageVector = when (this) {
+        SYSTEM -> Icons.Default.Contrast
+        GERMAN -> Icons.Default.Language
+        ENGLISH -> Icons.Default.Language
+        VORI -> Icons.Default.Language
+    }
+    
+    fun getIsoCode(): String = when (this) {
+        SYSTEM -> "" // Use system default
+        GERMAN -> "de"
+        ENGLISH -> "en"
+        VORI -> "de-at"
     }
 }
 
@@ -152,6 +186,30 @@ class Preferencemanager(
             val prefs = pref.data.first()
             val ordinal = prefs[key] ?: ThemeSetting.SYSTEM.ordinal
             ThemeSetting.entries[ordinal]
+        }
+    }
+
+    // Language methods
+    suspend fun saveLanguageSetting(language: LanguageSetting) {
+        pref.edit { datastore ->
+            val key = intPreferencesKey(PreferenceKey.LANGUAGE.toString())
+            datastore[key] = language.ordinal
+        }
+    }
+
+    fun getLanguageFlow(): Flow<LanguageSetting> = pref.data.map { prefs ->
+        val key = intPreferencesKey(PreferenceKey.LANGUAGE.toString())
+        val ordinal = prefs[key] ?: LanguageSetting.SYSTEM.ordinal
+        LanguageSetting.entries[ordinal]
+    }.flowOn(Dispatchers.IO)
+
+    // For one-time read (use in non-composable contexts)
+    suspend fun getLanguageSetting(): LanguageSetting {
+        return with(dispatcher) {
+            val key = intPreferencesKey(PreferenceKey.LANGUAGE.toString())
+            val prefs = pref.data.first()
+            val ordinal = prefs[key] ?: LanguageSetting.SYSTEM.ordinal
+            LanguageSetting.entries[ordinal]
         }
     }
 

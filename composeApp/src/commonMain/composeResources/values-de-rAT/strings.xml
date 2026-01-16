@@ -4,11 +4,11 @@
     
     <string name="profile_picture">Profilbild</string>
     <string name="schneaggmap">Schneaggmap</string>
-    <string name="settings">Einstellungen</string>
-    <string name="tools_and_games">Tools und Spiele</string>
-    <string name="filter">Filter</string>
-    <string name="search_friend">In Freunden suchen ...</string>
-    <string name="no_status">kein Status</string>
+    <string name="settings">Einstellunga</string>
+    <string name="tools_and_games">Blödsinn</string>
+    <string name="filter">Sortiera</string>
+    <string name="search_friend">Suach in dina Freunde ...</string>
+    <string name="no_status">kuan Status</string>
     <string name="unknown_user">unbekannter Nutzer</string>
     <string name="notification_bell">Benachrichtigungsglocke</string>
     <string name="go_back">zurück</string>
@@ -266,13 +266,5 @@
     <string name="confirm_leave_group">Bist du sicher, dass du diese Gruppe verlassen willst?</string>
     <string name="confirm_remove_friend">Bist du sicher, dass du %1$s als Freund entfernen willst?</string>
     <string name="confirm_remove_member">Bist du sicher, dass du %1$s aus der Gruppe entfernen willst?</string>
-
-    <!-- Language settings -->
-    <string name="system_language">System</string>
-    <string name="german_language">Deutsch (Deutschland)</string>
-    <string name="english_language">English</string>
-    <string name="vori_language">Vori</string>
-    <string name="language">Sprache</string>
-    <string name="language_sel_desc">Wähle die Sprache deiner App</string>
 
 </resources>

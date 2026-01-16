@@ -64,6 +64,8 @@ import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -74,7 +76,14 @@ import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitte
 @Preview(showBackground = true)
 fun App() {
     val preferenceManager = koinInject<Preferencemanager>()
+    val languageService = koinInject<LanguageService>()
     val themeSetting by preferenceManager.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
+
+    // Apply saved language on app startup
+    LaunchedEffect(Unit) {
+        val savedLanguage = languageService.getCurrentLanguage()
+        languageService.applyLanguage(savedLanguage)
+    }
 
     // Track app lifecycle for notification handling
     AppLifecycleTracker()

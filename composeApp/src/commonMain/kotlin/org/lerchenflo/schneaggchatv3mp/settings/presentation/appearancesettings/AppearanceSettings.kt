@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -23,10 +24,14 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewm
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ThemeSelector
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.LanguageSelector
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageSetting
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.appearance_settings
+import schneaggchatv3mp.composeapp.generated.resources.language
+import schneaggchatv3mp.composeapp.generated.resources.language_sel_desc
 import schneaggchatv3mp.composeapp.generated.resources.markdownInfo
 import schneaggchatv3mp.composeapp.generated.resources.markdown_24px
 import schneaggchatv3mp.composeapp.generated.resources.theme
@@ -88,6 +93,35 @@ fun AppearanceSettings(
                 },
                 selectedTheme = appearanceSettingsViewModel.selectedTheme,
                 onThemeSelected = {appearanceSettingsViewModel.saveThemeSetting(it)}
+            )
+        }
+
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+        var languageSelDialog by remember{mutableStateOf(false)}
+        var previousLanguage by remember { mutableStateOf(LanguageSetting.SYSTEM) }
+        // Language selector
+        SettingsOption(
+            Icons.Default.Language,
+            stringResource(Res.string.language),
+            stringResource(Res.string.language_sel_desc),
+            onClick = {
+                previousLanguage = appearanceSettingsViewModel.selectedLanguage
+                languageSelDialog = true
+            }
+        )
+        if(languageSelDialog){
+            LanguageSelector(
+                onDismiss = {
+                    languageSelDialog = false
+                    appearanceSettingsViewModel.saveLanguageSetting(previousLanguage)
+                            },
+                onConfirm = {
+                    previousLanguage = it
+                    languageSelDialog = false
+                },
+                selectedLanguage = appearanceSettingsViewModel.selectedLanguage,
+                onLanguageSelected = {appearanceSettingsViewModel.saveLanguageSetting(it)}
             )
         }
 
