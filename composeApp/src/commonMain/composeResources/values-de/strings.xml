@@ -10,7 +10,7 @@
     <string name="search_friend">In Freunden suchen ...</string>
     <string name="no_status">kein Status</string>
     <string name="unknown_user">unbekannter Nutzer</string>
-    <string name="notification_bell">Benachrichtigungsglocke</string>
+    
     <string name="go_back">zurück</string>
     <string name="add">hinzufügen</string>
     <string name="message">Nachricht</string>
@@ -44,7 +44,7 @@
     <string name="requirement_length">8 oder mehr Zeichen</string>
     <string name="requirement_digit">mindestens eine Zahl</string>
     <string name="requirement_special">mindestens ein Sonderzeichen</string>
-    <string name="requirement_forbidden">darf keine verbotenen eingaben enthalten</string>
+    <string name="requirement_forbidden">darf keine verbotenen Eingaben enthalten</string>
     <string name="password_missing_requirements">Fehlt: %1$s</string>
     <string name="logout">Ausloggen</string>
     <string name="are_you_sure_you_want_to_logout">Bist du dir sicher, dass du dich ausloggen willst?</string>
@@ -84,7 +84,9 @@
     <string name="please_restart_app">Bitte starte die App neu</string>
     <string name="others_say_about">Andere User haben über %1$s geschrieben:</string>
     <string name="status_info">Dieser Text wurde vom User verfasst</string>
-    <!--<string name="description_info">All friends of %1$s can edit this text, but %1$s cannot.</string>-->
+    <string name="description_info_user">Alle Freunde von %1$s können diesen Text bearbeiten und %1$s kann ihn nur sehen.</string>
+    <string name="description_info_group">Ändere die Gruppenbeschreibung</string>
+
     <string name="no_description">Keine Beschreibung</string>
     <string name="remove_friend">Freund entfernen</string>
     <string name="save">Speichern</string>
@@ -102,7 +104,7 @@
     <string name="bugplatform">Plattform</string>
     <string name="bugtype">Typ</string>
     <string name="bugstatus_unfinished">Nicht erledigt</string>
-    <string name="bugstatus_in_progress">In bearbeitung</string>
+    <string name="bugstatus_in_progress">In Bearbeitung</string>
     <string name="bugstatus_finished">Abgeschlossen</string>
     <string name="bugpriority_low">Schwach</string>
     <string name="bugpriority_normal">Normal</string>
@@ -126,7 +128,7 @@
     <string name="new_chat">Neuer Chat</string>
     <string name="new_group">Gruppe erstellen</string>
     <string name="invite_friend">Freund einladen</string>
-    <string name="search_user">User finden</string>
+    <string name="search_user">Benutzer finden</string>
     <string name="enter_username">Benutzername eingeben</string>
 
     <string name="system_theme">Systemdesign</string>
@@ -150,6 +152,10 @@
     <string name="group_picture">Gruppenprofilbild</string>
     <string name="group_name">Gruppenname</string>
     <string name="group_description">Gruppenbeschreibung</string>
+    <string name="user_description">Userbeschreibung</string>
+    <string name="leave_group">Gruppe verlassen</string>
+    <string name="add_users_to_group">Mitglied hinzufügen</string>
+    <string name="member_since">Mitglied seit %1$s</string>
 
     <string name="image">Bild</string>
     <string name="video">Video</string>
@@ -174,7 +180,7 @@
     <string name="send_friend_request">Freundschaftsanfrage senden</string>
     <string name="send_friend_request_description">Willst du %1$s eine Freundschaftsanfrage senden?</string>
     <string name="friend_request_sent">✔ Freunschaftsanfrage gesendet</string>
-    <string name="error_friend_request">❌ Fehler beim senden der Freundschaftsanfrage</string>
+    <string name="error_friend_request">❌ Fehler beim Senden der Freundschaftsanfrage</string>
 
     <string name="server_not_reachable">Verbindung zum Server konnte nicht hergestellt werden.</string>
 
@@ -197,12 +203,12 @@
     <string name="new_friend_request_noti_body">%1$s will dein Freund sein</string>
 
     <string name="tooltip_username">Wähle einen Benutzernamen den andere Benutzer sehen</string>
-    <string name="tooltip_email">Wird zum wiederherstellen der Zugangsdaten und zur Löschung des Accounts verwendet</string>
+    <string name="tooltip_email">Wird zum Wiederherstellen der Zugangsdaten und zur Löschung des Accounts verwendet</string>
     <string name="tooltip_birthdate">Wird benutzt, um deine Freunde zu informieren, wenn du Geburtstag hast</string>
     <string name="tooltip_password">Mindestens 8 Zeichen mit Nummern, Sonderzeichen und Groß - und Kleinbuchstabe</string>
     <string name="tooltip_password_repeat">Gib dein Passwort erneut ein, um sicher zu gehen, dass es richtig ist.</string>
     <string name="tooltip_profile_picture">Ein Profilbild, das deine Freunde sehen können</string>
-    <string name="tooltip_terms">Das akzeptieren der Bedingungen ist nötig für die Verwendung von Schneaggchat</string>
+    <string name="tooltip_terms">Das Akzeptieren der Bedingungen ist nötig für die Verwendung von Schneaggchat</string>
     <string name="tooltip_group_name">Wähle einen Namen für deine Gruppe. Du kannst ihn später ändern</string>
     <string name="tooltip_group_description">[Optional] Schreibe eine Beschreibung für diese Gruppe. Sie kann später geändert werden</string>
     <string name="tooltip_group_picture">Wähle ein Gruppenprofilbild</string>
@@ -240,15 +246,15 @@
     <string name="change">ändern</string>
     <string name="search_results">Suchergebnisse (%1$s)</string>
     <string name="change_username">Benutzername ändern</string>
-    <string name="change_username_description">Ändere deinen Usernamen. Er wird anderen angezeigt und wird fürs Einloggen gebraucht</string>
+    <string name="change_username_description">Ändere deinen Benutzernamen. Er wird anderen angezeigt und wird fürs Einloggen gebraucht</string>
     <string name="change_username_placeholder">neuer Benutzername ...</string>
 
     <string name="common_groups">Gemeinsame Gruppen (%1$s)</string>
     <string name="groupmembers">Gruppenmitglieder (%1$s)</string>
 
-    <string name="invitation_text">Du verwendest kein Schneaggchat? Tritt jetzt bei:</string>
 
     <string name="delete_account">Account löschen</string>
+    <string name="invitation_text">Du verwendest kein Schneaggchat? Tritt jetzt bei:</string>
 
     <string name="must_be_accepted">Du musst akzeptieren</string>
     <string name="you_need_to_select_a_profilepicture">Du musst ein Profilbild auswählen</string>
@@ -339,5 +345,17 @@
     <string name="undercover_winner_mr_white">Mr. White gewinnt</string>
     <string name="undercover_winner_civilians">Zivilisten gewinnen</string>
     <string name="undercover_winner_undercover">Undercover / Mr. White gewinnt</string>
+    <!-- Confirmation dialogs -->
+    <string name="confirm_leave_group">Bist du sicher, dass du diese Gruppe verlassen willst?</string>
+    <string name="confirm_remove_friend">Bist du sicher, dass du %1$s als Freund entfernen willst?</string>
+    <string name="confirm_remove_member">Bist du sicher, dass du %1$s aus der Gruppe entfernen willst?</string>
+
+    <!-- Language settings -->
+    <string name="system_language">System</string>
+    <string name="german_language">Deutsch (Deutschland)</string>
+    <string name="english_language">English</string>
+    <string name="vori_language">Vori</string>
+    <string name="language">Sprache</string>
+    <string name="language_sel_desc">Wähle die Sprache deiner App</string>
 
 </resources>

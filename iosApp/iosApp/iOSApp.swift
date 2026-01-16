@@ -28,17 +28,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
             Messaging.messaging().apnsToken = deviceToken
-
-            let token = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
-            print("APNs Token: \(token)")
-
-            Messaging.messaging().token { token, error in
-                if let error = error {
-                    print("Error fetching FCM token: \(error)")
-                } else if let token = token {
-                    print("FCM Token: \(token)")
-                }
-            }
     }
         
         

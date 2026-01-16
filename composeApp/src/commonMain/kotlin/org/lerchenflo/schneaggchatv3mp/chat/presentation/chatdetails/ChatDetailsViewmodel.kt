@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -23,7 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChatBase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
@@ -46,6 +47,24 @@ class ChatDetailsViewmodel(
     private val appRepository: AppRepository
 ) : ViewModel() {
 
+    var availableNewMembers by mutableStateOf<List<User>>(emptyList())
+
+
+    init {
+        if (globalViewModel.selectedChat.value.isGroup) {
+            viewModelScope.launch {
+                appRepository.getFriendsFlow("").collectLatest { allFriends ->
+                    val members = groupRepository.getGroupMembers(globalViewModel.selectedChat.value.id)
+                    availableNewMembers = allFriends.filter { friend ->
+                        !members.any { member -> member.userId == friend.id }
+                    }                }
+            }
+        }
+    }
+
+
+
+
     fun onBackClick(){
         viewModelScope.launch {
             navigator.navigateBack()
@@ -58,13 +77,14 @@ class ChatDetailsViewmodel(
         descriptionText = newValue
     }
 
+
     /**
      * Enriched chat details with group members or common groups populated.
      * This flow automatically transforms the selected chat by fetching and populating:
      * - For groups: groupMembers list
      * - For users: commonGroups list
      */
-    val chatDetails: StateFlow<SelectedChatBase> = globalViewModel.selectedChat
+    val chatDetails: StateFlow<SelectedChat> = globalViewModel.selectedChat
         .flatMapLatest { chat ->
             when {
                 chat.isGroup -> {
@@ -101,7 +121,7 @@ class ChatDetailsViewmodel(
 
     private suspend fun getGroupMembersWithUsers(groupId: String): List<GroupMemberWithUser> {
         val members = groupRepository.getGroupMembers(groupId)
-        return members.mapNotNull { member ->
+        return members.map { member ->
             val user = userRepository.getUserById(member.userId)
             if (user != null) {
                 GroupMemberWithUser(member, user)
@@ -112,15 +132,15 @@ class ChatDetailsViewmodel(
         }
     }
 
-    fun navigateToChat(selectedChat: SelectedChatBase){
+    fun navigateToChat(selectedChat: SelectedChat){
         viewModelScope.launch {
             globalViewModel.onSelectChat(selectedChat)
             // Exit all previous screen weil ma jo da selectedgegner im globalviewmodel gändert hot und denn ind chatdetails vo deam typ kummt
-            navigator.navigate(Route.Chat, exitPreviousScreen = true) // todo ma kummt nur ind chatauswahl mit 2 mol zruck
+            navigator.navigate(Route.Chat, exitPreviousScreen = true)
         }
     }
 
-    fun updateDescription(selectedChat: SelectedChatBase){
+    fun updateDescription(selectedChat: SelectedChat){
         viewModelScope.launch {
             if (selectedChat.isGroup) {
                 appRepository.changeGroupDescription(selectedChat.id, descriptionText.text)

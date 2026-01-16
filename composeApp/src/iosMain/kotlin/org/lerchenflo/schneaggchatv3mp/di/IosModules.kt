@@ -13,6 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
 
 val IosDatabaseModule = module {
     single<RoomDatabase.Builder<AppDatabase>> { iosAppDatabaseBuilder() }
@@ -40,4 +41,8 @@ val IosPictureManagerModule = module {
 
 val IosShareUtilsModule = module {
     single { ShareUtils() }
+}
+
+val IosLanguageManagerModule = module {
+    single { LanguageManager(get()) }
 }
