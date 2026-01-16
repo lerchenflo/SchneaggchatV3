@@ -9,6 +9,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Games
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -99,6 +101,14 @@ fun DeveloperSettings(
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
+        SettingsOption(
+            icon = Icons.Default.Games,
+            text = "Games",
+            subtext = null,
+            onClick = {
+                devSettingsViewModel.navigateGames()
+            }
+        )
 
     }
 

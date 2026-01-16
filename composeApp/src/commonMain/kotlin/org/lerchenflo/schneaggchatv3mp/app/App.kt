@@ -5,10 +5,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -49,14 +51,18 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
+import org.lerchenflo.schneaggchatv3mp.games.dartcounter.DartCounter
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
+import org.lerchenflo.schneaggchatv3mp.sharedUi.AutoFadePopup
+import org.lerchenflo.schneaggchatv3mp.sharedUi.OfflineBar
+import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
@@ -67,7 +73,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
-import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 
@@ -114,6 +119,9 @@ fun App() {
                         //Subgraph for settings
                         subclass(Route.Settings::class, Route.Settings.serializer())
 
+                        //sugraph for games
+                        subclass(Route.Games::class, Route.Games.serializer())
+
                     }
                 }
             },
@@ -133,6 +141,21 @@ fun App() {
                 }
             },
             Route.Settings.SettingsScreen
+        )
+
+
+        val gamesBackStack = rememberNavBackStack(
+            configuration = SavedStateConfiguration{
+                serializersModule = SerializersModule {
+                    polymorphic(NavKey::class) {
+                        subclass(Route.Games.GamesSelector::class, Route.Games.GamesSelector.serializer())
+                        subclass(Route.Games.DartCounter::class, Route.Games.DartCounter.serializer())
+
+
+                    }
+                }
+            },
+            Route.Games.GamesSelector
         )
 
 
@@ -424,6 +447,37 @@ fun App() {
 
                         entry<Route.Schneaggmap> {
                             SchneaggmapScreenRoot()
+                        }
+
+                        entry<Route.Games> {
+                            //TODO: Shared games viewmodel for game selection
+
+                            NavDisplay(
+                                backStack = gamesBackStack,
+                                entryProvider = entryProvider {
+                                    entry <Route.Games.GamesSelector> {
+                                        //TODO: Game selection screen
+                                        Column{
+                                            Button(
+                                                onClick = {
+                                                    scope.launch {
+                                                        gamesBackStack.add(Route.Games.DartCounter)
+                                                    }
+                                                }
+                                            ){
+                                                Text(
+                                                    text = "Dartcounter"
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    entry <Route.Games.DartCounter> {
+                                        DartCounter()
+                                    }
+                                }
+                            )
+
                         }
                     }
 

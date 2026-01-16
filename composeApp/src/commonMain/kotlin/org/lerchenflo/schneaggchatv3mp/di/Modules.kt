@@ -24,6 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
+import org.lerchenflo.schneaggchatv3mp.games.dartcounter.DartCounterViewmodel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
@@ -118,8 +119,13 @@ val sharedmodule = module{
     viewModelOf(::SettingsViewModel)
     factory { SettingsViewModel(get(), get()) } // factory -> new instance each injection
 
+
     viewModelOf(::DevSettingsViewModel)
-    factory { DevSettingsViewModel(get()) }
+    factory { DevSettingsViewModel(get(), get()) }
+
+    viewModelOf(::DartCounterViewmodel)
+    factory { DartCounterViewmodel() }
+
 
     viewModelOf(::UserSettingsViewModel)
     factory { UserSettingsViewModel(get(), get(), get()) }
