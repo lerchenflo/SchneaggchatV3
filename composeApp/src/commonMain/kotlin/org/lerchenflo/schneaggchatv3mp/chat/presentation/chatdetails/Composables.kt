@@ -1,34 +1,26 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.AddModerator
 import androidx.compose.material.icons.filled.AdminPanelSettings
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PersonRemove
 import androidx.compose.material.icons.filled.RemoveModerator
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -36,19 +28,18 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -58,47 +49,75 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChatBase
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorAction
+import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.MemberSelector
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
-import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
-import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_member
 import schneaggchatv3mp.composeapp.generated.resources.add_description_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.admin
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.change
 import schneaggchatv3mp.composeapp.generated.resources.common_groups
-import schneaggchatv3mp.composeapp.generated.resources.friend_request_title
 import schneaggchatv3mp.composeapp.generated.resources.group_description
 import schneaggchatv3mp.composeapp.generated.resources.groupmembers
 import schneaggchatv3mp.composeapp.generated.resources.make_admin
-import schneaggchatv3mp.composeapp.generated.resources.no_status
+import schneaggchatv3mp.composeapp.generated.resources.member_since
+import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.open_chat
 import schneaggchatv3mp.composeapp.generated.resources.remove_admin_status
 import schneaggchatv3mp.composeapp.generated.resources.remove_from_group
-import schneaggchatv3mp.composeapp.generated.resources.search_user
-import schneaggchatv3mp.composeapp.generated.resources.status
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
+import schneaggchatv3mp.composeapp.generated.resources.user_description
+import schneaggchatv3mp.composeapp.generated.resources.yes
 import schneaggchatv3mp.composeapp.generated.resources.you_with_brackets
+
+/**
+ * Reusable confirmation dialog for destructive actions.
+ */
+@Composable
+fun ConfirmationDialog(
+    message: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                onConfirm()
+                onDismiss()
+            }) {
+                Text(stringResource(Res.string.yes))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(Res.string.cancel))
+            }
+        },
+        text = {
+            Text(message)
+        }
+    )
+}
 
 @Composable
 fun GroupMembersView(
     members: List<GroupMemberWithUser>,
-    navigateToChat:(selectedChat: SelectedChatBase)-> Unit,
+    navigateToChat:(selectedChat: SelectedChat)-> Unit,
     changeAdminStatus:(groupMember: GroupMember)-> Unit,
     removeMember: (memberId: String)-> Unit,
     //iAmAdmin: Boolean,
@@ -122,16 +141,17 @@ fun GroupMembersView(
 
         members.forEach { (groupMember, user) ->
             var profilePictureDialogShown by remember { mutableStateOf(false) }
-
             var userOptionPopupExpanded by remember { mutableStateOf(false) }
+            var showRemoveMemberConfirmation by remember { mutableStateOf(false) }
             val me = groupMember.userId == ownid
+            val userName = user?.name ?: stringResource(Res.string.unknown_user)
 
             ChatButtonView(
                 profilePictureFilePath = user?.profilePictureUrl ?: "",
                 name = if(me){ // if own user is displays add a hint
-                    (user?.name ?: stringResource(Res.string.unknown_user)) + stringResource(Res.string.you_with_brackets)
+                    userName + stringResource(Res.string.you_with_brackets)
                 }else{
-                    user?.name ?: stringResource(Res.string.unknown_user)
+                    userName
                 },
                 isAdmin = groupMember.admin,
                 onClickText = {
@@ -139,7 +159,8 @@ fun GroupMembersView(
                 },
                 onClickImage = {
                     profilePictureDialogShown = true
-                }
+                },
+                joindate = groupMember.joinDate
             )
 
             if (profilePictureDialogShown) {
@@ -151,7 +172,20 @@ fun GroupMembersView(
                 )
             }
 
-                UserOptionPopup(
+            // Confirmation dialog for removing member
+            if (showRemoveMemberConfirmation) {
+                ConfirmationDialog(
+                    message = stringResource(Res.string.confirm_remove_member, userName),
+                    onConfirm = {
+                        removeMember(groupMember.userId)
+                    },
+                    onDismiss = {
+                        showRemoveMemberConfirmation = false
+                    }
+                )
+            }
+
+            UserOptionPopup(
                 expanded = userOptionPopupExpanded,
                 iAmAdmin = iAmAdmin,
                 groupMember = groupMember,
@@ -165,14 +199,10 @@ fun GroupMembersView(
                     ))
                 },
                 onAdminStatusChange = {
-                    // todo i hoff es isch an serverfehler aber es sind zmol 2 user 1 Admin und 1 nicht Admin
-                    // todo a coole meldung
                     changeAdminStatus(groupMember)
                 },
                 onRemoveUser = {
-                    SnackbarManager.showMessage("funktioniert es? denn bitte dia snackbar weck")
-                    removeMember(groupMember.userId)
-                    // todo Testen und a coole Meldung
+                    showRemoveMemberConfirmation = true  // Show confirmation instead of directly removing
                 },
             )
 
@@ -240,6 +270,7 @@ private fun ChatButtonView(
     isAdmin: Boolean = false,
     onClickText: () -> Unit = {},  // Add click for name + admin icon
     onClickImage: () -> Unit = {},  // Add click for image (profilepicture)
+    joindate: String? = null,
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .padding(6.dp)
@@ -260,17 +291,28 @@ private fun ChatButtonView(
 
         Row(
             modifier = Modifier
-                .fillMaxHeight()
+                .fillMaxSize()
                 .clickable{onClickText()},
             verticalAlignment = Alignment.CenterVertically
         ){
-            Text(
-                text = name,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f)
-            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+
+                if (joindate != null) {
+                    Text(
+                        text = stringResource(Res.string.member_since, millisToTimeDateOrYesterday(joindate.toLong())),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
+            }
 
             if(isAdmin){
                 Icon(
@@ -377,9 +419,10 @@ fun UserOptionPopup(
 fun ChangeDescription(
     onDismiss: () -> Unit,
     descriptionText: TextFieldValue = TextFieldValue(""),
-    updateDescription:(selectedChat: SelectedChatBase) -> Unit = {},
+    updateDescription:(selectedChat: SelectedChat) -> Unit = {},
     updateDescriptionText:(value: TextFieldValue) -> Unit = {},
-    selectedChat: SelectedChatBase
+    selectedChat: SelectedChat,
+    isGroup: Boolean
 ){
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current // Also helpful to hide keyboard
@@ -427,8 +470,11 @@ fun ChangeDescription(
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = stringResource(Res.string.group_description),
+                        text = if (isGroup) stringResource(Res.string.group_description) else stringResource(Res.string.user_description),
                     )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     OutlinedTextField(
                         value = descriptionText,
                         textStyle = MaterialTheme.typography.bodySmall.copy(
@@ -445,7 +491,8 @@ fun ChangeDescription(
                                     onDismiss()
                                 }
                                 false // Pass all other events (letters, backspace, etc.) to the TextField
-                            },
+                            }
+                            .fillMaxWidth(),
                         placeholder = { Text(stringResource(Res.string.add_description_placeholder)) }
                     )
 
@@ -461,6 +508,7 @@ fun DescriptionStatusRow(
     onClick: () -> Unit,
     titleText: String,
     bodyText: String,
+    infoText: String
 ){
     Row(
         modifier = Modifier
@@ -471,13 +519,22 @@ fun DescriptionStatusRow(
             .padding(
                 16.dp
             )
-
     ){
         Column(){
-            Text(
-                text = titleText,
-                modifier = Modifier
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = titleText,
+                    modifier = Modifier
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                TooltipIconButton(infoText)
+            }
+
+
             Text(
                 text = bodyText,
                 softWrap = true,
@@ -489,153 +546,47 @@ fun DescriptionStatusRow(
 }
 
 @Composable
-fun addUserView(
+fun AddUserToGroupPopup(
+    onDismiss: () -> Unit,
+    onSuccess: (List<SelectedChat>) -> Unit,
+    availableUsers: List<SelectedChat>
 
-){
-    /*
-    Column {
-        // der Teil oba wo die Profilbilder azoagt wörrend
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(
-                    start = 10.dp,
-                    end = 2.dp,
-                    bottom = 10.dp
-                )
+) {
 
-        ) {
-            // durch die selected users durchgo und azoaga
-            state.selectedUsers.forEach { user ->
-                Column(
-                    modifier = Modifier
-                        .padding(end = 5.dp)
-                        .clickable {
-                            onAction(GroupCreatorAction.addGroupMember(user))
-                        }
-
-                ) {
-                    val size = 70.dp
-                    Box(
-                        modifier = Modifier.size(size)
-                    ) {
-                        // Profile picture
-                        ProfilePictureView(
-                            filepath = user.profilePictureUrl,
-                            modifier = Modifier
-                                .size(size)
-                                .padding(8.dp)
-                                .clip(CircleShape)
-                        )
-
-                        // Trash icon overlay
-                        Icon(
-                            imageVector = Icons.Default.Delete, // or Icons.Outlined.Delete
-                            contentDescription = "Remove user",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .size(30.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.2f),
-                                    shape = CircleShape
-                                )
-                                .padding(2.dp)
-
-                        )
-                    }
-                    Text(
-                        text = user.name,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.width(size)
-                    )
-                }
-            }
-        }
-
-        // A suchfeld
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 5.dp,
-                    bottom = 5.dp
-                ),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            OutlinedTextField(
-                value = state.searchterm,
-                maxLines = 1,
-                onValueChange = { onAction(GroupCreatorAction.updateSearchterm(it)) },
-                modifier = Modifier
-                    .weight(1f),
-                placeholder = { Text(stringResource(Res.string.search_user)) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "search"
-                    )
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color.Transparent
-                )
-            )
-            Box(
-                modifier = Modifier
-                    .height(40.dp)
-                    .aspectRatio(1f)
-                    .clickable { onAction(GroupCreatorAction.updateSearchterm("")) },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Reset Search Text",
-                    modifier = Modifier
-                        .size(30.dp)
-
-                )
-            }
-
-        }
-
-        // die freunde azoaga zum uswähla
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth(),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                bottom = 16.dp
-            ),
-        ) {
-            items(state.availableUsers) { user ->
-                val selected = state.selectedUsers.contains(user)
-
-                UserButton(
-                    selectedChat = user,
-                    useOnClickGes = true,
-                    lastMessage = null,
-                    bottomTextOverride = "",
-                    selected = selected,
-                    onClickGes = {
-                        if (selected) {
-                            onAction(GroupCreatorAction.removeGroupMember(user))
-                        } else {
-                            onAction(GroupCreatorAction.addGroupMember(user))
-                        }
-
-                    }
-                )
-                HorizontalDivider(
-                    thickness = 0.5.dp
-                )
-            }
-        }
+    val selectedUsers = remember {
+        mutableStateListOf<SelectedChat>()
     }
-}*/
+
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                onSuccess(selectedUsers)
+            }) {
+                Text(stringResource(Res.string.ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = {
+                onDismiss()
+            }) {
+                Text(stringResource(Res.string.cancel))
+            }
+        },
+        text = {
+            var searchterm by remember {
+                mutableStateOf("")
+            }
+
+            MemberSelector(
+                availableUsers = availableUsers,
+                selectedUsers = selectedUsers,
+                searchTerm = searchterm,
+                onSearchTermChange = {searchterm = it},
+                onUserSelected = {selectedUsers += it},
+                onUserDeselected = {selectedUsers -= it}
+            )
+        }
+    )
 }

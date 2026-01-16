@@ -14,6 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
 
 val androidUserDatabaseModule = module {
     single<RoomDatabase.Builder<AppDatabase>> { androidAppDatabaseBuilder(androidContext()) }
@@ -51,4 +52,8 @@ val androidPictureManagerModule = module {
 
 val androidShareUtilsModule = module {
     single { ShareUtils(androidContext()) }
+}
+
+val androidLanguageManagerModule = module {
+    single<LanguageManager> { LanguageManager(androidContext(), get()) }
 }

@@ -296,6 +296,24 @@ class AppRepository(
     }
 
 
+    suspend fun getFriends(searchTerm: String): List<User> {
+        return userRepository.getAllUsers().filter {
+            it.name.contains(searchTerm)
+                    && it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED
+                    && !it.isGroup
+        }
+    }
+
+    fun getFriendsFlow(searchTerm: String): Flow<List<User>> {
+        return userRepository.getAllUsersFlow(searchTerm).map { users ->
+            users.filter {
+                it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED
+                        && !it.isGroup
+            }
+        }
+    }
+
+
     /**
      * Get main screen available items as flow
      */
@@ -1064,6 +1082,10 @@ class AppRepository(
 
             }
         }
+    }
+
+    suspend fun deleteLocalMessage(localpk: Long) {
+        messageRepository.deleteMessage(localpk)
     }
 
     suspend fun deleteMessage(messageId: String){

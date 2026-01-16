@@ -25,13 +25,19 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
-import org.lerchenflo.schneaggchatv3mp.sharedUi.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.sharedUi.NormalButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
+import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
+import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_friend
+import schneaggchatv3mp.composeapp.generated.resources.description_info_group
+import schneaggchatv3mp.composeapp.generated.resources.description_info_user
+import schneaggchatv3mp.composeapp.generated.resources.group_description
 import schneaggchatv3mp.composeapp.generated.resources.leave_group
 import schneaggchatv3mp.composeapp.generated.resources.no_description
 import schneaggchatv3mp.composeapp.generated.resources.no_status
@@ -64,6 +70,11 @@ fun ChatDetails(
     val group = chatDetails.isGroup
 
     var profilePictureDialogShown by remember { mutableStateOf(false) }
+    var showLeaveGroupConfirmation by remember { mutableStateOf(false) }
+    var showRemoveFriendConfirmation by remember { mutableStateOf(false) }
+
+    var showAddMemberPopup by remember { mutableStateOf(false) }
+
 
     // Profilbild größer azoaga
     if(profilePictureDialogShown){
@@ -123,7 +134,8 @@ fun ChatDetails(
                     bodyText = chatDetails.status
                         .takeIf { !it.isNullOrBlank() }
                         ?.replace("\\n", "\n")
-                        ?: stringResource(Res.string.no_status)
+                        ?: stringResource(Res.string.no_status),
+                    infoText = stringResource(Res.string.status_info)
                 )
 
             }
@@ -140,17 +152,19 @@ fun ChatDetails(
                     selectedChat = chatDetails,
                     descriptionText = chatdetailsViewmodel.descriptionText,
                     updateDescriptionText = chatdetailsViewmodel::updateDescriptionText,
-                    updateDescription = chatdetailsViewmodel::updateDescription
+                    updateDescription = chatdetailsViewmodel::updateDescription,
+                    isGroup = group
                 )
             }
 
             DescriptionStatusRow(
                 onClick = { showDescriptionChangeDialog = true },
-                titleText = stringResource(Res.string.others_say_about, chatDetails.name),
+                titleText = if (group) stringResource(Res.string.group_description) else stringResource(Res.string.others_say_about, chatDetails.name),
                 bodyText = chatDetails.description
                     .takeIf { !it.isNullOrBlank() }
                     ?.replace("\\n", "\n")
-                    ?: stringResource(Res.string.no_description)
+                    ?: stringResource(Res.string.no_description),
+                infoText = if (group) stringResource(Res.string.description_info_group) else stringResource(Res.string.description_info_user, chatDetails.name)
             )
 
             HorizontalDivider()
@@ -167,10 +181,12 @@ fun ChatDetails(
                 }
             }else{
                 chatDetails.toUser()?.let { userChat ->
-                    CommonGroupsView(
-                        groups = userChat.commonGroups,
-                        viewmodel = chatdetailsViewmodel
-                    )
+                    if (userChat.commonGroups.isNotEmpty()) {
+                        CommonGroupsView(
+                            groups = userChat.commonGroups,
+                            viewmodel = chatdetailsViewmodel
+                        )
+                    }
                 }
             }
 
@@ -186,33 +202,69 @@ fun ChatDetails(
                     NormalButton(
                         text = stringResource(Res.string.add_users_to_group),
                         onClick = {
-                            //TODO: Popup?
-                            SnackbarManager.showMessage("todo")
+                            showAddMemberPopup = true
                         },
                         modifier = Modifier
                             .fillMaxWidth()
                     )
+
+                    if (showAddMemberPopup) {
+                        AddUserToGroupPopup(
+                            onDismiss = {showAddMemberPopup = false},
+                            onSuccess = {
+                                it.forEach { user ->
+                                    chatdetailsViewmodel.addMember(user.id)
+                                }
+                                showAddMemberPopup = false
+                            },
+                            availableUsers = chatdetailsViewmodel.availableNewMembers
+                        )
+                    }
+
                 }
 
-                // Leave group
-                NormalButton(
+                // Confirmation dialog for leaving group
+                if (showLeaveGroupConfirmation) {
+                    ConfirmationDialog(
+                        message = stringResource(Res.string.confirm_leave_group),
+                        onConfirm = {
+                            chatdetailsViewmodel.removeMember(SessionCache.getOwnIdValue().toString())
+                            chatdetailsViewmodel.navigateChatSelExitAllPrevious()
+                        },
+                        onDismiss = {
+                            showLeaveGroupConfirmation = false
+                        }
+                    )
+                }
+
+                // Leave group (Always there)
+                DeleteButton(
                     text = stringResource(Res.string.leave_group),
                     onClick = {
-                        //TODO: Popup?
-                        chatdetailsViewmodel.removeMember(SessionCache.getOwnIdValue().toString())
-                        chatdetailsViewmodel.navigateChatSelExitAllPrevious() // go back and delete backtrace
+                        showLeaveGroupConfirmation = true
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                 )
             }else{
+                // Confirmation dialog for removing friend
+                if (showRemoveFriendConfirmation) {
+                    ConfirmationDialog(
+                        message = stringResource(Res.string.confirm_remove_friend, chatDetails.name),
+                        onConfirm = {
+                            chatdetailsViewmodel.removeFriend()
+                        },
+                        onDismiss = {
+                            showRemoveFriendConfirmation = false
+                        }
+                    )
+                }
+
                 // remove friend
-                //TODO: Andra button vlt?
-                NormalButton(
+                DeleteButton(
                     text = stringResource(Res.string.remove_friend),
                     onClick = {
-                        //TODO: Popup
-                        chatdetailsViewmodel.removeFriend()
+                        showRemoveFriendConfirmation = true
                     },
                     modifier = Modifier
                         .fillMaxWidth()

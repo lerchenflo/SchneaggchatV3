@@ -63,11 +63,15 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSe
 import org.lerchenflo.schneaggchatv3mp.sharedUi.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.OfflineBar
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
@@ -77,7 +81,14 @@ import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitte
 @Preview(showBackground = true)
 fun App() {
     val preferenceManager = koinInject<Preferencemanager>()
+    val languageService = koinInject<LanguageService>()
     val themeSetting by preferenceManager.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
+
+    // Apply saved language on app startup
+    LaunchedEffect(Unit) {
+        val savedLanguage = languageService.getCurrentLanguage()
+        languageService.applyLanguage(savedLanguage)
+    }
 
     // Track app lifecycle for notification handling
     AppLifecycleTracker()
@@ -178,9 +189,23 @@ fun App() {
                     rootBackStack.add(action.destination)
                 }
                 NavigationAction.NavigateBack -> {
+
+                    //Duplicate check for exiting chat after navigating from chatdetails
                     if (rootBackStack.size > 1){
-                        rootBackStack.removeAt(rootBackStack.size - 1) //Removelast not working on older android
+                        val currentScreen = rootBackStack[rootBackStack.size - 1]
+                        val previousScreen = rootBackStack[rootBackStack.size - 2]
+
+                        // Check if the last two items are of the same type
+                        if (currentScreen::class == previousScreen::class) {
+                            // Remove both - current and previous
+                            rootBackStack.removeAt(rootBackStack.size - 1) // Remove current
+                            rootBackStack.removeAt(rootBackStack.size - 1) // Remove previous (now last)
+                        } else {
+                            // Normal back navigation - just remove current
+                            rootBackStack.removeAt(rootBackStack.size - 1)
+                        }
                     }
+
                 }
             }
         }

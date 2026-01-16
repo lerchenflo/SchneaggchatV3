@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
@@ -60,7 +61,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.ismoy.imagepickerkmp.presentation.ui.components.ocr.AnimatedProgressBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -73,7 +73,7 @@ import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.RoundLoadingIndicator
-import org.lerchenflo.schneaggchatv3mp.sharedUi.UserButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
@@ -419,6 +419,15 @@ fun Chatauswahlscreen(
                     }
 
 
+                    val liststate = rememberLazyListState()
+
+
+
+                    LaunchedEffect(availablegegners) {
+                        if (liststate.firstVisibleItemIndex < 3) { //Only when the user is nearly at the top
+                            liststate.animateScrollToItem(0)
+                        }
+                    }
 
                     LazyColumn(
                         modifier = Modifier
@@ -428,10 +437,11 @@ fun Chatauswahlscreen(
                             end = 16.dp,
                             bottom = 16.dp
                         ),
+                        state = liststate
                     ) {
                         items(
                             items = availablegegners,
-                            key = {it.id}
+                            key = {"${it.id}_${it.isGroup}"}
                         ) { gegner ->
                             UserButton(
                                 selectedChat = gegner,

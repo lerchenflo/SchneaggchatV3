@@ -29,6 +29,10 @@ class MessageRepository(
         deleteMessageDto(id)
     }
 
+    suspend fun deleteMessage(lokalPk: Long) {
+        database.messageDao().deleteMessageDtoByPk(lokalPk)
+    }
+
 
     fun getMessagesByUserIdFlow(userId: String, gruppe: Boolean): Flow<List<Message>> {
         return database.messageDao().getMessagesByUserIdFlow(userId, gruppe).map { messages ->
@@ -104,6 +108,11 @@ class MessageRepository(
     private suspend fun deleteMessageDto(messageId: String) {
         database.messageDao().deleteMessageDtoById(messageId)
     }
+
+    private suspend fun deleteMessageDto(localpk: Long) {
+        database.messageDao().deleteMessageDtoByPk(localpk)
+    }
+
 
 
 

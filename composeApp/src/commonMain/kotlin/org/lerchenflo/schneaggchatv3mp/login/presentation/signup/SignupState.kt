@@ -35,7 +35,10 @@ data class SignupState(
         if (passwordRetypeState != other.passwordRetypeState) return false
         if (emailState != other.emailState) return false
         if (gebiDate != other.gebiDate) return false
+        if (gebiErrorText != other.gebiErrorText) return false
         if (!profilePic.contentEquals(other.profilePic)) return false
+        if (profilePicErrorText != other.profilePicErrorText) return false
+        if (agbsErrorText != other.agbsErrorText) return false
 
         return true
     }
@@ -49,7 +52,10 @@ data class SignupState(
         result = 31 * result + passwordRetypeState.hashCode()
         result = 31 * result + emailState.hashCode()
         result = 31 * result + (gebiDate?.hashCode() ?: 0)
+        result = 31 * result + (gebiErrorText?.hashCode() ?: 0)
         result = 31 * result + (profilePic?.contentHashCode() ?: 0)
+        result = 31 * result + (profilePicErrorText?.hashCode() ?: 0)
+        result = 31 * result + (agbsErrorText?.hashCode() ?: 0)
         return result
     }
 

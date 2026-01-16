@@ -6,7 +6,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.GroupMember
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 
-interface SelectedChatBase {
+interface SelectedChat {
     val id: String
     val isGroup: Boolean
     val name: String
@@ -33,7 +33,7 @@ data class NotSelected(
     override val lastmessage: Message? = null,
     override val friendshipStatus: NetworkUtils.FriendshipStatus? = null,
     override val requesterId: String? = null
-) : SelectedChatBase
+) : SelectedChat
 
 // Create wrapper for User that implements SelectedChat
 data class UserChat(
@@ -49,7 +49,7 @@ data class UserChat(
     override val requesterId: String?,
 
     val commonGroups : List<Group> = emptyList()
-) : SelectedChatBase {
+) : SelectedChat {
     override val isGroup: Boolean = false
 }
 
@@ -67,12 +67,10 @@ data class GroupChat(
     override val requesterId: String? = null,
 
     val groupMembersWithUsers : List<GroupMemberWithUser> = emptyList() //For chat details
-) : SelectedChatBase {
+) : SelectedChat {
     override val isGroup: Boolean = true
 }
 
-// Type alias for convenience
-typealias SelectedChat = SelectedChatBase
 
 fun SelectedChat.isNotSelected(): Boolean = this is NotSelected
 
