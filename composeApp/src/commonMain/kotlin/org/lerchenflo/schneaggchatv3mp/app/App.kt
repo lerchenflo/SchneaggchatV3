@@ -51,7 +51,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
-import org.lerchenflo.schneaggchatv3mp.games.dartcounter.DartCounter
+import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
+import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
@@ -73,8 +74,11 @@ import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.jetbrains.compose.resources.stringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
+import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
+import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
 
 
 @Composable
@@ -150,6 +154,8 @@ fun App() {
                     polymorphic(NavKey::class) {
                         subclass(Route.Games.GamesSelector::class, Route.Games.GamesSelector.serializer())
                         subclass(Route.Games.DartCounter::class, Route.Games.DartCounter.serializer())
+
+                        subclass(Route.Games.Undercover::class, Route.Games.Undercover.serializer())
 
 
                     }
@@ -466,7 +472,19 @@ fun App() {
                                                 }
                                             ){
                                                 Text(
-                                                    text = "Dartcounter"
+                                                    text = stringResource(Res.string.games_dartcounter_title)
+                                                )
+                                            }
+
+                                            Button(
+                                                onClick = {
+                                                    scope.launch {
+                                                        gamesBackStack.add(Route.Games.Undercover)
+                                                    }
+                                                }
+                                            ){
+                                                Text(
+                                                    text = stringResource(Res.string.games_undercover_title)
                                                 )
                                             }
                                         }
@@ -474,6 +492,10 @@ fun App() {
 
                                     entry <Route.Games.DartCounter> {
                                         DartCounter()
+                                    }
+
+                                    entry <Route.Games.Undercover> {
+                                        Undercover()
                                     }
                                 }
                             )

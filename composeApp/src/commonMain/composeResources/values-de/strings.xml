@@ -266,6 +266,85 @@
     <string name="declined">Abgelehnt</string>
     <string name="blocked">Blockiert</string>
 
+    <!-- Games -->
+    <string name="games_dartcounter_title">Dartcounter</string>
+    <string name="games_undercover_title">Undercover</string>
+
+    <!-- Games: DartCounter -->
+    <string name="dartcounter_add_players">Spieler hinzufügen</string>
+    <string name="dartcounter_start_game">Spiel starten</string>
+    <string name="dartcounter_stop_game">Spiel stoppen</string>
+    <string name="dartcounter_highscores">Bestenliste</string>
+    <string name="dartcounter_configure_game_hint">Konfiguriere das Spiel und füge Spieler hinzu, um zu starten</string>
+    <string name="dartcounter_multiplier_single">Single</string>
+    <string name="dartcounter_multiplier_double">Double</string>
+    <string name="dartcounter_multiplier_triple">Triple</string>
+    <string name="dartcounter_miss">Fehlwurf</string>
+    <string name="dartcounter_undo">Rückgängig</string>
+    <string name="dartcounter_list_separator">, </string>
+    <string name="dartcounter_winners_format">Gewinner: %1$s</string>
+    <string name="dartcounter_current_player_format">Aktueller Spieler: %1$s</string>
+    <string name="dartcounter_avg_format">Avg: %1$s</string>
+    <string name="dartcounter_dart_status_format">Dart: %1$d (Dart %2$d/3)</string>
+    <string name="dartcounter_finished_suffix"> ✓</string>
+    <string name="dartcounter_player_name_label">Spielername</string>
+    <string name="dartcounter_add">Hinzufügen</string>
+    <string name="dartcounter_remove">Entfernen</string>
+    <string name="dartcounter_done">Fertig</string>
+    <string name="dartcounter_game_configuration_title">Spielkonfiguration</string>
+    <string name="dartcounter_countdown_label">Countdown:</string>
+    <string name="dartcounter_out_mode_label">Aus-Modus:</string>
+    <string name="dartcounter_out_mode_single_out">Single Out</string>
+    <string name="dartcounter_out_mode_double_out">Double Out</string>
+    <string name="dartcounter_players_format">Spieler: %1$s</string>
+    <string name="dartcounter_please_add_players_first">Bitte zuerst Spieler hinzufügen</string>
+    <string name="dartcounter_cancel">Abbrechen</string>
+    <string name="dartcounter_stop_game_confirmation_message">Willst du das aktuelle Spiel wirklich stoppen? Der Fortschritt geht verloren.</string>
+
+    <!-- Games: Undercover -->
+    <string name="undercover_title">Undercover</string>
+    <string name="undercover_player_name_label">Spielername</string>
+    <string name="undercover_add">Hinzufügen</string>
+    <string name="undercover_players_title">Spieler</string>
+    <string name="undercover_remove">Entfernen</string>
+    <string name="undercover_roles_title">Rollen</string>
+    <string name="undercover_role_civilian">Zivilist</string>
+    <string name="undercover_role_mr_white">Mr. White</string>
+    <string name="undercover_role_undercover">Undercover</string>
+    <string name="undercover_autohide_title">Auto-Verstecken</string>
+    <string name="undercover_seconds_format">Sekunden: %1$d</string>
+    <string name="undercover_minus">-</string>
+    <string name="undercover_plus">+</string>
+    <string name="undercover_start_game">Spiel starten</string>
+    <string name="undercover_pass_phone_to">Gib das Handy an %1$s</string>
+    <string name="undercover_i_am_player">Ich bin %1$s</string>
+    <string name="undercover_no_player">Kein Spieler</string>
+    <string name="undercover_reset">Zurücksetzen</string>
+    <string name="undercover_reveal_word_format">Wort: %1$s</string>
+    <string name="undercover_reveal_mr_white">Du bist Mr White</string>
+    <string name="undercover_hide_and_pass_phone">Verstecken &amp; weitergeben</string>
+    <string name="undercover_autohide_enabled">Auto-Verstecken aktiviert</string>
+    <string name="undercover_starting_player_title">Startspieler</string>
+    <string name="undercover_mr_white_cannot_start">Mr. White kann nicht anfangen.</string>
+    <string name="undercover_starting_player_format">Startspieler: %1$s</string>
+    <string name="undercover_no_valid_starter">Kein gültiger Startspieler</string>
+    <string name="undercover_continue">Weiter</string>
+    <string name="undercover_discussion_title">Diskussion</string>
+    <string name="undercover_discussion_instructions">Jeder Spieler beschreibt sein Wort, ohne es zu sagen. Dann stimmt ab, um jemanden zu eliminieren.</string>
+    <string name="undercover_start_voting">Abstimmung starten</string>
+    <string name="undercover_voting_title">Abstimmung</string>
+    <string name="undercover_eliminate">Eliminieren</string>
+    <string name="undercover_eliminated_format">Eliminiert: %1$s</string>
+    <string name="undercover_role_was_format">Rolle war: %1$s</string>
+    <string name="undercover_mr_white_guess_title">Mr. White Vermutung</string>
+    <string name="undercover_mr_white_guess_instructions">Mr. White wurde eliminiert. Gib deine Vermutung für das Zivilisten-Wort ein.</string>
+    <string name="undercover_word_guess_label">Wort raten</string>
+    <string name="undercover_submit_guess">Vermutung abschicken</string>
+    <string name="undercover_game_over">Spiel vorbei</string>
+    <string name="undercover_new_game">Neues Spiel</string>
+    <string name="undercover_winner_mr_white">Mr. White gewinnt</string>
+    <string name="undercover_winner_civilians">Zivilisten gewinnen</string>
+    <string name="undercover_winner_undercover">Undercover / Mr. White gewinnt</string>
     <!-- Confirmation dialogs -->
     <string name="confirm_leave_group">Bist du sicher, dass du diese Gruppe verlassen willst?</string>
     <string name="confirm_remove_friend">Bist du sicher, dass du %1$s als Freund entfernen willst?</string>

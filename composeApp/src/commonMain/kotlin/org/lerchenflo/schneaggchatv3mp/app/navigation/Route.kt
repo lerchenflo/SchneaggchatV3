@@ -56,6 +56,9 @@ sealed interface Route : NavKey {
 
         @Serializable
         data object DartCounter: Route, NavKey
+
+        @Serializable
+        data object Undercover: Route, NavKey
     }
 }
 
