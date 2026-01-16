@@ -9,6 +9,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.random.Random
+import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.undercover_winner_civilians
+import schneaggchatv3mp.composeapp.generated.resources.undercover_winner_mr_white
+import schneaggchatv3mp.composeapp.generated.resources.undercover_winner_undercover
 
 class UndercoverViewModel : ViewModel() {
 
@@ -66,7 +71,7 @@ class UndercoverViewModel : ViewModel() {
         val mrWhiteGuessInput: String = "",
         val mrWhiteGuessWasCorrect: Boolean? = null,
 
-        val winnerText: String? = null
+        val winnerText: UiText? = null
     )
 
     var state by mutableStateOf(UiState())
@@ -322,7 +327,7 @@ class UndercoverViewModel : ViewModel() {
             state = state.copy(
                 phase = Phase.GAME_OVER,
                 mrWhiteGuessWasCorrect = true,
-                winnerText = "Mr. White wins"
+                winnerText = UiText.StringResourceText(Res.string.undercover_winner_mr_white)
             )
             return
         }
@@ -346,18 +351,18 @@ class UndercoverViewModel : ViewModel() {
         coerceRoleCountsToValidRange()
     }
 
-    private fun evaluateWinner(players: List<Player>): String? {
+    private fun evaluateWinner(players: List<Player>): UiText? {
         val alive = players.filter { it.isAlive }
         val aliveCivilians = alive.count { it.actualRole == ActualRole.CIVILIAN }
         val aliveUndercovers = alive.count { it.actualRole == ActualRole.UNDERCOVER }
         val aliveMrWhites = alive.count { it.actualRole == ActualRole.MR_WHITE }
 
         if (aliveUndercovers == 0 && aliveMrWhites == 0) {
-            return "Civilians win"
+            return UiText.StringResourceText(Res.string.undercover_winner_civilians)
         }
 
         if (aliveCivilians <= 1 && (aliveUndercovers + aliveMrWhites) > 0) {
-            return "Undercover / Mr. White win"
+            return UiText.StringResourceText(Res.string.undercover_winner_undercover)
         }
 
         return null

@@ -6,6 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 
 class DartCounterViewModel() : ViewModel() {
+    enum class OutMode {
+        SINGLE_OUT,
+        DOUBLE_OUT
+    }
+
     data class Player(val name: String, var score: Int, var throws: MutableList<Int> = mutableListOf(), var totalDartsThrown: Int = 0, var isFinished: Boolean = false)
 
     data class Turn(
@@ -232,7 +237,7 @@ class DartCounterViewModel() : ViewModel() {
     var selectedCountdown by mutableStateOf(501)
         private set
     
-    var selectedOutMode by mutableStateOf("Double Out")
+    var selectedOutMode by mutableStateOf(OutMode.DOUBLE_OUT)
         private set
     
     var currentThrow by mutableStateOf(0)
@@ -264,7 +269,7 @@ class DartCounterViewModel() : ViewModel() {
     fun startGame() {
         if (playerNames.isNotEmpty()) {
             gameManager = GameManager(
-                doubleOut = selectedOutMode == "Double Out",
+                doubleOut = selectedOutMode == OutMode.DOUBLE_OUT,
                 countdown = selectedCountdown,
                 playerNames = playerNames,
                 onDartCountChanged = { count -> /* currentTurnDartCount = count */ },
@@ -298,8 +303,8 @@ class DartCounterViewModel() : ViewModel() {
     fun setCountdown(countdown: Int) {
         selectedCountdown = countdown
     }
-    
-    fun setOutMode(mode: String) {
+
+    fun setOutMode(mode: OutMode) {
         selectedOutMode = mode
     }
     

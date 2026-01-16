@@ -70,8 +70,11 @@ import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.jetbrains.compose.resources.stringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
+import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
+import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
 
 
 @Composable
@@ -444,7 +447,7 @@ fun App() {
                                                 }
                                             ){
                                                 Text(
-                                                    text = "Dartcounter"
+                                                    text = stringResource(Res.string.games_dartcounter_title)
                                                 )
                                             }
 
@@ -456,7 +459,7 @@ fun App() {
                                                 }
                                             ){
                                                 Text(
-                                                    text = "Undercover"
+                                                    text = stringResource(Res.string.games_undercover_title)
                                                 )
                                             }
                                         }

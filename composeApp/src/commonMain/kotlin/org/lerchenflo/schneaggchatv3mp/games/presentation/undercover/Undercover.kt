@@ -29,7 +29,49 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.undercover_add
+import schneaggchatv3mp.composeapp.generated.resources.undercover_autohide_enabled
+import schneaggchatv3mp.composeapp.generated.resources.undercover_autohide_title
+import schneaggchatv3mp.composeapp.generated.resources.undercover_continue
+import schneaggchatv3mp.composeapp.generated.resources.undercover_discussion_instructions
+import schneaggchatv3mp.composeapp.generated.resources.undercover_discussion_title
+import schneaggchatv3mp.composeapp.generated.resources.undercover_eliminate
+import schneaggchatv3mp.composeapp.generated.resources.undercover_eliminated_format
+import schneaggchatv3mp.composeapp.generated.resources.undercover_game_over
+import schneaggchatv3mp.composeapp.generated.resources.undercover_hide_and_pass_phone
+import schneaggchatv3mp.composeapp.generated.resources.undercover_i_am_player
+import schneaggchatv3mp.composeapp.generated.resources.undercover_minus
+import schneaggchatv3mp.composeapp.generated.resources.undercover_mr_white_cannot_start
+import schneaggchatv3mp.composeapp.generated.resources.undercover_mr_white_guess_instructions
+import schneaggchatv3mp.composeapp.generated.resources.undercover_mr_white_guess_title
+import schneaggchatv3mp.composeapp.generated.resources.undercover_new_game
+import schneaggchatv3mp.composeapp.generated.resources.undercover_no_player
+import schneaggchatv3mp.composeapp.generated.resources.undercover_no_valid_starter
+import schneaggchatv3mp.composeapp.generated.resources.undercover_pass_phone_to
+import schneaggchatv3mp.composeapp.generated.resources.undercover_player_name_label
+import schneaggchatv3mp.composeapp.generated.resources.undercover_players_title
+import schneaggchatv3mp.composeapp.generated.resources.undercover_plus
+import schneaggchatv3mp.composeapp.generated.resources.undercover_remove
+import schneaggchatv3mp.composeapp.generated.resources.undercover_reveal_mr_white
+import schneaggchatv3mp.composeapp.generated.resources.undercover_reveal_word_format
+import schneaggchatv3mp.composeapp.generated.resources.undercover_reset
+import schneaggchatv3mp.composeapp.generated.resources.undercover_role_civilian
+import schneaggchatv3mp.composeapp.generated.resources.undercover_role_mr_white
+import schneaggchatv3mp.composeapp.generated.resources.undercover_role_undercover
+import schneaggchatv3mp.composeapp.generated.resources.undercover_role_was_format
+import schneaggchatv3mp.composeapp.generated.resources.undercover_roles_title
+import schneaggchatv3mp.composeapp.generated.resources.undercover_seconds_format
+import schneaggchatv3mp.composeapp.generated.resources.undercover_start_game
+import schneaggchatv3mp.composeapp.generated.resources.undercover_start_voting
+import schneaggchatv3mp.composeapp.generated.resources.undercover_starting_player_format
+import schneaggchatv3mp.composeapp.generated.resources.undercover_starting_player_title
+import schneaggchatv3mp.composeapp.generated.resources.undercover_submit_guess
+import schneaggchatv3mp.composeapp.generated.resources.undercover_title
+import schneaggchatv3mp.composeapp.generated.resources.undercover_voting_title
+import schneaggchatv3mp.composeapp.generated.resources.undercover_word_guess_label
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +91,7 @@ fun Undercover(
             when (state.phase) {
                 UndercoverViewModel.Phase.SETUP -> {
                     Text(
-                        text = "Undercover",
+                        text = stringResource(Res.string.undercover_title),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -65,20 +107,20 @@ fun Undercover(
                             value = state.setupPlayerNameInput,
                             onValueChange = viewModel::updateSetupPlayerNameInput,
                             modifier = Modifier.weight(1f),
-                            label = { Text("Player name") },
+                            label = { Text(stringResource(Res.string.undercover_player_name_label)) },
                             singleLine = true
                         )
                         Button(
                             onClick = viewModel::addSetupPlayer
                         ) {
-                            Text("Add")
+                            Text(stringResource(Res.string.undercover_add))
                         }
                     }
 
                     Spacer(Modifier.height(12.dp))
 
                     Text(
-                        text = "Players",
+                        text = stringResource(Res.string.undercover_players_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -101,7 +143,7 @@ fun Undercover(
                                 ) {
                                     Text(text = name)
                                     Button(onClick = { viewModel.removeSetupPlayer(name) }) {
-                                        Text("Remove")
+                                        Text(stringResource(Res.string.undercover_remove))
                                     }
                                 }
                             }
@@ -113,14 +155,14 @@ fun Undercover(
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(
-                                text = "Roles",
+                                text = stringResource(Res.string.undercover_roles_title),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Spacer(Modifier.height(8.dp))
 
                             RoleCounterRow(
-                                title = "Mr. White",
+                                title = stringResource(Res.string.undercover_role_mr_white),
                                 value = state.setupMrWhiteCount,
                                 onMinus = viewModel::decrementMrWhiteCount,
                                 onPlus = viewModel::incrementMrWhiteCount
@@ -129,7 +171,7 @@ fun Undercover(
                             Spacer(Modifier.height(8.dp))
 
                             RoleCounterRow(
-                                title = "Undercover",
+                                title = stringResource(Res.string.undercover_role_undercover),
                                 value = state.setupUndercoverCount,
                                 onMinus = viewModel::decrementUndercoverCount,
                                 onPlus = viewModel::incrementUndercoverCount
@@ -147,7 +189,7 @@ fun Undercover(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "Auto-hide reveal",
+                                    text = stringResource(Res.string.undercover_autohide_title),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.SemiBold
                                 )
@@ -164,10 +206,10 @@ fun Undercover(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(text = "Seconds: ${state.autoHideSeconds}")
+                                    Text(text = stringResource(Res.string.undercover_seconds_format, state.autoHideSeconds))
                                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Button(onClick = viewModel::decrementAutoHideSeconds) { Text("-") }
-                                        Button(onClick = viewModel::incrementAutoHideSeconds) { Text("+") }
+                                        Button(onClick = viewModel::decrementAutoHideSeconds) { Text(stringResource(Res.string.undercover_minus)) }
+                                        Button(onClick = viewModel::incrementAutoHideSeconds) { Text(stringResource(Res.string.undercover_plus)) }
                                     }
                                 }
                             }
@@ -181,7 +223,7 @@ fun Undercover(
                         enabled = viewModel.canStartGame(),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Start Game")
+                        Text(stringResource(Res.string.undercover_start_game))
                     }
                 }
 
@@ -198,13 +240,13 @@ fun Undercover(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "Pass the phone to $name",
+                                text = stringResource(Res.string.undercover_pass_phone_to, name),
                                 style = MaterialTheme.typography.headlineSmall,
                                 textAlign = TextAlign.Center
                             )
                             Spacer(Modifier.height(16.dp))
                             Button(onClick = viewModel::onConfirmPlayerIdentity) {
-                                Text("I am $name")
+                                Text(stringResource(Res.string.undercover_i_am_player, name))
                             }
                         }
                     }
@@ -215,9 +257,9 @@ fun Undercover(
                 UndercoverViewModel.Phase.REVEAL -> {
                     val player = viewModel.currentRevealPlayerOrNull()
                     if (player == null) {
-                        Text("No player")
+                        Text(stringResource(Res.string.undercover_no_player))
                         Spacer(Modifier.height(12.dp))
-                        Button(onClick = viewModel::resetGame) { Text("Reset") }
+                        Button(onClick = viewModel::resetGame) { Text(stringResource(Res.string.undercover_reset)) }
                     } else {
                         val word = viewModel.getWordForPlayer(player)
 
@@ -243,7 +285,8 @@ fun Undercover(
                                 //)
                                 Spacer(Modifier.height(12.dp))
                                 Text(
-                                    text = word?.let { "Word: $it" } ?: "You are Mr White",
+                                    text = word?.let { stringResource(Res.string.undercover_reveal_word_format, it) }
+                                        ?: stringResource(Res.string.undercover_reveal_mr_white),
                                     style = MaterialTheme.typography.titleLarge,
                                     textAlign = TextAlign.Center
                                 )
@@ -252,12 +295,12 @@ fun Undercover(
                                     onClick = viewModel::onHideAndPassPhone,
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Text("Hide & Pass Phone")
+                                    Text(stringResource(Res.string.undercover_hide_and_pass_phone))
                                 }
                                 if (state.autoHideEnabled) {
                                     Spacer(Modifier.height(8.dp))
                                     Text(
-                                        text = "Auto-hiding enabled",
+                                        text = stringResource(Res.string.undercover_autohide_enabled),
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                 }
@@ -275,13 +318,13 @@ fun Undercover(
                     }
 
                     Text(
-                        text = "Starting player",
+                        text = stringResource(Res.string.undercover_starting_player_title),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(Modifier.height(12.dp))
                     Text(
-                        text = "Mr. White cannot start.",
+                        text = stringResource(Res.string.undercover_mr_white_cannot_start),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Spacer(Modifier.height(12.dp))
@@ -297,7 +340,8 @@ fun Undercover(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = selectedName?.let { "Starting player: $it" } ?: "No valid starter found",
+                                text = selectedName?.let { stringResource(Res.string.undercover_starting_player_format, it) }
+                                    ?: stringResource(Res.string.undercover_no_valid_starter),
                                 style = MaterialTheme.typography.titleLarge,
                                 textAlign = TextAlign.Center
                             )
@@ -313,13 +357,13 @@ fun Undercover(
                         enabled = state.selectedStarterPlayerId != null,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Continue")
+                        Text(stringResource(Res.string.undercover_continue))
                     }
                 }
 
                 UndercoverViewModel.Phase.DISCUSSION -> {
                     Text(
-                        text = "Discussion",
+                        text = stringResource(Res.string.undercover_discussion_title),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -328,7 +372,7 @@ fun Undercover(
                     Card(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
-                                text = "Each player describes their word without saying it. Then vote to eliminate someone.",
+                                text = stringResource(Res.string.undercover_discussion_instructions),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -340,13 +384,13 @@ fun Undercover(
                         onClick = viewModel::startVoting,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Start Voting")
+                        Text(stringResource(Res.string.undercover_start_voting))
                     }
                 }
 
                 UndercoverViewModel.Phase.VOTING -> {
                     Text(
-                        text = "Voting",
+                        text = stringResource(Res.string.undercover_voting_title),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -402,7 +446,7 @@ fun Undercover(
                             enabled = state.votingSelectedPlayerId != null,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Eliminate")
+                            Text(stringResource(Res.string.undercover_eliminate))
                         }
                     } else {
                         Card(modifier = Modifier.fillMaxWidth()) {
@@ -413,14 +457,19 @@ fun Undercover(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    text = "Eliminated: ${result.eliminatedPlayerName}",
+                                    text = stringResource(Res.string.undercover_eliminated_format, result.eliminatedPlayerName),
                                     style = MaterialTheme.typography.titleLarge,
                                     fontWeight = FontWeight.SemiBold,
                                     textAlign = TextAlign.Center
                                 )
                                 Spacer(Modifier.height(8.dp))
+                                val roleText = when (result.revealedRole) {
+                                    UndercoverViewModel.ActualRole.CIVILIAN -> stringResource(Res.string.undercover_role_civilian)
+                                    UndercoverViewModel.ActualRole.UNDERCOVER -> stringResource(Res.string.undercover_role_undercover)
+                                    UndercoverViewModel.ActualRole.MR_WHITE -> stringResource(Res.string.undercover_role_mr_white)
+                                }
                                 Text(
-                                    text = "Role was: ${result.revealedRole}",
+                                    text = stringResource(Res.string.undercover_role_was_format, roleText),
                                     style = MaterialTheme.typography.titleMedium,
                                     textAlign = TextAlign.Center
                                 )
@@ -433,20 +482,20 @@ fun Undercover(
                             onClick = viewModel::onContinueAfterVotingResult,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Continue")
+                            Text(stringResource(Res.string.undercover_continue))
                         }
                     }
                 }
 
                 UndercoverViewModel.Phase.MR_WHITE_GUESS -> {
                     Text(
-                        text = "Mr. White Guess",
+                        text = stringResource(Res.string.undercover_mr_white_guess_title),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(Modifier.height(12.dp))
                     Text(
-                        text = "Mr. White was eliminated. Enter your guess for the civilian word.",
+                        text = stringResource(Res.string.undercover_mr_white_guess_instructions),
                         style = MaterialTheme.typography.bodyLarge
                     )
                     Spacer(Modifier.height(12.dp))
@@ -455,7 +504,7 @@ fun Undercover(
                         value = state.mrWhiteGuessInput,
                         onValueChange = viewModel::updateMrWhiteGuessInput,
                         modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Word guess") },
+                        label = { Text(stringResource(Res.string.undercover_word_guess_label)) },
                         singleLine = true
                     )
 
@@ -466,7 +515,7 @@ fun Undercover(
                         modifier = Modifier.fillMaxWidth(),
                         enabled = state.mrWhiteGuessInput.trim().isNotEmpty()
                     ) {
-                        Text("Submit Guess")
+                        Text(stringResource(Res.string.undercover_submit_guess))
                     }
                 }
 
@@ -481,13 +530,13 @@ fun Undercover(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "Game Over",
+                                text = stringResource(Res.string.undercover_game_over),
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(Modifier.height(12.dp))
                             Text(
-                                text = state.winnerText ?: "",
+                                text = state.winnerText?.asString() ?: "",
                                 style = MaterialTheme.typography.titleLarge,
                                 textAlign = TextAlign.Center
                             )
@@ -500,7 +549,7 @@ fun Undercover(
                         onClick = viewModel::resetGame,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("New Game")
+                        Text(stringResource(Res.string.undercover_new_game))
                     }
 
                     Spacer(Modifier.weight(1f))
@@ -524,9 +573,9 @@ private fun RoleCounterRow(
     ) {
         Text(text = title)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Button(onClick = onMinus) { Text("-") }
+            Button(onClick = onMinus) { Text(stringResource(Res.string.undercover_minus)) }
             Text(text = value.toString(), fontWeight = FontWeight.SemiBold)
-            Button(onClick = onPlus) { Text("+") }
+            Button(onClick = onPlus) { Text(stringResource(Res.string.undercover_plus)) }
         }
     }
 }

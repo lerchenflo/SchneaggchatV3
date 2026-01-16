@@ -20,6 +20,37 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.compose.ui.window.Dialog
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_add
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_add_players
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_avg_format
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_cancel
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_configure_game_hint
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_countdown_label
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_current_player_format
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_dart_status_format
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_done
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_finished_suffix
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_game_configuration_title
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_highscores
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_list_separator
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_miss
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_multiplier_double
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_multiplier_single
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_multiplier_triple
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_out_mode_double_out
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_out_mode_label
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_out_mode_single_out
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_players_format
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_player_name_label
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_please_add_players_first
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_remove
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_stop_game
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_stop_game_confirmation_message
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_start_game
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_undo
+import schneaggchatv3mp.composeapp.generated.resources.dartcounter_winners_format
 
 @Preview(
     showBackground = true,
@@ -54,7 +85,7 @@ fun DartCounter() {
                     }
                 )
             ) {
-                Text("Add Players")
+                Text(stringResource(Res.string.dartcounter_add_players))
             }
 
             Button(
@@ -75,9 +106,9 @@ fun DartCounter() {
                 )
             ) {
                 if(viewmodel.gameStarted){
-                    Text("Stop Game")
+                    Text(stringResource(Res.string.dartcounter_stop_game))
                 }else{
-                    Text("Start Game")
+                    Text(stringResource(Res.string.dartcounter_start_game))
                 }
             }
 
@@ -85,7 +116,7 @@ fun DartCounter() {
                 onClick = { /* Highscores - leave as is */ },
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Highscores")
+                Text(stringResource(Res.string.dartcounter_highscores))
             }
         }
         
@@ -99,7 +130,7 @@ fun DartCounter() {
             GameStatusDisplay(game = game, viewmodel = viewmodel)
         } ?: run {
             Text(
-                text = "Configure game and add players to start",
+                text = stringResource(Res.string.dartcounter_configure_game_hint),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(vertical = 16.dp)
             )
@@ -120,11 +151,16 @@ fun DartCounter() {
     }
 }
 
-
+enum class Multiplier {
+    SINGLE,
+    DOUBLE,
+    TRIPLE
+}
 
 @Composable
 fun DartBoard(viewmodel: DartCounterViewModel) {
-    var selectedMultiplier by remember { mutableStateOf("Single") }
+
+    var selectedMultiplier by remember { mutableStateOf(Multiplier.SINGLE) }
     
     Column {
         // Multiplier buttons
@@ -134,7 +170,12 @@ fun DartBoard(viewmodel: DartCounterViewModel) {
                 .padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            listOf("Single", "Double", "Triple").forEach { multiplier ->
+            val multipliers = listOf(
+                Multiplier.SINGLE,
+                Multiplier.DOUBLE,
+                Multiplier.TRIPLE
+            )
+            multipliers.forEach { multiplier ->
                 Button(
                     onClick = { selectedMultiplier = multiplier },
                     modifier = Modifier.weight(1f),
@@ -144,7 +185,12 @@ fun DartBoard(viewmodel: DartCounterViewModel) {
                             MaterialTheme.colorScheme.secondary
                     )
                 ) {
-                    Text(multiplier)
+                    val multiplierText = when (multiplier) {
+                        Multiplier.SINGLE -> stringResource(Res.string.dartcounter_multiplier_single)
+                        Multiplier.DOUBLE -> stringResource(Res.string.dartcounter_multiplier_double)
+                        Multiplier.TRIPLE -> stringResource(Res.string.dartcounter_multiplier_triple)
+                    }
+                    Text(multiplierText)
                 }
             }
         }
@@ -160,7 +206,7 @@ fun DartBoard(viewmodel: DartCounterViewModel) {
             items(numbers.size) { index ->
                 var number = numbers[index]
                 val isBullseye = number == 25 || number == 50
-                val isMultiplierSelected = selectedMultiplier == "Double" || selectedMultiplier == "Triple"
+                val isMultiplierSelected = selectedMultiplier == Multiplier.DOUBLE || selectedMultiplier == Multiplier.TRIPLE
                 val isDisabled = isBullseye && isMultiplierSelected
                 
                 Button(
@@ -168,14 +214,14 @@ fun DartBoard(viewmodel: DartCounterViewModel) {
                         .padding(2.dp)
                         .height(60.dp),
                     onClick = {
-                        val isDouble = selectedMultiplier == "Double"
-                        val isTriple = selectedMultiplier == "Triple"
+                        val isDouble = selectedMultiplier == Multiplier.DOUBLE
+                        val isTriple = selectedMultiplier == Multiplier.TRIPLE
                         if (number==21){
                             number = 0
                         }
                         viewmodel.throwDart(number, isDouble, isTriple)
                         // Auto-reset to Single after throwing
-                        selectedMultiplier = "Single"
+                        selectedMultiplier = Multiplier.SINGLE
                     },
                     enabled = viewmodel.gameManager != null && !viewmodel.gameManager!!.gameOver && !isDisabled,
                     colors = ButtonDefaults.buttonColors(
@@ -188,7 +234,7 @@ fun DartBoard(viewmodel: DartCounterViewModel) {
                 ) {
                     if (number == 21) {
                         Text(
-                            text = "Miss"
+                            text = stringResource(Res.string.dartcounter_miss)
                         )
 
                     } else {
@@ -218,7 +264,7 @@ fun DartBoard(viewmodel: DartCounterViewModel) {
                     )
                 ) {
                     Text(
-                        text = "Undo",
+                        text = stringResource(Res.string.dartcounter_undo),
                         color = MaterialTheme.colorScheme.onError
                     )
                 }
@@ -241,15 +287,18 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
             val winners = game.getWinners()
             
             if (winners.isNotEmpty()) {
+                val names = winners.joinToString(
+                    separator = stringResource(Res.string.dartcounter_list_separator)
+                ) { it.name }
                 Text(
-                    text = "Winners: ${winners.joinToString(", ") { it.name }}",
+                    text = stringResource(Res.string.dartcounter_winners_format, names),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
             } else if (!game.getCurrentPlayer().isFinished) {
                 Text(
-                    text = "Current Player: ${game.getCurrentPlayer().name}",
+                    text = stringResource(Res.string.dartcounter_current_player_format, game.getCurrentPlayer().name),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -291,7 +340,7 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
                     ) {
                         Column {
                             Text(
-                                text = "${player.name}: ${player.score}${if (player.isFinished) " ✓" else ""}",
+                                text = "${player.name}: ${player.score}${if (player.isFinished) stringResource(Res.string.dartcounter_finished_suffix) else ""}",
                                 fontSize = 22.sp,
                                 fontWeight = when {
                                     player.isFinished -> FontWeight.Bold
@@ -312,7 +361,7 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
                         val average = if (dartsThrown > 0) String.format("%.1f", totalScore.toDouble() / dartsThrown * 3) else "0.0"
                         
                         Text(
-                            text = "Avg: $average",
+                            text = stringResource(Res.string.dartcounter_avg_format, average),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium,
                             color = when {
@@ -328,7 +377,11 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
             if (viewmodel.currentThrow > -1 && !game.getCurrentPlayer().isFinished) {
                 Spacer(modifier = Modifier.height(7.dp))
                 Text(
-                    text = "Dart: ${viewmodel.currentThrow} (Dart ${viewmodel.throwCount}/3)",
+                    text = stringResource(
+                        Res.string.dartcounter_dart_status_format,
+                        viewmodel.currentThrow,
+                        viewmodel.throwCount
+                    ),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -349,7 +402,7 @@ fun PlayerSetupDialog(viewmodel: DartCounterViewModel) {
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "Add Players",
+                    text = stringResource(Res.string.dartcounter_add_players),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
@@ -363,7 +416,7 @@ fun PlayerSetupDialog(viewmodel: DartCounterViewModel) {
                     OutlinedTextField(
                         value = playerName,
                         onValueChange = { playerName = it },
-                        label = { Text("Player Name") },
+                        label = { Text(stringResource(Res.string.dartcounter_player_name_label)) },
                         modifier = Modifier.weight(1f)
                     )
                     
@@ -373,7 +426,7 @@ fun PlayerSetupDialog(viewmodel: DartCounterViewModel) {
                             playerName = ""
                         }
                     ) {
-                        Text("Add")
+                        Text(stringResource(Res.string.dartcounter_add))
                     }
                 }
                 
@@ -396,7 +449,7 @@ fun PlayerSetupDialog(viewmodel: DartCounterViewModel) {
                                     containerColor = MaterialTheme.colorScheme.error
                                 )
                             ) {
-                                Text("Remove")
+                                Text(stringResource(Res.string.dartcounter_remove))
                             }
                         }
                     }
@@ -411,7 +464,7 @@ fun PlayerSetupDialog(viewmodel: DartCounterViewModel) {
                     TextButton(
                         onClick = { viewmodel.hidePlayerSetupDialog() }
                     ) {
-                        Text("Done")
+                        Text(stringResource(Res.string.dartcounter_done))
                     }
                 }
             }
@@ -431,7 +484,7 @@ fun GameConfigDialog(viewmodel: DartCounterViewModel) {
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "Game Configuration",
+                    text = stringResource(Res.string.dartcounter_game_configuration_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
@@ -439,7 +492,7 @@ fun GameConfigDialog(viewmodel: DartCounterViewModel) {
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Text(
-                    text = "Countdown:",
+                    text = stringResource(Res.string.dartcounter_countdown_label),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
@@ -466,7 +519,7 @@ fun GameConfigDialog(viewmodel: DartCounterViewModel) {
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Text(
-                    text = "Out Mode:",
+                    text = stringResource(Res.string.dartcounter_out_mode_label),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
@@ -475,7 +528,11 @@ fun GameConfigDialog(viewmodel: DartCounterViewModel) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    listOf("Single Out", "Double Out").forEach { mode ->
+                    val modes = listOf(
+                        DartCounterViewModel.OutMode.SINGLE_OUT,
+                        DartCounterViewModel.OutMode.DOUBLE_OUT
+                    )
+                    modes.forEach { mode ->
                         Button(
                             onClick = { viewmodel.setOutMode(mode) },
                             modifier = Modifier.weight(1f),
@@ -485,7 +542,11 @@ fun GameConfigDialog(viewmodel: DartCounterViewModel) {
                                     MaterialTheme.colorScheme.secondary
                             )
                         ) {
-                            Text(mode)
+                            val modeText = when (mode) {
+                                DartCounterViewModel.OutMode.SINGLE_OUT -> stringResource(Res.string.dartcounter_out_mode_single_out)
+                                DartCounterViewModel.OutMode.DOUBLE_OUT -> stringResource(Res.string.dartcounter_out_mode_double_out)
+                            }
+                            Text(modeText)
                         }
                     }
                 }
@@ -493,13 +554,18 @@ fun GameConfigDialog(viewmodel: DartCounterViewModel) {
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Text(
-                    text = "Players: ${viewmodel.playerNames.joinToString(", ") { it }}",
+                    text = stringResource(
+                        Res.string.dartcounter_players_format,
+                        viewmodel.playerNames.joinToString(
+                            separator = stringResource(Res.string.dartcounter_list_separator)
+                        ) { it }
+                    ),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 
                 if (viewmodel.playerNames.isEmpty()) {
                     Text(
-                        text = "Please add players first",
+                        text = stringResource(Res.string.dartcounter_please_add_players_first),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -515,7 +581,7 @@ fun GameConfigDialog(viewmodel: DartCounterViewModel) {
                         onClick = { viewmodel.hideGameConfigDialog() },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(Res.string.dartcounter_cancel))
                     }
                     
                     Button(
@@ -523,7 +589,7 @@ fun GameConfigDialog(viewmodel: DartCounterViewModel) {
                         modifier = Modifier.weight(1f),
                         enabled = viewmodel.playerNames.isNotEmpty()
                     ) {
-                        Text("Start Game")
+                        Text(stringResource(Res.string.dartcounter_start_game))
                     }
                 }
             }
@@ -543,7 +609,7 @@ fun StopGameConfirmationDialog(viewmodel: DartCounterViewModel) {
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "Stop Game",
+                    text = stringResource(Res.string.dartcounter_stop_game),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
@@ -551,7 +617,7 @@ fun StopGameConfirmationDialog(viewmodel: DartCounterViewModel) {
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 Text(
-                    text = "Are you sure you want to stop the current game? All progress will be lost.",
+                    text = stringResource(Res.string.dartcounter_stop_game_confirmation_message),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 
@@ -565,7 +631,7 @@ fun StopGameConfirmationDialog(viewmodel: DartCounterViewModel) {
                         onClick = { viewmodel.hideStopGameConfirmation() },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(Res.string.dartcounter_cancel))
                     }
                     
                     Button(
@@ -575,7 +641,7 @@ fun StopGameConfirmationDialog(viewmodel: DartCounterViewModel) {
                             containerColor = MaterialTheme.colorScheme.error
                         )
                     ) {
-                        Text("Stop Game")
+                        Text(stringResource(Res.string.dartcounter_stop_game))
                     }
                 }
             }
