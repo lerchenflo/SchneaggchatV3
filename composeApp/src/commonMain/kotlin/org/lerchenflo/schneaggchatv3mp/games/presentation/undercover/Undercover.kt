@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.undercover
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -360,24 +362,33 @@ fun Undercover(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             items(candidates) { p ->
-                                Card(modifier = Modifier.fillMaxWidth()) {
+                                val isSelected = state.votingSelectedPlayerId == p.id
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { viewModel.selectVote(p.id) },
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = if (isSelected) {
+                                            MaterialTheme.colorScheme.secondaryContainer
+                                        } else {
+                                            MaterialTheme.colorScheme.surfaceVariant
+                                        }
+                                    )
+                                ) {
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(12.dp),
                                         verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
+                                        horizontalArrangement = Arrangement.Start
                                     ) {
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             RadioButton(
-                                                selected = state.votingSelectedPlayerId == p.id,
+                                                selected = isSelected,
                                                 onClick = { viewModel.selectVote(p.id) }
                                             )
                                             Spacer(Modifier.size(8.dp))
                                             Text(text = p.name)
-                                        }
-                                        Button(onClick = { viewModel.selectVote(p.id) }) {
-                                            Text("Select")
                                         }
                                     }
                                 }
