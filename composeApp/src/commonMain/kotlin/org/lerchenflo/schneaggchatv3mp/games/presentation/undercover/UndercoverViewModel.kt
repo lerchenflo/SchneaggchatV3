@@ -200,13 +200,6 @@ class UndercoverViewModel : ViewModel() {
         }
     }
 
-    fun getDisplayRoleForPlayer(player: Player): String {
-        return when (player.actualRole) {
-            ActualRole.MR_WHITE -> "Mr. White"
-            ActualRole.CIVILIAN -> "Civilian"
-            ActualRole.UNDERCOVER -> "Civilian"
-        }
-    }
 
     fun getWordForPlayer(player: Player): String? {
         val pair = state.selectedWordPair ?: return null
@@ -219,6 +212,18 @@ class UndercoverViewModel : ViewModel() {
 
     fun starterCandidates(): List<Player> {
         return state.players.filter { it.isAlive && it.actualRole != ActualRole.MR_WHITE }
+    }
+
+    fun selectRandomStarterIfNeeded() {
+        if (state.phase != Phase.CHOOSE_STARTER) return
+        if (state.selectedStarterPlayerId != null) return
+        val candidates = starterCandidates()
+        val picked = candidates.randomOrNull(Random) ?: return
+        state = state.copy(selectedStarterPlayerId = picked.id)
+    }
+
+    fun getPlayerNameById(playerId: String): String? {
+        return state.players.firstOrNull { it.id == playerId }?.name
     }
 
     fun selectStarter(playerId: String) {

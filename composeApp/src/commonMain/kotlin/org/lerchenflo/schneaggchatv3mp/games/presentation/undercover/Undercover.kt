@@ -21,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -216,7 +217,6 @@ fun Undercover(
                         Spacer(Modifier.height(12.dp))
                         Button(onClick = viewModel::resetGame) { Text("Reset") }
                     } else {
-                        val role = viewModel.getDisplayRoleForPlayer(player)
                         val word = viewModel.getWordForPlayer(player)
 
                         Spacer(Modifier.weight(1f))
@@ -234,14 +234,14 @@ fun Undercover(
                                     fontWeight = FontWeight.Bold,
                                     textAlign = TextAlign.Center
                                 )
+                                //Spacer(Modifier.height(12.dp))
+                                //Text(
+                                //    text = "Role: $role",
+                                //    style = MaterialTheme.typography.titleLarge
+                                //)
                                 Spacer(Modifier.height(12.dp))
                                 Text(
-                                    text = "Role: $role",
-                                    style = MaterialTheme.typography.titleLarge
-                                )
-                                Spacer(Modifier.height(12.dp))
-                                Text(
-                                    text = word?.let { "Word: $it" } ?: "Word: (none)",
+                                    text = word?.let { "Word: $it" } ?: "You are Mr White",
                                     style = MaterialTheme.typography.titleLarge,
                                     textAlign = TextAlign.Center
                                 )
@@ -266,9 +266,14 @@ fun Undercover(
                     }
                 }
 
+
                 UndercoverViewModel.Phase.CHOOSE_STARTER -> {
+                    LaunchedEffect(Unit) {
+                        viewModel.selectRandomStarterIfNeeded()
+                    }
+
                     Text(
-                        text = "Choose a starting player",
+                        text = "Starting player",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -279,37 +284,25 @@ fun Undercover(
                     )
                     Spacer(Modifier.height(12.dp))
 
-                    val candidates = viewModel.starterCandidates()
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f, fill = true),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(candidates) { p ->
-                            Card(modifier = Modifier.fillMaxWidth()) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        RadioButton(
-                                            selected = state.selectedStarterPlayerId == p.id,
-                                            onClick = { viewModel.selectStarter(p.id) }
-                                        )
-                                        Spacer(Modifier.size(8.dp))
-                                        Text(text = p.name)
-                                    }
-                                    Button(onClick = { viewModel.selectStarter(p.id) }) {
-                                        Text("Select")
-                                    }
-                                }
-                            }
+                    val selectedName = state.selectedStarterPlayerId
+                        ?.let { viewModel.getPlayerNameById(it) }
+
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = selectedName?.let { "Starting player: $it" } ?: "No valid starter found",
+                                style = MaterialTheme.typography.titleLarge,
+                                textAlign = TextAlign.Center
+                            )
                         }
                     }
+
+                    Spacer(Modifier.weight(1f))
 
                     Spacer(Modifier.height(12.dp))
 
