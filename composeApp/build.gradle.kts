@@ -254,11 +254,28 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
-            packageName = "org.lerchenflo.schneaggchatv3mp"
+            packageName = "Schneaggchat v3"
             packageVersion = "3.0.0"
+            copyright = "© 2026"
+            vendor = "lerchenflo"
+
             linux {
                 shortcut = true
                 menuGroup = "Chat"
+            }
+
+            windows {
+                iconFile.set(project.file("\\src\\commonMain\\composeResources\\files\\schneaggchat_logo_v3.ico"))
+
+                perUserInstall = true
+
+                upgradeUuid = "7edd54f0-9959-4da2-9e7a-7512f0e042ec"
+
+                menu = true
+                shortcut = true
+
+                // ./gradlew packageDistributionForCurrentOS
+
             }
         }
     }
