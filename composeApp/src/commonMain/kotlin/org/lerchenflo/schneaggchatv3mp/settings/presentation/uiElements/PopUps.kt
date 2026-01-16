@@ -24,8 +24,10 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageSetting
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.language
 import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.theme
 
@@ -94,6 +96,75 @@ fun ThemeSelector(
                         )
                         Text(
                             text = theme.toUiText().asString(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                }
+            }
+        }
+        },
+        shape = MaterialTheme.shapes.large,
+    )
+}
+
+@Composable
+fun LanguageSelector(
+    onConfirm:(LanguageSetting) -> Unit,
+    onLanguageSelected : (LanguageSetting) -> Unit,
+    onDismiss:() -> Unit,
+    selectedLanguage: LanguageSetting
+){
+    var tempSelection by mutableStateOf(selectedLanguage)
+
+    AlertDialog(
+        onDismissRequest = {onDismiss()},
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm (tempSelection)}
+            ) {
+                Text(stringResource(Res.string.ok), color = textContentColor)
+            }
+        },
+        dismissButton =
+            {
+                TextButton(
+                    onClick = { onDismiss() }
+                ) {
+                    Text(stringResource(Res.string.cancel), color = textContentColor)
+                }
+            },
+        title = { Text(text = stringResource(Res.string.language)) },
+        text = { Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+        ) {
+            // Radio group for language selection
+            Column(
+                modifier = Modifier.selectableGroup()
+            ) {
+                LanguageSetting.entries.forEach { language ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .selectable(
+                                selected = (language == tempSelection),
+                                onClick = {
+                                    tempSelection = language
+                                    onLanguageSelected(language)
+                                          },
+                                role = Role.RadioButton
+                            )
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = language.getIcon(),
+                            contentDescription = null,
+                            tint = if(language == tempSelection) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = language.toUiText().asString(),
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(start = 8.dp)
                         )

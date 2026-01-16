@@ -13,6 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
 
 
 val desktopAppDatabaseModule = module {
@@ -41,4 +42,8 @@ val desktopPictureManagerModule = module {
 
 val desktopShareUtilsModule = module {
     single { ShareUtils() }
+}
+
+val desktopLanguageManagerModule = module {
+    single { LanguageManager(get()) }
 }
