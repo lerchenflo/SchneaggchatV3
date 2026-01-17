@@ -235,6 +235,5 @@ enum class ChatFilter{
         PERSONS -> Icons.Default.Person3
         GROUPS   -> Icons.Default.Groups
         UNREAD -> Icons.Default.MarkChatUnread
-        else -> Icons.Default.Menu
     }
 }
