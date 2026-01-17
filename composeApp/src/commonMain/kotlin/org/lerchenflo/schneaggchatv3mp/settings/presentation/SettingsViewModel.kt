@@ -26,15 +26,8 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
 
 class SettingsViewModel(
-    private val appRepository: AppRepository,
-    private val navigator: Navigator
 ): ViewModel() {
 
-    fun deleteAllAppData(){
-        viewModelScope.launch {
-            appRepository.deleteAllAppData()
-            navigator.navigate(Route.AutoLoginCredChecker, exitAllPreviousScreens = true)
-        }
-    }
+
 
 }

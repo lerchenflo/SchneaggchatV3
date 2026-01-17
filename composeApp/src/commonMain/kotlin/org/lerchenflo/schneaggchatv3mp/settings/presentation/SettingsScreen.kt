@@ -18,7 +18,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Boy
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Hexagon
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.outlined.Hexagon
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -55,6 +57,8 @@ import schneaggchatv3mp.composeapp.generated.resources.appearance_settings
 import schneaggchatv3mp.composeapp.generated.resources.appearance_settings_info
 import schneaggchatv3mp.composeapp.generated.resources.developer_setting_info
 import schneaggchatv3mp.composeapp.generated.resources.developer_settings
+import schneaggchatv3mp.composeapp.generated.resources.misc_setting_info
+import schneaggchatv3mp.composeapp.generated.resources.misc_settings
 import schneaggchatv3mp.composeapp.generated.resources.no
 import schneaggchatv3mp.composeapp.generated.resources.settings
 import schneaggchatv3mp.composeapp.generated.resources.user_settings
@@ -72,6 +76,7 @@ fun SettingsScreen(
     onBackClick: () -> Unit,
     navigateUserSettings: () -> Unit,
     navigateDevSettings: () -> Unit,
+    navigateMiscSettings: () -> Unit,
     navigateAppearanceSettings: () -> Unit
 ){
     val appRepository = koinInject<AppRepository>()
@@ -187,35 +192,13 @@ fun SettingsScreen(
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
         }
 
-        var showAppBrokenDialog by rememberSaveable { mutableStateOf(false) }
-        SettingsOption(
-            Icons.Default.Delete,
-            stringResource(Res.string.app_broken),
-            stringResource(Res.string.app_broken_desc),
-            onClick = { showAppBrokenDialog = true }
-        )
-        // app kaputt dialog
-        if (showAppBrokenDialog) {
-            AlertDialog(
-                onDismissRequest = { showAppBrokenDialog = false },
-                title = { Text(text = stringResource(Res.string.app_broken)) },
-                text = { Text(text = stringResource(Res.string.app_broken_are_you_sure)) },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showAppBrokenDialog = false
-                        settingsViewmodel.deleteAllAppData()
 
-                    }) {
-                        Text(text = stringResource(Res.string.yes))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showAppBrokenDialog = false }) {
-                        Text(text = stringResource(Res.string.no))
-                    }
-                }
-            )
-        }
+        SettingsOption(
+            icon = Icons.Outlined.Hexagon,
+            text = stringResource(Res.string.misc_settings),
+            subtext = stringResource(Res.string.misc_setting_info),
+            onClick = navigateMiscSettings
+        )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 

@@ -18,23 +18,6 @@ class DevSettingsViewModel(
     private val navigator: Navigator
 ): ViewModel() {
 
-    var logs by mutableStateOf<List<LogEntry>>(emptyList())
-        private set
-
-    init {
-        viewModelScope.launch {
-            loggingRepository.getLogs().collect { loglist ->
-                logs = loglist
-            }
-        }
-    }
-
-    fun onClearLogs() {
-        viewModelScope.launch {
-            loggingRepository.clearLogs()
-        }
-    }
-
 
     fun navigateGames() {
         viewModelScope.launch {

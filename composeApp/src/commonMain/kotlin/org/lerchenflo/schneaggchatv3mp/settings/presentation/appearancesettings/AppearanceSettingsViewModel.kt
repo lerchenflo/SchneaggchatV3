@@ -86,5 +86,5 @@ class AppearanceSettingsViewModel(
             languageService.applyLanguage(language = language)
         }
     }
-    
+
 }

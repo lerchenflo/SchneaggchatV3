@@ -164,10 +164,14 @@
 
     <string name="change_server_url">change server URL</string>
     <string name="developer_settings">Developer</string>
+
     <string name="steps_until_developer">in %1$s steps you are a developer</string>
     <string name="you_are_now_developer">you are now a developer</string>
     <string name="you_are_already_developer">you are already are a developer</string>
     <string name="developer_setting_info">Be careful with the developer settings. Make sure you know what you are doing.</string>
+
+    <string name="misc_settings">Misc</string>
+    <string name="misc_setting_info">Other settings which might be useful if the app does not work correctly.</string>
 
     <string name="friend_request_title">Do you want to accept this friend request?</string>
     <string name="friend_request_cancel_title">Do you want to cancel this friend request?</string>
