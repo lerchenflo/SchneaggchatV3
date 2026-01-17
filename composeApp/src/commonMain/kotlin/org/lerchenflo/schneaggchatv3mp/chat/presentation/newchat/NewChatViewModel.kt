@@ -105,6 +105,7 @@ class NewChatViewModel (
             SnackbarManager.showMessage(
                 if (success) getString(Res.string.friend_request_sent) else getString(Res.string.error_friend_request)
             )
+            loadAvailableUsers(searchterm.value)
         }
     }
 

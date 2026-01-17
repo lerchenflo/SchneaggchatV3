@@ -336,15 +336,7 @@ fun NewChat(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun ActionCardPreview(){
-    ActionCard(
-        text = "Daeawdawd",
-        icon = Icons.Default.GroupAdd,
-        onClick = {},
-    )
-}
+
 
 @Composable
 fun ActionCard(

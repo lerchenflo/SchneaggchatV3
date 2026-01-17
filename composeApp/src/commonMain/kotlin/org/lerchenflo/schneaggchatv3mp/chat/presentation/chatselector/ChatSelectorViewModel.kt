@@ -55,6 +55,10 @@ class ChatSelectorViewModel(
     private val loggingRepository: LoggingRepository
 ): ViewModel() {
 
+
+    private val _pendingFriendCount = MutableStateFlow(0)
+    val pendingFriendCount: StateFlow<Int> = _pendingFriendCount.asStateFlow()
+
     init {
 
         viewModelScope.launch {
@@ -62,9 +66,6 @@ class ChatSelectorViewModel(
             val token = NotificationManager.getToken()
             appRepository.setFirebaseToken(token)
         }
-
-        //TODO: Maybe try login every 5 sec if not logged in (No sync all 5 secs)
-        //Chat verlassen
 
         viewModelScope.launch {
             appRepository.getPendingFriends("").collectLatest { list ->
@@ -77,8 +78,6 @@ class ChatSelectorViewModel(
         }
     }
 
-    private val _pendingFriendCount = MutableStateFlow(0)
-    val pendingFriendCount: StateFlow<Int> = _pendingFriendCount.asStateFlow()
 
 
     fun clearChat(){
@@ -151,6 +150,9 @@ class ChatSelectorViewModel(
     //Navigation
     fun onChatSelected(selectedChat: SelectedChat) {
         viewModelScope.launch {
+
+            //Chat opened, clear searchterm
+            _searchTerm.value = ""
 
             globalViewModel.onSelectChat(selectedChat)
             navigator.navigate(Route.Chat)
