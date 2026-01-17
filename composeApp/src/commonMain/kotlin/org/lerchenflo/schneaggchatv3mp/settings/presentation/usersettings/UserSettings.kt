@@ -57,7 +57,9 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.URL_DEL_ACC
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
@@ -79,6 +81,7 @@ import schneaggchatv3mp.composeapp.generated.resources.logout
 import schneaggchatv3mp.composeapp.generated.resources.no
 import schneaggchatv3mp.composeapp.generated.resources.user_settings
 import schneaggchatv3mp.composeapp.generated.resources.yes
+import schneaggchatv3mp.composeapp.generated.resources.your_friends_wrote_this
 
 @Composable
 fun UserSettings(
@@ -158,8 +161,18 @@ fun UserSettings(
                     .align(Alignment.CenterHorizontally)
             )
 
-
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+
+            if (ownuser != null && ownuser.description != null && ownuser.description.isNotEmpty()) {
+                //Userdescription
+                QuotedText(
+                    text = ownuser.description,
+                    author = stringResource(Res.string.your_friends_wrote_this)
+                )
+
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+            }
 
             //Username
             SettingsOption(
@@ -170,6 +183,8 @@ fun UserSettings(
                     showChangeUsernamePopup = true
                 }
             )
+
+            //TODO: Status + Ändra
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
