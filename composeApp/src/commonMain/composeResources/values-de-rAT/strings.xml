@@ -30,7 +30,7 @@
     <string name="create_account">Account erstella</string>
     <string name="create_account_subtitle">beitreata</string>
     <string name="acc_not_exist">Dean Account gits ned</string>
-    <string name="offline">Du bisch z arm für Internet</string>
+    <string name="offline">Dine App erreicht da Server ned</string>
     <string name="unknown_error">Irgend an Fehler isch uftreatta</string>
     <string name="birthdateerror">Es git a problem mit dinam Geburtstag</string>
     <string name="acc_locked">Din Account isch aktuell gsperrt</string>

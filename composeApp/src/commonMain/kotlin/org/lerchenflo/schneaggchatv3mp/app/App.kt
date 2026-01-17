@@ -61,6 +61,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
@@ -137,7 +138,7 @@ fun App() {
                         subclass(Route.Settings.DeveloperSettings::class, Route.Settings.DeveloperSettings.serializer())
                         subclass(Route.Settings.UserSettings::class, Route.Settings.UserSettings.serializer())
                         subclass(Route.Settings.AppearanceSettings::class, Route.Settings.AppearanceSettings.serializer())
-
+                        subclass(Route.Settings.MiscSettings::class, Route.Settings.MiscSettings.serializer())
                     }
                 }
             },
@@ -398,7 +399,8 @@ fun App() {
                                             },
                                             navigateUserSettings = {settingsBackStack.add(Route.Settings.UserSettings)},
                                             navigateDevSettings = {settingsBackStack.add(Route.Settings.DeveloperSettings)},
-                                            navigateAppearanceSettings = {settingsBackStack.add(Route.Settings.AppearanceSettings)}
+                                            navigateAppearanceSettings = {settingsBackStack.add(Route.Settings.AppearanceSettings)},
+                                            navigateMiscSettings = {settingsBackStack.add(Route.Settings.MiscSettings)}
                                         )
                                     }
 
@@ -429,6 +431,18 @@ fun App() {
                                     entry<Route.Settings.AppearanceSettings> {
                                         AppearanceSettings(
                                             appearanceSettingsViewModel = koinInject(),
+                                            sharedSettingsViewmodel = sharedSettingsViewmodel,
+                                            onBackClick = {
+                                                if (settingsBackStack.size > 1){
+                                                    settingsBackStack.removeAt(settingsBackStack.size - 1)
+                                                }
+                                            }
+                                        )
+                                    }
+
+                                    entry<Route.Settings.MiscSettings> {
+                                        MiscSettings(
+                                            miscSettingsViewModel = koinInject(),
                                             sharedSettingsViewmodel = sharedSettingsViewmodel,
                                             onBackClick = {
                                                 if (settingsBackStack.size > 1){

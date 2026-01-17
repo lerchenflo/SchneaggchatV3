@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Games
-import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -23,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.LogsDialog
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChangeDialog
@@ -76,28 +76,9 @@ fun DeveloperSettings(
 
 
 
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+        //HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-        var showLogsDialog by remember { mutableStateOf(false) }
-        SettingsOption(
-            icon = Icons.AutoMirrored.Filled.List,
-            text = "Logs",
-            subtext = "show logs",
-            onClick = {
-                showLogsDialog = true
-            }
-        )
-        if (showLogsDialog) {
-            LogsDialog(
-                logs = devSettingsViewModel.logs,
-                onDismiss = {
-                    showLogsDialog = false
-                },
-                onClearLogs = {
-                    devSettingsViewModel.onClearLogs()
-                }
-            )
-        }
+
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
