@@ -8,14 +8,19 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlin.random.Random
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageSetting
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.undercover_winner_civilians
 import schneaggchatv3mp.composeapp.generated.resources.undercover_winner_mr_white
 import schneaggchatv3mp.composeapp.generated.resources.undercover_winner_undercover
 
-class UndercoverViewModel : ViewModel() {
+class UndercoverViewModel(
+    private val languageService: LanguageService
+) : ViewModel() {
 
     enum class ActualRole {
         CIVILIAN,
@@ -137,14 +142,23 @@ class UndercoverViewModel : ViewModel() {
         if (n < 3) return false
         if (special >= n) return false
         if (state.setupMrWhiteCount < 0 || state.setupUndercoverCount < 0) return false
-        if (UNDERCOVER_WORD_PAIRS.isEmpty()) return false
+        
+        // Check if word lists are available by trying to get them
+        val currentLanguage = runBlocking { languageService.getCurrentLanguage() }
+        val wordPairs = getUndercoverWordPairs(currentLanguage)
+        if (wordPairs.isEmpty()) return false
+        
         return true
     }
 
     fun startGame() {
         if (!canStartGame()) return
 
-        val wordPair = UNDERCOVER_WORD_PAIRS.random(Random)
+        // Get the appropriate word list based on current language
+        val currentLanguage = runBlocking { languageService.getCurrentLanguage() }
+        val wordPairs = getUndercoverWordPairs(currentLanguage)
+        val wordPair = wordPairs.random(Random)
+        
         val names = state.setupPlayers
         val roles = buildList {
             repeat(state.setupMrWhiteCount) { add(ActualRole.MR_WHITE) }
