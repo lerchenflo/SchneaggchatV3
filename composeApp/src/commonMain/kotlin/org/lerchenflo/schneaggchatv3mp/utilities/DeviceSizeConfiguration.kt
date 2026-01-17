@@ -25,7 +25,8 @@ enum class DeviceSizeConfiguration {
                         heightClass == WindowHeightSizeClass.COMPACT -> MOBILE_LANDSCAPE
                 widthClass == WindowWidthSizeClass.MEDIUM &&
                         heightClass == WindowHeightSizeClass.EXPANDED -> TABLET_PORTRAIT
-                widthClass == WindowWidthSizeClass.EXPANDED &&
+                widthClass == WindowWidthSizeClass.
+                EXPANDED &&
                         heightClass == WindowHeightSizeClass.MEDIUM -> TABLET_LANDSCAPE
                 else -> DESKTOP
             }

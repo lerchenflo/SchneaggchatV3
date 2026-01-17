@@ -642,13 +642,11 @@ enum class AddMediaOptions{
         IMAGE -> UiText.StringResourceText(Res.string.image)
         POLL -> UiText.StringResourceText(Res.string.poll)
         AUDIO   -> UiText.StringResourceText(Res.string.audio)
-        else -> UiText.StringResourceText(Res.string.unknown_error)
     }
     fun getIcon(): ImageVector = when (this) {
         IMAGE -> Icons.Default.Image
         POLL -> Icons.Default.Poll
         AUDIO   -> Icons.Default.Headphones
-        else -> Icons.Default.Menu
     }
 
     fun getAction(): Unit = when (this) {

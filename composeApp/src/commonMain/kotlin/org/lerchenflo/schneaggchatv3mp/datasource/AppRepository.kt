@@ -608,7 +608,7 @@ class AppRepository(
                             val existing = database.userDao().getUserbyId(newUser.id)
                             database.userDao().upsert(UserDto(
                                 id = newUser.id,
-                                changedate = newUser.updatedAt.toLong(),
+                                changedate = newUser.updatedAt,
                                 name = newUser.username,
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
@@ -1030,7 +1030,6 @@ class AppRepository(
                                 )
                             }
 
-                            else -> { /* Handle other message types if needed */ }
                         }
                     }
 

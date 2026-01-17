@@ -53,6 +53,7 @@ import schneaggchatv3mp.composeapp.generated.resources.dartcounter_stop_game_con
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_start_game
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_undo
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_winners_format
+import kotlin.math.round
 
 @Preview(
     showBackground = true,
@@ -362,8 +363,13 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
                         // Three dart average calculation
                         val dartsThrown = player.totalDartsThrown + if (player == game.getCurrentPlayer() && !player.isFinished) viewmodel.throwCount else 0
                         val totalScore = game.countdown - player.score
-                        val average = if (dartsThrown > 0) String.format("%.1f", totalScore.toDouble() / dartsThrown * 3) else "0.0"
-                        
+
+                        val average = if (dartsThrown > 0) {
+                            val value = totalScore.toDouble() / dartsThrown * 3
+                            (round(value * 10) / 10).toString()
+                        } else {
+                            "0.0"
+                        }
                         Text(
                             text = stringResource(Res.string.dartcounter_avg_format, average),
                             style = MaterialTheme.typography.bodyMedium,

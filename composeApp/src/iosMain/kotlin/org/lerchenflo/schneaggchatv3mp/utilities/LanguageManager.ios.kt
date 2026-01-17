@@ -2,24 +2,26 @@ package org.lerchenflo.schneaggchatv3mp.utilities
 
 import platform.Foundation.NSUserDefaults
 import platform.Foundation.NSLocale
-import platform.Foundation.arrayOfObjects
-import platform.Foundation.setObject
-import platform.Foundation.synchronize
-import platform.Foundation.removeObjectForKey
+import platform.Foundation.preferredLanguages
 
 actual class LanguageManager(
     private val preferenceManager: Preferencemanager
 ) {
     companion object {
         // Capture original system locale at class initialization
-        private val ORIGINAL_SYSTEM_LOCALE: String = NSLocale.preferredLanguages.firstOrNull() ?: "en"
+        private val ORIGINAL_SYSTEM_LOCALE: String =
+            (NSLocale.preferredLanguages.firstOrNull() as? String) ?: "en"
     }
+
     private val userDefaults = NSUserDefaults.standardUserDefaults
-    
+
     actual suspend fun applyLanguage(language: LanguageSetting) {
         if (language == LanguageSetting.SYSTEM) {
             // Restore to original system locale captured at startup
-            userDefaults.setObject(arrayOfObjects(ORIGINAL_SYSTEM_LOCALE), "AppleLanguages")
+            userDefaults.setObject(
+                listOf(ORIGINAL_SYSTEM_LOCALE),
+                forKey = "AppleLanguages"
+            )
             userDefaults.synchronize()
             println("Reset to original system locale: $ORIGINAL_SYSTEM_LOCALE")
         } else {
@@ -31,12 +33,15 @@ actual class LanguageManager(
             } else {
                 isoCode
             }
-            
-            userDefaults.setObject(arrayOfObjects(languageCode), "AppleLanguages")
+
+            userDefaults.setObject(
+                listOf(languageCode),
+                forKey = "AppleLanguages"
+            )
             userDefaults.synchronize()
             println("Applying language: $language, Code: $languageCode")
         }
-        
+
         // Save to DataStore
         preferenceManager.saveLanguageSetting(language)
     }
