@@ -30,6 +30,7 @@ import schneaggchatv3mp.composeapp.generated.resources.app_broken_desc
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings
 import schneaggchatv3mp.composeapp.generated.resources.no
 import schneaggchatv3mp.composeapp.generated.resources.settings
+import schneaggchatv3mp.composeapp.generated.resources.show_logs
 import schneaggchatv3mp.composeapp.generated.resources.yes
 
 @Composable
@@ -56,7 +57,7 @@ fun MiscSettings(
         SettingsOption(
             icon = Icons.AutoMirrored.Filled.List,
             text = "Logs",
-            subtext = "show logs",
+            subtext = stringResource(Res.string.show_logs),
             onClick = {
                 showLogsDialog = true
             }
