@@ -164,10 +164,14 @@
 
     <string name="change_server_url">Server URL ändra</string>
     <string name="developer_settings">Entwickler</string>
+
     <string name="steps_until_developer">in %1$s Schritt bisch du Entwickler</string>
     <string name="you_are_now_developer">Du bisch Entwickler</string>
     <string name="you_are_already_developer">Du bisch schon Entwickler</string>
     <string name="developer_setting_info">Ufpassa mit da Entwickleroptiona. Sei da bewusst wasd machsch.</string>
+
+    <string name="misc_settings">Alles andre</string>
+    <string name="misc_setting_info">Alles andre des ma brucht wenn dia App kaputt isch.</string>
 
     <string name="friend_request_title">Magsch die Freundschaftsanfrog ania?</string>
     <string name="friend_request_cancel_title">Magsch die Freundschaftsanfrog abbreacha</string>

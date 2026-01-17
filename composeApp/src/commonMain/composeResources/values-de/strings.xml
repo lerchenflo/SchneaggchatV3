@@ -164,10 +164,14 @@
 
     <string name="change_server_url">Server URL ändern</string>
     <string name="developer_settings">Entwickler</string>
+
     <string name="steps_until_developer">in %1$s Schritten bist du Entwickler</string>
     <string name="you_are_now_developer">Du bist nun Entwickler</string>
     <string name="you_are_already_developer">Du bist schon ein Entwickler</string>
     <string name="developer_setting_info">Sei vorsichtig mit den Entwickleroptionen. Sei dir bewusst was du tust.</string>
+
+    <string name="misc_settings">Miscellaneous</string>
+    <string name="misc_setting_info">Andere Einstellungen die nützlich sind wenn die App nicht funktioniert.</string>
 
     <string name="friend_request_title">Willst du diese Freundschaftsanfrage akzeptieren?</string>
     <string name="friend_request_cancel_title">Willst du diese Freundschafstanfrage abbrechen?</string>
@@ -266,6 +270,19 @@
     <string name="declined">Abgelehnt</string>
     <string name="blocked">Blockiert</string>
 
+    <!-- Confirmation dialogs -->
+    <string name="confirm_leave_group">Bist du sicher, dass du diese Gruppe verlassen willst?</string>
+    <string name="confirm_remove_friend">Bist du sicher, dass du %1$s als Freund entfernen willst?</string>
+    <string name="confirm_remove_member">Bist du sicher, dass du %1$s aus der Gruppe entfernen willst?</string>
+
+    <!-- Language settings -->
+    <string name="system_language">System</string>
+    <string name="german_language">Deutsch (Deutschland)</string>
+    <string name="english_language">English</string>
+    <string name="vori_language">Vori</string>
+    <string name="language">Sprache</string>
+    <string name="language_sel_desc">Wähle die Sprache deiner App</string>
+
     <!-- Games -->
     <string name="games_dartcounter_title">Dartcounter</string>
     <string name="games_undercover_title">Undercover</string>
@@ -345,17 +362,6 @@
     <string name="undercover_winner_mr_white">Mr. White gewinnt</string>
     <string name="undercover_winner_civilians">Zivilisten gewinnen</string>
     <string name="undercover_winner_undercover">Undercover / Mr. White gewinnt</string>
-    <!-- Confirmation dialogs -->
-    <string name="confirm_leave_group">Bist du sicher, dass du diese Gruppe verlassen willst?</string>
-    <string name="confirm_remove_friend">Bist du sicher, dass du %1$s als Freund entfernen willst?</string>
-    <string name="confirm_remove_member">Bist du sicher, dass du %1$s aus der Gruppe entfernen willst?</string>
 
-    <!-- Language settings -->
-    <string name="system_language">System</string>
-    <string name="german_language">Deutsch (Deutschland)</string>
-    <string name="english_language">English</string>
-    <string name="vori_language">Vori</string>
-    <string name="language">Sprache</string>
-    <string name="language_sel_desc">Wähle die Sprache deiner App</string>
 
 </resources>
