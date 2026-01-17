@@ -24,6 +24,15 @@ class AppearanceSettingsViewModel(
     private val languageService: LanguageService
 ): ViewModel() {
 
+    var markdownEnabeled by mutableStateOf(false)
+        private set
+
+    var selectedTheme by mutableStateOf(ThemeSetting.SYSTEM)
+        private set
+
+    var selectedLanguage by mutableStateOf(LanguageSetting.SYSTEM)
+        private set
+
 
     init {
         viewModelScope.launch { // Markdown
@@ -56,8 +65,7 @@ class AppearanceSettingsViewModel(
         }
     }
 
-    var markdownEnabeled by mutableStateOf(false)
-        private set
+
 
     fun updateMarkdownSwitch(newValue: Boolean){
         CoroutineScope(Dispatchers.IO).launch {
@@ -66,23 +74,17 @@ class AppearanceSettingsViewModel(
     }
 
 
-    var selectedTheme by mutableStateOf(ThemeSetting.SYSTEM)
-        private set
-
     fun saveThemeSetting(theme: ThemeSetting){
         CoroutineScope(Dispatchers.IO).launch {
             preferenceManager.saveThemeSetting(theme = theme)
         }
     }
 
-    var selectedLanguage by mutableStateOf(LanguageSetting.SYSTEM)
-        private set
 
     fun saveLanguageSetting(language: LanguageSetting){
         CoroutineScope(Dispatchers.IO).launch {
             languageService.applyLanguage(language = language)
         }
     }
-
-
+    
 }
