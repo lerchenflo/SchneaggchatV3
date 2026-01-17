@@ -127,7 +127,7 @@ val sharedmodule = module{
     viewModelOf(::DartCounterViewModel)
     factory { DartCounterViewModel() }
     viewModelOf(::UndercoverViewModel)
-    factory { UndercoverViewModel() }
+    factory { UndercoverViewModel(get()) }
 
 
     viewModelOf(::UserSettingsViewModel)
