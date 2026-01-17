@@ -31,6 +31,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.change_server_url
 import schneaggchatv3mp.composeapp.generated.resources.developer_setting_info
 import schneaggchatv3mp.composeapp.generated.resources.developer_settings
+import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 
 @Composable
 fun DeveloperSettings(
@@ -84,7 +85,7 @@ fun DeveloperSettings(
 
         SettingsOption(
             icon = Icons.Default.Games,
-            text = "Games",
+            text = stringResource(Res.string.tools_and_games),
             subtext = null,
             onClick = {
                 devSettingsViewModel.navigateGames()

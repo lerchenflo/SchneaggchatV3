@@ -279,4 +279,85 @@
     <string name="language">Sproch</string>
     <string name="language_sel_desc">Was für a Sproch söll dine App hia</string>
 
+    <!-- Games -->
+    <string name="games_dartcounter_title">Dartcounter</string>
+    <string name="games_undercover_title">Undercover</string>
+
+    <!-- Games: DartCounter -->
+    <string name="dartcounter_add_players">Neua Spiela</string>
+    <string name="dartcounter_start_game">Spiel Starta</string>
+    <string name="dartcounter_stop_game">Stopp</string>
+    <string name="dartcounter_highscores">Highscores</string>
+    <string name="dartcounter_configure_game_hint">Mach paar Spiela denn kannsch starta</string>
+    <string name="dartcounter_multiplier_single">Single</string>
+    <string name="dartcounter_multiplier_double">Double</string>
+    <string name="dartcounter_multiplier_triple">Triple</string>
+    <string name="dartcounter_miss">Miss</string>
+    <string name="dartcounter_undo">Zruck</string>
+    <string name="dartcounter_list_separator">, </string>
+    <string name="dartcounter_winners_format">Gwunna hot Spiela %1$s</string>
+    <string name="dartcounter_current_player_format">Aktuella Spiela: %1$s</string>
+    <string name="dartcounter_avg_format">Avg: %1$s</string>
+    <string name="dartcounter_dart_status_format">Dart: %1$d (Dart %2$d/3)</string>
+    <string name="dartcounter_finished_suffix"> ✓</string>
+    <string name="dartcounter_player_name_label">Spiela Namma</string>
+    <string name="dartcounter_add">Hinzufügen</string>
+    <string name="dartcounter_remove">Löscha</string>
+    <string name="dartcounter_done">Fertig</string>
+    <string name="dartcounter_game_configuration_title">Spiel Konfiguriera</string>
+    <string name="dartcounter_countdown_label">Countdown:</string>
+    <string name="dartcounter_out_mode_label">Out Mode:</string>
+    <string name="dartcounter_out_mode_single_out">Single Out</string>
+    <string name="dartcounter_out_mode_double_out">Double Out</string>
+    <string name="dartcounter_players_format">Players: %1$s</string>
+    <string name="dartcounter_please_add_players_first">Füg zersch paar Spieler hinzu</string>
+    <string name="dartcounter_cancel">Abbrechen</string>
+    <string name="dartcounter_stop_game_confirmation_message">Bisch da sicha?</string>
+
+    <!-- Games: Undercover -->
+    <string name="undercover_title">Undercover</string>
+    <string name="undercover_player_name_label">Spieler Namma</string>
+    <string name="undercover_add">Hinzufügen</string>
+    <string name="undercover_players_title">Spiela</string>
+    <string name="undercover_remove">Löscha</string>
+    <string name="undercover_roles_title">Rollen</string>
+    <string name="undercover_role_civilian">Civilian</string>
+    <string name="undercover_role_mr_white">Mr. White</string>
+    <string name="undercover_role_undercover">Undercover</string>
+    <string name="undercover_autohide_title">Automatisch fastecka</string>
+    <string name="undercover_seconds_format">Sekunden: %1$d</string>
+    <string name="undercover_minus">-</string>
+    <string name="undercover_plus">+</string>
+    <string name="undercover_start_game">Spiel Starta</string>
+    <string name="undercover_pass_phone_to">Gibs witta zu %1$s</string>
+    <string name="undercover_i_am_player">I bin %1$s</string>
+    <string name="undercover_no_player">Koan Spiela</string>
+    <string name="undercover_reset">Zrucksetza</string>
+    <string name="undercover_reveal_word_format">Wort: %1$s</string>
+    <string name="undercover_reveal_mr_white">Du bisch Mr White</string>
+    <string name="undercover_hide_and_pass_phone">Fastecka und witta gea</string>
+    <string name="undercover_autohide_enabled">Automatisch fastecka</string>
+    <string name="undercover_starting_player_title">Spieler der Startet</string>
+    <string name="undercover_mr_white_cannot_start">Mr. White ka ned afanga</string>
+    <string name="undercover_starting_player_format">Starta tuat: %1$s</string>
+    <string name="undercover_no_valid_starter">So loft des ned</string>
+    <string name="undercover_continue">Witta</string>
+    <string name="undercover_discussion_title">Fangan a stritta</string>
+    <string name="undercover_discussion_instructions">Jeda musses Wort beschrieba. Denn muss jemand usse gwählt wera.</string>
+    <string name="undercover_start_voting">Fangan a voten</string>
+    <string name="undercover_voting_title">Voting</string>
+    <string name="undercover_eliminate">Eliminiera</string>
+    <string name="undercover_eliminated_format">Eliminiert: %1$s</string>
+    <string name="undercover_role_was_format">Er war: %1$s</string>
+    <string name="undercover_mr_white_guess_title">Mr. White Rotet</string>
+    <string name="undercover_mr_white_guess_instructions">Mr. White isch eliminiert wora. Fasuachs Wort zum arota.</string>
+    <string name="undercover_word_guess_label">Din Guess</string>
+    <string name="undercover_submit_guess">Kontrolliera lo</string>
+    <string name="undercover_game_over">Spiel vorbei</string>
+    <string name="undercover_new_game">Neus Spiel</string>
+    <string name="undercover_winner_mr_white">Mr. White hot gwunna</string>
+    <string name="undercover_winner_civilians">Civilians hon gwunna</string>
+    <string name="undercover_winner_undercover">Undercover und Mr. White hon gwunna</string>
+
+
 </resources>
