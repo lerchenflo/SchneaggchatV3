@@ -8,9 +8,30 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.games.domain.GameAction
-import org.lerchenflo.schneaggchatv3mp.games.domain.GameState
-import org.lerchenflo.schneaggchatv3mp.games.domain.Platform
+
+data class Platform(
+    val x: Float,
+    val y: Float,
+    val width: Float,
+    val height: Float = 5f,
+    val isMoving: Boolean = false,
+    val direction: Float = 1f // 1f for right, -1f for left
+)
+
+data class GameState(
+    val platforms: List<Platform> = emptyList(),
+    val currentPlatform: Platform? = null,
+    val score: Int = 0,
+    val isGameOver: Boolean = false,
+    val isGameStarted: Boolean = false,
+    val gameSpeed: Float = 2f
+)
+
+sealed class GameAction {
+    object StartGame : GameAction()
+    object PlacePlatform : GameAction()
+    object ResetGame : GameAction()
+}
 
 class TowerstackViewModel : ViewModel() {
     
@@ -23,7 +44,7 @@ class TowerstackViewModel : ViewModel() {
         private const val SCREEN_WIDTH = 300f
         private const val SCREEN_HEIGHT = 500f
         private const val PLATFORM_WIDTH = 80f
-        private const val PLATFORM_HEIGHT = 20f
+        private const val PLATFORM_HEIGHT = 15f
         private const val INITIAL_Y = 400f
         private const val BASE_Y = 450f
     }
@@ -54,7 +75,7 @@ class TowerstackViewModel : ViewModel() {
         
         val firstMovingPlatform = Platform(
             x = 0f,
-            y = INITIAL_Y,
+            y = BASE_Y - PLATFORM_HEIGHT,
             width = PLATFORM_WIDTH,
             height = PLATFORM_HEIGHT,
             isMoving = true,
