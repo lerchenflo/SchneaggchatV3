@@ -11,6 +11,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
@@ -65,6 +66,10 @@ fun createHttpClient(
         }
 
         if (useAuth){
+
+            install(WebSockets)
+
+
             install(Auth){
                 bearer {
 
