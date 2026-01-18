@@ -25,6 +25,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerstackViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.UndercoverViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
@@ -126,6 +127,8 @@ val sharedmodule = module{
     factory { DevSettingsViewModel(get(), get()) }
     viewModelOf(::DartCounterViewModel)
     factory { DartCounterViewModel() }
+    viewModelOf(::TowerstackViewModel)
+    factory { TowerstackViewModel() }
     viewModelOf(::UndercoverViewModel)
     factory { UndercoverViewModel(get()) }
 

@@ -53,6 +53,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
+import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
@@ -154,6 +155,7 @@ fun App() {
                         subclass(Route.Games.DartCounter::class, Route.Games.DartCounter.serializer())
 
                         subclass(Route.Games.Undercover::class, Route.Games.Undercover.serializer())
+                        subclass(Route.Games.TowerStack::class, Route.Games.TowerStack.serializer())
 
 
                     }
@@ -498,6 +500,18 @@ fun App() {
                                                     text = stringResource(Res.string.games_undercover_title)
                                                 )
                                             }
+
+                                            Button(
+                                                onClick = {
+                                                    scope.launch {
+                                                        gamesBackStack.add(Route.Games.TowerStack)
+                                                    }
+                                                }
+                                            ){
+                                                Text(
+                                                    text = "Tower Stack"
+                                                )
+                                            }
                                         }
                                     }
 
@@ -507,6 +521,10 @@ fun App() {
 
                                     entry <Route.Games.Undercover> {
                                         Undercover()
+                                    }
+
+                                    entry <Route.Games.TowerStack> {
+                                        TowerStackScreen()
                                     }
                                 }
                             )
