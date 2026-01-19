@@ -10,7 +10,10 @@
     <string name="search_friend">search your Friends ...</string>
     <string name="no_status">no status</string>
     <string name="unknown_user">unknown user</string>
-    
+
+    <string name="status_infotext">This status is available to all your friends.</string>
+
+
     <string name="go_back">go back</string>
     <string name="add">add</string>
     <string name="message">message</string>
@@ -79,6 +82,8 @@
     <string name="select_profile_pic">Select a profile picture</string>
 
     <string name="status">Status:</string>
+    <string name="status_nosemicolon">Status</string>
+
     <string name="app_broken_desc">Will fix most of the errors</string>
     <string name="app_broken_are_you_sure">This will delete the local database and fetch all data from the server again.\nAre you sure you want to continue?</string>
     <string name="please_restart_app">Please restart the app</string>
@@ -252,6 +257,9 @@
     <string name="change_username">Change username</string>
     <string name="change_username_description">Change your username. The new username will be shown to others and used for login</string>
     <string name="change_username_placeholder">new username ...</string>
+
+    <string name="change_status">Change status</string>
+
 
     <string name="common_groups">Common groups (%1$s)</string>
     <string name="groupmembers">Group members (%1$s)</string>

@@ -56,8 +56,8 @@ import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLa
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.vectorResource
 import org.lerchenflo.schneaggchatv3mp.URL_DEL_ACC
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
@@ -69,6 +69,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.are_you_sure_you_want_to_logout
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.change
+import schneaggchatv3mp.composeapp.generated.resources.change_status
 import schneaggchatv3mp.composeapp.generated.resources.change_username
 import schneaggchatv3mp.composeapp.generated.resources.change_username_description
 import schneaggchatv3mp.composeapp.generated.resources.change_username_placeholder
@@ -79,6 +80,11 @@ import schneaggchatv3mp.composeapp.generated.resources.emailinfo_unverified
 import schneaggchatv3mp.composeapp.generated.resources.error_cannot_be_the_same_username
 import schneaggchatv3mp.composeapp.generated.resources.logout
 import schneaggchatv3mp.composeapp.generated.resources.no
+import schneaggchatv3mp.composeapp.generated.resources.no_status
+import schneaggchatv3mp.composeapp.generated.resources.status
+import schneaggchatv3mp.composeapp.generated.resources.status_infotext
+import schneaggchatv3mp.composeapp.generated.resources.status_nosemicolon
+import schneaggchatv3mp.composeapp.generated.resources.user_attributes_24px
 import schneaggchatv3mp.composeapp.generated.resources.user_settings
 import schneaggchatv3mp.composeapp.generated.resources.yes
 import schneaggchatv3mp.composeapp.generated.resources.your_friends_wrote_this
@@ -95,6 +101,9 @@ fun UserSettings(
     val ownuser = sharedSettingsViewmodel.ownUser
 
     var showChangeUsernamePopup by remember { mutableStateOf(false) }
+
+    var showChangeStatusPopup by remember { mutableStateOf(false) }
+
 
     var showImagePickerDialog by remember { mutableStateOf(false) }
     Box(modifier = Modifier.fillMaxSize()) {
@@ -184,7 +193,23 @@ fun UserSettings(
                 }
             )
 
-            //TODO: Status + Ändra
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+
+            //Status
+            SettingsOption(
+                icon = vectorResource(Res.drawable.user_attributes_24px),
+                text = stringResource(Res.string.status_nosemicolon),
+                subtext = if (ownuser?.status == null || ownuser.status.isEmpty()) {
+                    stringResource(Res.string.status_infotext)
+                } else {
+                    ownuser.status
+                },
+                onClick = {
+                    showChangeStatusPopup = true
+                }
+            )
+
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
@@ -297,9 +322,19 @@ fun UserSettings(
         ChangeUsernameAlert(
             onDismiss = { showChangeUsernamePopup = false },
             onSave = {
-                userSettingsViewModel.updateUsernameOnSever(it)
+                userSettingsViewModel.updateUsernameOnServer(it)
             },
             oldUsername = sharedSettingsViewmodel.ownUser?.name ?: "",
+        )
+    }
+
+    if (showChangeStatusPopup) {
+        ChangeStatusAlert(
+            onDismiss = {showChangeStatusPopup = false},
+            onSave = {
+                userSettingsViewModel.changeStatus(it)
+            },
+            oldStatus = ownuser?.status ?: ""
         )
     }
 
@@ -387,6 +422,94 @@ fun ChangeUsernameAlert(
                                 false // Pass all other events (letters, backspace, etc.) to the TextField
                             },
                         placeholder = { Text(stringResource(Res.string.change_username_placeholder)) }
+                    )
+
+                }
+            }
+
+        },
+    )
+}
+
+
+@Composable
+fun ChangeStatusAlert(
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit,
+    oldStatus: String
+
+){
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current // Also helpful to hide keyboard
+
+    var newStatus by remember {
+        mutableStateOf(oldStatus)
+    }
+    val scope = rememberCoroutineScope()
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (newStatus == oldStatus) {
+                        onDismiss()
+                    } else {
+                        onSave(newStatus)
+                        onDismiss()
+                    }
+
+                },
+            ) {
+                Text(
+                    text = stringResource(Res.string.change)
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+            ) {
+                Text(
+                    text = stringResource(Res.string.cancel)
+                )
+            }
+        },
+        title = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .pointerInput(Unit) {
+                        detectTapGestures(onTap = {
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
+                        })
+                    }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = stringResource(Res.string.change_status),
+                    )
+                    OutlinedTextField(
+                        value = newStatus,
+                        textStyle = MaterialTheme.typography.bodySmall.copy(
+                            fontSize = 14.sp // You can adjust this value as needed
+                        ),
+                        singleLine = true,
+                        onValueChange = { newValue ->
+                            newStatus = newValue
+                        },
+                        modifier = Modifier
+                            .onPreviewKeyEvent { event ->
+                                // Check if the key is 'Escape' and it's a 'KeyDown' event
+                                if (event.key == Key.Escape && event.type == KeyEventType.KeyDown) {
+                                    onDismiss()
+                                }
+                                false // Pass all other events (letters, backspace, etc.) to the TextField
+                            },
                     )
 
                 }
