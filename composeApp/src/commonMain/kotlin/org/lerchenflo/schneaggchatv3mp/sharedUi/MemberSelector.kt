@@ -184,6 +184,7 @@ fun MemberSelector(
                     lastMessage = null,
                     bottomTextOverride = "",
                     selected = selected,
+                    showNotiIcons = false,
                     onClickGes = {
                         if (selected) {
                             onUserDeselected(user)

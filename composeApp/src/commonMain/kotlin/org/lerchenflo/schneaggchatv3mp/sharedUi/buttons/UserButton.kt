@@ -64,6 +64,7 @@ fun UserButton(
     bottomTextOverride: String? = "",
     useOnClickGes: Boolean = true,
     selected: Boolean? = null,
+    showNotiIcons: Boolean = true,
     onClickGes: () -> Unit = {},  // Add click for everything
     onClickText: () -> Unit = {},  // Add click for name ...
     onClickImage: () -> Unit = {}  // Add click for image (profilepicture)
@@ -124,27 +125,29 @@ fun UserButton(
                 )
 
 
-                if (selectedChat.unsentMessageCount != 0){
-                    Badge(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    ){
-                        Text(
-                            text = "${selectedChat.unsentMessageCount}",
-                        )
+                if (showNotiIcons) {
+                    if (selectedChat.unsentMessageCount != 0){
+                        Badge(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        ){
+                            Text(
+                                text = "${selectedChat.unsentMessageCount}",
+                            )
+                        }
                     }
-                }
 
-                Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
 
-                if (selectedChat.unreadMessageCount != 0 && selectedChat.unreadMessageCount - selectedChat.unsentMessageCount != 0){
-                    Badge(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    ){
-                        Text(
-                            text = "${selectedChat.unreadMessageCount - selectedChat.unsentMessageCount}", // ungesendete messages sind no ned gleasa vo mir
-                        )
+                    if (selectedChat.unreadMessageCount != 0 && selectedChat.unreadMessageCount - selectedChat.unsentMessageCount != 0){
+                        Badge(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ){
+                            Text(
+                                text = "${selectedChat.unreadMessageCount - selectedChat.unsentMessageCount}", // ungesendete messages sind no ned gleasa vo mir
+                            )
+                        }
                     }
                 }
 

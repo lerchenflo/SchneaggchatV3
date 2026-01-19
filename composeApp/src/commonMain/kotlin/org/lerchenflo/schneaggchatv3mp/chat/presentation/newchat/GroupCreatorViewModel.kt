@@ -229,15 +229,20 @@ class GroupCreatorViewModel (
                 profilePic = state.profilepic!!
             )
 
-            println("Group created: groupid: $groupId")
+            //Group creation not failed
+            if (groupId != null) {
+                println("Group created: groupid: $groupId")
 
-            //Launch sync
-            CoroutineScope(Dispatchers.IO).launch {
-                appRepository.dataSync()
+                //Launch sync
+                CoroutineScope(Dispatchers.IO).launch {
+                    appRepository.dataSync()
+                }
+
+                //TODO: Navigate directly to group chat?
+                navigator.navigate(Route.ChatSelector, exitPreviousScreen = true)
             }
 
-            //TODO: Navigate directly to group chat?
-            navigator.navigate(Route.ChatSelector, exitPreviousScreen = true)
+
         }
     }
 
