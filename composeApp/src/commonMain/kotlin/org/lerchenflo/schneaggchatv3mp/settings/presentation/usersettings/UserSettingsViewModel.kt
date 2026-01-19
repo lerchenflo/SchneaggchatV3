@@ -2,10 +2,6 @@
 
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
@@ -15,12 +11,10 @@ import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.error_cannot_be_the_same_username
 import schneaggchatv3mp.composeapp.generated.resources.error_username_must_not_be_empty
 import schneaggchatv3mp.composeapp.generated.resources.please_restart_app
 import kotlin.time.Clock
@@ -65,7 +59,7 @@ class UserSettingsViewModel(
         SnackbarManager.showMessage("Verification email sent")
     }
 
-    fun updateUsernameOnSever(newUsername: String){
+    fun updateUsernameOnServer(newUsername: String){
 
         if(newUsername.isEmpty()){ // check if username is not empty
             viewModelScope.launch {
@@ -81,6 +75,13 @@ class UserSettingsViewModel(
 
     fun changeEmail(newEmail: String){
         //TODO: Change email
+    }
+
+    fun changeStatus(newStatus: String) {
+        viewModelScope.launch {
+            appRepository.changeUserStatusDescription(newStatus, newDescription = null, userId = SessionCache.getOwnIdValue() ?: "")
+            appRepository.dataSync()
+        }
     }
 
 
