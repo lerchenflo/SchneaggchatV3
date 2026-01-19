@@ -11,6 +11,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.PinDrop
+
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,11 +22,41 @@ import androidx.compose.ui.unit.em
 import org.jetbrains.compose.resources.imageResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.maplibre.compose.camera.rememberCameraState
+import org.maplibre.compose.expressions.ast.BitmapLiteral
+import org.maplibre.compose.expressions.ast.BooleanLiteral
+import org.maplibre.compose.expressions.ast.ColorLiteral
+import org.maplibre.compose.expressions.ast.CompiledFunctionCall
+import org.maplibre.compose.expressions.ast.CompiledListLiteral
+import org.maplibre.compose.expressions.ast.CompiledMapLiteral
+import org.maplibre.compose.expressions.ast.CompiledOptions
+import org.maplibre.compose.expressions.ast.DpLiteral
+import org.maplibre.compose.expressions.ast.DpOffsetLiteral
+import org.maplibre.compose.expressions.ast.DpPaddingLiteral
+import org.maplibre.compose.expressions.ast.EnumLiteral
+import org.maplibre.compose.expressions.ast.FloatLiteral
+import org.maplibre.compose.expressions.ast.FunctionCall
+import org.maplibre.compose.expressions.ast.IntLiteral
+import org.maplibre.compose.expressions.ast.ListLiteral
+import org.maplibre.compose.expressions.ast.MapLiteral
+import org.maplibre.compose.expressions.ast.MillisecondsLiteral
+import org.maplibre.compose.expressions.ast.NullLiteral
+import org.maplibre.compose.expressions.ast.OffsetLiteral
+import org.maplibre.compose.expressions.ast.Options
+import org.maplibre.compose.expressions.ast.PainterLiteral
+import org.maplibre.compose.expressions.ast.StringLiteral
+import org.maplibre.compose.expressions.ast.TextUnitCalculation
+import org.maplibre.compose.expressions.ast.TextUnitOffsetCalculation
+import org.maplibre.compose.expressions.dsl.Case
+import org.maplibre.compose.expressions.dsl.Feature.get
+import org.maplibre.compose.expressions.dsl.asString
+import org.maplibre.compose.expressions.dsl.case
 import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.format
 import org.maplibre.compose.expressions.dsl.image
 import org.maplibre.compose.expressions.dsl.offset
 import org.maplibre.compose.expressions.dsl.span
+import org.maplibre.compose.expressions.dsl.switch
+import org.maplibre.compose.expressions.value.StringValue
 import org.maplibre.compose.layers.SymbolLayer
 import org.maplibre.compose.map.GestureOptions
 import org.maplibre.compose.map.MapOptions
@@ -42,7 +73,9 @@ import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.toJson
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.filter
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap
 
 @Composable
 fun SchneaggmapScreenRoot() {
@@ -179,26 +212,73 @@ fun SchneaggmapScreen(
             ClickResult.Pass
         },
     ) {
-        // Add a GeoJSON source with your point
-        val source = GeoJsonSource(
-            id = "marker-source", data = GeoJsonData.JsonString(markers.toJson()),
+        val userSource = GeoJsonSource(
+            id = "user-locations-source",
+            data = GeoJsonData.JsonString(
+                state.getUserLocationFeatureCollection().toJson()
+            ),
             options = GeoJsonOptions()
         )
 
+        SymbolLayer(
+            id = "user-locations-layer",
+            source = userSource,
+            iconSize = const(0.25f),
+            iconImage = image(imageResource(Res.drawable.icon_nutzer)),
+            textField = format(
+                span(get("username").cast<StringValue>()),
+            ),
+            textFont = const(listOf("Noto Sans Regular")),
+            textSize = const(0.8.em),
+            textOffset = offset(0.em, 2.5.em),
+            onClick = { features ->
+                features.firstOrNull()?.let { feature ->
+                    val username = feature.properties?.get("username")
+                    val lastSeen = feature.properties?.get("lastSeen")
+                    println("User clicked: $username (last seen: $lastSeen)")
+                }
+                ClickResult.Consume
+            }
+        )
+
+
+        // Place locations layer
+        val placeSource = GeoJsonSource(
+            id = "place-locations-source",
+            data = GeoJsonData.JsonString(
+                state.getPlaceLocationFeatureCollection().toJson()
+            ),
+            options = GeoJsonOptions()
+        )
 
         SymbolLayer(
-            id = "test",
-            source = source,
+            id = "place-locations-layer",
+            source = placeSource,
             iconSize = const(0.2f),
-            iconImage = image(imageResource(Res.drawable.icon_nutzer)),
-            textField =
-                format(
-                    span("AWdawda "),
-                ),
+            // Use match expression to show different icons based on place type
+            textField = format(
+                span(get("name").cast<StringValue>()),
+            ),
+            iconImage = switch(
+                input = get("placeType").cast<StringValue>(),
+                case("RADARBOX", image(imageResource(Res.drawable.icon_nutzer))),
+                case("DOENER", image(imageResource(Res.drawable.icon_nutzer))),
+                case("PIZZA", image(imageResource(Res.drawable.icon_nutzer))),
+                fallback = image(imageResource(Res.drawable.icon_nutzer))
+            ),
             textFont = const(listOf("Noto Sans Regular")),
-            textSize = const(1.em),
+            textSize = const(0.7.em),
             textOffset = offset(0.em, 2.em),
+            onClick = { features ->
+                features.firstOrNull()?.let { feature ->
+                    val name = feature.properties?.get("name") as? String
+                    val placeType = feature.properties?.get("placeType") as? String
+                    println("Place clicked: $name (type: $placeType)")
+                }
+                ClickResult.Consume
+            }
         )
+
     }
 
 
