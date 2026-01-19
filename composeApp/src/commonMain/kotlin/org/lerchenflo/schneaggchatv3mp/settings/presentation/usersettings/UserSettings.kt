@@ -61,6 +61,7 @@ import org.lerchenflo.schneaggchatv3mp.URL_DEL_ACC
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
@@ -276,22 +277,13 @@ fun UserSettings(
 
             //Logoutdialog
             if (showLogoutDialog) {
-                AlertDialog(
-                    onDismissRequest = { showLogoutDialog = false },
-                    title = { Text(text = stringResource(Res.string.logout)) },
-                    text = { Text(text = stringResource(Res.string.are_you_sure_you_want_to_logout)) },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            showLogoutDialog = false
-                            userSettingsViewModel.logout()
-                        }) {
-                            Text(text = stringResource(Res.string.yes))
-                        }
+                ConfirmationDialog(
+                    message = stringResource(Res.string.are_you_sure_you_want_to_logout),
+                    onConfirm = {
+                        userSettingsViewModel.logout()
                     },
-                    dismissButton = {
-                        TextButton(onClick = { showLogoutDialog = false }) {
-                            Text(text = stringResource(Res.string.no))
-                        }
+                    onDismiss = {
+                        showLogoutDialog = false
                     }
                 )
             }

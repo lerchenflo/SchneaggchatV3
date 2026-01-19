@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.app_broken
@@ -84,23 +85,14 @@ fun MiscSettings(
         )
         // app kaputt dialog
         if (showAppBrokenDialog) {
-            AlertDialog(
-                onDismissRequest = { showAppBrokenDialog = false },
-                title = { Text(text = stringResource(Res.string.app_broken)) },
-                text = { Text(text = stringResource(Res.string.app_broken_are_you_sure)) },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showAppBrokenDialog = false
-                        miscSettingsViewModel.deleteAllAppData()
-
-                    }) {
-                        Text(text = stringResource(Res.string.yes))
-                    }
+            ConfirmationDialog(
+                message = stringResource(Res.string.app_broken_are_you_sure),
+                onConfirm = {
+                    miscSettingsViewModel.deleteAllAppData()
+                    showAppBrokenDialog = false
                 },
-                dismissButton = {
-                    TextButton(onClick = { showAppBrokenDialog = false }) {
-                        Text(text = stringResource(Res.string.no))
-                    }
+                onDismiss = {
+                    showAppBrokenDialog = false
                 }
             )
         }
