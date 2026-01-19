@@ -62,6 +62,9 @@ sealed interface Route : NavKey {
 
         @Serializable
         data object Undercover: Route, NavKey
+
+        @Serializable
+        data object TowerStack: Route, NavKey
     }
 }
 
