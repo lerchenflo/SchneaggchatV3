@@ -14,21 +14,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.koin.androidx.compose.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.GameAction
-import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.GameState
-import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.Platform
+import org.koin.compose.koinInject
 
 @Composable
 fun TowerStackScreen(
-    viewModel: TowerstackViewModel = koinViewModel()
+    viewModel: TowerstackViewModel = koinInject()
 ) {
     val gameState by viewModel.gameState.collectAsState()
     val colors = MaterialTheme.colorScheme

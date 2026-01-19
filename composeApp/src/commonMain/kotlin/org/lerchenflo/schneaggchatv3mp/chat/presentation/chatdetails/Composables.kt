@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -60,9 +59,9 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
-import org.lerchenflo.schneaggchatv3mp.sharedUi.MemberSelector
-import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureBigDialog
-import org.lerchenflo.schneaggchatv3mp.sharedUi.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_member

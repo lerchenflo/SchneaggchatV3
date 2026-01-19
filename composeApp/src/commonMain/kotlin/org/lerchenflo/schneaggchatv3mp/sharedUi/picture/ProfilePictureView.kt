@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.sharedUi
+package org.lerchenflo.schneaggchatv3mp.sharedUi.picture
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
