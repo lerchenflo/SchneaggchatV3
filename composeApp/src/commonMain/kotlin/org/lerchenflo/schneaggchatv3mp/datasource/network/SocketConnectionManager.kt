@@ -8,10 +8,14 @@ import io.ktor.websocket.Frame
 import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 
@@ -58,16 +62,11 @@ class SocketConnectionManager(
             if (currentConnection?.serverUrl != serverUrl) {
                 currentConnection?.close()
             }
-            
-            // Get auth token
-            val tokens = tokenManager.loadBearerTokens()
-            val authToken = tokens?.accessToken ?: return false
-            
+
             // Create WebSocket connection
             val connection = SocketConnection(
                 httpClient = httpClient,
                 serverUrl = serverUrl,
-                authToken = authToken,
                 onMessage = onMessage,
                 onError = onError,
                 onClose = onClose
@@ -98,6 +97,7 @@ class SocketConnectionManager(
      * Close current connection
      */
     suspend fun close() {
+        println("Closing socket connection")
         currentConnection?.close()
         currentConnection = null
     }
@@ -114,71 +114,69 @@ class SocketConnectionManager(
 private class SocketConnection(
     private val httpClient: HttpClient,
     val serverUrl: String,
-    private val authToken: String,
     private val onMessage: (String) -> Unit,
     private val onError: (Throwable) -> Unit,
     private val onClose: () -> Unit
 ) {
     private var session: WebSocketSession? = null
-    private var isActive = false
-    
+    private val _isActive = MutableStateFlow(false)
+
     suspend fun connect(): Boolean {
         return try {
-            httpClient.webSocket(
-                request = {
-                    url(serverUrl)
-
-                    /*
-                    headers {
-                        append("Authorization", "Bearer $authToken")
+            CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                httpClient.webSocket(
+                    request = {
+                        url(serverUrl)
                     }
+                ) {
+                    session = this
+                    _isActive.value = true
 
-                     */
-                }
-            ) {
-                session = this
-                isActive = true
-                
-                try {
-                    // Listen for incoming messages
-                    incoming.receiveAsFlow()
-                        .filterIsInstance<Frame.Text>()
-                        .map { it.readText() }
-                        .collect { message ->
-                            onMessage(message)
-                        }
-                } catch (e: Exception) {
-                    onError(e)
-                } finally {
-                    isActive = false
-                    onClose()
+                    try {
+                        incoming.receiveAsFlow()
+                            .filterIsInstance<Frame.Text>()
+                            .map { it.readText() }
+                            .collect { message ->
+                                onMessage(message)
+                            }
+                    } catch (e: Exception) {
+                        onError(e)
+                    } finally {
+                        _isActive.value = false
+                        session = null
+                        onClose()
+                    }
                 }
             }
-            true
+
+            // Wait for connection to establish
+            kotlinx.coroutines.delay(100)
+            _isActive.value
         } catch (e: Exception) {
             onError(e)
             false
         }
     }
-    
+
     suspend fun send(message: String): Boolean {
         return try {
-            session?.send(Frame.Text(message))
+            session?.send(Frame.Text(message)) ?: return false
             true
         } catch (e: Exception) {
             onError(e)
             false
         }
     }
-    
+
     suspend fun close() {
         try {
             session?.close()
-            isActive = false
+            _isActive.value = false
+            session = null
         } catch (e: Exception) {
             // Ignore close errors
         }
     }
-    
-    fun isActive(): Boolean = isActive
+
+    fun isActive(): Boolean = _isActive.value
 }
