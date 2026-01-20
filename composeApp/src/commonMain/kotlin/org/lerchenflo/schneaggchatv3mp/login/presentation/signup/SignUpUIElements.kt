@@ -73,6 +73,7 @@ import org.lerchenflo.schneaggchatv3mp.URL_PRIVACY
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt1
 import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt2
@@ -94,6 +95,7 @@ import schneaggchatv3mp.composeapp.generated.resources.tooltip_password_repeat
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_profile_picture
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_terms
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_username
+import schneaggchatv3mp.composeapp.generated.resources.unknown_error
 import schneaggchatv3mp.composeapp.generated.resources.username
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -532,14 +534,21 @@ fun DatePickerDialogPopup(
             }
         },
         confirmButton = {
+            val unknownErrorString = stringResource(Res.string.unknown_error)
             TextButton(
                 onClick = {
-                    // 3. Convert the selected milliseconds to LocalDate
-                    datePickerState.selectedDateMillis?.let { millis ->
-                        val instant = Instant.fromEpochMilliseconds(millis)
-                        val localDate = instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
-                        onDateSelected(localDate)
+
+                    try { // do isch die uf Iphone amol crasht
+                        // Convert the selected milliseconds to LocalDate
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val instant = Instant.fromEpochMilliseconds(millis)
+                            val localDate = instant.toLocalDateTime(TimeZone.UTC).date // TimeZone.currentSystemDefault() durch TimeZone.UTC ausgetauscht -> verhindert hoffentlich crash
+                            onDateSelected(localDate)
+                        }
+                    }catch (e: Exception){
+                        SnackbarManager.showMessage(e.message ?: unknownErrorString)
                     }
+
                     onDismiss()
                 }
             ) {
