@@ -11,7 +11,8 @@
     <string name="no_status">no status</string>
     <string name="unknown_user">unknown user</string>
 
-    <string name="status_infotext">This status is available to all your friends.</string>
+    <string name="status_infotext">This status is available to all your friends. Currently it is not set.</string>
+    <string name="currentstatus">Your current status: %1$s</string>
 
 
     <string name="go_back">go back</string>
