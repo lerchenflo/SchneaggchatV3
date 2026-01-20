@@ -1,23 +1,24 @@
-package org.lerchenflo.schneaggchatv3mp.datasource.network
+package org.lerchenflo.schneaggchatv3mp.datasource.network.socket
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.webSocket
-import io.ktor.client.request.headers
 import io.ktor.client.request.url
 import io.ktor.websocket.Frame
 import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 
 /**
  * Socket connection manager for real-time communication
@@ -25,8 +26,8 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
  */
 class SocketConnectionManager(
     private val httpClient: HttpClient,
-    private val tokenManager: TokenManager,
-    private val loggingRepository: LoggingRepository
+    private val loggingRepository: LoggingRepository,
+    private val appRepository: AppRepository
 ) {
 
     companion object {
@@ -53,7 +54,6 @@ class SocketConnectionManager(
      */
     suspend fun connect(
         serverUrl: String,
-        onMessage: (String) -> Unit,
         onError: (Throwable) -> Unit,
         onClose: () -> Unit
     ): Boolean {
@@ -67,7 +67,11 @@ class SocketConnectionManager(
             val connection = SocketConnection(
                 httpClient = httpClient,
                 serverUrl = serverUrl,
-                onMessage = onMessage,
+                onMessage = {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        handleMessage(it)
+                    }
+                },
                 onError = onError,
                 onClose = onClose
             )
@@ -91,6 +95,10 @@ class SocketConnectionManager(
      */
     suspend fun sendMessage(message: String): Boolean {
         return currentConnection?.send(message) ?: false
+    }
+
+    suspend fun handleMessage(message: String) {
+
     }
     
     /**
@@ -123,7 +131,7 @@ private class SocketConnection(
 
     suspend fun connect(): Boolean {
         return try {
-            CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+            CoroutineScope(Dispatchers.IO).launch {
                 httpClient.webSocket(
                     request = {
                         url(serverUrl)
@@ -150,7 +158,7 @@ private class SocketConnection(
             }
 
             // Wait for connection to establish
-            kotlinx.coroutines.delay(100)
+            delay(100)
             _isActive.value
         } catch (e: Exception) {
             onError(e)
