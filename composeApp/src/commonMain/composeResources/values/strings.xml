@@ -294,6 +294,7 @@
     <!-- Games -->
     <string name="games_dartcounter_title">Dartcounter</string>
     <string name="games_undercover_title">Undercover</string>
+    <string name="games_stack_tower">Stack Tower</string>
 
     <!-- Games: DartCounter -->
     <string name="dartcounter_add_players">Add Players</string>
