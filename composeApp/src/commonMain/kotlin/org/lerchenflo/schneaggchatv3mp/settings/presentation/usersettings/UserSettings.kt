@@ -1,7 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,7 +22,6 @@ import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -36,17 +34,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
 import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
@@ -61,6 +50,7 @@ import org.lerchenflo.schneaggchatv3mp.URL_DEL_ACC
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ChangeDialog
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
@@ -74,6 +64,7 @@ import schneaggchatv3mp.composeapp.generated.resources.change_status
 import schneaggchatv3mp.composeapp.generated.resources.change_username
 import schneaggchatv3mp.composeapp.generated.resources.change_username_description
 import schneaggchatv3mp.composeapp.generated.resources.change_username_placeholder
+import schneaggchatv3mp.composeapp.generated.resources.currentstatus
 import schneaggchatv3mp.composeapp.generated.resources.delete_account
 import schneaggchatv3mp.composeapp.generated.resources.email
 import schneaggchatv3mp.composeapp.generated.resources.emailinfo
@@ -204,7 +195,8 @@ fun UserSettings(
                 subtext = if (ownuser?.status == null || ownuser.status.isEmpty()) {
                     stringResource(Res.string.status_infotext)
                 } else {
-                    ownuser.status
+                    stringResource(Res.string.currentstatus, ownuser.status)
+
                 },
                 onClick = {
                     showChangeStatusPopup = true
@@ -311,202 +303,36 @@ fun UserSettings(
 
 
     if(showChangeUsernamePopup){
-        ChangeUsernameAlert(
+        val cannot_be_same_username_text = stringResource(Res.string.error_cannot_be_the_same_username)
+
+        ChangeDialog(
+            title = stringResource(Res.string.change_username),
+            initialValue = sharedSettingsViewmodel.ownUser?.name ?: "",
+            placeholder = stringResource(Res.string.change_username_placeholder),
             onDismiss = { showChangeUsernamePopup = false },
-            onSave = {
+            onConfirm = {
                 userSettingsViewModel.updateUsernameOnServer(it)
             },
-            oldUsername = sharedSettingsViewmodel.ownUser?.name ?: "",
+            confirmButtonText = stringResource(Res.string.change),
+            validator = { newValue ->
+                if (newValue == (sharedSettingsViewmodel.ownUser?.name ?: "")) {
+                    cannot_be_same_username_text
+                } else null
+            }
         )
     }
 
     if (showChangeStatusPopup) {
-        ChangeStatusAlert(
-            onDismiss = {showChangeStatusPopup = false},
-            onSave = {
+        ChangeDialog(
+            title = stringResource(Res.string.change_status),
+            initialValue = ownuser?.status ?: "",
+            onDismiss = { showChangeStatusPopup = false },
+            onConfirm = {
                 userSettingsViewModel.changeStatus(it)
             },
-            oldStatus = ownuser?.status ?: ""
+            confirmButtonText = stringResource(Res.string.change)
         )
     }
 
 
-}
-
-@Composable
-fun ChangeUsernameAlert(
-    onDismiss: () -> Unit,
-    onSave: (String) -> Unit,
-    oldUsername: String
-
-){
-    val focusManager = LocalFocusManager.current
-    val keyboardController = LocalSoftwareKeyboardController.current // Also helpful to hide keyboard
-
-    var newUsername by remember {
-        mutableStateOf(oldUsername)
-    }
-    val scope = rememberCoroutineScope()
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    if (newUsername == oldUsername) {
-                        scope.launch {
-                            SnackbarManager.showMessage(getString(Res.string.error_cannot_be_the_same_username))
-                        }
-                    } else {
-                        onSave(newUsername)
-                        onDismiss()
-                    }
-
-                },
-            ) {
-                Text(
-                    text = stringResource(Res.string.change)
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-            ) {
-                Text(
-                    text = stringResource(Res.string.cancel)
-                )
-            }
-        },
-        title = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .pointerInput(Unit) {
-                        detectTapGestures(onTap = {
-                            keyboardController?.hide()
-                            focusManager.clearFocus()
-                        })
-                    }
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        text = stringResource(Res.string.change_username),
-                    )
-                    OutlinedTextField(
-                        value = newUsername,
-                        textStyle = MaterialTheme.typography.bodySmall.copy(
-                            fontSize = 14.sp // You can adjust this value as needed
-                        ),
-                        singleLine = true,
-                        onValueChange = { newValue ->
-                            newUsername = newValue
-                        },
-                        modifier = Modifier
-                            .onPreviewKeyEvent { event ->
-                                // Check if the key is 'Escape' and it's a 'KeyDown' event
-                                if (event.key == Key.Escape && event.type == KeyEventType.KeyDown) {
-                                    onDismiss()
-                                }
-                                false // Pass all other events (letters, backspace, etc.) to the TextField
-                            },
-                        placeholder = { Text(stringResource(Res.string.change_username_placeholder)) }
-                    )
-
-                }
-            }
-
-        },
-    )
-}
-
-
-@Composable
-fun ChangeStatusAlert(
-    onDismiss: () -> Unit,
-    onSave: (String) -> Unit,
-    oldStatus: String
-
-){
-    val focusManager = LocalFocusManager.current
-    val keyboardController = LocalSoftwareKeyboardController.current // Also helpful to hide keyboard
-
-    var newStatus by remember {
-        mutableStateOf(oldStatus)
-    }
-    val scope = rememberCoroutineScope()
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    if (newStatus == oldStatus) {
-                        onDismiss()
-                    } else {
-                        onSave(newStatus)
-                        onDismiss()
-                    }
-
-                },
-            ) {
-                Text(
-                    text = stringResource(Res.string.change)
-                )
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-            ) {
-                Text(
-                    text = stringResource(Res.string.cancel)
-                )
-            }
-        },
-        title = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .pointerInput(Unit) {
-                        detectTapGestures(onTap = {
-                            keyboardController?.hide()
-                            focusManager.clearFocus()
-                        })
-                    }
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        text = stringResource(Res.string.change_status),
-                    )
-                    OutlinedTextField(
-                        value = newStatus,
-                        textStyle = MaterialTheme.typography.bodySmall.copy(
-                            fontSize = 14.sp // You can adjust this value as needed
-                        ),
-                        singleLine = true,
-                        onValueChange = { newValue ->
-                            newStatus = newValue
-                        },
-                        modifier = Modifier
-                            .onPreviewKeyEvent { event ->
-                                // Check if the key is 'Escape' and it's a 'KeyDown' event
-                                if (event.key == Key.Escape && event.type == KeyEventType.KeyDown) {
-                                    onDismiss()
-                                }
-                                false // Pass all other events (letters, backspace, etc.) to the TextField
-                            },
-                    )
-
-                }
-            }
-
-        },
-    )
 }
