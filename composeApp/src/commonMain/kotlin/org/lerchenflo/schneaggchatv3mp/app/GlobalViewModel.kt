@@ -69,7 +69,8 @@ class GlobalViewModel(
 
 
     suspend fun startSocketConnection() {
-        if (!socketConnectionManager.isConnected()){
+        println("Socketconnection connected: ${socketConnectionManager.isConnected()}")
+        if (!socketConnectionManager.isConnected() && SessionCache.isLoggedInValue()){
             socketConnectionManager.connect(
                 serverUrl = SocketConnectionManager.getSocketUrl(preferencemanager.getServerUrl()),
                 onMessage = {
