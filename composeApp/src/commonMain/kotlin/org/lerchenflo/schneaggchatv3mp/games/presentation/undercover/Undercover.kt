@@ -31,7 +31,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
+import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
 import schneaggchatv3mp.composeapp.generated.resources.undercover_add
 import schneaggchatv3mp.composeapp.generated.resources.undercover_autohide_enabled
 import schneaggchatv3mp.composeapp.generated.resources.undercover_autohide_title
@@ -76,25 +79,29 @@ import schneaggchatv3mp.composeapp.generated.resources.undercover_word_guess_lab
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Undercover(
+    onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val viewModel = koinInject<UndercoverViewModel>()
     val state = viewModel.state
 
-    Scaffold { innerPadding ->
+    Scaffold {
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .padding(16.dp)
         ) {
+            ActivityTitle(
+                title = stringResource(Res.string.games_undercover_title),
+                onBackClick = onBackClick
+            )
             when (state.phase) {
                 UndercoverViewModel.Phase.SETUP -> {
-                    Text(
-                        text = stringResource(Res.string.undercover_title),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
+                    //Text(
+                    //    text = stringResource(Res.string.undercover_title),
+                   //     style = MaterialTheme.typography.headlineSmall,
+                    //    fontWeight = FontWeight.Bold
+                    //)
                    
                     Spacer(Modifier.height(12.dp))
 

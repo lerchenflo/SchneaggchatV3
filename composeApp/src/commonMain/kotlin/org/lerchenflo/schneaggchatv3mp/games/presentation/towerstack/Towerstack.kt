@@ -17,37 +17,50 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.koin.androidx.compose.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.GameAction
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.GameState
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.Platform
 
 @Composable
 fun TowerStackScreen(
-    viewModel: TowerstackViewModel = koinViewModel()
+    viewModel: TowerstackViewModel = koinViewModel(),
+    onBackClick: () -> Unit = {}
 ) {
     val gameState by viewModel.gameState.collectAsState()
     val colors = MaterialTheme.colorScheme
     
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.background)
-            .clickable {
-                if (!gameState.isGameStarted) {
-                    viewModel.onAction(GameAction.StartGame)
-                } else if (!gameState.isGameOver) {
-                    viewModel.onAction(GameAction.PlacePlatform)
-                } else {
-                    viewModel.onAction(GameAction.ResetGame)
-                }
-            },
-        contentAlignment = Alignment.Center
     ) {
+        ActivityTitle(
+            title = "Tower Stack",
+            onBackClick = onBackClick
+        )
+        
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f)
+                .background(colors.background)
+                .clickable {
+                    if (!gameState.isGameStarted) {
+                        viewModel.onAction(GameAction.StartGame)
+                    } else if (!gameState.isGameOver) {
+                        viewModel.onAction(GameAction.PlacePlatform)
+                    } else {
+                        viewModel.onAction(GameAction.ResetGame)
+                    }
+                },
+            contentAlignment = Alignment.Center
+        ) {
         if (!gameState.isGameStarted) {
             StartScreen()
         } else {
@@ -55,6 +68,7 @@ fun TowerStackScreen(
                 gameState = gameState,
                 onReset = { viewModel.onAction(GameAction.ResetGame) }
             )
+        }
         }
     }
 }
@@ -271,6 +285,7 @@ private fun GameContent(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp),
+                                //.pointerInput(block = Unit),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = colors.primary,
                                 contentColor = colors.onPrimary

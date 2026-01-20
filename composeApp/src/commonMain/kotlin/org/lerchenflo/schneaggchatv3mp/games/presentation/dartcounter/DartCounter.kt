@@ -23,6 +23,7 @@ import androidx.lifecycle.ViewModel
 import androidx.compose.ui.window.Dialog
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_add
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_add_players
@@ -53,6 +54,7 @@ import schneaggchatv3mp.composeapp.generated.resources.dartcounter_stop_game_con
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_start_game
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_undo
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_winners_format
+import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
 import kotlin.math.round
 
 @Preview(
@@ -61,7 +63,9 @@ import kotlin.math.round
 )
 
 @Composable
-fun DartCounter() {
+fun DartCounter(
+    onBackClick: () -> Unit = {}
+) {
     val viewmodel = koinInject<DartCounterViewModel>()
     
     Column(
@@ -69,6 +73,10 @@ fun DartCounter() {
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        ActivityTitle(
+            title = stringResource(Res.string.games_dartcounter_title),
+            onBackClick = onBackClick
+        )
         // Top buttons row
         Row(
             modifier = Modifier
