@@ -5,6 +5,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AdsClick
+import androidx.compose.material.icons.filled.Blind
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
@@ -52,6 +56,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameScreenElement
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
@@ -77,6 +83,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
+import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
 
 
@@ -471,48 +478,42 @@ fun App() {
                         entry<Route.Games> {
                             //TODO: Shared games viewmodel for game selection
 
+                            var gamesList = listOf<GameScreenElement>(
+                                GameScreenElement(
+                                    title = stringResource(Res.string.games_dartcounter_title),
+                                    icon = Icons.Default.AdsClick, // ma darf sich gern was besseres usdenka
+                                    route = Route.Games.DartCounter
+                                ),
+                                GameScreenElement(
+                                    title = stringResource(Res.string.games_undercover_title),
+                                    icon = Icons.Default.Blind, // todo i hab noch ned verstanda um was es in deam spiel goht
+                                    route = Route.Games.Undercover
+                                ),
+                                GameScreenElement(
+                                    title = stringResource(Res.string.games_stack_tower),
+                                    icon = Icons.Default.Menu, //
+                                    route = Route.Games.TowerStack
+                                ),
+
+                            )
                             NavDisplay(
                                 backStack = gamesBackStack,
                                 entryProvider = entryProvider {
                                     entry <Route.Games.GamesSelector> {
-                                        //TODO: Game selection screen
-                                        Column{
-                                            Button(
-                                                onClick = {
-                                                    scope.launch {
-                                                        gamesBackStack.add(Route.Games.DartCounter)
-                                                    }
+                                        GameSelectorScreen(
+                                            onBackClick = {
+                                                scope.launch {
+                                                    navigator.navigateBack() //Settings backstack gets cleared automatically
                                                 }
-                                            ){
-                                                Text(
-                                                    text = stringResource(Res.string.games_dartcounter_title)
-                                                )
-                                            }
+                                            },
+                                            onGameSelection = {
+                                                scope.launch {
+                                                    gamesBackStack.add(it)
+                                                }
+                                            },
+                                            gamesList = gamesList
+                                        )
 
-                                            Button(
-                                                onClick = {
-                                                    scope.launch {
-                                                        gamesBackStack.add(Route.Games.Undercover)
-                                                    }
-                                                }
-                                            ){
-                                                Text(
-                                                    text = stringResource(Res.string.games_undercover_title)
-                                                )
-                                            }
-
-                                            Button(
-                                                onClick = {
-                                                    scope.launch {
-                                                        gamesBackStack.add(Route.Games.TowerStack)
-                                                    }
-                                                }
-                                            ){
-                                                Text(
-                                                    text = "Tower Stack"
-                                                )
-                                            }
-                                        }
                                     }
 
                                     entry <Route.Games.DartCounter> {
