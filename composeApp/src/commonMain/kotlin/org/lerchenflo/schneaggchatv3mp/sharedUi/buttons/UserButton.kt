@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.filled.CallReceived
 import androidx.compose.material.icons.automirrored.outlined.CallMade
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
+import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -155,6 +157,18 @@ fun UserButton(
                             )
                         }
                     }
+                }
+
+                if (selectedChat.pinned > 0L) {
+                    Icon(
+                        imageVector = Icons.Default.PushPin,
+                        contentDescription = "pinned",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(18.dp)
+                            .rotate(45f) // Rotates the pin to look like it's sticking in
+                            .padding(end = 4.dp)
+                    )
                 }
 
                 // an hocka daneabad zum azoaga dass ma dean usgwählt hot

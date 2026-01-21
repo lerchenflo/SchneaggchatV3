@@ -25,11 +25,14 @@ import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MarkAsUnread
 import androidx.compose.material.icons.filled.Pin
+import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.DropdownMenu
@@ -96,6 +99,7 @@ import schneaggchatv3mp.composeapp.generated.resources.pin_chat
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap
 import schneaggchatv3mp.composeapp.generated.resources.search_friend
 import schneaggchatv3mp.composeapp.generated.resources.settings
+import schneaggchatv3mp.composeapp.generated.resources.unpin_chat
 
 @OptIn(ExperimentalMaterial3Api::class) // PullToRefreshBox is experimental
 @Preview
@@ -493,7 +497,9 @@ fun Chatauswahlscreen(
                                 selectedChat = gegner,
                                 onDismissRequest = { userOptionDropdownExpanded = false },
                                 onPin = { viewModel.pinUnpinChat(gegner) },
-                                onMarkAsUnread = { TODO() },
+                                onMarkAsUnread = {
+
+                                },
                                 onOpenChatDetails = { TODO() },
                             )
                         }
@@ -567,20 +573,31 @@ fun UserOptionDropdown(
             // todo unpin when pinned
             DropdownMenuItem(
                 text = {
-                    Text(stringResource(Res.string.pin_chat))
+                    if(selectedChat.pinned > 0L)
+                        Text(stringResource(Res.string.unpin_chat))
+                        else Text(stringResource(Res.string.pin_chat))
                        },
                 onClick = {
                     onPin()
                     onDismissRequest()
                 },
                 leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Lock, // todo bessere icon
-                        contentDescription = null
-                    )
+                    if(selectedChat.pinned > 0L)
+                    {
+                        Icon(
+                            imageVector = Icons.Outlined.PushPin,
+                            contentDescription = null
+                        )
+                    }else{
+                        Icon(
+                            imageVector = Icons.Filled.PushPin,
+                            contentDescription = null
+                        )
+                    }
+
                 }
             )
-
+/*
             DropdownMenuItem(
                 text = { Text(stringResource(Res.string.mark_as_unread)) },
                 onClick = {
@@ -594,7 +611,10 @@ fun UserOptionDropdown(
                     )
                 }
             )
+            
+ */
 
+            /* // für Chatdetails
             DropdownMenuItem(
                 text = { Text(stringResource(Res.string.more_info)) },
                 onClick = {
@@ -608,6 +628,8 @@ fun UserOptionDropdown(
                     )
                 }
             )
+
+             */
 
         }
     }
