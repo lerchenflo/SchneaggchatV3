@@ -19,6 +19,7 @@ interface SelectedChat {
     val unreadMessageCount: Int
     val unsentMessageCount: Int
     val lastmessage: Message?
+    val pinned: Long
 }
 
 data class NotSelected(
@@ -32,7 +33,8 @@ data class NotSelected(
     override val unsentMessageCount: Int = 0,
     override val lastmessage: Message? = null,
     override val friendshipStatus: NetworkUtils.FriendshipStatus? = null,
-    override val requesterId: String? = null
+    override val requesterId: String? = null,
+    override val pinned: Long = 0L
 ) : SelectedChat
 
 // Create wrapper for User that implements SelectedChat
@@ -47,6 +49,7 @@ data class UserChat(
     override val lastmessage: Message?,
     override val friendshipStatus: NetworkUtils.FriendshipStatus?,
     override val requesterId: String?,
+    override val pinned: Long = 0L,
 
     val commonGroups : List<Group> = emptyList()
 ) : SelectedChat {
@@ -65,6 +68,7 @@ data class GroupChat(
     override val lastmessage: Message?,
     override val friendshipStatus: NetworkUtils.FriendshipStatus? = null,
     override val requesterId: String? = null,
+    override val pinned: Long = 0L,
 
     val groupMembersWithUsers : List<GroupMemberWithUser> = emptyList() //For chat details
 ) : SelectedChat {
@@ -79,7 +83,8 @@ fun SelectedChat.isNotSelected(): Boolean = this is NotSelected
 fun User.toSelectedChat(
     unreadCount: Int,
     unsentCount: Int,
-    lastMessage: Message?
+    lastMessage: Message?,
+    pinned: Long = 0L
 ): UserChat = UserChat(
     id = this.id,
     name = this.name,
@@ -90,14 +95,17 @@ fun User.toSelectedChat(
     unsentMessageCount = unsentCount,
     lastmessage = lastMessage,
     friendshipStatus = this.friendshipStatus,
-    requesterId = this.requesterId
+    requesterId = this.requesterId,
+    pinned = pinned
+
 )
 
 // Extension function to convert GroupWithMembers to GroupChat
 fun Group.toSelectedChat(
     unreadCount: Int,
     unsentCount: Int,
-    lastMessage: Message?
+    lastMessage: Message?,
+    pinned: Long = 0L
 ): GroupChat = GroupChat(
     id = this.id,
     name = this.name,
@@ -106,7 +114,8 @@ fun Group.toSelectedChat(
     description = this.description,
     unreadMessageCount = unreadCount,
     unsentMessageCount = unsentCount,
-    lastmessage = lastMessage
+    lastmessage = lastMessage,
+    pinned = pinned
 )
 
 fun SelectedChat.toGroup(): GroupChat? =

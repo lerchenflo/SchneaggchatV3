@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.sharedUi.buttons
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -52,6 +53,7 @@ import schneaggchatv3mp.composeapp.generated.resources.you_sender
  * @param useOnClickGes select one OnClickListener for everything or separate listeners for text and Image
  * @param onClickGes OnClickListener for everything
  * @param onClickText OnClickListener only for the Text
+ * @param onLongClickText OnLongClickListener only for the Text
  * @param onClickImage OnClickListener only for the Image (profile picture)
  */
 
@@ -67,6 +69,7 @@ fun UserButton(
     showNotiIcons: Boolean = true,
     onClickGes: () -> Unit = {},  // Add click for everything
     onClickText: () -> Unit = {},  // Add click for name ...
+    onLongClickText: () -> Unit = {}, // Add long click for name ...
     onClickImage: () -> Unit = {}  // Add click for image (profilepicture)
 ) {
     var modifierGes = Modifier
@@ -104,7 +107,10 @@ fun UserButton(
             .fillMaxHeight()
             .weight(1f)
         if(!useOnClickGes){
-            modifierInfo = modifierInfo.clickable {onClickText()} // onclick to open chat
+            modifierInfo = modifierInfo.combinedClickable(
+                onClick = onClickText,
+                onLongClick = onLongClickText
+            ) // onclick to open chat
         }
         Column(
             modifier = modifierInfo,

@@ -324,8 +324,9 @@ class AppRepository(
         val messagesFlow = messageRepository.getAllMessages()
         val usersFlow = userRepository.getAllUsersFlow()
         val groupsFlow = groupRepository.getAllGroupswithMembersFlow()
+        val pinnedFlow = preferencemanager.getPinnedChatsFlow()
 
-        return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
+        return combine(messagesFlow, usersFlow, groupsFlow, pinnedFlow) { messages, users, groups, pinnedList ->
 
             val loweredSearch = searchTerm.trim().lowercase()
             val ownId = SessionCache.ownId
@@ -334,6 +335,7 @@ class AppRepository(
             val messagesByUser = mutableMapOf<String, MutableList<Message>>()
             val messagesByGroup = mutableMapOf<String, MutableList<Message>>()
             val userIdMap = users.associateBy { it.id }
+            val pinnedMap = pinnedList.associate { it.chatId to it.pinTimePoint }
 
             // Single pass through messages to build indexes
             messages.forEach { msg ->
@@ -381,7 +383,8 @@ class AppRepository(
                     user.toSelectedChat(
                         unreadCount = unreadCount,
                         unsentCount = unsentCount,
-                        lastMessage = last
+                        lastMessage = last,
+                        pinned = pinnedMap[user.id] ?: 0L
                     )
                 }
                 .toList()
@@ -412,7 +415,8 @@ class AppRepository(
                     gwm.toSelectedChat(
                         unreadCount = unreadCount,
                         unsentCount = unsentCount,
-                        lastMessage = last
+                        lastMessage = last,
+                        pinned = pinnedMap[gwm.id] ?: 0L
                     )
                 }
                 .toList()
@@ -426,7 +430,26 @@ class AppRepository(
                 ChatFilter.PERSONS -> allItems.filter { !it.isGroup }
             }
 
-            filtered.sortedByDescending { it.lastmessage?.getSendDateAsLong() ?: 0L }
+            //filtered.sortedByDescending { it.lastmessage?.getSendDateAsLong() ?: 0L }
+            filtered.sortedWith { a, b ->
+                when {
+                    // Case 1: Both are pinned -> Sort by pin timestamp (newest first)
+                    a.pinned > 0L && b.pinned > 0L -> b.pinned.compareTo(a.pinned)
+
+                    // Case 2: Only A is pinned -> A comes first
+                    a.pinned > 0L -> -1
+
+                    // Case 3: Only B is pinned -> B comes first
+                    b.pinned > 0L -> 1
+
+                    // Case 4: Neither is pinned -> Sort by last message date
+                    else -> {
+                        val timeA = a.lastmessage?.getSendDateAsLong() ?: 0L
+                        val timeB = b.lastmessage?.getSendDateAsLong() ?: 0L
+                        timeB.compareTo(timeA)
+                    }
+                }
+            }
 
         }.flowOn(Dispatchers.Default)
     }

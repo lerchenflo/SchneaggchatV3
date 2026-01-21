@@ -22,8 +22,12 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.MarkAsUnread
+import androidx.compose.material.icons.filled.Pin
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Badge
@@ -73,6 +77,7 @@ import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
@@ -84,7 +89,10 @@ import schneaggchatv3mp.composeapp.generated.resources.chat_add_on_24px
 import schneaggchatv3mp.composeapp.generated.resources.filter
 import schneaggchatv3mp.composeapp.generated.resources.loadinginfo_messages
 import schneaggchatv3mp.composeapp.generated.resources.loadinginfo_offline
+import schneaggchatv3mp.composeapp.generated.resources.mark_as_unread
+import schneaggchatv3mp.composeapp.generated.resources.more_info
 import schneaggchatv3mp.composeapp.generated.resources.no_friends_found_search
+import schneaggchatv3mp.composeapp.generated.resources.pin_chat
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap
 import schneaggchatv3mp.composeapp.generated.resources.search_friend
 import schneaggchatv3mp.composeapp.generated.resources.settings
@@ -459,19 +467,34 @@ fun Chatauswahlscreen(
                             items = availablegegners,
                             key = {"${it.id}_${it.isGroup}"}
                         ) { gegner ->
+                            var userOptionDropdownExpanded by remember{mutableStateOf(false)}
+
                             UserButton(
                                 selectedChat = gegner,
                                 useOnClickGes = false,
                                 lastMessage = gegner.lastmessage,
                                 onClickText = { viewModel.onChatSelected(gegner) },
+                                onLongClickText = {
+                                    userOptionDropdownExpanded = true
+                                },
                                 onClickImage = {
                                     //TODO: Fix for empty images (No profilepic)
                                     profilePictureDialogShown = true
                                     profilePictureFilePathTemp = gegner.profilePictureUrl
-                                }
+                                },
+
                             )
                             HorizontalDivider(
                                 thickness = 0.5.dp
+                            )
+
+                            if (userOptionDropdownExpanded) UserOptionDropdown(
+                                expanded = userOptionDropdownExpanded,
+                                selectedChat = gegner,
+                                onDismissRequest = { userOptionDropdownExpanded = false },
+                                onPin = { viewModel.pinUnpinChat(gegner) },
+                                onMarkAsUnread = { TODO() },
+                                onOpenChatDetails = { TODO() },
                             )
                         }
                     }
@@ -522,3 +545,70 @@ fun Chatauswahlscreen(
 }
 
 
+@Composable
+fun UserOptionDropdown(
+    expanded: Boolean,
+    selectedChat: SelectedChat,
+    onDismissRequest: () -> Unit,
+    onPin: () -> Unit,
+    onMarkAsUnread: () -> Unit,
+    onOpenChatDetails: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier,
+        // contentAlignment = if (myMessage) Alignment.TopEnd else Alignment.TopStart
+    ) {
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = onDismissRequest,
+            modifier = modifier
+        ) {
+            // todo unpin when pinned
+            DropdownMenuItem(
+                text = {
+                    Text(stringResource(Res.string.pin_chat))
+                       },
+                onClick = {
+                    onPin()
+                    onDismissRequest()
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Lock, // todo bessere icon
+                        contentDescription = null
+                    )
+                }
+            )
+
+            DropdownMenuItem(
+                text = { Text(stringResource(Res.string.mark_as_unread)) },
+                onClick = {
+                    onMarkAsUnread()
+                    onDismissRequest()
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.MarkAsUnread,
+                        contentDescription = null
+                    )
+                }
+            )
+
+            DropdownMenuItem(
+                text = { Text(stringResource(Res.string.more_info)) },
+                onClick = {
+                    onOpenChatDetails()
+                    onDismissRequest()
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null
+                    )
+                }
+            )
+
+        }
+    }
+}

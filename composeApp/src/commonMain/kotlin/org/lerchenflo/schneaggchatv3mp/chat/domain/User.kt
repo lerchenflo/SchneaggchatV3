@@ -31,6 +31,7 @@ data class User(
     override val unreadMessageCount: Int = 0,
     override val unsentMessageCount: Int = 0,
     override val lastmessage: Message? = null,
+    override val pinned: Long = 0L,
 ) : SelectedChat {
     override val isGroup: Boolean
         get() = false
@@ -64,7 +65,8 @@ data class User(
             unreadMessageCount=$unreadMessageCount,
             unsentMessageCount=$unsentMessageCount,
             lastmessage=$lastmessage,
-            isGroup=$isGroup
+            isGroup=$isGroup,
+            pinned=$pinned,
         )
     """.trimIndent()
     }

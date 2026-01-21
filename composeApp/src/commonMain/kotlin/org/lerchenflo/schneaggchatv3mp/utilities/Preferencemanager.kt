@@ -40,7 +40,8 @@ enum class PreferenceKey {
     THEME,
     LANGUAGE,
     SERVERURL,
-    DEVELOPERSETTINGS
+    DEVELOPERSETTINGS,
+    PINNEDCHATS
 }
 
 enum class ThemeSetting {
@@ -89,6 +90,11 @@ enum class LanguageSetting {
         VORI -> "de-at"
     }
 }
+
+class PinnedChat(
+    val chatId: String,
+    val pinTimePoint: Long
+)
 
 class Preferencemanager(
     private val pref: DataStore<Preferences>
@@ -266,4 +272,53 @@ class Preferencemanager(
     fun getDevSettingsFlow(): Flow<Boolean> = pref.data.map { prefs ->
         prefs[booleanPreferencesKey(PreferenceKey.DEVELOPERSETTINGS.toString())] ?: false
     }.flowOn(Dispatchers.IO)
+
+    private val pinnedChatsKey = androidx.datastore.preferences.core.stringSetPreferencesKey(PreferenceKey.PINNEDCHATS.toString())
+
+    // ADD or UPDATE a pinned chat
+    suspend fun addPinnedChat(chat: PinnedChat) {
+        pref.edit { datastore ->
+            val currentSet = datastore[pinnedChatsKey] ?: emptySet()
+            // Remove existing entry for this ID if it exists to avoid duplicates
+            val newSet = currentSet.filterNot { it.startsWith("${chat.chatId}|") }.toMutableSet()
+            newSet.add(chat.toStoredString())
+            datastore[pinnedChatsKey] = newSet
+        }
+    }
+
+    // DELETE a pinned chat by ID
+    suspend fun removePinnedChat(chatId: String) {
+        pref.edit { datastore ->
+            val currentSet = datastore[pinnedChatsKey] ?: emptySet()
+            val newSet = currentSet.filterNot { it.startsWith("$chatId|") }.toSet()
+            datastore[pinnedChatsKey] = newSet
+        }
+    }
+
+    // GET as a Flow
+    fun getPinnedChatsFlow(): Flow<List<PinnedChat>> = pref.data.map { prefs ->
+        val set = prefs[pinnedChatsKey] ?: emptySet()
+        set.mapNotNull { it.toPinnedChat() }
+            .sortedByDescending { it.pinTimePoint } // Usually you want the newest pins first
+    }.flowOn(Dispatchers.IO)
+
+    // GET one-time read
+    suspend fun getPinnedChats(): List<PinnedChat> {
+        return with(dispatcher) {
+            val prefs = pref.data.first()
+            val set = prefs[pinnedChatsKey] ?: emptySet()
+            set.mapNotNull { it.toPinnedChat() }.sortedByDescending { it.pinTimePoint }
+        }
+    }
+}
+
+private fun PinnedChat.toStoredString(): String = "$chatId|$pinTimePoint"
+
+private fun String.toPinnedChat(): PinnedChat? {
+    val parts = this.split("|")
+    if (parts.size < 2) return null
+    return PinnedChat(
+        chatId = parts[0],
+        pinTimePoint = parts[1].toLongOrNull() ?: 0L
+    )
 }
