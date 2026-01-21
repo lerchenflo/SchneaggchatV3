@@ -244,6 +244,7 @@
     <string name="unpin_chat">unpin Chat</string>
     <string name="mark_as_unread">mark as unread</string>
     <string name="more_info">more info</string>
+    <string name="edit_profile_picture">edit profile picture</string>
 
     <string name="admin">Admin</string>
 
@@ -265,6 +266,8 @@
     <string name="change_username_placeholder">new username ...</string>
 
     <string name="change_status">Change status</string>
+    <string name="change_email">Change email</string>
+    <string name="resend_verification">resend verification</string>
 
 
     <string name="common_groups">Common groups (%1$s)</string>

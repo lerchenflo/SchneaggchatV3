@@ -611,7 +611,7 @@ fun UserOptionDropdown(
                     )
                 }
             )
-            
+
  */
 
             /* // für Chatdetails

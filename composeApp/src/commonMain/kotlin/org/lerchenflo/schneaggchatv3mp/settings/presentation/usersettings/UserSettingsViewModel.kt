@@ -74,7 +74,7 @@ class UserSettingsViewModel(
     }
 
     fun changeEmail(newEmail: String){
-        //TODO: Change email
+        // todo
     }
 
     fun changeStatus(newStatus: String) {
