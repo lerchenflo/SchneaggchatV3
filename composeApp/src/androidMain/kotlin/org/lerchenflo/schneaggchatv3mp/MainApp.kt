@@ -1,18 +1,13 @@
 package org.lerchenflo.schneaggchatv3mp
 
 import android.app.Application
-import com.mmk.kmpnotifier.extensions.onCreateOrOnNewIntent
 import com.mmk.kmpnotifier.notification.NotifierManager
-import com.mmk.kmpnotifier.notification.PayloadData
 import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfiguration
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.koin.android.ext.koin.androidContext
-import org.koin.core.context.startKoin
+import org.koin.core.context.GlobalContext.startKoin
 import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.androidApp.R
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogType
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.di.androidDataStoreModule
@@ -64,25 +59,25 @@ class MainApp: Application() {
                 )
             }
 
-
-
-
             defaultHandler?.uncaughtException(thread, throwable)
         }
-
 
         //Firebase init
         NotifierManager.initialize(
             configuration = NotificationPlatformConfiguration.Android(
-                notificationIconResId = R.drawable.ic_schneaggcchat_v3,
+                notificationIconResId = org.lerchenflo.androidApp.R.drawable.ic_schne,
                 showPushNotification = true
             )
         )
+
+        println("Logo resid: $")
 
         //Initialize notificationmanager to catch payload in common code
         NotificationManager.initialize()
 
         println("Android firebase init fertig")
+
+
     }
 
     private fun getFullStackTrace(throwable: Throwable): String {
