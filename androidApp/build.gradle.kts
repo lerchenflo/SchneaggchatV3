@@ -2,7 +2,6 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.kotlin.android)
     id("com.google.gms.google-services")
 
 }
