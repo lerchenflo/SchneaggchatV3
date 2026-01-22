@@ -51,6 +51,14 @@ class ChatDetailsViewmodel(
 
 
     init {
+        if (globalViewModel.selectedChat.value.isNotSelected()) {
+            println("No selectedgegner, leaving chatdetails")
+            viewModelScope.launch {
+                navigator.navigateBack()
+            }
+        }
+
+
         if (globalViewModel.selectedChat.value.isGroup) {
             viewModelScope.launch {
                 appRepository.getFriendsFlow("").collectLatest { allFriends ->

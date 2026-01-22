@@ -67,7 +67,9 @@ fun DartCounter(
     onBackClick: () -> Unit = {}
 ) {
     val viewmodel = koinInject<DartCounterViewModel>()
-    
+
+    // todo: he manu du musch noch an backbutton ine tua sunsch sind die Iphone user stuck
+
     Column(
         modifier = Modifier
             .fillMaxSize()
