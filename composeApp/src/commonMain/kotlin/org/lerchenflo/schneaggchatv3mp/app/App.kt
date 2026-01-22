@@ -517,15 +517,33 @@ fun App() {
                                     }
 
                                     entry <Route.Games.DartCounter> {
-                                        DartCounter()
+                                        DartCounter(
+                                            onBackClick = {
+                                                if (gamesBackStack.size > 1){
+                                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                                }
+                                            }
+                                        )
                                     }
 
                                     entry <Route.Games.Undercover> {
-                                        Undercover()
+                                        Undercover(
+                                            onBackClick = {
+                                                if (gamesBackStack.size > 1){
+                                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                                }
+                                            }
+                                        )
                                     }
 
                                     entry <Route.Games.TowerStack> {
-                                        TowerStackScreen()
+                                        TowerStackScreen(
+                                            onBackClick = {
+                                                if (gamesBackStack.size > 1){
+                                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                                }
+                                            }
+                                        )
                                     }
                                 }
                             )
