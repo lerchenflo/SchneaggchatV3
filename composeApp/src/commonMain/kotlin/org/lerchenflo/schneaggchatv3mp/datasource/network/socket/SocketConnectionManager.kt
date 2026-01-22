@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 
@@ -27,7 +28,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 class SocketConnectionManager(
     private val httpClient: HttpClient,
     private val loggingRepository: LoggingRepository,
-    private val appRepository: AppRepository
+    private val appRepository: AppRepository,
+    private val messageRepository: MessageRepository
 ) {
 
     companion object {
@@ -69,7 +71,7 @@ class SocketConnectionManager(
                 serverUrl = serverUrl,
                 onMessage = {
                     CoroutineScope(Dispatchers.IO).launch {
-                        handleMessage(it)
+                        handleRemoteMessage(it)
                     }
                 },
                 onError = onError,
@@ -97,8 +99,11 @@ class SocketConnectionManager(
         return currentConnection?.send(message) ?: false
     }
 
-    suspend fun handleMessage(message: String) {
-
+    suspend fun handleRemoteMessage(message: String) {
+        //TODO flo deserialize message etc
+//        when (message) {
+//            messageRepository.upsertMessage()
+//        }
     }
     
     /**

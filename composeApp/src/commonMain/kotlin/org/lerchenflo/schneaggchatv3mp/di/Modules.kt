@@ -74,7 +74,7 @@ val sharedmodule = module{
 
     // Socket Connection Manager
     single<SocketConnectionManager> {
-        SocketConnectionManager(get(named("api")), get(), get())
+        SocketConnectionManager(get(named("api")), get(), get(), get())
     }
 
 
