@@ -1,8 +1,6 @@
 [versions]
 agp = "9.0.0"
-android-compileSdk = "36"
-android-minSdk = "26"
-android-targetSdk = "36"
+
 androidx-activity = "1.12.2"
 
 androidx-lifecycle = "2.10.0-alpha07"
@@ -30,7 +28,7 @@ kotlinx-datetime = "0.7.1"
 
 koin-core = "4.1.1"
 koin-annotations = "2.3.1"
-ktor = "3.3.3"
+ktor = "3.4.0"
 adaptive = "1.2.0"
 datastore = "1.2.0"
 
@@ -41,13 +39,12 @@ uiToolingPreview = "1.10.0"
 cmpNavigation3 = "1.1.0-alpha01"
 appUpdateKtx = "2.1.0"
 maps = "0.12.1"
-coreKtx = "1.10.1"
+coreKtx = "1.17.0"
 junit = "4.13.2"
-junitVersion = "1.1.5"
-espressoCore = "3.5.1"
-appcompat = "1.6.1"
-material = "1.10.0"
-coreKtxVersion = "1.17.0"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
+appcompat = "1.7.1"
+material = "1.13.0"
 composeBom = "2026.01.00"
 
 
@@ -116,8 +113,6 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "j
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtxVersion" }
-#core-ktx = { group = "com.google.android.play", name = "core-ktx", version.ref = "coreKtx" }
 
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }

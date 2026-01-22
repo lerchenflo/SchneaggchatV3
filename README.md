@@ -8,6 +8,18 @@ Neue Version in CMP mit Multiplatform für Android, IOs und Desktop
 Schneaggchat is an innovative chatting platform. 
 It is an alternative to the tech giants stealing our data.
 
+# Changelog
+
+### 3.0.1
+- Auto Scroll for Chat + Chatselector
+- Status / Description Settings
+- Group member add / Admin status change
+- Android Gradle Plugin 9.0.0 refactoring
+
+### 3.0.0
+- Initial release (User, Groups, Notifications, ProfilePicture)
+
+
 # Doku
 ## Networktask
 The networktask is very simple structurized: There are two networkclients(ktor), one with JWT Auth (For all authenticated entpoints), and one without Auth (For login, register and refresh).
