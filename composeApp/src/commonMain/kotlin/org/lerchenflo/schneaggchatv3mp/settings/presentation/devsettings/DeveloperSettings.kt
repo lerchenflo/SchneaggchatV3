@@ -92,6 +92,9 @@ fun DeveloperSettings(
             }
         )
 
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+
     }
 
     if(showChangeServerUrlPopup){
