@@ -6,7 +6,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterNone
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.MarkChatUnread
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person3
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,18 +40,22 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PinnedChat
+import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.groups
 import schneaggchatv3mp.composeapp.generated.resources.none
 import schneaggchatv3mp.composeapp.generated.resources.persons
 import schneaggchatv3mp.composeapp.generated.resources.unread
+import kotlin.time.Clock
 
 class ChatSelectorViewModel(
     private val appRepository: AppRepository,
     private val navigator: Navigator,
     private val globalViewModel: GlobalViewModel,
-    private val loggingRepository: LoggingRepository
+    private val loggingRepository: LoggingRepository,
+    private val preferenceManager: Preferencemanager,
 ): ViewModel() {
 
 
@@ -194,6 +197,17 @@ class ChatSelectorViewModel(
 
     fun updateFilter(newValue: ChatFilter) {
         _filter.value = newValue
+    }
+
+    fun pinUnpinChat(chat: SelectedChat) {
+        viewModelScope.launch {
+            if(chat.pinned > 0L){
+                preferenceManager.removePinnedChat(chat.id)
+            } else {
+                val now = Clock.System.now().toEpochMilliseconds()
+                preferenceManager.addPinnedChat(PinnedChat(chat.id, now))
+            }
+        }
     }
 
 

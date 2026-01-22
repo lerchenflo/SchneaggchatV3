@@ -9,12 +9,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.Blind
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -478,7 +476,7 @@ fun App() {
                         entry<Route.Games> {
                             //TODO: Shared games viewmodel for game selection
 
-                            var gamesList = listOf<GameScreenElement>(
+                            val gamesList = listOf<GameScreenElement>(
                                 GameScreenElement(
                                     title = stringResource(Res.string.games_dartcounter_title),
                                     icon = Icons.Default.AdsClick, // ma darf sich gern was besseres usdenka

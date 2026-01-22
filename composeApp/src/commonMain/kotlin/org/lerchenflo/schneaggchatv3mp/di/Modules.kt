@@ -91,7 +91,7 @@ val sharedmodule = module{
     //Alle viewmodels mit factory für desktop
 
     viewModelOf(::ChatSelectorViewModel)
-    factory { ChatSelectorViewModel(get(), get(), get(), get()) }
+    factory { ChatSelectorViewModel(get(), get(), get(), get(), get()) }
 
     viewModelOf(::ChatViewModel)
     factory { ChatViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
