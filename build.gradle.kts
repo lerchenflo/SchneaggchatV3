@@ -3,12 +3,15 @@ plugins {
     // in each subproject's classloader
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.androidLibrary) apply false
+    alias(libs.plugins.androidKmpLibrary) apply false
+
     alias(libs.plugins.composeHotReload) apply false
     alias(libs.plugins.composeMultiplatform) apply false
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.kotlinMultiplatform) apply false
     id("com.google.gms.google-services") version "4.4.4" apply false
-    id("io.github.frankois944.spmForKmp") version "1.4.5" apply false
+    id("io.github.frankois944.spmForKmp") version "1.4.6" apply false
+    alias(libs.plugins.kotlin.android) apply false
 
 }
 

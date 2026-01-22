@@ -281,7 +281,7 @@ fun App() {
                             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
 
                             //Load initial credentials
-                            LaunchedEffect(Unit) {
+                            LaunchedEffect(this) { //THis key to relaunch on notification click (Launchedeffekt triggered again) -> User not stuck in infinite loading screen
                                 //Load saved credentials (Tokens, Userid)
                                 val savedCreds = appRepository.loadSavedLoginConfig() //Returns boolean
 

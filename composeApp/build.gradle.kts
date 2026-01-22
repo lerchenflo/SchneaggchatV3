@@ -1,23 +1,20 @@
 @file:OptIn(ExperimentalSpmForKmpFeature::class)
 
-import com.android.build.gradle.internal.tasks.UnstrippedLibs.add
 import io.github.frankois944.spmForKmp.swiftPackageConfig
 import io.github.frankois944.spmForKmp.utils.ExperimentalSpmForKmpFeature
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.net.URI
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
     alias(libs.plugins.jetbrains.kotlin.serialization)
-    id("com.google.gms.google-services")
+    alias(libs.plugins.androidKmpLibrary)
     id("io.github.frankois944.spmForKmp")
 }
 
@@ -40,14 +37,38 @@ fun detectTarget(): String {
 }
 
 
+kotlin {
+    jvmToolchain(17)
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 kotlin {
-    androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
-        }
+//    androidTarget {
+//        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+//        compilerOptions {
+//            jvmTarget.set(JvmTarget.JVM_17)
+//        }
+//    }
+
+
+    androidLibrary {
+        compileSdk = 36
+        minSdk = 26
+        namespace = "org.lerchenflo.schneaggchatv3mp.androidApp"
+        androidResources { enable = true }
+
+        //experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
+
+//        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+//        compilerOptions {
+//            freeCompilerArgs.addAll("-Xexpect-actual-classes")
+//        }
     }
+
     
     listOf(
         iosX64(),
@@ -71,20 +92,16 @@ kotlin {
             baseName = "ComposeApp"
             isStatic = true
             export("io.github.mirzemehdi:kmpnotifier:1.6.1")
-
         }
 
 
     }
 
-
     jvm()
 
+    //jvmToolchain(17)
 
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-    
+
     sourceSets {
         androidMain.dependencies {
             implementation(libs.ui.tooling.preview)
@@ -208,44 +225,13 @@ kotlin {
 
 
 
-/*
-project.tasks.withType(KotlinCompilationTask::class.java).configureEach {
-    if(name != "kspCommonMainKotlinMetadata") {
-        dependsOn("kspCommonMainKotlinMetadata")
-    }
-}
 
- */
+//project.tasks.withType(KotlinCompilationTask::class.java).configureEach {
+//    if(name != "kspCommonMainKotlinMetadata") {
+//        dependsOn("kspCommonMainKotlinMetadata")
+//    }
+//}
 
-
-
-
-android {
-    namespace = "org.lerchenflo.schneaggchatv3mp"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    defaultConfig {
-        applicationId = "org.lerchenflo.schneaggchatv3mp"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 9
-        versionName = "3.0-beta"
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-}
 
 
 compose.desktop {
@@ -295,7 +281,7 @@ room{
 dependencies{
     //add("kspCommonMainMetadata", libs.koin.ksp.compiler)
     ksp(libs.room.compiler)
-    debugImplementation(libs.ui.tooling)
+    //debugImplementation(libs.ui.tooling)
 }
 
 ksp {
