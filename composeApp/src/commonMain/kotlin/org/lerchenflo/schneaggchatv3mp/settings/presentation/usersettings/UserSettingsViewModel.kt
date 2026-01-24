@@ -74,12 +74,15 @@ class UserSettingsViewModel(
     }
 
     fun changeEmail(newEmail: String){
-        // todo
+        viewModelScope.launch {
+            appRepository.changeUserDetails(newEmail = newEmail, userId = SessionCache.getOwnIdValue() ?: "")
+            appRepository.dataSync()
+        }
     }
 
     fun changeStatus(newStatus: String) {
         viewModelScope.launch {
-            appRepository.changeUserStatusDescription(newStatus, newDescription = null, userId = SessionCache.getOwnIdValue() ?: "")
+            appRepository.changeUserDetails(newStatus = newStatus, userId = SessionCache.getOwnIdValue() ?: "")
             appRepository.dataSync()
         }
     }

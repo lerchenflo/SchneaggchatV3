@@ -513,15 +513,21 @@ class NetworkUtils(
         val userId: String,
         val newDescription: String?,
         val newStatus: String?,
+        val newEmail: String?,
+        val newBirthDate: String?,
+        val newNickName: String?
     )
     
-    suspend fun changeProfile(newStatus: String?, newDescription: String?, userId: String): NetworkResult<Any, NetworkError> {
+    suspend fun changeProfile(userId: String, newStatus: String?, newDescription: String?, newEmail: String?, newBirthDate: String?, newNickName: String?): NetworkResult<Any, NetworkError> {
         return safePost(
             endpoint = "/users/changeprofile",
             body = UserRequest(
                 userId = userId,
                 newDescription = newDescription,
-                newStatus = newStatus
+                newStatus = newStatus,
+                newEmail = newEmail,
+                newBirthDate = newBirthDate,
+                newNickName = newNickName
             )
         )
     }
