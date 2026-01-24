@@ -13,12 +13,17 @@ It is an alternative to the tech giants stealing our data.
 ### 3.0.1
 
 #### Features
-- Auto Scroll for Chat + Chatselector
 - Status / Description Settings
 - Group member add / Admin status change
+- Socket connection updates
+- Birthdate change setting
 
 #### Bugfixes
 - Android Gradle Plugin 9.0.0 refactoring
+- Auto Scroll for Chat + Chatselection + Signup
+- Chatdetails + Chatselection UI fixes
+- Socketconnection crash fix
+
 
 
 ### 3.0.0

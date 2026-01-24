@@ -45,4 +45,18 @@ actual class LanguageManager(
         // Save to DataStore
         preferenceManager.saveLanguageSetting(language)
     }
+
+    actual fun getSystemLanguage(): String {
+        // Get the preferred languages from the system
+        val preferredLanguages = NSLocale.preferredLanguages
+        val firstLanguage = preferredLanguages.firstOrNull() as? String
+        
+        return if (!firstLanguage.isNullOrEmpty()) {
+            // Extract language code (before any dash or underscore)
+            firstLanguage.split("-", "_").firstOrNull()?.takeIf { it.isNotEmpty() } ?: "en"
+        } else {
+            // Fallback to current locale or default to English
+            NSLocale.currentLocale.languageCode?.takeIf { it.isNotEmpty() } ?: "en"
+        }
+    }
 }

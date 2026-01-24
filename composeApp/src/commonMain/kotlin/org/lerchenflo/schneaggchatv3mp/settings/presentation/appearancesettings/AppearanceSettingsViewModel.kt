@@ -85,6 +85,7 @@ class AppearanceSettingsViewModel(
         CoroutineScope(Dispatchers.IO).launch {
             languageService.applyLanguage(language = language)
         }
+        println("System language: ${languageService.getSystemLanguage()}")
     }
 
 }
