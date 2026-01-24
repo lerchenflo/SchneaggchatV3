@@ -382,7 +382,7 @@
     <string name="undercover_winner_undercover">Undercover / Mr. White win</string>
 
 
-    <string name="your_friends_wrote_this">-- Your friends</string>
+    <string name="your_friends_wrote_this">~ Your friends</string>
     <string name="show_logs">Show logs</string>
 
 </resources>

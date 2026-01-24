@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,6 +20,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -43,11 +47,15 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -62,6 +70,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
@@ -308,36 +317,67 @@ fun Chatauswahlscreen(
 
                 val focusmanager = LocalFocusManager.current
 
-                OutlinedTextField(
+
+                BasicTextField(
                     value = searchterm,
-                    maxLines = 1,
-                    onValueChange = { viewModel.updateSearchterm(it) }, //In da datenbank gits a suchfeature
+                    onValueChange = { viewModel.updateSearchterm(it) },
                     modifier = Modifier
-                        .weight(1f),
-                    placeholder = { Text(stringResource(Res.string.search_friend)) },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Search"
-                        )
-                    },
-                    trailingIcon = {
-                        if (searchterm.isNotEmpty()) {
+                        .weight(1f)
+                        .height(40.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f),
+                            shape = RoundedCornerShape(20.dp)
+                        ),
+                    textStyle = LocalTextStyle.current.copy(
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    ),                    singleLine = true,
+                    decorationBox = { innerTextField ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 12.dp)
+                        ) {
                             Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Cancel search",
-                                modifier = Modifier.clickable{
-                                    focusmanager.clearFocus()
-                                    viewModel.updateSearchterm("")
-                                }
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Search",
+                                modifier = Modifier.size(20.dp)
                             )
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Box(
+                                modifier = Modifier.weight(1f),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                if (searchterm.isEmpty()) {
+                                    Text(
+                                        text = stringResource(Res.string.search_friend),
+                                        fontSize = 14.sp,
+                                        color = LocalContentColor.current.copy(alpha = 0.4f)
+                                    )
+                                }
+                                innerTextField()
+                            }
+
+                            if (searchterm.isNotEmpty()) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Cancel search",
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .clickable {
+                                            focusmanager.clearFocus()
+                                            viewModel.updateSearchterm("")
+                                        }
+                                )
+                            }
                         }
                     },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = Color.Transparent
-                    )
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                 )
-
 
                 Spacer(Modifier.width(10.dp))
 
@@ -403,6 +443,8 @@ fun Chatauswahlscreen(
 
                  */
             }
+
+            //HorizontalDivider()
 
             //Gegneranzeige
             //val state = rememberPullToRefreshState()
