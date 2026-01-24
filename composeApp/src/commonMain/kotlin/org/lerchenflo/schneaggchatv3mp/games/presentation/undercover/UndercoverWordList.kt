@@ -1,5 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.undercover
 
+import kotlinx.coroutines.runBlocking
+import org.koin.compose.koinInject
+import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageSetting
+
 data class UndercoverWordPair(
     val civilianWord: String,
     val undercoverWord: String
@@ -612,23 +618,16 @@ val UNDERCOVER_WORD_PAIRS_DE: List<UndercoverWordPair> = listOf(
 /**
  * Returns the appropriate word list based on the current language setting
  */
-fun getUndercoverWordPairs(languageSetting: org.lerchenflo.schneaggchatv3mp.utilities.LanguageSetting): List<UndercoverWordPair> {
+fun getUndercoverWordPairs(languageSetting: LanguageSetting): List<UndercoverWordPair> {
     return when (languageSetting) {
-        org.lerchenflo.schneaggchatv3mp.utilities.LanguageSetting.ENGLISH -> UNDERCOVER_WORD_PAIRS_EN
-        org.lerchenflo.schneaggchatv3mp.utilities.LanguageSetting.GERMAN -> UNDERCOVER_WORD_PAIRS_DE
-        org.lerchenflo.schneaggchatv3mp.utilities.LanguageSetting.VORI -> UNDERCOVER_WORD_PAIRS_DE
-        org.lerchenflo.schneaggchatv3mp.utilities.LanguageSetting.SYSTEM -> {
-            // Check system locale for SYSTEM setting
-            val systemLanguage = getCurrentSystemLanguage()
-            when (systemLanguage) {
-                "de" -> UNDERCOVER_WORD_PAIRS_DE
-                else -> UNDERCOVER_WORD_PAIRS_EN
+        LanguageSetting.ENGLISH -> UNDERCOVER_WORD_PAIRS_EN
+        LanguageSetting.GERMAN, LanguageSetting.VORI -> UNDERCOVER_WORD_PAIRS_DE
+        LanguageSetting.SYSTEM -> {
+            runBlocking {
+                val languageService = KoinPlatform.getKoin().get<LanguageService>()
+                val systemLanguage = languageService.getCurrentLanguage()
+                getUndercoverWordPairs(systemLanguage) // Recursive call
             }
         }
     }
 }
-
-/**
- * Gets the current system language code (e.g., "de", "en")
- */
-expect fun getCurrentSystemLanguage(): String
