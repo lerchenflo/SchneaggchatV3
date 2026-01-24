@@ -10,6 +10,8 @@ import io.ktor.websocket.readText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterIsInstance
@@ -29,23 +31,39 @@ class SocketConnectionManager(
     private val httpClient: HttpClient,
     private val loggingRepository: LoggingRepository,
     private val appRepository: AppRepository,
-    private val messageRepository: MessageRepository
+    private val messageRepository: MessageRepository,
+    private val tokenManager: TokenManager
 ) {
 
     companion object {
         fun getSocketUrl(url: String): String {
-            val newurl = if (url.startsWith("https")) {
-                url.replace("https", "wss")
-            } else if (url.startsWith("http")){
-                url.replace("http", "ws")
-            } else {
-                println("GetsocketURL error: $url")
-                url
+            // Remove trailing slashes
+            val cleanUrl = url.trimEnd('/')
+
+            // Convert protocol
+            val wsUrl = when {
+                cleanUrl.startsWith("https://") -> cleanUrl.replaceFirst("https://", "wss://")
+                cleanUrl.startsWith("http://") -> cleanUrl.replaceFirst("http://", "ws://")
+                cleanUrl.startsWith("wss://") || cleanUrl.startsWith("ws://") -> cleanUrl
+                else -> {
+                    println("Invalid URL format: $url. Expected http:// or https://")
+                    // Assume https if no protocol specified
+                    "wss://$cleanUrl"
+                }
             }
-            println("New socket url: $newurl/ws")
-            return "$newurl/ws"
+
+            // Add /ws path if not already present
+            val finalUrl = if (wsUrl.endsWith("/ws")) {
+                wsUrl
+            } else {
+                "$wsUrl/ws"
+            }
+
+            println("WebSocket URL: $finalUrl")
+            return finalUrl
         }
     }
+
 
 
 
@@ -136,37 +154,41 @@ private class SocketConnection(
 
     suspend fun connect(): Boolean {
         return try {
-            CoroutineScope(Dispatchers.IO).launch {
-                httpClient.webSocket(
-                    request = {
-                        url(serverUrl)
-                    }
-                ) {
-                    session = this
-                    _isActive.value = true
-
+            coroutineScope {
+                async(Dispatchers.IO) {
                     try {
-                        incoming.receiveAsFlow()
-                            .filterIsInstance<Frame.Text>()
-                            .map { it.readText() }
-                            .collect { message ->
-                                onMessage(message)
+                        httpClient.webSocket(
+                            request = {
+                                url(serverUrl)
                             }
-                    } catch (e: Exception) {
-                        onError(e)
-                    } finally {
-                        _isActive.value = false
-                        session = null
-                        onClose()
-                    }
-                }
-            }
+                        ) {
+                            session = this
+                            _isActive.value = true
 
-            // Wait for connection to establish
-            delay(100)
-            _isActive.value
+                            try {
+                                incoming.receiveAsFlow()
+                                    .filterIsInstance<Frame.Text>()
+                                    .map { it.readText() }
+                                    .collect { message ->
+                                        onMessage(message)
+                                    }
+                            } catch (e: Exception) {
+                                onError(e)
+                            } finally {
+                                _isActive.value = false
+                                session = null
+                                onClose()
+                            }
+                        }
+                        true
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        false
+                    }
+                }.await()
+            }
         } catch (e: Exception) {
-            onError(e)
+            e.printStackTrace()
             false
         }
     }
