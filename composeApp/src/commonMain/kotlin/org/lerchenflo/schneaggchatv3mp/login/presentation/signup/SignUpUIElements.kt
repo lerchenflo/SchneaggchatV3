@@ -272,7 +272,7 @@ fun SignUpForm1(
         ){
             Button(
                 onClick = {
-                    showDatePicker = true
+                    // showDatePicker = true todo server backend fehlt
                 },
                 modifier = Modifier
                     .weight(1f)
@@ -330,7 +330,7 @@ fun SignUpForm1(
                 onDateSelected = { selectedDate ->
                     ongebidateselected(selectedDate)
                 },
-                onDismiss = { showDatePicker = false }
+                onDismiss = { showDatePicker = false}
             )
         }
 
@@ -522,14 +522,16 @@ fun SignUpHeaderText(
 @Composable
 fun BirthdatePickerPopup(
     onDateSelected: (LocalDate) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    defaultDate: LocalDate? = null
+
 ) {
     val today = Clock.System.now().toLocalDateTime(TimeZone.UTC).date // TimeZone.currentSystemDefault() künnt fehler uf Iphone werfa (crash)
     val endOfCurrentYear = LocalDate(year = today.year, monthNumber = 12, dayOfMonth = 31)
-    val eighteenYearsAgo = today.minus(18, DateTimeUnit.YEAR)
+    val _defaultDate = defaultDate ?: today.minus(18, DateTimeUnit.YEAR)
 
     var selectedDate by remember {
-        mutableStateOf(eighteenYearsAgo)
+        mutableStateOf(_defaultDate)
     }
 
     AlertDialog(

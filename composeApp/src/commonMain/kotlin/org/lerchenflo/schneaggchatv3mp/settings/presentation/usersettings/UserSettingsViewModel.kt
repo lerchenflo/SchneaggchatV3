@@ -87,6 +87,13 @@ class UserSettingsViewModel(
         }
     }
 
+    fun changeBirthDate(newBirthDate: String) {
+        viewModelScope.launch {
+            appRepository.changeUserDetails(newBirthDate = newBirthDate, userId = SessionCache.getOwnIdValue() ?: "")
+            appRepository.dataSync()
+        }
+    }
+
 
     fun logout(){
         viewModelScope.launch {

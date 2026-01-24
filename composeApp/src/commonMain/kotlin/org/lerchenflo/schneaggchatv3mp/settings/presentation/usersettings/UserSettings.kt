@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Mail
@@ -43,6 +44,8 @@ import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
 import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.lerchenflo.schneaggchatv3mp.URL_DEL_ACC
@@ -51,6 +54,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedTe
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ChangeDialog
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
+import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.BirthdatePickerPopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
@@ -59,6 +63,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.are_you_sure_you_want_to_logout
 import schneaggchatv3mp.composeapp.generated.resources.change
 import schneaggchatv3mp.composeapp.generated.resources.change_email
+import schneaggchatv3mp.composeapp.generated.resources.change_gebi_date
 import schneaggchatv3mp.composeapp.generated.resources.change_status
 import schneaggchatv3mp.composeapp.generated.resources.change_username
 import schneaggchatv3mp.composeapp.generated.resources.change_username_description
@@ -72,6 +77,7 @@ import schneaggchatv3mp.composeapp.generated.resources.emailinfo_unverified
 import schneaggchatv3mp.composeapp.generated.resources.error_cannot_be_the_same_username
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
 import schneaggchatv3mp.composeapp.generated.resources.logout
+import schneaggchatv3mp.composeapp.generated.resources.select_gebi_date
 import schneaggchatv3mp.composeapp.generated.resources.status_infotext
 import schneaggchatv3mp.composeapp.generated.resources.status_nosemicolon
 import schneaggchatv3mp.composeapp.generated.resources.user_attributes_24px
@@ -92,6 +98,7 @@ fun UserSettings(
     var showChangeUsernamePopup by remember { mutableStateOf(false) }
 
     var showChangeStatusPopup by remember { mutableStateOf(false) }
+    var showChangeBirthDatePopup by remember { mutableStateOf(false) }
     var showChangeEmailPopup by remember { mutableStateOf(false) }
 
 
@@ -217,10 +224,28 @@ fun UserSettings(
                     stringResource(Res.string.status_infotext)
                 } else {
                     stringResource(Res.string.currentstatus, ownuser.status)
-
                 },
                 onClick = {
                     showChangeStatusPopup = true
+                }
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            // Gebidate
+            SettingsOption(
+                icon = Icons.Default.Cake,
+                text = stringResource(Res.string.change_gebi_date),
+                subtext = ownuser?.birthDate?.let { dateString ->
+                    try {
+                        val date = LocalDate.parse(dateString)
+                        "${date.day.toString().padStart(2, '0')}.${date.month.number.toString().padStart(2, '0')}.${date.year}"
+                    } catch (e: Exception) {
+                        dateString
+                    }
+                },
+                onClick = {
+                    showChangeBirthDatePopup = true
                 }
             )
 
@@ -376,6 +401,24 @@ fun UserSettings(
                 if (!isEmailValid(newValue)) {
                     invalidEmailString
                 } else null
+            }
+        )
+    }
+
+    if(showChangeBirthDatePopup){
+        BirthdatePickerPopup(
+            onDateSelected = {
+                userSettingsViewModel.changeBirthDate(
+                    it.toString()
+                )
+            },
+            onDismiss = { showChangeBirthDatePopup = false },
+            defaultDate = ownuser?.birthDate?.let { dateString ->
+                try {
+                    LocalDate.parse(dateString)
+                } catch (e: Exception) {
+                    null
+                }
             }
         )
     }
