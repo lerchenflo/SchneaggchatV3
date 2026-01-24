@@ -153,7 +153,7 @@ class ChatDetailsViewmodel(
             if (selectedChat.isGroup) {
                 appRepository.changeGroupDescription(selectedChat.id, descriptionText.text)
             }else {
-                appRepository.changeUserStatusDescription(null, descriptionText.text, selectedChat.id)
+                appRepository.changeUserDetails(newStatus = null, newDescription =  descriptionText.text, userId = selectedChat.id)
 
             }
         }

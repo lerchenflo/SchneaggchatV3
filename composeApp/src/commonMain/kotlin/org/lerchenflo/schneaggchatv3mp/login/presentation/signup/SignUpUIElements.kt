@@ -2,6 +2,7 @@
 
 package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,10 +23,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -34,7 +34,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
@@ -63,8 +62,12 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dev.darkokoa.datetimewheelpicker.WheelDatePicker
+import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
@@ -73,7 +76,6 @@ import org.lerchenflo.schneaggchatv3mp.URL_PRIVACY
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt1
 import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt2
@@ -95,10 +97,9 @@ import schneaggchatv3mp.composeapp.generated.resources.tooltip_password_repeat
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_profile_picture
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_terms
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_username
-import schneaggchatv3mp.composeapp.generated.resources.unknown_error
 import schneaggchatv3mp.composeapp.generated.resources.username
+import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
 //Signup element für Username und email
 @OptIn(ExperimentalMaterial3Api::class)
@@ -271,7 +272,7 @@ fun SignUpForm1(
         ){
             Button(
                 onClick = {
-                    showDatePicker = true
+                    // showDatePicker = true todo server backend fehlt
                 },
                 modifier = Modifier
                     .weight(1f)
@@ -325,11 +326,11 @@ fun SignUpForm1(
 
 
         if (showDatePicker) {
-            DatePickerDialogPopup(
+            BirthdatePickerPopup(
                 onDateSelected = { selectedDate ->
                     ongebidateselected(selectedDate)
                 },
-                onDismiss = { showDatePicker = false }
+                onDismiss = { showDatePicker = false}
             )
         }
 
@@ -518,50 +519,57 @@ fun SignUpHeaderText(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DatePickerDialogPopup(
-    onDateSelected: (LocalDate?) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val datePickerState = rememberDatePickerState()
+fun BirthdatePickerPopup(
+    onDateSelected: (LocalDate) -> Unit,
+    onDismiss: () -> Unit,
+    defaultDate: LocalDate? = null
 
-    DatePickerDialog(
+) {
+    val today = Clock.System.now().toLocalDateTime(TimeZone.UTC).date // TimeZone.currentSystemDefault() künnt fehler uf Iphone werfa (crash)
+    val endOfCurrentYear = LocalDate(year = today.year, monthNumber = 12, dayOfMonth = 31)
+    val _defaultDate = defaultDate ?: today.minus(18, DateTimeUnit.YEAR)
+
+    var selectedDate by remember {
+        mutableStateOf(_defaultDate)
+    }
+
+    AlertDialog(
         onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                onDateSelected(selectedDate)
+                onDismiss()
+            }) {
+                Text(stringResource(Res.string.ok))
+            }
+        },
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(stringResource(Res.string.cancel))
             }
         },
-        confirmButton = {
-            val unknownErrorString = stringResource(Res.string.unknown_error)
-            TextButton(
-                onClick = {
-
-                    try { // do isch die uf Iphone amol crasht
-                        // Convert the selected milliseconds to LocalDate
-                        datePickerState.selectedDateMillis?.let { millis ->
-                            val instant = Instant.fromEpochMilliseconds(millis)
-                            val localDate = instant.toLocalDateTime(TimeZone.UTC).date // TimeZone.currentSystemDefault() durch TimeZone.UTC ausgetauscht -> verhindert hoffentlich crash
-                            onDateSelected(localDate)
-                        }
-                    }catch (e: Exception){
-                        SnackbarManager.showMessage(e.message ?: unknownErrorString)
-                    }
-
-                    onDismiss()
+        text = {
+            // In this library, the parameter is 'onDatelineChanged' or 'onValueChange'
+            // and the styling is handled via specific parameters, not a single 'style' object.
+            WheelDatePicker(
+                modifier = Modifier.fillMaxWidth(),
+                startDate = selectedDate,
+                minDate = LocalDate(1900, 1, 1),
+                maxDate = endOfCurrentYear,
+                rowCount = 5,
+                textColor = MaterialTheme.colorScheme.onSurface,
+                selectorProperties = WheelPickerDefaults.selectorProperties(
+                    enabled = true,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                ),
+                onSnappedDate = { snappedDate: LocalDate ->
+                    selectedDate = snappedDate
                 }
-            ) {
-                Text(stringResource(Res.string.ok))
-            }
-
-
-
-        },
-    ) {
-        // 4. Place the DatePicker inside the dialog
-        DatePicker(state = datePickerState)
-    }
+            )
+        }
+    )
 }
 
 

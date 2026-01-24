@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -68,10 +69,12 @@ fun SignUpScreen(
 
             val rootmodifier = Modifier
                 .fillMaxSize()
+                .padding(innerPadding)
                 .clip(RoundedCornerShape(
                     topStart = 15.dp,
                     topEnd = 15.dp
                 ))
+                .imePadding()
                 .padding(
                     horizontal = 16.dp,
                     vertical = 24.dp
@@ -131,11 +134,12 @@ fun SignUpScreen(
             if (!showImagePickerDialog){
                 val windowSizeclass = currentWindowAdaptiveInfo().windowSizeClass
                 val deviceConfiguration = DeviceSizeConfiguration.fromWindowSizeClass(windowSizeclass)
+                val scrollState = rememberScrollState()
                 when (deviceConfiguration){
                     DeviceSizeConfiguration.MOBILE_PORTRAIT -> {
                         Column(
                             modifier = rootmodifier
-                                .verticalScroll(rememberScrollState()),
+                                .verticalScroll(scrollState),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ){
                             SignUpForm1(
@@ -196,7 +200,7 @@ fun SignUpScreen(
 
                         Row(
                             modifier = rootmodifier
-                                .verticalScroll(rememberScrollState()),
+                                .verticalScroll(scrollState),
 
                             horizontalArrangement = Arrangement.spacedBy(32.dp)
                         ){
@@ -245,7 +249,7 @@ fun SignUpScreen(
 
                         Column(
                             modifier = rootmodifier
-                                .verticalScroll(rememberScrollState()),
+                                .verticalScroll(scrollState),
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ){

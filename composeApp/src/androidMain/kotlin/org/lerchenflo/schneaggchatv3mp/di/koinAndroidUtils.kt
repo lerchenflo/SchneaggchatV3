@@ -65,6 +65,8 @@ private fun getFullStackTrace(throwable: Throwable): String {
         }
     }
 
+
+
     pw.flush()
     return sw.toString()
 }

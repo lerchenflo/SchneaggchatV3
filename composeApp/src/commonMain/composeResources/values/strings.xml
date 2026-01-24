@@ -80,6 +80,7 @@
     <string name="error_username_must_not_be_empty">The new username must not be empty</string>
 
     <string name="select_gebi_date">Select your birth date</string>
+    <string name="change_gebi_date">Change your birth date</string>
     <string name="select_profile_pic">Select a profile picture</string>
 
     <string name="status">Status:</string>

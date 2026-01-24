@@ -837,8 +837,22 @@ class AppRepository(
     /**
      * Change status and description. if userid = self then only status, else only description
      */
-    suspend fun changeUserStatusDescription(newStatus: String?, newDescription: String?, userId: String) : Boolean {
-        when (val success = networkUtils.changeProfile(newStatus, newDescription, userId)){
+    suspend fun changeUserDetails( // todo flo macht a server update denn loft des
+        userId: String,
+        newStatus: String? = null,
+        newDescription: String? = null,
+        newEmail: String? = null,
+        newBirthDate: String? = null,
+        newNickName: String? = null,
+        ) : Boolean {
+        when (val success = networkUtils.changeProfile(
+            userId = userId,
+            newStatus = newStatus,
+            newDescription = newDescription,
+            newEmail = newEmail,
+            newBirthDate = newBirthDate,
+            newNickName = newNickName,
+        )){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
                 dataSync()
