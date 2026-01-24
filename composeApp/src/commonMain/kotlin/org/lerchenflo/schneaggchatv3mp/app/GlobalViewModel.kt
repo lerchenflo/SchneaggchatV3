@@ -57,24 +57,24 @@ class GlobalViewModel(
             }
         }
 
-        viewModelScope.launch {
-            startSocketConnection()
-        }
-
     }
 
 
-    suspend fun startSocketConnection() {
-        println("Socketconnection connected: ${socketConnectionManager.isConnected()}")
-        if (!socketConnectionManager.isConnected() && SessionCache.isLoggedInValue()){
-            socketConnectionManager.connect(
-                serverUrl = SocketConnectionManager.getSocketUrl(preferencemanager.getServerUrl()),
-                onError = {
-                    println("SOCKETCONNECTION error: " + it.message)
-
-                },
-                onClose = {}
-            )
+    fun startSocketConnection() {
+        viewModelScope.launch {
+            println("Socketconnection connected: ${socketConnectionManager.isConnected()}")
+            if (!socketConnectionManager.isConnected() && SessionCache.isLoggedInValue()){
+                println("Connecting to socket connection -----------------------")
+                val serverurl = SocketConnectionManager.getSocketUrl(preferencemanager.getServerUrl())
+                println(serverurl)
+                socketConnectionManager.connect(
+                    serverUrl = serverurl,
+                    onError = {
+                        println("SOCKETCONNECTION error: " + it.message)
+                    },
+                    onClose = {}
+                )
+            }
         }
     }
 
