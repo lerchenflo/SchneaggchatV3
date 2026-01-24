@@ -25,6 +25,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
@@ -86,7 +87,6 @@ fun ChatDetails(
 
     Column(
         modifier = modifier
-            .padding(horizontal = 16.dp)
     ){
 
         ActivityTitle(
@@ -112,7 +112,7 @@ fun ChatDetails(
                     filepath = chatDetails.profilePictureUrl,
                     modifier = Modifier
                         .size(200.dp) // Use square aspect ratio
-                        .padding(bottom = 10.dp)
+                        .padding(vertical = 10.dp)
                         .clickable {
                             profilePictureDialogShown = true
                         }
@@ -126,6 +126,19 @@ fun ChatDetails(
                 // Status
                 val statusInfoString = stringResource(Res.string.status_info)
 
+                chatDetails.status?.let {
+                    if (it.isNotEmpty()) {
+                        QuotedText(
+                            text = it,
+                            author = "~ " + chatDetails.name,
+                            onClick = {
+                                SnackbarManager.showMessage(statusInfoString)
+                            }
+                        )
+                    }
+                }
+                
+                /*
                 DescriptionStatusRow(
                     onClick = {
                         SnackbarManager.showMessage(statusInfoString)
@@ -137,6 +150,8 @@ fun ChatDetails(
                         ?: stringResource(Res.string.no_status),
                     infoText = stringResource(Res.string.status_info)
                 )
+
+                 */
 
             }
 

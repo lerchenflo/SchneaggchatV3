@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.AddModerator
@@ -47,6 +48,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -206,7 +208,7 @@ fun GroupMembersView(
             )
 
 
-            HorizontalDivider()
+            //HorizontalDivider()
         }
     }
 }
@@ -256,7 +258,7 @@ fun CommonGroupsView(
                 )
             }
 
-            HorizontalDivider()
+            //HorizontalDivider()
         }
     }
 }
@@ -525,7 +527,11 @@ fun DescriptionStatusRow(
             ) {
                 Text(
                     text = titleText,
-                    modifier = Modifier
+                    modifier = Modifier.weight(1f),  // Takes available space but allows other items to show
+                    autoSize = TextAutoSize.StepBased(13.sp, 19.sp),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,  // Shows "..." if text is too long
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -533,12 +539,18 @@ fun DescriptionStatusRow(
                 TooltipIconButton(infoText)
             }
 
+            Spacer(modifier = Modifier.height(4.dp))
 
-            Text(
-                text = bodyText,
-                softWrap = true,
-                maxLines = 20
-            )
+            Row {
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Text(
+                    text = bodyText,
+                    fontSize = 14.sp,  // Smaller body text
+                    lineHeight = 16.sp,
+                    maxLines = 20,
+                )
+            }
         }
 
     }

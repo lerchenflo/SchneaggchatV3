@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -51,10 +52,14 @@ fun QuotedText(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable{
+                onClick()
+            }
             .background(
                 color = Color.Gray.copy(alpha = 0.15f),
             )
             .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 8.dp)
+
     ) {
 
         Text(
@@ -92,20 +97,20 @@ fun QuotedText(
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
 
-            // Opening quote (positioned after text, but offset up)
 
-
-            // Author (with negative top padding to compensate for quote offset)
-            Text(
-                text = author,
-                style = MaterialTheme.typography.bodySmall.copy(
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Normal
-                ),
-                color = Color.Gray.copy(alpha = 0.7f),
-                modifier = Modifier
-                    .padding(top = 8.dp)
-            )
+            if (author.isNotEmpty()){
+                // Author (with negative top padding to compensate for quote offset)
+                Text(
+                    text = author,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Normal
+                    ),
+                    color = Color.Gray.copy(alpha = 0.7f),
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                )
+            }
         }
     }
 }
