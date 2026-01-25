@@ -606,7 +606,8 @@ class NetworkUtils(
         val userid: String,
         val joinedAt: String,
         val admin: Boolean,
-        val color: Int
+        val color: Int,
+        val memberName: String
     )
 
     suspend fun createGroup(

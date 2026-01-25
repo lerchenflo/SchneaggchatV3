@@ -1198,6 +1198,8 @@ class AppRepository(
             }
 
             is NetworkResult.Success<NetworkUtils.GroupSyncResponse> -> {
+                println("GroupIdSync sync response: ${groupSyncResponse.data.toString()}")
+
 
                 groupSyncResponse.data.updatedGroups.forEach { groupResponse ->
                     groupRepository.upsertGroup(Group(
@@ -1215,7 +1217,8 @@ class AppRepository(
                                 joinDate = groupMemberresp.joinedAt,
                                 admin = groupMemberresp.admin,
                                 color = groupMemberresp.color,
-                            )
+                                memberName = groupMemberresp.memberName
+                                )
                         }
                     ))
 

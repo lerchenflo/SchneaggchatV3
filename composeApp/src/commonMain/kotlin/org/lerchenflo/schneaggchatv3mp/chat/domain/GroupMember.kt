@@ -9,6 +9,7 @@ data class GroupMember(
     val joinDate: String,
     val admin: Boolean,
     val color: Int,
+    val memberName: String
 )
 
 fun GroupMemberDto.toGroupMember(): GroupMember = GroupMember(
@@ -17,7 +18,8 @@ fun GroupMemberDto.toGroupMember(): GroupMember = GroupMember(
     userId = userId,
     joinDate = joinDate,
     admin = admin,
-    color = color
+    color = color,
+    memberName = memberName
 )
 
 /** Convert domain GroupMember -> persistence/transport GroupMemberDto */
@@ -27,5 +29,6 @@ fun GroupMember.toDto(): GroupMemberDto = GroupMemberDto(
     userId = userId,
     joinDate = joinDate,
     admin = admin,
-    color = color
+    color = color,
+    memberName = memberName
 )
