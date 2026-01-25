@@ -42,6 +42,8 @@ import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 
 class ChatViewModel(
     private val appRepository: AppRepository,
@@ -252,8 +254,8 @@ class ChatViewModel(
 
     private fun processMessages(
         messages: List<Message>,
-        users: List<org.lerchenflo.schneaggchatv3mp.chat.domain.User>,
-        groupMembers: List<org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember>
+        users: List<User>,
+        groupMembers: List<GroupMember>
     ): List<MessageDisplayItem> {
         val userMap = users.associateBy { it.id }
         val groupMap = groupMembers.associateBy { it.userId }
@@ -266,7 +268,7 @@ class ChatViewModel(
                 messages[index + 1].sendDate.toLongOrNull()?.toLocalDate()
             } else null
 
-            val senderName = userMap[message.senderId]?.name
+            val senderName = userMap[message.senderId]?.name ?: groupMap[message.senderId]?.memberName ?: "Unresolved Username"
             val resolvedColor = groupMap[message.senderId]?.color ?: 0
             message.senderColor = resolvedColor
 

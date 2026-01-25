@@ -559,7 +559,8 @@ class NetworkUtils(
         @SerialName("friend_request")
         data class FriendRequestNotificationResponse(
             val requesterId: String,
-            val requesterName: String
+            val requesterName: String,
+            val accepted: Boolean
         ) : NotificationResponse
 
         //Response for a system notification
@@ -606,7 +607,8 @@ class NetworkUtils(
         val userid: String,
         val joinedAt: String,
         val admin: Boolean,
-        val color: Int
+        val color: Int,
+        val memberName: String
     )
 
     suspend fun createGroup(

@@ -213,6 +213,9 @@
     <string name="new_friend_request_noti">Friend request from %1$s</string>
     <string name="new_friend_request_noti_body">%1$s wants to be your friend</string>
 
+    <string name="new_friend_accepted_noti">Friend request accepted</string>
+    <string name="new_friend_accepted_noti_body">%1$s is now your friend</string>
+
     <string name="tooltip_username">Choose a unique username others will see</string>
     <string name="tooltip_email">Used for account recovery and deletion</string>
     <string name="tooltip_birthdate">Used to show others when your birthday is</string>

@@ -145,7 +145,7 @@ fun GroupMembersView(
             var userOptionPopupExpanded by remember { mutableStateOf(false) }
             var showRemoveMemberConfirmation by remember { mutableStateOf(false) }
             val me = groupMember.userId == ownid
-            val userName = user?.name ?: stringResource(Res.string.unknown_user)
+            val userName = user?.name ?: groupMember.memberName
 
             ChatButtonView(
                 profilePictureFilePath = user?.profilePictureUrl ?: "",

@@ -23,6 +23,7 @@ import kotlinx.serialization.modules.subclass
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
+import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionMessage
 
 fun createHttpClient(
     engine: HttpClientEngine,
@@ -45,23 +46,7 @@ fun createHttpClient(
         //Json
         install(ContentNegotiation) {
             json(
-                json = Json {
-                    ignoreUnknownKeys = true
-                    //https://kotlinlang.org/api/kotlinx.serialization/kotlinx-serialization-core/kotlinx.serialization/-polymorphic-serializer/
-                    serializersModule = SerializersModule {
-                        polymorphic(NetworkUtils.UserResponse::class) {
-                            subclass(NetworkUtils.UserResponse.SimpleUserResponse::class)
-                            subclass(NetworkUtils.UserResponse.FriendUserResponse::class)
-                            subclass(NetworkUtils.UserResponse.SelfUserResponse::class)
-                        }
-
-                        polymorphic(NetworkUtils.NotificationResponse::class) {
-                            subclass(NetworkUtils.NotificationResponse.MessageNotificationResponse::class)
-                            subclass(NetworkUtils.NotificationResponse.FriendRequestNotificationResponse::class)
-                            subclass(NetworkUtils.NotificationResponse.SystemNotificationResponse::class)
-                        }
-                    }
-                }
+                json = AppJson.instance
             )
         }
 
@@ -99,4 +84,34 @@ private val RefreshTokenRequestAttributeKey = AttributeKey<Unit>("RefreshTokenRe
 
 fun HttpRequestBuilder.markAsRefreshTokenRequest() {
     attributes.put(RefreshTokenRequestAttributeKey, Unit)
+}
+
+/**
+ * Deserializer for all polymorphic json objects
+ */
+object AppJson {
+    val instance = Json {
+        ignoreUnknownKeys = true
+        //https://kotlinlang.org/api/kotlinx.serialization/kotlinx-serialization-core/kotlinx.serialization/-polymorphic-serializer/
+
+        serializersModule = SerializersModule {
+            polymorphic(NetworkUtils.UserResponse::class) {
+                subclass(NetworkUtils.UserResponse.SimpleUserResponse::class)
+                subclass(NetworkUtils.UserResponse.FriendUserResponse::class)
+                subclass(NetworkUtils.UserResponse.SelfUserResponse::class)
+            }
+
+            polymorphic(NetworkUtils.NotificationResponse::class) {
+                subclass(NetworkUtils.NotificationResponse.MessageNotificationResponse::class)
+                subclass(NetworkUtils.NotificationResponse.FriendRequestNotificationResponse::class)
+                subclass(NetworkUtils.NotificationResponse.SystemNotificationResponse::class)
+            }
+
+            polymorphic(SocketConnectionMessage::class) {
+                subclass(SocketConnectionMessage.MessageChange::class)
+                subclass(SocketConnectionMessage.UserChange::class)
+                subclass(SocketConnectionMessage.FriendRequest::class)
+            }
+        }
+    }
 }

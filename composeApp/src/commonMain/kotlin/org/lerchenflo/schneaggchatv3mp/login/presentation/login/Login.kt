@@ -18,8 +18,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -28,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +41,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -62,23 +69,64 @@ fun LoginScreen(
     SchneaggchatTheme {
 
 
-        LaunchedEffect(Unit) {
-            val languageService = KoinPlatform.getKoin().get<LanguageService>()
-            val language = languageService.getCurrentLanguage()
+        val languageService = koinInject<LanguageService>()
 
-            var showPopup = false
+        var showVoriLanguageDialog by remember { mutableStateOf(false) }
+
+        LaunchedEffect(Unit) {
+            val language = languageService.getCurrentLanguage()
 
             if (language == LanguageSetting.SYSTEM) {
                 val systemlanguage = languageService.getSystemLanguage()
                 println("system language: $systemlanguage")
-                when (systemlanguage) {
-                    "de-AT" -> {showPopup = true}
+
+                if (systemlanguage.trim().startsWith("de") || systemlanguage.trim().startsWith("DE")) {
+                    showVoriLanguageDialog = true
                 }
             }
+        }
 
-            if (showPopup) {
-                SnackbarManager.showMessage("vori language erkannt")
-            }
+        val scope = rememberCoroutineScope()
+
+        if (showVoriLanguageDialog) {
+            AlertDialog(
+                onDismissRequest = {},
+                title = { Text("Deutsche Systemsprache erkannt") },
+                text = {
+                    Column {
+                        Text("Möchtest du zu Vorarlbergerisch wechseln?\nDu kannst dies später in den Einstellungen umstellen.")
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    languageService.applyLanguage(LanguageSetting.GERMAN)
+                                    showVoriLanguageDialog = false
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Deutsch (DE)")
+                        }
+                        HorizontalDivider()
+
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    languageService.applyLanguage(LanguageSetting.VORI)
+                                    showVoriLanguageDialog = false
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Vorarlbergerisch (DE-AT)")
+                        }
+                    }
+                },
+                confirmButton = {},
+                dismissButton = {},
+            )
         }
 
 
@@ -261,7 +309,7 @@ fun VersionText(appRepository: AppRepository) {
             .fillMaxWidth()
             .padding(bottom = 16.dp),
         textAlign = TextAlign.Center,
-        style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
-        color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
     )
 }

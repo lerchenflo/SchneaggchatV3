@@ -730,7 +730,7 @@ class AppRepository(
     /**
      * Get the profile pics for all passed user ids from the server
      */
-    private suspend fun getProfilePicturesForUserIds(userIds: List<String>){
+    suspend fun getProfilePicturesForUserIds(userIds: List<String>){
         userIds.forEach { userId ->
             val savefilename = userId + USERPROFILEPICTURE_FILE_NAME
             when (val picture = networkUtils.getProfilePicForUserId(userId)) {
@@ -1198,6 +1198,8 @@ class AppRepository(
             }
 
             is NetworkResult.Success<NetworkUtils.GroupSyncResponse> -> {
+                println("GroupIdSync sync response: ${groupSyncResponse.data.toString()}")
+
 
                 groupSyncResponse.data.updatedGroups.forEach { groupResponse ->
                     groupRepository.upsertGroup(Group(
@@ -1215,7 +1217,8 @@ class AppRepository(
                                 joinDate = groupMemberresp.joinedAt,
                                 admin = groupMemberresp.admin,
                                 color = groupMemberresp.color,
-                            )
+                                memberName = groupMemberresp.memberName
+                                )
                         }
                     ))
 

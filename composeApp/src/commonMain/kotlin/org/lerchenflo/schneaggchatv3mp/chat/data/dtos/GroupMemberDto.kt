@@ -21,7 +21,9 @@ data class GroupMemberDto(
 
     val admin: Boolean,
 
-    val color: Int
+    val color: Int,
+
+    val memberName: String
 
 
 )
