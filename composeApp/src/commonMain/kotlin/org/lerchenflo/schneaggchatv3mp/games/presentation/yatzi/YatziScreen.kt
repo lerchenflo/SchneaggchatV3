@@ -336,6 +336,60 @@ fun Scorecard(
                         }
                     }
                 }
+                
+                // Add boundary and sum after upper section (after SIXES)
+                if (category == YatziCategory.SIXES) {
+                    // Upper Section Sum Row
+                    Row(modifier = Modifier.height(35.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
+                        Box(modifier = Modifier.width(120.dp).padding(8.dp), contentAlignment = Alignment.CenterStart) {
+                            Text("Upper Sum", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+                        }
+                        players.forEachIndexed { index, player ->
+                            val isCurrent = index == currentPlayerIndex
+                            Box(
+                                modifier = Modifier
+                                    .width(80.dp)
+                                    .height(35.dp)
+                                    .background(if (isCurrent) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f) else Color.Transparent),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    player.upperScore.toString(), 
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (player.upperScore >= 63) Color.Green else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                    
+                    // Bonus Row
+                    Row(modifier = Modifier.height(35.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
+                        Box(modifier = Modifier.width(120.dp).padding(8.dp), contentAlignment = Alignment.CenterStart) {
+                            Text("Bonus", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+                        }
+                        players.forEachIndexed { index, player ->
+                            val isCurrent = index == currentPlayerIndex
+                            Box(
+                                modifier = Modifier
+                                    .width(80.dp)
+                                    .height(35.dp)
+                                    .background(if (isCurrent) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f) else Color.Transparent),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    if (player.bonus > 0) "+${player.bonus}" else "0", 
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (player.bonus > 0) Color.Green else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                    
+                    // Separator Row - more subtle boundary
+                    Row(modifier = Modifier.height(2.dp).background(MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))) {
+                        Box(modifier = Modifier.fillMaxWidth()) {}
+                    }
+                }
             }
             
             // Totals
