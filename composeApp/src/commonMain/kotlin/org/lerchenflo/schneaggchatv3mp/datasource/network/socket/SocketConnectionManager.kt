@@ -25,6 +25,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -141,6 +143,8 @@ class SocketConnectionManager(
             val socketMessage = AppJson.instance.decodeFromString<SocketConnectionMessage>(message)
 
             when (socketMessage) {
+
+                //A message got updated
                 is SocketConnectionMessage.MessageChange -> {
 
                     val existing = messageRepository.getMessageById(socketMessage.message.messageId)
@@ -180,6 +184,8 @@ class SocketConnectionManager(
                         NotificationManager.showNotification(message)
                     }
                 }
+
+                //A user got updated
                 is SocketConnectionMessage.UserChange -> {
                     if (socketMessage.deleted) {
                         userRepository.deleteUser(socketMessage.user.id)
@@ -269,6 +275,39 @@ class SocketConnectionManager(
                         appRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
                     }
                 }
+
+                //A group got updated
+                is SocketConnectionMessage.GroupChange -> {
+                    if (socketMessage.deleted) {
+                        groupRepository.deleteGroup(socketMessage.group.id)
+                    } else {
+
+                        val existing = groupRepository.getGroupById(socketMessage.group.id)
+
+                        groupRepository.upsertGroup(Group(
+                            id = socketMessage.group.id,
+                            name = socketMessage.group.name,
+                            profilePictureUrl = "",
+                            description = socketMessage.group.description,
+                            createDate = socketMessage.group.createdAt,
+                            changedate = socketMessage.group.updatedAt,
+                            notisMuted = existing?.notisMuted ?: false,
+                            members = socketMessage.group.members.map { groupMemberresp ->
+                                GroupMember(
+                                    groupId = socketMessage.group.id,
+                                    userId = groupMemberresp.userid,
+                                    joinDate = groupMemberresp.joinedAt,
+                                    admin = groupMemberresp.admin,
+                                    color = groupMemberresp.color,
+                                    memberName = groupMemberresp.memberName
+                                )
+                            }
+                        ))
+                        appRepository.getProfilePicturesForGroupIds(listOf(socketMessage.group.id))
+                    }
+                }
+
+                //Friend request was sent
                 is SocketConnectionMessage.FriendRequest -> {
                     appRepository.dataSync()
                     if (socketMessage.accepted) {
@@ -284,6 +323,8 @@ class SocketConnectionManager(
                     }
 
                 }
+
+
             }
         } catch (e: Exception) {
             println("Failed to deserialize socket message: ${e.message}")

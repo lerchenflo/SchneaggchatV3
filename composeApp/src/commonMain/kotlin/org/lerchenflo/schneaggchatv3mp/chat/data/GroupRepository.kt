@@ -23,13 +23,10 @@ class GroupRepository(
     suspend fun upsertGroup(group: Group) {
         val groupWithMembersDto = group.toDto()
 
-        // 1️⃣ Upsert group first
         database.groupDao().upsertGroup(groupWithMembersDto.group)
 
-        // 2️⃣ Delete all existing members for this group
         database.groupDao().deleteMembersForGroup(groupWithMembersDto.group.id)
 
-        // 3️⃣ Re-insert members (if any)
         if (groupWithMembersDto.members.isNotEmpty()) {
             database.groupDao().upsertMembers(
                 groupWithMembersDto.members.map {
@@ -86,6 +83,10 @@ class GroupRepository(
 
     fun getGroupFlow(id: String): Flow<Group?> {
         return database.groupDao().getGroupWithMembersByIdFlow(id).map { it?.toGroup() }
+    }
+
+    suspend fun getGroupById(id: String) : Group? {
+        return database.groupDao().getGroupWithMembersById(id)?.toGroup()
     }
 
     /**

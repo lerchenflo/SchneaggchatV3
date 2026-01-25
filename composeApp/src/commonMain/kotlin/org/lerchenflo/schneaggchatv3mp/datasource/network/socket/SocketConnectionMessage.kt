@@ -18,10 +18,9 @@ sealed interface SocketConnectionMessage {
     @Serializable
     @SerialName("userchange")
 
-    data class UserChange(
-        val user: NetworkUtils.UserResponse,
-        val deleted: Boolean
-    ) : SocketConnectionMessage
+    data class UserChange(val user: NetworkUtils.UserResponse, val deleted: Boolean) : SocketConnectionMessage
+
+    data class GroupChange(val group: NetworkUtils.GroupResponse, val deleted: Boolean) : SocketConnectionMessage
 
     @Serializable
     @SerialName("friendrequest")
