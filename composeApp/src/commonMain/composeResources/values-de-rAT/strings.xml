@@ -10,7 +10,11 @@
     <string name="search_friend">Suach in dina Freunde ...</string>
     <string name="no_status">kuan Status</string>
     <string name="unknown_user">kennsch ned</string>
-    
+
+    <string name="status_infotext">Din Status dean alle dine Freunde leasa künnand. Aktuell ischa leer.</string>
+    <string name="currentstatus">Din aktuella Status: %1$s</string>
+
+
     <string name="go_back">zruck</string>
     <string name="add">dazuatua</string>
     <string name="message">Nochricht</string>
@@ -76,9 +80,12 @@
     <string name="error_username_must_not_be_empty">Da neue Nama darf ned leer si</string>
 
     <string name="select_gebi_date">Wenn hosch Geburtstag</string>
+    <string name="change_gebi_date">Änder din Geburtsdatum</string>
     <string name="select_profile_pic">Suach da a profilbild us</string>
 
     <string name="status">Status:</string>
+    <string name="status_nosemicolon">Status</string>
+
     <string name="app_broken_desc">Behebt die meista fehler mit da App</string>
     <string name="app_broken_are_you_sure">Löscht alle Appdaten vom handy und startet d App neu.\nBisch da sicha dassd des willsch?</string>
     <string name="please_restart_app">Bitte start dine App neu</string>
@@ -206,6 +213,9 @@
     <string name="new_friend_request_noti">Freundschaftsanfrog von %1$s</string>
     <string name="new_friend_request_noti_body">%1$s will din Freund sei</string>
 
+    <string name="new_friend_accepted_noti">Freundschaftafrog agno</string>
+    <string name="new_friend_accepted_noti_body">%1$s isch jetzt din Freund</string>
+
     <string name="tooltip_username">Wähl an Benutzernama dean andere Benutzer seahand</string>
     <string name="tooltip_email">Wird zum Wiederherstella vo da Zugangsdaten und zur Löschung vom Account verwendet</string>
     <string name="tooltip_birthdate">Wird verwendet zum dine Freunde zum informiera wenn du Geburtstag hosch</string>
@@ -234,6 +244,12 @@
     <string name="edit">Bearbeita</string>
     <string name="delete">Löscha</string>
 
+    <string name="pin_chat">Chat apinna</string>
+    <string name="unpin_chat">Pin entferna</string>
+    <string name="mark_as_unread">als ungleasa markiera</string>
+    <string name="more_info">Meh Informationa</string>
+    <string name="edit_profile_picture">Profilbild bearbeita</string>
+
     <string name="admin">Admin</string>
 
 
@@ -252,6 +268,11 @@
     <string name="change_username">Benutzernama ändra</string>
     <string name="change_username_description">Änder din Benutzernama. Er wird andra azoagt und wird fürs Ilogga brucht</string>
     <string name="change_username_placeholder">neuer Benutzernama ...</string>
+
+    <string name="change_status">Status ändra</string>
+    <string name="change_email">Email ändra</string>
+    <string name="resend_verification">Bestätigungsemail noml schicka</string>
+
 
     <string name="common_groups">Gemeinsame Gruppa (%1$s)</string>
     <string name="groupmembers">Gruppenmitglieder (%1$s)</string>
@@ -286,6 +307,7 @@
     <!-- Games -->
     <string name="games_dartcounter_title">Dartcounter</string>
     <string name="games_undercover_title">Undercover</string>
+    <string name="games_stack_tower">Turm</string>
 
     <!-- Games: DartCounter -->
     <string name="dartcounter_add_players">Neua Spiela</string>
@@ -365,6 +387,12 @@
 
 
     <string name="your_friends_wrote_this">~ Dine Freunde</string>
+    <string name="show_logs">Logs aschoua</string>
 
+    <!-- polls -->
+    <string name="poll_creator_title">Umfrog erstella</string>
+    <string name="poll_title">Umfrogatitel ...</string>
+    <string name="poll_options_title">Optiona</string>
+    <string name="poll_option">Option</string>
 
 </resources>
