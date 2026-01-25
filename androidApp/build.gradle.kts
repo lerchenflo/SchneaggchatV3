@@ -27,7 +27,7 @@ android {
         minSdk = 26
         targetSdk = 36
         versionCode = 10
-        versionName = "3.0-beta"
+        versionName = "3.0.2-beta"
     }
     packaging {
         resources {

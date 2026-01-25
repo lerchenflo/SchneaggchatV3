@@ -10,7 +10,7 @@ It is an alternative to the tech giants stealing our data.
 
 # Changelog
 
-### 3.0.1
+### 3.0.2
 
 #### Features
 - Status / Description Settings
@@ -24,7 +24,8 @@ It is an alternative to the tech giants stealing our data.
 - Chatdetails + Chatselection UI fixes
 - Socketconnection crash fix
 
-
+### 3.0.1
+- Quick bugfixes for IOs
 
 ### 3.0.0
 - Initial release (User, Groups, Notifications, ProfilePicture)
