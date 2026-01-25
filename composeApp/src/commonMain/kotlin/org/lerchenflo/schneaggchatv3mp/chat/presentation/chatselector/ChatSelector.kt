@@ -528,6 +528,7 @@ fun Chatauswahlscreen(
                                     profilePictureDialogShown = true
                                     profilePictureFilePathTemp = gegner.profilePictureUrl
                                 },
+                                showPin = true
 
                             )
                             HorizontalDivider(
