@@ -10,7 +10,11 @@
     <string name="search_friend">In Freunden suchen ...</string>
     <string name="no_status">kein Status</string>
     <string name="unknown_user">unbekannter Nutzer</string>
-    
+
+    <string name="status_infotext">Dieser Status ist für alle deine Freunde lesbar. Aktuell ist er leer.</string>
+    <string name="currentstatus">Dein aktueller Status: %1$s</string>
+
+
     <string name="go_back">zurück</string>
     <string name="add">hinzufügen</string>
     <string name="message">Nachricht</string>
@@ -76,9 +80,12 @@
     <string name="error_username_must_not_be_empty">Der neue Benutzername darf nicht leer sein</string>
 
     <string name="select_gebi_date">Wähle dein Geburtsdatum aus</string>
+    <string name="change_gebi_date">Ändere dein Geburtsdatum</string>
     <string name="select_profile_pic">Wähle dein Profilbild aus</string>
 
     <string name="status">Status:</string>
+    <string name="status_nosemicolon">Status</string>
+
     <string name="app_broken_desc">Behebt die meisten gängigen Fehler mit der App</string>
     <string name="app_broken_are_you_sure">Dies wird die Lokale Datenbank löschen und erneut alle Daten vom Server herunterladen.\nBist du sicher dass du fortfahren willst?</string>
     <string name="please_restart_app">Bitte starte die App neu</string>
@@ -206,6 +213,9 @@
     <string name="new_friend_request_noti">Freundschaftsanfrage von %1$s</string>
     <string name="new_friend_request_noti_body">%1$s will dein Freund sein</string>
 
+    <string name="new_friend_accepted_noti">Freundschaftsanfrage akzeptiert</string>
+    <string name="new_friend_accepted_noti_body">%1$s ist jetzt dein Freund</string>
+
     <string name="tooltip_username">Wähle einen Benutzernamen den andere Benutzer sehen</string>
     <string name="tooltip_email">Wird zum Wiederherstellen der Zugangsdaten und zur Löschung des Accounts verwendet</string>
     <string name="tooltip_birthdate">Wird benutzt, um deine Freunde zu informieren, wenn du Geburtstag hast</string>
@@ -234,6 +244,12 @@
     <string name="edit">Bearbeiten</string>
     <string name="delete">Löschen</string>
 
+    <string name="pin_chat">Chat anpinnen</string>
+    <string name="unpin_chat">Pin entfernen</string>
+    <string name="mark_as_unread">als ungelesen markieren</string>
+    <string name="more_info">Mehr Informationen</string>
+    <string name="edit_profile_picture">Profilbild bearbeiten</string>
+
     <string name="admin">Admin</string>
 
 
@@ -252,6 +268,11 @@
     <string name="change_username">Benutzername ändern</string>
     <string name="change_username_description">Ändere deinen Benutzernamen. Er wird anderen angezeigt und wird fürs Einloggen gebraucht</string>
     <string name="change_username_placeholder">neuer Benutzername ...</string>
+
+    <string name="change_status">Status ändern</string>
+    <string name="change_email">Email ändern</string>
+    <string name="resend_verification">Bestätigungsemail erneut senden</string>
+
 
     <string name="common_groups">Gemeinsame Gruppen (%1$s)</string>
     <string name="groupmembers">Gruppenmitglieder (%1$s)</string>
@@ -286,6 +307,7 @@
     <!-- Games -->
     <string name="games_dartcounter_title">Dartcounter</string>
     <string name="games_undercover_title">Undercover</string>
+    <string name="games_stack_tower">Stack Tower</string>
 
     <!-- Games: DartCounter -->
     <string name="dartcounter_add_players">Spieler hinzufügen</string>
@@ -363,7 +385,14 @@
     <string name="undercover_winner_civilians">Zivilisten gewinnen</string>
     <string name="undercover_winner_undercover">Undercover / Mr. White gewinnt</string>
 
-    <string name="your_friends_wrote_this">~ Deine Freunde</string>
 
+    <string name="your_friends_wrote_this">~ Deine Freunde</string>
+    <string name="show_logs">Logs anzeigen</string>
+
+    <!-- polls -->
+    <string name="poll_creator_title">Umfrage erstellen</string>
+    <string name="poll_title">Umfragentitel ...</string>
+    <string name="poll_options_title">Optionen</string>
+    <string name="poll_option">Option</string>
 
 </resources>
