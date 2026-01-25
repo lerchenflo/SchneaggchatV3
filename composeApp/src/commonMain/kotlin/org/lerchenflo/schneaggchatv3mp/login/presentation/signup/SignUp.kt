@@ -29,13 +29,11 @@ import androidx.compose.ui.unit.dp
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
 import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
-import io.github.ismoy.imagepickerkmp.domain.config.PermissionAndConfirmationConfig
-import io.github.ismoy.imagepickerkmp.domain.config.UiConfig
 import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
 import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
+import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
 
 

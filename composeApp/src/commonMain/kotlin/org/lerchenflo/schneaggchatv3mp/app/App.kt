@@ -71,7 +71,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSe
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
-import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
+import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager

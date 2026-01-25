@@ -41,19 +41,16 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChangeDialog
-import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
+import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageSetting
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.version
 

@@ -2,11 +2,9 @@ package org.lerchenflo.schneaggchatv3mp.sharedUi
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,9 +19,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Reply
@@ -40,12 +36,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
@@ -55,14 +49,12 @@ import com.mikepenz.markdown.m3.Markdown
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.resources.vectorResource
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.check
-import schneaggchatv3mp.composeapp.generated.resources.read
 import schneaggchatv3mp.composeapp.generated.resources.something_wrong_message
 import kotlin.math.roundToInt
 
@@ -106,6 +98,9 @@ fun MessageViewWithActions(
             ReplyArrow()
         }
         Surface(
+            color = MaterialTheme.colorScheme.background,
+            tonalElevation = 0.dp,
+            shadowElevation = 0.dp,
             modifier = Modifier
                 .fillMaxSize()
                 .offset { IntOffset(offset.value.roundToInt(), 0) }
@@ -209,7 +204,7 @@ private fun MessageView(
     Column(){
         if (replyMessage != null) {
 
-            ReplyPreview(
+            RepliedMessagePreview(
                 message = replyMessage,
                 onClick = replyMessageOnClick,
                 modifier = Modifier
@@ -243,7 +238,7 @@ private fun MessageView(
                         color = if (mymessage) {
                             MaterialTheme.colorScheme.primaryContainer
                         } else {
-                            MaterialTheme.colorScheme.secondaryContainer
+                            MaterialTheme.colorScheme.surfaceVariant
                         },
                         shape = RoundedCornerShape(15.dp)
                     )
@@ -341,8 +336,12 @@ fun MessageContent(
     }
 }
 
+
+/**
+ * Preview for the message that was replied to in an already sent message
+ */
 @Composable
-private fun ReplyPreview(
+private fun RepliedMessagePreview(
     message: Message,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -367,7 +366,7 @@ private fun ReplyPreview(
                         color = if (message.myMessage) {
                             MaterialTheme.colorScheme.primaryContainer
                         } else {
-                            MaterialTheme.colorScheme.secondaryContainer
+                            MaterialTheme.colorScheme.surfaceVariant
                         },
                         shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp)
                     )
@@ -546,7 +545,7 @@ fun DayDivider(millis: Long) {
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-private fun messagepreview(){
+private fun Messagepreview(){
     val mymessage = Message(
         msgType = MessageType.TEXT,
         senderId = "1",
