@@ -59,27 +59,6 @@ fun YatziSetupScreen(
     onStartGame: () -> Unit,
     viewModel: YatziViewModel = viewModel { YatziViewModel() }
 ) {
-    // Note: In a real app with DI, you'd pass the same ViewModel instance to the game screen.
-    // Here we might need to handle sharing the viewmodel differently if not using a shared graph.
-    // For now, let's assume this screen just collects names and passes them?
-    // Actually, KMP navigation usually destroys VM on pop. 
-    // If we want to persist data from setup to game, we should probably pass arguments 
-    // or use a shared ViewModel holder.
-    // Given the constraints, let's assume valid KMP DI or keep it simple.
-    // To keep it simple in this single-file context without DI framework access:
-    // We will just return the list of names? Or we can use the ViewModel if the navigator keeps it alive.
-    // Let's implement the UI for adding players.
-    
-    // Correction: Since I cannot easily change the DI setup, I will assume the ViewModel can be retrieved or shared.
-    // Actually, better: Let's have ONE Screen that switches content or use navigation content.
-    // But Route says YatziSetup and YatziGame are separate.
-    // Let's just use the ViewModel locally here to build the list, 
-    // but we need to pass the list to the next screen. 
-    // Since I can't change Route easily to add arguments (it's object based mostly), I might have issues passing data.
-    // Wait, Route.src shows `data object` but I can make them `data class` if needed.
-    // But let's look at `Route.kt` again. They are `data object`. 
-    // I can change `YatziGame` to `data class YatziGame(val players: List<String>)`.
-    // Let's do that in a follow up if needed. For now, I'll build the UI.
 
     var newPlayerName by remember { mutableStateOf("") }
     val state by viewModel.state.collectAsState()
@@ -147,10 +126,6 @@ fun YatziSetupScreen(
         }
     }
 }
-
-// NOTE: We need a way to pass the players. I will modify Route.kt in a moment to allow passing arguments.
-// Or I can just implement the GameScreen and assume the ViewModel is shared/injected.
-// Let's implement the GameScreen UI assuming we have the ViewModel.
 
 @Composable
 fun YatziGameScreen(
@@ -345,7 +320,7 @@ fun Scorecard(
                 // Add boundary and sum after upper section (after SIXES)
                 if (category == YatziCategory.SIXES) {
                     // Upper Section Sum Row
-                    Row(modifier = Modifier.height(35.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
+                    Row(modifier = Modifier.height(35.dp).border(2.dp, MaterialTheme.colorScheme.outlineVariant)) {
                         Box(modifier = Modifier.width(120.dp).padding(8.dp), contentAlignment = Alignment.CenterStart) {
                             Text("Upper Sum", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
                         }
