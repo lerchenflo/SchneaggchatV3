@@ -49,6 +49,7 @@ import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.lerchenflo.schneaggchatv3mp.URL_DEL_ACC
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
@@ -268,47 +269,51 @@ fun UserSettings(
 
              */
 
-            SettingsOption(
-                icon = Icons.Default.Mail,
-                text = stringResource(Res.string.email),
-                subtext = (if (ownuser?.isEmailVerified() == true) stringResource(Res.string.emailinfo) else stringResource(Res.string.emailinfo_unverified)) + "\n" + ownuser?.email,
-                onClick = {
-                    showChangeEmailPopup = true
-                    /*
+            if (SessionCache.developer) {
+
+                SettingsOption(
+                    icon = Icons.Default.Mail,
+                    text = stringResource(Res.string.email),
+                    subtext = (if (ownuser?.isEmailVerified() == true) stringResource(Res.string.emailinfo) else stringResource(
+                        Res.string.emailinfo_unverified
+                    )) + "\n" + ownuser?.email,
+                    onClick = {
+                        showChangeEmailPopup = true
+                        /*
                     if (ownuser?.isEmailVerified() == true){
                     }else {
                         userSettingsViewModel.sendEmailVerify()
                     }
 
                      */
-                },
-                rightSideIcon = {
-                    if (ownuser != null){
-                        if (ownuser.isEmailVerified()) {
-                            Icon(
-                                imageVector = Icons.Outlined.Verified,
-                                contentDescription = "Email is verified",
-                                modifier = Modifier.size(30.dp),
-                                tint = Color(red = 0, green = 255, blue = 0)
-                            )
-                        }else {
-                            Icon(
-                                imageVector = Icons.Rounded.Warning,
-                                contentDescription = "Email not verified",
-                                tint = Color(red = 255, green = 165, blue = 0), //orange
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .clickable{
-                                        userSettingsViewModel.sendEmailVerify()
-                                    }
-                            )
+                    },
+                    rightSideIcon = {
+                        if (ownuser != null) {
+                            if (ownuser.isEmailVerified()) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Verified,
+                                    contentDescription = "Email is verified",
+                                    modifier = Modifier.size(30.dp),
+                                    tint = Color(red = 0, green = 255, blue = 0)
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Rounded.Warning,
+                                    contentDescription = "Email not verified",
+                                    tint = Color(red = 255, green = 165, blue = 0), //orange
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .clickable {
+                                            userSettingsViewModel.sendEmailVerify()
+                                        }
+                                )
+                            }
                         }
-                    }
-                },
-            )
+                    },
+                )
 
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+            }
 
             var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
             SettingsOption(
