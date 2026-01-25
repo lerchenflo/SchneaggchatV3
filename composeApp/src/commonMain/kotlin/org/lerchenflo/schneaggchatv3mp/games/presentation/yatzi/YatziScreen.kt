@@ -180,9 +180,23 @@ fun YatziGameScreen(
              }
          } else {
              Column(modifier = Modifier.padding(padding)) {
+                 // Scorecard - takes most of the space but is scrollable
+                 Scorecard(
+                     modifier = Modifier.weight(1f),
+                     players = state.players,
+                     currentPlayerIndex = state.currentPlayerIndex,
+                     onCategorySelect = { viewModel.selectCategory(it) },
+                     viewModel = viewModel, // passing VM to calculate potential score
+                     canScore = state.canScore,
+                     state = state
+                 )
+                 
+                 Spacer(modifier = Modifier.height(16.dp))
+                 
                  // Game Header (Current Player, Rolls left)
                  state.currentPlayer
-                 // Dice Area
+                 
+                 // Dice Area - fixed size at bottom
                  DiceArea(
                      dice = state.dice,
                      onToggleDie = { viewModel.toggleDie(it) },
@@ -190,16 +204,6 @@ fun YatziGameScreen(
                      onRoll = { viewModel.rollDice() },
                      state = state,
                      rollCount = state.currentRollCount
-                 )
-                 
-                 // Scorecard
-                 Scorecard(
-                     players = state.players,
-                     currentPlayerIndex = state.currentPlayerIndex,
-                     onCategorySelect = { viewModel.selectCategory(it) },
-                     viewModel = viewModel, // passing VM to calculate potential score
-                     canScore = state.canScore,
-                     state = state
                  )
              }
          }
@@ -225,6 +229,7 @@ fun WinnerScreen(winner: YatziPlayer, onBack: () -> Unit) {
 
 @Composable
 fun Scorecard(
+    modifier: Modifier = Modifier,
     players: List<YatziPlayer>,
     currentPlayerIndex: Int,
     onCategorySelect: (YatziCategory) -> Unit,
@@ -245,7 +250,7 @@ fun Scorecard(
     
     // Header Row
     Row(
-        modifier = Modifier
+        modifier = modifier
             .verticalScroll(scrollState)
             .horizontalScroll(horizontalScrollState)
     ) {
