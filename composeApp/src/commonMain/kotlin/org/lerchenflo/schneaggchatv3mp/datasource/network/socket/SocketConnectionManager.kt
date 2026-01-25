@@ -116,7 +116,7 @@ class SocketConnectionManager(
             
             if (connection.connect()) {
                 currentConnection = connection
-                loggingRepository.logInfo("WebSocket connected to $serverUrl")
+                //loggingRepository.logInfo("WebSocket connected to $serverUrl")
                 true
             } else {
                 false
