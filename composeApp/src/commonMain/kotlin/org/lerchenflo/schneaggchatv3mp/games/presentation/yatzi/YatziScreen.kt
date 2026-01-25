@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 
@@ -178,8 +181,7 @@ fun YatziGameScreen(
          } else {
              Column(modifier = Modifier.padding(padding)) {
                  // Game Header (Current Player, Rolls left)
-                 GameHeader(state)
-                 
+                 state.currentPlayer
                  // Dice Area
                  DiceArea(
                      dice = state.dice,
@@ -196,7 +198,8 @@ fun YatziGameScreen(
                      currentPlayerIndex = state.currentPlayerIndex,
                      onCategorySelect = { viewModel.selectCategory(it) },
                      viewModel = viewModel, // passing VM to calculate potential score
-                     canScore = state.canScore
+                     canScore = state.canScore,
+                     state = state
                  )
              }
          }
@@ -218,73 +221,7 @@ fun WinnerScreen(winner: YatziPlayer, onBack: () -> Unit) {
     }
 }
 
-@Composable
-fun GameHeader(state: YatziState) {
-    val currentPlayer = state.currentPlayer ?: return
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                "Current Turn: ${currentPlayer.name}",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
 
-@Composable
-fun DiceArea(
-    dice: List<YatziDie>,
-    onToggleDie: (Int) -> Unit,
-    canRoll: Boolean,
-    onRoll: () -> Unit,
-    state: YatziState,
-    rollCount: Int
-) {
-    Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            dice.forEachIndexed { index, die ->
-                DieView(die, onClick = { onToggleDie(index) })
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = onRoll,
-            enabled = canRoll,
-            modifier = Modifier.fillMaxWidth(0.5f)
-        ) {
-            Text(if (rollCount == 0) "Roll Dice, ${3 - state.currentRollCount} left" else "Roll Again, ${3 - state.currentRollCount} left")
-        }
-    }
-}
-
-@Composable
-fun DieView(die: YatziDie, onClick: () -> Unit) {
-    val backgroundColor = if (die.isKept) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
-    val contentColor = if (die.isKept) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-    
-    Box(
-        modifier = Modifier
-            .size(60.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(backgroundColor)
-            .clickable(onClick = onClick)
-            .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp)),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = die.value.toString(),
-            style = MaterialTheme.typography.headlineMedium,
-            color = contentColor
-        )
-    }
-}
 
 @Composable
 fun Scorecard(
@@ -292,12 +229,26 @@ fun Scorecard(
     currentPlayerIndex: Int,
     onCategorySelect: (YatziCategory) -> Unit,
     viewModel: YatziViewModel,
-    canScore: Boolean
+    canScore: Boolean,
+    state: YatziState
 ) {
     val scrollState = rememberScrollState()
+    val horizontalScrollState = rememberScrollState()
+    
+    // Auto-scroll to current player when turn changes
+    LaunchedEffect(currentPlayerIndex) {
+        val playerColumnWidth = 80.dp
+        val headerWidth = 120.dp
+        val targetOffset = headerWidth + (currentPlayerIndex * playerColumnWidth)
+        horizontalScrollState.animateScrollTo(targetOffset.value.toInt())
+    }
     
     // Header Row
-    Row(modifier = Modifier.verticalScroll(scrollState)) {
+    Row(
+        modifier = Modifier
+            .verticalScroll(scrollState)
+            .horizontalScroll(horizontalScrollState)
+    ) {
         Column {
             // Header
             Row(modifier = Modifier.height(50.dp).background(MaterialTheme.colorScheme.surface)) {
@@ -324,7 +275,7 @@ fun Scorecard(
             
             // Categories
             YatziCategory.entries.forEach { category ->
-                Row(modifier = Modifier.height(30.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
+                Row(modifier = Modifier.height(35.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
                     // Category Name
                     Box(modifier = Modifier.width(120.dp).padding(8.dp), contentAlignment = Alignment.CenterStart) {
                         Text(category.displayName, style = MaterialTheme.typography.bodyMedium)
@@ -348,11 +299,14 @@ fun Scorecard(
                         ) {
                             if (score != null) {
                                 Text(score.toString(), fontWeight = FontWeight.Bold)
-                            } else if (isSelectable && canScore) {
+                            } else if (isCurrent && state.currentRollCount > 0) {
                                 val potential = viewModel.calculatePotentialScore(category)
                                 Text(
                                     potential.toString(),
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                                    color = if (isSelectable && canScore) 
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.8f) 
+                                    else 
+                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             }
@@ -373,5 +327,56 @@ fun Scorecard(
                  }
             }
         }
+    }
+}
+
+@Composable
+fun DiceArea(
+    dice: List<YatziDie>,
+    onToggleDie: (Int) -> Unit,
+    canRoll: Boolean,
+    onRoll: () -> Unit,
+    state: YatziState,
+    rollCount: Int
+) {
+    Column(modifier = Modifier.padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            dice.forEachIndexed { index, die ->
+                DieView(die, onClick = { onToggleDie(index) })
+            }
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+        Button(
+            onClick = onRoll,
+            enabled = canRoll,
+            modifier = Modifier.fillMaxWidth(0.5f)
+        ) {
+            Text(if (rollCount == 0) "Roll Dice, ${3 - state.currentRollCount} left" else "Roll Again, ${3 - state.currentRollCount} left")
+        }
+    }
+}
+
+@Composable
+fun DieView(die: YatziDie, onClick: () -> Unit) {
+    val backgroundColor = if (die.isKept) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+    val contentColor = if (die.isKept) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+
+    Box(
+        modifier = Modifier
+            .size(60.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(backgroundColor)
+            .clickable(onClick = onClick)
+            .border(2.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = die.value.toString(),
+            style = MaterialTheme.typography.headlineMedium,
+            color = contentColor
+        )
     }
 }

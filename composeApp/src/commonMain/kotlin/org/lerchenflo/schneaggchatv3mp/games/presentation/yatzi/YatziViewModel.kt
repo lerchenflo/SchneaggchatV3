@@ -175,7 +175,7 @@ class YatziViewModel : ViewModel() {
             }
             YatziCategory.CHANCE -> values.sum()
             YatziCategory.YAHTZEE -> {
-                 if (counts.any { it.value == 5 }) 50 else 0
+                 if (counts.any { it.value == 5 }) 50 + values.sum() else 0
             }
         }
     }
