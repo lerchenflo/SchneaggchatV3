@@ -8,6 +8,7 @@ coilComposeVersion = "3.3.0"
 componentsResources = "1.10.0"
 composeHotReload = "1.0.0"
 composeMultiplatform = "1.10.0"
+coreSplashscreen = "1.2.0"
 cryptographyProviderOptimal = "0.5.0"
 encoding = "2.6.0"
 foundation = "1.10.0"
@@ -51,6 +52,7 @@ composeBom = "2026.01.00"
 
 [libraries]
 
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maps" }
 
 

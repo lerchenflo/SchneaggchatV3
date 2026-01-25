@@ -104,6 +104,7 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
+            implementation(libs.ui.tooling)
             implementation(libs.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
 

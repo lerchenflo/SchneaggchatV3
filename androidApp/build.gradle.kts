@@ -1,3 +1,4 @@
+import org.jetbrains.compose.ComposeBuildConfig.composeVersion
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -42,6 +43,10 @@ android {
     buildFeatures {
         compose = true
     }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = composeVersion
+    }
 }
 
 //jvmToolchain(17)
@@ -52,8 +57,8 @@ dependencies {
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.app.update.ktx)
-    debugImplementation(libs.androidx.compose.ui.tooling)
-    debugImplementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.ui.tooling)
+    implementation(libs.androidx.compose.ui.tooling.preview)
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.ui)
@@ -70,6 +75,6 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     // splash screen
-    implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation(libs.androidx.core.splashscreen)
 
 }
