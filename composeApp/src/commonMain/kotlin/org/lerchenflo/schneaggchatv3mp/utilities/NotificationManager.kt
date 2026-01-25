@@ -26,6 +26,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti
+import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.new_message_noti_group_title
@@ -52,7 +54,8 @@ object NotificationManager{
 
         data class FriendRequestNotification(
             val requesterId: String,
-            val requesterName: String
+            val requesterName: String,
+            val accepted: Boolean
         ) : NotificationObject
 
         data class SystemNotification(
@@ -123,6 +126,7 @@ object NotificationManager{
                 NotificationObject.FriendRequestNotification(
                     requesterId = this.requesterId,
                     requesterName = this.requesterName,
+                    accepted = this.accepted
                 )
             }
             is NetworkUtils.NotificationResponse.SystemNotificationResponse -> {
@@ -257,10 +261,17 @@ object NotificationManager{
 
                                 is NotificationObject.FriendRequestNotification -> {
                                     // Handle friend request notification
-                                    showNotification(
-                                        titletext = getString(Res.string.new_friend_request_noti, notiObject.requesterName),
-                                        bodytext = getString(Res.string.new_friend_request_noti_body, notiObject.requesterName)
-                                    )
+                                    if (notiObject.accepted) {
+                                        showNotification(
+                                            titletext = getString(Res.string.new_friend_accepted_noti),
+                                            bodytext = getString(Res.string.new_friend_accepted_noti_body, notiObject.requesterName)
+                                        )
+                                    } else {
+                                        showNotification(
+                                            titletext = getString(Res.string.new_friend_request_noti, notiObject.requesterName),
+                                            bodytext = getString(Res.string.new_friend_request_noti_body, notiObject.requesterName)
+                                        )
+                                    }
                                 }
 
                                 is NotificationObject.SystemNotification -> {
