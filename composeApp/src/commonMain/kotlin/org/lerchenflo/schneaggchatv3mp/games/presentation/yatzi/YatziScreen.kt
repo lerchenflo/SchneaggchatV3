@@ -298,7 +298,30 @@ fun Scorecard(
                             contentAlignment = Alignment.Center
                         ) {
                             if (score != null) {
-                                Text(score.toString(), fontWeight = FontWeight.Bold)
+                                val textColor = if (category.isUpper) {
+                                    val expectedScore = when (category) {
+                                        YatziCategory.ONES -> 3
+                                        YatziCategory.TWOS -> 6
+                                        YatziCategory.THREES -> 9
+                                        YatziCategory.FOURS -> 12
+                                        YatziCategory.FIVES -> 15
+                                        YatziCategory.SIXES -> 18
+                                        else -> 0
+                                    }
+                                    when {
+                                        score == expectedScore -> MaterialTheme.colorScheme.onSurface
+                                        score > expectedScore -> Color.Green
+                                        else -> Color.Red
+                                    }
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                }
+                                
+                                Text(
+                                    score.toString(), 
+                                    fontWeight = FontWeight.Bold,
+                                    color = textColor
+                                )
                             } else if (isCurrent && state.currentRollCount > 0) {
                                 val potential = viewModel.calculatePotentialScore(category)
                                 Text(
