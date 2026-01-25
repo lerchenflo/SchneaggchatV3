@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Main app theme (NO action bar) -->
+    <style name="Theme.App" parent="@android:style/Theme.Material.Light.NoActionBar" />
+
+    <!-- Splash screen theme (REQUIRED parent) -->
+    <style name="Theme.App.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#121212</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+
+        <!-- Switch to your no-action-bar theme after splash -->
+        <item name="postSplashScreenTheme">@style/Theme.App</item>
+    </style>
+
+</resources>
