@@ -69,6 +69,7 @@ fun UserButton(
     useOnClickGes: Boolean = true,
     selected: Boolean? = null,
     showNotiIcons: Boolean = true,
+    showPin: Boolean = false,
     onClickGes: () -> Unit = {},  // Add click for everything
     onClickText: () -> Unit = {},  // Add click for name ...
     onLongClickText: () -> Unit = {}, // Add long click for name ...
@@ -159,7 +160,7 @@ fun UserButton(
                     }
                 }
 
-                if (selectedChat.pinned > 0L) {
+                if (selectedChat.pinned > 0L && showPin) {
                     Icon(
                         imageVector = Icons.Default.PushPin,
                         contentDescription = "pinned",
