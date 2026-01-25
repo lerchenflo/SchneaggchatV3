@@ -608,7 +608,7 @@ class NetworkUtils(
         val joinedAt: String,
         val admin: Boolean,
         val color: Int,
-        val memberName: String
+        val memberName: String = ""
     )
 
     suspend fun createGroup(
@@ -624,7 +624,7 @@ class NetworkUtils(
                 formData = formData {
                     append("name", name)
                     append("description", description)
-                    append("memberlist[]", memberIds)
+                    append("memberlist", memberIds.joinToString(","))
                     append("profilepic", profilePicBytes, Headers.build {
                         append(HttpHeaders.ContentType, "image/jpeg")
                         append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")

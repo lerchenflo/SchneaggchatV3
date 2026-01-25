@@ -1201,7 +1201,9 @@ class AppRepository(
                 println("GroupIdSync sync response: ${groupSyncResponse.data.toString()}")
 
 
+
                 groupSyncResponse.data.updatedGroups.forEach { groupResponse ->
+                    val existing = groupRepository.getGroupById(groupResponse.id)
                     groupRepository.upsertGroup(Group(
                         id = groupResponse.id,
                         name = groupResponse.name,
@@ -1209,7 +1211,7 @@ class AppRepository(
                         description = groupResponse.description,
                         createDate = groupResponse.createdAt,
                         changedate = groupResponse.updatedAt,
-                        notisMuted = false,
+                        notisMuted = existing?.notisMuted ?: false,
                         members = groupResponse.members.map { groupMemberresp ->
                             GroupMember(
                                 groupId = groupResponse.id,
@@ -1237,7 +1239,7 @@ class AppRepository(
         }
     }
 
-    private suspend fun getProfilePicturesForGroupIds(groupIds: List<String>){
+    suspend fun getProfilePicturesForGroupIds(groupIds: List<String>){
         groupIds.forEach { groupId ->
             val savefilename = groupId + GROUPPROFILEPICTURE_FILE_NAME
             when (val picture = networkUtils.getProfilePicForGroupId(groupId)) {
