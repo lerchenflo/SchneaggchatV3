@@ -58,7 +58,7 @@ fun GameSelectorScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(  gamesList) { game ->
+            items(gamesList) { game ->
                 GameElementView(
                     icon = game.icon,
                     text = game.title,
