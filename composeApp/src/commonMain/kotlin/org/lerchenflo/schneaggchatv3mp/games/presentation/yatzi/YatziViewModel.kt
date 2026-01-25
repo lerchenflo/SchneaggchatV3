@@ -18,6 +18,20 @@ class YatziViewModel : ViewModel() {
         }
     }
 
+    fun resetAll() {
+        _state.value = YatziState()
+    }
+
+    fun endGameToSetup() {
+        val clearedPlayers = _state.value.players.map { it.copy(scores = emptyMap()) }
+        _state.value = YatziState(players = clearedPlayers)
+    }
+
+    fun restartGame() {
+        val clearedPlayers = _state.value.players.map { it.copy(scores = emptyMap()) }
+        _state.value = YatziState(players = clearedPlayers, gameStarted = true)
+    }
+
     fun startGame() {
         if (_state.value.players.isEmpty()) return
         _state.update {

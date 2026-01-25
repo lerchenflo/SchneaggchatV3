@@ -90,7 +90,7 @@ fun YatziSetupScreen(
                         viewModel.addPlayer(newPlayerName)
                         newPlayerName = ""
                     }
-                }) {
+                }, enabled = !state.gameStarted) {
                     Icon(Icons.Default.Add, "Add")
                 }
             }
@@ -112,16 +112,46 @@ fun YatziSetupScreen(
                 }
             }
             
-            Button(
-                onClick = {
-                    if (state.players.isNotEmpty()) {
-                        onStartGame()
+            if (!state.gameStarted) {
+                Button(
+                    onClick = {
+                        if (state.players.isNotEmpty()) {
+                            viewModel.startGame()
+                            onStartGame()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = state.players.isNotEmpty()
+                ) {
+                    Text("Start Game")
+                }
+            } else {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = onStartGame,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Continue")
                     }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = state.players.isNotEmpty()
-            ) {
-                Text("Start Game")
+                    Button(
+                        onClick = {
+                            viewModel.restartGame()
+                            onStartGame()
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Restart")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    onClick = { viewModel.resetAll() },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("New Game")
+                }
             }
         }
     }
