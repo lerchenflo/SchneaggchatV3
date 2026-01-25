@@ -389,4 +389,10 @@
     <string name="your_friends_wrote_this">~ Your friends</string>
     <string name="show_logs">Show logs</string>
 
+    <!-- polls -->
+    <string name="poll_creator_title">Create Poll</string>
+    <string name="poll_title">Poll title ...</string>
+    <string name="poll_options_title">Options</string>
+    <string name="poll_option">Option</string>
+
 </resources>

@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
@@ -76,6 +77,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
@@ -314,21 +316,23 @@ fun InputFieldRow(viewModel: ChatViewModel){
     ) {
         // button zum züg addden
         var addMediaDropdownExpanded by remember { mutableStateOf(false) }
+        var showPollDialog by remember { mutableStateOf(false) }
 
-/*
 
-        IconButton(
-            onClick = { addMediaDropdownExpanded = true },
-            modifier = Modifier
-                .padding(5.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.AttachFile,
-                contentDescription = stringResource(Res.string.add)
-            )
+        if(SessionCache.developer) {
+            IconButton(
+                onClick = { addMediaDropdownExpanded = true },
+                modifier = Modifier
+                    .padding(5.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AttachFile,
+                    contentDescription = stringResource(Res.string.add)
+                )
+            }
         }
 
- */
+
         if (addMediaDropdownExpanded) {
             DropdownMenu(
                 expanded = addMediaDropdownExpanded,
@@ -350,11 +354,24 @@ fun InputFieldRow(viewModel: ChatViewModel){
                         },
                         onClick = {
                             addMediaDropdownExpanded = false
-                            option.getAction()
+                            option.getAction(
+                                onPollAction = { showPollDialog = true },
+                                onImageAction = {}, // todo actions übergeaba
+                                onAudioAction = {}
+                            )
                         }
                     )
                 }
             }
+        }
+
+        if(showPollDialog){
+            PollDialog(
+                onDismiss = { showPollDialog = false },
+                onCreatePoll = {
+
+                }
+            )
         }
 
         OutlinedTextField(
@@ -649,15 +666,13 @@ enum class AddMediaOptions{
         AUDIO   -> Icons.Default.Headphones
     }
 
-    fun getAction(): Unit = when (this) {
-        IMAGE -> {
-            SnackbarManager.showMessage("to be done (image)")
-        }
-        POLL -> {
-            SnackbarManager.showMessage("to be done (poll)")
-        }
-        AUDIO   -> {
-            SnackbarManager.showMessage("to be done (audio)")
-        }
+    fun getAction(
+        onImageAction: () -> Unit,
+        onPollAction: () -> Unit,
+        onAudioAction: () -> Unit,
+    ): Unit = when (this) {
+        IMAGE -> onImageAction()
+        POLL -> onPollAction()
+        AUDIO -> onAudioAction()
     }
 }
