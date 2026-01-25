@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
 import android.content.Context
+import android.os.Build
 import android.os.LocaleList
 import java.util.Locale
 
@@ -51,5 +52,10 @@ actual class LanguageManager(
             val newLocale = context.resources.configuration.locales[0]
             println("New system locale: ${newLocale.language}-${newLocale.country}")
         }
+    }
+
+    actual fun getSystemLanguage(): String {
+        val locale = context.resources.configuration.locales[0]
+        return "${locale.language}-${locale.country}"
     }
 }

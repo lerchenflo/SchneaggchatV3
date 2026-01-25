@@ -24,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,10 +39,14 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChangeDialog
 import org.lerchenflo.schneaggchatv3mp.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.version
 
@@ -55,6 +60,27 @@ fun LoginScreen(
     val appRepository = koinInject<AppRepository>()
 
     SchneaggchatTheme {
+
+
+        LaunchedEffect(Unit) {
+            val languageService = KoinPlatform.getKoin().get<LanguageService>()
+            val language = languageService.getCurrentLanguage()
+
+            var showPopup = false
+
+            if (language == LanguageSetting.SYSTEM) {
+                val systemlanguage = languageService.getSystemLanguage()
+                println("system language: $systemlanguage")
+                when (systemlanguage) {
+                    "de-AT" -> {showPopup = true}
+                }
+            }
+
+            if (showPopup) {
+                SnackbarManager.showMessage("vori language erkannt")
+            }
+        }
+
 
         var showUrlChangeDialog by remember {mutableStateOf(false)}
 

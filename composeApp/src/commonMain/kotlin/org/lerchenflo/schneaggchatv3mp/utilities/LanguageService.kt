@@ -20,6 +20,10 @@ class LanguageService(
     suspend fun getCurrentLanguage(): LanguageSetting {
         return preferenceManager.getLanguageSetting()
     }
+
+    fun getSystemLanguage(): String {
+        return languageManager.getSystemLanguage()
+    }
     
     /**
      * Apply a new language setting

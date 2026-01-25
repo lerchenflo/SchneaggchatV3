@@ -47,4 +47,9 @@ actual class LanguageManager(
             println("Applying language: $language, Locale: ${locale.language}-${locale.country}")
         }
     }
+
+    actual fun getSystemLanguage(): String {
+        val language = Locale.getDefault().language
+        return language.takeIf { it.isNotEmpty() } ?: "en"
+    }
 }
