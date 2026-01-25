@@ -1,12 +1,10 @@
-package org.lerchenflo.schneaggchatv3mp.theme
+package org.lerchenflo.schneaggchatv3mp.app.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.Immutable
-import androidx.compose.ui.graphics.Color
 import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
 
 private val lightScheme = lightColorScheme(

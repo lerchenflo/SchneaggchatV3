@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.theme
+package org.lerchenflo.schneaggchatv3mp.app.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable

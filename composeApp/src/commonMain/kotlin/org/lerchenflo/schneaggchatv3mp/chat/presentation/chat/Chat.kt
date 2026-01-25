@@ -462,7 +462,7 @@ fun ReplyPreview(viewModel: ChatViewModel, globalViewModel: GlobalViewModel){
                         color = if (viewModel.replyMessage!!.myMessage) {
                             MaterialTheme.colorScheme.primaryContainer.copy(alpha = alphaValue)
                         } else {
-                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = alphaValue)
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = alphaValue)
                         },
                         shape = RoundedCornerShape(15.dp)
                     )

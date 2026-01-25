@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.theme
+package org.lerchenflo.schneaggchatv3mp.app.theme
 import androidx.compose.ui.graphics.Color
 
 val primaryLight = Color(0xFF006E2C)
