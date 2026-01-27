@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -21,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.compose.ui.window.Dialog
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
@@ -327,13 +329,24 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
 
             Spacer(modifier = Modifier.height(7.dp))
 
-            // Vertical player list with averages
-            Column(
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+            // LazyColumn with autoscroll to active player
+            val listState = rememberLazyListState()
+            val coroutineScope = rememberCoroutineScope()
+            
+            // Auto-scroll to current player when it changes
+            LaunchedEffect(game.currentPlayerIndex) {
+                coroutineScope.launch {
+                    listState.animateScrollToItem(game.currentPlayerIndex)
+                }
+            }
+            
+            LazyColumn(
+                state = listState,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.heightIn(max = 300.dp) // Limit height to prevent taking up too much space
             ) {
-                game.playerList.forEach { player ->
+                items(game.playerList.size) { index ->
+                    val player = game.playerList[index]
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
