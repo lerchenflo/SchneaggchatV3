@@ -44,68 +44,73 @@ fun DeveloperSettings(
 
     var showChangeServerUrlPopup by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-    ) {
+    Column {
+
+
         ActivityTitle(
             title = stringResource(Res.string.developer_settings),
             onBackClick = onBackClick
         )
 
-        Spacer(modifier = Modifier.size(10.dp))
-
-        SettingsSwitch(
-            titletext = stringResource(Res.string.developer_settings),
-            infotext = stringResource(Res.string.developer_setting_info),
-            switchchecked = sharedSettingsViewmodel.devSettingsEnabled,
-            onSwitchChange = { sharedSettingsViewmodel.updateDevSettings(it) },
-            icon = Icons.Default.Code
-        )
-
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
-        SettingsOption(
-            icon = Icons.Default.Link,
-            text = stringResource(Res.string.change_server_url),
-            subtext = null,
-            onClick = {
-                showChangeServerUrlPopup = true
-            }
-        )
+        Column(
+            modifier = modifier
+                .verticalScroll(rememberScrollState())
+        ) {
 
 
+            SettingsSwitch(
+                titletext = stringResource(Res.string.developer_settings),
+                infotext = stringResource(Res.string.developer_setting_info),
+                switchchecked = sharedSettingsViewmodel.devSettingsEnabled,
+                onSwitchChange = { sharedSettingsViewmodel.updateDevSettings(it) },
+                icon = Icons.Default.Code
+            )
 
-        //HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-
-
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-        SettingsOption(
-            icon = Icons.Default.Games,
-            text = stringResource(Res.string.tools_and_games),
-            subtext = null,
-            onClick = {
-                devSettingsViewModel.navigateGames()
-            }
-        )
-
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
-    }
+            SettingsOption(
+                icon = Icons.Default.Link,
+                text = stringResource(Res.string.change_server_url),
+                subtext = null,
+                onClick = {
+                    showChangeServerUrlPopup = true
+                }
+            )
 
-    if(showChangeServerUrlPopup){
-        UrlChangeDialog(
-            onDismiss = { showChangeServerUrlPopup = false },
-            onConfirm = {
-                sharedSettingsViewmodel.updateServerUrl(it)
-                showChangeServerUrlPopup = false
-                        },
-            serverUrl = sharedSettingsViewmodel.serverUrl
-        )
+
+            //HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            SettingsOption(
+                icon = Icons.Default.Games,
+                text = stringResource(Res.string.tools_and_games),
+                subtext = null,
+                onClick = {
+                    devSettingsViewModel.navigateGames()
+                }
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+
+        }
+
+        if (showChangeServerUrlPopup) {
+            UrlChangeDialog(
+                onDismiss = { showChangeServerUrlPopup = false },
+                onConfirm = {
+                    sharedSettingsViewmodel.updateServerUrl(it)
+                    showChangeServerUrlPopup = false
+                },
+                serverUrl = sharedSettingsViewmodel.serverUrl
+            )
+        }
     }
 
 

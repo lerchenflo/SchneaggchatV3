@@ -42,10 +42,9 @@ fun MiscSettings(
     sharedSettingsViewmodel: SharedSettingsViewmodel,
     onBackClick : () -> Unit
 ) {
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-    ) {
+
+    Column {
+
         ActivityTitle(
             title = stringResource(Res.string.misc_settings),
             onBackClick = onBackClick
@@ -54,53 +53,62 @@ fun MiscSettings(
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
-        var showLogsDialog by remember { mutableStateOf(false) }
-        SettingsOption(
-            icon = Icons.AutoMirrored.Filled.List,
-            text = "Logs",
-            subtext = stringResource(Res.string.show_logs),
-            onClick = {
-                showLogsDialog = true
+        Column(
+            modifier = modifier
+                .verticalScroll(rememberScrollState())
+        ) {
+
+
+
+
+            var showLogsDialog by remember { mutableStateOf(false) }
+            SettingsOption(
+                icon = Icons.AutoMirrored.Filled.List,
+                text = "Logs",
+                subtext = stringResource(Res.string.show_logs),
+                onClick = {
+                    showLogsDialog = true
+                }
+            )
+            if (showLogsDialog) {
+                LogsDialog(
+                    logs = miscSettingsViewModel.logs,
+                    onDismiss = {
+                        showLogsDialog = false
+                    },
+                    onClearLogs = {
+                        miscSettingsViewModel.onClearLogs()
+                    }
+                )
             }
-        )
-        if (showLogsDialog) {
-            LogsDialog(
-                logs = miscSettingsViewModel.logs,
-                onDismiss = {
-                    showLogsDialog = false
-                },
-                onClearLogs = {
-                    miscSettingsViewModel.onClearLogs()
-                }
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            var showAppBrokenDialog by rememberSaveable { mutableStateOf(false) }
+            SettingsOption(
+                Icons.Default.Delete,
+                stringResource(Res.string.app_broken),
+                stringResource(Res.string.app_broken_desc),
+                onClick = { showAppBrokenDialog = true }
             )
+            // app kaputt dialog
+            if (showAppBrokenDialog) {
+                ConfirmationDialog(
+                    message = stringResource(Res.string.app_broken_are_you_sure),
+                    onConfirm = {
+                        miscSettingsViewModel.deleteAllAppData()
+                        showAppBrokenDialog = false
+                    },
+                    onDismiss = {
+                        showAppBrokenDialog = false
+                    }
+                )
+            }
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+
         }
-
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-        var showAppBrokenDialog by rememberSaveable { mutableStateOf(false) }
-        SettingsOption(
-            Icons.Default.Delete,
-            stringResource(Res.string.app_broken),
-            stringResource(Res.string.app_broken_desc),
-            onClick = { showAppBrokenDialog = true }
-        )
-        // app kaputt dialog
-        if (showAppBrokenDialog) {
-            ConfirmationDialog(
-                message = stringResource(Res.string.app_broken_are_you_sure),
-                onConfirm = {
-                    miscSettingsViewModel.deleteAllAppData()
-                    showAppBrokenDialog = false
-                },
-                onDismiss = {
-                    showAppBrokenDialog = false
-                }
-            )
-        }
-
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-
     }
 
 }

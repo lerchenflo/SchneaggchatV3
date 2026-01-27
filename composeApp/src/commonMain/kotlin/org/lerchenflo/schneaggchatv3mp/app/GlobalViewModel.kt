@@ -44,13 +44,17 @@ class GlobalViewModel(
 
         viewModelScope.launch {
             while (true) {
-                if (SessionCache.isLoggedInValue() && !SessionCache.isOnlineValue()) {
-                    //You are logged in, but there is no connection to the server
+                if (SessionCache.isLoggedInValue()) {
+                    if (!SessionCache.isOnlineValue()) {
+                        //You are logged in, but there is no connection to the server
 
-                    //Ping server
-                    appRepository.testServer() //If online will automatically set the online bool
+                        //Ping server
+                        appRepository.testServer() //If online will automatically set the online bool
+                    }
 
-                    startSocketConnection()
+                    if (!socketConnectionManager.isConnectedNow()) {
+                        startSocketConnection()
+                    }
                 }
 
                 delay(5000)
@@ -62,8 +66,8 @@ class GlobalViewModel(
 
     fun startSocketConnection() {
         viewModelScope.launch {
-            println("Socketconnection connected: ${socketConnectionManager.isConnected()}")
-            if (!socketConnectionManager.isConnected() && SessionCache.isLoggedInValue()){
+            println("Socketconnection connected: ${socketConnectionManager.isConnectedNow()}")
+            if (!socketConnectionManager.isConnectedNow() && SessionCache.isLoggedInValue()){
                 println("Connecting to socket connection -----------------------")
                 val serverurl = SocketConnectionManager.getSocketUrl(preferencemanager.getServerUrl())
                 println(serverurl)

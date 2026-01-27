@@ -46,88 +46,91 @@ fun AppearanceSettings(
     sharedSettingsViewmodel: SharedSettingsViewmodel,
     onBackClick : () -> Unit
 ) {
-
-    Column(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-    ) {
+    Column {
         ActivityTitle(
             title = stringResource(Res.string.appearance_settings),
             onBackClick = onBackClick
         )
-        Spacer(modifier = Modifier.size(10.dp))
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-        // Markdown Formatting
-        SettingsSwitch(
-            titletext = stringResource(Res.string.useMarkdown),
-            infotext = stringResource(Res.string.markdownInfo),
-            switchchecked = appearanceSettingsViewModel.markdownEnabeled,
-            onSwitchChange = { appearanceSettingsViewModel.updateMarkdownSwitch(it) },
-            icon = vectorResource(Res.drawable.markdown_24px) //Gibts uf da icons no ned aber uf da website scho
-        )
 
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+        Column(
+            modifier = modifier
+                .verticalScroll(rememberScrollState())
+        ) {
 
-        var themeSelDialog by remember{mutableStateOf(false)}
-        var previousTheme by remember { mutableStateOf(ThemeSetting.SYSTEM) }
-        // Theme selector
-        SettingsOption(
-            Icons.Default.Palette,
-            stringResource(Res.string.theme),
-            stringResource(Res.string.theme_sel_desc),
-            onClick = {
-                previousTheme = appearanceSettingsViewModel.selectedTheme
-                themeSelDialog = true
-            }
-        )
-        if(themeSelDialog){
-            ThemeSelector(
-                onDismiss = {
-                    themeSelDialog = false
-                    appearanceSettingsViewModel.saveThemeSetting(previousTheme)
-                            },
-                onConfirm = {
-                    previousTheme = it
-                    themeSelDialog = false
-                },
-                selectedTheme = appearanceSettingsViewModel.selectedTheme,
-                onThemeSelected = {appearanceSettingsViewModel.saveThemeSetting(it)}
+
+            // Markdown Formatting
+            SettingsSwitch(
+                titletext = stringResource(Res.string.useMarkdown),
+                infotext = stringResource(Res.string.markdownInfo),
+                switchchecked = appearanceSettingsViewModel.markdownEnabeled,
+                onSwitchChange = { appearanceSettingsViewModel.updateMarkdownSwitch(it) },
+                icon = vectorResource(Res.drawable.markdown_24px) //Gibts uf da icons no ned aber uf da website scho
             )
-        }
 
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-        var languageSelDialog by remember{mutableStateOf(false)}
-        var previousLanguage by remember { mutableStateOf(LanguageSetting.SYSTEM) }
-        // Language selector
-        SettingsOption(
-            Icons.Default.Language,
-            stringResource(Res.string.language),
-            stringResource(Res.string.language_sel_desc),
-            onClick = {
-                previousLanguage = appearanceSettingsViewModel.selectedLanguage
-                languageSelDialog = true
-            }
-        )
-        if(languageSelDialog){
-            LanguageSelector(
-                onDismiss = {
-                    languageSelDialog = false
-                    appearanceSettingsViewModel.saveLanguageSetting(previousLanguage)
-                            },
-                onConfirm = {
-                    previousLanguage = it
-                    languageSelDialog = false
-                },
-                selectedLanguage = appearanceSettingsViewModel.selectedLanguage,
-                onLanguageSelected = {appearanceSettingsViewModel.saveLanguageSetting(it)}
+            var themeSelDialog by remember { mutableStateOf(false) }
+            var previousTheme by remember { mutableStateOf(ThemeSetting.SYSTEM) }
+            // Theme selector
+            SettingsOption(
+                Icons.Default.Palette,
+                stringResource(Res.string.theme),
+                stringResource(Res.string.theme_sel_desc),
+                onClick = {
+                    previousTheme = appearanceSettingsViewModel.selectedTheme
+                    themeSelDialog = true
+                }
             )
+            if (themeSelDialog) {
+                ThemeSelector(
+                    onDismiss = {
+                        themeSelDialog = false
+                        appearanceSettingsViewModel.saveThemeSetting(previousTheme)
+                    },
+                    onConfirm = {
+                        previousTheme = it
+                        themeSelDialog = false
+                    },
+                    selectedTheme = appearanceSettingsViewModel.selectedTheme,
+                    onThemeSelected = { appearanceSettingsViewModel.saveThemeSetting(it) }
+                )
+            }
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            var languageSelDialog by remember { mutableStateOf(false) }
+            var previousLanguage by remember { mutableStateOf(LanguageSetting.SYSTEM) }
+            // Language selector
+            SettingsOption(
+                Icons.Default.Language,
+                stringResource(Res.string.language),
+                stringResource(Res.string.language_sel_desc),
+                onClick = {
+                    previousLanguage = appearanceSettingsViewModel.selectedLanguage
+                    languageSelDialog = true
+                }
+            )
+            if (languageSelDialog) {
+                LanguageSelector(
+                    onDismiss = {
+                        languageSelDialog = false
+                        appearanceSettingsViewModel.saveLanguageSetting(previousLanguage)
+                    },
+                    onConfirm = {
+                        previousLanguage = it
+                        languageSelDialog = false
+                    },
+                    selectedLanguage = appearanceSettingsViewModel.selectedLanguage,
+                    onLanguageSelected = { appearanceSettingsViewModel.saveLanguageSetting(it) }
+                )
+            }
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+
         }
-
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-
     }
 
 

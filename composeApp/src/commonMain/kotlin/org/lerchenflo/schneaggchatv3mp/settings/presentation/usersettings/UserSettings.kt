@@ -143,218 +143,222 @@ fun UserSettings(
 
 
     if (!showImagePickerDialog){
-        Column(
-            modifier = modifier
-                .verticalScroll(rememberScrollState())
-        ) {
+        Column {
+
             ActivityTitle(
                 title = stringResource(Res.string.user_settings),
                 onBackClick = onBackClick
             )
-            Spacer(modifier = Modifier.size(10.dp))
+
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
-            Box(
-                modifier = Modifier
-                    .padding(horizontal = 60.dp)
-                    .widthIn(max = 250.dp)
-                    .fillMaxWidth()
-                    .align(Alignment.CenterHorizontally) // Ensure the Box itself is centered
-                    .clickable { showImagePickerDialog = true }
-
+            Column(
+                modifier = modifier
+                    .verticalScroll(rememberScrollState())
             ) {
-                // The Main Profile Picture
-                ProfilePictureView(
-                    filepath = ownuser?.profilePictureUrl ?: "",
+
+                Box(
                     modifier = Modifier
+                        .padding(horizontal = 60.dp)
+                        .widthIn(max = 250.dp)
                         .fillMaxWidth()
-                        .padding(16.dp)
-                )
+                        .align(Alignment.CenterHorizontally) // Ensure the Box itself is centered
+                        .clickable { showImagePickerDialog = true }
 
-                // The Edit Icon Overlay
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .align(Alignment.BottomEnd) // Positions icon at bottom right
-                        .offset(x = (-8).dp, y = (-8).dp) // Adjusts spacing from the edges
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = stringResource(Res.string.edit_profile_picture),
-                        tint = MaterialTheme.colorScheme.primary,
+                    // The Main Profile Picture
+                    ProfilePictureView(
+                        filepath = ownuser?.profilePictureUrl ?: "",
                         modifier = Modifier
-                            .padding(8.dp)
+                            .fillMaxWidth()
+                            .padding(16.dp)
                     )
+
+                    // The Edit Icon Overlay
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .align(Alignment.BottomEnd) // Positions icon at bottom right
+                            .offset(x = (-8).dp, y = (-8).dp) // Adjusts spacing from the edges
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = stringResource(Res.string.edit_profile_picture),
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .padding(8.dp)
+                        )
+                    }
                 }
-            }
 
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
-            if (ownuser != null && ownuser.description != null && ownuser.description.isNotEmpty()) {
-                //Userdescription
-                QuotedText(
-                    text = ownuser.description,
-                    author = stringResource(Res.string.your_friends_wrote_this)
+                if (ownuser != null && ownuser.description != null && ownuser.description.isNotEmpty()) {
+                    //Userdescription
+                    QuotedText(
+                        text = ownuser.description,
+                        author = stringResource(Res.string.your_friends_wrote_this)
+                    )
+
+                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                }
+
+                //Username
+                SettingsOption(
+                    icon = Icons.Default.EditNote,
+                    text = stringResource(Res.string.change_username),
+                    subtext = stringResource(Res.string.change_username_description),
+                    onClick = {
+                        showChangeUsernamePopup = true
+                    }
                 )
 
                 HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-            }
-
-            //Username
-            SettingsOption(
-                icon = Icons.Default.EditNote,
-                text = stringResource(Res.string.change_username),
-                subtext = stringResource(Res.string.change_username_description),
-                onClick = {
-                    showChangeUsernamePopup = true
-                }
-            )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
-            //Status
-            SettingsOption(
-                icon = vectorResource(Res.drawable.user_attributes_24px),
-                text = stringResource(Res.string.status_nosemicolon),
-                subtext = if (ownuser?.status == null || ownuser.status.isEmpty()) {
-                    stringResource(Res.string.status_infotext)
-                } else {
-                    stringResource(Res.string.currentstatus, ownuser.status)
-                },
-                onClick = {
-                    showChangeStatusPopup = true
-                }
-            )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            // Gebidate
-            SettingsOption(
-                icon = Icons.Default.Cake,
-                text = stringResource(Res.string.change_gebi_date),
-                subtext = ownuser?.birthDate?.let { dateString ->
-                    try {
-                        val date = LocalDate.parse(dateString)
-                        "${date.day.toString().padStart(2, '0')}.${date.month.number.toString().padStart(2, '0')}.${date.year}"
-                    } catch (e: Exception) {
-                        dateString
-                    }
-                },
-                onClick = {
-                    showChangeBirthDatePopup = true
-                }
-            )
-
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            /*
-            //TODO: Change passwort
-            //passwort
-            SettingsOption(
-                icon = Icons.Default.Key,
-                text = "mehr Settings",
-                subtext = "es gibt ned mehr dev settings",
-                onClick = {
-                    SnackbarManager.showMessage("joo muasch da was usdenka")
-                }
-            )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-             */
-
-            if (SessionCache.developer) {
-
+                //Status
                 SettingsOption(
-                    icon = Icons.Default.Mail,
-                    text = stringResource(Res.string.email),
-                    subtext = (if (ownuser?.isEmailVerified() == true) stringResource(Res.string.emailinfo) else stringResource(
-                        Res.string.emailinfo_unverified
-                    )) + "\n" + ownuser?.email,
-                    onClick = {
-                        showChangeEmailPopup = true
-                        /*
-                    if (ownuser?.isEmailVerified() == true){
-                    }else {
-                        userSettingsViewModel.sendEmailVerify()
-                    }
-
-                     */
+                    icon = vectorResource(Res.drawable.user_attributes_24px),
+                    text = stringResource(Res.string.status_nosemicolon),
+                    subtext = if (ownuser?.status == null || ownuser.status.isEmpty()) {
+                        stringResource(Res.string.status_infotext)
+                    } else {
+                        stringResource(Res.string.currentstatus, ownuser.status)
                     },
-                    rightSideIcon = {
-                        if (ownuser != null) {
-                            if (ownuser.isEmailVerified()) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Verified,
-                                    contentDescription = "Email is verified",
-                                    modifier = Modifier.size(30.dp),
-                                    tint = Color(red = 0, green = 255, blue = 0)
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Rounded.Warning,
-                                    contentDescription = "Email not verified",
-                                    tint = Color(red = 255, green = 165, blue = 0), //orange
-                                    modifier = Modifier
-                                        .size(30.dp)
-                                        .clickable {
-                                            userSettingsViewModel.sendEmailVerify()
-                                        }
-                                )
-                            }
+                    onClick = {
+                        showChangeStatusPopup = true
+                    }
+                )
+
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+                // Gebidate
+                SettingsOption(
+                    icon = Icons.Default.Cake,
+                    text = stringResource(Res.string.change_gebi_date),
+                    subtext = ownuser?.birthDate?.let { dateString ->
+                        try {
+                            val date = LocalDate.parse(dateString)
+                            "${date.day.toString().padStart(2, '0')}.${date.month.number.toString().padStart(2, '0')}.${date.year}"
+                        } catch (e: Exception) {
+                            dateString
                         }
                     },
+                    onClick = {
+                        showChangeBirthDatePopup = true
+                    }
+                )
+
+
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+                /*
+                //TODO: Change passwort
+                //passwort
+                SettingsOption(
+                    icon = Icons.Default.Key,
+                    text = "mehr Settings",
+                    subtext = "es gibt ned mehr dev settings",
+                    onClick = {
+                        SnackbarManager.showMessage("joo muasch da was usdenka")
+                    }
                 )
 
                 HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-            }
 
-            var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
-            SettingsOption(
-                icon = Icons.AutoMirrored.Default.ExitToApp,
-                text = stringResource(Res.string.logout),
-                onClick = {
-                    showLogoutDialog = true
+                 */
+
+                if (SessionCache.developer) {
+
+                    SettingsOption(
+                        icon = Icons.Default.Mail,
+                        text = stringResource(Res.string.email),
+                        subtext = (if (ownuser?.isEmailVerified() == true) stringResource(Res.string.emailinfo) else stringResource(
+                            Res.string.emailinfo_unverified
+                        )) + "\n" + ownuser?.email,
+                        onClick = {
+                            showChangeEmailPopup = true
+                            /*
+                        if (ownuser?.isEmailVerified() == true){
+                        }else {
+                            userSettingsViewModel.sendEmailVerify()
+                        }
+
+                         */
+                        },
+                        rightSideIcon = {
+                            if (ownuser != null) {
+                                if (ownuser.isEmailVerified()) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Verified,
+                                        contentDescription = "Email is verified",
+                                        modifier = Modifier.size(30.dp),
+                                        tint = Color(red = 0, green = 255, blue = 0)
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Warning,
+                                        contentDescription = "Email not verified",
+                                        tint = Color(red = 255, green = 165, blue = 0), //orange
+                                        modifier = Modifier
+                                            .size(30.dp)
+                                            .clickable {
+                                                userSettingsViewModel.sendEmailVerify()
+                                            }
+                                    )
+                                }
+                            }
+                        },
+                    )
+
+                    HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                 }
-            )
 
-            //Logoutdialog
-            if (showLogoutDialog) {
-                ConfirmationDialog(
-                    message = stringResource(Res.string.are_you_sure_you_want_to_logout),
-                    onConfirm = {
-                        userSettingsViewModel.logout()
-                    },
-                    onDismiss = {
-                        showLogoutDialog = false
+                var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
+                SettingsOption(
+                    icon = Icons.AutoMirrored.Default.ExitToApp,
+                    text = stringResource(Res.string.logout),
+                    onClick = {
+                        showLogoutDialog = true
                     }
                 )
+
+                //Logoutdialog
+                if (showLogoutDialog) {
+                    ConfirmationDialog(
+                        message = stringResource(Res.string.are_you_sure_you_want_to_logout),
+                        onConfirm = {
+                            userSettingsViewModel.logout()
+                        },
+                        onDismiss = {
+                            showLogoutDialog = false
+                        }
+                    )
+                }
+
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+                val uriHandler = LocalUriHandler.current
+
+                DeleteButton(
+                    text = stringResource(Res.string.delete_account),
+                    onClick = {
+                        uriHandler.openUri(URL_DEL_ACC)
+                    },
+                    modifier = Modifier
+                        .padding(top = 8.dp,
+                            bottom = 4.dp,
+                            start = 4.dp,
+                            end = 4.dp)
+
+                        .fillMaxWidth(),
+                )
+
             }
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            val uriHandler = LocalUriHandler.current
-
-            DeleteButton(
-                text = stringResource(Res.string.delete_account),
-                onClick = {
-                    uriHandler.openUri(URL_DEL_ACC)
-                },
-                modifier = Modifier
-                    .padding(top = 8.dp,
-                        bottom = 4.dp,
-                        start = 4.dp,
-                        end = 4.dp)
-
-                    .fillMaxWidth(),
-            )
-
         }
     }
 
