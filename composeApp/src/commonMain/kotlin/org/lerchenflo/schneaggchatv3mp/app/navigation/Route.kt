@@ -65,6 +65,12 @@ sealed interface Route : NavKey {
 
         @Serializable
         data object TowerStack: Route, NavKey
+
+        @Serializable
+        data object YatziSetup: Route, NavKey
+
+        @Serializable
+        data object YatziGame: Route, NavKey
     }
 }
 

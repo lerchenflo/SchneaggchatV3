@@ -76,7 +76,9 @@ class UndercoverViewModel(
         val mrWhiteGuessInput: String = "",
         val mrWhiteGuessWasCorrect: Boolean? = null,
 
-        val winnerText: UiText? = null
+        val winnerText: UiText? = null,
+        
+        val showRulesDialog: Boolean = false
     )
 
     var state by mutableStateOf(UiState())
@@ -134,6 +136,14 @@ class UndercoverViewModel(
 
     fun decrementAutoHideSeconds() {
         state = state.copy(autoHideSeconds = (state.autoHideSeconds - 1).coerceAtLeast(1))
+    }
+
+    fun showRulesDialog() {
+        state = state.copy(showRulesDialog = true)
+    }
+
+    fun hideRulesDialog() {
+        state = state.copy(showRulesDialog = false)
     }
 
     fun canStartGame(): Boolean {

@@ -385,6 +385,33 @@
     <string name="undercover_winner_civilians">Civilians win</string>
     <string name="undercover_winner_undercover">Undercover / Mr. White win</string>
 
+    <!-- Rules Dialog -->
+    <string name="undercover_rules_title">Undercover Rules</string>
+    <string name="undercover_rules_explanation">Explanation</string>
+    <string name="undercover_rules_explanation_text">A small group of Impostors has appeared in the game. They have a different word than the others and must hide. Civilians have to discover them.</string>
+    
+    <string name="undercover_rules_roles">Roles and Goals</string>
+    <string name="undercover_rules_roles_text">There are 3 groups in the game: Civilians, Undercover and Mr.White. The majority of the residents are the peace-loving Civilians. There are up to two groups of Impostors: Undercover and Mr.White.</string>
+    
+    <string name="undercover_rules_secret_word">Get your secret word</string>
+    <string name="undercover_rules_secret_word_text">At the beginning of the game, everyone receives a secret word. Each game uses a pair of secret words. Remember to keep your secret word hidden from the others.\n\nCivilians receive the same secret word. Undercovers receive a word slightly different from the Civilians'. Mr.Whites don't receive any word. At this moment, you don't know if you are a Civilian or an Undercover.</string>
+    
+    <string name="undercover_rules_gameplay">Gameplay</string>
+    
+    <string name="undercover_rules_description_phase">Description Phase</string>
+    <string name="undercover_rules_description_phase_text">As soon as everyone has received their secret word, a random player is assigned to start describing their word. One by one, everyone describes their word using a word or phrase. Mr.White needs to improvise, since he/she doesn't have a word.\n\nUse this phase to disclose enough info to find your allies but hide the specifics from Mr.White.</string>
+    
+    <string name="undercover_rules_discussion_phase">Discussion Phase</string>
+    <string name="undercover_rules_discussion_phase_text">Once the round of description is complete, players discuss and debate about who they think are the Impostors or the Civilians.\n\nCivilians and Undercovers should use this phase to gather more clues to discover their own identity, build alliances and identify enemies. Meanwhile, for Mr.White, it is the best time to dig deeper on the Civilians' secret word.\n\nRemember the bottom line: don't expose yourself unnecessarily too early! Use your charm to tilt the odds in your favour.</string>
+    
+    <string name="undercover_rules_elimination_phase">Elimination Phase</string>
+    <string name="undercover_rules_elimination_phase_text">When the discussion phase ends, all remaining players vote for one player they want to oust. Remember, players that were already ousted can't cast their votes anymore.\n\nThe player with the most votes will be ousted from the game! Unless the voted player turns out to be Mr.White! In this case, he/she still has 1 chance to guess the Civilian word. If he/she guesses the Civilian word correctly, Mr.White wins immediately!\n\nIf the victory condition of the game is not met after the elimination phase, repeat the above 3 phases until one of the groups (Civilian, Undercover or Mr.White) wins the game.</string>
+    
+    <string name="undercover_rules_victory">Victory</string>
+    <string name="undercover_rules_victory_text">• Civilians win if they eliminate all Undercovers and Mr.Whites.\n• The Impostors (Undercovers and/or Mr.Whites) win if they survive until only 1 Civilian is left.\n• Mr.White also wins if they guess the Civilians' word correctly.</string>
+    
+    <string name="undercover_rules_button">Rules</string>
+    <string name="undercover_rules_close">Close</string>
 
     <string name="your_friends_wrote_this">~ Your friends</string>
     <string name="show_logs">Show logs</string>

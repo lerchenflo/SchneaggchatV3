@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.undercover
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -22,6 +26,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -75,6 +80,24 @@ import schneaggchatv3mp.composeapp.generated.resources.undercover_submit_guess
 import schneaggchatv3mp.composeapp.generated.resources.undercover_title
 import schneaggchatv3mp.composeapp.generated.resources.undercover_voting_title
 import schneaggchatv3mp.composeapp.generated.resources.undercover_word_guess_label
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_button
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_close
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_title
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_explanation
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_explanation_text
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_roles
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_roles_text
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_secret_word
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_secret_word_text
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_gameplay
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_description_phase
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_description_phase_text
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_discussion_phase
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_discussion_phase_text
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_elimination_phase
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_elimination_phase_text
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_victory
+import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_victory_text
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,12 +120,6 @@ fun Undercover(
             )
             when (state.phase) {
                 UndercoverViewModel.Phase.SETUP -> {
-                    //Text(
-                    //    text = stringResource(Res.string.undercover_title),
-                   //     style = MaterialTheme.typography.headlineSmall,
-                    //    fontWeight = FontWeight.Bold
-                    //)
-                   
                     Spacer(Modifier.height(12.dp))
 
                     Row(
@@ -225,12 +242,23 @@ fun Undercover(
 
                     Spacer(Modifier.height(12.dp))
 
-                    Button(
-                        onClick = viewModel::startGame,
-                        enabled = viewModel.canStartGame(),
-                        modifier = Modifier.fillMaxWidth()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(stringResource(Res.string.undercover_start_game))
+                        Button(
+                            onClick = viewModel::showRulesDialog,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(stringResource(Res.string.undercover_rules_button))
+                        }
+                        Button(
+                            onClick = viewModel::startGame,
+                            enabled = viewModel.canStartGame(),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(stringResource(Res.string.undercover_start_game))
+                        }
                     }
                 }
 
@@ -562,6 +590,139 @@ fun Undercover(
                     Spacer(Modifier.weight(1f))
                 }
             }
+        }
+        
+        // Rules Dialog
+        if (state.showRulesDialog) {
+            AlertDialog(
+                onDismissRequest = viewModel::hideRulesDialog,
+                title = {
+                    Text(
+                        text = stringResource(Res.string.undercover_rules_title),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        // Explanation
+                        Text(
+                            text = stringResource(Res.string.undercover_rules_explanation),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(Res.string.undercover_rules_explanation_text),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        
+                        Spacer(Modifier.height(16.dp))
+                        
+                        // Roles and Goals
+                        Text(
+                            text = stringResource(Res.string.undercover_rules_roles),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(Res.string.undercover_rules_roles_text),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        
+                        Spacer(Modifier.height(16.dp))
+                        
+                        // Get your secret word
+                        Text(
+                            text = stringResource(Res.string.undercover_rules_secret_word),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(Res.string.undercover_rules_secret_word_text),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        
+                        Spacer(Modifier.height(16.dp))
+                        
+                        // Gameplay
+                        Text(
+                            text = stringResource(Res.string.undercover_rules_gameplay),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        
+                        Spacer(Modifier.height(8.dp))
+                        
+                        // Description Phase
+                        Text(
+                            text = stringResource(Res.string.undercover_rules_description_phase),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(Res.string.undercover_rules_description_phase_text),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        
+                        Spacer(Modifier.height(12.dp))
+                        
+                        // Discussion Phase
+                        Text(
+                            text = stringResource(Res.string.undercover_rules_discussion_phase),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(Res.string.undercover_rules_discussion_phase_text),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        
+                        Spacer(Modifier.height(12.dp))
+                        
+                        // Elimination Phase
+                        Text(
+                            text = stringResource(Res.string.undercover_rules_elimination_phase),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(Res.string.undercover_rules_elimination_phase_text),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        
+                        Spacer(Modifier.height(16.dp))
+                        
+                        // Victory
+                        Text(
+                            text = stringResource(Res.string.undercover_rules_victory),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(Res.string.undercover_rules_victory_text),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = viewModel::hideRulesDialog
+                    ) {
+                        Text(stringResource(Res.string.undercover_rules_close))
+                    }
+                }
+            )
         }
     }
 }

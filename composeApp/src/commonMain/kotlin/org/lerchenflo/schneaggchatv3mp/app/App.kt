@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.Blind
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -58,6 +59,8 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameScreenElement
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
+import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziGameScreen
+import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziSetupScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
@@ -161,6 +164,8 @@ fun App() {
 
                         subclass(Route.Games.Undercover::class, Route.Games.Undercover.serializer())
                         subclass(Route.Games.TowerStack::class, Route.Games.TowerStack.serializer())
+                        subclass(Route.Games.YatziSetup::class, Route.Games.YatziSetup.serializer())
+                        subclass(Route.Games.YatziGame::class, Route.Games.YatziGame.serializer())
 
 
                     }
@@ -475,6 +480,7 @@ fun App() {
 
                         entry<Route.Games> {
                             //TODO: Shared games viewmodel for game selection
+                            val yatziViewModel: org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel = androidx.lifecycle.viewmodel.compose.viewModel { org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel() }
 
                             val gamesList = listOf<GameScreenElement>(
                                 GameScreenElement(
@@ -491,6 +497,11 @@ fun App() {
                                     title = stringResource(Res.string.games_stack_tower),
                                     icon = Icons.Default.Menu, //
                                     route = Route.Games.TowerStack
+                                ),
+                                GameScreenElement(
+                                    title = "Yahtzee",
+                                    icon = Icons.Default.Star,
+                                    route = Route.Games.YatziSetup
                                 ),
 
                             )
@@ -541,6 +552,31 @@ fun App() {
                                                     gamesBackStack.removeAt(gamesBackStack.size - 1)
                                                 }
                                             }
+                                        )
+                                    }
+
+                                    entry <Route.Games.YatziSetup> {
+                                        YatziSetupScreen(
+                                            onBack = {
+                                                if (gamesBackStack.size > 1){
+                                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                                }
+                                            },
+                                            onStartGame = {
+                                                gamesBackStack.add(Route.Games.YatziGame)
+                                            },
+                                            viewModel = yatziViewModel
+                                        )
+                                    }
+
+                                    entry <Route.Games.YatziGame> {
+                                        YatziGameScreen(
+                                            onBack = {
+                                                if (gamesBackStack.size > 1){
+                                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                                }
+                                            },
+                                            viewModel = yatziViewModel
                                         )
                                     }
                                 }
