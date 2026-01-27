@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelector
 
 @Composable
 fun YatziSetupScreen(
@@ -60,7 +61,7 @@ fun YatziSetupScreen(
     viewModel: YatziViewModel = viewModel { YatziViewModel() }
 ) {
 
-    var newPlayerName by remember { mutableStateOf("") }
+    // var newPlayerName by remember { mutableStateOf("") } // Removed local state for player input
     val state by viewModel.state.collectAsState()
 
     Scaffold(
@@ -78,20 +79,12 @@ fun YatziSetupScreen(
     ) { padding ->
         Column(modifier = Modifier.padding(padding).padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(
-                    value = newPlayerName,
-                    onValueChange = { newPlayerName = it },
-                    label = { Text("Player Name") },
-                    modifier = Modifier.weight(1f)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = {
-                    if (newPlayerName.isNotBlank()) {
-                        viewModel.addPlayer(newPlayerName)
-                        newPlayerName = ""
-                    }
-                }, enabled = !state.gameStarted) {
-                    Icon(Icons.Default.Add, "Add")
+                Button(
+                    onClick = { viewModel.showPlayerSelector() },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !state.gameStarted
+                ) {
+                   Text("Add / Manage Players")
                 }
             }
             
@@ -154,6 +147,16 @@ fun YatziSetupScreen(
                 }
             }
         }
+        }
+
+    if (state.showPlayerSelector) {
+        PlayerSelector(
+            onDismiss = { viewModel.hidePlayerSelector() },
+            onFinish = { selectedPlayers ->
+                viewModel.setPlayers(selectedPlayers)
+                viewModel.hidePlayerSelector()
+            }
+        )
     }
 }
 

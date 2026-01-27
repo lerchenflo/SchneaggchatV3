@@ -40,7 +40,9 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
+import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelector
 import schneaggchatv3mp.composeapp.generated.resources.undercover_add
+
 import schneaggchatv3mp.composeapp.generated.resources.undercover_autohide_enabled
 import schneaggchatv3mp.composeapp.generated.resources.undercover_autohide_title
 import schneaggchatv3mp.composeapp.generated.resources.undercover_continue
@@ -82,7 +84,6 @@ import schneaggchatv3mp.composeapp.generated.resources.undercover_voting_title
 import schneaggchatv3mp.composeapp.generated.resources.undercover_word_guess_label
 import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_button
 import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_close
-import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_title
 import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_explanation
 import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_explanation_text
 import schneaggchatv3mp.composeapp.generated.resources.undercover_rules_roles
@@ -127,15 +128,9 @@ fun Undercover(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        OutlinedTextField(
-                            value = state.setupPlayerNameInput,
-                            onValueChange = viewModel::updateSetupPlayerNameInput,
-                            modifier = Modifier.weight(1f),
-                            label = { Text(stringResource(Res.string.undercover_player_name_label)) },
-                            singleLine = true
-                        )
                         Button(
-                            onClick = viewModel::addSetupPlayer
+                            onClick = viewModel::showPlayerSelector,
+                            modifier = Modifier.weight(1f)
                         ) {
                             Text(stringResource(Res.string.undercover_add))
                         }
@@ -598,7 +593,7 @@ fun Undercover(
                 onDismissRequest = viewModel::hideRulesDialog,
                 title = {
                     Text(
-                        text = stringResource(Res.string.undercover_rules_title),
+                        text = stringResource(Res.string.undercover_rules_button),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -721,6 +716,17 @@ fun Undercover(
                     ) {
                         Text(stringResource(Res.string.undercover_rules_close))
                     }
+                }
+            )
+        }
+        
+        // PlayerSelector Dialog
+        if (state.showPlayerSelector) {
+            PlayerSelector(
+                onDismiss = viewModel::hidePlayerSelector,
+                onFinish = { selectedPlayers ->
+                    viewModel.setSetupPlayers(selectedPlayers)
+                    viewModel.hidePlayerSelector()
                 }
             )
         }

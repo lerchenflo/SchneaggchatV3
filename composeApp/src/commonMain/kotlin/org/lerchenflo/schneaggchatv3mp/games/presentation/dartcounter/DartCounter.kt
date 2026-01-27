@@ -24,7 +24,9 @@ import androidx.compose.ui.window.Dialog
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelector
 import schneaggchatv3mp.composeapp.generated.resources.Res
+
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_add
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_add_players
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_avg_format
@@ -152,7 +154,13 @@ fun DartCounter(
     
     // Dialogs
     if (viewmodel.showPlayerSetup) {
-        PlayerSetupDialog(viewmodel = viewmodel)
+        PlayerSelector(
+            onDismiss = { viewmodel.hidePlayerSetupDialog() },
+            onFinish = { selectedPlayers ->
+                viewmodel.setPlayers(selectedPlayers)
+                viewmodel.hidePlayerSetupDialog()
+            }
+        )
     }
     
     if (viewmodel.showGameConfig) {
@@ -404,89 +412,6 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
                     ),
                     style = MaterialTheme.typography.bodyMedium
                 )
-            }
-        }
-    }
-}
-@Composable
-fun PlayerSetupDialog(viewmodel: DartCounterViewModel) {
-    var playerName by remember { mutableStateOf("") }
-    
-    Dialog(onDismissRequest = { viewmodel.hidePlayerSetupDialog() }) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text(
-                    text = stringResource(Res.string.dartcounter_add_players),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedTextField(
-                        value = playerName,
-                        onValueChange = { playerName = it },
-                        label = { Text(stringResource(Res.string.dartcounter_player_name_label)) },
-                        modifier = Modifier.weight(1f)
-                    )
-                    
-                    Button(
-                        onClick = {
-                            viewmodel.addPlayerName(playerName)
-                            playerName = ""
-                        }
-                    ) {
-                        Text(stringResource(Res.string.dartcounter_add))
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                LazyColumn(
-                    modifier = Modifier.height(200.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    items(viewmodel.playerNames) { name ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(name)
-                            Button(
-                                onClick = { viewmodel.removePlayerName(name) },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.error
-                                )
-                            ) {
-                                Text(stringResource(Res.string.dartcounter_remove))
-                            }
-                        }
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(
-                        onClick = { viewmodel.hidePlayerSetupDialog() }
-                    ) {
-                        Text(stringResource(Res.string.dartcounter_done))
-                    }
-                }
             }
         }
     }

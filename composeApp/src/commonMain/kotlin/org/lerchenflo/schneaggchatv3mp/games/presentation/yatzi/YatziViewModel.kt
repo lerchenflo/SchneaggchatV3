@@ -11,6 +11,20 @@ class YatziViewModel : ViewModel() {
     private val _state = MutableStateFlow(YatziState())
     val state: StateFlow<YatziState> = _state.asStateFlow()
 
+    fun setPlayers(names: List<String>) {
+        _state.update {
+            it.copy(players = names.map { name -> YatziPlayer(name) })
+        }
+    }
+
+    fun showPlayerSelector() {
+        _state.update { it.copy(showPlayerSelector = true) }
+    }
+
+    fun hidePlayerSelector() {
+        _state.update { it.copy(showPlayerSelector = false) }
+    }
+
     fun addPlayer(name: String) {
         if (name.isBlank()) return
         _state.update {

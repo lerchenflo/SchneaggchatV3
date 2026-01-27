@@ -78,7 +78,8 @@ class UndercoverViewModel(
 
         val winnerText: UiText? = null,
         
-        val showRulesDialog: Boolean = false
+        val showRulesDialog: Boolean = false,
+        val showPlayerSelector: Boolean = false
     )
 
     var state by mutableStateOf(UiState())
@@ -144,6 +145,19 @@ class UndercoverViewModel(
 
     fun hideRulesDialog() {
         state = state.copy(showRulesDialog = false)
+    }
+
+    fun showPlayerSelector() {
+        state = state.copy(showPlayerSelector = true)
+    }
+
+    fun hidePlayerSelector() {
+        state = state.copy(showPlayerSelector = false)
+    }
+
+    fun setSetupPlayers(names: List<String>) {
+        state = state.copy(setupPlayers = names)
+        coerceRoleCountsToValidRange()
     }
 
     fun canStartGame(): Boolean {

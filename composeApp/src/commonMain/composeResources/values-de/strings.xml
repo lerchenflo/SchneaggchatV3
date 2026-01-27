@@ -384,7 +384,7 @@
     <string name="undercover_winner_mr_white">Mr. White gewinnt</string>
     <string name="undercover_winner_civilians">Zivilisten gewinnen</string>
     <string name="undercover_winner_undercover">Undercover / Mr. White gewinnt</string>
-
+    <string name="undercover_rules_button">Regeln</string>
 
     <string name="your_friends_wrote_this">~ Deine Freunde</string>
     <string name="show_logs">Logs anzeigen</string>

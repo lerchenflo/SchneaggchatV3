@@ -386,7 +386,6 @@
     <string name="undercover_winner_undercover">Undercover / Mr. White win</string>
 
     <!-- Rules Dialog -->
-    <string name="undercover_rules_title">Undercover Rules</string>
     <string name="undercover_rules_explanation">Explanation</string>
     <string name="undercover_rules_explanation_text">A small group of Impostors has appeared in the game. They have a different word than the others and must hide. Civilians have to discover them.</string>
     

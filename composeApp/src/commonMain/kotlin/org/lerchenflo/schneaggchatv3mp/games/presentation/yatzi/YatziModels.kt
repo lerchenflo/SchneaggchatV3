@@ -51,9 +51,10 @@ data class YatziState(
     val dice: List<YatziDie> = List(5) { YatziDie() },
     val gameStarted: Boolean = false,
     val winner: YatziPlayer? = null,
-    val potentialScores: Map<YatziCategory, Int> = emptyMap()
+    val potentialScores: Map<YatziCategory, Int> = emptyMap(),
+    val showPlayerSelector: Boolean = false
 ) {
     val currentPlayer: YatziPlayer? get() = players.getOrNull(currentPlayerIndex)
-    val canRoll: Boolean get() = currentRollCount < 3
-    val canScore: Boolean get() = currentRollCount > 0
+    val canRoll: Boolean get() = currentRollCount < 3 && winner == null
+    val canScore: Boolean get() = currentRollCount > 0 && winner == null
 }
