@@ -123,15 +123,38 @@ fun UserButton(
             Row(
 
             ){
-                Text(
-                    text = selectedChat.name
-                        .takeIf { it.isNotBlank() }
-                        ?: stringResource(Res.string.unknown_user),
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
+
+                //Second row for user with pin (For the weight modifier to work and use the full size)
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (selectedChat.pinned > 0L && showPin) {
+                        Icon(
+                            imageVector = Icons.Default.PushPin,
+                            contentDescription = "pinned",
+                            tint = MaterialTheme.colorScheme.errorContainer,
+                            modifier = Modifier
+                                .size(18.dp)
+                                .rotate(45f) // Rotates the pin to look like it's sticking in
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+
+                    Text(
+                        text = selectedChat.name
+                            .takeIf { it.isNotBlank() }
+                            ?: stringResource(Res.string.unknown_user),
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+
+
+
+                }
 
 
                 if (showNotiIcons) {
@@ -158,18 +181,6 @@ fun UserButton(
                             )
                         }
                     }
-                }
-
-                if (selectedChat.pinned > 0L && showPin) {
-                    Icon(
-                        imageVector = Icons.Default.PushPin,
-                        contentDescription = "pinned",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier
-                            .size(18.dp)
-                            .rotate(45f) // Rotates the pin to look like it's sticking in
-                            .padding(end = 4.dp)
-                    )
                 }
 
                 // an hocka daneabad zum azoaga dass ma dean usgwählt hot

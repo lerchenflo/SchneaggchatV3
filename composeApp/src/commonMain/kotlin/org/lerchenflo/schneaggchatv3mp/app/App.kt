@@ -13,6 +13,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -25,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation.NavBackStackEntry
@@ -72,6 +74,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
+import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
@@ -260,7 +263,6 @@ fun App() {
                             .fillMaxWidth()
                     )
                 }
-
 
 
                 //Main content
