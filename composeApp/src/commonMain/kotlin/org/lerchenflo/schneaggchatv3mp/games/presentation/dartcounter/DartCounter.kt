@@ -36,7 +36,6 @@ import schneaggchatv3mp.composeapp.generated.resources.dartcounter_cancel
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_configure_game_hint
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_countdown_label
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_current_player_format
-import schneaggchatv3mp.composeapp.generated.resources.dartcounter_dart_status_format
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_done
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_finished_suffix
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_game_configuration_title
@@ -321,7 +320,9 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
                 )
             } else if (!game.getCurrentPlayer().isFinished) {
                 Text(
-                    text = stringResource(Res.string.dartcounter_current_player_format, game.getCurrentPlayer().name),
+                    text = stringResource(Res.string.dartcounter_current_player_format, game.getCurrentPlayer().name,
+                    viewmodel.throwCount
+                    ),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -415,17 +416,6 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
                 }
             }
 
-            if (viewmodel.currentThrow > -1 && !game.getCurrentPlayer().isFinished) {
-                Spacer(modifier = Modifier.height(7.dp))
-                Text(
-                    text = stringResource(
-                        Res.string.dartcounter_dart_status_format,
-                        viewmodel.currentThrow,
-                        viewmodel.throwCount
-                    ),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
         }
     }
 }

@@ -322,9 +322,8 @@
     <string name="dartcounter_undo">Zruck</string>
     <string name="dartcounter_list_separator">, </string>
     <string name="dartcounter_winners_format">Gwunna hot Spiela %1$s</string>
-    <string name="dartcounter_current_player_format">Aktuella Spiela: %1$s</string>
+    <string name="dartcounter_current_player_format">Current Player: %1$s, (Dart %2$d/3)</string>
     <string name="dartcounter_avg_format">Avg: %1$s</string>
-    <string name="dartcounter_dart_status_format">Dart: %1$d (Dart %2$d/3)</string>
     <string name="dartcounter_finished_suffix"> ✓</string>
     <string name="dartcounter_player_name_label">Spiela Namma</string>
     <string name="dartcounter_add">Hinzufügen</string>

@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
@@ -33,6 +34,7 @@ fun PlayerSelector(
     val friends = viewModel.friends
     val selectedPlayers = viewModel.selectedPlayers
     var newPlayerName by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -91,7 +93,7 @@ fun PlayerSelector(
                 TabRow(
                     selectedTabIndex = tabIndex,
                     modifier = Modifier.fillMaxWidth(),
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = MaterialTheme.colorScheme.background,
                     contentColor = MaterialTheme.colorScheme.primary,
                     divider = { 
                         HorizontalDivider(
@@ -103,7 +105,9 @@ fun PlayerSelector(
                     Tab(
                         selected = tabIndex == 0,
                         onClick = { 
-                            // No action needed - pager will handle tab switching
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(0)
+                            }
                         },
                         text = { 
                             Text(
@@ -117,7 +121,9 @@ fun PlayerSelector(
                     Tab(
                         selected = tabIndex == 1,
                         onClick = { 
-                            // No action needed - pager will handle tab switching
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(1)
+                            }
                         },
                         text = { 
                             Text(
