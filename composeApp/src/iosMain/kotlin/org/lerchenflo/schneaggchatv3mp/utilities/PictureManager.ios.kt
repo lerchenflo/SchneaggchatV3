@@ -122,4 +122,63 @@ actual class PictureManager {
         val fileManager = NSFileManager.defaultManager
         return fileManager.fileExistsAtPath(filePath)
     }
+
+    actual suspend fun downscaleImage(
+        imageBytes: ByteArray,
+        targetSizeBytes: Int
+    ): ByteArray = withContext(Dispatchers.Default) {
+        val nsData = imageBytes.toNSData()
+        var uiImage = UIImage.imageWithData(nsData)
+            ?: throw IllegalArgumentException("Invalid image data")
+
+        var quality = 0.9
+        var resultData: NSData?
+
+        // First try with original size at reduced quality
+        do {
+            resultData = UIImageJPEGRepresentation(uiImage, quality)
+            if (resultData == null || resultData.length.toInt() <= targetSizeBytes) {
+                break
+            }
+            quality -= 0.1
+        } while (quality > 0.1)
+
+        // If still too large, resize the image
+        if (resultData != null && resultData.length.toInt() > targetSizeBytes) {
+            var scale = 0.9
+            while (scale > 0.1) {
+                val newWidth = uiImage.size.width * scale
+                val newHeight = uiImage.size.height * scale
+
+                // Resize using UIGraphics
+                val newSize = CGSizeMake(newWidth, newHeight)
+                UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+                uiImage.drawInRect(CGRectMake(0.0, 0.0, newWidth, newHeight))
+                val resizedImage = UIGraphicsGetImageFromCurrentImageContext()
+                UIGraphicsEndImageContext()
+
+                if (resizedImage != null) {
+                    uiImage = resizedImage
+                    quality = 0.9
+
+                    // Try compression again with resized image
+                    do {
+                        resultData = UIImageJPEGRepresentation(uiImage, quality)
+                        if (resultData == null || resultData.length.toInt() <= targetSizeBytes) {
+                            break
+                        }
+                        quality -= 0.1
+                    } while (quality > 0.1)
+
+                    if (resultData != null && resultData.length.toInt() <= targetSizeBytes) {
+                        break
+                    }
+                }
+                scale -= 0.1
+            }
+        }
+
+        val finalData = resultData ?: throw RuntimeException("Failed to downscale image")
+        return@withContext finalData.toByteArray()
+    }
 }

@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.ui.graphics.ImageBitmap
@@ -10,7 +11,9 @@ import kotlinx.coroutines.withContext
 import okio.ByteString.Companion.decodeBase64
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
+import java.io.ByteArrayOutputStream
 import java.io.File
+import androidx.core.graphics.scale
 
 actual class PictureManager(private val context: Context) {
 
@@ -73,5 +76,79 @@ actual class PictureManager(private val context: Context) {
     actual fun checkImageExists(filePath: String): Boolean {
         val file = File(filePath)
         return file.exists()
+    }
+
+    actual suspend fun downscaleImage(
+        imageBytes: ByteArray,
+        targetSizeBytes: Int,
+    ): ByteArray = withContext(Dispatchers.IO) {
+        // If original is already small enough, return it
+        if (imageBytes.size <= targetSizeBytes) {
+            Log.d("Android downscale", "Image already under target (${imageBytes.size} <= $targetSizeBytes), returning original")
+            return@withContext imageBytes
+        }
+
+        var bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+            ?: throw IllegalArgumentException("Invalid image data")
+
+        var quality = 90
+        var resultBytes: ByteArray
+
+        // First try with original size at reduced quality
+        do {
+            val outputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+            resultBytes = outputStream.toByteArray()
+
+            if (resultBytes.size <= targetSizeBytes) {
+                break
+            }
+            quality -= 10
+        } while (quality > 10)
+
+        // If still too large, resize the image
+        if (resultBytes.size > targetSizeBytes) {
+            var scale = 0.9f
+            while (scale > 0.1f) {
+                val newWidth = (bitmap.width * scale).toInt()
+                val newHeight = (bitmap.height * scale).toInt()
+
+                val resizedBitmap = bitmap.scale(newWidth, newHeight)
+
+                // Reset quality for resized bitmap
+                quality = 90
+
+                // Try compression again with resized image
+                do {
+                    val outputStream = ByteArrayOutputStream()
+                    resizedBitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+                    resultBytes = outputStream.toByteArray()
+
+                    if (resultBytes.size <= targetSizeBytes) {
+                        if (resizedBitmap != bitmap) {
+                            bitmap.recycle()
+                        }
+                        bitmap = resizedBitmap
+                        break
+                    }
+                    quality -= 10
+                } while (quality > 10)
+
+                if (resultBytes.size <= targetSizeBytes) {
+                    break
+                }
+
+                if (resizedBitmap != bitmap) {
+                    resizedBitmap.recycle()
+                }
+                scale -= 0.1f
+            }
+        }
+
+        // Clean up bitmap
+        bitmap.recycle()
+
+        Log.d("Android downscale", "Downscaled image from ${imageBytes.size} to ${resultBytes.size} bytes")
+        return@withContext resultBytes
     }
 }

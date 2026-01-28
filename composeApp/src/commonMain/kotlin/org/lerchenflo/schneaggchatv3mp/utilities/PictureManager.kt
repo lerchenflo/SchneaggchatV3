@@ -34,4 +34,13 @@ expect class PictureManager {
      * Check if a image with this name is in the storage
      */
     fun checkImageExists(filePath: String) : Boolean
+
+    /**
+     * Downscale an image to approximately the target size in bytes.
+     * Uses iterative quality reduction to achieve target size.
+     * @param imageBytes Original image bytes
+     * @param targetSizeBytes Target maximum size (default ~500KB)
+     * @return Downscaled image bytes as JPEG
+     */
+    suspend fun downscaleImage(imageBytes: ByteArray, targetSizeBytes: Int = 500_000): ByteArray
 }

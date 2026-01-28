@@ -38,6 +38,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.InputfieldState
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignupState
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.name_too_long
 import schneaggchatv3mp.composeapp.generated.resources.name_too_short
@@ -111,6 +112,8 @@ sealed interface GroupCreatorAction {
 
 class GroupCreatorViewModel (
     private val appRepository: AppRepository,
+    private val pictureManager: PictureManager,
+
     private val navigator: Navigator
 ): ViewModel() {
 
@@ -181,8 +184,14 @@ class GroupCreatorViewModel (
                     val bytearray = action.profilePicUri
                         .loadBytes()
 
+                    println("Unscaled image size: ${bytearray.size}")
+
+                    val downscaledimage = pictureManager.downscaleImage(bytearray)
+
+                    println("Downscaled image size: ${downscaledimage.size}")
+
                     state = state.copy(
-                        profilepic = bytearray
+                        profilepic = downscaledimage
                     )
                 }
 
