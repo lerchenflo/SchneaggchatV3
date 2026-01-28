@@ -109,7 +109,7 @@ val sharedmodule = module{
     factory { LoginViewModel(get(), get(), get()) }
 
     viewModelOf(::SignUpViewModel)
-    factory { SignUpViewModel(get(), get(), get()) }
+    factory { SignUpViewModel(get(), get(), get(), get()) }
 
     viewModelOf(::TodolistViewModel)
     factory { TodolistViewModel(get(), get(), get()) }
@@ -139,7 +139,7 @@ val sharedmodule = module{
 
 
     viewModelOf(::UserSettingsViewModel)
-    factory { UserSettingsViewModel(get(), get(), get()) }
+    factory { UserSettingsViewModel(get(), get(), get(), get()) }
 
     viewModelOf(::AppearanceSettingsViewModel)
     factory { AppearanceSettingsViewModel(get(), get(), get()) }
