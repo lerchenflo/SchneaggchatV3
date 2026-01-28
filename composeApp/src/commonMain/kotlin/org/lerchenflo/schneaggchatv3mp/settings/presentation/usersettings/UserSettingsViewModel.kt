@@ -12,6 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -25,6 +26,7 @@ import kotlin.time.Instant
 class UserSettingsViewModel(
     private val appRepository: AppRepository,
     private val preferenceManager: Preferencemanager,
+    private val pictureManager: PictureManager,
     private val navigator: Navigator,
 ): ViewModel() {
 
@@ -33,9 +35,14 @@ class UserSettingsViewModel(
 
 
     fun changeProfilePicture(newImage: GalleryPhotoResult){
-        val bytearray = newImage
+
+        val bytearrayfullsize = newImage
             .loadBytes()
+
         viewModelScope.launch {
+
+            val bytearray = pictureManager.downscaleImage(bytearrayfullsize)
+
             val success = appRepository.changeProfilePic(bytearray)
 
             if (success) {
