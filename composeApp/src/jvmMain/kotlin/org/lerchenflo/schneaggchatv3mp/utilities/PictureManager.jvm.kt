@@ -10,6 +10,12 @@ import androidx.compose.ui.graphics.toComposeImageBitmap
 import okio.ByteString.Companion.decodeBase64
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
+import java.awt.Image
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import javax.imageio.IIOImage
+import javax.imageio.ImageWriteParam
+import javax.imageio.ImageWriter
 
 actual class PictureManager {
 
@@ -83,5 +89,111 @@ actual class PictureManager {
 
     actual fun checkImageExists(filePath: String): Boolean {
         return File(filePath).exists()
+    }
+
+    actual suspend fun downscaleImage(
+        imageBytes: ByteArray,
+        targetSizeBytes: Int
+    ): ByteArray {
+        // If original is already small enough, return it
+        if (imageBytes.size <= targetSizeBytes) {
+            println("Desktop: Image already under target (${imageBytes.size} <= $targetSizeBytes), returning original")
+            return imageBytes
+        }
+
+        var originalImage = ImageIO.read(ByteArrayInputStream(imageBytes))
+            ?: throw IllegalArgumentException("Invalid image data")
+
+        // Convert to RGB if needed (JPEG doesn't support alpha channel)
+        var bufferedImage = if (originalImage.type != BufferedImage.TYPE_INT_RGB) {
+            val rgbImage = BufferedImage(originalImage.width, originalImage.height, BufferedImage.TYPE_INT_RGB)
+            val g = rgbImage.createGraphics()
+            g.drawImage(originalImage, 0, 0, null)
+            g.dispose()
+            rgbImage
+        } else {
+            originalImage
+        }
+
+        val writer: ImageWriter = ImageIO.getImageWritersByFormatName("jpeg").next()
+        val writeParam = writer.defaultWriteParam
+
+        // Enable compression
+        writeParam.compressionMode = ImageWriteParam.MODE_EXPLICIT
+
+        var quality = 0.9f
+        var resultBytes: ByteArray
+
+        // First try with original size at reduced quality
+        do {
+            val outputStream = ByteArrayOutputStream()
+            val ios = ImageIO.createImageOutputStream(outputStream)
+            writer.output = ios
+            writeParam.compressionQuality = quality
+
+            writer.write(null, IIOImage(bufferedImage, null, null), writeParam)
+            ios.close()
+
+            resultBytes = outputStream.toByteArray()
+
+            if (resultBytes.size <= targetSizeBytes) {
+                break
+            }
+            quality -= 0.1f
+        } while (quality > 0.1f)
+
+        // If still too large, resize the image
+        if (resultBytes.size > targetSizeBytes) {
+            var scale = 0.9
+            while (scale > 0.1) {
+                val newWidth = (bufferedImage.width * scale).toInt()
+                val newHeight = (bufferedImage.height * scale).toInt()
+
+                // Create scaled image
+                val scaledImage = bufferedImage.getScaledInstance(
+                    newWidth,
+                    newHeight,
+                    Image.SCALE_SMOOTH
+                )
+
+                // Convert to BufferedImage (RGB for JPEG)
+                val resizedBufferedImage = BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB)
+                val g = resizedBufferedImage.createGraphics()
+                g.drawImage(scaledImage, 0, 0, null)
+                g.dispose()
+
+                bufferedImage = resizedBufferedImage
+                quality = 0.9f
+
+                // Try compression again with resized image
+                do {
+                    val outputStream = ByteArrayOutputStream()
+                    val ios = ImageIO.createImageOutputStream(outputStream)
+                    writer.output = ios
+                    writeParam.compressionQuality = quality
+
+                    writer.write(null, IIOImage(bufferedImage, null, null), writeParam)
+                    ios.close()
+
+                    resultBytes = outputStream.toByteArray()
+
+                    if (resultBytes.size <= targetSizeBytes) {
+                        break
+                    }
+                    quality -= 0.1f
+                } while (quality > 0.1f)
+
+                if (resultBytes.size <= targetSizeBytes) {
+                    break
+                }
+
+                scale -= 0.1
+            }
+        }
+
+        writer.dispose()
+
+        println("Desktop downscale: ${imageBytes.size} bytes -> ${resultBytes.size} bytes")
+        return resultBytes
     }
 }

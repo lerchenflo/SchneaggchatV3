@@ -103,13 +103,13 @@ val sharedmodule = module{
     factory { NewChatViewModel(get(), get(), get(),get()) }
 
     viewModelOf(::GroupCreatorViewModel)
-    factory { GroupCreatorViewModel(get(), get()) }
+    factory { GroupCreatorViewModel(get(), get(), get()) }
 
     viewModelOf(::LoginViewModel)
     factory { LoginViewModel(get(), get(), get()) }
 
     viewModelOf(::SignUpViewModel)
-    factory { SignUpViewModel(get(), get(), get()) }
+    factory { SignUpViewModel(get(), get(), get(), get()) }
 
     viewModelOf(::TodolistViewModel)
     factory { TodolistViewModel(get(), get(), get()) }
@@ -139,7 +139,7 @@ val sharedmodule = module{
 
 
     viewModelOf(::UserSettingsViewModel)
-    factory { UserSettingsViewModel(get(), get(), get()) }
+    factory { UserSettingsViewModel(get(), get(), get(), get()) }
 
     viewModelOf(::AppearanceSettingsViewModel)
     factory { AppearanceSettingsViewModel(get(), get(), get()) }

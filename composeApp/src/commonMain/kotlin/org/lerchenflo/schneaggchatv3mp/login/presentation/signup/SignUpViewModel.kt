@@ -25,6 +25,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.getMissingPasswordRequirements
 import org.lerchenflo.schneaggchatv3mp.utilities.isEmailValid
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -44,6 +45,7 @@ import schneaggchatv3mp.composeapp.generated.resources.you_need_to_select_a_prof
 class SignUpViewModel(
     private val appRepository: AppRepository,
     private val navigator: Navigator,
+    private val pictureManager: PictureManager,
     private val loggingRepository: LoggingRepository
 ): ViewModel() {
 
@@ -117,8 +119,10 @@ class SignUpViewModel(
 
                 is SignupAction.OnProfilepicSelected -> {
                     CoroutineScope(Dispatchers.Default).launch{ //Use one core
-                        val bytearray = action.profilePicResult
+                        val bytearrayfullsize = action.profilePicResult
                             .loadBytes()
+
+                        val bytearray = pictureManager.downscaleImage(bytearrayfullsize)
 
                         state = state.copy(
                             profilePic = bytearray,

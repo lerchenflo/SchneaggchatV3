@@ -77,11 +77,13 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.DayDivider
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
@@ -116,9 +118,18 @@ fun ChatScreen(
 ){
     val globalViewModel = koinInject<GlobalViewModel>()
     val viewModel = koinViewModel<ChatViewModel>()
+    val loggingRepository = koinInject<LoggingRepository>()
     val displayItems by viewModel.messageDisplayState.collectAsStateWithLifecycle()
     val focusManager = LocalFocusManager.current
     val clipboardManager = LocalClipboardManager.current
+
+    LaunchedEffect(globalViewModel.selectedChat) {
+        if (globalViewModel.selectedChat.value.isNotSelected()) {
+            println("Chat no user selected, navigating back")
+            loggingRepository.logWarning("No User in chat  selected, navigating back")
+            viewModel.onBackClick()
+        }
+    }
 
     Scaffold(
         modifier = modifier
