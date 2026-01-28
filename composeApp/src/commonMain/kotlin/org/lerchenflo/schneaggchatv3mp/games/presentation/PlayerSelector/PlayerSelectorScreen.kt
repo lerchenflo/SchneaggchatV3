@@ -4,6 +4,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -12,6 +15,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -25,7 +29,8 @@ fun PlayerSelector(
     onFinish: (List<String>) -> Unit
 ) {
     val viewModel = koinInject<PlayerSelectorViewModel>()
-    val allPlayers = viewModel.allPlayers
+    val localPlayers = viewModel.localPlayers
+    val friends = viewModel.friends
     val selectedPlayers = viewModel.selectedPlayers
     var newPlayerName by remember { mutableStateOf("") }
 
@@ -78,67 +83,115 @@ fun PlayerSelector(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Player List
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f, fill = false)
-                        .heightIn(max = 300.dp)
-                ) {
-                    // Local Players Section
-                    if (viewModel.localPlayers.isNotEmpty()) {
-                        item {
-                            Text(
-                                text = "Local Players",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                        }
-                        
-                        items(viewModel.localPlayers) { player ->
-                            PlayerItem(
-                                player = player,
-                                isSelected = selectedPlayers.contains(player),
-                                onToggleRequest = { viewModel.toggleSelection(player) },
-                                onDeleteRequest = { viewModel.deletePlayer(player) }
-                            )
-                        }
+                // Tabs with HorizontalPager
+                val pagerState = rememberPagerState(pageCount = { 2 })
+                val tabIndex = pagerState.currentPage
+                
+                // Tab Row
+                TabRow(
+                    selectedTabIndex = tabIndex,
+                    modifier = Modifier.fillMaxWidth(),
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    divider = { 
+                        HorizontalDivider(
+                            thickness = 1.dp,
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                        )
                     }
+                ) {
+                    Tab(
+                        selected = tabIndex == 0,
+                        onClick = { 
+                            // No action needed - pager will handle tab switching
+                        },
+                        text = { 
+                            Text(
+                                "Local Players",
+                                fontWeight = if (tabIndex == 0) FontWeight.Bold else FontWeight.Normal
+                            )
+                        },
+                        selectedContentColor = MaterialTheme.colorScheme.primary,
+                        unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Tab(
+                        selected = tabIndex == 1,
+                        onClick = { 
+                            // No action needed - pager will handle tab switching
+                        },
+                        text = { 
+                            Text(
+                                "Friends",
+                                fontWeight = if (tabIndex == 1) FontWeight.Bold else FontWeight.Normal
+                            )
+                        },
+                        selectedContentColor = MaterialTheme.colorScheme.primary,
+                        unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
 
-                    // Friends Section
-                    if (viewModel.friends.isNotEmpty()) {
-                        if (viewModel.localPlayers.isNotEmpty()) {
-                            item {
-                                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // HorizontalPager for swipeable content
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
+                ) { page ->
+                    when (page) {
+                        0 -> {
+                            // Local Players Tab
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                if (localPlayers.isEmpty()) {
+                                    item {
+                                        Text(
+                                            text = "No local players yet. Add some!",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.padding(vertical = 16.dp)
+                                        )
+                                    }
+                                } else {
+                                    items(localPlayers) { player ->
+                                        PlayerItem(
+                                            player = player,
+                                            isSelected = selectedPlayers.contains(player),
+                                            onToggleRequest = { viewModel.toggleSelection(player) },
+                                            onDeleteRequest = { viewModel.deletePlayer(player) }
+                                        )
+                                    }
+                                }
                             }
                         }
-                        
-                        item {
-                            Text(
-                                text = "Friends",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                        }
-                        
-                        items(viewModel.friends) { friend ->
-                            FriendItem(
-                                friend = friend,
-                                isSelected = selectedPlayers.contains(friend),
-                                onToggleRequest = { viewModel.toggleSelection(friend) }
-                            )
-                        }
-                    }
-                    
-                    if (allPlayers.isEmpty()) {
-                        item {
-                            Text(
-                                text = "No players yet. Add some!",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(vertical = 16.dp)
-                            )
+                        1 -> {
+                            // Friends Tab
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                if (friends.isEmpty()) {
+                                    item {
+                                        Text(
+                                            text = "No friends available.",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.padding(vertical = 16.dp)
+                                        )
+                                    }
+                                } else {
+                                    items(friends) { friend ->
+                                        FriendItem(
+                                            friend = friend,
+                                            isSelected = selectedPlayers.contains(friend),
+                                            onToggleRequest = { viewModel.toggleSelection(friend) }
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -182,7 +235,7 @@ fun PlayerItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onToggleRequest)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(
@@ -216,7 +269,7 @@ fun FriendItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onToggleRequest)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(
