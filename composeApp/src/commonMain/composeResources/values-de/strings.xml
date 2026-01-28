@@ -383,7 +383,35 @@
     <string name="undercover_winner_mr_white">Mr. White gewinnt</string>
     <string name="undercover_winner_civilians">Zivilisten gewinnen</string>
     <string name="undercover_winner_undercover">Undercover / Mr. White gewinnt</string>
+
+    <!-- Rules Dialog -->
+    <string name="undercover_rules_explanation">Erklärung</string>
+    <string name="undercover_rules_explanation_text">Eine kleine Gruppe von Betrügern ist im Spiel aufgetaucht. Sie haben ein anderes Wort als die anderen und müssen sich verstecken. Die Zivilisten müssen sie aufspüren.</string>
+    
+    <string name="undercover_rules_roles">Regeln und Ziele</string>
+    <string name="undercover_rules_roles_text">Es gibt 3 Gruppen im Spiel: Zivilisten, Undercover und Mr. White. Die Mehrheit der Einwohner sind friedliebende Zivilisten. Es gibt bis zu zwei Gruppen von Betrügern: Undercover und Mr. White.</string>
+    
+    <string name="undercover_rules_secret_word">Dein geheimes Wort</string>
+    <string name="undercover_rules_secret_word_text">Zu Beginn des Spiels erhält jeder ein geheimes Wort. In jedem Spiel werden zwei geheime Wörter verwendet. Denken Sie daran, Ihr geheimes Wort vor den anderen geheim zu halten. Zivilisten erhalten dasselbe geheime Wort. Undercover-Agenten erhalten ein Wort, das sich leicht von dem der Zivilisten unterscheidet. Mr. Whites erhalten kein Wort. Zu diesem Zeitpunkt wissen Sie noch nicht, ob Sie ein Zivilist oder ein Undercover-Agent sind.
+
+Übersetzt mit DeepL.com (kostenlose Version)</string>
+    
+    <string name="undercover_rules_gameplay">Spielzüge</string>
+    
+    <string name="undercover_rules_description_phase">Beschreibungsphase</string>
+    <string name="undercover_rules_description_phase_text">Sobald alle ihr Geheimwort erhalten haben, wird ein zufälliger Spieler ausgewählt, der als Erster sein Wort beschreiben darf. Nacheinander beschreiben alle ihr Wort mit einem Wort oder einem Satz. Mr. White muss improvisieren, da er/sie kein Wort hat. \n\nNutzen Sie diese Phase, um genügend Informationen preiszugeben, um Ihre Verbündeten zu finden, aber verbergen Sie die Einzelheiten vor Mr. White.</string>
+    
+    <string name="undercover_rules_discussion_phase">Diskussionsphase</string>
+    <string name="undercover_rules_discussion_phase_text">Sobald die Beschreibungsrunde abgeschlossen ist, diskutieren und debattieren die Spieler darüber, wer ihrer Meinung nach die Betrüger und wer die Zivilisten sind. Zivilisten und Undercover-Agenten sollten diese Phase nutzen, um weitere Hinweise zu sammeln, um ihre eigene Identität zu entdecken, Allianzen zu bilden und Feinde zu identifizieren. Für Mr. White ist dies der beste Zeitpunkt, um mehr über das Geheimwort der Zivilisten herauszufinden. Denken Sie daran: Geben Sie sich nicht unnötig früh zu erkennen! Nutzen Sie Ihren Charme, um die Chancen zu Ihren Gunsten zu wenden.</string>
+    
+    <string name="undercover_rules_elimination_phase">Eliminierungsphase</string>
+    <string name="undercover_rules_elimination_phase_text">Wenn die Diskussionsphase beendet ist, stimmen alle verbleibenden Spieler für einen Spieler, den sie aus dem Spiel werfen möchten. Denken Sie daran, dass Spieler, die bereits aus dem Spiel geworfen wurden, keine Stimme mehr abgeben können. \n\nDer Spieler mit den meisten Stimmen wird aus dem Spiel geworfen! Es sei denn, der gewählte Spieler ist Mr. White! In diesem Fall hat er/sie noch eine Chance, das Wort „Zivilist” zu erraten. Wenn er/sie das Wort „Zivilist” richtig errät, gewinnt Mr. White sofort! Wenn die Siegbedingung des Spiels nach der Eliminierungsphase nicht erfüllt ist, wiederholen Sie die oben genannten drei Phasen, bis eine der Gruppen (Zivilisten, Undercover oder Mr. White) das Spiel gewinnt.</string>
+    
+    <string name="undercover_rules_victory">Gewonnen</string>
+    <string name="undercover_rules_victory_text">• Die Zivilisten gewinnen, wenn sie alle Undercover-Agenten und Mr. Whites eliminieren. • Die Betrüger (Undercover-Agenten und/oder Mr. Whites) gewinnen, wenn sie überleben, bis nur noch ein Zivilist übrig ist. • Mr. White gewinnt auch, wenn er das Wort der Zivilisten richtig errät.</string>
+    
     <string name="undercover_rules_button">Regeln</string>
+    <string name="undercover_rules_close">Schließen</string>
 
     <string name="your_friends_wrote_this">~ Deine Freunde</string>
     <string name="show_logs">Logs anzeigen</string>
@@ -393,5 +421,26 @@
     <string name="poll_title">Umfragentitel ...</string>
     <string name="poll_options_title">Optionen</string>
     <string name="poll_option">Option</string>
+
+    <!-- Games: Yatzi -->
+    <string name="yatzi_setup_title">Yahtzee Einstellungen</string>
+    <string name="yatzi_game_title">Yahtzee Spiel</string>
+    <string name="yatzi_add_manage_players">Spielerverwaltung</string>
+    <string name="yatzi_players">Spieler:</string>
+    <string name="yatzi_start_game">Spiel starten</string>
+    <string name="yatzi_continue">Weitermachen</string>
+    <string name="yatzi_restart">Neustarten</string>
+    <string name="yatzi_new_game">Neues Spiel</string>
+    <string name="yatzi_game_over">Spiel vorbei!</string>
+    <string name="yatzi_winner">Gewinner: %1$s</string>
+    <string name="yatzi_score">Punkte: %1$s</string>
+    <string name="yatzi_back_to_menu">Zurück</string>
+    <string name="yatzi_no_active_game">Kein aktuelles Spiel.</string>
+    <string name="yatzi_category">Kategorie</string>
+    <string name="yatzi_upper_sum">Upper Sum</string>
+    <string name="yatzi_bonus">Bonus</string>
+    <string name="yatzi_total">Gesammt</string>
+    <string name="yatzi_roll_dice">Würfeln, %1$d left</string>
+    <string name="yatzi_roll_again">Erneut Würfeln, %1$d left</string>
 
 </resources>

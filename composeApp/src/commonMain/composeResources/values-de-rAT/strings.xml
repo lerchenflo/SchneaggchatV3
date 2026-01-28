@@ -383,8 +383,33 @@
     <string name="undercover_winner_mr_white">Mr. White hot gwunna</string>
     <string name="undercover_winner_civilians">Civilians hon gwunna</string>
     <string name="undercover_winner_undercover">Undercover und Mr. White hon gwunna</string>
-    <string name="undercover_rules_button">Regla</string>
 
+    <!-- Rules Dialog -->
+    <string name="undercover_rules_explanation">Erklärung</string>
+    <string name="undercover_rules_explanation_text">Es sin paar falsche Hünd in dera Gruppa. Die hon a andas Wort wie da Rest. Findan se!</string>
+    
+    <string name="undercover_rules_roles">Regla und Ziele</string>
+    <string name="undercover_rules_roles_text">Es git drü Gruppa: Zivis, Undercover und Mr. White. Es git hauptsächlich unschuldige Zivis, da Rest sin Schlawiner!</string>
+    
+    <string name="undercover_rules_secret_word">Krig din geheims Wort</string>
+    <string name="undercover_rules_secret_word_text">Am Anfang krigt jeda a geheims Wort. Jeds spiel hot zwoa sehr ähnliche Worter. Zivis krigan alle des selbe Wort. Undercover krigan alle des andere ähnliche Wort. Mr. White krigt goanix. Wenn was ida Bira hosch merksch das am Afang sealb ned woasch ob Zivi oda Undercover bisch. </string>
+    
+    <string name="undercover_rules_gameplay">Des Spiel sealb</string>
+    
+    <string name="undercover_rules_description_phase">Posaun was usse</string>
+    <string name="undercover_rules_description_phase_text">Sobald alle ihr Wort krigt hon (und hoffentlich gmerkt sus kaschas glei fagessa), fang an Spiela a der ned Mr. White isch. Denn beschribt jeda da Reihe noch sin Wort mit oa zwoa Wörter die des ursprüngliche Wort ned beinhalten (du Bimbo). Mr. White muss hald ane phantasiera so guat dasas goht. Segan nix zu leichts sus kut da Mr. White direkt druf. Es muss trozm was sie, das da Rest mirkt das du dochs Wort kennsch.</string>
+    
+    <string name="undercover_rules_discussion_phase">Stritand mitnand</string>
+    <string name="undercover_rules_discussion_phase_text">Alta eig bini zful zum dean ganza scheiß übasetza. Es isch ned so deep ma voted jz hald dia usse wo ma denkt das sie Schlawiner sin. Denk oh kle drüba noch obs ned vlt sealb bisch... Zum voten künnt ma uf drei ufnand zoaga oda sowas.</string>
+    
+    <string name="undercover_rules_elimination_phase">Jz wöran Lüt tötet</string>
+    <string name="undercover_rules_elimination_phase_text">Wenns jz no ned kapiert hosch kanni da oh num wittahelfa man. Wenn du mol usse gvoted wora bisch kannsch num mit voten eh klar. Wenn da Mr. White tötet wird hota a Chance des Wort fo da Zivis zum errota, schafft ers gwinnt er des Spiel! Sus hald net und Zivis gwinnen. Ma wiederholt des usse voten solang bis nur no oan Zivi übrig isch (die Schlawiner gwinnen) oda hald alle Schalwiner (Undercover und Mr. Whites) dussa sin.</string>
+    
+    <string name="undercover_rules_victory">Gwunna</string>
+    <string name="undercover_rules_victory_text">Wenns jz no ned gschnallt hosch gang ham</string>
+    
+    <string name="undercover_rules_button">Regla</string>
+    <string name="undercover_rules_close">Schlüßa</string>
 
     <string name="your_friends_wrote_this">~ Dine Freunde</string>
     <string name="show_logs">Logs aschoua</string>
@@ -394,5 +419,26 @@
     <string name="poll_title">Umfrogatitel ...</string>
     <string name="poll_options_title">Optiona</string>
     <string name="poll_option">Option</string>
+
+    <!-- Games: Yatzi -->
+    <string name="yatzi_setup_title">Yahtzee Einstellunga</string>
+    <string name="yatzi_game_title">Yahtzee Spiel</string>
+    <string name="yatzi_add_manage_players">Spielerverwaltung</string>
+    <string name="yatzi_players">Spieler:</string>
+    <string name="yatzi_start_game">Spiel starta</string>
+    <string name="yatzi_continue">Wittamaha</string>
+    <string name="yatzi_restart">Neustarta</string>
+    <string name="yatzi_new_game">Neus Spiel</string>
+    <string name="yatzi_game_over">Fertig jetzt!</string>
+    <string name="yatzi_winner">Gwunna: %1$s</string>
+    <string name="yatzi_score">Punkte: %1$s</string>
+    <string name="yatzi_back_to_menu">Zruck</string>
+    <string name="yatzi_no_active_game">Du Bimbo hosch koa Spiel igstelt.</string>
+    <string name="yatzi_category">Kategorie</string>
+    <string name="yatzi_upper_sum">Alls fo oba</string>
+    <string name="yatzi_bonus">Dine Muatta</string>
+    <string name="yatzi_total">Alls zem</string>
+    <string name="yatzi_roll_dice">Uf was wartesch, %1$d left</string>
+    <string name="yatzi_roll_again">Jo nomml, %1$d left</string>
 
 </resources>
