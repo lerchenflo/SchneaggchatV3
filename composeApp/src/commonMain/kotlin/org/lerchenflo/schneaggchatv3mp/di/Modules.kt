@@ -141,7 +141,7 @@ val sharedmodule = module{
     factory { UndercoverViewModel(get()) }
     
     viewModelOf(::PlayerSelectorViewModel)
-    factory { PlayerSelectorViewModel(get()) }
+    factory { PlayerSelectorViewModel(get(), get()) }
 
 
     viewModelOf(::UserSettingsViewModel)

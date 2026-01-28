@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 
 @Composable
 fun PlayerSelector(
@@ -23,7 +25,7 @@ fun PlayerSelector(
     onFinish: (List<String>) -> Unit
 ) {
     val viewModel = koinInject<PlayerSelectorViewModel>()
-    val players = viewModel.players
+    val allPlayers = viewModel.allPlayers
     val selectedPlayers = viewModel.selectedPlayers
     var newPlayerName by remember { mutableStateOf("") }
 
@@ -82,15 +84,54 @@ fun PlayerSelector(
                         .weight(1f, fill = false)
                         .heightIn(max = 300.dp)
                 ) {
-                    items(players) { player ->
-                        PlayerItem(
-                            player = player,
-                            isSelected = selectedPlayers.contains(player),
-                            onToggleRequest = { viewModel.toggleSelection(player) },
-                            onDeleteRequest = { viewModel.deletePlayer(player) }
-                        )
+                    // Local Players Section
+                    if (viewModel.localPlayers.isNotEmpty()) {
+                        item {
+                            Text(
+                                text = "Local Players",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                        }
+                        
+                        items(viewModel.localPlayers) { player ->
+                            PlayerItem(
+                                player = player,
+                                isSelected = selectedPlayers.contains(player),
+                                onToggleRequest = { viewModel.toggleSelection(player) },
+                                onDeleteRequest = { viewModel.deletePlayer(player) }
+                            )
+                        }
                     }
-                    if (players.isEmpty()) {
+
+                    // Friends Section
+                    if (viewModel.friends.isNotEmpty()) {
+                        if (viewModel.localPlayers.isNotEmpty()) {
+                            item {
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+                        }
+                        
+                        item {
+                            Text(
+                                text = "Friends",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                        }
+                        
+                        items(viewModel.friends) { friend ->
+                            FriendItem(
+                                friend = friend,
+                                isSelected = selectedPlayers.contains(friend),
+                                onToggleRequest = { viewModel.toggleSelection(friend) }
+                            )
+                        }
+                    }
+                    
+                    if (allPlayers.isEmpty()) {
                         item {
                             Text(
                                 text = "No players yet. Add some!",
@@ -116,8 +157,8 @@ fun PlayerSelector(
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            onFinish(selectedPlayers.map { it.name })
-                            viewModel.clearSelection() // Optional: clear selection after use
+                            onFinish(viewModel.getSelectedPlayerNames())
+                            viewModel.clearSelection()
                             onDismiss()
                         },
                         enabled = selectedPlayers.isNotEmpty()
@@ -162,5 +203,36 @@ fun PlayerItem(
                 tint = MaterialTheme.colorScheme.error
             )
         }
+    }
+}
+
+@Composable
+fun FriendItem(
+    friend: User,
+    isSelected: Boolean,
+    onToggleRequest: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onToggleRequest)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(
+            checked = isSelected,
+            onCheckedChange = { onToggleRequest() }
+        )
+        Icon(
+            imageVector = Icons.Default.Person,
+            contentDescription = "Friend",
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+        )
+        Text(
+            text = friend.name,
+            modifier = Modifier.weight(1f),
+            style = MaterialTheme.typography.bodyLarge
+        )
     }
 }
