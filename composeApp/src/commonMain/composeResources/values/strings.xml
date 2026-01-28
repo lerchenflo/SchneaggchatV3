@@ -420,4 +420,25 @@
     <string name="poll_options_title">Options</string>
     <string name="poll_option">Option</string>
 
+    <!-- Games: Yatzi -->
+    <string name="yatzi_setup_title">Yahtzee Setup</string>
+    <string name="yatzi_game_title">Yahtzee Game</string>
+    <string name="yatzi_add_manage_players">Add / Manage Players</string>
+    <string name="yatzi_players">Players:</string>
+    <string name="yatzi_start_game">Start Game</string>
+    <string name="yatzi_continue">Continue</string>
+    <string name="yatzi_restart">Restart</string>
+    <string name="yatzi_new_game">New Game</string>
+    <string name="yatzi_game_over">Game Over!</string>
+    <string name="yatzi_winner">Winner: %1$s</string>
+    <string name="yatzi_score">Score: %1$s</string>
+    <string name="yatzi_back_to_menu">Back to Menu</string>
+    <string name="yatzi_no_active_game">No active game. Please go back and setup a new game.</string>
+    <string name="yatzi_category">Category</string>
+    <string name="yatzi_upper_sum">Upper Sum</string>
+    <string name="yatzi_bonus">Bonus</string>
+    <string name="yatzi_total">Total</string>
+    <string name="yatzi_roll_dice">Roll Dice, %1$d left</string>
+    <string name="yatzi_roll_again">Roll Again, %1$d left</string>
+
 </resources>

@@ -51,8 +51,29 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.lifecycle.viewmodel.compose.viewModel
+import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelector
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_setup_title
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_game_title
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_add_manage_players
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_players
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_start_game
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_continue
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_restart
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_new_game
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_game_over
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_winner
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_score
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_back_to_menu
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_no_active_game
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_category
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_upper_sum
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_bonus
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_total
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_roll_dice
+import schneaggchatv3mp.composeapp.generated.resources.yatzi_roll_again
 
 @Composable
 fun YatziSetupScreen(
@@ -68,7 +89,7 @@ fun YatziSetupScreen(
         topBar = {
             @OptIn(ExperimentalMaterial3Api::class)
             TopAppBar(
-                title = { Text("Yahtzee Setup") },
+                title = { Text(stringResource(Res.string.yatzi_setup_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
@@ -84,13 +105,13 @@ fun YatziSetupScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !state.gameStarted
                 ) {
-                   Text("Add / Manage Players")
+                   Text(stringResource(Res.string.yatzi_add_manage_players))
                 }
             }
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            Text("Players:", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(Res.string.yatzi_players), style = MaterialTheme.typography.titleMedium)
             
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(state.players) { player ->
@@ -116,7 +137,7 @@ fun YatziSetupScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = state.players.isNotEmpty()
                 ) {
-                    Text("Start Game")
+                    Text(stringResource(Res.string.yatzi_start_game))
                 }
             } else {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -124,7 +145,7 @@ fun YatziSetupScreen(
                         onClick = onStartGame,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Continue")
+                        Text(stringResource(Res.string.yatzi_continue))
                     }
                     Button(
                         onClick = {
@@ -133,7 +154,7 @@ fun YatziSetupScreen(
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Restart")
+                        Text(stringResource(Res.string.yatzi_restart))
                     }
                 }
 
@@ -143,7 +164,7 @@ fun YatziSetupScreen(
                     onClick = { viewModel.resetAll() },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("New Game")
+                    Text(stringResource(Res.string.yatzi_new_game))
                 }
             }
         }
@@ -171,7 +192,7 @@ fun YatziGameScreen(
         topBar = {
             @OptIn(ExperimentalMaterial3Api::class)
             TopAppBar(
-                title = { Text("Yahtzee Game") },
+                title = { Text(stringResource(Res.string.yatzi_game_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
@@ -184,7 +205,7 @@ fun YatziGameScreen(
              WinnerScreen(state.winner!!, onBack)
          } else if (state.players.isEmpty()) {
              Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                 Text("No active game. Please go back and setup a new game.")
+                 Text(stringResource(Res.string.yatzi_no_active_game))
              }
          } else {
              Column(modifier = Modifier.padding(padding)) {
@@ -222,12 +243,12 @@ fun YatziGameScreen(
 fun WinnerScreen(winner: YatziPlayer, onBack: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("Game Over!", style = MaterialTheme.typography.headlineLarge)
-            Text("Winner: ${winner.name}", style = MaterialTheme.typography.headlineMedium)
-            Text("Score: ${winner.totalScore}", style = MaterialTheme.typography.headlineMedium)
+            Text(stringResource(Res.string.yatzi_game_over), style = MaterialTheme.typography.headlineLarge)
+            Text(stringResource(Res.string.yatzi_winner, winner.name), style = MaterialTheme.typography.headlineMedium)
+            Text(stringResource(Res.string.yatzi_score, winner.totalScore.toString()), style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = onBack) {
-                Text("Back to Menu")
+                Text(stringResource(Res.string.yatzi_back_to_menu))
             }
         }
     }
@@ -266,7 +287,7 @@ fun Scorecard(
             // Header
             Row(modifier = Modifier.height(50.dp).background(MaterialTheme.colorScheme.surface)) {
                 Box(modifier = Modifier.width(120.dp).padding(8.dp), contentAlignment = Alignment.CenterStart) {
-                    Text("Category", fontWeight = FontWeight.Bold)
+                    Text(stringResource(Res.string.yatzi_category), fontWeight = FontWeight.Bold)
                 }
                 players.forEachIndexed { index, player ->
                     val isCurrent = index == currentPlayerIndex
@@ -355,7 +376,7 @@ fun Scorecard(
                     // Upper Section Sum Row
                     Row(modifier = Modifier.height(35.dp).border(2.dp, MaterialTheme.colorScheme.outlineVariant)) {
                         Box(modifier = Modifier.width(120.dp).padding(8.dp), contentAlignment = Alignment.CenterStart) {
-                            Text("Upper Sum", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+                            Text(stringResource(Res.string.yatzi_upper_sum), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
                         }
                         players.forEachIndexed { index, player ->
                             val isCurrent = index == currentPlayerIndex
@@ -378,7 +399,7 @@ fun Scorecard(
                     // Bonus Row
                     Row(modifier = Modifier.height(35.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
                         Box(modifier = Modifier.width(120.dp).padding(8.dp), contentAlignment = Alignment.CenterStart) {
-                            Text("Bonus", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+                            Text(stringResource(Res.string.yatzi_bonus), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
                         }
                         players.forEachIndexed { index, player ->
                             val isCurrent = index == currentPlayerIndex
@@ -408,7 +429,7 @@ fun Scorecard(
             // Totals
             Row(modifier = Modifier.height(50.dp).background(MaterialTheme.colorScheme.secondaryContainer)) {
                  Box(modifier = Modifier.width(120.dp).padding(8.dp), contentAlignment = Alignment.CenterStart) {
-                    Text("Total", fontWeight = FontWeight.Bold)
+                    Text(stringResource(Res.string.yatzi_total), fontWeight = FontWeight.Bold)
                  }
                  players.forEach { player ->
                      Box(modifier = Modifier.width(80.dp).padding(8.dp), contentAlignment = Alignment.Center) {
@@ -444,7 +465,7 @@ fun DiceArea(
             enabled = canRoll,
             modifier = Modifier.fillMaxWidth(0.5f)
         ) {
-            Text(if (rollCount == 0) "Roll Dice, ${3 - state.currentRollCount} left" else "Roll Again, ${3 - state.currentRollCount} left")
+            Text(if (rollCount == 0) stringResource(Res.string.yatzi_roll_dice, 3 - state.currentRollCount) else stringResource(Res.string.yatzi_roll_again, 3 - state.currentRollCount))
         }
     }
 }
