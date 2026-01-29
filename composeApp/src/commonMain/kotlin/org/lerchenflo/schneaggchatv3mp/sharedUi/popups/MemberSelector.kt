@@ -40,6 +40,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.at_least_members
 import schneaggchatv3mp.composeapp.generated.resources.search_user
 
 /**
@@ -60,14 +61,24 @@ fun MemberSelector(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
+
+
         // Selected users horizontal scroll view
         if (selectedUsers.isNotEmpty()) {
+
+            if (selectedUsers.size < 2){
+                Text(
+                    text = stringResource(Res.string.at_least_members, "2"),
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState())
                     .padding(
-                        start = 10.dp,
+                        start = 16.dp,
                         end = 2.dp,
                         bottom = 10.dp
                     )
