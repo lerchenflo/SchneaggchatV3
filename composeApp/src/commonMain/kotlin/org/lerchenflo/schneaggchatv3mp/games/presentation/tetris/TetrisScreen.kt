@@ -118,7 +118,9 @@ fun TetrisScreen(
                    onRotate = { viewModel.rotate() },
                    onMoveLeft = { viewModel.moveLeft() },
                    onMoveRight = { viewModel.moveRight() },
-                   onDrop = { viewModel.hardDrop() }
+                   onDrop = { viewModel.hardDrop() },
+                   onSoftDropStart = { viewModel.setSoftDropping(true) },
+                   onSoftDropEnd = { viewModel.setSoftDropping(false) }
                )
                
                if (state.isGameOver) {
@@ -153,13 +155,17 @@ fun TetrisBoard(
     onRotate: () -> Unit,
     onMoveLeft: () -> Unit,
     onMoveRight: () -> Unit,
-    onDrop: () -> Unit
+    onDrop: () -> Unit,
+    onSoftDropStart: () -> Unit,
+    onSoftDropEnd: () -> Unit
 ) {
     // Determine cell size based on screen width/height available
     // Tetris board is 10x20
     
     var dragAccumulator by remember { mutableStateOf(0f) }
-    val dragThreshold = 50f // Pixels to move one cell
+    var verticalDragAccumulator by remember { mutableStateOf(0f) }
+    val dragThreshold = 80f // Pixels to move one cell
+    val verticalDragThreshold = 40f // Pixels for vertical swipe detection
 
     Canvas(
         modifier = Modifier
@@ -174,17 +180,30 @@ fun TetrisBoard(
             }
             .pointerInput(Unit) {
                 detectDragGestures(
-                    onDragStart = { dragAccumulator = 0f },
+                    onDragStart = { 
+                        dragAccumulator = 0f
+                        verticalDragAccumulator = 0f
+                    },
+                    onDragEnd = { 
+                        onSoftDropEnd()
+                    },
                     onDrag = { change, dragAmount ->
                         change.consume()
                         dragAccumulator += dragAmount.x
+                        verticalDragAccumulator += dragAmount.y
                         
+                        // Handle horizontal movement
                         if (dragAccumulator > dragThreshold) {
                             onMoveRight()
                             dragAccumulator -= dragThreshold
                         } else if (dragAccumulator < -dragThreshold) {
                             onMoveLeft()
                             dragAccumulator += dragThreshold
+                        }
+                        
+                        // Handle vertical swipe down for soft drop
+                        if (verticalDragAccumulator > verticalDragThreshold) {
+                            onSoftDropStart()
                         }
                     }
                 )

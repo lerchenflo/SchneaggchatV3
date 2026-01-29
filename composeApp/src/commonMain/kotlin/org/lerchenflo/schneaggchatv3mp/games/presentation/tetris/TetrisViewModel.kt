@@ -17,7 +17,9 @@ data class TetrisState(
     val piecePosition: Pair<Int, Int> = 0 to 0, // Row, Column
     val score: Int = 0,
     val isGameOver: Boolean = false,
-    val isPlaying: Boolean = false
+    val isPlaying: Boolean = false,
+    val gameTime: Long = 0L, // Total game time in milliseconds
+    val isSoftDropping: Boolean = false
 )
 
 enum class TetrominoType {
@@ -73,9 +75,32 @@ class TetrisViewModel : ViewModel() {
     val state = _state.asStateFlow()
 
     private var gameLoopJob: Job? = null
-    private val tickRate = 500L // ms
+    private val baseTickRate = 500L // ms
+    private val softDropMultiplier = 0.1f // 10x faster when soft dropping
+    private var gameStartTime = 0L
+    
+    private fun getCurrentTickRate(): Long {
+        val currentState = _state.value
+        val speedMultiplier = calculateSpeedMultiplier(currentState.gameTime)
+        val tickRate = (baseTickRate / speedMultiplier).toLong()
+        
+        return if (currentState.isSoftDropping) {
+            (tickRate * softDropMultiplier).toLong()
+        } else {
+            tickRate
+        }
+    }
+    
+    private fun calculateSpeedMultiplier(gameTime: Long): Float {
+        // Increase speed every 30 seconds, max 3x speed
+        val speedIncreaseInterval = 30000L // 30 seconds
+        val maxSpeedMultiplier = 3f
+        val speedIncrease = (gameTime / speedIncreaseInterval).toFloat()
+        return (1f + speedIncrease).coerceAtMost(maxSpeedMultiplier)
+    }
 
     fun startGame() {
+        gameStartTime = System.currentTimeMillis()
         _state.value = TetrisState(isPlaying = true)
         spawnPiece()
         startGameLoop()
@@ -85,7 +110,11 @@ class TetrisViewModel : ViewModel() {
         gameLoopJob?.cancel()
         gameLoopJob = viewModelScope.launch {
             while (state.value.isPlaying && !state.value.isGameOver) {
-                delay(tickRate)
+                val currentTime = System.currentTimeMillis()
+                val gameTime = currentTime - gameStartTime
+                _state.update { it.copy(gameTime = gameTime) }
+                
+                delay(getCurrentTickRate())
                 moveDown()
             }
         }
@@ -104,6 +133,7 @@ class TetrisViewModel : ViewModel() {
     }
 
     fun restartGame() {
+        gameStartTime = System.currentTimeMillis()
         startGame()
     }
 
@@ -205,6 +235,10 @@ class TetrisViewModel : ViewModel() {
             
             targetRow < 20 && targetCol in 0..9 && (targetRow < 0 || board[targetRow][targetCol] == null)
         }
+    }
+
+    fun setSoftDropping(isSoftDropping: Boolean) {
+        _state.update { it.copy(isSoftDropping = isSoftDropping) }
     }
 
     private fun lockPiece() {
