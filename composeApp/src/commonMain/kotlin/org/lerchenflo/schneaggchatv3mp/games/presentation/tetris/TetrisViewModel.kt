@@ -246,6 +246,11 @@ class TetrisViewModel : ViewModel() {
         val piece = currentState.currentPiece ?: return
         val (pRow, pCol) = currentState.piecePosition
         
+        // Reset soft dropping when piece lands
+        if (currentState.isSoftDropping) {
+            _state.update { it.copy(isSoftDropping = false) }
+        }
+        
         val newBoard = currentState.board.map { it.toMutableList() }.toMutableList()
         
         piece.getShape().forEach { (r, c) ->
