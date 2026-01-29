@@ -15,12 +15,13 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
+import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 
 
 @Database(
-    entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, TodoEntityDto::class, LogEntry::class],
+    entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, TodoEntityDto::class, LogEntry::class, PlayerEntity::class],
     exportSchema = true,
-    version = 47
+    version = 48
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -37,6 +38,8 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun todolistdao(): TodolistDao
 
     abstract fun logDao(): LogDao
+
+    abstract fun playerDao(): PlayerDao
 
     abstract fun allDatabaseDao(): AllDatabaseDao
 

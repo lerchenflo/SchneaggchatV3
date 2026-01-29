@@ -322,9 +322,8 @@
     <string name="dartcounter_undo">Undo</string>
     <string name="dartcounter_list_separator">, </string>
     <string name="dartcounter_winners_format">Winners: %1$s</string>
-    <string name="dartcounter_current_player_format">Current Player: %1$s</string>
+    <string name="dartcounter_current_player_format">Current Player: %1$s, (Dart %2$d/3)</string>
     <string name="dartcounter_avg_format">Avg: %1$s</string>
-    <string name="dartcounter_dart_status_format">Dart: %1$d (Dart %2$d/3)</string>
     <string name="dartcounter_finished_suffix"> ✓</string>
     <string name="dartcounter_player_name_label">Player Name</string>
     <string name="dartcounter_add">Add</string>
@@ -386,7 +385,6 @@
     <string name="undercover_winner_undercover">Undercover / Mr. White win</string>
 
     <!-- Rules Dialog -->
-    <string name="undercover_rules_title">Undercover Rules</string>
     <string name="undercover_rules_explanation">Explanation</string>
     <string name="undercover_rules_explanation_text">A small group of Impostors has appeared in the game. They have a different word than the others and must hide. Civilians have to discover them.</string>
     
@@ -421,5 +419,26 @@
     <string name="poll_title">Poll title ...</string>
     <string name="poll_options_title">Options</string>
     <string name="poll_option">Option</string>
+
+    <!-- Games: Yatzi -->
+    <string name="yatzi_setup_title">Yahtzee Setup</string>
+    <string name="yatzi_game_title">Yahtzee Game</string>
+    <string name="yatzi_add_manage_players">Add / Manage Players</string>
+    <string name="yatzi_players">Players:</string>
+    <string name="yatzi_start_game">Start Game</string>
+    <string name="yatzi_continue">Continue</string>
+    <string name="yatzi_restart">Restart</string>
+    <string name="yatzi_new_game">New Game</string>
+    <string name="yatzi_game_over">Game Over!</string>
+    <string name="yatzi_winner">Winner: %1$s</string>
+    <string name="yatzi_score">Score: %1$s</string>
+    <string name="yatzi_back_to_menu">Back to Menu</string>
+    <string name="yatzi_no_active_game">No active game. Please go back and setup a new game.</string>
+    <string name="yatzi_category">Category</string>
+    <string name="yatzi_upper_sum">Upper Sum</string>
+    <string name="yatzi_bonus">Bonus</string>
+    <string name="yatzi_total">Total</string>
+    <string name="yatzi_roll_dice">Roll Dice, %1$d left</string>
+    <string name="yatzi_roll_again">Roll Again, %1$d left</string>
 
 </resources>

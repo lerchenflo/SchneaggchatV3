@@ -18,6 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
+import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 
 @Dao
 interface UserDao {
@@ -260,6 +261,21 @@ interface AllDatabaseDao {
         clearTodos()
 
     }
+}
+
+@Dao
+interface PlayerDao {
+    @Query("SELECT * FROM players")
+    fun getAllPlayersFlow(): Flow<List<PlayerEntity>>
+
+    @Query("SELECT * FROM players")
+    suspend fun getAllPlayers(): List<PlayerEntity>
+
+    @Upsert
+    suspend fun upsert(player: PlayerEntity)
+
+    @Query("DELETE FROM players WHERE id = :playerId")
+    suspend fun delete(playerId: String)
 }
 
 @Serializable

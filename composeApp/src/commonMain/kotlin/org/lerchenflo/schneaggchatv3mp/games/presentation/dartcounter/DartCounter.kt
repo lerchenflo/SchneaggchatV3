@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -21,10 +22,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.compose.ui.window.Dialog
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelector
 import schneaggchatv3mp.composeapp.generated.resources.Res
+
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_add
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_add_players
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_avg_format
@@ -32,7 +36,6 @@ import schneaggchatv3mp.composeapp.generated.resources.dartcounter_cancel
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_configure_game_hint
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_countdown_label
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_current_player_format
-import schneaggchatv3mp.composeapp.generated.resources.dartcounter_dart_status_format
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_done
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_finished_suffix
 import schneaggchatv3mp.composeapp.generated.resources.dartcounter_game_configuration_title
@@ -152,7 +155,13 @@ fun DartCounter(
     
     // Dialogs
     if (viewmodel.showPlayerSetup) {
-        PlayerSetupDialog(viewmodel = viewmodel)
+        PlayerSelector(
+            onDismiss = { viewmodel.hidePlayerSetupDialog() },
+            onFinish = { selectedPlayers ->
+                viewmodel.setPlayers(selectedPlayers)
+                viewmodel.hidePlayerSetupDialog()
+            }
+        )
     }
     
     if (viewmodel.showGameConfig) {
@@ -311,7 +320,9 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
                 )
             } else if (!game.getCurrentPlayer().isFinished) {
                 Text(
-                    text = stringResource(Res.string.dartcounter_current_player_format, game.getCurrentPlayer().name),
+                    text = stringResource(Res.string.dartcounter_current_player_format, game.getCurrentPlayer().name,
+                    viewmodel.throwCount
+                    ),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -319,13 +330,24 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
 
             Spacer(modifier = Modifier.height(7.dp))
 
-            // Vertical player list with averages
-            Column(
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+            // LazyColumn with autoscroll to active player
+            val listState = rememberLazyListState()
+            val coroutineScope = rememberCoroutineScope()
+            
+            // Auto-scroll to current player when it changes
+            LaunchedEffect(game.currentPlayerIndex) {
+                coroutineScope.launch {
+                    listState.animateScrollToItem(game.currentPlayerIndex)
+                }
+            }
+            
+            LazyColumn(
+                state = listState,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.heightIn(max = 300.dp) // Limit height to prevent taking up too much space
             ) {
-                game.playerList.forEach { player ->
+                items(game.playerList.size) { index ->
+                    val player = game.playerList[index]
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -394,100 +416,6 @@ fun GameStatusDisplay(game: DartCounterViewModel.GameManager, viewmodel: DartCou
                 }
             }
 
-            if (viewmodel.currentThrow > -1 && !game.getCurrentPlayer().isFinished) {
-                Spacer(modifier = Modifier.height(7.dp))
-                Text(
-                    text = stringResource(
-                        Res.string.dartcounter_dart_status_format,
-                        viewmodel.currentThrow,
-                        viewmodel.throwCount
-                    ),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
-    }
-}
-@Composable
-fun PlayerSetupDialog(viewmodel: DartCounterViewModel) {
-    var playerName by remember { mutableStateOf("") }
-    
-    Dialog(onDismissRequest = { viewmodel.hidePlayerSetupDialog() }) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text(
-                    text = stringResource(Res.string.dartcounter_add_players),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedTextField(
-                        value = playerName,
-                        onValueChange = { playerName = it },
-                        label = { Text(stringResource(Res.string.dartcounter_player_name_label)) },
-                        modifier = Modifier.weight(1f)
-                    )
-                    
-                    Button(
-                        onClick = {
-                            viewmodel.addPlayerName(playerName)
-                            playerName = ""
-                        }
-                    ) {
-                        Text(stringResource(Res.string.dartcounter_add))
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                LazyColumn(
-                    modifier = Modifier.height(200.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    items(viewmodel.playerNames) { name ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(name)
-                            Button(
-                                onClick = { viewmodel.removePlayerName(name) },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.error
-                                )
-                            ) {
-                                Text(stringResource(Res.string.dartcounter_remove))
-                            }
-                        }
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(
-                        onClick = { viewmodel.hidePlayerSetupDialog() }
-                    ) {
-                        Text(stringResource(Res.string.dartcounter_done))
-                    }
-                }
-            }
         }
     }
 }

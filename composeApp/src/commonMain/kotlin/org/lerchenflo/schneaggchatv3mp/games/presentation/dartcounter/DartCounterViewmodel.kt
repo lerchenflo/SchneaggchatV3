@@ -256,6 +256,10 @@ class DartCounterViewModel() : ViewModel() {
     var totalThrowsCount by mutableStateOf(0)
         private set
 
+    fun setPlayers(names: List<String>) {
+        playerNames = names
+    }
+
     fun addPlayerName(name: String) {
         if (name.isNotBlank() && name !in playerNames) {
             playerNames = playerNames + name

@@ -26,6 +26,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerstackViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.UndercoverViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
+import org.lerchenflo.schneaggchatv3mp.datasource.database.PlayerDao
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewmodel
@@ -45,6 +47,7 @@ val sharedmodule = module{
 
     //Database
     single <AppDatabase> { CreateAppDatabase(get()).getDatabase() }
+    single <PlayerDao> { get<AppDatabase>().playerDao() }
 
     singleOf(::TokenManager)
 
@@ -136,6 +139,9 @@ val sharedmodule = module{
     factory { TowerstackViewModel() }
     viewModelOf(::UndercoverViewModel)
     factory { UndercoverViewModel(get()) }
+    
+    viewModelOf(::PlayerSelectorViewModel)
+    factory { PlayerSelectorViewModel(get(), get()) }
 
 
     viewModelOf(::UserSettingsViewModel)
