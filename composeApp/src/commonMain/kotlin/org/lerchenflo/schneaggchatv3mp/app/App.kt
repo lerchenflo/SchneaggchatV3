@@ -64,6 +64,8 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackS
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziGameScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziSetupScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
+import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
+import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
@@ -169,6 +171,7 @@ fun App() {
                         subclass(Route.Games.TowerStack::class, Route.Games.TowerStack.serializer())
                         subclass(Route.Games.YatziSetup::class, Route.Games.YatziSetup.serializer())
                         subclass(Route.Games.YatziGame::class, Route.Games.YatziGame.serializer())
+                        subclass(Route.Games.Tetris::class, Route.Games.Tetris.serializer())
 
 
                     }
@@ -505,6 +508,11 @@ fun App() {
                                     icon = Icons.Default.Star,
                                     route = Route.Games.YatziSetup
                                 ),
+                                GameScreenElement(
+                                    title = "Tetris",
+                                    icon = Icons.Default.Menu, // Placeholder
+                                    route = Route.Games.Tetris
+                                ),
 
                             )
                             NavDisplay(
@@ -579,6 +587,18 @@ fun App() {
                                                 }
                                             },
                                             viewModel = yatziViewModel
+                                        )
+                                    }
+
+                                    entry <Route.Games.Tetris> {
+                                        val tetrisViewModel: TetrisViewModel = androidx.lifecycle.viewmodel.compose.viewModel { TetrisViewModel() }
+                                        TetrisScreen(
+                                            onBackClick = {
+                                                if (gamesBackStack.size > 1){
+                                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                                }
+                                            },
+                                            viewModel = tetrisViewModel
                                         )
                                     }
                                 }

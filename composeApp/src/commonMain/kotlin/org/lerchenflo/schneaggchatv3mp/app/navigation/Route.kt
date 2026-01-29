@@ -71,6 +71,9 @@ sealed interface Route : NavKey {
 
         @Serializable
         data object YatziGame: Route, NavKey
+
+        @Serializable
+        data object Tetris: Route, NavKey
     }
 }
 
