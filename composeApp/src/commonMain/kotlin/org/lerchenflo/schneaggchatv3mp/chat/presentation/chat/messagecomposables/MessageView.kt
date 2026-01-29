@@ -47,6 +47,8 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mikepenz.markdown.m3.Markdown
+import com.mikepenz.markdown.model.DefaultMarkdownColors
+import com.mikepenz.markdown.model.MarkdownColors
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -475,11 +477,23 @@ fun TextMessage(
         }
         Markdown(
             content = content,
-            modifier = modifier
+            modifier = modifier,
+            //TODO: Nocham neua theme do die message text color flicka
+            
+            colors = DefaultMarkdownColors(
+                text = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                inlineCodeBackground = MaterialTheme.colorScheme.error,
+                dividerColor = MaterialTheme.colorScheme.onPrimary,
+                tableBackground = MaterialTheme.colorScheme.onSurface,
+                codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+             
         )
     }else{
         Text(
-            text = messageWithReaders.content
+            text = messageWithReaders.content,
+            color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 
