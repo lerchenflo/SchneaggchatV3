@@ -1,10 +1,5 @@
-@file:OptIn(ExperimentalSpmForKmpFeature::class)
 
-import io.github.frankois944.spmForKmp.swiftPackageConfig
-import io.github.frankois944.spmForKmp.utils.ExperimentalSpmForKmpFeature
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import java.net.URI
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -15,7 +10,7 @@ plugins {
     alias(libs.plugins.room)
     alias(libs.plugins.jetbrains.kotlin.serialization)
     alias(libs.plugins.androidKmpLibrary)
-    id("io.github.frankois944.spmForKmp")
+    //id("io.github.frankois944.spmForKmp")
 }
 
 
@@ -38,12 +33,12 @@ fun detectTarget(): String {
 
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 kotlin {
@@ -76,6 +71,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
 
+        /*
         iosTarget.swiftPackageConfig(cinteropName = "spmMaplibre") {
             dependency {
                 remotePackageVersion(
@@ -87,6 +83,8 @@ kotlin {
             }
 
         }
+
+         */
 
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
@@ -192,7 +190,7 @@ kotlin {
             implementation(libs.coil3.coil.compose)
 
             //maps
-            implementation(libs.maplibre.compose)
+            //implementation(libs.maplibre.compose)
 
             //Socket connection
             implementation(libs.socket)

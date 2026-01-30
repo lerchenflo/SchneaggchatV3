@@ -28,7 +28,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerstackV
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.UndercoverViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
@@ -114,8 +113,8 @@ val sharedmodule = module{
     viewModelOf(::TodolistViewModel)
     factory { TodolistViewModel(get(), get(), get()) }
 
-    viewModelOf(::SchneaggmapViewmodel)
-    factory { SchneaggmapViewmodel(get()) }
+    //viewModelOf(::SchneaggmapViewmodel)
+    //factory { SchneaggmapViewmodel(get()) }
 
 
 
