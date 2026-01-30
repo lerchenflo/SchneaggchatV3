@@ -84,6 +84,13 @@ class GlobalViewModel(
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        viewModelScope.launch {
+            socketConnectionManager.close()
+        }
+    }
+
 
 
 

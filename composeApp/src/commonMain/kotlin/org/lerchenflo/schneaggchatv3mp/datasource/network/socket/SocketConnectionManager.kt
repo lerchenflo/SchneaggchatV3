@@ -141,11 +141,6 @@ class SocketConnectionManager(
      */
     fun isConnectedNow(): Boolean = _connectionState.value
 
-    // Add this method to handle incoming messages
-    private suspend fun handleSocketConnectionMessage(message: String) {
-        // Your message handling logic here
-        println("Received message: $message")
-    }
 }
 
 /**

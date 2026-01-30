@@ -87,47 +87,6 @@ class ChatViewModel(
     // Track if we should load all messages or just initial batch
     private val _shouldLoadAllMessages = MutableStateFlow(false)
 
-    init {
-        viewModelScope.launch {
-            settingsRepository.getUsemd()
-                .catch { exception ->
-                    loggingRepository.logWarning("ChatViewModel: Problem getting MD preference: ${exception.message}")
-                }
-                .collect { value ->
-                    markdownEnabled = value
-                }
-        }
-
-        // Trigger background loading after a short delay
-        viewModelScope.launch {
-            delay(700) // Give initial messages time to load and render
-            _isLoadingOlderMessages.value = true
-            _shouldLoadAllMessages.value = true
-            println("loading all messages")
-        }
-
-
-        //Set messages read on start
-        setAllMessagesRead()
-
-        //Set all messages read on app resumed
-        viewModelScope.launch {
-            AppLifecycleManager.appResumedEvent.collectLatest {
-                if (SessionCache.isLoggedInValue()) {
-                    setAllMessagesRead()
-                }
-            }
-        }
-
-        //Set all messages read on message change
-        viewModelScope.launch {
-            messageDisplayState.collectLatest { displayItems ->
-                if (displayItems.isNotEmpty()) {
-                    setAllMessagesRead()
-                }
-            }
-        }
-    }
 
     fun setAllMessagesRead() {
 
@@ -329,4 +288,50 @@ class ChatViewModel(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+
+
+    //Beim call vom init sind alle values initialisiert
+    init {
+        viewModelScope.launch {
+            settingsRepository.getUsemd()
+                .catch { exception ->
+                    loggingRepository.logWarning("ChatViewModel: Problem getting MD preference: ${exception.message}")
+                }
+                .collect { value ->
+                    markdownEnabled = value
+                }
+        }
+
+        // Trigger background loading after a short delay
+        viewModelScope.launch {
+            delay(700) // Give initial messages time to load and render
+            _isLoadingOlderMessages.value = true
+            _shouldLoadAllMessages.value = true
+            println("loading all messages")
+        }
+
+
+        //Set messages read on start
+        //setAllMessagesRead() Automatically on list change
+
+        //Set all messages read on app resumed
+        viewModelScope.launch {
+            AppLifecycleManager.appResumedEvent.collectLatest {
+                if (SessionCache.isLoggedInValue()) {
+                    setAllMessagesRead()
+                }
+            }
+        }
+
+        //Set all messages read on message change
+        viewModelScope.launch {
+            messageDisplayState.collectLatest { displayItems ->
+                if (displayItems.isNotEmpty()) {
+                    setAllMessagesRead()
+                }
+            }
+        }
+    }
+
+
 }
