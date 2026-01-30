@@ -34,10 +34,10 @@ fun SettingsSwitch(
             bottom = 20.dp
         ),
     titletext: String,
-    infotext: String,
+    infotext: String?,
     switchchecked: Boolean,
     onSwitchChange : (Boolean) -> Unit,
-    icon: ImageVector
+    icon: ImageVector?
     ){
     //Quer umme a row
     Row(
@@ -45,14 +45,17 @@ fun SettingsSwitch(
         verticalAlignment = Alignment.CenterVertically
 
     ){
-        Icon(
-            contentDescription = titletext,
-            modifier = Modifier.size(35.dp),
-            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
-            imageVector = icon
-        )
+        icon?.let {
+            Icon(
+                contentDescription = titletext,
+                modifier = Modifier.size(35.dp),
+                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                imageVector = icon
+            )
 
-        Spacer(modifier = Modifier.width(24.dp))
+            Spacer(modifier = Modifier.width(24.dp))
+        }
+
 
 
         //In da row an titel und drunta a info
@@ -66,12 +69,13 @@ fun SettingsSwitch(
                 style = MaterialTheme.typography.titleMedium
             )
 
-            Text(
-                text = infotext,
-                style = MaterialTheme.typography.bodySmall,
-                color = LocalContentColor.current.copy(alpha = 0.65f)
-
-            )
+            infotext?.let {
+                Text(
+                    text = infotext,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = LocalContentColor.current.copy(alpha = 0.65f)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.width(10.dp))

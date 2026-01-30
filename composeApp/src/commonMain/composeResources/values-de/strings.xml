@@ -416,11 +416,6 @@
     <string name="your_friends_wrote_this">~ Deine Freunde</string>
     <string name="show_logs">Logs anzeigen</string>
 
-    <!-- polls -->
-    <string name="poll_creator_title">Umfrage erstellen</string>
-    <string name="poll_title">Umfragentitel ...</string>
-    <string name="poll_options_title">Optionen</string>
-    <string name="poll_option">Option</string>
 
     <!-- Games: Yatzi -->
     <string name="yatzi_setup_title">Yahtzee Einstellungen</string>

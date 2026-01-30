@@ -414,11 +414,6 @@
     <string name="your_friends_wrote_this">~ Dine Freunde</string>
     <string name="show_logs">Logs aschoua</string>
 
-    <!-- polls -->
-    <string name="poll_creator_title">Umfrog erstella</string>
-    <string name="poll_title">Umfrogatitel ...</string>
-    <string name="poll_options_title">Optiona</string>
-    <string name="poll_option">Option</string>
 
     <!-- Games: Yatzi -->
     <string name="yatzi_setup_title">Yahtzee Einstellunga</string>
