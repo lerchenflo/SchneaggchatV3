@@ -65,7 +65,6 @@ class ChatSelectorViewModel(
     init {
 
         viewModelScope.launch {
-            NotificationManager.removeNotification() //Clear all notis
             val token = NotificationManager.getToken()
             appRepository.setFirebaseToken(token)
             globalViewModel.startSocketConnection()

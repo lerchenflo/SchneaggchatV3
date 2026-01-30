@@ -36,6 +36,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -66,6 +67,9 @@ class NewChatViewModel (
     val pendingFriends: StateFlow<List<SelectedChat>> = _pendingFriends.asStateFlow()
 
     init {
+        //On start remove all friend request notis
+        NotificationManager.removeNotification(NotificationManager.NotiIdType.FRIEND_REQUEST.baseId)
+
         // Kombiniere searchTerm mit einem Flow der die Daten lädt
         viewModelScope.launch {
             searchterm

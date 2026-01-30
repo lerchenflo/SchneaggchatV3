@@ -44,6 +44,7 @@ import kotlin.time.Instant
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 
 class ChatViewModel(
     private val appRepository: AppRepository,
@@ -86,41 +87,27 @@ class ChatViewModel(
     // Track if we should load all messages or just initial batch
     private val _shouldLoadAllMessages = MutableStateFlow(false)
 
-    init {
-        viewModelScope.launch {
-            settingsRepository.getUsemd()
-                .catch { exception ->
-                    loggingRepository.logWarning("ChatViewModel: Problem getting MD preference: ${exception.message}")
-                }
-                .collect { value ->
-                    markdownEnabled = value
-                }
-        }
-
-
-
-        // Trigger background loading after a short delay
-        viewModelScope.launch {
-            delay(700) // Give initial messages time to load and render
-            _isLoadingOlderMessages.value = true
-            _shouldLoadAllMessages.value = true
-            println("loading all messages")
-        }
-
-
-        //Set messages read
-        setAllMessagesRead()
-
-        viewModelScope.launch {
-            AppLifecycleManager.appResumedEvent.collectLatest {
-                if (SessionCache.isLoggedInValue()) {
-                    setAllMessagesRead()
-                }
-            }
-        }
-    }
 
     fun setAllMessagesRead() {
+
+        CoroutineScope(Dispatchers.IO).launch {
+            // Get message IDs from current chat that need notification removal
+            val messageIdsString = messageDisplayState.value
+                .filterIsInstance<MessageDisplayItem.MessageItem>()
+                .filter { item -> !item.message.readByMe }
+                .mapNotNull {
+                    it.message.id
+                }
+
+            val messageIds = messageIdsString.map {
+                NotificationManager.NotiId.HexString(it).asInt
+            }
+
+            if (messageIds.isNotEmpty()) {
+                NotificationManager.removeNotifications(messageIds)
+            }
+        }
+
         CoroutineScope(Dispatchers.IO).launch {
             appRepository.setAllChatMessagesRead(
                 globalViewModel.selectedChat.value.id,
@@ -301,4 +288,50 @@ class ChatViewModel(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+
+
+    //Beim call vom init sind alle values initialisiert
+    init {
+        viewModelScope.launch {
+            settingsRepository.getUsemd()
+                .catch { exception ->
+                    loggingRepository.logWarning("ChatViewModel: Problem getting MD preference: ${exception.message}")
+                }
+                .collect { value ->
+                    markdownEnabled = value
+                }
+        }
+
+        // Trigger background loading after a short delay
+        viewModelScope.launch {
+            delay(700) // Give initial messages time to load and render
+            _isLoadingOlderMessages.value = true
+            _shouldLoadAllMessages.value = true
+            println("loading all messages")
+        }
+
+
+        //Set messages read on start
+        //setAllMessagesRead() Automatically on list change
+
+        //Set all messages read on app resumed
+        viewModelScope.launch {
+            AppLifecycleManager.appResumedEvent.collectLatest {
+                if (SessionCache.isLoggedInValue()) {
+                    setAllMessagesRead()
+                }
+            }
+        }
+
+        //Set all messages read on message change
+        viewModelScope.launch {
+            messageDisplayState.collectLatest { displayItems ->
+                if (displayItems.isNotEmpty()) {
+                    setAllMessagesRead()
+                }
+            }
+        }
+    }
+
+
 }
