@@ -415,10 +415,33 @@
     <string name="show_logs">Show logs</string>
 
     <!-- polls -->
-    <string name="poll_creator_title">Create Poll</string>
-    <string name="poll_title">Poll title ...</string>
+    <string name="poll_create_screentitle">Create Poll</string>
+    <string name="poll_create_title">Question</string>
+    <string name="poll_create_title_placeholder">Ask a question ...</string>
+
     <string name="poll_options_title">Options</string>
-    <string name="poll_option">Option</string>
+    <string name="poll_options_placeholder">+ Add</string>
+
+    <string name="poll_settings_allowmultiple">Allow multiple answers</string>
+    <string name="poll_settings_allowmultiple_info">Allow each user to submit multiple answers (Check more than one option)</string>
+
+    <string name="poll_settings_allowcustom">Allow custom answers</string>
+    <string name="poll_settings_allowcustom_withcount">Allow %1$s custom answers per user</string>
+    <string name="poll_settings_allowcustom_info">Allow each user to create custom answers in case they do not like your options</string>
+
+    <string name="poll_settings_infinite_custom_answers_warning">WARNING: Users will be able to create infinite custom answers!</string>
+    <string name="poll_settings_infinite_custom_and_selected_answers_warning">WARNING: Users will be able to create and select unlimited answers!</string>
+
+    <string name="poll_visibility_title">Visibility: %1$s</string>
+
+    <string name="poll_visibility_public">public</string>
+    <string name="poll_visibility_private">private</string>
+    <string name="poll_visibility_anonym">anonym</string>
+
+    <string name="poll_expires_at">anonym</string>
+
+
+
 
     <!-- Games: Yatzi -->
     <string name="yatzi_setup_title">Yahtzee Setup</string>
