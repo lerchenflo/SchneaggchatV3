@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.koin.compose.koinInject
 import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
@@ -60,8 +61,9 @@ suspend fun handleSocketConnectionMessage(message: String) {
     val userRepository = KoinPlatform.getKoin().get<UserRepository>()
     val messageRepository = KoinPlatform.getKoin().get<MessageRepository>()
     val groupRepository = KoinPlatform.getKoin().get<GroupRepository>()
+    val globalViewModel = KoinPlatform.getKoin().get<GlobalViewModel>()
 
-    println("Recieved socket message: $message")
+    //println("Recieved socket message: $message")
     try {
         val socketMessage = AppJson.instance.decodeFromString<SocketConnectionMessage>(message)
 
@@ -104,7 +106,11 @@ suspend fun handleSocketConnectionMessage(message: String) {
 
                 //THis is a new message, show a notification
                 if (socketMessage.newMessage) {
-                    NotificationManager.showNotification(message)
+                    if (globalViewModel.selectedChat.value.id == message.senderId && globalViewModel.selectedChat.value.isGroup == message.groupMessage){
+                        println("Notification is in current chat, skipping display of socketmessage")
+                    } else {
+                        NotificationManager.showNotification(message)
+                    }
                 }
             }
 

@@ -199,15 +199,17 @@ object NotificationManager{
                             when (notiObject) {
                                 is NotificationObject.MessageNotification -> {
 
+                                    println("[NotificationManager] New notification arrived")
                                     if (AppLifecycleManager.isAppOpen()) {
-                                        //println("[NotificationManager] App is open, skipping notification display")
-                                        //return@launch
-
                                         val globalviewmodel = KoinPlatform.getKoin().get<GlobalViewModel>()
+
+                                        println("[NotificationManager] App is open, current selected user: ${globalviewmodel.selectedChat.value}")
+
 
                                         //No notification in current chat
                                         //TODO: Fix notification and pass senderid to compare
                                         if (globalviewmodel.selectedChat.value.name == notiObject.senderName && globalviewmodel.selectedChat.value.isGroup == notiObject.groupMessage){
+                                            println("Notification is in current chat, skipping display")
                                             return@launch
                                         }
                                     }
@@ -374,11 +376,6 @@ object NotificationManager{
 
 
     fun showNotification(message: Message) {
-        // Check if app is open before showing notification
-        if (AppLifecycleManager.isAppOpen()) {
-            println("[NotificationManager] App is open, skipping message notification display")
-            return
-        }
         
         val senderstring = message.senderAsString
         val content = if (message.isPicture()) "Pic" else message.content
