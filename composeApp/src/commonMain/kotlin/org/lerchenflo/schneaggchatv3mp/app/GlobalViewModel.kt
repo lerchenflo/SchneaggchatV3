@@ -35,7 +35,9 @@ class GlobalViewModel(
                     appRepository.dataSync()
                     appRepository.sendOfflineMessages()
 
-                    NotificationManager.removeNotification()
+                    //On resume clear all error notis
+                    NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)
+
 
                     startSocketConnection()
                 }

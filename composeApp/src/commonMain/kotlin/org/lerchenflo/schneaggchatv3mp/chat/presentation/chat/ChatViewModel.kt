@@ -44,6 +44,7 @@ import kotlin.time.Instant
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 
 class ChatViewModel(
     private val appRepository: AppRepository,
@@ -97,8 +98,6 @@ class ChatViewModel(
                 }
         }
 
-
-
         // Trigger background loading after a short delay
         viewModelScope.launch {
             delay(700) // Give initial messages time to load and render
@@ -108,9 +107,10 @@ class ChatViewModel(
         }
 
 
-        //Set messages read
+        //Set messages read on start
         setAllMessagesRead()
 
+        //Set all messages read on app resumed
         viewModelScope.launch {
             AppLifecycleManager.appResumedEvent.collectLatest {
                 if (SessionCache.isLoggedInValue()) {
@@ -118,9 +118,37 @@ class ChatViewModel(
                 }
             }
         }
+
+        //Set all messages read on message change
+        viewModelScope.launch {
+            messageDisplayState.collectLatest { displayItems ->
+                if (displayItems.isNotEmpty()) {
+                    setAllMessagesRead()
+                }
+            }
+        }
     }
 
     fun setAllMessagesRead() {
+
+        CoroutineScope(Dispatchers.IO).launch {
+            // Get message IDs from current chat that need notification removal
+            val messageIdsString = messageDisplayState.value
+                .filterIsInstance<MessageDisplayItem.MessageItem>()
+                .filter { item -> !item.message.readByMe }
+                .mapNotNull {
+                    it.message.id
+                }
+
+            val messageIds = messageIdsString.map {
+                NotificationManager.NotiId.HexString(it).asInt
+            }
+
+            if (messageIds.isNotEmpty()) {
+                NotificationManager.removeNotifications(messageIds)
+            }
+        }
+
         CoroutineScope(Dispatchers.IO).launch {
             appRepository.setAllChatMessagesRead(
                 globalViewModel.selectedChat.value.id,

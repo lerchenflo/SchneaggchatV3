@@ -18,6 +18,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
+import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiId
+import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiIdType
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti_body
@@ -234,12 +236,17 @@ suspend fun handleSocketConnectionMessage(message: String) {
                 if (socketMessage.accepted) {
                     NotificationManager.showNotification(
                         titletext = getString(Res.string.new_friend_accepted_noti),
-                        bodytext = getString(Res.string.new_friend_accepted_noti_body, socketMessage.requestingUserName)
+                        bodytext = getString(
+                            Res.string.new_friend_accepted_noti_body,
+                            socketMessage.requestingUserName
+                        ),
+                        notiId = NotiId.Integ(NotiIdType.FRIEND_REQUEST.baseId)
                     )
                 } else {
                     NotificationManager.showNotification(
                         titletext = getString(Res.string.new_friend_request_noti, socketMessage.requestingUserName),
-                        bodytext = getString(Res.string.new_friend_request_noti_body, socketMessage.requestingUserName)
+                        bodytext = getString(Res.string.new_friend_request_noti_body, socketMessage.requestingUserName),
+                        notiId = NotiId.Integ(NotiIdType.FRIEND_REQUEST.baseId)
                     )
                 }
 

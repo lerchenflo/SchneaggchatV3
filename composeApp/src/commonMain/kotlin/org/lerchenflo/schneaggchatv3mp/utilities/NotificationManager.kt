@@ -5,13 +5,10 @@ import com.mmk.kmpnotifier.notification.PayloadData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -20,7 +17,6 @@ import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -32,8 +28,7 @@ import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.new_message_noti_group_title
 import schneaggchatv3mp.composeapp.generated.resources.new_message_noti_single_title
-import schneaggchatv3mp.composeapp.generated.resources.you_have_new_messages
-import kotlin.random.Random
+import kotlin.math.absoluteValue
 
 object NotificationManager{
 
@@ -181,7 +176,12 @@ object NotificationManager{
 
                             if (notiObject == null) {
                                 println("[NotificationManager] ERROR: Failed to parse notification payload")
-                                showNotification("Schneaggchat Error", "Failed to parse notification data")
+                                showNotification(
+                                    titletext = "Schneaggchat Error",
+                                    bodytext = "Failed to parse notification data",
+                                    notiId = NotiId.Integ(NotiIdType.ERROR.baseId)
+
+                                )
                                 return@launch
                             }
 
@@ -221,7 +221,11 @@ object NotificationManager{
 
                                     if (encryptionkey.isEmpty()) {
                                         println("[NotificationManager] WARNING: Decryption key is empty")
-                                        showNotification("Schneaggchat", "New message received (decryption key not available)")
+                                        showNotification(
+                                            titletext = "Schneaggchat",
+                                            bodytext = "New message received (decryption key not available)",
+                                            notiId = NotiId.Integ(NotiIdType.ERROR.baseId)
+                                        )
                                         return@launch
                                     }
 
@@ -242,7 +246,8 @@ object NotificationManager{
                                         // Show notification
                                         showNotification(
                                             titletext = finaltitlestr,
-                                            bodytext = decryptedContent
+                                            bodytext = decryptedContent,
+                                            notiId = NotiId.HexString(notiObject.msgId)
                                         )
 
                                         //Start datasync (May get cancelled but we dont care)
@@ -254,7 +259,8 @@ object NotificationManager{
                                         // Show error notification
                                         showNotification(
                                             titletext = "$finaltitlestr (Decryption Error)",
-                                            bodytext = "Failed to decrypt message: ${e.message}"
+                                            bodytext = "Failed to decrypt message: ${e.message}",
+                                            notiId = NotiId.Integ(NotiIdType.ERROR.baseId)
                                         )
                                     }
                                 }
@@ -264,12 +270,17 @@ object NotificationManager{
                                     if (notiObject.accepted) {
                                         showNotification(
                                             titletext = getString(Res.string.new_friend_accepted_noti),
-                                            bodytext = getString(Res.string.new_friend_accepted_noti_body, notiObject.requesterName)
+                                            bodytext = getString(
+                                                Res.string.new_friend_accepted_noti_body,
+                                                notiObject.requesterName
+                                            ),
+                                            notiId = NotiId.Integ(NotiIdType.FRIEND_REQUEST.baseId)
                                         )
                                     } else {
                                         showNotification(
                                             titletext = getString(Res.string.new_friend_request_noti, notiObject.requesterName),
-                                            bodytext = getString(Res.string.new_friend_request_noti_body, notiObject.requesterName)
+                                            bodytext = getString(Res.string.new_friend_request_noti_body, notiObject.requesterName),
+                                            notiId = NotiId.Integ(NotiIdType.FRIEND_REQUEST.baseId)
                                         )
                                     }
                                 }
@@ -278,7 +289,8 @@ object NotificationManager{
                                     // Handle system notification
                                     showNotification(
                                         titletext = notiObject.title,
-                                        bodytext = notiObject.message
+                                        bodytext = notiObject.message,
+                                        notiId = NotiId.Integ(NotiIdType.SERVERMESSAGE.baseId)
                                     )
                                 }
                             }
@@ -286,7 +298,7 @@ object NotificationManager{
                             KoinPlatform.getKoin().get<LoggingRepository>().logError("[NotificationManager] Unexpected error in notification handler: ${e.message}")
 
                             // Show error notification
-                            showNotification("Schneaggchat Error", "Notification error: ${e.message}")
+                            showNotification("Schneaggchat Error", "Notification error: ${e.message}", NotiId.Integ(1))
                         }
                     }
 
@@ -324,17 +336,37 @@ object NotificationManager{
 
 
 
+
+    private fun String.toNotificationId(): Int {
+        return this.hashCode().absoluteValue
+    }
+
+    sealed interface NotiId {
+        val asInt: Int
+
+        data class Integ(val value: Int) : NotiId {
+            override val asInt: Int get() = value
+        }
+
+        data class HexString(val value: String) : NotiId {
+            override val asInt: Int get() = value.toNotificationId()
+        }
+    }
+
+    enum class NotiIdType(val baseId: Int) {
+        ERROR(1),
+        SERVERMESSAGE(2),
+        FRIEND_REQUEST(3)
+    }
+
     /**
      * Show a basic notification
      */
-    fun showNotification(titletext: String, bodytext: String) {
+    fun showNotification(titletext: String, bodytext: String, notiId: NotiId) {
         val notifier = NotifierManager.getLocalNotifier()
 
-        val notiidnn = Random.nextInt(0, Int.MAX_VALUE)
-
-
         notifier.notify {
-            id= notiidnn
+            id = notiId.asInt
             title = titletext
             body = bodytext
         }
@@ -351,19 +383,29 @@ object NotificationManager{
         val senderstring = message.senderAsString
         val content = if (message.isPicture()) "Pic" else message.content
 
-        showNotification(senderstring, content)
+        showNotification(senderstring, content, NotiId.HexString(message.id!!))
     }
 
     /**
      * Remove notification, if no id is passed then all notifications
-     * @param notiid Id of notification to remove
+     * * Id 1: Error Notifications
+     * * Id 2: Server messages
+     * * Id 3: Friend Request messages
+     * @param notiId Id of notification to remove
+     *
      */
-    fun removeNotification(notiid: Int? = null){
+    fun removeNotification(notiId: Int? = null){
         val notifier = NotifierManager.getLocalNotifier()
-        if (notiid == null){
+        if (notiId == null){
             notifier.removeAll()
         }else {
-            notifier.remove(notiid)
+            notifier.remove(notiId)
+        }
+    }
+
+    fun removeNotifications(ids: List<Int>) {
+        ids.forEach {
+            removeNotification(it)
         }
     }
 
