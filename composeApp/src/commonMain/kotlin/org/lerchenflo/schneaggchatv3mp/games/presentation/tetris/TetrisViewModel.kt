@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.random.Random
+import kotlin.time.Clock
 
 data class TetrisState(
     val board: List<List<Color?>> = List(20) { List(10) { null } },
@@ -100,7 +101,7 @@ class TetrisViewModel : ViewModel() {
     }
 
     fun startGame() {
-        gameStartTime = System.currentTimeMillis()
+        gameStartTime = Clock.System.now().toEpochMilliseconds()
         _state.value = TetrisState(isPlaying = true)
         spawnPiece()
         startGameLoop()
@@ -110,7 +111,7 @@ class TetrisViewModel : ViewModel() {
         gameLoopJob?.cancel()
         gameLoopJob = viewModelScope.launch {
             while (state.value.isPlaying && !state.value.isGameOver) {
-                val currentTime = System.currentTimeMillis()
+                val currentTime = Clock.System.now().toEpochMilliseconds()
                 val gameTime = currentTime - gameStartTime
                 _state.update { it.copy(gameTime = gameTime) }
                 
@@ -133,7 +134,7 @@ class TetrisViewModel : ViewModel() {
     }
 
     fun restartGame() {
-        gameStartTime = System.currentTimeMillis()
+        gameStartTime = Clock.System.now().toEpochMilliseconds()
         startGame()
     }
 
