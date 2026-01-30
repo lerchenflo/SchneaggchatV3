@@ -30,7 +30,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerS
 import org.lerchenflo.schneaggchatv3mp.datasource.database.PlayerDao
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
@@ -117,8 +116,8 @@ val sharedmodule = module{
     viewModelOf(::TodolistViewModel)
     factory { TodolistViewModel(get(), get(), get()) }
 
-    viewModelOf(::SchneaggmapViewmodel)
-    factory { SchneaggmapViewmodel(get()) }
+    //viewModelOf(::SchneaggmapViewmodel)
+    //factory { SchneaggmapViewmodel(get()) }
 
 
 

@@ -1,5 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
-
+/*
 import kotlinx.serialization.json.JsonPrimitive
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.map.MapLocation
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.map.toFeature
@@ -26,3 +26,5 @@ data class SchneaggmapState(
 sealed interface SchneaggmapAction {
     data object OnBackClicked : SchneaggmapAction
 }
+
+ */

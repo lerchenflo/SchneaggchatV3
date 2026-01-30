@@ -1,5 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.map
-
+/*
 // Sample user locations around Dornbirn, Vorarlberg area
 val sampleUserLocations = listOf(
     MapLocation.UserLocation(
@@ -422,3 +422,5 @@ val samplePlaceLocations = listOf(
         rating = 5
     )
 )
+
+ */

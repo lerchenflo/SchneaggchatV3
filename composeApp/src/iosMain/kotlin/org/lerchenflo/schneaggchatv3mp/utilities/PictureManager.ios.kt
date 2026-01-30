@@ -9,12 +9,15 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.allocArrayOf
 import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.useContents
 import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.skia.Image
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
+import platform.CoreGraphics.CGRectMake
+import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSData
 import platform.Foundation.NSDataBase64DecodingIgnoreUnknownCharacters
 import platform.Foundation.NSDocumentDirectory
@@ -24,6 +27,9 @@ import platform.Foundation.NSUserDomainMask
 import platform.Foundation.create
 import platform.Foundation.dataWithContentsOfFile
 import platform.Foundation.writeToFile
+import platform.UIKit.UIGraphicsBeginImageContextWithOptions
+import platform.UIKit.UIGraphicsEndImageContext
+import platform.UIKit.UIGraphicsGetImageFromCurrentImageContext
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
 import platform.posix.memcpy
@@ -131,54 +137,80 @@ actual class PictureManager {
         var uiImage = UIImage.imageWithData(nsData)
             ?: throw IllegalArgumentException("Invalid image data")
 
-        var quality = 0.9
-        var resultData: NSData?
+        // Helper function to get compressed data size
+        fun getCompressedSize(image: UIImage, quality: Double): NSData? {
+            return UIImageJPEGRepresentation(image, quality)
+        }
 
-        // First try with original size at reduced quality
-        do {
-            resultData = UIImageJPEGRepresentation(uiImage, quality)
-            if (resultData == null || resultData.length.toInt() <= targetSizeBytes) {
-                break
-            }
-            quality -= 0.1
-        } while (quality > 0.1)
-
-        // If still too large, resize the image
-        if (resultData != null && resultData.length.toInt() > targetSizeBytes) {
-            var scale = 0.9
-            while (scale > 0.1) {
-                val newWidth = uiImage.size.width * scale
-                val newHeight = uiImage.size.height * scale
-
-                // Resize using UIGraphics
+        // Helper function to resize image
+        fun resizeImage(image: UIImage, scale: Double): UIImage? {
+            return memScoped {
+                val originalSize = image.size
+                val newWidth = originalSize.useContents { width } * scale
+                val newHeight = originalSize.useContents { height } * scale
                 val newSize = CGSizeMake(newWidth, newHeight)
+
                 UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
-                uiImage.drawInRect(CGRectMake(0.0, 0.0, newWidth, newHeight))
+                image.drawInRect(CGRectMake(0.0, 0.0, newWidth, newHeight))
                 val resizedImage = UIGraphicsGetImageFromCurrentImageContext()
                 UIGraphicsEndImageContext()
 
-                if (resizedImage != null) {
-                    uiImage = resizedImage
-                    quality = 0.9
-
-                    // Try compression again with resized image
-                    do {
-                        resultData = UIImageJPEGRepresentation(uiImage, quality)
-                        if (resultData == null || resultData.length.toInt() <= targetSizeBytes) {
-                            break
-                        }
-                        quality -= 0.1
-                    } while (quality > 0.1)
-
-                    if (resultData != null && resultData.length.toInt() <= targetSizeBytes) {
-                        break
-                    }
-                }
-                scale -= 0.1
+                resizedImage
             }
         }
 
-        val finalData = resultData ?: throw RuntimeException("Failed to downscale image")
+        var currentImage = uiImage
+        var currentQuality = 0.9
+        var resultData: NSData? = null
+
+        // Strategy 1: Try reducing quality first (maintains resolution)
+        while (currentQuality >= 0.1) {
+            resultData = getCompressedSize(currentImage, currentQuality)
+
+            if (resultData != null && resultData.length.toInt() <= targetSizeBytes) {
+                // Success! We found a quality that works
+                return@withContext resultData.toByteArray()
+            }
+
+            currentQuality -= 0.1
+        }
+
+        // Strategy 2: If quality reduction wasn't enough, start reducing size
+        var currentScale = 0.9
+
+        while (currentScale >= 0.1) {
+            val resizedImage = resizeImage(uiImage, currentScale)
+
+            if (resizedImage == null) {
+                currentScale -= 0.1
+                continue
+            }
+
+            currentImage = resizedImage
+            currentQuality = 0.9
+
+            // Try different quality levels with this new size
+            while (currentQuality >= 0.1) {
+                resultData = getCompressedSize(currentImage, currentQuality)
+
+                if (resultData != null && resultData.length.toInt() <= targetSizeBytes) {
+                    // Success! We found a size/quality combo that works
+                    return@withContext resultData.toByteArray()
+                }
+
+                currentQuality -= 0.1
+            }
+
+            // This size didn't work even at lowest quality, try smaller
+            currentScale -= 0.1
+        }
+
+        // If we get here, even the smallest size at lowest quality is too big
+        // Return the best we could do
+        val finalData = resultData
+            ?: UIImageJPEGRepresentation(currentImage, 0.1)
+            ?: throw RuntimeException("Failed to compress image")
+
         return@withContext finalData.toByteArray()
     }
 }

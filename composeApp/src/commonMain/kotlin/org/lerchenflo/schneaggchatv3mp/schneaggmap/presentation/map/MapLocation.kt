@@ -1,5 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.map
-
+/*
 import androidx.compose.ui.graphics.ImageBitmap
 import kotlinx.serialization.json.JsonPrimitive
 import org.maplibre.spatialk.geojson.Feature
@@ -59,3 +59,5 @@ fun MapLocation.toFeature(): Feature<Point, Map<String, JsonPrimitive>> {
         )
     }
 }
+
+ */
