@@ -24,7 +24,6 @@ materialIconsExtended = "1.7.3"
 room = "2.8.4"
 
 runtime = "1.10.0"
-socket = "1.2.5"
 sqlite = "2.6.2"
 kotlinx-datetime = "0.7.1"
 datetime-wheel-picker = "1.1.0"
@@ -76,7 +75,6 @@ material3 = { module = "org.jetbrains.compose.material3:material3", version.ref 
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "runtime" }
-socket = { module = "com.ditchoom:socket", version.ref = "socket" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 datetime-wheel-picker = { module = "io.github.darkokoa:datetime-wheel-picker", version.ref = "datetime-wheel-picker" }

@@ -194,10 +194,6 @@ kotlin {
             //maps
             implementation(libs.maplibre.compose)
 
-            //Socket connection
-            implementation(libs.socket)
-
-
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
