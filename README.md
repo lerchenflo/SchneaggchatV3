@@ -11,11 +11,13 @@ It is an alternative to the tech giants stealing our data.
 # Changelog
 
 
-### 3.0.3
-
+### 3.0.2 - bugfix
+ 
 #### Features
+- Games
 
 #### Bugfixes
+- Register Screen fix
 - Profilepicture downscaling before sending to server
 
 

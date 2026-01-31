@@ -491,27 +491,32 @@ fun App() {
                                 GameScreenElement(
                                     title = stringResource(Res.string.games_dartcounter_title),
                                     icon = Icons.Default.AdsClick, // ma darf sich gern was besseres usdenka
-                                    route = Route.Games.DartCounter
+                                    route = Route.Games.DartCounter,
+                                    inDev = false
                                 ),
                                 GameScreenElement(
                                     title = stringResource(Res.string.games_undercover_title),
                                     icon = Icons.Default.Blind, // todo i hab noch ned verstanda um was es in deam spiel goht
-                                    route = Route.Games.Undercover
+                                    route = Route.Games.Undercover,
+                                    inDev = false
                                 ),
                                 GameScreenElement(
                                     title = stringResource(Res.string.games_stack_tower),
                                     icon = Icons.Default.Menu, //
-                                    route = Route.Games.TowerStack
+                                    route = Route.Games.TowerStack,
+                                    inDev = true
                                 ),
                                 GameScreenElement(
                                     title = "Yahtzee",
                                     icon = Icons.Default.Star,
-                                    route = Route.Games.YatziSetup
+                                    route = Route.Games.YatziSetup,
+                                    inDev = false
                                 ),
                                 GameScreenElement(
                                     title = "Tetris",
                                     icon = Icons.Default.Menu, // Placeholder
-                                    route = Route.Games.Tetris
+                                    route = Route.Games.Tetris,
+                                    inDev = false
                                 ),
 
                             )

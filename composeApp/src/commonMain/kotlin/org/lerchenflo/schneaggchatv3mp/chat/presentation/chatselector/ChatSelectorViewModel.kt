@@ -174,7 +174,7 @@ class ChatSelectorViewModel(
     }
     fun onToolsAndGamesClick() {
         viewModelScope.launch {
-            navigator.navigate(Route.Todolist)
+            navigator.navigate(Route.Games)
         }
     }
     fun onMapClick(){
