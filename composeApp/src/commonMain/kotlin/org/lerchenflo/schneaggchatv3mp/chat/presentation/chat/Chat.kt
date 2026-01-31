@@ -379,7 +379,8 @@ fun InputFieldRow(viewModel: ChatViewModel){
             PollDialog(
                 onDismiss = { showPollDialog = false },
                 onCreatePoll = {
-
+                    println("Poll created but not sent: $it")
+                    //TODO: Send message to server
                 }
             )
         }

@@ -1,19 +1,18 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,8 +21,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSliderState
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -37,14 +37,30 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import dev.darkokoa.datetimewheelpicker.WheelDateTimePicker
+import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.ok
+import schneaggchatv3mp.composeapp.generated.resources.poll_create
+import schneaggchatv3mp.composeapp.generated.resources.poll_create_description
+import schneaggchatv3mp.composeapp.generated.resources.poll_create_description_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.poll_create_screentitle
 import schneaggchatv3mp.composeapp.generated.resources.poll_create_title
 import schneaggchatv3mp.composeapp.generated.resources.poll_create_title_placeholder
+import schneaggchatv3mp.composeapp.generated.resources.poll_expiry_title
+import schneaggchatv3mp.composeapp.generated.resources.poll_expiry_title_info
+import schneaggchatv3mp.composeapp.generated.resources.poll_expiry_title_withdate
+import schneaggchatv3mp.composeapp.generated.resources.poll_options_error
 import schneaggchatv3mp.composeapp.generated.resources.poll_options_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.poll_options_title
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_allowcustom
@@ -55,6 +71,7 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_settings_allowmultip
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_infinite_custom_and_selected_answers_warning
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_infinite_custom_answers_warning
 import schneaggchatv3mp.composeapp.generated.resources.poll_visibility_title
+import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(
@@ -67,13 +84,50 @@ fun PollDialog(
     onCreatePoll: (PollMessage) -> Unit = {}
 ) {
     var title by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+
     var allowCustomAnswers by remember { mutableStateOf(false) }
     var allowMultipleAnswers by remember { mutableStateOf(false) }
     var allowedCustomAnswerCount by remember { mutableStateOf(1) }
     var visibility by remember { mutableStateOf(PollVisibility.PUBLIC) }
+    
+    var expiresAt by remember { mutableStateOf<LocalDateTime?>(null) }
+    var showExpiresAtDatePickerDialog by remember { mutableStateOf(false) }
 
     val options = remember {
-        mutableStateListOf("")
+        mutableStateListOf("", "")
+    }
+
+    //Errors
+    var titleError by remember { mutableStateOf(false) }
+    var optionsError by remember { mutableStateOf(false) }
+
+    fun validateInputs() : Boolean {
+        if (title.length < 2) {
+            titleError = true
+        }
+
+        if (options.filter { it.isNotEmpty() }.size < 2) {
+            optionsError = true
+            return false
+        }
+
+        return true
+    }
+
+    //Reset errors with launchedeffect
+    LaunchedEffect(title, options.toList(), options.size) {
+        if (titleError) {
+            if (title.length >= 2) {
+                titleError = false
+            }
+        }
+
+        if (optionsError) {
+            if (options.filter { it.isNotEmpty() }.size >= 2) {
+                optionsError = false
+            }
+        }
     }
 
     Dialog(
@@ -84,6 +138,7 @@ fun PollDialog(
             usePlatformDefaultWidth = false
         ),
     ) {
+        
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -121,13 +176,38 @@ fun PollDialog(
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                    ),
+                    isError = titleError
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+
+                //Description text input
+                Text(stringResource(Res.string.poll_create_description))
+
+                OutlinedTextField(
+                    value = description,
+                    maxLines = 1,
+                    onValueChange = { description = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text(stringResource(Res.string.poll_create_description_placeholder)) },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
                     )
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+
                 //Poll options
                 Text(text = stringResource(Res.string.poll_options_title))
+
+                if (optionsError) {
+                    Text(text = stringResource(Res.string.poll_options_error),
+                        color = MaterialTheme.colorScheme.error)
+                }
 
                 options.forEachIndexed { index, value ->
 
@@ -235,7 +315,6 @@ fun PollDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-
                 Column {
                     DropdownMenu(
                         expanded = dropDownMenuShown,
@@ -257,6 +336,112 @@ fun PollDialog(
                             )
                         }
                     }
+                }
+
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+
+                //Timer for poll expiration
+                SettingsSwitch(
+                    modifier = Modifier.fillMaxWidth(),
+                    titletext = if (expiresAt == null) {stringResource(Res.string.poll_expiry_title)} else {
+                        stringResource(Res.string.poll_expiry_title_withdate, "${expiresAt!!.dayOfMonth.toString().padStart(2, '0')}.${expiresAt!!.monthNumber.toString().padStart(2, '0')}.${expiresAt!!.year} ${expiresAt!!.hour.toString().padStart(2, '0')}:${expiresAt!!.minute.toString().padStart(2, '0')}")
+                    },
+                    infotext = stringResource(Res.string.poll_expiry_title_info),
+                    switchchecked = expiresAt != null,
+                    onSwitchChange = {
+                        if (expiresAt != null) {
+                            expiresAt = null
+                        } else {
+                            showExpiresAtDatePickerDialog = true
+                        }
+                                     },
+                    icon = null
+                )
+                //Popup for date picker
+                if (showExpiresAtDatePickerDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showExpiresAtDatePickerDialog = false },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                // Handle confirm action
+                                showExpiresAtDatePickerDialog = false
+                            }) {
+                                Text(stringResource(Res.string.ok))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = {
+                                showExpiresAtDatePickerDialog = false
+                                expiresAt = null
+                            }) {
+                                Text(stringResource(Res.string.cancel))
+                            }
+                        },
+                        text = {
+                            WheelDateTimePicker(
+                                modifier = Modifier.fillMaxWidth(),
+                                rowCount = 3,
+                                minDateTime = Clock.System.now().toLocalDateTime(TimeZone.UTC),
+                                textColor = MaterialTheme.colorScheme.onSurface,
+                                selectorProperties = WheelPickerDefaults.selectorProperties(
+                                    enabled = true,
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                                ),
+                                onSnappedDateTime = {
+                                    expiresAt = it
+                                }
+                            )
+                        }
+                    )
+                }
+
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                //Submit / Cancel row
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+
+                ) {
+                    NormalButton(
+                        onClick = { onDismiss() },
+                        text = stringResource(Res.string.cancel),
+                        primary = false
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    NormalButton(
+                        onClick = {
+                            if (!validateInputs()) return@NormalButton
+                            onCreatePoll(PollMessage(
+                                creatorId = SessionCache.getOwnIdValue()!!,
+                                title = title,
+                                description = description,
+                                allowCustomAnswers = allowCustomAnswers,
+                                maxCustomAnswers = allowedCustomAnswerCount,
+                                allowMultipleAnswers = allowMultipleAnswers,
+                                visibility = visibility,
+                                expiresAt = expiresAt?.toInstant(TimeZone.UTC)?.toEpochMilliseconds(),
+                                voteOptions = options
+                                    .filter { it.trim().isNotEmpty() }
+                                    .mapIndexed { index, optionStr ->
+                                    PollVoteOption(
+                                        id = index.toString(),
+                                        text = optionStr,
+                                        custom = false,
+                                        creatorId = SessionCache.getOwnIdValue()!!,
+                                        voters = emptyList()
+                                    )
+                                }
+                            ))
+                            onDismiss()
+                        },
+                        text = stringResource(Res.string.poll_create)
+                    )
                 }
 
             }
