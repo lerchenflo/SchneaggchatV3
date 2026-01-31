@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Info
@@ -111,7 +112,6 @@ import schneaggchatv3mp.composeapp.generated.resources.settings
 import schneaggchatv3mp.composeapp.generated.resources.unpin_chat
 
 @OptIn(ExperimentalMaterial3Api::class) // PullToRefreshBox is experimental
-@Preview
 @Composable
 fun Chatauswahlscreen(
     modifier: Modifier = Modifier
@@ -257,6 +257,7 @@ fun Chatauswahlscreen(
                 Spacer(Modifier.width(gap))
 
 
+                /*
                 //Schneaggmap beta feature
                 if (SessionCache.developer){
                     Box(
@@ -276,12 +277,28 @@ fun Chatauswahlscreen(
                     }
 
                     Spacer(Modifier.width(gap))
-
                 }
 
+                 */
 
+                //tools and games
+                Box(
+                    modifier = Modifier
+                        .padding(2.dp)
+                        .size(touchSize)
+                        .clip(CircleShape)
+                        .clickable { viewModel.onToolsAndGamesClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Apps,
+                        contentDescription = "Tools and Games",
+                        modifier = Modifier.size(iconSize),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
 
-
+                Spacer(Modifier.width(gap))
 
 
                 Box(
@@ -299,10 +316,6 @@ fun Chatauswahlscreen(
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
-
-
-
-
 
 
             }

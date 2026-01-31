@@ -191,7 +191,7 @@ fun PollDialog(
                     Slider(
                         value = allowedCustomAnswerCount.toFloat(),
                         onValueChange = {allowedCustomAnswerCount = it.toInt()},
-                        valueRange = 2f..10f,
+                        valueRange = 1f..10f,
                         steps = 9,
                         modifier = Modifier.padding(vertical = 4.dp)
                     )

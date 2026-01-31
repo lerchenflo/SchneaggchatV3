@@ -440,6 +440,8 @@
 
     <string name="poll_expires_at">anonym</string>
 
+    <string name="highscores_not_implemented_warning">Public highscores are not yet implemented!</string>
+
 
 
 

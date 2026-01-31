@@ -9,5 +9,6 @@ data class GameScreenElement(
     val title: String,
     val description: String? = null,
     val icon: ImageVector,
-    val route: Route
+    val route: Route,
+    val inDev : Boolean
 )

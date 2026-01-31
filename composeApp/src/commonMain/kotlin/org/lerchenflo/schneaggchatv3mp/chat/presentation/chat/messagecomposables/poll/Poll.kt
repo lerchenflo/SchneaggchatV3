@@ -26,6 +26,7 @@ data class PollVoteOption(
     val id: String,
     val text: String,
     val custom: Boolean,
+    val creatorId: String,
     val voters : List<PollVoter>
 )
 
