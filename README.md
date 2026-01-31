@@ -11,14 +11,23 @@ It is an alternative to the tech giants stealing our data.
 # Changelog
 
 
-### 3.0.2 - bugfix
- 
+### 3.0.3
+#### Features
+- polls
+
+#### Bugfixes
+
+
+
+
+### 3.0.2 - bugfix 
 #### Features
 - Games
 
 #### Bugfixes
 - Register Screen fix
 - Profilepicture downscaling before sending to server
+- Changed text color in chat
 
 
 ### 3.0.2

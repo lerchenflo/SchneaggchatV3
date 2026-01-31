@@ -14,7 +14,7 @@ data class PollMessage(
 
     val allowCustomAnswers: Boolean,
     val allowMultipleAnswers: Boolean,
-    val showAnswers: Boolean,
+    val visibility: PollVisibility,
     val maxCustomAnswers: Int?,
 
     val expiresAt: Long?,
