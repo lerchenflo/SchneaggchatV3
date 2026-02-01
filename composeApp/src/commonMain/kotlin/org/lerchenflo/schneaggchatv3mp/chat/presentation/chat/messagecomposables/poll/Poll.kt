@@ -1,27 +1,31 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll
 
-import org.jetbrains.compose.resources.stringResource
+import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.poll_visibility_anonym
 import schneaggchatv3mp.composeapp.generated.resources.poll_visibility_private
 import schneaggchatv3mp.composeapp.generated.resources.poll_visibility_public
 
+@Serializable
 data class PollMessage(
     val creatorId: String,
     val title: String,
     val description: String?,
 
-    val allowCustomAnswers: Boolean,
-    val allowMultipleAnswers: Boolean,
+    val maxAnswers: Int?, // null = unlimited
+
+    val customAnswersEnabled: Boolean,
+    val maxAllowedCustomAnswers: Int?, // null = unlimited
+
     val visibility: PollVisibility,
-    val maxCustomAnswers: Int?,
 
     val expiresAt: Long?,
 
     val voteOptions: List<PollVoteOption> = emptyList(),
 )
 
+@Serializable
 data class PollVoteOption(
     val id: String,
     val text: String,
@@ -30,11 +34,13 @@ data class PollVoteOption(
     val voters : List<PollVoter>
 )
 
+@Serializable
 data class PollVoter(
     val userId: String,
     val votedAt: Long
 )
 
+@Serializable
 enum class PollVisibility{
     PUBLIC,
     PRIVATE,

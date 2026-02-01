@@ -427,6 +427,7 @@
     <string name="poll_options_error">You need at least 2 possible answers</string>
 
     <string name="poll_settings_allowmultiple">Allow multiple answers</string>
+    <string name="poll_settings_allowmultiple_withcount">Allow %1$s answers per user</string>
     <string name="poll_settings_allowmultiple_info">Allow each user to submit multiple answers (Check more than one option)</string>
 
     <string name="poll_settings_allowcustom">Allow custom answers</string>
