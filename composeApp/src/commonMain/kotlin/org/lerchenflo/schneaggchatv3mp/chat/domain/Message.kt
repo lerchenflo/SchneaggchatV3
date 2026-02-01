@@ -6,7 +6,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReade
 
 enum class MessageType {
     TEXT,
-    IMAGE
+    IMAGE,
+    POLL
 }
 
 

@@ -48,13 +48,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.model.DefaultMarkdownColors
-import com.mikepenz.markdown.model.MarkdownColors
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollMessageContentView
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.text.TextMessageContentView
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.check
@@ -290,11 +291,17 @@ fun MessageContent(
             //Contentrow
             Row {
                 when(message.msgType){
-                    MessageType.TEXT -> TextMessage(
+                    MessageType.TEXT -> TextMessageContentView(
                         useMD = useMD,
-                        messageWithReaders = message,
+                        message = message,
                         myMessage = mymessage
                     )
+
+                    MessageType.POLL -> PollMessageContentView(
+                        message = message,
+                        useMD = useMD
+                    )
+
                     else -> ErrorMessage()
                 }
             }
@@ -379,7 +386,7 @@ private fun RepliedMessagePreview(
                 modifier = Modifier
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
-                /* todo show names
+                /* todo show the name of the user which is replied to currently
                 Text(
                     text = if (message.myMessage) "You" else "Contact", // Replace with actual name if available
                     style = MaterialTheme.typography.labelMedium,
@@ -461,45 +468,7 @@ private fun ReadIndicator(
 
 
 
-@Composable
-fun TextMessage(
-    useMD: Boolean = false,
-    messageWithReaders: Message,
-    myMessage: Boolean,
-    modifier: Modifier = Modifier
-){
 
-    // ma künnt es chatViewmodel o do instanzieren aber denn würd des für jede message einzeln passiera des isch glob ned des wahre
-    if(useMD){ // get setting if if md is enabled
-        // Cache markdown rendering to avoid re-parsing on every recomposition
-        val content = remember(messageWithReaders.content) {
-            messageWithReaders.content
-        }
-        Markdown(
-            content = content,
-            modifier = modifier,
-            //TODO: Nocham neua theme do die message text color flicka
-            
-            colors = DefaultMarkdownColors(
-                text = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                inlineCodeBackground = MaterialTheme.colorScheme.error,
-                dividerColor = MaterialTheme.colorScheme.onPrimary,
-                tableBackground = MaterialTheme.colorScheme.onSurface,
-                codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-             
-        )
-    }else{
-        Text(
-            text = messageWithReaders.content,
-            color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-
-
-
-}
 
 @Composable
 fun ImageMessage(
@@ -513,7 +482,7 @@ fun ImageMessage(
 
 @Composable
 fun VoiceMessage(
-    messageDto: MessageDto,
+    message: Message,
     modifier: Modifier = Modifier
 ){
     Text(
@@ -521,15 +490,7 @@ fun VoiceMessage(
     )
 }
 
-@Composable
-fun PollMessage(
-    messageDto: MessageDto,
-    modifier: Modifier = Modifier
-){
-    Text(
-        text = "Voice message not implemented yet"
-    )
-}
+
 
 @Composable
 fun ErrorMessage(
