@@ -440,6 +440,7 @@ fun InputFieldRow(viewModel: ChatViewModel){
                 onClick = {
                     viewModel.editMessageId = null
                     viewModel.updatesendText(TextFieldValue(""))
+                    println("Update message sendtext to empty")
                 },
                 modifier = Modifier
                     .padding(5.dp)
@@ -452,6 +453,7 @@ fun InputFieldRow(viewModel: ChatViewModel){
             IconButton(
                 onClick = {
                     viewModel.editMessage()
+                    viewModel.updatesendText(TextFieldValue(""))
 
                 },
                 modifier = Modifier
