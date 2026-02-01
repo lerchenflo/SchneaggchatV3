@@ -38,6 +38,12 @@ android {
         getByName("release") {
             isMinifyEnabled = false
         }
+
+
+        debug {
+            //Only for debug build
+            applicationIdSuffix = ".debug"
+        }
     }
 
     buildFeatures {

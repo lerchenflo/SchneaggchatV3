@@ -23,6 +23,25 @@
           "other_platform_oauth_client": []
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:429816239249:android:9bf2aad2cad1cb491bdb30",
+        "android_client_info": {
+          "package_name": "org.lerchenflo.schneaggchatv3mp.debug"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1BmVIlQwFguGc8ug1vyJXfJpIcOedhEU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
     }
   ],
   "configuration_version": "1"
