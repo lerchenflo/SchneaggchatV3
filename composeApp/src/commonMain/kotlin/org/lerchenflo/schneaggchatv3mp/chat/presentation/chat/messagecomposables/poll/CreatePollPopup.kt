@@ -68,6 +68,7 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_settings_allowcustom
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_allowcustom_withcount
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_allowmultiple
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_allowmultiple_info
+import schneaggchatv3mp.composeapp.generated.resources.poll_settings_allowmultiple_withcount
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_infinite_custom_and_selected_answers_warning
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_infinite_custom_answers_warning
 import schneaggchatv3mp.composeapp.generated.resources.poll_visibility_title
@@ -87,8 +88,11 @@ fun PollDialog(
     var description by remember { mutableStateOf("") }
 
     var allowCustomAnswers by remember { mutableStateOf(false) }
-    var allowMultipleAnswers by remember { mutableStateOf(false) }
     var allowedCustomAnswerCount by remember { mutableStateOf(1) }
+
+    var allowMultipleAnswers by remember { mutableStateOf(false) }
+    var allowedAnswerCount by remember { mutableStateOf(1) }
+
     var visibility by remember { mutableStateOf(PollVisibility.PUBLIC) }
     
     var expiresAt by remember { mutableStateOf<LocalDateTime?>(null) }
@@ -105,6 +109,7 @@ fun PollDialog(
     fun validateInputs() : Boolean {
         if (title.length < 2) {
             titleError = true
+            return false
         }
 
         if (options.filter { it.isNotEmpty() }.size < 2) {
@@ -232,13 +237,33 @@ fun PollDialog(
 
                 //settings
                 SettingsSwitch(
-                    titletext = stringResource(Res.string.poll_settings_allowmultiple),
+                    titletext = if (!allowMultipleAnswers) {
+                        stringResource(Res.string.poll_settings_allowmultiple)
+                    }
+                    else if (allowedAnswerCount in 1..9) {
+                        stringResource(
+                            Res.string.poll_settings_allowmultiple_withcount, //TODO: Quantity string?? für 1 answer: https://developer.android.com/guide/topics/resources/string-resource
+                            allowedAnswerCount.toString()
+                        )
+                    }
+                    else {
+                        stringResource(Res.string.poll_settings_allowmultiple_withcount, "∞")
+                    },
                     infotext = stringResource(Res.string.poll_settings_allowmultiple_info),
                     switchchecked = allowMultipleAnswers,
                     onSwitchChange = { allowMultipleAnswers = it},
                     icon = null,
                     modifier = Modifier.fillMaxWidth()
                 )
+                if (allowMultipleAnswers) {
+                    Slider(
+                        value = allowedAnswerCount.toFloat(),
+                        onValueChange = {allowedAnswerCount = it.toInt()},
+                        valueRange = 1f..10f,
+                        steps = 9,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -421,22 +446,33 @@ fun PollDialog(
                                 creatorId = SessionCache.getOwnIdValue()!!,
                                 title = title,
                                 description = description,
-                                allowCustomAnswers = allowCustomAnswers,
-                                maxCustomAnswers = allowedCustomAnswerCount,
-                                allowMultipleAnswers = allowMultipleAnswers,
+
+                                customAnswersEnabled = allowCustomAnswers,
+                                maxAllowedCustomAnswers = allowedCustomAnswerCount,
+
+                                maxAnswers = if (allowMultipleAnswers) {
+                                    if (allowedAnswerCount == 10) {
+                                        null
+                                    } else {
+                                        allowedAnswerCount
+                                    }
+                                } else 1,
+
                                 visibility = visibility,
-                                expiresAt = expiresAt?.toInstant(TimeZone.UTC)?.toEpochMilliseconds(),
+                                expiresAt = expiresAt?.toInstant(TimeZone.UTC)
+                                    ?.toEpochMilliseconds(),
                                 voteOptions = options
                                     .filter { it.trim().isNotEmpty() }
                                     .mapIndexed { index, optionStr ->
-                                    PollVoteOption(
-                                        id = index.toString(),
-                                        text = optionStr,
-                                        custom = false,
-                                        creatorId = SessionCache.getOwnIdValue()!!,
-                                        voters = emptyList()
-                                    )
-                                }
+                                        PollVoteOption(
+                                            id = index.toString(),
+                                            text = optionStr,
+                                            custom = false,
+                                            creatorId = SessionCache.getOwnIdValue()!!,
+                                            voters = emptyList()
+                                        )
+                                    },
+
                             ))
                             onDismiss()
                         },

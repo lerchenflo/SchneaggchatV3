@@ -44,9 +44,12 @@ android {
         compose = true
     }
 
+    /*
     composeOptions {
         kotlinCompilerExtensionVersion = composeVersion
     }
+
+     */
 }
 
 //jvmToolchain(17)
