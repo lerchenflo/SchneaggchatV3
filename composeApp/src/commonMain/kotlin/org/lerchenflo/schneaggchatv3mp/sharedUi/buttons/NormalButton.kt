@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.sharedUi.buttons
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,6 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -28,6 +31,7 @@ fun NormalButton(
     focusRequester: FocusRequester? = null,
     nextFocusRequester: FocusRequester? = null,
     primary: Boolean = true,
+    showOutline: Boolean = false,
     modifier: Modifier = Modifier
 ){
     var newModifier = modifier
@@ -57,7 +61,19 @@ fun NormalButton(
             },
             contentColor = if (primary) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
         ),
-        contentPadding = PaddingValues(12.dp)
+        contentPadding = PaddingValues(12.dp),
+        border = if (showOutline) {
+            BorderStroke(
+                width = 2.dp,
+                brush = SolidColor(
+                    if (primary) {
+                        MaterialTheme.colorScheme.secondary
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    }
+                )
+            )
+        } else null
     ){
         if (isLoading) {
             CircularProgressIndicator(

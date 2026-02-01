@@ -337,6 +337,7 @@ fun PollDialog(
                         dropDownMenuShown = true
                     },
                     primary = false,
+                    showOutline = true,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -434,7 +435,7 @@ fun PollDialog(
                     NormalButton(
                         onClick = { onDismiss() },
                         text = stringResource(Res.string.cancel),
-                        primary = false
+                        primary = false,
                     )
 
                     Spacer(modifier = Modifier.weight(1f))
@@ -476,7 +477,7 @@ fun PollDialog(
                             ))
                             onDismiss()
                         },
-                        text = stringResource(Res.string.poll_create)
+                        text = stringResource(Res.string.poll_create),
                     )
                 }
 
