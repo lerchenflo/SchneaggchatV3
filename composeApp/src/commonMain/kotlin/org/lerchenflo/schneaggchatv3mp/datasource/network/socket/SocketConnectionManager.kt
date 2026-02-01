@@ -56,7 +56,6 @@ class SocketConnectionManager(
                 "$wsUrl/ws"
             }
 
-            println("WebSocket URL: $finalUrl")
             return finalUrl
         }
     }
@@ -176,7 +175,7 @@ private class SocketConnection(
                             onMessage(message)
                         }
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    //e.printStackTrace()
                     onError(e)
                 } finally {
                     _isActive.value = false
@@ -186,7 +185,7 @@ private class SocketConnection(
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            //e.printStackTrace()
             _isActive.value = false
             onConnectionStateChanged(false)
             onError(e)
@@ -210,7 +209,7 @@ private class SocketConnection(
             onConnectionStateChanged(false)
             session = null
         } catch (e: Exception) {
-            e.printStackTrace()
+            //e.printStackTrace()
             // Ignore close errors
         }
     }
