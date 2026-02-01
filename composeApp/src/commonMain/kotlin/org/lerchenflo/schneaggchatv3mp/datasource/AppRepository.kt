@@ -3,6 +3,8 @@
 package org.lerchenflo.schneaggchatv3mp.datasource
 
 import androidx.compose.runtime.Composable
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.auth.clearAuthTokens
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -19,6 +21,11 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.getString
+import org.koin.compose.koinInject
+import org.koin.core.parameter.ParametersHolder
+import org.koin.core.qualifier.Qualifier
+import org.koin.core.qualifier.named
+import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
@@ -162,7 +169,11 @@ class AppRepository(
 
     suspend fun logout(){
         deleteAllAppData() // delete all app data when logging out
+
+        //Clear access tokens
         preferencemanager.saveTokens(tokenPair = NetworkUtils.TokenPair(accessToken = "", refreshToken = "")) // override credentials with empty string
+        KoinPlatform.getKoin().get<HttpClient>(qualifier = named("auth")).clearAuthTokens()
+
         SessionCache.clear() //Alle variabla löscja
         NotificationManager.removeToken()
         SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
