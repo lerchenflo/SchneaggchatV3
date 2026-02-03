@@ -234,7 +234,7 @@ class SignUpViewModel(
                                 //Set username
                                 updateUsername(state.usernameState.text)
                                 viewModelScope.launch {
-                                    navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
+                                    navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                                 }
                             }
                         }

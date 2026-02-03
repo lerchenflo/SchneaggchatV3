@@ -12,13 +12,20 @@ class Navigator {
 
     suspend fun navigate(
         destination: Route,
-        exitPreviousScreen: Boolean = false,
-        exitAllPreviousScreens: Boolean = false
+        navigationOptions: NavigationOptions = NavigationOptions()
     ){
-        _navigationActions.send(NavigationAction.Navigate(destination, exitPreviousScreen, exitAllPreviousScreens))
+        _navigationActions.send(NavigationAction.Navigate(destination, navigationOptions))
     }
 
-    suspend fun navigateBack(){
-        _navigationActions.send(NavigationAction.NavigateBack)
+    suspend fun navigateBack(navigationOptions: NavigationOptions = NavigationOptions()){
+        _navigationActions.send(NavigationAction.NavigateBack(navigationOptions))
     }
+
+
+    data class NavigationOptions(
+        val exitPreviousScreen: Boolean = false,
+        val exitAllPreviousScreens: Boolean = false,
+        val removeAllScreensByRoute: List<Route> = emptyList(), //Remove all of these types
+        val removeAllExceptByRoute: Route? = null //Remove all but this route
+    )
 }

@@ -144,7 +144,7 @@ class ChatDetailsViewmodel(
         viewModelScope.launch {
             globalViewModel.onSelectChat(selectedChat)
             // Exit all previous screen weil ma jo da selectedgegner im globalviewmodel gändert hot und denn ind chatdetails vo deam typ kummt
-            navigator.navigate(Route.Chat, exitPreviousScreen = true)
+            navigator.navigate(Route.Chat, navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true))
         }
     }
 
@@ -163,7 +163,7 @@ class ChatDetailsViewmodel(
         if (!chatDetails.value.isGroup) {
             viewModelScope.launch {
                 if(appRepository.removeFriend(chatDetails.value.id)){
-                    navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
+                    navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                 }
             }
         }
@@ -201,7 +201,7 @@ class ChatDetailsViewmodel(
 
     fun navigateChatSelExitAllPrevious(){
         viewModelScope.launch {
-            navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
+            navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
         }
     }
 

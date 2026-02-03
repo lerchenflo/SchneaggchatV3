@@ -106,7 +106,7 @@ class UserSettingsViewModel(
         viewModelScope.launch {
             appRepository.logout()
             viewModelScope.launch {
-                navigator.navigate(Route.Login, exitAllPreviousScreens = true)
+                navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
             }
         }
     }

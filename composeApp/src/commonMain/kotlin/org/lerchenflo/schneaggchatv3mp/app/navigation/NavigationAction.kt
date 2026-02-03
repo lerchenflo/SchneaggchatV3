@@ -1,14 +1,15 @@
 package org.lerchenflo.schneaggchatv3mp.app.navigation
 
-import androidx.navigation.NavOptionsBuilder
-
 sealed interface NavigationAction{
 
-    data object NavigateBack: NavigationAction
+    val navigationOptions: Navigator.NavigationOptions
+
+    data class NavigateBack(
+        override val navigationOptions: Navigator.NavigationOptions = Navigator.NavigationOptions()
+    ): NavigationAction
 
     data class Navigate(
         val destination: Route,
-        val exitPreviousScreen: Boolean = false,
-        val exitAllPreviousScreens: Boolean = false,
+        override val navigationOptions: Navigator.NavigationOptions = Navigator.NavigationOptions()
     ) : NavigationAction
 }
