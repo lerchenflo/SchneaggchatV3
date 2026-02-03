@@ -248,7 +248,7 @@ class GroupCreatorViewModel (
                 }
 
                 //TODO: Navigate directly to group chat?
-                navigator.navigate(Route.ChatSelector, exitPreviousScreen = true)
+                navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true))
             }
 
 

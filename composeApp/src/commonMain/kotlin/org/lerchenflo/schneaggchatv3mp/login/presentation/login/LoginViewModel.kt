@@ -94,7 +94,7 @@ class LoginViewModel(
                         if (success) {
                             println("Login erfolgreich")
                             viewModelScope.launch {
-                                navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
+                                navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                             }
                         }
                     }

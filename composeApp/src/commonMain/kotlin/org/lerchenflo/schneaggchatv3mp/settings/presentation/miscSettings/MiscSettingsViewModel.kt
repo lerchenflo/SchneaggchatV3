@@ -49,7 +49,7 @@ class MiscSettingsViewModel(
     fun deleteAllAppData(){
         viewModelScope.launch {
             appRepository.deleteAllAppData()
-            navigator.navigate(Route.AutoLoginCredChecker, exitAllPreviousScreens = true)
+            navigator.navigate(Route.AutoLoginCredChecker, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
         }
     }
 

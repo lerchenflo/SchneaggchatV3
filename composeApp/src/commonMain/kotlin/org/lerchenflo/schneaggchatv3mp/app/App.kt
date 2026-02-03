@@ -14,7 +14,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -27,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation.NavBackStackEntry
@@ -79,7 +77,6 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
-import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
@@ -198,34 +195,48 @@ fun App() {
         ObserveAsEvents(
             flow = navigator.navigationActions
         ){  action ->
+            val navigationOptions = action.navigationOptions
+
+
+
+            if (navigationOptions.exitPreviousScreen){
+                if (rootBackStack.size > 1){
+                    rootBackStack.removeAt(rootBackStack.size - 1) //Removelast not working on older android
+                }
+            }
+
+            //Helper function to remove all routes of a specific type from the backstack
+            fun removeAllScreens(route: Route) {
+                rootBackStack.removeAll { navKey -> navKey == route }
+            }
+
+            if (navigationOptions.removeAllScreensByRoute.isNotEmpty()) {
+                navigationOptions.removeAllScreensByRoute.forEach {
+                    removeAllScreens(it)
+                }
+            }
+
+            if (navigationOptions.removeAllExceptByRoute != null) {
+                rootBackStack.removeAll { navKey ->
+                    navKey != navigationOptions.removeAllExceptByRoute
+                }
+            }
+
+
             when(action){
                 is NavigationAction.Navigate -> {
-                    if (action.exitAllPreviousScreens){
+                    if (navigationOptions.exitAllPreviousScreens){
                         rootBackStack.clear()
                     }
-                    if (action.exitPreviousScreen){
-                        if (rootBackStack.size > 1){
-                            rootBackStack.removeAt(rootBackStack.size - 1) //Removelast not working on older android
-                        }
-                    }
+
                     rootBackStack.add(action.destination)
                 }
-                NavigationAction.NavigateBack -> {
+                is NavigationAction.NavigateBack -> {
 
-                    //Duplicate check for exiting chat after navigating from chatdetails
+                    //Ignore exitallpreviousscreens because the app would close
+
                     if (rootBackStack.size > 1){
-                        val currentScreen = rootBackStack[rootBackStack.size - 1]
-                        val previousScreen = rootBackStack[rootBackStack.size - 2]
-
-                        // Check if the last two items are of the same type
-                        if (currentScreen::class == previousScreen::class) {
-                            // Remove both - current and previous
-                            rootBackStack.removeAt(rootBackStack.size - 1) // Remove current
-                            rootBackStack.removeAt(rootBackStack.size - 1) // Remove previous (now last)
-                        } else {
-                            // Normal back navigation - just remove current
-                            rootBackStack.removeAt(rootBackStack.size - 1)
-                        }
+                        rootBackStack.removeAt(rootBackStack.size - 1)
                     }
 
                 }
@@ -297,12 +308,16 @@ fun App() {
 
                                 if (!savedCreds){
                                     //No tokens are saved, we navigate to the login
-                                    navigator.navigate(Route.Login, exitAllPreviousScreens = true)
+                                    navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(
+                                        exitAllPreviousScreens = true
+                                    ))
                                 }else {
 
                                     //At this point there were credentials loaded from storage
                                     //Navigate to the chat
-                                    navigator.navigate(Route.ChatSelector, exitAllPreviousScreens = true)
+                                    navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(
+                                        exitAllPreviousScreens = true
+                                    ))
 
                                     //Launch a token refresh async
                                     globalViewModel.viewModelScope.launch {
@@ -345,7 +360,9 @@ fun App() {
                                             appRepository.logout()
 
                                             //Navigate back to the loginscreen
-                                            navigator.navigate(Route.Login, exitAllPreviousScreens = true)
+                                            navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(
+                                                exitAllPreviousScreens = true
+                                            ))
                                         }else {
                                             //Log any other error which might occur
                                             AppRepository.trySendError(
