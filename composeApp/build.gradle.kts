@@ -33,7 +33,7 @@ fun detectTarget(): String {
 
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(17)
 }
 
 java {
@@ -243,10 +243,12 @@ compose.desktop {
             packageVersion = "3.0.0"
             copyright = "© 2026"
             vendor = "lerchenflo"
+            modules("jdk.unsupported")
 
             linux {
                 shortcut = true
                 menuGroup = "Chat"
+                iconFile.set(project.file("src/commonMain/composeResources/files/schneaggchat_logo_v3.png"))
             }
 
             windows {
