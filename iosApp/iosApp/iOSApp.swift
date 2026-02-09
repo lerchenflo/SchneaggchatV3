@@ -34,6 +34,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any]) async -> UIBackgroundFetchResult {
         print("IOS Notification received")
 
+        UIApplication.shared.applicationIconBadgeNumber += 1
+
         NotifierManager.shared.onApplicationDidReceiveRemoteNotification(userInfo: userInfo)
             return UIBackgroundFetchResult.newData
         }
@@ -57,6 +59,8 @@ struct iOSApp: App {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                         AppUpdateChecker.checkForUpdate()
                     }
+
+                    UIApplication.shared.applicationIconBadgeNumber = 0
                 }
         }
     }
