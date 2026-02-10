@@ -1,10 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.undercover
 
 import kotlinx.coroutines.runBlocking
-import org.koin.compose.koinInject
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
-import org.lerchenflo.schneaggchatv3mp.utilities.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.utilities.preferences.LanguageSetting
 
 data class UndercoverWordPair(
     val civilianWord: String,
