@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.room)
     alias(libs.plugins.jetbrains.kotlin.serialization)
     alias(libs.plugins.androidKmpLibrary)
+    alias(libs.plugins.koin.compiler)
     //id("io.github.frankois944.spmForKmp")
 }
 
@@ -66,7 +67,7 @@ kotlin {
 
     
     listOf(
-        iosX64(),
+        //iosX64(),
         iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
@@ -76,7 +77,8 @@ kotlin {
             dependency {
                 remotePackageVersion(
                     url = URI("https://github.com/maplibre/maplibre-gl-native-distribution.git"),
-                    products = { add("MapLibre") },
+                    products = { add("MapLibre") }, alias(libs.plugins.koin.compiler)
+
                     version = "6.17.1",
                 )
 
