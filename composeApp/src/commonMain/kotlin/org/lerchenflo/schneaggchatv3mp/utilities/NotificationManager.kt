@@ -15,8 +15,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.decodeFromJsonElement
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
-import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -187,10 +185,13 @@ object NotificationManager{
                             //println("[NotificationManager] Parsed notification: $notiObject")
 
                             // Check if app is open before showing notification
+                            /*
                             if (AppLifecycleManager.isAppOpen()) {
                                 //println("[NotificationManager] App is open, skipping notification display")
                                 //return@launch
                             }
+
+                             */
 
 
 
@@ -199,6 +200,8 @@ object NotificationManager{
                                 is NotificationObject.MessageNotification -> {
 
                                     println("[NotificationManager] New notification arrived")
+
+                                    /*
                                     if (AppLifecycleManager.isAppOpen()) {
                                         //val globalviewmodel = KoinPlatform.getKoin().get<GlobalViewModel>()
 
@@ -214,6 +217,8 @@ object NotificationManager{
 
                                          */
                                     }
+
+                                     */
 
 
 
