@@ -129,7 +129,7 @@ kotlin {
             implementation(libs.ui)
             implementation(libs.components.resources)
             implementation(libs.ui.tooling.preview)
-            implementation(libs.androidx.lifecycle.viewmodelCompose)
+            //implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
             //Datenbank
