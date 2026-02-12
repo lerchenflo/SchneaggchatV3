@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.di
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.room.RoomDatabase
+import eu.anifantakis.lib.ksafe.KSafe
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.core.qualifier.named
@@ -30,6 +31,10 @@ val desktopHttpAuthModule = module {
 
 val desktopDataStoreModule = module {
     single<DataStore<Preferences>> { desktopDatastoreBuilder() }
+}
+
+val desktopKSafeModule = module {
+    single<KSafe> { KSafe() }
 }
 
 val desktopVersionModule = module {

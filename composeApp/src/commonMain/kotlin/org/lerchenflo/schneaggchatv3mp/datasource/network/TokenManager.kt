@@ -11,11 +11,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.logging.LogType
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
-import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
 
 class TokenManager(
     private val preferenceManager: Preferencemanager,

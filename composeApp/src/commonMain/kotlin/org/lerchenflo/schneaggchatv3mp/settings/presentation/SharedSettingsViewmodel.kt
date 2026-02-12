@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
 
 class SharedSettingsViewmodel(
     private val appRepository: AppRepository,

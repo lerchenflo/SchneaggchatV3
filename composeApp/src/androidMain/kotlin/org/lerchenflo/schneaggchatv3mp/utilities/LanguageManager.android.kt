@@ -1,8 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
 import android.content.Context
-import android.os.Build
 import android.os.LocaleList
+import org.lerchenflo.schneaggchatv3mp.utilities.preferences.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
 import java.util.Locale
 
 actual class LanguageManager(

@@ -179,6 +179,10 @@ kotlin {
             api(libs.datastore.preferences)
             api(libs.datastore)
 
+            //Secure sharedprefs
+            implementation(libs.ksafe)
+            implementation(libs.ksafe.compose)
+
             // Markdown
             //implementation(libs.mikepenzMultiplatformMarkdown)
             implementation(libs.mikepenzMultiplatformMarkdownM3)

@@ -36,13 +36,18 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.ObserveAsEvents
@@ -79,10 +84,11 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
-import org.lerchenflo.schneaggchatv3mp.utilities.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import org.lerchenflo.schneaggchatv3mp.utilities.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.utilities.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.preferences.SecureDataMigration
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
@@ -96,6 +102,28 @@ fun App() {
     val preferenceManager = koinInject<Preferencemanager>()
     val languageService = koinInject<LanguageService>()
     val themeSetting by preferenceManager.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
+
+
+    LaunchedEffect(Unit) {
+
+        //TODO: Remove in future update
+        withContext(Dispatchers.IO) {
+            val migration = SecureDataMigration(
+                dataStore = KoinPlatform.getKoin().get(),
+                kSafe = KoinPlatform.getKoin().get()
+            )
+
+            if (migration.needsMigration()) {
+                val success = migration.migrate()
+                if (success) {
+                    println("Migration: Successfully migrated secure data to KSafe")
+                } else {
+                    println("Migration: Failed to migrate secure data")
+                }
+            }
+        }
+    }
+
 
     // Apply saved language on app startup
     LaunchedEffect(Unit) {
