@@ -73,6 +73,7 @@ class NetworkUtils(
         return try {
             val response = block()
 
+            // If we got a response (even an error response), we have connectivity
             SessionCache.updateOnline(true)
 
             if (response.status.isSuccess()) {
@@ -81,25 +82,45 @@ class NetworkUtils(
                 NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
             }
         } catch (e: UnresolvedAddressException) {
+            // DNS resolution failed - definitely offline
+            println("Going offline: DNS resolution failed - ${e.message}")
+            loggingRepository.logWarning("Going offline: UnresolvedAddressException - ${e.message}")
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.NoInternet())
-        } catch (e: HttpRequestTimeoutException) {
+        } catch (e: ConnectTimeoutException) {
+            // Could be offline or slow network - mark as offline
+            println("Going offline: Connection timeout - ${e.message}")
+            loggingRepository.logWarning("Going offline: ConnectTimeoutException - ${e.message}")
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: SocketTimeoutException) {
+            // Socket timeout - conservative approach marks as offline
+            println("Going offline: Socket timeout - ${e.message}")
+            loggingRepository.logWarning("Going offline: SocketTimeoutException - ${e.message}")
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.RequestTimeout())
-        } catch (e: ConnectTimeoutException) {
+        } catch (e: HttpRequestTimeoutException) {
+            // Request timeout - conservative approach marks as offline
+            println("Going offline: HTTP request timeout - ${e.message}")
+            loggingRepository.logWarning("Going offline: HttpRequestTimeoutException - ${e.message}")
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.RequestTimeout())
-        } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkError.Serialization(message = e.message))
-        }catch (e: IOException) { // This catches UnknownHostException too
+        } catch (e: IOException) {
+            // IO exceptions (including UnknownHostException) indicate network problems
+            println("Going offline: IO exception - ${e.message}")
+            loggingRepository.logWarning("Going offline: IOException - ${e.message}")
+            e.printStackTrace()
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.NoInternet())
+        } catch (e: SerializationException) {
+            // Serialization errors are NOT network issues - don't change online state
+            println("Serialization error (staying online): ${e.message}")
+            loggingRepository.logWarning("SerializationException (not changing online state): ${e.message}")
+            NetworkResult.Error(NetworkError.Serialization(message = e.message))
         } catch (e: Exception) {
-            loggingRepository.logWarning("NetworkUtils safeCall failed: ${e.message}")
-            SessionCache.updateOnline(false)
+            // Unknown errors are NOT necessarily network issues - don't mark as offline
+            println("Unknown exception (staying online): ${e.message}")
+            loggingRepository.logWarning("NetworkUtils safeCall failed (not changing online state): ${e.message}")
             NetworkResult.Error(NetworkError.Unknown(message = e.message))
         }
     }
