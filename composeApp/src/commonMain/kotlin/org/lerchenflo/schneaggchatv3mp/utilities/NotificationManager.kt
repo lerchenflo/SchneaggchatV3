@@ -15,8 +15,6 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.decodeFromJsonElement
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
-import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -168,8 +166,6 @@ object NotificationManager{
                     //Inject preferencemanager
                     val preferenceManager = KoinPlatform.getKoin().get<Preferencemanager>()
 
-
-
                     val notiThread = CoroutineScope(Dispatchers.IO).launch {
                         try {
                             //get notiobject from payload data
@@ -189,10 +185,13 @@ object NotificationManager{
                             //println("[NotificationManager] Parsed notification: $notiObject")
 
                             // Check if app is open before showing notification
+                            /*
                             if (AppLifecycleManager.isAppOpen()) {
                                 //println("[NotificationManager] App is open, skipping notification display")
                                 //return@launch
                             }
+
+                             */
 
 
 
@@ -201,19 +200,25 @@ object NotificationManager{
                                 is NotificationObject.MessageNotification -> {
 
                                     println("[NotificationManager] New notification arrived")
+
+                                    /*
                                     if (AppLifecycleManager.isAppOpen()) {
-                                        val globalviewmodel = KoinPlatform.getKoin().get<GlobalViewModel>()
+                                        //val globalviewmodel = KoinPlatform.getKoin().get<GlobalViewModel>()
 
-                                        println("[NotificationManager] App is open, current selected user: ${globalviewmodel.selectedChat.value}")
+                                        //println("[NotificationManager] App is open, current selected user: ${globalviewmodel.selectedChat.value}")
 
 
-                                        //No notification in current chat
-                                        //TODO: Fix notification and pass senderid to compare
+                                        //No notification in current chat (Should not happen anymore because of socket connection, show all notis from firebase)
+                                        /*
                                         if (globalviewmodel.selectedChat.value.name == notiObject.senderName && globalviewmodel.selectedChat.value.isGroup == notiObject.groupMessage){
                                             println("Notification is in current chat, skipping display")
                                             return@launch
                                         }
+
+                                         */
                                     }
+
+                                     */
 
 
 
@@ -301,7 +306,7 @@ object NotificationManager{
                             KoinPlatform.getKoin().get<LoggingRepository>().logError("[NotificationManager] Unexpected error in notification handler: ${e.message}")
 
                             // Show error notification
-                            showNotification("Schneaggchat Error", "Notification error: ${e.message}", NotiId.Integ(1))
+                            showNotification("Schneaggchat Error", "Notification error: ${e.message}", NotiId.Integ(NotiIdType.ERROR.baseId))
                         }
                     }
 
@@ -311,10 +316,12 @@ object NotificationManager{
                     }
 
                     // Sync data (Ignore if app is open or not etc)
-                    val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                    /*val appRepository = KoinPlatform.getKoin().get<AppRepository>()
                     CoroutineScope(Dispatchers.IO).launch {
                         appRepository.dataSync()
                     }
+
+                     */
                 }
             })
 
