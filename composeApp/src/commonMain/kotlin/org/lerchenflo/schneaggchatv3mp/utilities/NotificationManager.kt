@@ -168,8 +168,6 @@ object NotificationManager{
                     //Inject preferencemanager
                     val preferenceManager = KoinPlatform.getKoin().get<Preferencemanager>()
 
-
-
                     val notiThread = CoroutineScope(Dispatchers.IO).launch {
                         try {
                             //get notiobject from payload data
@@ -202,17 +200,19 @@ object NotificationManager{
 
                                     println("[NotificationManager] New notification arrived")
                                     if (AppLifecycleManager.isAppOpen()) {
-                                        val globalviewmodel = KoinPlatform.getKoin().get<GlobalViewModel>()
+                                        //val globalviewmodel = KoinPlatform.getKoin().get<GlobalViewModel>()
 
-                                        println("[NotificationManager] App is open, current selected user: ${globalviewmodel.selectedChat.value}")
+                                        //println("[NotificationManager] App is open, current selected user: ${globalviewmodel.selectedChat.value}")
 
 
-                                        //No notification in current chat
-                                        //TODO: Fix notification and pass senderid to compare
+                                        //No notification in current chat (Should not happen anymore because of socket connection, show all notis from firebase)
+                                        /*
                                         if (globalviewmodel.selectedChat.value.name == notiObject.senderName && globalviewmodel.selectedChat.value.isGroup == notiObject.groupMessage){
                                             println("Notification is in current chat, skipping display")
                                             return@launch
                                         }
+
+                                         */
                                     }
 
 
@@ -301,7 +301,7 @@ object NotificationManager{
                             KoinPlatform.getKoin().get<LoggingRepository>().logError("[NotificationManager] Unexpected error in notification handler: ${e.message}")
 
                             // Show error notification
-                            showNotification("Schneaggchat Error", "Notification error: ${e.message}", NotiId.Integ(1))
+                            showNotification("Schneaggchat Error", "Notification error: ${e.message}", NotiId.Integ(NotiIdType.ERROR.baseId))
                         }
                     }
 
@@ -311,10 +311,12 @@ object NotificationManager{
                     }
 
                     // Sync data (Ignore if app is open or not etc)
-                    val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                    /*val appRepository = KoinPlatform.getKoin().get<AppRepository>()
                     CoroutineScope(Dispatchers.IO).launch {
                         appRepository.dataSync()
                     }
+
+                     */
                 }
             })
 
