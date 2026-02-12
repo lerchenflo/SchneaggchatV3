@@ -46,7 +46,8 @@ val sharedmodule = module{
 
     //Database
     single <AppDatabase> { CreateAppDatabase(get()).getDatabase() }
-    single <PlayerDao> { get<AppDatabase>().playerDao() }
+
+    single <PlayerDao> { get<AppDatabase>().playerDao() } //TODO: Manu warum musch du inegrätscha und alles andersch macha
 
     singleOf(::TokenManager)
 
