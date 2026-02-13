@@ -88,14 +88,12 @@ class Preferencemanager(
     }
 
     // Markdown Format
-    val mdFormatKey = PrefsKeys.MD_FORMAT.name
-
     suspend fun saveUseMd(value: Boolean) {
         prefs.edit { it[PrefsKeys.MD_FORMAT] = value }
     }
 
     fun getUseMdFlow(): Flow<Boolean> = prefs.data.map { prefs ->
-        prefs[PrefsKeys.MD_FORMAT] ?: false
+        prefs[PrefsKeys.MD_FORMAT] ?: true //Default to true
     }
 
     // Theme methods
