@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.di
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.room.RoomDatabase
+import eu.anifantakis.lib.ksafe.KSafe
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.darwin.Darwin
 import org.koin.core.qualifier.named
@@ -29,6 +30,10 @@ val IosHttpAuthModule = module {
 
 val IosDatastoreModule = module {
     single<DataStore<Preferences>> { iosDatastoreBuilder() }
+}
+
+val IosKSafeModule = module {
+    single { KSafe() }
 }
 
 val IosVersionModule = module {

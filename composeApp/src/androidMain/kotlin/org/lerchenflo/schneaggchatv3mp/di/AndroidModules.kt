@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.di
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.room.RoomDatabase
+import eu.anifantakis.lib.ksafe.KSafe
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.dsl.module
@@ -40,6 +41,10 @@ val androidHttpAuthModule = module {
 
 val androidDataStoreModule = module {
     single<DataStore<Preferences>> { createAndroidDataStore(androidContext()) }
+}
+
+val androidKsafeModule = module {
+    single { KSafe(androidContext()) }
 }
 
 val androidVersionModule = module {
