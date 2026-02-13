@@ -361,6 +361,9 @@ class NetworkUtils(
         val username: String
         val updatedAt: Long
 
+        val profilePicUpdatedAt: Long
+
+
 
         //Response for a user (Not yourself and not your friend)
         @Serializable
@@ -369,6 +372,7 @@ class NetworkUtils(
             override val id: String,
             override val username: String,
             override val updatedAt: Long,
+            override val profilePicUpdatedAt: Long,
 
             //Custom to simpleuserresponse:
             val friendShipStatus: FriendshipStatus?,
@@ -384,6 +388,8 @@ class NetworkUtils(
             override val username: String,
 
             override val updatedAt: Long,
+            override val profilePicUpdatedAt: Long,
+
 
             val requesterId: String?, //Who requested the friendship
 
@@ -391,8 +397,6 @@ class NetworkUtils(
             val birthDate: String,
             val userDescription: String,
             val userStatus: String,
-
-
 
             ) : UserResponse
 
@@ -404,6 +408,7 @@ class NetworkUtils(
             override val username: String,
 
             override val updatedAt: Long,
+            override val profilePicUpdatedAt: Long,
 
 
             //Custom to friend response
@@ -608,9 +613,10 @@ class NetworkUtils(
         val name: String,
         val description: String,
 
-        val updatedAt: String,
+        val updatedAt: Long,
+        val profilePicUpdatedAt: Long,
 
-        val createdAt: String,
+        val createdAt: Long,
         val creatorId: String,
         val members: List<GroupMemberResponse>
     )

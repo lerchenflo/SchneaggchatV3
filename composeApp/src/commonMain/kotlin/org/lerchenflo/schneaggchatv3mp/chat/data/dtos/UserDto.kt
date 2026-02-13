@@ -7,7 +7,6 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
 @Serializable
 @Entity(tableName = "users")
@@ -15,7 +14,8 @@ data class UserDto(
     @PrimaryKey(autoGenerate = false)
     var id: String = "",
 
-    var changedate: Long, //lastchanged
+    var updatedAt: Long,
+    val profilePicUpdatedAt: Long,
 
     var name: String = "",
 
@@ -53,4 +53,4 @@ data class UserDto(
     var createdAt: Long?,
 
 
-)
+    )

@@ -41,7 +41,7 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE id = :userid")
     suspend fun getUserbyId(userid: String?): UserDto?
 
-    @Query("SELECT id, changedate FROM users")
+    @Query("SELECT id, updatedAt FROM users")
     suspend fun getUserIdsWithChangeDates(): List<IdChangeDate>
 
 }
@@ -105,7 +105,7 @@ interface MessageDao {
     @Query("SELECT * FROM messages WHERE id = :msgid")
     suspend fun getMessageById(msgid: String): MessageWithReadersDto?
 
-    @Query("SELECT id, changedate FROM messages WHERE id != 0")
+    @Query("SELECT id, updatedAt FROM messages WHERE id != 0")
     suspend fun getMessageIdsWithChangeDates(): List<IdChangeDate>
 
     @Transaction
@@ -116,7 +116,7 @@ interface MessageDao {
     @Query("UPDATE messages SET id = :serverId, sent = 1 WHERE localPK = :localPK")
     suspend fun markMessageAsSent(serverId: String, localPK: Long)
 
-    @Query("UPDATE messages SET readByMe = 1, changeDate = :timestamp WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe AND readByMe = 0")
+    @Query("UPDATE messages SET readByMe = 1, updatedAt = :timestamp WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe AND readByMe = 0")
     suspend fun markAllChatMessagesRead(userId: String, gruppe: Boolean, timestamp: String)
 
     @Query("INSERT OR REPLACE INTO message_readers (messageId, readerID, readDate) SELECT m.id, :ownId, :timestamp FROM messages m WHERE (m.senderId = :userId OR m.receiverId = :userId) AND m.groupMessage = :gruppe AND m.readByMe = 0 AND m.id != ''")
@@ -144,7 +144,7 @@ interface GroupDao {
     @Upsert
     suspend fun upsertGroup(group: GroupDto)
 
-    @Query("SELECT id, changedate FROM `groups`")
+    @Query("SELECT id, updatedAt FROM `groups`")
     suspend fun getGroupIdsWithChangeDates(): List<IdChangeDate>
 
     @Query("DELETE FROM `groups` WHERE id = :groupid")
@@ -207,7 +207,7 @@ interface TodolistDao{
     @Query("SELECT * FROM todoentitydto")
     fun getAllTodos(): Flow<List<TodoEntityDto>>
 
-    @Query("SELECT id, changedate FROM todoentitydto")
+    @Query("SELECT id, updatedAt FROM todoentitydto")
     suspend fun getTodoIdsWithChangeDates(): List<IdChangeDate>
 
     @Query("SELECT * FROM todoentitydto WHERE id = :id")
@@ -281,6 +281,6 @@ interface PlayerDao {
 @Serializable
 data class IdChangeDate(
     val id: String,
-    val changedate: String
+    val updatedAt: String
 )
 

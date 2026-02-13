@@ -3,7 +3,6 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network.socket
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
-import org.koin.compose.koinInject
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -124,13 +123,14 @@ suspend fun handleSocketConnectionMessage(message: String) {
                             val existing = userRepository.getUserById(newUser.id)
                             userRepository.upsertUser(UserDto(
                                 id = newUser.id,
-                                changedate = newUser.updatedAt,
+                                updatedAt = newUser.updatedAt,
                                 name = newUser.username,
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
                                 birthDate = newUser.birthDate,
                                 frienshipStatus = NetworkUtils.FriendshipStatus.ACCEPTED,
                                 requesterId = newUser.requesterId,
+                                profilePicUpdatedAt = newUser.profilePicUpdatedAt,
 
                                 // Preserve existing values:
                                 locationLat = existing?.locationLat,
@@ -143,18 +143,23 @@ suspend fun handleSocketConnectionMessage(message: String) {
                                 email = null,
                                 emailVerifiedAt = null,
                                 createdAt = null,
-                                profilePictureUrl = ""
+                                profilePictureUrl = existing?.profilePictureUrl ?: ""
                             ))
+                            //Update profile picture if user is new or the profile pic got updated
+                            if (existing == null || existing.profilePicUpdatedAt < socketMessage.user.profilePicUpdatedAt) {
+                                appRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
+                            }
                         }
                         is NetworkUtils.UserResponse.SelfUserResponse -> {
                             val existing = userRepository.getUserById(newUser.id)
                             userRepository.upsertUser(UserDto(
                                 id = newUser.id,
-                                changedate = newUser.updatedAt,
+                                updatedAt = newUser.updatedAt,
                                 name = newUser.username,
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
                                 birthDate = newUser.birthDate,
+                                profilePicUpdatedAt = newUser.profilePicUpdatedAt,
 
                                 // Preserve existing values:
                                 locationLat = existing?.locationLat,
@@ -172,11 +177,18 @@ suspend fun handleSocketConnectionMessage(message: String) {
                                 profilePictureUrl = ""
 
                             ))
+
+                            //Update profile picture if user is new or the profile pic got updated
+                            if (existing == null || existing.profilePicUpdatedAt < socketMessage.user.profilePicUpdatedAt) {
+                                appRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
+                            }
                         }
                         is NetworkUtils.UserResponse.SimpleUserResponse -> {
+                            val existing = userRepository.getUserById(newUser.id)
                             userRepository.upsertUser(UserDto(
                                 id = newUser.id,
-                                changedate = newUser.updatedAt,
+                                updatedAt = newUser.updatedAt,
+                                profilePicUpdatedAt = newUser.profilePicUpdatedAt,
                                 name = newUser.username,
                                 description = null,
                                 status = null,
@@ -197,11 +209,16 @@ suspend fun handleSocketConnectionMessage(message: String) {
                                 profilePictureUrl = ""
                             ))
 
+                            //Update profile picture if user is new or the profile pic got updated
+                            if (existing == null || existing.profilePicUpdatedAt < socketMessage.user.profilePicUpdatedAt) {
+                                appRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
+                            }
+
 
                         }
                     }
 
-                    appRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
+
                 }
             }
 
@@ -219,7 +236,8 @@ suspend fun handleSocketConnectionMessage(message: String) {
                         profilePictureUrl = "",
                         description = socketMessage.group.description,
                         createDate = socketMessage.group.createdAt,
-                        changedate = socketMessage.group.updatedAt,
+                        updatedAt = socketMessage.group.updatedAt,
+                        profilePicUpdatedAt = socketMessage.group.profilePicUpdatedAt,
                         notisMuted = existing?.notisMuted ?: false,
                         members = socketMessage.group.members.map { groupMemberresp ->
                             GroupMember(
@@ -232,7 +250,11 @@ suspend fun handleSocketConnectionMessage(message: String) {
                             )
                         }
                     ))
-                    appRepository.getProfilePicturesForGroupIds(listOf(socketMessage.group.id))
+
+                    //Update profile picture if group is new or the profile pic got updated
+                    if (existing == null || existing.profilePicUpdatedAt < socketMessage.group.profilePicUpdatedAt) {
+                        appRepository.getProfilePicturesForGroupIds(listOf(socketMessage.group.id))
+                    }
                 }
             }
 

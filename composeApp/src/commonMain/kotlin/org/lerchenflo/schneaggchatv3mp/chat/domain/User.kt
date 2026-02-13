@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
@@ -26,6 +25,8 @@ data class User(
     val emailVerifiedAt: Long?,
 
     val createdAt: Long?,
+
+    val profilePicUpdatedAt: Long,
 
     //Not in db
     override val unreadMessageCount: Int = 0,
@@ -74,7 +75,7 @@ data class User(
 
 fun UserDto.toUser(): User = User(
     id = this.id,
-    lastChanged = this.changedate,
+    lastChanged = this.updatedAt,
     name = this.name,
     description = this.description,
     status = this.status,
@@ -92,12 +93,13 @@ fun UserDto.toUser(): User = User(
     createdAt = this.createdAt,
     friendshipStatus = this.frienshipStatus,
     profilePictureUrl = this.profilePictureUrl,
+    profilePicUpdatedAt = this.profilePicUpdatedAt,
 )
 
 /** Convert domain User back to UserDto (for persistence/transport) */
 fun User.toDto(): UserDto = UserDto(
     id = this.id,
-    changedate = this.lastChanged,
+    updatedAt = this.lastChanged,
     name = this.name,
     description = this.description,
     status = this.status,
@@ -115,4 +117,5 @@ fun User.toDto(): UserDto = UserDto(
     frienshipStatus = this.friendshipStatus,
     createdAt = this.createdAt,
     profilePictureUrl = this.profilePictureUrl,
+    profilePicUpdatedAt = this.profilePicUpdatedAt
 )

@@ -273,7 +273,7 @@ class AppRepository(
         }
         getProfilePicturesForGroupIds(missingPpGroupIds)
 
-        //TODO: Add image messages if implemented
+        //TODO: IMAGES Get missing image messages if implemented
 
     }
 
@@ -639,7 +639,7 @@ class AppRepository(
                             val existing = database.userDao().getUserbyId(newUser.id)
                             database.userDao().upsert(UserDto(
                                 id = newUser.id,
-                                changedate = newUser.updatedAt,
+                                updatedAt = newUser.updatedAt,
                                 name = newUser.username,
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
@@ -658,7 +658,8 @@ class AppRepository(
                                 email = null,
                                 emailVerifiedAt = null,
                                 createdAt = null,
-                                profilePictureUrl = ""
+                                profilePictureUrl = "",
+                                profilePicUpdatedAt = newUser.profilePicUpdatedAt,
                             ))
                             profilePicsToGet += newUser.id
                         }
@@ -666,7 +667,7 @@ class AppRepository(
                             val existing = database.userDao().getUserbyId(newUser.id)
                             database.userDao().upsert(UserDto(
                                 id = newUser.id,
-                                changedate = newUser.updatedAt,
+                                updatedAt = newUser.updatedAt,
                                 name = newUser.username,
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
@@ -685,15 +686,15 @@ class AppRepository(
                                 email = newUser.email,
                                 emailVerifiedAt = newUser.emailVerifiedAt,
                                 createdAt = newUser.createdAt,
-                                profilePictureUrl = ""
-
-                            ))
+                                profilePictureUrl = "",
+                                profilePicUpdatedAt = newUser.profilePicUpdatedAt,
+                                ))
                             profilePicsToGet += newUser.id
                         }
                         is NetworkUtils.UserResponse.SimpleUserResponse -> {
                             database.userDao().upsert(UserDto(
                                 id = newUser.id,
-                                changedate = newUser.updatedAt,
+                                updatedAt = newUser.updatedAt,
                                 name = newUser.username,
                                 description = null,
                                 status = null,
@@ -711,16 +712,15 @@ class AppRepository(
                                 email = null,
                                 emailVerifiedAt = null,
                                 createdAt = null,
-                                profilePictureUrl = ""
-                            ))
+                                profilePictureUrl = "",
+                                profilePicUpdatedAt = newUser.profilePicUpdatedAt
+                                ))
 
                             //Get the profile pic for this user too??
                             profilePicsToGet += newUser.id
 
                         }
                     }
-
-
 
                 }
 
@@ -906,7 +906,7 @@ class AppRepository(
             senderId = SessionCache.getOwnIdValue()!!,
             receiverId = empfaenger,
             sendDate = senddate,
-            changedate = senddate,
+            updatedAt = senddate,
             deleted = false,
             groupMessage = gruppe,
             answerId = answerid,
@@ -1016,7 +1016,7 @@ class AppRepository(
         while (moreMessages) {
 
             val messageSyncResponse = networkUtils.messageSync(
-                messageIds = localmessages.map { NetworkUtils.IdTimeStamp(it.id, it.changedate) },
+                messageIds = localmessages.map { NetworkUtils.IdTimeStamp(it.id, it.updatedAt) },
                 page = currentPage
             )
 
@@ -1227,7 +1227,7 @@ class AppRepository(
 
         val groupSyncResponse = networkUtils.groupIdSync(
             groupIds = localgroups.map {
-                NetworkUtils.IdTimeStamp(it.id, it.changedate)
+                NetworkUtils.IdTimeStamp(it.id, it.updatedAt)
             }
         )
 
@@ -1240,8 +1240,6 @@ class AppRepository(
             is NetworkResult.Success<NetworkUtils.GroupSyncResponse> -> {
                 println("GroupIdSync sync response: ${groupSyncResponse.data.toString()}")
 
-
-
                 groupSyncResponse.data.updatedGroups.forEach { groupResponse ->
                     val existing = groupRepository.getGroupById(groupResponse.id)
                     groupRepository.upsertGroup(Group(
@@ -1250,7 +1248,8 @@ class AppRepository(
                         profilePictureUrl = "",
                         description = groupResponse.description,
                         createDate = groupResponse.createdAt,
-                        changedate = groupResponse.updatedAt,
+                        updatedAt = groupResponse.updatedAt,
+                        profilePicUpdatedAt = groupResponse.profilePicUpdatedAt,
                         notisMuted = existing?.notisMuted ?: false,
                         members = groupResponse.members.map { groupMemberresp ->
                             GroupMember(
@@ -1264,7 +1263,10 @@ class AppRepository(
                         }
                     ))
 
-                    profilepicsToGet += groupResponse.id
+                    //Update profile picture if group is new or the profile pic got updated
+                    if (existing == null || existing.profilePicUpdatedAt < groupResponse.profilePicUpdatedAt) {
+                        profilepicsToGet += groupResponse.id
+                    }
                 }
 
 

@@ -16,9 +16,10 @@ data class GroupDto(
 
     val description: String,
 
-    val createDate: String?,
+    val createDate: Long,
 
-    val changedate: String?,
+    val updatedAt: Long,
+    val profilePicUpdatedAt: Long,
 
     val notisMuted: Boolean = false
 )
