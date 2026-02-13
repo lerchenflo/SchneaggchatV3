@@ -29,7 +29,7 @@ data class MessageDto(
 
     var sendDate: String = "",
 
-    var changedate: String = "",
+    var updatedAt: String = "",
 
     var deleted: Boolean = false,
 

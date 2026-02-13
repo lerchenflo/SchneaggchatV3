@@ -8,8 +8,11 @@ data class Group(
     val name: String,
     val profilePictureUrl: String,
     val description: String,
-    val createDate: String? = null,
-    val changedate: String? = null,
+    val createDate: Long,
+
+    val updatedAt: Long,
+    val profilePicUpdatedAt: Long,
+
     val notisMuted: Boolean = false,
     val members: List<GroupMember>
 )
@@ -20,8 +23,9 @@ fun GroupWithMembersDto.toGroup(): Group = Group(
     profilePictureUrl = this.group.profilePictureUrl,
     description = this.group.description,
     createDate = this.group.createDate,
-    changedate = this.group.changedate,
+    updatedAt = this.group.updatedAt,
     notisMuted = this.group.notisMuted,
+    profilePicUpdatedAt = this.group.profilePicUpdatedAt,
     members = this.members.map { groupMemberDto ->
         groupMemberDto.toGroupMember()
     }
@@ -35,7 +39,8 @@ fun Group.toDto(): GroupWithMembersDto = GroupWithMembersDto(
         profilePictureUrl = this.profilePictureUrl,
         description = this.description,
         createDate = this.createDate,
-        changedate = this.changedate,
+        updatedAt = this.updatedAt,
+        profilePicUpdatedAt = this.profilePicUpdatedAt,
         notisMuted = this.notisMuted
     ),
     members = this.members.map { member ->

@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 48,
-    "identityHash": "d71214ff5b506d7a56de43d351a89bc0",
+    "version": 49,
+    "identityHash": "495367c7a6ec35f0d6424cfb27e0fe2c",
     "entities": [
       {
         "tableName": "users",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `changedate` INTEGER NOT NULL, `name` TEXT NOT NULL, `description` TEXT, `status` TEXT, `profilePictureUrl` TEXT NOT NULL, `locationLat` REAL, `locationLong` REAL, `locationDate` INTEGER, `frienshipStatus` TEXT, `requesterId` TEXT, `locationShared` INTEGER NOT NULL, `wakeupEnabled` INTEGER NOT NULL, `lastOnline` INTEGER, `notisMuted` INTEGER NOT NULL, `birthDate` TEXT, `email` TEXT, `emailVerifiedAt` INTEGER, `createdAt` INTEGER, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `updatedAt` INTEGER NOT NULL, `profilePicUpdatedAt` INTEGER NOT NULL, `name` TEXT NOT NULL, `description` TEXT, `status` TEXT, `profilePictureUrl` TEXT NOT NULL, `locationLat` REAL, `locationLong` REAL, `locationDate` INTEGER, `frienshipStatus` TEXT, `requesterId` TEXT, `locationShared` INTEGER NOT NULL, `wakeupEnabled` INTEGER NOT NULL, `lastOnline` INTEGER, `notisMuted` INTEGER NOT NULL, `birthDate` TEXT, `email` TEXT, `emailVerifiedAt` INTEGER, `createdAt` INTEGER, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -15,8 +15,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "changedate",
-            "columnName": "changedate",
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "profilePicUpdatedAt",
+            "columnName": "profilePicUpdatedAt",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -120,7 +126,7 @@
       },
       {
         "tableName": "messages",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localPK` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT, `msgType` TEXT NOT NULL, `content` TEXT NOT NULL, `senderId` TEXT NOT NULL, `receiverId` TEXT NOT NULL, `sendDate` TEXT NOT NULL, `changedate` TEXT NOT NULL, `deleted` INTEGER NOT NULL, `myMessage` INTEGER NOT NULL, `readByMe` INTEGER NOT NULL, `groupMessage` INTEGER NOT NULL, `answerId` TEXT, `sent` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localPK` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT, `msgType` TEXT NOT NULL, `content` TEXT NOT NULL, `senderId` TEXT NOT NULL, `receiverId` TEXT NOT NULL, `sendDate` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, `deleted` INTEGER NOT NULL, `myMessage` INTEGER NOT NULL, `readByMe` INTEGER NOT NULL, `groupMessage` INTEGER NOT NULL, `answerId` TEXT, `sent` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "localPK",
@@ -164,8 +170,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "changedate",
-            "columnName": "changedate",
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -273,7 +279,7 @@
       },
       {
         "tableName": "groups",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `profilePictureUrl` TEXT NOT NULL, `description` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `changedate` INTEGER NOT NULL, `notisMuted` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `profilePictureUrl` TEXT NOT NULL, `description` TEXT NOT NULL, `createDate` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `profilePicUpdatedAt` INTEGER NOT NULL, `notisMuted` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -306,8 +312,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "changedate",
-            "columnName": "changedate",
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "profilePicUpdatedAt",
+            "columnName": "profilePicUpdatedAt",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -381,7 +393,7 @@
       },
       {
         "tableName": "TodoEntityDto",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `senderId` TEXT NOT NULL, `platform` INTEGER NOT NULL, `type` INTEGER NOT NULL, `editorId` INTEGER NOT NULL, `content` TEXT NOT NULL, `title` TEXT NOT NULL, `changedate` TEXT NOT NULL, `createDate` TEXT NOT NULL, `senderAsString` TEXT NOT NULL, `status` INTEGER NOT NULL, `priority` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `senderId` TEXT NOT NULL, `platform` INTEGER NOT NULL, `type` INTEGER NOT NULL, `editorId` INTEGER NOT NULL, `content` TEXT NOT NULL, `title` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, `createDate` TEXT NOT NULL, `senderAsString` TEXT NOT NULL, `status` INTEGER NOT NULL, `priority` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -426,8 +438,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "lastChanged",
-            "columnName": "changedate",
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -520,7 +532,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd71214ff5b506d7a56de43d351a89bc0')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '495367c7a6ec35f0d6424cfb27e0fe2c')"
     ]
   }
 }

@@ -36,9 +36,7 @@ data class TodoEntityDto(
     @SerialName("title")
     var title: String = "",
 
-    @SerialName("lastChanged")
-    @ColumnInfo(name = "changedate")
-    var lastChanged: String = "",
+    var updatedAt: String = "",
 
     @SerialName("createDate")
     var createDate: String = "",
@@ -63,7 +61,7 @@ fun TodoEntityDto.toTodoEntry(): TodoEntry {
         editorId = this.editorId,
         content = this.content,
         title = this.title,
-        lastChanged = this.lastChanged,
+        lastChanged = this.updatedAt,
         senderAsString = this.senderAsString,
         status = this.status,
         priority = this.priority
@@ -80,7 +78,7 @@ fun TodoEntry.toTodoEntityDto(): TodoEntityDto {
         editorId = this.editorId,
         content = this.content,
         title = this.title,
-        lastChanged = this.lastChanged.ifBlank { "0" },
+        updatedAt = this.lastChanged.ifBlank { "0" },
         senderAsString = this.senderAsString,
         status = this.status,
         priority = this.priority
