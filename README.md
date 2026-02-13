@@ -14,6 +14,8 @@ It is an alternative to the tech giants stealing our data.
 ### 3.0.3
 #### Features
 - polls
+- Secure data store on all platforms
+- Improved sync for profile pictures
 
 #### Bugfixes
 

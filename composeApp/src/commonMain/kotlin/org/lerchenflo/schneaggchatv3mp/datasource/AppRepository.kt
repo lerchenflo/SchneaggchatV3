@@ -661,7 +661,9 @@ class AppRepository(
                                 profilePictureUrl = "",
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt,
                             ))
-                            profilePicsToGet += newUser.id
+                            if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
+                                profilePicsToGet += newUser.id
+                            }
                         }
                         is NetworkUtils.UserResponse.SelfUserResponse -> {
                             val existing = database.userDao().getUserbyId(newUser.id)
@@ -689,9 +691,11 @@ class AppRepository(
                                 profilePictureUrl = "",
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt,
                                 ))
-                            profilePicsToGet += newUser.id
-                        }
+                            if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
+                                profilePicsToGet += newUser.id
+                            }                        }
                         is NetworkUtils.UserResponse.SimpleUserResponse -> {
+                            val existing = database.userDao().getUserbyId(newUser.id)
                             database.userDao().upsert(UserDto(
                                 id = newUser.id,
                                 updatedAt = newUser.updatedAt,
@@ -716,8 +720,9 @@ class AppRepository(
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt
                                 ))
 
-                            //Get the profile pic for this user too??
-                            profilePicsToGet += newUser.id
+                            if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
+                                profilePicsToGet += newUser.id
+                            }
 
                         }
                     }
@@ -732,7 +737,9 @@ class AppRepository(
         }
         //println("profilepics to get count: ${profilePicsToGet.size}")
 
-        getProfilePicturesForUserIds(profilePicsToGet)
+        if (profilePicsToGet.isNotEmpty()) {
+            getProfilePicturesForUserIds(profilePicsToGet)
+        }
     }
 
     /**
