@@ -12,7 +12,7 @@ actual class AppVersion(
 
     actual fun getVersionCode(): String {
         return context.packageManager
-            .getPackageInfo(context.packageName, 0).versionCode.toString()
+            .getPackageInfo(context.packageName, 0).longVersionCode.toString()
     }
 
     actual fun isMobile(): Boolean {

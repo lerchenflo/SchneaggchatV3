@@ -527,7 +527,7 @@ fun BirthdatePickerPopup(
 
 ) {
     val today = Clock.System.now().toLocalDateTime(TimeZone.UTC).date // TimeZone.currentSystemDefault() künnt fehler uf Iphone werfa (crash)
-    val endOfCurrentYear = LocalDate(year = today.year, monthNumber = 12, dayOfMonth = 31)
+    val endOfCurrentYear = LocalDate(year = today.year, month = 12, day = 31)
     val _defaultDate = defaultDate ?: today.minus(18, DateTimeUnit.YEAR)
 
     var selectedDate by remember {

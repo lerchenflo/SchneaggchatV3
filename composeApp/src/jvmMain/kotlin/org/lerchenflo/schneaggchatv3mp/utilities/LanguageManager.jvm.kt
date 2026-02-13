@@ -9,6 +9,7 @@ actual class LanguageManager(
 ) {
     companion object {
         // Capture original system locale at class initialization
+        @Suppress("ConstantLocale")
         private val ORIGINAL_SYSTEM_LOCALE: Locale = Locale.getDefault()
     }
     actual suspend fun applyLanguage(language: LanguageSetting) {
@@ -30,13 +31,8 @@ actual class LanguageManager(
         } else {
             // Set specific locale
             val isoCode = language.getIsoCode()
-            val locale = if (isoCode.contains("-")) {
-                val parts = isoCode.split("-")
-                Locale(parts[0], parts[1]) // language, country
-            } else {
-                Locale(isoCode) // language only
-            }
-            
+            val locale = Locale.forLanguageTag(isoCode.replace("_", "-"))
+
             Locale.setDefault(locale)
             
             // Also set system properties for some Java libraries

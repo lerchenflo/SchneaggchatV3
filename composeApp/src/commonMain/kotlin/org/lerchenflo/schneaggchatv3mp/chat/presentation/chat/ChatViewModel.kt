@@ -180,7 +180,7 @@ class ChatViewModel(
     }
 
     private fun formatDate(date: LocalDate): String {
-        return "${date.dayOfMonth}.${date.monthNumber}.${date.year}"
+        return "${date.day}.${date.month.ordinal}.${date.year}"
     }
 
     @OptIn(ExperimentalTime::class)
