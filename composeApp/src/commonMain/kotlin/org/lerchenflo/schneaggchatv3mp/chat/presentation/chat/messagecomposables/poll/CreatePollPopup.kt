@@ -372,7 +372,7 @@ fun PollDialog(
                 SettingsSwitch(
                     modifier = Modifier.fillMaxWidth(),
                     titletext = if (expiresAt == null) {stringResource(Res.string.poll_expiry_title)} else {
-                        stringResource(Res.string.poll_expiry_title_withdate, "${expiresAt!!.dayOfMonth.toString().padStart(2, '0')}.${expiresAt!!.monthNumber.toString().padStart(2, '0')}.${expiresAt!!.year} ${expiresAt!!.hour.toString().padStart(2, '0')}:${expiresAt!!.minute.toString().padStart(2, '0')}")
+                        stringResource(Res.string.poll_expiry_title_withdate, "${expiresAt!!.day.toString().padStart(2, '0')}.${expiresAt!!.month.ordinal.toString().padStart(2, '0')}.${expiresAt!!.year} ${expiresAt!!.hour.toString().padStart(2, '0')}:${expiresAt!!.minute.toString().padStart(2, '0')}")
                     },
                     infotext = stringResource(Res.string.poll_expiry_title_info),
                     switchchecked = expiresAt != null,

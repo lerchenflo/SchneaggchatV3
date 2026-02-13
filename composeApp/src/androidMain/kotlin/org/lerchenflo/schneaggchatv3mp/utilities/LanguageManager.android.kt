@@ -24,30 +24,27 @@ actual class LanguageManager(
             
             val config = context.resources.configuration
             config.setLocales(ORIGINAL_SYSTEM_LOCALES)
-            context.createConfigurationContext(config)
-            context.resources.updateConfiguration(config, context.resources.displayMetrics)
+            //context.createConfigurationContext(config)
+            context.resources.configuration.setLocales(ORIGINAL_SYSTEM_LOCALES)
+            //context.resources.updateConfiguration(config, context.resources.displayMetrics)
             
             println("Reset to original system locale: ${ORIGINAL_SYSTEM_LOCALES[0].language}-${ORIGINAL_SYSTEM_LOCALES[0].country}")
         } else {
             // Apply specific locale
             val isoCode = language.getIsoCode()
-            val locale = if (isoCode.contains("-")) {
-                val parts = isoCode.split("-")
-                Locale(parts[0], parts[1]) // language, country
-            } else {
-                Locale(isoCode) // language only
-            }
+            val locale = Locale.forLanguageTag(isoCode.replace("_", "-"))
             
             // Debug logging
             println("Applying language: $language, ISO: ${language.getIsoCode()}, Locale: ${locale.language}-${locale.country}")
             
             Locale.setDefault(locale)
-            val config = context.resources.configuration
-            config.setLocales(LocaleList(locale))
-            context.createConfigurationContext(config)
-            
+            //val config = context.resources.configuration
+            //config.setLocales(LocaleList(locale))
+            //context.createConfigurationContext(config)
+            context.resources.configuration.setLocale(locale)
+
             // Update context to apply changes immediately
-            context.resources.updateConfiguration(config, context.resources.displayMetrics)
+            //context.resources.updateConfiguration(config, context.resources.displayMetrics)
             
             // Verify the change
             val newLocale = context.resources.configuration.locales[0]

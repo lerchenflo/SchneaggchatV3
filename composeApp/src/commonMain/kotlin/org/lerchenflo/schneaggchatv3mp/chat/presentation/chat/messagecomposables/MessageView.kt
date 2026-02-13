@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Reply
 import androidx.compose.material3.HorizontalDivider
@@ -178,7 +179,7 @@ private fun ReplyArrow(
         modifier = modifier
     ){
         Icon(
-            imageVector = Icons.Default.Reply,
+            imageVector = Icons.AutoMirrored.Filled.Reply,
             contentDescription = "reply",
             modifier = Modifier
                 .align(Alignment.CenterStart)

@@ -1,8 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
-import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
-import androidx.window.core.layout.WindowWidthSizeClass
 
 enum class DeviceSizeConfiguration {
     MOBILE_PORTRAIT,
@@ -13,21 +11,29 @@ enum class DeviceSizeConfiguration {
 
     companion object {
         fun fromWindowSizeClass(windowSizeClass: WindowSizeClass): DeviceSizeConfiguration {
-            val widthClass = windowSizeClass.windowWidthSizeClass
-            val heightClass = windowSizeClass.windowHeightSizeClass
-
             return when {
-                widthClass == WindowWidthSizeClass.COMPACT &&
-                        heightClass == WindowHeightSizeClass.MEDIUM -> MOBILE_PORTRAIT
-                widthClass == WindowWidthSizeClass.COMPACT &&
-                        heightClass == WindowHeightSizeClass.EXPANDED -> MOBILE_PORTRAIT
-                widthClass == WindowWidthSizeClass.EXPANDED &&
-                        heightClass == WindowHeightSizeClass.COMPACT -> MOBILE_LANDSCAPE
-                widthClass == WindowWidthSizeClass.MEDIUM &&
-                        heightClass == WindowHeightSizeClass.EXPANDED -> TABLET_PORTRAIT
-                widthClass == WindowWidthSizeClass.
-                EXPANDED &&
-                        heightClass == WindowHeightSizeClass.MEDIUM -> TABLET_LANDSCAPE
+                // Mobile Portrait: Compact width, Medium+ height
+                !windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) &&
+                        windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND) ->
+                    MOBILE_PORTRAIT
+
+                // Mobile Landscape: Expanded+ width, Compact height
+                windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) &&
+                        !windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND) ->
+                    MOBILE_LANDSCAPE
+
+                // Tablet Portrait: Medium width (but not Expanded), Expanded+ height
+                windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) &&
+                        !windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) &&
+                        windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND) ->
+                    TABLET_PORTRAIT
+
+                // Tablet Landscape: Expanded+ width, Medium height (but not Expanded)
+                windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) &&
+                        windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND) &&
+                        !windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND) ->
+                    TABLET_LANDSCAPE
+
                 else -> DESKTOP
             }
         }

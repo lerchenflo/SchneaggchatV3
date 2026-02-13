@@ -69,9 +69,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -107,10 +104,8 @@ import schneaggchatv3mp.composeapp.generated.resources.message_delete_info
 import schneaggchatv3mp.composeapp.generated.resources.poll
 import schneaggchatv3mp.composeapp.generated.resources.reply
 import schneaggchatv3mp.composeapp.generated.resources.yes
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
-@Preview()
+
 @Composable
 fun ChatScreen(
     modifier: Modifier = Modifier
@@ -503,9 +498,7 @@ fun ReplyPreview(viewModel: ChatViewModel, globalViewModel: GlobalViewModel){
                 senderColor = viewModel.replyMessage!!.senderColor
             )
         }
-        Column(
-
-        ) {
+        Column {
             IconButton(
                 onClick = {
                     viewModel.updateReplyMessage(null)
@@ -656,11 +649,6 @@ fun DeleteMessageAlert(
 
 fun copyToClipboard(text: String, clipboardManager: ClipboardManager) {
     clipboardManager.setText(AnnotatedString(text))
-}
-@OptIn(ExperimentalTime::class)
-fun Long.toLocalDate(): LocalDate {
-    val instant = Instant.fromEpochMilliseconds(this)
-    return instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
 }
 
 enum class AddMediaOptions{
