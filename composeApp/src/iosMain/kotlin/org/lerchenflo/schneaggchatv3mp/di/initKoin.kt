@@ -11,7 +11,10 @@ fun initKoin(){
         modules(
             IosHttpModule,
             IosHttpAuthModule,
+
             IosDatastoreModule,
+            IosKSafeModule,
+
             IosVersionModule,
             IosPictureManagerModule,
             IosShareUtilsModule,
