@@ -159,6 +159,9 @@ class ChatViewModel(
                 messageId = editMessageId!!,
                 newContent = sendText.text
             )
+
+            //Clear text after editing message
+            updatesendText(TextFieldValue(""))
         }
     }
 
