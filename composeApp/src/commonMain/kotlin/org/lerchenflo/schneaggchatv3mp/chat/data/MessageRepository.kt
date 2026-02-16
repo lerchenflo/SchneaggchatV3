@@ -4,16 +4,13 @@ import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 class MessageRepository(
     private val database: AppDatabase,
@@ -78,14 +75,14 @@ class MessageRepository(
      * Delete all readers of a message
      */
     private suspend fun deleteReadersForMessage(messageId: String){
-        database.messagereaderDao().deleteReadersForMessage(messageId)
+        database.messageReaderDao().deleteReadersForMessage(messageId)
     }
 
     /**
      * Insert new readers for a message
      */
     private suspend fun insertReaders(readers: List<MessageReaderDto>){
-        database.messagereaderDao().upsertReaders(readers)
+        database.messageReaderDao().upsertReaders(readers)
     }
 
 

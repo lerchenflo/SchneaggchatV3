@@ -1,5 +1,3 @@
-@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-
 package org.lerchenflo.schneaggchatv3mp.datasource.database
 
 import androidx.room.ConstructedBy
@@ -8,7 +6,6 @@ import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
 import androidx.room.TypeConverters
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
-import org.lerchenflo.schneaggchatv3mp.app.logging.LogTypeConverter
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupMemberDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
@@ -21,21 +18,21 @@ import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 @Database(
     entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, TodoEntityDto::class, LogEntry::class, PlayerEntity::class],
     exportSchema = true,
-    version = 49
+    version = 51
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)
-@TypeConverters(LogTypeConverter::class)
+@TypeConverters(RoomTypeConverters::class)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun userDao(): UserDao
 
     abstract fun messageDao(): MessageDao
 
-    abstract fun messagereaderDao(): MessageReaderDao
+    abstract fun messageReaderDao(): MessageReaderDao
 
     abstract fun groupDao(): GroupDao
 
-    abstract fun todolistdao(): TodolistDao
+    abstract fun todoListDao(): TodolistDao
 
     abstract fun logDao(): LogDao
 
