@@ -177,9 +177,7 @@ class ChatViewModel(
             is MessageAction.VotePoll -> {
                 // TODO: Implement poll voting via appRepository
             }
-            is MessageAction.RemovePollVote -> {
-                // TODO: Implement poll vote removal via appRepository
-            }
+            
             is MessageAction.AddCustomPollOption -> {
                 // TODO: Implement custom poll option via appRepository
             }

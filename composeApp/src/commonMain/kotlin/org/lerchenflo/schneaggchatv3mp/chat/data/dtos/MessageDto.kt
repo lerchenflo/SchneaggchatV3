@@ -6,7 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollMessage
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 
 @Serializable
 @Entity(

@@ -2,8 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.datasource.database
 
 import androidx.room.TypeConverter
 import kotlinx.serialization.json.Json
-import org.lerchenflo.schneaggchatv3mp.app.logging.LogType
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollMessage
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 
 class RoomTypeConverters {
 

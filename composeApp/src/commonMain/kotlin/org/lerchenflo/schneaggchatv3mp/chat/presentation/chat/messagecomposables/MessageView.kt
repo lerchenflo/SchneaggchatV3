@@ -55,6 +55,9 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollMessageContentView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.text.TextMessageContentView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
@@ -527,7 +530,7 @@ fun DayDivider(millis: Long) {
     }
 }
 
-/*
+
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun Messagepreview(){
@@ -555,19 +558,103 @@ private fun Messagepreview(){
         sendDate = "12"
     )
 
+    val pollmessage1 = Message(
+        msgType = MessageType.POLL,
+        senderId = "1",
+        receiverId = "2",
+        myMessage = false,
+        readByMe = false,
+        readers = emptyList(),
+        sent = false,
+        content = "",
+        poll = PollMessage(
+            creatorId = "awd",
+            title = "Titeltitel",
+            description = "Descripiton description fortnite skybase description",
+            maxAnswers = null,
+            customAnswersEnabled = false,
+            maxAllowedCustomAnswers = null,
+            visibility = PollVisibility.PUBLIC,
+            expiresAt = 1212111,
+            voteOptions = listOf(
+                PollVoteOption(
+                    id = "1",
+                    text = "Poll option 1",
+                    custom = false,
+                    creatorId = "waw",
+                    voters = emptyList()
+                ),
+
+                PollVoteOption(
+                    id = "2",
+                    text = "Custom option jee",
+                    custom = true,
+                    creatorId = "awdawd",
+                    voters = emptyList()
+                )
+            )
+        ),
+        sendDate = "12"
+    )
+
+    val pollmessage2 = Message(
+        msgType = MessageType.POLL,
+        senderId = "1",
+        receiverId = "2",
+        myMessage = true,
+        readByMe = false,
+        readers = emptyList(),
+        sent = true,
+        content = "",
+        poll = PollMessage(
+            creatorId = "awd",
+            title = "Titeltitel",
+            description = "Descripiton description fortnite skybase description",
+            maxAnswers = 1,
+            customAnswersEnabled = true,
+            maxAllowedCustomAnswers = 2,
+            visibility = PollVisibility.PUBLIC,
+            expiresAt = 1212111,
+            voteOptions = listOf(
+                PollVoteOption(
+                    id = "1",
+                    text = "Poll option 1",
+                    custom = false,
+                    creatorId = "waw",
+                    voters = emptyList()
+                ),
+
+                PollVoteOption(
+                    id = "2",
+                    text = "Custom option jee",
+                    custom = true,
+                    creatorId = "awdawd",
+                    voters = emptyList()
+                )
+            )
+        ),
+        sendDate = "12"
+    )
+
+
+
     Column(
         modifier = Modifier.fillMaxSize()
             .padding(16.dp)
     ) {
-        for (i in 1..12) {
-            MessageViewWithActions(
-                message = mymessage
-            )
-            MessageViewWithActions(
-                message = othermessage
-            )
-        }
+        MessageViewWithActions(
+            message = mymessage
+        )
+        MessageViewWithActions(
+            message = othermessage
+        )
+
+        MessageViewWithActions(
+            message = pollmessage1
+        )
+
+        MessageViewWithActions(
+            message = pollmessage2
+        )
     }
 }
-
- */
