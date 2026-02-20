@@ -44,6 +44,8 @@ import kotlin.time.Instant
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 
 class ChatViewModel(
@@ -117,7 +119,7 @@ class ChatViewModel(
         }
     }
 
-    fun sendMessage(){
+    fun sendTextMessage(){
         if (sendText.text.isEmpty()) return
 
         if(editMessageId == null) {
@@ -125,10 +127,10 @@ class ChatViewModel(
             updatesendText(TextFieldValue(""))
 
             globalViewModel.viewModelScope.launch {
-                appRepository.sendTextMessage(
+                appRepository.sendMessage(
                     empfaenger = globalViewModel.selectedChat.value.id,
                     gruppe = globalViewModel.selectedChat.value.isGroup,
-                    content = content,
+                    content = AppRepository.MessageContent.TextContent(content),
                     answerid = replyMessage?.id,
                 )
 
@@ -138,6 +140,19 @@ class ChatViewModel(
             editMessage()
             updatesendText(TextFieldValue(""))
             editMessageId = null
+        }
+    }
+
+    fun createPollMessage(poll: NetworkUtils.PollCreateRequest) {
+        globalViewModel.viewModelScope.launch {
+            appRepository.sendMessage(
+                empfaenger = globalViewModel.selectedChat.value.id,
+                gruppe = globalViewModel.selectedChat.value.isGroup,
+                content = AppRepository.MessageContent.PollContent(poll),
+                answerid = replyMessage?.id,
+            )
+
+            replyMessage = null
         }
     }
 

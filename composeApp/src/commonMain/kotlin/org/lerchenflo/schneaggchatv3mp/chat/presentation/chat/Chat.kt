@@ -65,7 +65,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
@@ -374,8 +373,9 @@ fun InputFieldRow(viewModel: ChatViewModel){
             PollDialog(
                 onDismiss = { showPollDialog = false },
                 onCreatePoll = {
-                    println("Poll created but not sent: $it")
-                    //TODO: Send message to server
+                    println("Poll created: $it")
+                    viewModel.createPollMessage(it)
+
                 }
             )
         }
@@ -409,7 +409,7 @@ fun InputFieldRow(viewModel: ChatViewModel){
                         } else {
                             // ACTION: Enter (only)
                             // Send the message
-                            viewModel.sendMessage()
+                            viewModel.sendTextMessage()
                             return@onPreviewKeyEvent true // Consume the event (no newline added)
                         }
                     }
@@ -421,7 +421,7 @@ fun InputFieldRow(viewModel: ChatViewModel){
         if(viewModel.editMessageId == null){ // schoua ob mir gad a nachricht bearbeitend
             // send button
             IconButton(
-                onClick = { viewModel.sendMessage() },
+                onClick = { viewModel.sendTextMessage() },
                 modifier = Modifier
                     .padding(5.dp)
             ) {

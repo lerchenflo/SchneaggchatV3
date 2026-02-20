@@ -36,7 +36,7 @@ data class PollVoteOption(
 
 @Serializable
 data class PollVoter(
-    val userId: String,
+    val userId: String?,
     val votedAt: Long
 )
 
