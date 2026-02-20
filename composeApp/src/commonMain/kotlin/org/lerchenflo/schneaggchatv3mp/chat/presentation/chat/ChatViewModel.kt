@@ -3,7 +3,6 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
@@ -44,9 +43,9 @@ import kotlin.time.Instant
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
+import androidx.compose.ui.text.input.TextFieldValue
 
 class ChatViewModel(
     private val appRepository: AppRepository,
@@ -67,6 +66,7 @@ class ChatViewModel(
         private set
 
     var editMessageId by mutableStateOf<String?>(null)
+        private set
 
     var sendText by mutableStateOf(TextFieldValue(""))
         private set
@@ -165,6 +165,37 @@ class ChatViewModel(
                 appRepository.deleteMessage(message.id!!)
                 println("Remote message deleted")
             }
+        }
+    }
+
+    /**
+     * Centralized action handler for all message-level user interactions.
+     * Composables only need a single `onAction: (MessageAction) -> Unit` callback.
+     */
+    fun onAction(action: MessageAction) {
+        when (action) {
+            is MessageAction.VotePoll -> {
+                // TODO: Implement poll voting via appRepository
+            }
+            is MessageAction.RemovePollVote -> {
+                // TODO: Implement poll vote removal via appRepository
+            }
+            is MessageAction.AddCustomPollOption -> {
+                // TODO: Implement custom poll option via appRepository
+            }
+            is MessageAction.DeleteMessage -> deleteMessage(action.message)
+            is MessageAction.StartEditMessage -> {
+                editMessageId = action.message.id
+                updatesendText(TextFieldValue(action.message.content))
+            }
+            MessageAction.CancelEditMessage -> {
+                editMessageId = null
+                updatesendText(TextFieldValue(""))
+                println("Update message sendtext to empty")
+            }
+
+            is MessageAction.ReplyToMessage -> updateReplyMessage(action.message)
+
         }
     }
 
@@ -281,12 +312,18 @@ class ChatViewModel(
             val resolvedColor = groupMap[message.senderId]?.color ?: 0
             message.senderColor = resolvedColor
 
+            // Pre-resolve reader names for this message
+            val resolvedReaders = message.readers.associate { reader ->
+                reader.readerId to (userMap[reader.readerId]?.name ?: groupMap[reader.readerId]?.memberName ?: "Unknown")
+            }
+
             displayItems.add(
                 MessageDisplayItem.MessageItem(
                     id = "msg_${message.localPK}",
                     message = message,
                     senderName = senderName,
-                    senderColor = resolvedColor
+                    senderColor = resolvedColor,
+                    resolvedReaders = resolvedReaders
                 )
             )
 

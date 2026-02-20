@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 
 @Composable
 fun PollMessageContentView(
     message: Message,
-    useMD: Boolean
+    useMD: Boolean,
+    onAction: (MessageAction) -> Unit = {}
 ){
     //TODO: Implement poll in message db + sync + senden
 
@@ -16,6 +18,8 @@ fun PollMessageContentView(
     Column {
 
         //Title
+        // Example usage when implementing poll voting UI:
+        // Button(onClick = { onAction(MessageAction.VotePoll(message.id!!, option.id)) }) { ... }
 
     }
 }

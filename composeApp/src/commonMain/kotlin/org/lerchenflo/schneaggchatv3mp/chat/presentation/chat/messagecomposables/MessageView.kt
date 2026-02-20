@@ -57,6 +57,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollMessageContentView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.text.TextMessageContentView
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.check
@@ -74,6 +75,7 @@ fun MessageViewWithActions(
     replyMessageOnClick: () -> Unit = {},
     onReplyCall: () -> Unit = {},
     onLongPress: () -> Unit = {},
+    onAction: (MessageAction) -> Unit = {},
     modifier: Modifier = Modifier
         .fillMaxWidth()
 ){
@@ -164,7 +166,8 @@ fun MessageViewWithActions(
                 senderName = senderName,
                 senderColor = senderColor,
                 replyMessage = replyMessage,
-                replyMessageOnClick = replyMessageOnClick
+                replyMessageOnClick = replyMessageOnClick,
+                onAction = onAction
             )
         }
     }
@@ -201,6 +204,7 @@ private fun MessageView(
     senderColor: Int = 0,
     replyMessage: Message? = null,
     replyMessageOnClick: () -> Unit = {},
+    onAction: (MessageAction) -> Unit = {},
 )
 {
 
@@ -254,7 +258,8 @@ private fun MessageView(
                 mymessage = mymessage,
                 selectedChatId = selectedChatId,
                 senderName = senderName,
-                senderColor = senderColor
+                senderColor = senderColor,
+                onAction = onAction
 
             )
 
@@ -270,7 +275,8 @@ fun MessageContent(
     mymessage: Boolean = false,
     selectedChatId: String,
     senderName: String? = null,
-    senderColor: Int = 0
+    senderColor: Int = 0,
+    onAction: (MessageAction) -> Unit = {}
 ){
     //Farbiger kasten
     Box(
@@ -300,7 +306,8 @@ fun MessageContent(
 
                     MessageType.POLL -> PollMessageContentView(
                         message = message,
-                        useMD = useMD
+                        useMD = useMD,
+                        onAction = onAction
                     )
 
                     else -> ErrorMessage()
