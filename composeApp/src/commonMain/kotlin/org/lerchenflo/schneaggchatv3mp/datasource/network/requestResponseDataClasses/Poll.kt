@@ -18,7 +18,7 @@ fun PollResponse.toPollMessage(): PollMessage {
         customAnswersEnabled = this.customAnswersEnabled,
         maxAllowedCustomAnswers = this.maxAllowedCustomAnswers,
         visibility = this.visibility,
-        expiresAt = this.closeDate?.toLong(),
+        expiresAt = this.closeDate,
         voteOptions = when (this) {
             is PollResponse.PublicPollResponse -> this.voteOptions.map { option ->
                 PollVoteOption(

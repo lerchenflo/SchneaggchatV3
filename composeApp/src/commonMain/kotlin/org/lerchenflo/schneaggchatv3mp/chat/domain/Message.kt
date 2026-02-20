@@ -94,6 +94,8 @@ data class Message(
             if (answerId != null) {
                 appendLine("  answerId: $answerId")
             }
+
+            appendLine("Poll: $poll")
             append("}")
         }
     }
@@ -105,6 +107,7 @@ fun MessageWithReadersDto.toMessage(): Message = Message(
     id = this.messageDto.id,
     msgType = this.messageDto.msgType,
     content = this.messageDto.content,
+    poll = this.messageDto.poll,
     senderId = this.messageDto.senderId,
     receiverId = this.messageDto.receiverId,
     sendDate = this.messageDto.sendDate,
@@ -129,6 +132,7 @@ fun Message.toDto(): MessageWithReadersDto = MessageWithReadersDto(
         id = this.id,
         msgType = this.msgType,
         content = this.content,
+        poll = this.poll,
         senderId = this.senderId,
         receiverId = this.receiverId,
         sendDate = this.sendDate,

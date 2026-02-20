@@ -1175,35 +1175,37 @@ class AppRepository(
                             }
 
                             MessageType.POLL -> {
-                                //TODO: Same as normal message but with poll answer upsert
                                 val existing = database.messageDao().getMessageDtoById(messageResponse.messageId)
+
+                                val savedMessage = Message(
+                                    localPK = existing?.localPK ?: 0L,
+                                    id = messageResponse.messageId,
+                                    msgType = messageResponse.msgType,
+                                    content = messageResponse.content,
+                                    poll = messageResponse.pollResponse?.toPollMessage(),
+                                    senderId = messageResponse.senderId,
+                                    receiverId = messageResponse.receiverId,
+                                    sendDate = messageResponse.sendDate.toString(),
+                                    changeDate = messageResponse.lastChanged.toString(),
+                                    deleted = messageResponse.deleted,
+                                    groupMessage = messageResponse.groupMessage,
+                                    answerId = messageResponse.answerId,
+                                    sent = true,
+                                    myMessage = messageResponse.senderId == SessionCache.getOwnIdValue(),
+                                    readByMe = messageResponse.readers.any { it.userId == SessionCache.ownId.value },
+                                    senderAsString = "",
+                                    senderColor = 0,
+                                    readers = messageResponse.readers.map {
+                                        MessageReader(
+                                            readerEntryId = 0L,
+                                            messageId = messageResponse.messageId,
+                                            readerId = it.userId,
+                                            readDate = it.readAt.toString()
+                                        )
+                                    }
+                                )
                                 messageRepository.upsertMessage(
-                                    Message(
-                                        localPK = existing?.localPK ?: 0L,
-                                        id = messageResponse.messageId,
-                                        msgType = messageResponse.msgType,
-                                        content = messageResponse.content,
-                                        senderId = messageResponse.senderId,
-                                        receiverId = messageResponse.receiverId,
-                                        sendDate = messageResponse.sendDate.toString(),
-                                        changeDate = messageResponse.lastChanged.toString(),
-                                        deleted = messageResponse.deleted,
-                                        groupMessage = messageResponse.groupMessage,
-                                        answerId = messageResponse.answerId,
-                                        sent = true,
-                                        myMessage = messageResponse.senderId == SessionCache.getOwnIdValue(),
-                                        readByMe = messageResponse.readers.any { it.userId == SessionCache.ownId.value },
-                                        senderAsString = "",
-                                        senderColor = 0,
-                                        readers = messageResponse.readers.map {
-                                            MessageReader(
-                                                readerEntryId = 0L,
-                                                messageId = messageResponse.messageId,
-                                                readerId = it.userId,
-                                                readDate = it.readAt.toString()
-                                            )
-                                        }
-                                    )
+                                    savedMessage
                                 )
                             }
                         }
