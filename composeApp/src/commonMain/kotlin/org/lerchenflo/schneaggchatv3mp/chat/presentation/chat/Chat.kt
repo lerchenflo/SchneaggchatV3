@@ -64,8 +64,6 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
@@ -241,11 +239,12 @@ fun ChatScreen(
                                         }
                                     },
                                     onReplyCall = {
-                                        viewModel.updateReplyMessage(message)
+                                        viewModel.onAction(MessageAction.ReplyToMessage(message))
                                     },
                                     onLongPress = {
                                         showMessageOptionPopup = true
-                                    }
+                                    },
+                                    onAction = viewModel::onAction
                                 )
 
                                 val copiedToClipboardString = stringResource(Res.string.copied_to_clipboard)
@@ -256,7 +255,7 @@ fun ChatScreen(
                                     expanded = showMessageOptionPopup,
                                     message = message,
                                     onDismissRequest = { showMessageOptionPopup = false },
-                                    onReply = { viewModel.updateReplyMessage(message) },
+                                    onReply = { viewModel.onAction(MessageAction.ReplyToMessage(message)) },
                                     onCopy = {
                                         copyToClipboard(message.content, clipboardManager)
                                         SnackbarManager.showMessage(copiedToClipboardString)
@@ -268,8 +267,7 @@ fun ChatScreen(
                                         showMessageOptionPopup = false
                                     },
                                     onEdit = {
-                                        viewModel.editMessageId = message.id
-                                        viewModel.updatesendText(TextFieldValue(message.content))
+                                        viewModel.onAction(MessageAction.StartEditMessage(message))
                                         showMessageOptionPopup = false
                                     },
                                     modifier = Modifier.align(
@@ -281,8 +279,7 @@ fun ChatScreen(
                                     DeleteMessageAlert(
                                         onDismiss = { showDeleteAlert = false },
                                         onConfirm = {
-
-                                            viewModel.deleteMessage(item.message)
+                                            viewModel.onAction(MessageAction.DeleteMessage(item.message))
                                             showDeleteAlert = false
                                         },
                                         message = message,
@@ -374,8 +371,8 @@ fun InputFieldRow(viewModel: ChatViewModel){
             PollDialog(
                 onDismiss = { showPollDialog = false },
                 onCreatePoll = {
-                    println("Poll created but not sent: $it")
-                    //TODO: Send message to server
+                    println("Poll created: $it")
+                    viewModel.createPollMessage(it)
                 }
             )
         }
@@ -409,7 +406,7 @@ fun InputFieldRow(viewModel: ChatViewModel){
                         } else {
                             // ACTION: Enter (only)
                             // Send the message
-                            viewModel.sendMessage()
+                            viewModel.sendTextMessage()
                             return@onPreviewKeyEvent true // Consume the event (no newline added)
                         }
                     }
@@ -421,7 +418,7 @@ fun InputFieldRow(viewModel: ChatViewModel){
         if(viewModel.editMessageId == null){ // schoua ob mir gad a nachricht bearbeitend
             // send button
             IconButton(
-                onClick = { viewModel.sendMessage() },
+                onClick = { viewModel.sendTextMessage() },
                 modifier = Modifier
                     .padding(5.dp)
             ) {
@@ -431,11 +428,11 @@ fun InputFieldRow(viewModel: ChatViewModel){
                 )
             }
         }else{
+
+            //Cancel reply button
             IconButton(
                 onClick = {
-                    viewModel.editMessageId = null
-                    viewModel.updatesendText(TextFieldValue(""))
-                    println("Update message sendtext to empty")
+                    viewModel.onAction(MessageAction.CancelEditMessage)
                 },
                 modifier = Modifier
                     .padding(5.dp)
@@ -445,11 +442,11 @@ fun InputFieldRow(viewModel: ChatViewModel){
                     contentDescription = stringResource(Res.string.cancel),
                 )
             }
+
+            //edit message button
             IconButton(
                 onClick = {
                     viewModel.editMessage()
-                    viewModel.updatesendText(TextFieldValue(""))
-
                 },
                 modifier = Modifier
                     .padding(5.dp)

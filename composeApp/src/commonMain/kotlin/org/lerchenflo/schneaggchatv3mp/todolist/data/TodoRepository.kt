@@ -14,7 +14,7 @@ class TodoRepository(
 ) {
 
     fun getTodoItemsFlow() : Flow<List<TodoEntry>>{
-        return database.todolistdao().getAllTodos().map { entityList ->
+        return database.todoListDao().getAllTodos().map { entityList ->
             entityList.map { entity ->
                 entity.toTodoEntry()
             }
@@ -23,19 +23,19 @@ class TodoRepository(
 
     @Transaction
     suspend fun gettodochangeid(): List<IdChangeDate>{
-        return database.todolistdao().getTodoIdsWithChangeDates()
+        return database.todoListDao().getTodoIdsWithChangeDates()
     }
 
     suspend fun deleteTodo(id: String){
-        database.todolistdao().delete(id)
+        database.todoListDao().delete(id)
     }
 
     @Transaction
     suspend fun upsertTodo(todo: TodoEntry) {
-        if (database.todolistdao().getTodoById(todo.id) != null) {
-            database.todolistdao().updateTodo(todo.toTodoEntityDto())
+        if (database.todoListDao().getTodoById(todo.id) != null) {
+            database.todoListDao().updateTodo(todo.toTodoEntityDto())
         } else {
-            database.todolistdao().insertTodo(todo.toTodoEntityDto())
+            database.todoListDao().insertTodo(todo.toTodoEntityDto())
         }
     }
 

@@ -17,6 +17,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionMessage
 
 fun createHttpClient(
@@ -105,6 +106,11 @@ object AppJson {
                 subclass(SocketConnectionMessage.MessageChange::class)
                 subclass(SocketConnectionMessage.UserChange::class)
                 subclass(SocketConnectionMessage.FriendRequest::class)
+            }
+
+            polymorphic(PollResponse::class) {
+                subclass(PollResponse.PublicPollResponse::class)
+                subclass(PollResponse.AnonymousPollResponse::class)
             }
         }
     }

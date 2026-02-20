@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollMessage
 
 enum class MessageType {
     TEXT,
@@ -15,7 +16,10 @@ data class Message(
     var localPK: Long = 0L,
     var id: String? = null,
     var msgType: MessageType,
+
     var content: String = "",
+    var poll: PollMessage? = null,
+
     var senderId: String,
     var receiverId: String,
     var sendDate: String = "",
@@ -90,6 +94,8 @@ data class Message(
             if (answerId != null) {
                 appendLine("  answerId: $answerId")
             }
+
+            appendLine("Poll: $poll")
             append("}")
         }
     }
@@ -101,6 +107,7 @@ fun MessageWithReadersDto.toMessage(): Message = Message(
     id = this.messageDto.id,
     msgType = this.messageDto.msgType,
     content = this.messageDto.content,
+    poll = this.messageDto.poll,
     senderId = this.messageDto.senderId,
     receiverId = this.messageDto.receiverId,
     sendDate = this.messageDto.sendDate,
@@ -125,6 +132,7 @@ fun Message.toDto(): MessageWithReadersDto = MessageWithReadersDto(
         id = this.id,
         msgType = this.msgType,
         content = this.content,
+        poll = this.poll,
         senderId = this.senderId,
         receiverId = this.receiverId,
         sendDate = this.sendDate,

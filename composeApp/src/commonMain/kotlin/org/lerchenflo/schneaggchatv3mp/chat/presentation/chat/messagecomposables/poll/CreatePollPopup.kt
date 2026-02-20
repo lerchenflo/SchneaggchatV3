@@ -45,6 +45,8 @@ import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollMessageRequest
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
@@ -82,7 +84,7 @@ import kotlin.time.Clock
 @Composable
 fun PollDialog(
     onDismiss: () -> Unit = {},
-    onCreatePoll: (PollMessage) -> Unit = {}
+    onCreatePoll: (NetworkUtils.PollCreateRequest) -> Unit = {}
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -443,38 +445,33 @@ fun PollDialog(
                     NormalButton(
                         onClick = {
                             if (!validateInputs()) return@NormalButton
-                            onCreatePoll(PollMessage(
-                                creatorId = SessionCache.getOwnIdValue()!!,
-                                title = title,
-                                description = description,
 
-                                customAnswersEnabled = allowCustomAnswers,
-                                maxAllowedCustomAnswers = allowedCustomAnswerCount,
+                            onCreatePoll(
+                                NetworkUtils.PollCreateRequest(
+                                    title = title,
+                                    description = description,
+                                    maxAnswers = if (allowMultipleAnswers) {
+                                        if (allowedAnswerCount == 10) {
+                                            null
+                                        } else {
+                                            allowedAnswerCount
+                                        }
+                                    } else 1,
+                                    customAnswersEnabled = allowCustomAnswers,
+                                    maxAllowedCustomAnswers = allowedCustomAnswerCount,
+                                    visibility = visibility,
+                                    closeDate = expiresAt?.toInstant(TimeZone.UTC)
+                                        ?.toEpochMilliseconds(),
+                                    voteOptions = options
+                                        .filter { it.trim().isNotEmpty() }
+                                        .map {
+                                            NetworkUtils.PollVoteOptionCreateRequest(
+                                                text = it
+                                            )
+                                        }
+                                )
+                            )
 
-                                maxAnswers = if (allowMultipleAnswers) {
-                                    if (allowedAnswerCount == 10) {
-                                        null
-                                    } else {
-                                        allowedAnswerCount
-                                    }
-                                } else 1,
-
-                                visibility = visibility,
-                                expiresAt = expiresAt?.toInstant(TimeZone.UTC)
-                                    ?.toEpochMilliseconds(),
-                                voteOptions = options
-                                    .filter { it.trim().isNotEmpty() }
-                                    .mapIndexed { index, optionStr ->
-                                        PollVoteOption(
-                                            id = index.toString(),
-                                            text = optionStr,
-                                            custom = false,
-                                            creatorId = SessionCache.getOwnIdValue()!!,
-                                            voters = emptyList()
-                                        )
-                                    },
-
-                            ))
                             onDismiss()
                         },
                         text = stringResource(Res.string.poll_create),
