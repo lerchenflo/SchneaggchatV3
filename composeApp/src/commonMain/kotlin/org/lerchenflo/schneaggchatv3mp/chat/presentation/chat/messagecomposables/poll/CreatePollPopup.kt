@@ -471,7 +471,7 @@ fun PollDialog(
                                         }
                                 )
                             )
-                            
+
                             onDismiss()
                         },
                         text = stringResource(Res.string.poll_create),

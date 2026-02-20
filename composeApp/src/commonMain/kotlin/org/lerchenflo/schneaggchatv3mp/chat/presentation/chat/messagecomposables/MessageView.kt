@@ -520,6 +520,7 @@ fun DayDivider(millis: Long) {
     }
 }
 
+/*
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun Messagepreview(){
@@ -561,3 +562,5 @@ private fun Messagepreview(){
         }
     }
 }
+
+ */

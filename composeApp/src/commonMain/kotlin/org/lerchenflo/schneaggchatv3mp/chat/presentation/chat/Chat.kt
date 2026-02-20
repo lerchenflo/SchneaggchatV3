@@ -375,7 +375,6 @@ fun InputFieldRow(viewModel: ChatViewModel){
                 onCreatePoll = {
                     println("Poll created: $it")
                     viewModel.createPollMessage(it)
-
                 }
             )
         }

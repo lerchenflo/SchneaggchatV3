@@ -170,6 +170,8 @@ class ChatViewModel(
 
     fun editMessage() {
         viewModelScope.launch {
+
+            //TODO: Check if message is sent
             appRepository.editMessage(
                 messageId = editMessageId!!,
                 newContent = sendText.text
