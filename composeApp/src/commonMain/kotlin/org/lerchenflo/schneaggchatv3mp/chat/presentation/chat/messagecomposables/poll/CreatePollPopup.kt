@@ -448,7 +448,7 @@ fun PollDialog(
                             onCreatePoll(
                                 NetworkUtils.PollCreateRequest(
                                     title = title,
-                                    description = description,
+                                    description = description.ifEmpty { null },
                                     maxAnswers = if (allowMultipleAnswers) {
                                         if (allowedAnswerCount == 10) {
                                             null
