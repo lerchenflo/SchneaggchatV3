@@ -76,7 +76,10 @@ class GlobalViewModel(
                 socketConnectionManager.connect(
                     serverUrl = serverurl,
                     onError = {
-                        SessionCache.updateOnline(false)
+                        startSocketConnection()
+                        if (!socketConnectionManager.isConnectedNow()) {
+                            SessionCache.updateOnline(false)
+                        }
                         println("SOCKETCONNECTION error: " + it.message)
                     },
                     onClose = {}
