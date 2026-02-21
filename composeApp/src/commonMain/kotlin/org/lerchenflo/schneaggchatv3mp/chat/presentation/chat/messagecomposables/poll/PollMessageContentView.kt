@@ -24,6 +24,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonColors
 import androidx.compose.material3.RadioButtonDefaults
@@ -232,7 +233,8 @@ fun PollMessageOptionView(
             LinearProgressIndicator(
                 progress = { votePercentage },
                 drawStopIndicator = {}, //Remove stop indicator
-                trackColor = MaterialTheme.colorScheme.secondary
+                trackColor = Color.Transparent,
+                color = if (myMessage) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
             )
 
         }
