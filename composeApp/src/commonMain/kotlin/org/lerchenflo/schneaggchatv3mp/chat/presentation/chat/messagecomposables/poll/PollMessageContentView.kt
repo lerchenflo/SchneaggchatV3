@@ -49,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
@@ -58,6 +59,16 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.add
+import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.poll_add_custom_answer
+import schneaggchatv3mp.composeapp.generated.resources.poll_answer_label
+import schneaggchatv3mp.composeapp.generated.resources.poll_answer_placeholder
+import schneaggchatv3mp.composeapp.generated.resources.poll_answers_count
+import schneaggchatv3mp.composeapp.generated.resources.poll_closed
+import schneaggchatv3mp.composeapp.generated.resources.poll_ends_in
+import schneaggchatv3mp.composeapp.generated.resources.poll_user_count
 import kotlin.time.Clock
 
 @Composable
@@ -174,7 +185,7 @@ fun PollMessageContentView(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
-                    text = "Eigene Antwort hinzufügen", // TODO: StringResource
+                    text = stringResource(Res.string.poll_add_custom_answer),
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (myMessage) {
                         MaterialTheme.colorScheme.onPrimary
@@ -209,7 +220,7 @@ fun CustomPollOptionDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Eigene Antwort hinzufügen", // TODO: StringResource
+                text = stringResource(Res.string.poll_add_custom_answer),
                 style = MaterialTheme.typography.titleLarge
             )
         },
@@ -217,8 +228,8 @@ fun CustomPollOptionDialog(
             OutlinedTextField(
                 value = customOptionText,
                 onValueChange = { customOptionText = it },
-                label = { Text("Antwort") }, // TODO: StringResource
-                placeholder = { Text("Deine Antwort eingeben...") }, // TODO: StringResource
+                label = { Text(stringResource(Res.string.poll_answer_label)) },
+                placeholder = { Text(stringResource(Res.string.poll_answer_placeholder)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -232,12 +243,12 @@ fun CustomPollOptionDialog(
                 },
                 enabled = customOptionText.isNotBlank()
             ) {
-                Text("Hinzufügen") // TODO: StringResource
+                Text(stringResource(Res.string.add))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Abbrechen") // TODO: StringResource
+                Text(stringResource(Res.string.cancel))
             }
         }
     )
@@ -387,7 +398,7 @@ fun PollSmallInfoWindow(poll: PollMessage, myMessage: Boolean) {
 
             if (poll.getTotalVoteCount() != 0) {
                 Text(
-                    text = "${poll.getTotalVoteCount()} antworten", //TODO Stringressource
+                    text = stringResource(Res.string.poll_answers_count, poll.getTotalVoteCount()),
                     fontSize = 10.sp,
                     lineHeight = 12.sp,
                     color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
@@ -396,7 +407,7 @@ fun PollSmallInfoWindow(poll: PollMessage, myMessage: Boolean) {
 
             if (poll.getUniqueVoterCount() != 0) {
                 Text(
-                    text = "${poll.getUniqueVoterCount()} verschiedene user", //TODO Stringressource
+                    text = stringResource(Res.string.poll_user_count, poll.getUniqueVoterCount()),
                     fontSize = 10.sp,
                     lineHeight = 12.sp,
                     color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
@@ -417,7 +428,7 @@ fun PollSmallInfoWindow(poll: PollMessage, myMessage: Boolean) {
 
                     if (poll.maxAnswers != null && poll.maxAnswers != 10) {
                         Text(
-                            text = poll.maxAnswers.toString(), //TODO Stringressource
+                            text = poll.maxAnswers.toString(),
                             fontSize = 10.sp,
                             lineHeight = 12.sp,
                             color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
@@ -503,9 +514,9 @@ fun PollCountdownTimer(expiresAt: Long, myMessage: Boolean) {
 
     Text(
         text = if (timeRemaining > 0) {
-            "Endet in: $formattedTime" // TODO: StringResource
+            stringResource(Res.string.poll_ends_in, formattedTime)
         } else {
-            "Beendet" // TODO: StringResource
+            stringResource(Res.string.poll_closed)
         },
         fontSize = 10.sp,
         color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant

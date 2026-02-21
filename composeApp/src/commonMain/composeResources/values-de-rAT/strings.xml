@@ -414,6 +414,61 @@
     <string name="your_friends_wrote_this">~ Dine Freunde</string>
     <string name="show_logs">Logs aschoua</string>
 
+    <!-- polls -->
+    <string name="poll_create_screentitle">Umfrog erstella</string>
+    <string name="poll_create_title">Frog</string>
+    <string name="poll_create_title_placeholder">Stell a Frog ...</string>
+
+    <string name="poll_create_description">Beschreibung (Optional)</string>
+    <string name="poll_create_description_placeholder">Was genau willsch wissa ...</string>
+
+    <string name="poll_options_title">Optiona</string>
+    <string name="poll_options_placeholder">+ neue Antwortmöglichkeit</string>
+    <string name="poll_options_error">Du bruchsch mindestens zwoa Antwortmöglichkeita</string>
+
+    <string name="poll_settings_allowmultiple">Mehrere Antworta zualo</string>
+    <string name="poll_settings_allowmultiple_withcount">jeder darf %1$s mol abstimma</string>
+    <string name="poll_settings_allowmultiple_info">jeder darf mehr als ua mol abstimma</string>
+
+    <string name="poll_settings_allowcustom">Eigene Antworta erlauba</string>
+    <string name="poll_settings_allowcustom_withcount">jeder darf %1$s eigene optiona erstella</string>
+    <string name="poll_settings_allowcustom_info">Jeder darf eigene Antwortmöglichkeita erstella, falls eam dine Sacha ned gfalland</string>
+
+    <string name="poll_settings_infinite_custom_answers_warning">WARNUNG: Jeder darf so viele Antwortmöglichkeita erstella wie er mag</string>
+    <string name="poll_settings_infinite_custom_and_selected_answers_warning">WARNUNG: Alle künnand tua und lo was se wennd!</string>
+
+    <string name="poll_visibility_title">Sichtbarkeit: %1$s</string>
+
+    <string name="poll_visibility_public">Öffentlich (Jeder siaht wo wer abgstimmt hot)</string>
+    <string name="poll_visibility_private">Privat (Nur du siahsch wer wo abgstimmt hot)</string>
+    <string name="poll_visibility_anonym">Anonym (Niemand siaht wer wo abgstimmt hot)</string>
+
+    <string name="poll_expiry_title">Ablaufdatum</string>
+    <string name="poll_expiry_title_withdate">Läuft ab in %1$s</string>
+
+    <string name="poll_expiry_title_info">Noch deam Datum kua Antworta mehr ania</string>
+    
+
+    <string name="poll_create">Umfrog erstella</string>
+
+
+    <string name="poll_add_custom_answer">Eigene Antwort erstella</string>
+    <string name="poll_answer_label">Antwort</string>
+    <string name="poll_answer_placeholder">Gib dine Antwort i ...</string>
+    <string name="poll_answers_count">%1$s Antworta</string>
+    <string name="poll_user_count">%1$s User</string>
+    <string name="poll_ends_in">Endet in: %1$s</string>
+    <string name="poll_closed">Gschlossa</string>
+
+
+
+
+
+    <string name="highscores_not_implemented_warning">Öffentliche Highscores kummand bald!</string>
+
+
+
+
 
     <!-- Games: Yatzi -->
     <string name="yatzi_setup_title">Yahtzee Einstellunga</string>

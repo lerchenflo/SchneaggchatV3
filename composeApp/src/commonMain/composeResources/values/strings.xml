@@ -419,11 +419,11 @@
     <string name="poll_create_title">Question</string>
     <string name="poll_create_title_placeholder">Ask a question ...</string>
 
-    <string name="poll_create_description">Description</string>
+    <string name="poll_create_description">Description (Optional)</string>
     <string name="poll_create_description_placeholder">Write a description if the question is not clear ...</string>
 
     <string name="poll_options_title">Options</string>
-    <string name="poll_options_placeholder">+ Add</string>
+    <string name="poll_options_placeholder">+ Add option</string>
     <string name="poll_options_error">You need at least 2 possible answers</string>
 
     <string name="poll_settings_allowmultiple">Allow multiple answers</string>
@@ -439,19 +439,33 @@
 
     <string name="poll_visibility_title">Visibility: %1$s</string>
 
-    <string name="poll_visibility_public">public</string>
-    <string name="poll_visibility_private">private</string>
-    <string name="poll_visibility_anonym">anonym</string>
+    <string name="poll_visibility_public">public (Everyone can see who voted where)</string>
+    <string name="poll_visibility_private">private (Only you can see who voted where)</string>
+    <string name="poll_visibility_anonym">anonym (No one can see who voted)</string>
 
     <string name="poll_expiry_title">Expires</string>
     <string name="poll_expiry_title_withdate">Expires at %1$s</string>
 
-    <string name="poll_expiry_title_info">Allow users to only answer until a specific datetime</string>
-    <string name="poll_expires_at">anonym</string>
+    <string name="poll_expiry_title_info">Poll does not allow and votes past this date &amp; time</string>
+    
 
     <string name="poll_create">create poll</string>
 
+
+    <string name="poll_add_custom_answer">create custom answer</string>
+    <string name="poll_answer_label">answer</string>
+    <string name="poll_answer_placeholder">type your answer ...</string>
+    <string name="poll_answers_count">%1$s answers</string>
+    <string name="poll_user_count">%1$s users</string>
+    <string name="poll_ends_in">ends in: %1$s</string>
+    <string name="poll_closed">closed</string>
+
+
+
+
+
     <string name="highscores_not_implemented_warning">Public highscores are not yet implemented!</string>
+
 
 
 

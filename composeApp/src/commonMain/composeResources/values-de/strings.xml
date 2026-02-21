@@ -416,6 +416,61 @@
     <string name="your_friends_wrote_this">~ Deine Freunde</string>
     <string name="show_logs">Logs anzeigen</string>
 
+    <!-- polls -->
+    <string name="poll_create_screentitle">Umfrage erstellen</string>
+    <string name="poll_create_title">Frage</string>
+    <string name="poll_create_title_placeholder">Stelle eine Frage ...</string>
+
+    <string name="poll_create_description">Beschreibung (Optional)</string>
+    <string name="poll_create_description_placeholder">Erkläre die Frage genauer wenn nötig ...</string>
+
+    <string name="poll_options_title">Optionen</string>
+    <string name="poll_options_placeholder">+ Antwortmöglichkeit hinzufügen</string>
+    <string name="poll_options_error">Du brauchst mindestens 2 Antwortmöglichkeiten</string>
+
+    <string name="poll_settings_allowmultiple">Mehrere Antworten erlauben</string>
+    <string name="poll_settings_allowmultiple_withcount">%1$s Antworten pro Benutzer erlauben</string>
+    <string name="poll_settings_allowmultiple_info">Benutzern erlauben, mehrere Antworten abzugeben</string>
+
+    <string name="poll_settings_allowcustom">Eigene Antworten erlauben</string>
+    <string name="poll_settings_allowcustom_withcount">%1$s eigene Antworten pro Benutzer erlauben</string>
+    <string name="poll_settings_allowcustom_info">Benutzern erlauben, eigene Antwortmöglichkeiten zu erstellen, wenn ihnen deine Antworten nicht gefallen</string>
+
+    <string name="poll_settings_infinite_custom_answers_warning">WARNUNG: Benutzer können unlimitiert viele eigene Antwortmöglichkeiten erstellen!</string>
+    <string name="poll_settings_infinite_custom_and_selected_answers_warning">WARNUNG: Benutzer dürfen unlimitiert viele Antwortmöglichkeiten erstellen und auswählen!</string>
+
+    <string name="poll_visibility_title">Sichtbarkeit: %1$s</string>
+
+    <string name="poll_visibility_public">Öffentlich (Jeder sieht wer wo abgestimmt hat)</string>
+    <string name="poll_visibility_private">Privat (Nur du siehst wer wo abgestimmt hat)</string>
+    <string name="poll_visibility_anonym">Anonym (Niemand sieht wer wo abgestimmt hat)</string>
+
+    <string name="poll_expiry_title">Ablaufdatum</string>
+    <string name="poll_expiry_title_withdate">Läuft ab in %1$s</string>
+
+    <string name="poll_expiry_title_info">Nach diesem Datum keine Antworten mehr annehmen</string>
+    
+
+    <string name="poll_create">Umfrage erstellen</string>
+
+
+    <string name="poll_add_custom_answer">Eigene Antwort erstellen</string>
+    <string name="poll_answer_label">Antwort</string>
+    <string name="poll_answer_placeholder">Gib deine Antwort ein ...</string>
+    <string name="poll_answers_count">%1$s Antworten</string>
+    <string name="poll_user_count">%1$s Benutzer</string>
+    <string name="poll_ends_in">Endet in: %1$s</string>
+    <string name="poll_closed">Geschlossen</string>
+
+
+
+
+
+    <string name="highscores_not_implemented_warning">Öffentliche Highscores sind noch nicht eingebaut!</string>
+
+
+
+
 
     <!-- Games: Yatzi -->
     <string name="yatzi_setup_title">Yahtzee Einstellungen</string>
