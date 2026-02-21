@@ -17,9 +17,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Blind
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.PersonSearch
+import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
@@ -110,9 +113,11 @@ fun PollMessageContentView(
                 style = MaterialTheme.typography.bodyMedium,
                 color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
         }
 
-        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
         poll.voteOptions.forEach { option ->
             PollMessageOptionView(
@@ -410,7 +415,7 @@ fun PollSmallInfoWindow(poll: PollMessage, myMessage: Boolean) {
                         tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    if (poll.maxAnswers != null) {
+                    if (poll.maxAnswers != null && poll.maxAnswers != 10) {
                         Text(
                             text = poll.maxAnswers.toString(), //TODO Stringressource
                             fontSize = 10.sp,
@@ -436,12 +441,40 @@ fun PollSmallInfoWindow(poll: PollMessage, myMessage: Boolean) {
                         tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    if (poll.maxAllowedCustomAnswers != null) {
+                    if (poll.maxAllowedCustomAnswers != null && poll.maxAllowedCustomAnswers != 10) {
                         Text(
-                            text = poll.maxAllowedCustomAnswers.toString(), //TODO Stringressource
+                            text = poll.maxAllowedCustomAnswers.toString(),
                             fontSize = 10.sp,
                             lineHeight = 12.sp,
                             color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                //Visibility
+                when (poll.visibility) {
+                    PollVisibility.PUBLIC -> {
+                        Icon(
+                            imageVector = Icons.Default.Public,
+                            contentDescription = "Public",
+                            modifier = Modifier.size(12.dp),
+                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    PollVisibility.PRIVATE -> {
+                        Icon(
+                            imageVector = Icons.Default.PersonSearch,
+                            contentDescription = "Private",
+                            modifier = Modifier.size(12.dp),
+                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    PollVisibility.ANONYMOUS -> {
+                        Icon(
+                            imageVector = Icons.Default.Blind,
+                            contentDescription = "Anonymous",
+                            modifier = Modifier.size(12.dp),
+                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
