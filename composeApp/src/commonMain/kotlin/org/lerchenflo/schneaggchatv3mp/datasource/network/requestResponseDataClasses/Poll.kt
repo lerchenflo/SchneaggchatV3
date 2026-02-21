@@ -10,6 +10,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoter
 
 
 fun PollResponse.toPollMessage(): PollMessage {
+
     return PollMessage(
         creatorId = this.creatorId,
         title = this.title,
@@ -42,7 +43,7 @@ fun PollResponse.toPollMessage(): PollMessage {
                     creatorId = this.creatorId, // Not available in anonymous response
                     voters = option.voters.map { voter ->
                         PollVoter(
-                            userId = if (voter.isMe) SessionCache.getOwnIdValue() else null, // Anonymous — no userId
+                            userId = if (voter.myAnswer) SessionCache.getOwnIdValue() else null, // Anonymous — no userId
                             votedAt = voter.votedAt
                         )
                     }
@@ -117,7 +118,7 @@ data class AnonymousPollVoteOptionResponse(
 
 @Serializable
 data class AnonymousPollVoterResponse(
-    val isMe: Boolean,
+    val myAnswer: Boolean,
     val votedAt: Long,
 )
 
