@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.bearer
@@ -47,7 +48,9 @@ fun createHttpClient(
 
         if (useAuth){
 
-            install(WebSockets)
+            install(WebSockets) {
+                pingIntervalMillis = 20_000
+            }
 
 
             install(Auth){
@@ -68,9 +71,20 @@ fun createHttpClient(
 
 
         install(HttpTimeout) {
-            requestTimeoutMillis = 10000
-            connectTimeoutMillis = 3000
-            socketTimeoutMillis = 30000
+            requestTimeoutMillis = 30000
+            connectTimeoutMillis = 10000
+            socketTimeoutMillis = 60000
+        }
+
+        install(HttpRequestRetry) {
+            //retryOnServerErrors(maxRetries = 3)
+            retryOnException(maxRetries = 3, retryOnTimeout = true)
+            exponentialDelay() // 1s, 2s, 4s delays between retries
+
+            modifyRequest { request ->
+                // Optional: log retry attempts
+                println("Retrying request: ${request.url}")
+            }
         }
     }
 }
