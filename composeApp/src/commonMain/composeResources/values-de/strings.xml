@@ -175,7 +175,7 @@
     <string name="steps_until_developer">in %1$s Schritten bist du Entwickler</string>
     <string name="you_are_now_developer">Du bist nun Entwickler</string>
     <string name="you_are_already_developer">Du bist schon ein Entwickler</string>
-    <string name="developer_setting_info">Sei vorsichtig mit den Entwickleroptionen. Sei dir bewusst was du tust.</string>
+    <string name="developer_setting_info">Sei vorsichtig mit den Entwickleroptionen. Sei dir bewusst, was du tust.</string>
 
     <string name="misc_settings">Miscellaneous</string>
     <string name="misc_setting_info">Andere Einstellungen die nützlich sind wenn die App nicht funktioniert.</string>
