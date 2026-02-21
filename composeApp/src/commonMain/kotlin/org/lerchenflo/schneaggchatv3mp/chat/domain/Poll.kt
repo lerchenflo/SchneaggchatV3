@@ -81,7 +81,15 @@ data class PollVoteOption(
     val custom: Boolean,
     val creatorId: String,
     val voters : List<PollVoter>
-)
+) {
+    /**
+     * Get list of user IDs who voted for this option
+     */
+    fun getVoterIdsForOption(): List<String?> {
+        return voters.map { it.userId }
+    }
+
+}
 
 @Serializable
 data class PollVoter(

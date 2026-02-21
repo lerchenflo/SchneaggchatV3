@@ -175,9 +175,18 @@ class ChatViewModel(
     fun onAction(action: MessageAction) {
         when (action) {
             is MessageAction.VotePoll -> {
-                // TODO: Implement poll voting via appRepository
+                viewModelScope.launch {
+                    appRepository.votePoll(
+                        NetworkUtils.PollVoteRequest(
+                            messageId = action.messageId,
+                            id = action.optionId,
+                            text = null,
+                            selected = action.checked
+                        )
+                    )
+                }
             }
-            
+
             is MessageAction.AddCustomPollOption -> {
                 // TODO: Implement custom poll option via appRepository
             }

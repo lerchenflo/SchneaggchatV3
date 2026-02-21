@@ -830,6 +830,14 @@ class NetworkUtils(
     )
 
 
+    suspend fun votePoll(pollVoteRequest: PollVoteRequest) : NetworkResult<MessageResponse, RequestError>{
+        return safePost(
+            endpoint = "/messages/pollvote",
+            body = pollVoteRequest,
+        )
+    }
+
+
     @Serializable
     data class MessageResponse(
         val messageId: String, //Objectid

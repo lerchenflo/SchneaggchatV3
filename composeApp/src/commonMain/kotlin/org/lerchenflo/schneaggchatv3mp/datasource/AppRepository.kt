@@ -1282,6 +1282,30 @@ class AppRepository(
     }
 
 
+
+    suspend fun votePoll(pollVoteRequest: NetworkUtils.PollVoteRequest) {
+        val request = networkUtils.votePoll(
+            pollVoteRequest
+        )
+
+        when (request) {
+            is NetworkResult.Error<RequestError> ->  {
+                sendErrorSuspend(ErrorEvent(error = request.error))
+            }
+            is NetworkResult.Success<MessageResponse> -> {
+                val existing = messageRepository.getMessageById(request.data.messageId)
+                if (existing != null) {
+                    messageRepository.upsertMessage(existing.copy(
+                        poll = request.data.pollResponse?.toPollMessage(),
+                        changeDate = request.data.lastChanged.toString(),
+                    ))
+                }
+
+            }
+        }
+    }
+
+
     /*
     **************************************************************************
 

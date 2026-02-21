@@ -74,6 +74,7 @@ fun MessageViewWithActions(
     message: Message,
     senderName: String? = null,
     senderColor: Int = 0,
+    readerMap: Map<String, String> = emptyMap(),
     replyMessage: Message? = null,
     replyMessageOnClick: () -> Unit = {},
     onReplyCall: () -> Unit = {},
@@ -168,6 +169,7 @@ fun MessageViewWithActions(
                 selectedChatId = selectedChatId,
                 senderName = senderName,
                 senderColor = senderColor,
+                readerMap = readerMap,
                 replyMessage = replyMessage,
                 replyMessageOnClick = replyMessageOnClick,
                 onAction = onAction
@@ -205,6 +207,7 @@ private fun MessageView(
     selectedChatId: String,
     senderName: String? = null,
     senderColor: Int = 0,
+    readerMap: Map<String,String> = emptyMap(),
     replyMessage: Message? = null,
     replyMessageOnClick: () -> Unit = {},
     onAction: (MessageAction) -> Unit = {},
@@ -262,6 +265,7 @@ private fun MessageView(
                 selectedChatId = selectedChatId,
                 senderName = senderName,
                 senderColor = senderColor,
+                readerMap = readerMap,
                 onAction = onAction
 
             )
@@ -279,6 +283,7 @@ fun MessageContent(
     selectedChatId: String,
     senderName: String? = null,
     senderColor: Int = 0,
+    readerMap: Map<String, String> = emptyMap(),
     onAction: (MessageAction) -> Unit = {}
 ){
     //Farbiger kasten
@@ -333,6 +338,8 @@ fun MessageContent(
 
                     // gelesen haken
                     // Cache expensive read state calculation
+
+                    //TODO: Readermap show pictures etc?
 
                     val readState = remember(message.sent, message.readers, selectedChatId, mymessage) {
                         when {

@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -38,11 +40,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import kotlin.time.Clock
 
 @Composable
@@ -108,6 +114,7 @@ fun PollMessageContentView(
                 multipleAnswers = poll.acceptsMultipleAnswers(), //Allow multiple answers if maxanswers is null(not set) or more than one
                 votePercentage = option.voters.size.toFloat() / poll.getTotalVoteCount().toFloat(),
                 myMessage = myMessage,
+                voterIds = option.getVoterIdsForOption(),
                 onOptionSelected = {
                     onAction(MessageAction.VotePoll(
                         messageId = message.id!!,
@@ -129,6 +136,7 @@ fun PollMessageOptionView(
     multipleAnswers: Boolean,
     votePercentage: Float,
     myMessage: Boolean,
+    voterIds: List<String?>,
     onOptionSelected: (Boolean) -> Unit
 ) {
 
@@ -170,22 +178,61 @@ fun PollMessageOptionView(
 
         Column(
             horizontalAlignment = Alignment.Start,
-            modifier = Modifier.height(24.dp)
         ) {
 
-            Row {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
                     text = option.text,
-                    color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
                 )
 
                 //TODO: Voted user profile pics??
+                val pictureManager = koinInject<PictureManager>()
+
+
+                val nonNullVoterIds = voterIds.filterNotNull()
+                val anonymousVoterCount = voterIds.count { it == null }
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Show profile pictures for identified voters
+                    nonNullVoterIds.forEach { userId ->
+                        ProfilePictureView(
+                            filepath = pictureManager.getProfilePicFilePath(userId, false),
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+
+                    // Show count of anonymous voters if any
+                    if (anonymousVoterCount > 0) {
+                        Box(
+                            modifier = Modifier
+                                .size(14.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    shape = CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "+$anonymousVoterCount",
+                                fontSize = 6.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
             }
 
             LinearProgressIndicator(
                 progress = { votePercentage },
                 drawStopIndicator = {}, //Remove stop indicator
-                modifier = Modifier.height(16.dp)
+                trackColor = MaterialTheme.colorScheme.secondary
             )
 
         }
