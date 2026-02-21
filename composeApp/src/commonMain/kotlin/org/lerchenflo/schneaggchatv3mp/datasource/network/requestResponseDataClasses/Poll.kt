@@ -7,6 +7,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoter
+import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 
 
 fun PollResponse.toPollMessage(): PollMessage {

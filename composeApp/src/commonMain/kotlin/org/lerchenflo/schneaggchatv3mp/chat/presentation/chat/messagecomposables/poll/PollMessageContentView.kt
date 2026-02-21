@@ -340,21 +340,11 @@ fun PollMessageOptionView(
 
                     // Show count of anonymous voters if any
                     if (anonymousVoterCount > 0) {
-                        Box(
-                            modifier = Modifier
-                                .size(14.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.surfaceVariant,
-                                    shape = CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "+$anonymousVoterCount",
-                                fontSize = 6.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        Text(
+                            text = "+$anonymousVoterCount",
+                            fontSize = 12.sp,
+                            color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }
