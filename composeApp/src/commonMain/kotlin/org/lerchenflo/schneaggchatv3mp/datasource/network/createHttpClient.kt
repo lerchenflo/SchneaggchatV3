@@ -78,7 +78,7 @@ fun createHttpClient(
 
         install(HttpRequestRetry) {
             //retryOnServerErrors(maxRetries = 3)
-            retryOnException(maxRetries = 3, retryOnTimeout = true)
+            retryOnException(maxRetries = 3)
             exponentialDelay() // 1s, 2s, 4s delays between retries
 
             modifyRequest { request ->

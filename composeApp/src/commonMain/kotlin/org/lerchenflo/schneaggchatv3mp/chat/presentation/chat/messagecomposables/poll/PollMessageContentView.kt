@@ -1,6 +1,7 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -26,22 +26,27 @@ import androidx.compose.material.icons.filled.Public
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonColors
 import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.RichTooltip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +54,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -63,12 +69,21 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.poll_add_custom_answer
+import schneaggchatv3mp.composeapp.generated.resources.poll_anonymous_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_answer_label
 import schneaggchatv3mp.composeapp.generated.resources.poll_answer_placeholder
+import schneaggchatv3mp.composeapp.generated.resources.poll_answer_summary
 import schneaggchatv3mp.composeapp.generated.resources.poll_answers_count
 import schneaggchatv3mp.composeapp.generated.resources.poll_closed
+import schneaggchatv3mp.composeapp.generated.resources.poll_customoption_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_ends_in
+import schneaggchatv3mp.composeapp.generated.resources.poll_maxoptions_info
+import schneaggchatv3mp.composeapp.generated.resources.poll_oneoption_info
+import schneaggchatv3mp.composeapp.generated.resources.poll_private_info
+import schneaggchatv3mp.composeapp.generated.resources.poll_public_info
+import schneaggchatv3mp.composeapp.generated.resources.poll_tooltip_title
 import schneaggchatv3mp.composeapp.generated.resources.poll_user_count
+import schneaggchatv3mp.composeapp.generated.resources.unlimited
 import kotlin.time.Clock
 
 @Composable
@@ -89,9 +104,8 @@ fun PollMessageContentView(
         return
     }
 
-    //TODO: Nochboua vo do https://medium.com/design-bootcamp/whats-up-with-whatsapps-poll-ux-6dec6a630f2e (Whatsapp ui in besser)
 
-    //TODO: MD Support für alle texte
+    //TODO: MD Support für alle texte??
     Column(
         modifier = Modifier.padding(4.dp)
     ) {
@@ -112,7 +126,34 @@ fun PollMessageContentView(
 
             Spacer(modifier = Modifier.width(4.dp))
 
-            PollSmallInfoWindow(poll, myMessage)
+
+            val tooltipState = rememberTooltipState(isPersistent = true)
+            val scope = rememberCoroutineScope()
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                    positioning = TooltipAnchorPosition.Above,
+                    spacingBetweenTooltipAndAnchor = 12.dp
+                ),
+                tooltip = {
+
+                    RichTooltip {
+                        PollInfoTooltipContent(poll = poll)
+                    }
+                },
+                state = tooltipState,
+            ){
+                PollSmallInfoWindow(
+                    modifier = Modifier.clickable {
+                        scope.launch {
+                            if (tooltipState.isVisible) {
+                                tooltipState.dismiss()
+                            }else tooltipState.show()
+                        }
+                    },
+                    poll = poll,
+                    myMessage = myMessage
+                )
+            }
         }
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
@@ -380,10 +421,15 @@ fun PollMessageOptionView(
 /**
  * Small box which shows what the poll can do (Multiple answers, custom answers, current answer count, users current answer count)
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PollSmallInfoWindow(poll: PollMessage, myMessage: Boolean) {
+fun PollSmallInfoWindow(
+    modifier: Modifier,
+    poll: PollMessage,
+    myMessage: Boolean) {
+
     Box(
-        modifier = Modifier
+        modifier = modifier
             .border(
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.primary,
@@ -495,6 +541,86 @@ fun PollSmallInfoWindow(poll: PollMessage, myMessage: Boolean) {
                 PollCountdownTimer(expiresAt = it, myMessage = myMessage)
             }
         }
+    }
+}
+
+@Composable
+fun PollInfoTooltipContent(poll: PollMessage) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier.padding(8.dp)
+    ) {
+        Text(
+            text = stringResource(Res.string.poll_tooltip_title),
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+        )
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+        // Answer type
+        TooltipRow(
+            icon = if (poll.acceptsMultipleAnswers()) Icons.Default.CheckBox else Icons.Default.CheckCircle,
+            text = if (poll.acceptsMultipleAnswers()) {
+                stringResource(Res.string.poll_maxoptions_info, poll.maxAnswers ?: stringResource(Res.string.unlimited))
+            } else {
+                stringResource(Res.string.poll_oneoption_info)
+            }
+        )
+
+        // Custom answers
+        if (poll.customAnswersEnabled) {
+            TooltipRow(
+                icon = Icons.Default.Add,
+                text = stringResource(Res.string.poll_customoption_info, poll.maxAllowedCustomAnswers ?: stringResource(Res.string.unlimited))
+            )
+        }
+
+        // Visibility
+        TooltipRow(
+            icon = when (poll.visibility) {
+                PollVisibility.PUBLIC -> Icons.Default.Public
+                PollVisibility.PRIVATE -> Icons.Default.PersonSearch
+                PollVisibility.ANONYMOUS -> Icons.Default.Blind
+            },
+            text = when (poll.visibility) {
+                PollVisibility.PUBLIC -> stringResource(Res.string.poll_public_info)
+                PollVisibility.PRIVATE -> stringResource(Res.string.poll_private_info)
+                PollVisibility.ANONYMOUS -> stringResource(Res.string.poll_anonymous_info)
+            }
+        )
+
+        // Stats if available
+        if (poll.getTotalVoteCount() > 0) {
+            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            Text(
+                text = stringResource(Res.string.poll_answer_summary, poll.getTotalVoteCount(), poll.getUniqueVoterCount()),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
+
+@Composable
+private fun TooltipRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    text: String
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall
+        )
     }
 }
 

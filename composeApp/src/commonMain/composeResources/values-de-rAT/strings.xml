@@ -461,6 +461,24 @@
     <string name="poll_closed">Gschlossa</string>
 
 
+    <string name="poll_tooltip_title">Umfroginfo</string>
+    <string name="poll_maxoptions_info">Mehrere Antworta auswähla (maximal %1$s)</string>
+    <string name="poll_oneoption_info">Nur ua Option uswähla</string>
+    <string name="unlimited">∞</string>
+
+    <string name="poll_customoption_info">Mach dine eigne Antwort (maximal %1$s)</string>
+
+    <string name="poll_public_info">Alle Antworta sind Öffentlich</string>
+    <string name="poll_private_info">Nur da Ersteller siaht d Antworta</string>
+    <string name="poll_anonymous_info">Antworta sind anonym</string>
+
+    <string name="poll_answer_summary">%1$s Antworta von %2$s Benutzern</string>
+
+
+
+
+
+
 
 
 

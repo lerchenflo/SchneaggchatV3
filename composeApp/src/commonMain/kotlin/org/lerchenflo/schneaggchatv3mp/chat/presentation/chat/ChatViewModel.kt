@@ -218,6 +218,8 @@ class ChatViewModel(
     fun editMessage() {
         viewModelScope.launch {
 
+            if (sendText.text.isEmpty()) return@launch
+
             //TODO: Check if message is sent
             appRepository.editMessage(
                 messageId = editMessageId!!,
@@ -225,7 +227,7 @@ class ChatViewModel(
             )
 
             //Clear text after editing message
-            updatesendText(TextFieldValue(""))
+            onAction(MessageAction.CancelEditMessage)
         }
     }
 

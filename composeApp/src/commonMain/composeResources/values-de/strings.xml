@@ -463,6 +463,24 @@
     <string name="poll_closed">Geschlossen</string>
 
 
+    <string name="poll_tooltip_title">Umfrageinfo</string>
+    <string name="poll_maxoptions_info">Mehrere Antworten auswählen (maximal %1$s)</string>
+    <string name="poll_oneoption_info">Nur eine Option auswählen</string>
+    <string name="unlimited">∞</string>
+
+    <string name="poll_customoption_info">Füge deine eigene Antwort hinzu (maximal %1$s)</string>
+
+    <string name="poll_public_info">Alle Antworten sind Öffentlich</string>
+    <string name="poll_private_info">Nur der Ersteller sieht die Antworten</string>
+    <string name="poll_anonymous_info">Antworten sind anonym</string>
+
+    <string name="poll_answer_summary">%1$s Antworten von %2$s Benutzern</string>
+
+
+
+
+
+
 
 
 

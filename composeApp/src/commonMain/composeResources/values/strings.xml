@@ -461,6 +461,24 @@
     <string name="poll_closed">closed</string>
 
 
+    <string name="poll_tooltip_title">Poll info</string>
+    <string name="poll_maxoptions_info">Select multiple (max %1$s) options</string>
+    <string name="poll_oneoption_info">Select only one option</string>
+    <string name="unlimited">∞</string>
+
+    <string name="poll_customoption_info">Add your own answer (max %1$s)</string>
+
+    <string name="poll_public_info">All votes are public</string>
+    <string name="poll_private_info">Only creator sees votes</string>
+    <string name="poll_anonymous_info">Votes are anonymous</string>
+
+    <string name="poll_answer_summary">%1$s votes from %2$s users</string>
+
+
+
+
+
+
 
 
 
