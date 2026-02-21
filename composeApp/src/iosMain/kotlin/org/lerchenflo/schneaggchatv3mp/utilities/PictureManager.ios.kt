@@ -118,8 +118,8 @@ actual class PictureManager {
         }
     }
 
-    actual fun getProfilePicFilePath(id: Long, gruppe: Boolean): String {
-        val filename = id.toString() + if(gruppe) GROUPPROFILEPICTURE_FILE_NAME else USERPROFILEPICTURE_FILE_NAME
+    actual fun getProfilePicFilePath(id: String, gruppe: Boolean): String {
+        val filename = id + if(gruppe) GROUPPROFILEPICTURE_FILE_NAME else USERPROFILEPICTURE_FILE_NAME
 
         return "$basePath/$filename"
     }

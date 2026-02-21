@@ -66,9 +66,9 @@ actual class PictureManager(private val context: Context) {
             file.delete()
         }
 
-    actual fun getProfilePicFilePath(id: Long, gruppe: Boolean) : String {
+    actual fun getProfilePicFilePath(id: String, gruppe: Boolean) : String {
 
-        val filename = id.toString() + if (gruppe) GROUPPROFILEPICTURE_FILE_NAME else USERPROFILEPICTURE_FILE_NAME
+        val filename = id + if (gruppe) GROUPPROFILEPICTURE_FILE_NAME else USERPROFILEPICTURE_FILE_NAME
 
         return File(context.filesDir, filename).absolutePath
     }

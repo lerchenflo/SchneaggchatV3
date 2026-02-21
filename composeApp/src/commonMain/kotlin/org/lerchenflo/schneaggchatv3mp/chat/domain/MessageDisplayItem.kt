@@ -16,7 +16,8 @@ sealed class MessageDisplayItem {
         override val id: String,
         val message: Message,
         val senderName: String?,  // Pre-resolved from User
-        val senderColor: Int       // Pre-calculated for group messages
+        val senderColor: Int,      // Pre-calculated for group messages
+        val resolvedReaders: Map<String, String> = emptyMap() // readerId -> readerName, pre-resolved
     ) : MessageDisplayItem()
     
     /**

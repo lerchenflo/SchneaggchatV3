@@ -2,7 +2,9 @@ package org.lerchenflo.schneaggchatv3mp.app.logging
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
 
+@Serializable
 enum class LogType {
     INFO, WARNING, ERROR, DEBUG
 }

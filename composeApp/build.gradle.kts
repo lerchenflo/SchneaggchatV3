@@ -34,7 +34,18 @@ fun detectTarget(): String {
 
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
+
+    targets.all {
+        compilations.all {
+            compileTaskProvider.configure {
+                compilerOptions {
+                    //Ignore expect actual warnings
+                    freeCompilerArgs.add("-Xexpect-actual-classes")
+                }
+            }
+        }
+    }
 }
 
 java {
@@ -67,7 +78,7 @@ kotlin {
 
     
     listOf(
-        //iosX64(),
+        //iosX64(), //Not supported anymore
         iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
@@ -285,13 +296,10 @@ room{
     schemaDirectory("$projectDir/schemas")
 }
 
-dependencies{
-    //add("kspCommonMainMetadata", libs.koin.ksp.compiler)
-    ksp(libs.room.compiler)
-    //debugImplementation(libs.ui.tooling)
-}
-
-ksp {
-    arg("KOIN_USE_COMPOSE_VIEWMODEL","true")
-    arg("KOIN_CONFIG_CHECK","true")
+dependencies {
+    // Apply KSP processors to all configured targets
+    listOf("Android", "IosArm64", "IosSimulatorArm64", "Jvm").forEach { target ->
+        add("ksp$target", libs.room.compiler)
+        //add("ksp$target", libs.koin)
+    }
 }

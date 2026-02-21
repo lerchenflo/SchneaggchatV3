@@ -26,6 +26,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText.*
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -782,13 +784,71 @@ class NetworkUtils(
     )
 
     @Serializable
+    data class PollMessageRequest(
+        val receiverId: String,
+        val groupMessage: Boolean,
+        val msgType: MessageType,
+        val answerId: String?,
+        val poll: PollCreateRequest
+    )
+
+    @Serializable
+    data class PollCreateRequest(
+        val title: String,
+        val description: String?,
+
+        val maxAnswers: Int?, // null = unlimited
+        val customAnswersEnabled: Boolean,
+        val maxAllowedCustomAnswers: Int?, // null = unlimited
+
+        val visibility: PollVisibility,
+
+        val closeDate: Long?,
+
+        val voteOptions: List<PollVoteOptionCreateRequest>,
+    )
+
+    /**
+     * Data class needed for appending options when creating a poll
+     */
+    @Serializable
+    data class PollVoteOptionCreateRequest(
+        //Ids get assigned by the server
+        val text: String,
+    )
+    
+
+    /**
+     * Vote in a poll
+     */
+    @Serializable
+    data class PollVoteRequest(
+        val messageId: String,
+        val id: String?, //Pass if available, else this is a new custom option
+        val text: String?, //Pass if the id is null (New custom option with this text)
+        val selected: Boolean, //Did the user select or unselect this item
+    )
+
+
+    suspend fun votePoll(pollVoteRequest: PollVoteRequest) : NetworkResult<MessageResponse, RequestError>{
+        return safePost(
+            endpoint = "/messages/pollvote",
+            body = pollVoteRequest,
+        )
+    }
+
+
+    @Serializable
     data class MessageResponse(
         val messageId: String, //Objectid
         val senderId: String,
         val receiverId: String,
         val groupMessage: Boolean,
         val msgType: MessageType,
+
         val content: String,
+        val pollResponse: PollResponse?,
+
         val answerId: String?,
 
         val sendDate: Long,
@@ -820,6 +880,28 @@ class NetworkUtils(
             body = messageRequest
         )
     }
+
+
+    suspend fun sendPollMessageToServer(empfaenger: String, gruppe: Boolean, content: PollCreateRequest, answerid: String?) : NetworkResult<MessageResponse, NetworkError> {
+        val pollRequest = PollMessageRequest(
+            receiverId = empfaenger,
+            groupMessage = gruppe,
+            msgType = MessageType.POLL,
+            answerId = answerid,
+            poll = content
+        )
+
+        println("PollMessageRequest: $pollRequest")
+
+        return safePost(
+            endpoint = "/messages/send/poll",
+            body = pollRequest
+        )
+    }
+
+
+
+
 
     @Serializable
     data class MessageSyncResponse(

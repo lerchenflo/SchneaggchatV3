@@ -46,7 +46,6 @@ class SecureDataMigration(
             val refreshToken = prefs[OldKeys.REFRESH_TOKEN]
             val encryptionKey = prefs[OldKeys.ENCRYPTION_KEY]
             val ownId = prefs[OldKeys.OWN_ID]
-            val pinnedChatsSet = prefs[OldKeys.PINNED_CHATS]
 
             // Only migrate if we have data
             var hasMigrated = false
@@ -71,24 +70,6 @@ class SecureDataMigration(
                 hasMigrated = true
             }
 
-            // Migrate pinned chats from string set to JSON list
-            if (!pinnedChatsSet.isNullOrEmpty()) {
-                val pinnedChats = pinnedChatsSet.mapNotNull { str ->
-                    val parts = str.split("|")
-                    if (parts.size >= 2) {
-                        PinnedChat(
-                            chatId = parts[0],
-                            pinTimePoint = parts.getOrNull(1)?.toLongOrNull() ?: 0L
-                        )
-                    } else null
-                }
-
-                if (pinnedChats.isNotEmpty()) {
-                    val chatsJson = json.encodeToString(pinnedChats)
-                    kSafe.put(OldKeys.PINNED_CHATS.name, chatsJson)
-                    hasMigrated = true
-                }
-            }
 
             // Remove old data from DataStore
             if (hasMigrated) {

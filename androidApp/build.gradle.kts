@@ -24,7 +24,7 @@ android {
 
     defaultConfig {
         applicationId = "org.lerchenflo.schneaggchatv3mp"
-        minSdk = 26
+        minSdk = 28
         targetSdk = 36
         versionCode = 11
         versionName = "3.0.2-beta"

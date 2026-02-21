@@ -42,12 +42,15 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
@@ -661,7 +664,9 @@ class AppRepository(
                                 profilePictureUrl = "",
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt,
                             ))
-                            profilePicsToGet += newUser.id
+                            if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
+                                profilePicsToGet += newUser.id
+                            }
                         }
                         is NetworkUtils.UserResponse.SelfUserResponse -> {
                             val existing = database.userDao().getUserbyId(newUser.id)
@@ -689,9 +694,11 @@ class AppRepository(
                                 profilePictureUrl = "",
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt,
                                 ))
-                            profilePicsToGet += newUser.id
-                        }
+                            if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
+                                profilePicsToGet += newUser.id
+                            }                        }
                         is NetworkUtils.UserResponse.SimpleUserResponse -> {
+                            val existing = database.userDao().getUserbyId(newUser.id)
                             database.userDao().upsert(UserDto(
                                 id = newUser.id,
                                 updatedAt = newUser.updatedAt,
@@ -716,8 +723,9 @@ class AppRepository(
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt
                                 ))
 
-                            //Get the profile pic for this user too??
-                            profilePicsToGet += newUser.id
+                            if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
+                                profilePicsToGet += newUser.id
+                            }
 
                         }
                     }
@@ -732,7 +740,9 @@ class AppRepository(
         }
         //println("profilepics to get count: ${profilePicsToGet.size}")
 
-        getProfilePicturesForUserIds(profilePicsToGet)
+        if (profilePicsToGet.isNotEmpty()) {
+            getProfilePicturesForUserIds(profilePicsToGet)
+        }
     }
 
     /**
@@ -881,12 +891,18 @@ class AppRepository(
 
 
 
+    sealed class MessageContent {
+        data class TextContent(val message: String) : MessageContent()
+        //data class ImageContent(val image: ByteArray) : MessageContent() TODO ADD images
+
+        data class PollContent(val poll: NetworkUtils.PollCreateRequest) : MessageContent()
+    }
 
     /**
      * @param localpk Local pk, only pass if already in db
      *
      */
-    suspend fun sendTextMessage(empfaenger: String, gruppe: Boolean, content: String, answerid: String?, localpk: Long = 0){
+    suspend fun sendMessage(empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long = 0){
 
         var localpkintern = localpk
 
@@ -898,22 +914,63 @@ class AppRepository(
         val senddate = getCurrentTimeMillisString()
 
         //Interne message macha die ned alles hot
-        val messageDto = MessageDto(
-            localPK = localpkintern,
-            id = null,
-            msgType = MessageType.TEXT,
-            content = content,
-            senderId = SessionCache.getOwnIdValue()!!,
-            receiverId = empfaenger,
-            sendDate = senddate,
-            updatedAt = senddate,
-            deleted = false,
-            groupMessage = gruppe,
-            answerId = answerid,
-            sent = false,
-            myMessage = true,
-            readByMe = true
-        )
+        val messageDto = when(content) {
+            is MessageContent.PollContent -> {
+                MessageDto(
+                    localPK = localpkintern,
+                    id = null,
+                    msgType = MessageType.POLL,
+                    content = "",
+                    poll = PollMessage(
+                        creatorId = SessionCache.getOwnIdValue()!!,
+                        title = content.poll.title,
+                        description = content.poll.description,
+                        maxAnswers = content.poll.maxAnswers,
+                        customAnswersEnabled = content.poll.customAnswersEnabled,
+                        maxAllowedCustomAnswers = content.poll.maxAllowedCustomAnswers,
+                        visibility = content.poll.visibility,
+                        expiresAt = content.poll.closeDate,
+                        voteOptions = content.poll.voteOptions.mapIndexed { index, request ->
+                            PollVoteOption(
+                                id = index.toString(),
+                                text = request.text,
+                                custom = false,
+                                creatorId = SessionCache.getOwnIdValue()!!,
+                                voters = emptyList()
+                            )
+                        }
+                    ),
+                    senderId = SessionCache.getOwnIdValue()!!,
+                    receiverId = empfaenger,
+                    sendDate = senddate,
+                    updatedAt = senddate,
+                    deleted = false,
+                    groupMessage = gruppe,
+                    answerId = answerid,
+                    sent = false,
+                    myMessage = true,
+                    readByMe = true
+                )
+            }
+            is MessageContent.TextContent -> {
+                MessageDto(
+                    localPK = localpkintern,
+                    id = null,
+                    msgType = MessageType.TEXT,
+                    content = content.message,
+                    senderId = SessionCache.getOwnIdValue()!!,
+                    receiverId = empfaenger,
+                    sendDate = senddate,
+                    updatedAt = senddate,
+                    deleted = false,
+                    groupMessage = gruppe,
+                    answerId = answerid,
+                    sent = false,
+                    myMessage = true,
+                    readByMe = true
+                )
+            }
+        }
 
         //Nachricht hot scho a pk vo da db, also scho din
         if (localpkintern == 0L){
@@ -922,12 +979,24 @@ class AppRepository(
         }
 
 
-        val serverrequest = networkUtils.sendTextMessageToServer(
-            empfaenger = empfaenger,
-            gruppe = gruppe,
-            content = content,
-            answerid = answerid
-        )
+        val serverrequest = when (content) {
+            is MessageContent.PollContent -> {
+                networkUtils.sendPollMessageToServer(
+                    empfaenger = empfaenger,
+                    gruppe = gruppe,
+                    content = content.poll,
+                    answerid = answerid
+                )
+            }
+            is MessageContent.TextContent -> {
+                networkUtils.sendTextMessageToServer(
+                    empfaenger = empfaenger,
+                    gruppe = gruppe,
+                    content = content.message,
+                    answerid = answerid
+                )
+            }
+        }
 
         when (serverrequest){
             is NetworkResult.Error<*> -> println("Message senden error: ${serverrequest.error}")
@@ -941,7 +1010,10 @@ class AppRepository(
                             localPK = localpkintern,
                             id = serverrequest.data.messageId,
                             msgType = serverrequest.data.msgType,
+
                             content = serverrequest.data.content,
+                            poll = serverrequest.data.pollResponse?.toPollMessage(),
+
                             senderId = serverrequest.data.senderId,
                             receiverId = serverrequest.data.receiverId,
                             sendDate = serverrequest.data.sendDate.toString(),
@@ -982,10 +1054,37 @@ class AppRepository(
             for (m in messages){
                 if (m.isText()){
                     try {
-                        sendTextMessage(
+                        sendMessage(
                             empfaenger = m.receiverId,
                             gruppe = m.groupMessage,
-                            content = m.content,
+                            content = when (m.msgType) {
+                                MessageType.TEXT -> {
+                                    MessageContent.TextContent(m.content)
+                                }
+                                MessageType.IMAGE -> {
+                                    MessageContent.TextContent("") //TODO IMAGES
+                                }
+                                MessageType.POLL -> {
+                                    
+                                    val poll = m.poll!!
+                                    MessageContent.PollContent(
+                                        NetworkUtils.PollCreateRequest(
+                                            title = poll.title,
+                                            description = poll.description,
+                                            maxAnswers = poll.maxAnswers,
+                                            customAnswersEnabled = poll.customAnswersEnabled,
+                                            maxAllowedCustomAnswers = poll.maxAllowedCustomAnswers,
+                                            visibility = poll.visibility,
+                                            closeDate = poll.expiresAt,
+                                            voteOptions = poll.voteOptions.map { 
+                                                NetworkUtils.PollVoteOptionCreateRequest(
+                                                    text = it.text
+                                                )
+                                            }
+                                        )
+                                    )
+                                }
+                            },
                             answerid = m.answerId,
                             localpk = m.localPK
                         )
@@ -1076,35 +1175,37 @@ class AppRepository(
                             }
 
                             MessageType.POLL -> {
-                                //TODO: Same as normal message but with poll answer upsert
                                 val existing = database.messageDao().getMessageDtoById(messageResponse.messageId)
+
+                                val savedMessage = Message(
+                                    localPK = existing?.localPK ?: 0L,
+                                    id = messageResponse.messageId,
+                                    msgType = messageResponse.msgType,
+                                    content = messageResponse.content,
+                                    poll = messageResponse.pollResponse?.toPollMessage(),
+                                    senderId = messageResponse.senderId,
+                                    receiverId = messageResponse.receiverId,
+                                    sendDate = messageResponse.sendDate.toString(),
+                                    changeDate = messageResponse.lastChanged.toString(),
+                                    deleted = messageResponse.deleted,
+                                    groupMessage = messageResponse.groupMessage,
+                                    answerId = messageResponse.answerId,
+                                    sent = true,
+                                    myMessage = messageResponse.senderId == SessionCache.getOwnIdValue(),
+                                    readByMe = messageResponse.readers.any { it.userId == SessionCache.ownId.value },
+                                    senderAsString = "",
+                                    senderColor = 0,
+                                    readers = messageResponse.readers.map {
+                                        MessageReader(
+                                            readerEntryId = 0L,
+                                            messageId = messageResponse.messageId,
+                                            readerId = it.userId,
+                                            readDate = it.readAt.toString()
+                                        )
+                                    }
+                                )
                                 messageRepository.upsertMessage(
-                                    Message(
-                                        localPK = existing?.localPK ?: 0L,
-                                        id = messageResponse.messageId,
-                                        msgType = messageResponse.msgType,
-                                        content = messageResponse.content,
-                                        senderId = messageResponse.senderId,
-                                        receiverId = messageResponse.receiverId,
-                                        sendDate = messageResponse.sendDate.toString(),
-                                        changeDate = messageResponse.lastChanged.toString(),
-                                        deleted = messageResponse.deleted,
-                                        groupMessage = messageResponse.groupMessage,
-                                        answerId = messageResponse.answerId,
-                                        sent = true,
-                                        myMessage = messageResponse.senderId == SessionCache.getOwnIdValue(),
-                                        readByMe = messageResponse.readers.any { it.userId == SessionCache.ownId.value },
-                                        senderAsString = "",
-                                        senderColor = 0,
-                                        readers = messageResponse.readers.map {
-                                            MessageReader(
-                                                readerEntryId = 0L,
-                                                messageId = messageResponse.messageId,
-                                                readerId = it.userId,
-                                                readDate = it.readAt.toString()
-                                            )
-                                        }
-                                    )
+                                    savedMessage
                                 )
                             }
                         }
@@ -1177,6 +1278,30 @@ class AppRepository(
                 messageRepository.deleteMessage(messageId)
             }
 
+        }
+    }
+
+
+
+    suspend fun votePoll(pollVoteRequest: NetworkUtils.PollVoteRequest) {
+        val request = networkUtils.votePoll(
+            pollVoteRequest
+        )
+
+        when (request) {
+            is NetworkResult.Error<RequestError> ->  {
+                sendErrorSuspend(ErrorEvent(error = request.error))
+            }
+            is NetworkResult.Success<MessageResponse> -> {
+                val existing = messageRepository.getMessageById(request.data.messageId)
+                if (existing != null) {
+                    messageRepository.upsertMessage(existing.copy(
+                        poll = request.data.pollResponse?.toPollMessage(),
+                        changeDate = request.data.lastChanged.toString(),
+                    ))
+                }
+
+            }
         }
     }
 

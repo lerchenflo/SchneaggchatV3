@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 
 @Serializable
 @Entity(
@@ -22,6 +23,7 @@ data class MessageDto(
     var msgType: MessageType,
 
     var content: String = "",
+    var poll: PollMessage? = null,
 
     var senderId: String,
 

@@ -114,7 +114,7 @@ class TodolistViewModel(
 
 
     fun getProfilePicfileNameFromId(userid: Int) : String {
-        return pictureManager.getProfilePicFilePath(userid.toLong(), false)
+        return pictureManager.getProfilePicFilePath("", false) //TODO remove
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
