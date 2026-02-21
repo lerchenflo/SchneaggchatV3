@@ -76,7 +76,7 @@ class GlobalViewModel(
                 socketConnectionManager.connect(
                     serverUrl = serverurl,
                     onError = {
-                        startSocketConnection()
+                        //startSocketConnection()
                         if (!socketConnectionManager.isConnectedNow()) {
                             SessionCache.updateOnline(false)
                         }

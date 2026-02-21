@@ -457,7 +457,7 @@ fun PollDialog(
                                         }
                                     } else 1,
                                     customAnswersEnabled = allowCustomAnswers,
-                                    maxAllowedCustomAnswers = allowedCustomAnswerCount,
+                                    maxAllowedCustomAnswers = if (allowedCustomAnswerCount == 10) null else allowedCustomAnswerCount,
                                     visibility = visibility,
                                     closeDate = expiresAt?.toInstant(TimeZone.UTC)
                                         ?.toEpochMilliseconds(),
