@@ -26,7 +26,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollVisibility
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText.*
@@ -828,6 +828,14 @@ class NetworkUtils(
         val text: String?, //Pass if the id is null (New custom option with this text)
         val selected: Boolean, //Did the user select or unselect this item
     )
+
+
+    suspend fun votePoll(pollVoteRequest: PollVoteRequest) : NetworkResult<MessageResponse, RequestError>{
+        return safePost(
+            endpoint = "/messages/pollvote",
+            body = pollVoteRequest,
+        )
+    }
 
 
     @Serializable

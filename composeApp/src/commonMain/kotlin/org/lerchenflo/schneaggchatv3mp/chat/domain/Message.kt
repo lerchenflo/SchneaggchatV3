@@ -3,7 +3,6 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollMessage
 
 enum class MessageType {
     TEXT,

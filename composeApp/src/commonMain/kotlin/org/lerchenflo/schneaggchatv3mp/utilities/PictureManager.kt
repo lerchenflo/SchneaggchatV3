@@ -28,7 +28,7 @@ expect class PictureManager {
     /**
      * Get the filepath for a picture
      */
-    fun getProfilePicFilePath(id: Long, gruppe: Boolean) : String
+    fun getProfilePicFilePath(id: String, gruppe: Boolean) : String
 
     /**
      * Check if a image with this name is in the storage

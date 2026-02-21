@@ -42,8 +42,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollMessage
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollVoteOption
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
@@ -1278,6 +1278,30 @@ class AppRepository(
                 messageRepository.deleteMessage(messageId)
             }
 
+        }
+    }
+
+
+
+    suspend fun votePoll(pollVoteRequest: NetworkUtils.PollVoteRequest) {
+        val request = networkUtils.votePoll(
+            pollVoteRequest
+        )
+
+        when (request) {
+            is NetworkResult.Error<RequestError> ->  {
+                sendErrorSuspend(ErrorEvent(error = request.error))
+            }
+            is NetworkResult.Success<MessageResponse> -> {
+                val existing = messageRepository.getMessageById(request.data.messageId)
+                if (existing != null) {
+                    messageRepository.upsertMessage(existing.copy(
+                        poll = request.data.pollResponse?.toPollMessage(),
+                        changeDate = request.data.lastChanged.toString(),
+                    ))
+                }
+
+            }
         }
     }
 
