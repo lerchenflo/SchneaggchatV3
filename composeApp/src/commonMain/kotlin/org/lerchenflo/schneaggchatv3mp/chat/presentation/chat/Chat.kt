@@ -321,17 +321,15 @@ fun InputFieldRow(viewModel: ChatViewModel){
         var showPollDialog by remember { mutableStateOf(false) }
 
 
-        if(SessionCache.developer) {
-            IconButton(
-                onClick = { addMediaDropdownExpanded = true },
-                modifier = Modifier
-                    .padding(5.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.AttachFile,
-                    contentDescription = stringResource(Res.string.add)
-                )
-            }
+        IconButton(
+            onClick = { addMediaDropdownExpanded = true },
+            modifier = Modifier
+                .padding(5.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.AttachFile,
+                contentDescription = stringResource(Res.string.add)
+            )
         }
 
 
@@ -341,6 +339,12 @@ fun InputFieldRow(viewModel: ChatViewModel){
                 onDismissRequest = { addMediaDropdownExpanded = false }
             ) {
                 AddMediaOptions.entries.forEach { option ->
+
+                    if(!SessionCache.developer) {
+                        if (option == AddMediaOptions.AUDIO || option == AddMediaOptions.IMAGE) return@forEach
+                    }
+
+
                     DropdownMenuItem(
                         text = {
                             Row {

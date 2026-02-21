@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,16 +19,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonColors
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -127,7 +133,109 @@ fun PollMessageContentView(
             Spacer(modifier = Modifier.height(4.dp))
         }
 
+        Spacer(modifier = Modifier.height(4.dp))
+
+        //Add custom option
+        if (poll.customAnswersEnabled) {
+            var showDialog by remember { mutableStateOf(false) }
+
+            Row(
+                modifier = Modifier
+                    .clickable { showDialog = true }
+                    .border(
+                        width = 1.dp,
+                        color = if (myMessage) {
+                            MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)
+                        } else {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                        },
+                        shape = RoundedCornerShape(4.dp)
+                    )
+                    .padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add custom option",
+                    modifier = Modifier.size(20.dp),
+                    tint = if (myMessage) {
+                        MaterialTheme.colorScheme.onPrimary
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    }
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Text(
+                    text = "Eigene Antwort hinzufügen", // TODO: StringResource
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (myMessage) {
+                        MaterialTheme.colorScheme.onPrimary
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    }
+                )
+            }
+
+            if (showDialog) {
+                CustomPollOptionDialog(
+                    onDismiss = { showDialog = false },
+                    onSubmit = { customOption ->
+                        onAction(MessageAction.AddCustomPollOption(message.id!!, customOption))
+                        showDialog = false
+                    }
+                )
+            }
+        }
+
     }
+}
+
+@Composable
+fun CustomPollOptionDialog(
+    onDismiss: () -> Unit,
+    onSubmit: (String) -> Unit
+) {
+    var customOptionText by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Eigene Antwort hinzufügen", // TODO: StringResource
+                style = MaterialTheme.typography.titleLarge
+            )
+        },
+        text = {
+            OutlinedTextField(
+                value = customOptionText,
+                onValueChange = { customOptionText = it },
+                label = { Text("Antwort") }, // TODO: StringResource
+                placeholder = { Text("Deine Antwort eingeben...") }, // TODO: StringResource
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (customOptionText.isNotBlank()) {
+                        onSubmit(customOptionText.trim())
+                    }
+                },
+                enabled = customOptionText.isNotBlank()
+            ) {
+                Text("Hinzufügen") // TODO: StringResource
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Abbrechen") // TODO: StringResource
+            }
+        }
+    )
 }
 
 @Composable
@@ -183,13 +291,35 @@ fun PollMessageOptionView(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = option.text,
-                    color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f)
-                )
 
-                //TODO: Voted user profile pics??
+
+                if (option.custom) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.PersonAdd,
+                            contentDescription = "Custom user answer",
+                            modifier = Modifier.size(12.dp),
+                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Text(
+                            text = option.text,
+                            color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                } else {
+                    Text(
+                        text = option.text,
+                        color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
                 val pictureManager = koinInject<PictureManager>()
 
 
@@ -232,7 +362,8 @@ fun PollMessageOptionView(
             LinearProgressIndicator(
                 progress = { votePercentage },
                 drawStopIndicator = {}, //Remove stop indicator
-                trackColor = MaterialTheme.colorScheme.secondary
+                trackColor = Color.Transparent,
+                color = if (myMessage) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
             )
 
         }
@@ -288,6 +419,15 @@ fun PollSmallInfoWindow(poll: PollMessage, myMessage: Boolean) {
                         modifier = Modifier.size(12.dp),
                         tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
+
+                    if (poll.maxAnswers != null) {
+                        Text(
+                            text = poll.maxAnswers.toString(), //TODO Stringressource
+                            fontSize = 10.sp,
+                            lineHeight = 12.sp,
+                            color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 } else {
                     Icon(
                         imageVector = Icons.Default.CheckCircle,
@@ -305,10 +445,18 @@ fun PollSmallInfoWindow(poll: PollMessage, myMessage: Boolean) {
                         modifier = Modifier.size(12.dp),
                         tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
+
+                    if (poll.maxAllowedCustomAnswers != null) {
+                        Text(
+                            text = poll.maxAllowedCustomAnswers.toString(), //TODO Stringressource
+                            fontSize = 10.sp,
+                            lineHeight = 12.sp,
+                            color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
 
-            //Expires at (TODO)
             poll.expiresAt?.let {
                 PollCountdownTimer(expiresAt = it, myMessage = myMessage)
             }

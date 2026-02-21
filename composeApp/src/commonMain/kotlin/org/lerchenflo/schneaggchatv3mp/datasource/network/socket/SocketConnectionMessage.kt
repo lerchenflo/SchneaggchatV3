@@ -17,6 +17,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiId
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiIdType
@@ -71,12 +72,17 @@ suspend fun handleSocketConnectionMessage(message: String) {
             //A message got updated
             is SocketConnectionMessage.MessageChange -> {
 
+                println("Socket Message change recieved")
+
                 val existing = messageRepository.getMessageById(socketMessage.message.messageId)
                 val message = Message(
                     localPK = existing?.localPK ?: 0L,
                     id = socketMessage.message.messageId,
                     msgType = socketMessage.message.msgType,
+
                     content = socketMessage.message.content,
+                    poll = socketMessage.message.pollResponse?.toPollMessage(),
+
                     senderId = socketMessage.message.senderId,
                     receiverId = socketMessage.message.receiverId,
                     sendDate = socketMessage.message.sendDate.toString(),

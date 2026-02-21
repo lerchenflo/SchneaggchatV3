@@ -188,7 +188,16 @@ class ChatViewModel(
             }
 
             is MessageAction.AddCustomPollOption -> {
-                // TODO: Implement custom poll option via appRepository
+                viewModelScope.launch {
+                    appRepository.votePoll(
+                        NetworkUtils.PollVoteRequest(
+                            messageId = action.messageId,
+                            id = null,
+                            text = action.text,
+                            selected = true
+                        )
+                    )
+                }
             }
             is MessageAction.DeleteMessage -> deleteMessage(action.message)
             is MessageAction.StartEditMessage -> {
