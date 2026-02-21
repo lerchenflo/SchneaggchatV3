@@ -409,7 +409,7 @@ fun PollSmallInfoWindow(poll: PollMessage, myMessage: Boolean) {
             }
 
             Row(
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
             ) {
                 // Multiple answers?
                 if (poll.acceptsMultipleAnswers()) {
