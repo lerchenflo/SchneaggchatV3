@@ -11,7 +11,7 @@ It is an alternative to the tech giants stealing our data.
 # Changelog
 
 
-### 3.0.3
+### 3.0.4
 #### Features
 - polls
 - Secure data store on all platforms
@@ -22,7 +22,7 @@ It is an alternative to the tech giants stealing our data.
 
 
 
-### 3.0.2 - bugfix 
+### 3.0.3 - bugfix 
 #### Features
 - Games
 
