@@ -20,11 +20,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
+import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
+import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
+import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
+import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorAction
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
@@ -75,15 +82,24 @@ fun ChatDetails(
     var showRemoveFriendConfirmation by remember { mutableStateOf(false) }
 
     var showAddMemberPopup by remember { mutableStateOf(false) }
+    var showImagePickerDialog by remember { mutableStateOf(false) }
 
 
     // Profilbild größer azoaga
     if(profilePictureDialogShown){
         ProfilePictureBigDialog(
             onDismiss = {profilePictureDialogShown = false},
-            filepath = chatDetails.profilePictureUrl
+            filepath = chatDetails.profilePictureUrl,
+            showEditButton = true,
+            //showEditButton = group, // if only admins are able to change the profile picture use this line instead
+            onEdit = {
+                profilePictureDialogShown = false
+                showImagePickerDialog = true
+            }
         )
     }
+
+
 
     Column(
         modifier = modifier
@@ -289,6 +305,38 @@ fun ChatDetails(
         }
 
 
+    }
+
+    if (showImagePickerDialog) {
+        GalleryPickerLauncher(
+            onPhotosSelected = {
+                chatdetailsViewmodel.updateProfilePic(it.first())
+                showImagePickerDialog = false
+            },
+            onError = {
+                showImagePickerDialog = false
+            },
+            onDismiss = {
+                showImagePickerDialog = false
+            },
+            selectionLimit = 1,
+            enableCrop = true,
+            cameraCaptureConfig = CameraCaptureConfig(
+                compressionLevel = CompressionLevel.HIGH,
+                preference = CapturePhotoPreference.FAST, //No flash
+                cropConfig = CropConfig(
+                    enabled = true,
+                    aspectRatioLocked = true,
+                    circularCrop = true,
+                    squareCrop = false,
+                    freeformCrop = false
+                ),
+                galleryConfig = GalleryConfig(
+                    allowMultiple = false,
+                    selectionLimit = 1,
+                )
+            )
+        )
     }
 
 

@@ -6,12 +6,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -27,12 +31,15 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil3.compose.AsyncImage
+import io.ktor.client.request.invoke
 
 // Zoagt es Profilbild groß a
 @Composable
 fun ProfilePictureBigDialog(
     onDismiss: () -> Unit,
-    filepath: String
+    filepath: String,
+    onEdit: () -> Unit = {},
+    showEditButton: Boolean = false
 ) {
     var containerWidth by remember { mutableStateOf(0f) }
     var containerHeight by remember { mutableStateOf(0f) }
@@ -101,6 +108,17 @@ fun ProfilePictureBigDialog(
                         contentDescription = "Close",
                         modifier = Modifier.size(32.dp)
                     )
+                }
+
+                if(showEditButton){
+                    Spacer(modifier = Modifier.width(4.dp))
+                    IconButton(onClick = onEdit) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit",
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
             }
         }

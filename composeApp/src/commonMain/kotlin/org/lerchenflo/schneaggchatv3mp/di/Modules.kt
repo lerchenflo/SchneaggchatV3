@@ -100,7 +100,7 @@ val sharedmodule = module{
     factory { ChatViewModel(get(), get(), get(), get(), get(), get(), get(), get()) }
 
     viewModelOf(::ChatDetailsViewmodel)
-    factory { ChatDetailsViewmodel(get(), get(), get(), get(), get()) }
+    factory { ChatDetailsViewmodel(get(), get(), get(), get(), get(), get()) }
 
     viewModelOf(::NewChatViewModel)
     factory { NewChatViewModel(get(), get(), get(),get()) }
