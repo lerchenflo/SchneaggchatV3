@@ -111,3 +111,16 @@ enum class PollVisibility{
         }
     }
 }
+
+data class PollUiState(
+    val totalVotes: Int = 0,
+    val uniqueVoterCount: Int = 0,
+    val optionsMetadata: Map<String, OptionMetadata> = emptyMap(),
+    val isClosed: Boolean = false
+)
+
+data class OptionMetadata(
+    val votePercentage: Float,
+    val isCheckedByMe: Boolean,
+    val voterIds: List<String?>
+)

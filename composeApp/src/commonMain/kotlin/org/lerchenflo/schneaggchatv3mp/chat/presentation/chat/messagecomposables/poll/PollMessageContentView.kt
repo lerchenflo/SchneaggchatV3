@@ -45,6 +45,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -55,11 +56,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.OptionMetadata
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollUiState
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
@@ -102,6 +106,30 @@ fun PollMessageContentView(
             color = MaterialTheme.colorScheme.error
         )
         return
+    }
+
+    // in da Theorie sött des Poll stats im hintergrund lada und damit da chat schneller macha. ob des in da praxis tatsächlich so isch woas i ned
+    val pollUiState by produceState(initialValue = PollUiState(), key1 = message.poll) {
+        // Run heavy calculations on the Default (Background) dispatcher
+        withContext(kotlinx.coroutines.Dispatchers.Default) {
+            val totalVotes = poll.getTotalVoteCount()
+            val uniqueVoters = poll.getUniqueVoterCount()
+            val ownId = SessionCache.getOwnIdValue()
+
+            val metadataMap = poll.voteOptions.associate { option ->
+                option.id to OptionMetadata(
+                    votePercentage = if (totalVotes > 0) option.voters.size.toFloat() / totalVotes.toFloat() else 0f,
+                    isCheckedByMe = option.voters.any { it.userId == ownId },
+                    voterIds = option.getVoterIdsForOption()
+                )
+            }
+
+            value = PollUiState(
+                totalVotes = totalVotes,
+                uniqueVoterCount = uniqueVoters,
+                optionsMetadata = metadataMap
+            )
+        }
     }
 
 
@@ -151,6 +179,7 @@ fun PollMessageContentView(
                         }
                     },
                     poll = poll,
+                    uiState = pollUiState,
                     myMessage = myMessage
                 )
             }
@@ -172,21 +201,19 @@ fun PollMessageContentView(
 
 
         poll.voteOptions.forEach { option ->
+            val meta = pollUiState.optionsMetadata[option.id]
             PollMessageOptionView(
                 option = option,
-                multipleAnswers = poll.acceptsMultipleAnswers(), //Allow multiple answers if maxanswers is null(not set) or more than one
-                votePercentage = option.voters.size.toFloat() / poll.getTotalVoteCount().toFloat(),
+                multipleAnswers = poll.acceptsMultipleAnswers(),
+                // Use pre-calculated values
+                votePercentage = meta?.votePercentage ?: 0f,
+                optionCheckedByMe = meta?.isCheckedByMe ?: false,
+                voterIds = meta?.voterIds ?: emptyList(),
                 myMessage = myMessage,
-                voterIds = option.getVoterIdsForOption(),
-                onOptionSelected = {
-                    onAction(MessageAction.VotePoll(
-                        messageId = message.id!!,
-                        optionId = option.id,
-                        checked = it
-                    ))
+                onOptionSelected = { checked ->
+                    onAction(MessageAction.VotePoll(message.id!!, option.id, checked))
                 }
             )
-
             Spacer(modifier = Modifier.height(4.dp))
         }
 
@@ -301,11 +328,12 @@ fun PollMessageOptionView(
     multipleAnswers: Boolean,
     votePercentage: Float,
     myMessage: Boolean,
+    optionCheckedByMe: Boolean,
     voterIds: List<String?>,
     onOptionSelected: (Boolean) -> Unit
 ) {
 
-    val optionCheckedByMe = option.voters.any { it.userId == SessionCache.getOwnIdValue() }
+    // val optionCheckedByMe = option.voters.any { it.userId == SessionCache.getOwnIdValue() }
 
 
     Row(
@@ -426,6 +454,7 @@ fun PollMessageOptionView(
 fun PollSmallInfoWindow(
     modifier: Modifier,
     poll: PollMessage,
+    uiState: PollUiState,
     myMessage: Boolean) {
 
     Box(
@@ -442,18 +471,18 @@ fun PollSmallInfoWindow(
             verticalArrangement = Arrangement.spacedBy(1.dp)
         ) {
 
-            if (poll.getTotalVoteCount() != 0) {
+            if (uiState.totalVotes != 0) {
                 Text(
-                    text = stringResource(Res.string.poll_answers_count, poll.getTotalVoteCount()),
+                    text = stringResource(Res.string.poll_answers_count, uiState.totalVotes),
                     fontSize = 10.sp,
                     lineHeight = 12.sp,
                     color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
-            if (poll.getUniqueVoterCount() != 0) {
+            if (uiState.uniqueVoterCount != 0) {
                 Text(
-                    text = stringResource(Res.string.poll_user_count, poll.getUniqueVoterCount()),
+                    text = stringResource(Res.string.poll_user_count, uiState.uniqueVoterCount),
                     fontSize = 10.sp,
                     lineHeight = 12.sp,
                     color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant

@@ -13,6 +13,7 @@ It is an alternative to the tech giants stealing our data.
 ### 3.0.5
 #### Features
 - change Group Profile Pictures
+- Improved Poll loading
 
 #### Bugfixes
 
