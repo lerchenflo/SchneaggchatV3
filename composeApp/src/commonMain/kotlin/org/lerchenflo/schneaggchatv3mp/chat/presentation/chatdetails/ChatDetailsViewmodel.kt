@@ -8,6 +8,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
+import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +19,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -32,6 +35,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.please_restart_app
 
 
 data class GroupMemberWithUser(
@@ -44,7 +51,8 @@ class ChatDetailsViewmodel(
     private val globalViewModel: GlobalViewModel,
     private val navigator: Navigator,
     private val userRepository: UserRepository,
-    private val appRepository: AppRepository
+    private val appRepository: AppRepository,
+    private val pictureManager: PictureManager,
 ) : ViewModel() {
 
     var availableNewMembers by mutableStateOf<List<User>>(emptyList())
@@ -176,6 +184,27 @@ class ChatDetailsViewmodel(
                 memberId = member.userId,
                 groupId = member.groupId
             )
+        }
+    }
+
+    fun updateProfilePic (profilePicUri: GalleryPhotoResult) {
+        viewModelScope.launch {
+            val bytearray = profilePicUri
+                .loadBytes()
+
+            //println("Unscaled image size: ${bytearray.size}")
+
+            val downscaledimage = pictureManager.downscaleImage(bytearray)
+
+            //println("Downscaled image size: ${downscaledimage.size}")
+            val success = appRepository.changeGroupProfilePic(
+                groupId = chatDetails.value.id,
+                newPic = downscaledimage
+            )
+
+            if (success) {
+                SnackbarManager.showMessage(getString(Res.string.please_restart_app)) //Des image caching vo coil isch so guat dassas sich ned abtöta loht. ma künnt profilbild mit datum speichra aber denn wirds ned überschrieba und unendlich speicherverbrauch
+            }
         }
     }
 
