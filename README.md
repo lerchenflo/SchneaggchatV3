@@ -10,6 +10,11 @@ It is an alternative to the tech giants stealing our data.
 
 # Changelog
 
+### 3.0.4
+#### Features
+- change Group Profile Pictures
+
+#### Bugfixes
 
 ### 3.0.3
 #### Features
