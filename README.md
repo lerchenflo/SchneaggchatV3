@@ -15,6 +15,7 @@ It is an alternative to the tech giants stealing our data.
 - change Group Profile Pictures
 
 #### Bugfixes
+- Navigate to chat selector when no user is selected in chat (bug when swiping back)
 
 ### 3.0.4
 #### Features

@@ -115,7 +115,15 @@ fun ChatScreen(
     val displayItems by viewModel.messageDisplayState.collectAsStateWithLifecycle()
     val focusManager = LocalFocusManager.current
     val clipboardManager = LocalClipboardManager.current
+    val selectedChat by globalViewModel.selectedChat.collectAsStateWithLifecycle()
 
+    // Des funkat amol besser wie der LaunchedEfffekt was o immer der do dunna macht
+    if(selectedChat.isNotSelected()){
+        println("Unselected chat, navigating back")
+        viewModel.onBackClick()
+    }
+
+    /*
     LaunchedEffect(globalViewModel.selectedChat) {
         if (globalViewModel.selectedChat.value.isNotSelected()) {
             println("Chat no user selected, navigating back")
@@ -123,6 +131,7 @@ fun ChatScreen(
             viewModel.onBackClick()
         }
     }
+     */
 
     Scaffold(
         modifier = modifier
@@ -153,7 +162,7 @@ fun ChatScreen(
                     )
                 }
 
-                val selectedChat by globalViewModel.selectedChat.collectAsStateWithLifecycle()
+
                 val userButtonselectedChat by derivedStateOf {
                     when (val chat = selectedChat) {
                         is UserChat -> chat.copy(unreadMessageCount = 0, unsentMessageCount = 0)
