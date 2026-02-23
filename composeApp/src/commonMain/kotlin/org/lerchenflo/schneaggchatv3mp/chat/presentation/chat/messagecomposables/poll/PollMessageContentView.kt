@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Blind
@@ -51,6 +53,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -63,6 +67,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
+import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -81,8 +86,10 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_maxoptions_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_oneoption_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_private_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_public_info
+import schneaggchatv3mp.composeapp.generated.resources.poll_show_answers
 import schneaggchatv3mp.composeapp.generated.resources.poll_tooltip_title
 import schneaggchatv3mp.composeapp.generated.resources.poll_user_count
+import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 import schneaggchatv3mp.composeapp.generated.resources.unlimited
 import kotlin.time.Clock
 
@@ -90,6 +97,7 @@ import kotlin.time.Clock
 fun PollMessageContentView(
     message: Message,
     useMD: Boolean,
+    readerMap: Map<String, String>,
     onAction: (MessageAction) -> Unit = {}
 ){
 
@@ -247,7 +255,113 @@ fun PollMessageContentView(
             }
         }
 
+        Spacer(modifier = Modifier.height(8.dp))
+
+
+        var showVoterDialog by remember { mutableStateOf(false) }
+
+        Row {
+            Spacer(modifier = Modifier.weight(1f))
+
+            NormalButton(
+                text = stringResource(Res.string.poll_show_answers),
+                onClick = {
+                    showVoterDialog = true
+                },
+                primary = false,
+                showOutline = true
+            )
+            if (showVoterDialog) {
+
+                PollVoterOverviewDialog(
+                    poll = poll,
+                    onDismiss = { showVoterDialog = false },
+                    readerMap = readerMap
+                )
+            }
+        }
+
     }
+}
+
+@Composable
+fun PollVoterOverviewDialog(
+    poll: PollMessage,
+    readerMap: Map<String, String>,
+    onDismiss: () -> Unit
+) {
+    val pictureManager = koinInject<PictureManager>()
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = poll.title,
+                style = MaterialTheme.typography.titleLarge
+            )
+        },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                poll.voteOptions.forEach { option ->
+                    if (option.voters.isEmpty()) return@forEach
+
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            text = option.text,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        option.voters.forEach { voter ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.padding(start = 8.dp)
+                            ) {
+                                if (voter.userId != null) {
+                                    ProfilePictureView(
+                                        filepath = pictureManager.getProfilePicFilePath(voter.userId, false),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Text(
+                                        text = readerMap[voter.userId] ?: stringResource(Res.string.unknown_user),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.Blind,
+                                        contentDescription = "Anonymous",
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+
+                                    /*
+                                    Text(
+                                        text = stringResource(Res.string.poll_anonymous_info),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+
+                                     */
+                                }
+                            }
+                        }
+
+                        HorizontalDivider()
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(Res.string.cancel))
+            }
+        }
+    )
 }
 
 @Composable
@@ -553,7 +667,7 @@ fun PollInfoTooltipContent(poll: PollMessage) {
         Text(
             text = stringResource(Res.string.poll_tooltip_title),
             style = MaterialTheme.typography.titleSmall,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            fontWeight = FontWeight.Bold
         )
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
@@ -604,7 +718,7 @@ fun PollInfoTooltipContent(poll: PollMessage) {
 
 @Composable
 private fun TooltipRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     text: String
 ) {
     Row(
