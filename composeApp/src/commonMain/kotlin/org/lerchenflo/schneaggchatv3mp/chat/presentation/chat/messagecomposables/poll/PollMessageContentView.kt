@@ -258,26 +258,28 @@ fun PollMessageContentView(
         Spacer(modifier = Modifier.height(8.dp))
 
 
-        var showVoterDialog by remember { mutableStateOf(false) }
+        if (poll.visibility == PollVisibility.PUBLIC || (poll.visibility == PollVisibility.PRIVATE && poll.creatorId == SessionCache.getOwnIdValue())) {
+            var showVoterDialog by remember { mutableStateOf(false) }
 
-        Row {
-            Spacer(modifier = Modifier.weight(1f))
+            Row {
+                Spacer(modifier = Modifier.weight(1f))
 
-            NormalButton(
-                text = stringResource(Res.string.poll_show_answers),
-                onClick = {
-                    showVoterDialog = true
-                },
-                primary = false,
-                showOutline = true
-            )
-            if (showVoterDialog) {
-
-                PollVoterOverviewDialog(
-                    poll = poll,
-                    onDismiss = { showVoterDialog = false },
-                    readerMap = readerMap
+                NormalButton(
+                    text = stringResource(Res.string.poll_show_answers),
+                    onClick = {
+                        showVoterDialog = true
+                    },
+                    primary = false,
+                    showOutline = true
                 )
+                if (showVoterDialog) {
+
+                    PollVoterOverviewDialog(
+                        poll = poll,
+                        onDismiss = { showVoterDialog = false },
+                        readerMap = readerMap
+                    )
+                }
             }
         }
 
