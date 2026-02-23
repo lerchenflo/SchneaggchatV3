@@ -315,7 +315,8 @@ fun MessageContent(
                     MessageType.POLL -> PollMessageContentView(
                         message = message,
                         useMD = useMD,
-                        onAction = onAction
+                        onAction = onAction,
+                        readerMap = readerMap
                     )
 
                     else -> ErrorMessage()

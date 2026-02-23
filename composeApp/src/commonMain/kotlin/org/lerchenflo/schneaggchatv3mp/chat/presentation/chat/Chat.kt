@@ -253,7 +253,8 @@ fun ChatScreen(
                                     onLongPress = {
                                         showMessageOptionPopup = true
                                     },
-                                    onAction = viewModel::onAction
+                                    onAction = viewModel::onAction,
+                                    readerMap = item.resolvedReaders
                                 )
 
                                 val copiedToClipboardString = stringResource(Res.string.copied_to_clipboard)
