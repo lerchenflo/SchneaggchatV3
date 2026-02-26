@@ -6,6 +6,8 @@ val URL_PRIVACY = "$BASE_SERVER_URL/privacypolicy.html"
 
 val URL_DEL_ACC = "$BASE_SERVER_URL/delete_account.html"
 
+val URL_PASSWORD_RESET = "$BASE_SERVER_URL/reset_password.html"
+
 var URL_INSTAGRAM = "https://www.instagram.com/schneaggchat?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
 
 
