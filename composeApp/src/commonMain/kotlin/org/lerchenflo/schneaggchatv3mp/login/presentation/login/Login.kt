@@ -186,6 +186,7 @@ fun LoginScreen(
                     FloatingActionButtonMenuItem(
                         onClick = {
                             showUrlChangeDialog = true
+                            menuExpanded = false
                         },
                         icon = {
                             Icon(
@@ -260,7 +261,10 @@ fun LoginScreen(
                             loginbuttonloading = viewModel.isLoading,
                             usernameFocusRequester = usernameFocusRequester,
                             passwordFocusRequester = passwordFocusRequester,
-                            loginFocusRequester = loginFocusRequester
+                            loginFocusRequester = loginFocusRequester,
+                            onPasswordForgotClick = {
+                                uriHandler.openUri(URL_PASSWORD_RESET)
+                            }
                         )
 
                         VersionText(appRepository)
@@ -301,7 +305,10 @@ fun LoginScreen(
                                 loginbuttonloading = viewModel.isLoading,
                                 usernameFocusRequester = usernameFocusRequester,
                                 passwordFocusRequester = passwordFocusRequester,
-                                loginFocusRequester = loginFocusRequester
+                                loginFocusRequester = loginFocusRequester,
+                                onPasswordForgotClick = {
+                                    uriHandler.openUri(URL_PASSWORD_RESET)
+                                }
                             )
                         }
                         VersionText(appRepository)
@@ -339,7 +346,10 @@ fun LoginScreen(
                             loginbuttonloading = viewModel.isLoading,
                             usernameFocusRequester = usernameFocusRequester,
                             passwordFocusRequester = passwordFocusRequester,
-                            loginFocusRequester = loginFocusRequester
+                            loginFocusRequester = loginFocusRequester,
+                            onPasswordForgotClick = {
+                                uriHandler.openUri(URL_PASSWORD_RESET)
+                            }
                         )
 
                         VersionText(appRepository)

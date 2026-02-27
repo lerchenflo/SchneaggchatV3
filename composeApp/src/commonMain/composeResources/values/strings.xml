@@ -26,6 +26,8 @@
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="password_again">Same password again</string>
+    <string name="password_forgotten">Forgot password?</string>
+
 
     <string name="email">Email</string>
     <string name="invalid_email">Enter a correct email address</string>
