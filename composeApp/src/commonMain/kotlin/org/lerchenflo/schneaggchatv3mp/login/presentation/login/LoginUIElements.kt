@@ -53,6 +53,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
@@ -60,6 +61,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.login
 import schneaggchatv3mp.composeapp.generated.resources.loginsubtitle
 import schneaggchatv3mp.composeapp.generated.resources.password
+import schneaggchatv3mp.composeapp.generated.resources.password_forgotten
 import schneaggchatv3mp.composeapp.generated.resources.sign_up
 import schneaggchatv3mp.composeapp.generated.resources.username
 
@@ -261,6 +263,8 @@ fun LoginFormSection(
     passwordFocusRequester: FocusRequester,
     loginFocusRequester: FocusRequester,
 
+    onPasswordForgotClick: () -> Unit,
+
     modifier: Modifier = Modifier
 ){
     Column(
@@ -297,7 +301,34 @@ fun LoginFormSection(
                 .fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(2.dp))
+
+        //Password forgotten
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+
+        ) {
+
+            Spacer(
+                modifier = Modifier
+                    .weight(1f)
+            )
+            Text(
+                text = stringResource(Res.string.password_forgotten),
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier
+                    .clickable {
+                        onPasswordForgotClick()
+                    }
+                    .padding(4.dp),
+                textAlign = TextAlign.Center,
+                fontSize = 10.sp
+            )
+
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         NormalButton(
             text = stringResource(Res.string.login),

@@ -1,5 +1,10 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package org.lerchenflo.schneaggchatv3mp.login.presentation.login
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,9 +22,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FloatingActionButtonMenu
+import androidx.compose.material3.FloatingActionButtonMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,6 +47,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -45,6 +56,8 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
+import org.lerchenflo.schneaggchatv3mp.URL_PASSWORD_RESET
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChangeDialog
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
@@ -52,6 +65,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.preferences.LanguageSetting
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.change_server_url
 import schneaggchatv3mp.composeapp.generated.resources.version
 
 @Preview()
@@ -65,6 +79,7 @@ fun LoginScreen(
 
     SchneaggchatTheme {
 
+        val uriHandler = LocalUriHandler.current
 
         val languageService = koinInject<LanguageService>()
 
@@ -134,16 +149,56 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxSize(),
             floatingActionButton = {
-                IconButton(
-                    onClick = {
-                        showUrlChangeDialog = true
+
+                var menuExpanded by remember { mutableStateOf(false) }
+
+
+                FloatingActionButtonMenu(
+                    expanded = menuExpanded,
+                    button = {
+
+                        Icon(
+                            imageVector = Icons.Default.Language,
+                            contentDescription = "website",
+                            modifier = Modifier
+                                .size(48.dp)
+                                .pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onTap = {
+                                            if (menuExpanded) {
+                                                menuExpanded = false
+                                            } else {
+                                                uriHandler.openUri(BASE_SERVER_URL)
+                                            }
+                                        },
+                                        onLongPress = {
+                                            menuExpanded = !menuExpanded
+                                        }
+                                    )
+                            }
+                        )
+
+
+
                     },
-                ){
-                    Icon(
-                        imageVector = Icons.Default.Link,
-                        contentDescription = "change serverurl",
-                        modifier = Modifier
-                            .size(48.dp)
+                ) {
+
+                    FloatingActionButtonMenuItem(
+                        onClick = {
+                            showUrlChangeDialog = true
+                            menuExpanded = false
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Default.Link,
+                                contentDescription = "change serverurl",
+                                modifier = Modifier
+                                    .size(48.dp)
+                            )
+                        },
+                        text = {
+                            stringResource(Res.string.change_server_url)
+                        }
                     )
                 }
             }
@@ -206,7 +261,10 @@ fun LoginScreen(
                             loginbuttonloading = viewModel.isLoading,
                             usernameFocusRequester = usernameFocusRequester,
                             passwordFocusRequester = passwordFocusRequester,
-                            loginFocusRequester = loginFocusRequester
+                            loginFocusRequester = loginFocusRequester,
+                            onPasswordForgotClick = {
+                                uriHandler.openUri(URL_PASSWORD_RESET)
+                            }
                         )
 
                         VersionText(appRepository)
@@ -247,7 +305,10 @@ fun LoginScreen(
                                 loginbuttonloading = viewModel.isLoading,
                                 usernameFocusRequester = usernameFocusRequester,
                                 passwordFocusRequester = passwordFocusRequester,
-                                loginFocusRequester = loginFocusRequester
+                                loginFocusRequester = loginFocusRequester,
+                                onPasswordForgotClick = {
+                                    uriHandler.openUri(URL_PASSWORD_RESET)
+                                }
                             )
                         }
                         VersionText(appRepository)
@@ -285,7 +346,10 @@ fun LoginScreen(
                             loginbuttonloading = viewModel.isLoading,
                             usernameFocusRequester = usernameFocusRequester,
                             passwordFocusRequester = passwordFocusRequester,
-                            loginFocusRequester = loginFocusRequester
+                            loginFocusRequester = loginFocusRequester,
+                            onPasswordForgotClick = {
+                                uriHandler.openUri(URL_PASSWORD_RESET)
+                            }
                         )
 
                         VersionText(appRepository)
