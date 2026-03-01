@@ -49,6 +49,12 @@ class MessageRepository(
         }
     }
 
+    suspend fun getImageMessages(): List<Message> {
+        return database.messageDao().getImageMessages().map {
+            it.toMessage()
+        }
+    }
+
     suspend fun getMessageById(id: String) : Message? {
         return database.messageDao().getMessageById(id)?.toMessage()
     }
@@ -89,7 +95,16 @@ class MessageRepository(
         database.messageReaderDao().upsertReaders(readers)
     }
 
-
+    suspend fun updatePictureUrl(messageId: String, newUrl: String) {
+        val dbMessage = database.messageDao().getMessageById(messageId)
+        if (dbMessage != null) {
+            database.messageDao().upsertMessageDto(
+                dbMessage.messageDto.copy(
+                    content = newUrl
+                )
+            )
+        }
+    }
 
     @Transaction
     fun getAllMessages(): Flow<List<Message>>{

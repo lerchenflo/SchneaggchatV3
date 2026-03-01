@@ -17,6 +17,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 
@@ -115,6 +116,10 @@ interface MessageDao {
     @Transaction
     @Query("SELECT * FROM messages WHERE sent = 0")
     suspend fun getUnsentMessages(): List<MessageWithReadersDto>
+
+    @Transaction
+    @Query("SELECT * FROM messages WHERE msgType = :type")
+    suspend fun getImageMessages(type: String = MessageType.IMAGE.name): List<MessageWithReadersDto>
 
     @Transaction
     @Query("UPDATE messages SET id = :serverId, sent = 1 WHERE localPK = :localPK")

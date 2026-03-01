@@ -25,6 +25,7 @@ import org.koin.core.qualifier.named
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
+import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
@@ -276,7 +277,20 @@ class AppRepository(
         }
         getProfilePicturesForGroupIds(missingPpGroupIds)
 
-        //TODO: IMAGES Get missing image messages if implemented
+
+        val messages = messageRepository.getImageMessages()
+        var missingImageMessageIds: List<String> = emptyList()
+
+        messages.forEach { image ->
+            if (image.id != null) {
+                val exists = pictureManager.checkImageExists(image.id + PICTURE_FILE_NAME) ||pictureManager.checkImageExists(image.content)
+                if (!exists) {
+                    println("Imagemessage picture does not exist: ${image.content}, getting")
+                    missingImageMessageIds = missingImageMessageIds + image.id!!
+                }
+            }
+        }
+        getPicturesForMessageIds(missingImageMessageIds)
 
     }
 
@@ -1035,8 +1049,6 @@ class AppRepository(
 
                     println("Messageid returned from server: ${serverrequest.data.messageId}")
 
-                    //TODO: get image for imagemessage
-
                     messageRepository.upsertMessage(
                         Message(
                             localPK = localpkintern,
@@ -1065,8 +1077,11 @@ class AppRepository(
                                 )
                             }
                         )
-
                     )
+
+                    if (serverrequest.data.msgType == MessageType.IMAGE) {
+                        getPicturesForMessageIds(listOf(serverrequest.data.messageId))
+                    }
                 }
             }
         }
@@ -1267,10 +1282,25 @@ class AppRepository(
 
         println("Messagesync completed. Total pages: $currentPage")
 
-        //TODO: Get all images
+
         if (imagesToGet.isNotEmpty()) {
             println("Images to fetch: ${imagesToGet.size}")
-            // fetchImages(imagesToGet)
+            getPicturesForMessageIds(imagesToGet)
+        }
+    }
+
+    suspend fun getPicturesForMessageIds(ids: List<String>){
+        ids.forEach { messageId ->
+            val savefilename = messageId + PICTURE_FILE_NAME
+
+            when (val picture = networkUtils.getImageForImageMessage(messageId)) {
+                is NetworkResult.Error<*> -> {println("Picture error for messageid $messageId")}
+                is NetworkResult.Success<ByteArray> -> {
+                    val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
+
+                    messageRepository.updatePictureUrl(messageId, filepath)
+                }
+            }
         }
     }
 
