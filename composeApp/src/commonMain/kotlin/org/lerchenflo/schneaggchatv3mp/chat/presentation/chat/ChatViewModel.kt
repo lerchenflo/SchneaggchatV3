@@ -67,6 +67,12 @@ class ChatViewModel(
         private const val INITIAL_MESSAGE_COUNT = 12
     }
 
+    // chat id und group bool wörrend im init oamol glada
+    // Damit leabt des o solang wie es viewmodel o wenn des im globalviewmodel scho tötet worra isch
+    var chatId: String = ""
+    var isGroup: Boolean = false
+
+
     var markdownEnabled by mutableStateOf(false)
         private set
 
@@ -128,29 +134,37 @@ class ChatViewModel(
 
         CoroutineScope(Dispatchers.IO).launch {
             appRepository.setAllChatMessagesRead(
-                globalViewModel.selectedChat.value.id,
-                globalViewModel.selectedChat.value.isGroup,
+                chatId,
+                isGroup,
                 getCurrentTimeMillisString()
             )
         }
     }
 
+    fun saveDraft(){
+        CoroutineScope(Dispatchers.IO).launch {
+            // todo wenn bild oder sprachnachricht oder so künnt ma des speichera
+            if(!sendText.text.isEmpty()) { // schoua ob es textfeld leer isch
+                settingsRepository.saveDraft(
+                    chatId = chatId,
+                    group = isGroup,
+                    string = sendText.text
+                )
+            }
+        }
+    }
 
     fun sendMessage(message: SendMessageContent, replyTo: Message? = null) {
         if (message is SendMessageContent.TextContent && message.textMessage.isBlank()) return
         if (message is SendMessageContent.ImageContent && message.imageMessage.isEmpty()) return
 
-        globalViewModel.viewModelScope.launch {
-            appRepository.sendMessage(
-                empfaenger = globalViewModel.selectedChat.value.id,
-                gruppe = globalViewModel.selectedChat.value.isGroup,
-                content = when(message) {
-                    is SendMessageContent.ImageContent -> AppRepository.MessageContent.ImageContent(message.imageMessage)
-                    is SendMessageContent.TextContent -> AppRepository.MessageContent.TextContent(message.textMessage)
-                },
-                answerid = replyTo?.id,
-                messageId = null,
-            )
+            globalViewModel.viewModelScope.launch {
+                appRepository.sendMessage(
+                    empfaenger = chatId,
+                    gruppe = isGroup,
+                    content = AppRepository.MessageContent.TextContent(content),
+                    answerid = replyMessage?.id,
+                )
 
             updateReplyMessage(null)
             updateSendContent(SendMessageContent.TextContent(""))
@@ -169,8 +183,8 @@ class ChatViewModel(
     fun createPollMessage(poll: NetworkUtils.PollCreateRequest) {
         globalViewModel.viewModelScope.launch {
             appRepository.sendMessage(
-                empfaenger = globalViewModel.selectedChat.value.id,
-                gruppe = globalViewModel.selectedChat.value.isGroup,
+                empfaenger = chatId,
+                gruppe = isGroup,
                 content = AppRepository.MessageContent.PollContent(poll),
                 answerid = replyMessage?.id,
                 messageId = null
@@ -265,6 +279,7 @@ class ChatViewModel(
 
 
     fun onBackClick() {
+        saveDraft()
         viewModelScope.launch {
             navigator.navigateBack(navigationOptions = Navigator.NavigationOptions(
                 removeAllScreensByRoute = listOf(Route.ChatDetails, Route.Chat)
@@ -365,6 +380,7 @@ class ChatViewModel(
             } else null
 
             val senderName = userMap[message.senderId]?.name ?: groupMap[message.senderId]?.memberName ?: "Unresolved Username"
+            message.senderAsString = senderName
             val resolvedColor = groupMap[message.senderId]?.color ?: 0
             message.senderColor = resolvedColor
 
@@ -410,12 +426,31 @@ class ChatViewModel(
     //Beim call vom init sind alle values initialisiert
     init {
         viewModelScope.launch {
+            chatId = globalViewModel.selectedChat.value.id
+            isGroup = globalViewModel.selectedChat.value.isGroup
+        }
+
+        viewModelScope.launch {
             settingsRepository.getUsemd()
                 .catch { exception ->
                     loggingRepository.logWarning("ChatViewModel: Problem getting MD preference: ${exception.message}")
                 }
                 .collect { value ->
                     markdownEnabled = value
+                }
+        }
+
+        // load draft
+        viewModelScope.launch {
+            settingsRepository.getDraft(
+                chatId = chatId,
+                group = isGroup
+            )
+                .catch { exception ->
+                    loggingRepository.logWarning("ChatViewModel: Problem getting draft: ${exception.message}")
+                }
+                .collect { value ->
+                    updatesendText(TextFieldValue(value?: ""))
                 }
         }
 

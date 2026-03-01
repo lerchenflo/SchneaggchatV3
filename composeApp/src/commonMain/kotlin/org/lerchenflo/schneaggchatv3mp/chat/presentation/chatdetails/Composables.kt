@@ -596,7 +596,8 @@ fun AddUserToGroupPopup(
                 searchTerm = searchterm,
                 onSearchTermChange = {searchterm = it},
                 onUserSelected = {selectedUsers += it},
-                onUserDeselected = {selectedUsers -= it}
+                onUserDeselected = {selectedUsers -= it},
+                minUsers = 1
             )
         }
     )

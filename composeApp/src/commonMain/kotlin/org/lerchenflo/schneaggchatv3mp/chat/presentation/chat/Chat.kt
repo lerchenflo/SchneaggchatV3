@@ -44,6 +44,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -171,6 +172,17 @@ fun ChatScreen(
                     )
                 )
             }
+        }
+    }
+
+    // This effect runs when the Composable enters the composition
+    DisposableEffect(Unit) {
+        // You can do setup here if needed
+
+        onDispose {
+            // This block runs when the screen is closed or navigated away from
+            println("ChatScreen disposed: Performing cleanup")
+            viewModel.saveDraft()
         }
     }
 
@@ -703,7 +715,8 @@ fun DeleteMessageAlert(
                     .padding(6.dp),
                 message = message,
                 useMD = false, // fertig mit markdown
-                selectedChatId = selectedChatId
+                selectedChatId = selectedChatId,
+
             )
         },
         shape = MaterialTheme.shapes.large,

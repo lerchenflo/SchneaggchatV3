@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
@@ -85,6 +84,7 @@ class Preferencemanager(
         val SERVER_URL = stringPreferencesKey("server_url")
         val DEVELOPER_SETTINGS = booleanPreferencesKey("developer_settings")
         val PINNED_CHATS = stringPreferencesKey("pinned_chats")
+        val DRAFTS = stringPreferencesKey("drafts")
     }
 
     // Markdown Format
@@ -211,10 +211,68 @@ class Preferencemanager(
             }
         }
     }
+
+    // Drafts - Stored as JSON
+    suspend fun addDraft(draft: Draft) {
+        val currentDrafts = getDrafts().toMutableList()
+
+        // Remove existing entry for this ID to avoid duplicates
+        currentDrafts.removeAll { it.chatId == draft.chatId && it.group == draft.group }
+
+        // Add new chat
+        currentDrafts.add(draft)
+
+        // Save to DataStore as JSON
+        prefs.edit {
+            it[PrefsKeys.DRAFTS] = json.encodeToString(currentDrafts)
+        }
+    }
+
+    suspend fun removeDraft(chatId: String, group: Boolean) {
+        val currentDrafts = getDrafts().toMutableList()
+        currentDrafts.removeAll { it.chatId == chatId && it.group == group }
+
+        prefs.edit {
+            it[PrefsKeys.DRAFTS] = json.encodeToString(currentDrafts)
+        }
+    }
+
+    fun getDraftsFlow(chatId: String, group: Boolean): Flow<String?> = prefs.data.map { prefs ->
+       val draftsJson = prefs[PrefsKeys.DRAFTS] ?: ""
+        if (draftsJson.isEmpty()) {
+            null
+        } else {
+            try {
+                val drafts = json.decodeFromString<List<Draft>>(draftsJson)
+                drafts.find { it.chatId == chatId && it.group == group }?.string
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+
+    suspend fun getDrafts(): List<Draft> {
+        val drafts = prefs.data.first()[PrefsKeys.DRAFTS] ?: ""
+        return if (drafts.isEmpty()) {
+            emptyList()
+        } else {
+            try {
+                json.decodeFromString<List<Draft>>(drafts)
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+    }
 }
 
 @Serializable
 data class PinnedChat(
     val chatId: String,
     val pinTimePoint: Long
+)
+@Serializable
+data class Draft(
+    val chatId: String,
+    val group: Boolean,
+    val string: String
 )
