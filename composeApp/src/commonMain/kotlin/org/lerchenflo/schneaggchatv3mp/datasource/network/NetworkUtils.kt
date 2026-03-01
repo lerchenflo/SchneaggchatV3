@@ -1007,4 +1007,10 @@ class NetworkUtils(
         )
     }
 
+    suspend fun getImageForImageMessage(messageId: String) : NetworkResult<ByteArray, NetworkError> {
+        return safeGet(
+            endpoint = "/messages/images/$messageId"
+        )
+    }
+
 }

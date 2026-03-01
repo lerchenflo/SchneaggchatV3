@@ -23,7 +23,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.filled.CloudOff
-import androidx.compose.material.icons.filled.Reply
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -47,8 +46,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mikepenz.markdown.m3.Markdown
-import com.mikepenz.markdown.model.DefaultMarkdownColors
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -61,6 +58,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollMessageContentView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.text.TextMessageContentView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.image.ImageMessageContentView
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.check
@@ -317,6 +315,10 @@ fun MessageContent(
                         useMD = useMD,
                         onAction = onAction,
                         readerMap = readerMap
+                    )
+
+                    MessageType.IMAGE -> ImageMessageContentView(
+                        message = message
                     )
 
                     else -> ErrorMessage()

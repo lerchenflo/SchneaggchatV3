@@ -87,6 +87,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
@@ -613,35 +614,39 @@ fun MessageOptionPopup(
                 }
             )
 
-            DropdownMenuItem(
-                text = { Text(stringResource(Res.string.copy)) },
-                onClick = {
-                    onCopy()
-                    onDismissRequest()
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.ContentCopy,
-                        contentDescription = null
-                    )
-                }
-            )
-
-            if (message.myMessage) {
-
+            if (message.msgType == MessageType.TEXT) {
                 DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.edit)) },
+                    text = { Text(stringResource(Res.string.copy)) },
                     onClick = {
-                        onEdit()
+                        onCopy()
                         onDismissRequest()
                     },
                     leadingIcon = {
                         Icon(
-                            imageVector = Icons.Default.Edit,
+                            imageVector = Icons.Default.ContentCopy,
                             contentDescription = null
                         )
                     }
                 )
+            }
+
+            if (message.myMessage) {
+
+                if (message.msgType == MessageType.TEXT) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(Res.string.edit)) },
+                        onClick = {
+                            onEdit()
+                            onDismissRequest()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = null
+                            )
+                        }
+                    )
+                }
 
                 DropdownMenuItem(
                     text = { Text(stringResource(Res.string.delete)) },

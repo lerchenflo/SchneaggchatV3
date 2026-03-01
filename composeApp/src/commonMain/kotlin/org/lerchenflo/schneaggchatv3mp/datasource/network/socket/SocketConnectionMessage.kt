@@ -14,6 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
@@ -107,6 +108,10 @@ suspend fun handleSocketConnectionMessage(message: String) {
                     messageRepository.deleteMessage(socketMessage.message.messageId)
                 } else {
                     messageRepository.upsertMessage(message)
+                }
+
+                if (socketMessage.message.msgType == MessageType.IMAGE) {
+                    appRepository.getPicturesForMessageIds(listOf(socketMessage.message.messageId))
                 }
 
                 //THis is a new message, show a notification
