@@ -144,7 +144,7 @@ class ChatViewModel(
     fun saveDraft(){
         CoroutineScope(Dispatchers.IO).launch {
             // todo wenn bild oder sprachnachricht oder so künnt ma des speichera
-            if(currentSendContent is SendMessageContent.TextContent && (currentSendContent as SendMessageContent.TextContent).textMessage.isNotBlank()) { // schoua ob es textfeld leer isch
+            if(currentSendContent is SendMessageContent.TextContent) { // schoua ob es textfeld leer isch
                 settingsRepository.saveDraft(
                     chatId = chatId,
                     group = isGroup,

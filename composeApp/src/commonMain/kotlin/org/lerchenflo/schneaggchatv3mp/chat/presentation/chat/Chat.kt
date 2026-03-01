@@ -132,7 +132,7 @@ fun ChatScreen(
     val clipboardManager = LocalClipboardManager.current
     val selectedChat by globalViewModel.selectedChat.collectAsStateWithLifecycle()
 
-    // Des funkat amol besser wie der LaunchedEfffekt was o immer der do dunna macht
+    // Des funkat amol besser wie der LaunchedEffekt was o immer der do dunna macht
     if(selectedChat.isNotSelected()){
         println("Unselected chat, navigating back")
         viewModel.onBackClick()
@@ -181,7 +181,6 @@ fun ChatScreen(
 
         onDispose {
             // This block runs when the screen is closed or navigated away from
-            println("ChatScreen disposed: Performing cleanup")
             viewModel.saveDraft()
         }
     }
@@ -264,6 +263,7 @@ fun ChatScreen(
                     when (item) {
                         is MessageDisplayItem.MessageItem -> {
                             val message = item.message
+                            println("Message read by: ${message.readers}")
 
                             var answerMessage: Message? = null
                             if (message.answerId != null) {
