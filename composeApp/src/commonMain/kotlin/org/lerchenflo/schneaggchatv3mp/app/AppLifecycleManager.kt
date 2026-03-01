@@ -20,11 +20,10 @@ object AppLifecycleManager {
     private var _isAppInForeground = mutableStateOf(false)
     
     private val _appResumedEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    private val _appBackgroundedEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     
-    /**
-     * SharedFlow that emits an event every time the app comes into the foreground (ON_RESUME)
-     */
     val appResumedEvent: SharedFlow<Unit> = _appResumedEvent.asSharedFlow()
+    val appBackgroundedEvent: SharedFlow<Unit> = _appBackgroundedEvent.asSharedFlow()
     
     /**
      * Whether the app is currently in foreground (visible to user)
@@ -44,6 +43,10 @@ object AppLifecycleManager {
      */
     internal fun notifyAppResumed() {
         _appResumedEvent.tryEmit(Unit)
+    }
+    
+    internal fun notifyAppBackgrounded() {
+        _appBackgroundedEvent.tryEmit(Unit)
     }
     
     /**
@@ -91,6 +94,7 @@ fun AppLifecycleTracker() {
                 Lifecycle.Event.ON_STOP -> {
                     lifecycleState = Lifecycle.State.CREATED
                     AppLifecycleManager.updateAppForegroundState(false)
+                    AppLifecycleManager.notifyAppBackgrounded()
                 }
 
                 Lifecycle.Event.ON_DESTROY -> {

@@ -7,16 +7,24 @@ import io.ktor.websocket.Frame
 import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlin.math.min
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
@@ -35,6 +43,12 @@ class SocketConnectionManager(
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository
 ) {
+
+    enum class ConnectionState {
+        Disconnected,
+        Connecting,
+        Connected
+    }
 
     companion object {
         fun getSocketUrl(url: String): String {
@@ -60,13 +74,28 @@ class SocketConnectionManager(
         }
     }
 
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private val connectMutex = Mutex()
     private var currentConnection: SocketConnection? = null
-    private val _connectionState = MutableStateFlow(false)
+
+    private var connectJob: Job? = null
+    private var reconnectJob: Job? = null
+
+    private var lastServerUrl: String? = null
+    private var lastOnError: ((Throwable) -> Unit)? = null
+    private var lastOnClose: (() -> Unit)? = null
+
+    private val _connectionState = MutableStateFlow(ConnectionState.Disconnected)
 
     /**
      * Observable connection state for Composables
      */
-    val isConnected: StateFlow<Boolean> = _connectionState.asStateFlow()
+    val connectionState: StateFlow<ConnectionState> = _connectionState.asStateFlow()
+
+    val isConnected: StateFlow<Boolean> = _connectionState
+        .map { it == ConnectionState.Connected }
+        .stateIn(scope = scope, started = SharingStarted.Eagerly, initialValue = false)
 
     /**
      * Establish WebSocket connection with authentication
@@ -76,45 +105,68 @@ class SocketConnectionManager(
         onError: (Throwable) -> Unit,
         onClose: () -> Unit
     ): Boolean {
-        return try {
-            // Close existing connection if the serverUrl changed
-            if (currentConnection?.serverUrl != serverUrl) {
+        lastServerUrl = serverUrl
+        lastOnError = onError
+        lastOnClose = onClose
+
+        return connectMutex.withLock {
+            if (_connectionState.value == ConnectionState.Connected || _connectionState.value == ConnectionState.Connecting) {
+                return@withLock true
+            }
+
+            _connectionState.value = ConnectionState.Connecting
+
+            try {
+                reconnectJob?.cancel()
+                reconnectJob = null
+
                 currentConnection?.close()
-                _connectionState.value = false
-            }
+                currentConnection = null
 
-            // Create WebSocket connection
-            val connection = SocketConnection(
-                httpClient = httpClient,
-                serverUrl = serverUrl,
-                onMessage = {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        handleSocketConnectionMessage(it)
+                val connection = SocketConnection(
+                    httpClient = httpClient,
+                    serverUrl = serverUrl,
+                    onMessage = {
+                        scope.launch {
+                            handleSocketConnectionMessage(it)
+                        }
+                    },
+                    onError = { throwable ->
+                        _connectionState.value = ConnectionState.Disconnected
+                        onError(throwable)
+                        scheduleReconnectIfPossible()
+                    },
+                    onClose = {
+                        _connectionState.value = ConnectionState.Disconnected
+                        onClose()
+                        scheduleReconnectIfPossible()
+                    },
+                    onConnectionStateChanged = { isActive ->
+                        _connectionState.value = if (isActive) ConnectionState.Connected else ConnectionState.Disconnected
                     }
-                },
-                onError = onError,
-                onClose = {
-                    _connectionState.value = false
-                    onClose()
-                },
-                onConnectionStateChanged = { isActive ->
-                    _connectionState.value = isActive
+                )
+
+                currentConnection = connection
+
+                connectJob?.cancel()
+                connectJob = scope.launch {
+                    try {
+                        connection.connect()
+                    } catch (t: Throwable) {
+                        _connectionState.value = ConnectionState.Disconnected
+                        onError(t)
+                        scheduleReconnectIfPossible()
+                    }
                 }
-            )
 
-            currentConnection = connection
-
-            // Launch connection in background
-            CoroutineScope(Dispatchers.IO).launch {
-                connection.connect()
+                true
+            } catch (e: Exception) {
+                //loggingRepository.logError("Failed to connect WebSocket: ${e.message}")
+                _connectionState.value = ConnectionState.Disconnected
+                onError(e)
+                scheduleReconnectIfPossible()
+                false
             }
-
-            true // Connection attempt initiated successfully
-        } catch (e: Exception) {
-            loggingRepository.logError("Failed to connect WebSocket: ${e.message}")
-            _connectionState.value = false
-            onError(e)
-            false
         }
     }
 
@@ -129,17 +181,38 @@ class SocketConnectionManager(
      * Close current connection
      */
     suspend fun close() {
-        println("Closing socket connection")
+        reconnectJob?.cancel()
+        reconnectJob = null
+        connectJob?.cancel()
+        connectJob = null
+
         currentConnection?.close()
         currentConnection = null
-        _connectionState.value = false
+        _connectionState.value = ConnectionState.Disconnected
     }
 
     /**
      * Check if connection is active (synchronous check)
      */
-    fun isConnectedNow(): Boolean = _connectionState.value
+    fun isConnectedNow(): Boolean = _connectionState.value == ConnectionState.Connected
 
+    private fun scheduleReconnectIfPossible() {
+        val url = lastServerUrl ?: return
+        val onError = lastOnError ?: return
+        val onClose = lastOnClose ?: return
+
+        if (reconnectJob?.isActive == true) return
+
+        reconnectJob = scope.launch {
+            var attempt = 0
+            while (_connectionState.value != ConnectionState.Connected) {
+                val delayMs = min(30_000L, 1_000L * (1L shl min(attempt, 5)))
+                attempt++
+                delay(delayMs)
+                connect(url, onError, onClose)
+            }
+        }
+    }
 }
 
 /**
