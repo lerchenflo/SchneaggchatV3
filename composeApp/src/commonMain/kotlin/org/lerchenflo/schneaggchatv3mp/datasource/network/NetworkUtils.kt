@@ -886,9 +886,9 @@ class NetworkUtils(
         val readAt: Long
     )
 
-    suspend fun sendTextMessageToServer(empfaenger: String, gruppe: Boolean, content: String, answerid: String?) : NetworkResult<MessageResponse, NetworkError> {
+    suspend fun sendTextMessageToServer(messageId: String?, empfaenger: String, gruppe: Boolean, content: String, answerid: String?) : NetworkResult<MessageResponse, NetworkError> {
         val messageRequest = MessageRequest(
-            messageId = null,
+            messageId = messageId,
             receiverId = empfaenger,
             groupMessage = gruppe,
             msgType = MessageType.TEXT,

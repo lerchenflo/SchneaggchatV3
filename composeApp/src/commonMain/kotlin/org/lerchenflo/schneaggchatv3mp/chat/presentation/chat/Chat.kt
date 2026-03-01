@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -51,6 +53,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -66,7 +69,15 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
+import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
+import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
+import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
+import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
+import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
+import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -83,6 +94,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollDialog
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignupAction
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
@@ -96,6 +109,7 @@ import schneaggchatv3mp.composeapp.generated.resources.copy
 import schneaggchatv3mp.composeapp.generated.resources.delete
 import schneaggchatv3mp.composeapp.generated.resources.edit
 import schneaggchatv3mp.composeapp.generated.resources.go_back
+import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.message
 import schneaggchatv3mp.composeapp.generated.resources.message_delete_info
@@ -123,15 +137,42 @@ fun ChatScreen(
         viewModel.onBackClick()
     }
 
-    /*
-    LaunchedEffect(globalViewModel.selectedChat) {
-        if (globalViewModel.selectedChat.value.isNotSelected()) {
-            println("Chat no user selected, navigating back")
-            loggingRepository.logWarning("No User in chat  selected, navigating back")
-            viewModel.onBackClick()
+    var addMediaDropdownExpanded by remember { mutableStateOf(false) }
+
+
+    var showPollDialog by remember { mutableStateOf(false) }
+    var showImagePickerDialog by remember { mutableStateOf(false) }
+
+
+    if (showImagePickerDialog) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (showImagePickerDialog ) {
+
+                GalleryPickerLauncher(
+                    onPhotosSelected = {
+                        viewModel.onImageSelected(it.first())
+                        showImagePickerDialog = false
+                    },
+                    onError = {
+                        showImagePickerDialog = false
+                    },
+                    onDismiss = {
+                        showImagePickerDialog = false
+                    },
+                    selectionLimit = 1,
+                    enableCrop = true,
+                    cameraCaptureConfig = CameraCaptureConfig(
+                        compressionLevel = CompressionLevel.HIGH,
+                        preference = CapturePhotoPreference.FAST, //No flash
+                        galleryConfig = GalleryConfig(
+                            allowMultiple = false,
+                            selectionLimit = 1,
+                        )
+                    )
+                )
+            }
         }
     }
-     */
 
     Scaffold(
         modifier = modifier
@@ -303,176 +344,191 @@ fun ChatScreen(
                 }
             }
 
-                // Reply view
-                if (viewModel.replyMessage != null) {
-                    ReplyPreview(viewModel, globalViewModel)
+            // Reply view
+            if (viewModel.replyMessage != null) {
+                ReplyPreview(viewModel, globalViewModel)
+            }
+
+            //Inputrow for sending messages
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalAlignment = Alignment.Bottom
+            ) {
+                // button zum züg addden
+
+
+
+
+                IconButton(
+                    onClick = { addMediaDropdownExpanded = true },
+                    modifier = Modifier
+                        .padding(5.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AttachFile,
+                        contentDescription = stringResource(Res.string.add)
+                    )
                 }
 
-                InputFieldRow(viewModel)
 
-        }
-    }
-}
+                if (addMediaDropdownExpanded) {
+                    DropdownMenu(
+                        expanded = addMediaDropdownExpanded,
+                        onDismissRequest = { addMediaDropdownExpanded = false }
+                    ) {
+                        AddMediaOptions.entries.forEach { option ->
 
-@Composable
-fun InputFieldRow(viewModel: ChatViewModel){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        verticalAlignment = Alignment.Bottom
-    ) {
-        // button zum züg addden
-        var addMediaDropdownExpanded by remember { mutableStateOf(false) }
-        var showPollDialog by remember { mutableStateOf(false) }
-
-
-        IconButton(
-            onClick = { addMediaDropdownExpanded = true },
-            modifier = Modifier
-                .padding(5.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.AttachFile,
-                contentDescription = stringResource(Res.string.add)
-            )
-        }
-
-
-        if (addMediaDropdownExpanded) {
-            DropdownMenu(
-                expanded = addMediaDropdownExpanded,
-                onDismissRequest = { addMediaDropdownExpanded = false }
-            ) {
-                AddMediaOptions.entries.forEach { option ->
-
-                    if(!SessionCache.developer) {
-                        if (option == AddMediaOptions.AUDIO || option == AddMediaOptions.IMAGE) return@forEach
-                    }
-
-
-                    DropdownMenuItem(
-                        text = {
-                            Row {
-                                Icon(
-                                    imageVector = option.getIcon(),
-                                    contentDescription = option.toUiText().asString(),
-                                )
-                                Spacer(Modifier.width(5.dp))
-                                Text(
-                                    text = option.toUiText().asString()
-                                )
+                            if(!SessionCache.developer) {
+                                if (option == AddMediaOptions.AUDIO) return@forEach //Removes audio if no dev
                             }
-                        },
-                        onClick = {
-                            addMediaDropdownExpanded = false
-                            option.getAction(
-                                onPollAction = { showPollDialog = true },
-                                onImageAction = {}, // todo actions übergeaba
-                                onAudioAction = {}
+
+
+                            DropdownMenuItem(
+                                text = {
+                                    Row {
+                                        Icon(
+                                            imageVector = option.getIcon(),
+                                            contentDescription = option.toUiText().asString(),
+                                        )
+                                        Spacer(Modifier.width(5.dp))
+                                        Text(
+                                            text = option.toUiText().asString()
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    addMediaDropdownExpanded = false
+                                    option.getAction(
+                                        onPollAction = { showPollDialog = true },
+                                        onImageAction = { showImagePickerDialog = true }, // todo actions übergeaba
+                                        onAudioAction = {}
+                                    )
+                                }
                             )
+                        }
+                    }
+                }
+
+                if(showPollDialog){
+                    PollDialog(
+                        onDismiss = { showPollDialog = false },
+                        onCreatePoll = {
+                            println("Poll created: $it")
+                            viewModel.createPollMessage(it)
                         }
                     )
                 }
-            }
-        }
 
-        if(showPollDialog){
-            PollDialog(
-                onDismiss = { showPollDialog = false },
-                onCreatePoll = {
-                    println("Poll created: $it")
-                    viewModel.createPollMessage(it)
-                }
-            )
-        }
 
-        OutlinedTextField(
-            value = viewModel.sendText,
-            onValueChange = { newValue ->
-                viewModel.updatesendText(newValue)
-            },
-            modifier = Modifier
-                .weight(1f)
-                .onPreviewKeyEvent { event ->
-                    // Check if the key is 'Enter' and it's a 'KeyDown' event
-                    if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
-                        if (event.isShiftPressed) {
-                            // ACTION: Shift + Enter
-                            // add a newline
-                            val newValue = viewModel.sendText.text.replaceRange(
-                                viewModel.sendText.selection.min,
-                                viewModel.sendText.selection.max,
-                                "\n"
-                            )
-                            val newCursorPos = viewModel.sendText.selection.min + 1
-                            viewModel.updatesendText(
-                                viewModel.sendText.copy(
-                                    text = newValue,
-                                    selection = TextRange(newCursorPos)
-                                )
-                            )
-                            return@onPreviewKeyEvent false // Let the system handle the newline
-                        } else {
-                            // ACTION: Enter (only)
-                            // Send the message
-                            viewModel.sendTextMessage()
-                            return@onPreviewKeyEvent true // Consume the event (no newline added)
-                        }
+
+                //sendinput
+                when (val content = viewModel.currentSendContent) {
+                    is ChatViewModel.SendMessageContent.TextContent -> {
+                        OutlinedTextField(
+                            value = content.textMessage,
+                            onValueChange = { newValue ->
+                                viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(newValue))
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .onPreviewKeyEvent { event ->
+                                    // Check if the key is 'Enter' and it's a 'KeyDown' event
+                                    if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
+                                        if (event.isShiftPressed) {
+                                            // ACTION: Shift + Enter
+                                            // add a newline
+                                            viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(content.textMessage + "\n"))
+                                            return@onPreviewKeyEvent false // Let the system handle the newline
+                                        } else {
+                                            // ACTION: Enter (only)
+                                            // Send the message
+                                            viewModel.sendMessage(
+                                                message = viewModel.currentSendContent,
+                                                replyTo = viewModel.replyMessage
+                                            )
+                                            return@onPreviewKeyEvent true // Consume the event (no newline added)
+                                        }
+                                    }
+                                    false // Pass all other events (letters, backspace, etc.) to the TextField
+                                },
+                            placeholder = { Text(stringResource(Res.string.message) + " ...") }
+                        )
                     }
-                    false // Pass all other events (letters, backspace, etc.) to the TextField
-                },
-            placeholder = { Text(stringResource(Res.string.message) + " ...") }
-        )
 
-        if(viewModel.editMessageId == null){ // schoua ob mir gad a nachricht bearbeitend
-            // send button
-            IconButton(
-                onClick = { viewModel.sendTextMessage() },
-                modifier = Modifier
-                    .padding(5.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Send,
-                    contentDescription = stringResource(Res.string.add),
-                )
-            }
-        }else{
+                    is ChatViewModel.SendMessageContent.ImageContent -> {
+                        AsyncImage(
+                            model = content.imageMessage,
+                            modifier = Modifier.size(240.dp),
+                            contentDescription = "send image",
+                        )
+                    }
+                }
 
-            //Cancel reply button
-            IconButton(
-                onClick = {
-                    viewModel.onAction(MessageAction.CancelEditMessage)
-                },
-                modifier = Modifier
-                    .padding(5.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Cancel,
-                    contentDescription = stringResource(Res.string.cancel),
-                )
+
+
+                if(viewModel.editMessage == null){ // schoua ob mir gad a nachricht bearbeitend
+                    // send button
+                    IconButton(
+                        onClick = {
+                            viewModel.sendMessage(
+                                message = viewModel.currentSendContent,
+                                replyTo = viewModel.replyMessage
+                            )
+                                  },
+                        modifier = Modifier
+                            .padding(5.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            contentDescription = stringResource(Res.string.add),
+                        )
+                    }
+                }else{
+
+                    //Cancel reply button
+                    IconButton(
+                        onClick = {
+                            viewModel.onAction(MessageAction.CancelEditMessage)
+                        },
+                        modifier = Modifier
+                            .padding(5.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Cancel,
+                            contentDescription = stringResource(Res.string.cancel),
+                        )
+                    }
+
+                    //edit message button
+                    IconButton(
+                        onClick = {
+                            viewModel.editMessage(
+                                message = viewModel.editMessage,
+                                content = viewModel.currentSendContent
+                            )
+                        },
+                        modifier = Modifier
+                            .padding(5.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = stringResource(Res.string.edit),
+                        )
+                    }
+                    // mdtodo
+                }
+
+
+
             }
 
-            //edit message button
-            IconButton(
-                onClick = {
-                    viewModel.editMessage()
-                },
-                modifier = Modifier
-                    .padding(5.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = stringResource(Res.string.edit),
-                )
-            }
-            // mdtodo
         }
-
-
-
     }
 }
+
+
 
 @Composable
 fun ReplyPreview(viewModel: ChatViewModel, globalViewModel: GlobalViewModel){

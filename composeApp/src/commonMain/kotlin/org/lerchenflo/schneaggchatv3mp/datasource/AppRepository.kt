@@ -902,7 +902,7 @@ class AppRepository(
      * @param localpk Local pk, only pass if already in db
      *
      */
-    suspend fun sendMessage(empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long = 0){
+    suspend fun sendMessage(messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long = 0){
 
         var localpkintern = localpk
 
@@ -955,7 +955,7 @@ class AppRepository(
             is MessageContent.TextContent -> {
                 MessageDto(
                     localPK = localpkintern,
-                    id = null,
+                    id = messageId,
                     msgType = MessageType.TEXT,
                     content = content.message,
                     senderId = SessionCache.getOwnIdValue()!!,
@@ -1010,6 +1010,7 @@ class AppRepository(
             }
             is MessageContent.TextContent -> {
                 networkUtils.sendTextMessageToServer(
+                    messageId = messageId,
                     empfaenger = empfaenger,
                     gruppe = gruppe,
                     content = content.message,
@@ -1093,9 +1094,11 @@ class AppRepository(
                                     MessageType.TEXT -> {
                                         MessageContent.TextContent(m.content)
                                     }
+
                                     MessageType.IMAGE -> {
                                         MessageContent.TextContent("") //TODO IMAGES
                                     }
+
                                     MessageType.POLL -> {
 
                                         val poll = m.poll!!
@@ -1118,15 +1121,20 @@ class AppRepository(
                                     }
                                 },
                                 answerid = m.answerId,
-                                localpk = m.localPK
+                                localpk = m.localPK,
+                                messageId = null
                             )
                         } catch (e: Exception){
                             println("Retry send failed for localPK=${m.localPK}: $e")
                             // optional: increment retry counter in DB, break or continue
                         }
                     }
-                    MessageType.IMAGE -> TODO()
-                    MessageType.POLL -> TODO()
+                    MessageType.IMAGE -> {
+                        //TODO()
+                    }
+                    MessageType.POLL -> {
+                        //TODO()
+                    }
                 }
 
                 //TODO: Offline message send for images
@@ -1274,27 +1282,50 @@ class AppRepository(
     }
 
 
-    suspend fun editMessage(messageId: String, newContent: String) {
-        val request = networkUtils.editMessage(
-            messageId = messageId,
-            newContent = newContent
-        )
+    suspend fun editMessage(message: Message, newContent: String) {
+        if (!message.isText()) return
 
-        when (request) {
-            is NetworkResult.Error<RequestError> ->  {
-                sendErrorSuspend(ErrorEvent(error = request.error))
+        if (message.id == null) {
+            //edit a not sent message
+            val existing = messageRepository.getMessageById(message.localPK)
+            if (existing != null) {
+                messageRepository.upsertMessage(existing.copy(
+                    content = newContent,
+                    sent = false
+                ))
             }
-            is NetworkResult.Success<MessageResponse> -> {
-                val existing = messageRepository.getMessageById(request.data.messageId)
-                if (existing != null) {
-                    messageRepository.upsertMessage(existing.copy(
-                        content = request.data.content,
-                        changeDate = request.data.lastChanged.toString(),
-                    ))
-                }
 
+        } else {
+            val request = networkUtils.editMessage(
+                messageId = message.id!!,
+                newContent = newContent
+            )
+
+            when (request) {
+                is NetworkResult.Error<RequestError> ->  {
+                    val existing = messageRepository.getMessageById(message.localPK)
+                    if (existing != null) {
+                        messageRepository.upsertMessage(existing.copy(
+                            content = newContent,
+                            sent = false
+                        ))
+                    }
+                    //sendErrorSuspend(ErrorEvent(error = request.error))
+                }
+                is NetworkResult.Success<MessageResponse> -> {
+                    val existing = messageRepository.getMessageById(request.data.messageId)
+                    if (existing != null) {
+                        messageRepository.upsertMessage(existing.copy(
+                            content = request.data.content,
+                            changeDate = request.data.lastChanged.toString(),
+                        ))
+                    }
+
+                }
             }
         }
+
+
     }
 
     suspend fun deleteLocalMessage(localpk: Long) {
