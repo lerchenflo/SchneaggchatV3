@@ -663,7 +663,8 @@ fun DeleteMessageAlert(
                     .padding(6.dp),
                 message = message,
                 useMD = false, // fertig mit markdown
-                selectedChatId = selectedChatId
+                selectedChatId = selectedChatId,
+
             )
         },
         shape = MaterialTheme.shapes.large,

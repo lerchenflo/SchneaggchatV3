@@ -13,6 +13,8 @@ It is an alternative to the tech giants stealing our data.
 ### 3.0.5
 #### Features
 - change Group Profile Pictures
+- save Message as Draft when leaving Chat (only for Text Messages)
+- Names on replies
 
 #### Bugfixes
 - Navigate to chat selector when no user is selected in chat (bug when swiping back)

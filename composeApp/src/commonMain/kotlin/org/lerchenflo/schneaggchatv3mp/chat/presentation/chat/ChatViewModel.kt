@@ -127,11 +127,14 @@ class ChatViewModel(
 
     fun saveDraft(){
         CoroutineScope(Dispatchers.IO).launch {
-            settingsRepository.saveDraft(
-                chatId = chatId,
-                group = isGroup,
-                string = sendText.text // todo wenn bild oder sprachnachricht oder so künnt ma des speichera
-            )
+            // todo wenn bild oder sprachnachricht oder so künnt ma des speichera
+            if(!sendText.text.isEmpty()) { // schoua ob es textfeld leer isch
+                settingsRepository.saveDraft(
+                    chatId = chatId,
+                    group = isGroup,
+                    string = sendText.text
+                )
+            }
         }
     }
 
@@ -344,6 +347,7 @@ class ChatViewModel(
             } else null
 
             val senderName = userMap[message.senderId]?.name ?: groupMap[message.senderId]?.memberName ?: "Unresolved Username"
+            message.senderAsString = senderName
             val resolvedColor = groupMap[message.senderId]?.color ?: 0
             message.senderColor = resolvedColor
 
