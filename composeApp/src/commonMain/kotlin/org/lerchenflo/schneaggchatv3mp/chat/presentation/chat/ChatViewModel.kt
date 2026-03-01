@@ -144,11 +144,11 @@ class ChatViewModel(
     fun saveDraft(){
         CoroutineScope(Dispatchers.IO).launch {
             // todo wenn bild oder sprachnachricht oder so künnt ma des speichera
-            if(!sendText.text.isEmpty()) { // schoua ob es textfeld leer isch
+            if(currentSendContent is SendMessageContent.TextContent && (currentSendContent as SendMessageContent.TextContent).textMessage.isNotBlank()) { // schoua ob es textfeld leer isch
                 settingsRepository.saveDraft(
                     chatId = chatId,
                     group = isGroup,
-                    string = sendText.text
+                    string = (currentSendContent as SendMessageContent.TextContent).textMessage
                 )
             }
         }
@@ -158,13 +158,17 @@ class ChatViewModel(
         if (message is SendMessageContent.TextContent && message.textMessage.isBlank()) return
         if (message is SendMessageContent.ImageContent && message.imageMessage.isEmpty()) return
 
-            globalViewModel.viewModelScope.launch {
-                appRepository.sendMessage(
-                    empfaenger = chatId,
-                    gruppe = isGroup,
-                    content = AppRepository.MessageContent.TextContent(content),
-                    answerid = replyMessage?.id,
-                )
+        globalViewModel.viewModelScope.launch {
+            appRepository.sendMessage(
+                empfaenger = globalViewModel.selectedChat.value.id,
+                gruppe = globalViewModel.selectedChat.value.isGroup,
+                content = when(message) {
+                    is SendMessageContent.ImageContent -> AppRepository.MessageContent.ImageContent(message.imageMessage)
+                    is SendMessageContent.TextContent -> AppRepository.MessageContent.TextContent(message.textMessage)
+                },
+                answerid = replyTo?.id,
+                messageId = null,
+            )
 
             updateReplyMessage(null)
             updateSendContent(SendMessageContent.TextContent(""))
@@ -450,7 +454,7 @@ class ChatViewModel(
                     loggingRepository.logWarning("ChatViewModel: Problem getting draft: ${exception.message}")
                 }
                 .collect { value ->
-                    updatesendText(TextFieldValue(value?: ""))
+                    updateSendContent(SendMessageContent.TextContent(value?: ""))
                 }
         }
 
