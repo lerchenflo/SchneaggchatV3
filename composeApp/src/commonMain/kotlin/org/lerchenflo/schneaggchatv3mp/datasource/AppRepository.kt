@@ -893,7 +893,7 @@ class AppRepository(
 
     sealed class MessageContent {
         data class TextContent(val message: String) : MessageContent()
-        //data class ImageContent(val image: ByteArray) : MessageContent() TODO ADD images
+        data class ImageContent(val image: ByteArray) : MessageContent()
 
         data class PollContent(val poll: NetworkUtils.PollCreateRequest) : MessageContent()
     }
@@ -902,7 +902,7 @@ class AppRepository(
      * @param localpk Local pk, only pass if already in db
      *
      */
-    suspend fun sendMessage(empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long = 0){
+    suspend fun sendMessage(messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long = 0){
 
         var localpkintern = localpk
 
@@ -955,9 +955,29 @@ class AppRepository(
             is MessageContent.TextContent -> {
                 MessageDto(
                     localPK = localpkintern,
-                    id = null,
+                    id = messageId,
                     msgType = MessageType.TEXT,
                     content = content.message,
+                    senderId = SessionCache.getOwnIdValue()!!,
+                    receiverId = empfaenger,
+                    sendDate = senddate,
+                    updatedAt = senddate,
+                    deleted = false,
+                    groupMessage = gruppe,
+                    answerId = answerid,
+                    sent = false,
+                    myMessage = true,
+                    readByMe = true
+                )
+            }
+
+            is MessageContent.ImageContent -> {
+                //TODO: save image in local storage for offline message
+                MessageDto(
+                    localPK = localpkintern,
+                    id = null,
+                    msgType = MessageType.IMAGE,
+                    content = "",
                     senderId = SessionCache.getOwnIdValue()!!,
                     receiverId = empfaenger,
                     sendDate = senddate,
@@ -990,9 +1010,19 @@ class AppRepository(
             }
             is MessageContent.TextContent -> {
                 networkUtils.sendTextMessageToServer(
+                    messageId = messageId,
                     empfaenger = empfaenger,
                     gruppe = gruppe,
                     content = content.message,
+                    answerid = answerid
+                )
+            }
+
+            is MessageContent.ImageContent -> {
+                networkUtils.sendImageMessageToServer(
+                    empfaenger = empfaenger,
+                    gruppe = gruppe,
+                    image = content.image,
                     answerid = answerid
                 )
             }
@@ -1004,6 +1034,8 @@ class AppRepository(
                 withContext(Dispatchers.IO) {
 
                     println("Messageid returned from server: ${serverrequest.data.messageId}")
+
+                    //TODO: get image for imagemessage
 
                     messageRepository.upsertMessage(
                         Message(
@@ -1052,47 +1084,59 @@ class AppRepository(
 
             //Do no parallel des loft jetzt alles seriell
             for (m in messages){
-                if (m.isText()){
-                    try {
-                        sendMessage(
-                            empfaenger = m.receiverId,
-                            gruppe = m.groupMessage,
-                            content = when (m.msgType) {
-                                MessageType.TEXT -> {
-                                    MessageContent.TextContent(m.content)
-                                }
-                                MessageType.IMAGE -> {
-                                    MessageContent.TextContent("") //TODO IMAGES
-                                }
-                                MessageType.POLL -> {
-                                    
-                                    val poll = m.poll!!
-                                    MessageContent.PollContent(
-                                        NetworkUtils.PollCreateRequest(
-                                            title = poll.title,
-                                            description = poll.description,
-                                            maxAnswers = poll.maxAnswers,
-                                            customAnswersEnabled = poll.customAnswersEnabled,
-                                            maxAllowedCustomAnswers = poll.maxAllowedCustomAnswers,
-                                            visibility = poll.visibility,
-                                            closeDate = poll.expiresAt,
-                                            voteOptions = poll.voteOptions.map { 
-                                                NetworkUtils.PollVoteOptionCreateRequest(
-                                                    text = it.text
-                                                )
-                                            }
+                when (m.msgType) {
+                    MessageType.TEXT -> {
+                        try {
+                            sendMessage(
+                                empfaenger = m.receiverId,
+                                gruppe = m.groupMessage,
+                                content = when (m.msgType) {
+                                    MessageType.TEXT -> {
+                                        MessageContent.TextContent(m.content)
+                                    }
+
+                                    MessageType.IMAGE -> {
+                                        MessageContent.TextContent("") //TODO IMAGES
+                                    }
+
+                                    MessageType.POLL -> {
+
+                                        val poll = m.poll!!
+                                        MessageContent.PollContent(
+                                            NetworkUtils.PollCreateRequest(
+                                                title = poll.title,
+                                                description = poll.description,
+                                                maxAnswers = poll.maxAnswers,
+                                                customAnswersEnabled = poll.customAnswersEnabled,
+                                                maxAllowedCustomAnswers = poll.maxAllowedCustomAnswers,
+                                                visibility = poll.visibility,
+                                                closeDate = poll.expiresAt,
+                                                voteOptions = poll.voteOptions.map {
+                                                    NetworkUtils.PollVoteOptionCreateRequest(
+                                                        text = it.text
+                                                    )
+                                                }
+                                            )
                                         )
-                                    )
-                                }
-                            },
-                            answerid = m.answerId,
-                            localpk = m.localPK
-                        )
-                    } catch (e: Exception){
-                        println("Retry send failed for localPK=${m.localPK}: $e")
-                        // optional: increment retry counter in DB, break or continue
+                                    }
+                                },
+                                answerid = m.answerId,
+                                localpk = m.localPK,
+                                messageId = null
+                            )
+                        } catch (e: Exception){
+                            println("Retry send failed for localPK=${m.localPK}: $e")
+                            // optional: increment retry counter in DB, break or continue
+                        }
+                    }
+                    MessageType.IMAGE -> {
+                        //TODO()
+                    }
+                    MessageType.POLL -> {
+                        //TODO()
                     }
                 }
+
                 //TODO: Offline message send for images
             }
         }
@@ -1238,27 +1282,50 @@ class AppRepository(
     }
 
 
-    suspend fun editMessage(messageId: String, newContent: String) {
-        val request = networkUtils.editMessage(
-            messageId = messageId,
-            newContent = newContent
-        )
+    suspend fun editMessage(message: Message, newContent: String) {
+        if (!message.isText()) return
 
-        when (request) {
-            is NetworkResult.Error<RequestError> ->  {
-                sendErrorSuspend(ErrorEvent(error = request.error))
+        if (message.id == null) {
+            //edit a not sent message
+            val existing = messageRepository.getMessageById(message.localPK)
+            if (existing != null) {
+                messageRepository.upsertMessage(existing.copy(
+                    content = newContent,
+                    sent = false
+                ))
             }
-            is NetworkResult.Success<MessageResponse> -> {
-                val existing = messageRepository.getMessageById(request.data.messageId)
-                if (existing != null) {
-                    messageRepository.upsertMessage(existing.copy(
-                        content = request.data.content,
-                        changeDate = request.data.lastChanged.toString(),
-                    ))
-                }
 
+        } else {
+            val request = networkUtils.editMessage(
+                messageId = message.id!!,
+                newContent = newContent
+            )
+
+            when (request) {
+                is NetworkResult.Error<RequestError> ->  {
+                    val existing = messageRepository.getMessageById(message.localPK)
+                    if (existing != null) {
+                        messageRepository.upsertMessage(existing.copy(
+                            content = newContent,
+                            sent = false
+                        ))
+                    }
+                    //sendErrorSuspend(ErrorEvent(error = request.error))
+                }
+                is NetworkResult.Success<MessageResponse> -> {
+                    val existing = messageRepository.getMessageById(request.data.messageId)
+                    if (existing != null) {
+                        messageRepository.upsertMessage(existing.copy(
+                            content = request.data.content,
+                            changeDate = request.data.lastChanged.toString(),
+                        ))
+                    }
+
+                }
             }
         }
+
+
     }
 
     suspend fun deleteLocalMessage(localpk: Long) {

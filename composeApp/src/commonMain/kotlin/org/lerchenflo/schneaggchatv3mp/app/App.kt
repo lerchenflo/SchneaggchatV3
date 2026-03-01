@@ -2,9 +2,13 @@ package org.lerchenflo.schneaggchatv3mp.app
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.Blind
@@ -296,6 +300,9 @@ fun App() {
             snackbarHost = { SnackbarHost(snackbarHostState) },
             modifier = Modifier
                 .clearFocusOnTap()
+                .imePadding(),
+            //contentWindowInsets = WindowInsets.c
+
         ) { innerpadding ->
 
             Column(

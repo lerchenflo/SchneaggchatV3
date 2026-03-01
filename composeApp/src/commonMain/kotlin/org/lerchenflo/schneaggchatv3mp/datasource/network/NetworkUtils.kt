@@ -6,6 +6,8 @@ import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.FormBuilder
+import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.statement.HttpResponse
@@ -156,6 +158,17 @@ class NetworkUtils(
             httpClient.post(preferenceManager.buildServerUrl(endpoint)) {
                 contentType(ContentType.Application.Json)
                 setBody(body)
+            }
+        }
+    }
+
+    private suspend inline fun <reified R> safePostMultipart(
+        endpoint: String,
+        crossinline parts: FormBuilder.() -> Unit
+    ): NetworkResult<R, NetworkError> {
+        return safeCall {
+            httpClient.post(preferenceManager.buildServerUrl(endpoint)) {
+                setBody(MultiPartFormDataContent(formData { parts() }))
             }
         }
     }
@@ -784,6 +797,16 @@ class NetworkUtils(
     )
 
     @Serializable
+    data class ImageMessageRequest(
+        val messageId: String?, //Objectid
+
+        val receiverId: String,
+        val groupMessage: Boolean,
+        val msgType: MessageType,
+        val answerId: String?
+    )
+
+    @Serializable
     data class PollMessageRequest(
         val receiverId: String,
         val groupMessage: Boolean,
@@ -863,9 +886,9 @@ class NetworkUtils(
         val readAt: Long
     )
 
-    suspend fun sendTextMessageToServer(empfaenger: String, gruppe: Boolean, content: String, answerid: String?) : NetworkResult<MessageResponse, NetworkError> {
+    suspend fun sendTextMessageToServer(messageId: String?, empfaenger: String, gruppe: Boolean, content: String, answerid: String?) : NetworkResult<MessageResponse, NetworkError> {
         val messageRequest = MessageRequest(
-            messageId = null,
+            messageId = messageId,
             receiverId = empfaenger,
             groupMessage = gruppe,
             msgType = MessageType.TEXT,
@@ -878,6 +901,43 @@ class NetworkUtils(
         return safePost(
             endpoint = "/messages/send/text",
             body = messageRequest
+        )
+    }
+
+    suspend fun sendImageMessageToServer(
+        empfaenger: String,
+        gruppe: Boolean,
+        image: ByteArray,
+        answerid: String?
+    ): NetworkResult<MessageResponse, NetworkError> {
+
+        val messageRequest = ImageMessageRequest(
+            messageId = null,
+            receiverId = empfaenger,
+            groupMessage = gruppe,
+            msgType = MessageType.IMAGE,
+            answerId = answerid,
+        )
+
+        return safePostMultipart(
+            endpoint = "/messages/send/image",
+            parts = {
+                append(
+                    key = "image",
+                    value = image,
+                    headers = Headers.build {
+                        append(HttpHeaders.ContentType, "image/jpeg")
+                        append(HttpHeaders.ContentDisposition, "filename=\"image.jpg\"")
+                    }
+                )
+                append(
+                    key = "request",
+                    value = AppJson.instance.encodeToString(ImageMessageRequest.serializer(), messageRequest),
+                    headers = Headers.build {
+                        append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    }
+                )
+            }
         )
     }
 

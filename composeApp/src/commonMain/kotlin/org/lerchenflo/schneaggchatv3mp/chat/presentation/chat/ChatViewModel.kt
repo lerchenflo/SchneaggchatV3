@@ -46,6 +46,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import androidx.compose.ui.text.input.TextFieldValue
+import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
+import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
+import io.ktor.client.plugins.api.Send
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 class ChatViewModel(
     private val appRepository: AppRepository,
@@ -55,7 +59,8 @@ class ChatViewModel(
     private val settingsRepository: SettingsRepository,
     private val globalViewModel: GlobalViewModel,
     private val navigator: Navigator,
-    private val loggingRepository: LoggingRepository
+    private val loggingRepository: LoggingRepository,
+    private val pictureManager: PictureManager
 ): ViewModel() {
 
     companion object {
@@ -71,22 +76,33 @@ class ChatViewModel(
     var markdownEnabled by mutableStateOf(false)
         private set
 
-    var editMessageId by mutableStateOf<String?>(null)
-        private set
 
-    var sendText by mutableStateOf(TextFieldValue(""))
-        private set
 
-    fun updatesendText(newValue: TextFieldValue) {
-        sendText = newValue
+    var editMessage by mutableStateOf<Message?>(null)
+        private set
+    fun updateEditMessage(newValue: Message?) {
+        editMessage = newValue
     }
+
+
+    sealed class SendMessageContent {
+        data class TextContent(val textMessage: String) : SendMessageContent()
+        data class ImageContent(val imageMessage: ByteArray) : SendMessageContent()
+    }
+
+    var currentSendContent by mutableStateOf<SendMessageContent>(SendMessageContent.TextContent(""))
+        private set
+    fun updateSendContent(newValue: SendMessageContent) {
+        currentSendContent = newValue
+    }
+
 
     var replyMessage by mutableStateOf<Message?>(null)
         private set
-
     fun updateReplyMessage(newValue: Message?) {
         replyMessage = newValue
     }
+
 
     // Track loading state
     private val _isLoadingOlderMessages = MutableStateFlow(false)
@@ -138,12 +154,9 @@ class ChatViewModel(
         }
     }
 
-    fun sendTextMessage(){
-        if (sendText.text.isEmpty()) return
-
-        if(editMessageId == null) {
-            val content = sendText.text
-            updatesendText(TextFieldValue(""))
+    fun sendMessage(message: SendMessageContent, replyTo: Message? = null) {
+        if (message is SendMessageContent.TextContent && message.textMessage.isBlank()) return
+        if (message is SendMessageContent.ImageContent && message.imageMessage.isEmpty()) return
 
             globalViewModel.viewModelScope.launch {
                 appRepository.sendMessage(
@@ -153,12 +166,17 @@ class ChatViewModel(
                     answerid = replyMessage?.id,
                 )
 
-                replyMessage = null
-            }
-        } else {
-            editMessage()
-            updatesendText(TextFieldValue(""))
-            editMessageId = null
+            updateReplyMessage(null)
+            updateSendContent(SendMessageContent.TextContent(""))
+        }
+    }
+
+    fun onImageSelected(result: GalleryPhotoResult) {
+        viewModelScope.launch {
+            val byteArray = result.loadBytes()
+            val downscaled = pictureManager.downscaleImage(byteArray)
+
+            updateSendContent(SendMessageContent.ImageContent(downscaled))
         }
     }
 
@@ -169,6 +187,7 @@ class ChatViewModel(
                 gruppe = isGroup,
                 content = AppRepository.MessageContent.PollContent(poll),
                 answerid = replyMessage?.id,
+                messageId = null
             )
 
             replyMessage = null
@@ -220,12 +239,12 @@ class ChatViewModel(
             }
             is MessageAction.DeleteMessage -> deleteMessage(action.message)
             is MessageAction.StartEditMessage -> {
-                editMessageId = action.message.id
-                updatesendText(TextFieldValue(action.message.content))
+                editMessage = action.message
+                updateSendContent(SendMessageContent.TextContent(""))
             }
             MessageAction.CancelEditMessage -> {
-                editMessageId = null
-                updatesendText(TextFieldValue(""))
+                editMessage = null
+                updateSendContent(SendMessageContent.TextContent(""))
                 println("Update message sendtext to empty")
             }
 
@@ -234,21 +253,30 @@ class ChatViewModel(
         }
     }
 
-    fun editMessage() {
+    fun editMessage(message: Message?, content: SendMessageContent) {
         viewModelScope.launch {
 
-            if (sendText.text.isEmpty()) return@launch
+            if (content !is SendMessageContent.TextContent) return@launch
+            if (message == null) return@launch
 
-            //TODO: Check if message is sent
+            //Block empty edit
+            if (content.textMessage.isBlank()) return@launch
+
+            //Only allow edits for textmessages
+            if (!message.isText()) return@launch
+
             appRepository.editMessage(
-                messageId = editMessageId!!,
-                newContent = sendText.text
+                message = message,
+                newContent = content.textMessage
             )
 
             //Clear text after editing message
             onAction(MessageAction.CancelEditMessage)
         }
     }
+
+
+
 
     fun onBackClick() {
         saveDraft()
@@ -265,6 +293,11 @@ class ChatViewModel(
         }
     }
 
+
+
+
+
+
     private fun formatDate(date: LocalDate): String {
         return "${date.day}.${date.month.ordinal}.${date.year}"
     }
@@ -274,6 +307,9 @@ class ChatViewModel(
         val instant = Instant.fromEpochMilliseconds(this)
         return instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
     }
+
+
+
 
     /**
      * Transform message flow to display items with pre-resolved sender names.
@@ -330,10 +366,7 @@ class ChatViewModel(
             }
             .flowOn(Dispatchers.Default)
 
-    private fun processMessages(
-        messages: List<Message>,
-        users: List<User>,
-        groupMembers: List<GroupMember>
+    private fun processMessages(messages: List<Message>, users: List<User>, groupMembers: List<GroupMember>
     ): List<MessageDisplayItem> {
         val userMap = users.associateBy { it.id }
         val groupMap = groupMembers.associateBy { it.userId }
@@ -386,6 +419,8 @@ class ChatViewModel(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+
+
 
 
     //Beim call vom init sind alle values initialisiert

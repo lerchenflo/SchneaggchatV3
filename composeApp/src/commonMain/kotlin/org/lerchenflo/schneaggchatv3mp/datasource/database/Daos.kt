@@ -105,6 +105,10 @@ interface MessageDao {
     @Query("SELECT * FROM messages WHERE id = :msgid")
     suspend fun getMessageById(msgid: String): MessageWithReadersDto?
 
+    @Transaction
+    @Query("SELECT * FROM messages WHERE localPK = :msgid")
+    suspend fun getMessageById(msgid: Long): MessageWithReadersDto?
+
     @Query("SELECT id, updatedAt FROM messages WHERE id != 0")
     suspend fun getMessageIdsWithChangeDates(): List<IdChangeDate>
 
