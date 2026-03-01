@@ -58,6 +58,7 @@ fun MemberSelector(
     onSearchTermChange: (String) -> Unit,
     onUserSelected: (SelectedChat) -> Unit,
     onUserDeselected: (SelectedChat) -> Unit,
+    minUsers: Int = 2,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -66,9 +67,9 @@ fun MemberSelector(
         // Selected users horizontal scroll view
         if (selectedUsers.isNotEmpty()) {
 
-            if (selectedUsers.size < 2){
+            if (selectedUsers.size < minUsers){
                 Text(
-                    text = stringResource(Res.string.at_least_members, "2"),
+                    text = stringResource(Res.string.at_least_members, minUsers.toString()),
                     color = MaterialTheme.colorScheme.error
                 )
             }

@@ -16,6 +16,7 @@ It is an alternative to the tech giants stealing our data.
 
 #### Bugfixes
 - Navigate to chat selector when no user is selected in chat (bug when swiping back)
+- User limit of 2 warning removed for adding users to Groups
 
 ### 3.0.4
 #### Features
