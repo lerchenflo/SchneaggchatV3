@@ -13,6 +13,8 @@ It is an alternative to the tech giants stealing our data.
 ### 3.0.5
 #### Features
 - change Group Profile Pictures
+- save Message as Draft when leaving Chat (only for Text Messages)
+- Names on replies
 - Bugreport / Featurerequest form
 - Poll ui fixes + show answers
 - Passwort reset button

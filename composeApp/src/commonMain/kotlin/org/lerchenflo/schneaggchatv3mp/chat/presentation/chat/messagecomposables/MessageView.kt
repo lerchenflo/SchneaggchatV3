@@ -65,6 +65,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.check
 import schneaggchatv3mp.composeapp.generated.resources.something_wrong_message
+import schneaggchatv3mp.composeapp.generated.resources.you_sender
 import kotlin.math.roundToInt
 
 @Composable
@@ -296,9 +297,9 @@ fun MessageContent(
             modifier = Modifier // Remove the modifier parameter here
         ){
             // Show name for groups/other senders
-            if (!mymessage && senderName != null && message.groupMessage) {
+            if (!mymessage && message.senderAsString != "" && message.groupMessage) {
                 Text(
-                    text = senderName,
+                    text = message.senderAsString,
                     color = if (senderColor == 0) Color.Red else Color(senderColor.toLong() and 0xFFFFFFFFL),
                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                 )
@@ -405,13 +406,14 @@ private fun RepliedMessagePreview(
                 modifier = Modifier
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
-                /* todo show the name of the user which is replied to currently
-                Text(
-                    text = if (message.myMessage) "You" else "Contact", // Replace with actual name if available
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1
-                )*/
+                if(message.groupMessage){
+                    Text(
+                        text = if (message.myMessage) stringResource(Res.string.you_sender) else message.senderAsString, // Replace with actual name if available
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (message.senderColor == 0) Color.Red else Color(message.senderColor.toLong() and 0xFFFFFFFFL),
+                        maxLines = 1
+                    )
+                }
 
                 Text(
                     text = message.content,
