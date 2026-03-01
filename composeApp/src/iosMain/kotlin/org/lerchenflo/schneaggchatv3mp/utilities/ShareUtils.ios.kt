@@ -28,7 +28,7 @@ actual class ShareUtils {
         val windowScene = UIApplication.sharedApplication.connectedScenes
             .firstOrNull { it is UIWindowScene } as? UIWindowScene
         return windowScene?.windows
-            ?.firstOrNull { (it as? UIWindow)?.isKeyWindow == true }
+            ?.firstOrNull { (it as? UIWindow)?.isKeyWindow() == true }
             ?.let { (it as UIWindow).rootViewController }
             ?: UIApplication.sharedApplication.delegate?.window?.rootViewController
     }
@@ -94,9 +94,9 @@ actual class ShareUtils {
             if (params.isNotEmpty()) "$uri?${params.joinToString("&")}" else uri
         }
 
-        val url = NSURL.URLWithString(string = mailtoUri)
+        val url = NSURL.URLWithString(URLString = mailtoUri)
 
-        if (url != null && UIApplication.sharedApplication.canOpenURL(url)) {
+        if (url != null && UIApplication.sharedApplication.canOpenURL(url as NSURL)) {
             UIApplication.sharedApplication.openURL(
                 url,
                 options = emptyMap<Any?, Any>(),
