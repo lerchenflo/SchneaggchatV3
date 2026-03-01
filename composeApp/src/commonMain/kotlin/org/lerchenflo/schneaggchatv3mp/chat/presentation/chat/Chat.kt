@@ -143,7 +143,7 @@ fun ChatScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp, 0.dp, 10.dp, 16.dp),
+                    .padding(10.dp, 0.dp, 10.dp, 0.dp),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ){
@@ -181,15 +181,11 @@ fun ChatScreen(
                 )
             }
         },
-        bottomBar = {
-
-        },
-        contentWindowInsets = WindowInsets.ime
     ) {innerPadding ->
         // The innerPadding contains the height of the topBar
         Column(
             modifier = modifier
-                .padding(innerPadding)
+                .padding(top = innerPadding.calculateTopPadding())
         ) {
 
             // Messages
