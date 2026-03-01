@@ -64,7 +64,6 @@ suspend fun handleSocketConnectionMessage(message: String) {
     val groupRepository = KoinPlatform.getKoin().get<GroupRepository>()
     val globalViewModel = KoinPlatform.getKoin().get<GlobalViewModel>()
 
-    //println("Recieved socket message: $message")
     try {
         val socketMessage = AppJson.instance.decodeFromString<SocketConnectionMessage>(message)
 
@@ -72,9 +71,6 @@ suspend fun handleSocketConnectionMessage(message: String) {
 
             //A message got updated
             is SocketConnectionMessage.MessageChange -> {
-
-                println("Socket Message change recieved")
-
                 val existing = messageRepository.getMessageById(socketMessage.message.messageId)
                 val message = Message(
                     localPK = existing?.localPK ?: 0L,
@@ -118,6 +114,7 @@ suspend fun handleSocketConnectionMessage(message: String) {
                 if (socketMessage.newMessage) {
                     if (globalViewModel.selectedChat.value.id == message.senderId && globalViewModel.selectedChat.value.isGroup == message.groupMessage){
                         println("Notification is in current chat, skipping display of socketmessage")
+
                     } else {
                         NotificationManager.showNotification(message)
                     }
@@ -294,6 +291,5 @@ suspend fun handleSocketConnectionMessage(message: String) {
 
         }
     } catch (e: Exception) {
-        println("Failed to deserialize socket message: ${e.message}")
     }
 }

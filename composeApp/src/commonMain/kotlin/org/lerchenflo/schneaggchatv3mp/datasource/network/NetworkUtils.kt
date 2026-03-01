@@ -88,31 +88,25 @@ class NetworkUtils(
         } catch (e: UnresolvedAddressException) {
             // DNS resolution failed - definitely offline
             println("Going offline: DNS resolution failed - ${e.message}")
-            loggingRepository.logWarning("Going offline: UnresolvedAddressException - ${e.message}")
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: ConnectTimeoutException) {
             // Could be offline or slow network - mark as offline
             println("Going offline: Connection timeout - ${e.message}")
-            loggingRepository.logWarning("Going offline: ConnectTimeoutException - ${e.message}")
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: SocketTimeoutException) {
             // Socket timeout - conservative approach marks as offline
-            println("Going offline: Socket timeout - ${e.message}")
-            loggingRepository.logWarning("Going offline: SocketTimeoutException - ${e.message}")
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: HttpRequestTimeoutException) {
             // Request timeout - conservative approach marks as offline
             println("Going offline: HTTP request timeout - ${e.message}")
-            loggingRepository.logWarning("Going offline: HttpRequestTimeoutException - ${e.message}")
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: IOException) {
             // IO exceptions (including UnknownHostException) indicate network problems
             println("Going offline: IO exception - ${e.message}")
-            loggingRepository.logWarning("Going offline: IOException - ${e.message}")
             e.printStackTrace()
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.NoInternet())
