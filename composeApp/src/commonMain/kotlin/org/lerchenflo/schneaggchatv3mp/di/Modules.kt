@@ -151,5 +151,5 @@ val sharedmodule = module{
     factory { AppearanceSettingsViewModel(get(), get(), get()) }
 
     viewModelOf(::MiscSettingsViewModel)
-    factory { MiscSettingsViewModel(get(), get(), get()) }
+    factory { MiscSettingsViewModel(get(), get(), get(), get()) }
 }
