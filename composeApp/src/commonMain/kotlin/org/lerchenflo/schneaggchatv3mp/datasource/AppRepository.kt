@@ -1198,6 +1198,35 @@ class AppRepository(
                     updatedMessages.forEach { messageResponse ->
                         when (messageResponse.msgType) {
                             MessageType.IMAGE -> {
+                                val existing = database.messageDao().getMessageDtoById(messageResponse.messageId)
+                                messageRepository.upsertMessage(
+                                    Message(
+                                        localPK = existing?.localPK ?: 0L,
+                                        id = messageResponse.messageId,
+                                        msgType = messageResponse.msgType,
+                                        content = "",
+                                        senderId = messageResponse.senderId,
+                                        receiverId = messageResponse.receiverId,
+                                        sendDate = messageResponse.sendDate.toString(),
+                                        changeDate = messageResponse.lastChanged.toString(),
+                                        deleted = messageResponse.deleted,
+                                        groupMessage = messageResponse.groupMessage,
+                                        answerId = messageResponse.answerId,
+                                        sent = true,
+                                        myMessage = messageResponse.senderId == SessionCache.getOwnIdValue(),
+                                        readByMe = messageResponse.readers.any { it.userId == SessionCache.ownId.value },
+                                        senderAsString = "",
+                                        senderColor = 0,
+                                        readers = messageResponse.readers.map {
+                                            MessageReader(
+                                                readerEntryId = 0L,
+                                                messageId = messageResponse.messageId,
+                                                readerId = it.userId,
+                                                readDate = it.readAt.toString()
+                                            )
+                                        }
+                                    )
+                                )
                                 imagesToGet += messageResponse.messageId
                             }
 

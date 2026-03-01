@@ -291,5 +291,6 @@ suspend fun handleSocketConnectionMessage(message: String) {
 
         }
     } catch (e: Exception) {
+        e.printStackTrace()
     }
 }
