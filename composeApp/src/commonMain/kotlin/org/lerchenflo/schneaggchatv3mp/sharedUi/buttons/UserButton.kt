@@ -36,20 +36,21 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.no_status
+import schneaggchatv3mp.composeapp.generated.resources.poll
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 import schneaggchatv3mp.composeapp.generated.resources.you_sender
 
 /**
  * Can be used everywhere where the Username as well as additional information needs to be shown
- * @param user pass User object
  * @param showProfilePicture if true shows the profile picture of the user on the left
- * @param unreadMessages shows an Unread Messages Icon next to the Username
  * @param lastMessage pass lastMessage (Message) Object (not done yet) to show the message as well as the time
  * @param bottomTextOverride if null -> bottom Text displays status, if empty -> Text disappeares, if not empty -> overrides text. Default: Empty String
  * @param useOnClickGes select one OnClickListener for everything or separate listeners for text and Image
@@ -227,7 +228,12 @@ fun UserButton(
                                 } else {
                                     lastMessage.senderAsString + ": "
                                 }
-                                ) + lastMessage.content,
+                                ) +
+                                when(lastMessage.msgType) {
+                            MessageType.TEXT -> lastMessage.content
+                            MessageType.IMAGE -> stringResource(Res.string.image)
+                            MessageType.POLL -> stringResource(Res.string.poll)
+                        },
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) // 👈 lighter text
                         ),
