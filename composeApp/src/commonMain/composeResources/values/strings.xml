@@ -60,6 +60,11 @@
     <string name="cancel">cancel</string>
     <string name="version">Version: %1$s</string>
     <string name="app_broken">App broken</string>
+
+    <string name="bugreport_request">Bugreport / Featurerequest</string>
+    <string name="bugreport_request_info">Report bugs or things that feel off (Not userfriendly etc), or request a new feature!</string>
+
+
     <string name="loadinginfo_messages">Loading messages...</string>
     <string name="loadinginfo_offline">You are currently offline...</string>
     <string name="read">read</string>
@@ -488,7 +493,30 @@
     <string name="highscores_not_implemented_warning">Public highscores are not yet implemented!</string>
 
 
+    <!-- Bug Report Dialog -->
+    <string name="bugreportdialog_title_bug">Bug Report</string>
+    <string name="bugreportdialog_title_feature">Feature Request</string>
+    <string name="bugreportdialog_type_bug">Bug</string>
+    <string name="bugreportdialog_type_feature">Feature</string>
+    <string name="bugreportdialog_field_title">Title *</string>
+    <string name="bugreportdialog_field_description">Description *</string>
+    <string name="bugreportdialog_field_steps">Steps to Reproduce</string>
+    <string name="bugreportdialog_field_steps_placeholder">1. Open…\n2. Tap…\n3. See error</string>
+    <string name="bugreportdialog_field_expected">Expected Behavior</string>
+    <string name="bugreportdialog_field_actual">Actual Behavior</string>
+    <string name="bugreportdialog_label_severity">Severity</string>
 
+    <string name="bugreportdialog_severity_low">LOW</string>
+    <string name="bugreportdialog_severity_medium">MEDIUM</string>
+    <string name="bugreportdialog_severity_high">HIGH</string>
+    <string name="bugreportdialog_severity_critical">CRITICAL</string>
+
+    <string name="bugreportdialog_field_motivation">Why is this needed?</string>
+    <string name="bugreportdialog_label_priority">Priority</string>
+
+    <string name="bugreportdialog_priority_low">LOW</string>
+    <string name="bugreportdialog_priority_medium">MEDIUM</string>
+    <string name="bugreportdialog_priority_high">HIGH</string>
 
 
     <!-- Games: Yatzi -->

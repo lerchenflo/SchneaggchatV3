@@ -137,7 +137,7 @@ object NotificationManager{
     private var initialized = false
 
     /**
-     * Initialize the Notificationmanager (Listeners etc)
+     * Initialize the Notificationmanager (Listeners etc.)
      * Should be called once during app startup
      */
     fun initialize() {

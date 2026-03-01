@@ -6,6 +6,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DividerDefaults
@@ -24,10 +25,13 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewm
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.app_broken
 import schneaggchatv3mp.composeapp.generated.resources.app_broken_are_you_sure
 import schneaggchatv3mp.composeapp.generated.resources.app_broken_desc
+import schneaggchatv3mp.composeapp.generated.resources.bugreport_request
+import schneaggchatv3mp.composeapp.generated.resources.bugreport_request_info
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings
 import schneaggchatv3mp.composeapp.generated.resources.no
 import schneaggchatv3mp.composeapp.generated.resources.settings
@@ -84,6 +88,25 @@ fun MiscSettings(
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
+            var showBugFeaturePopup by rememberSaveable { mutableStateOf(false) }
+            SettingsOption(
+                Icons.Default.BugReport,
+                text = stringResource(Res.string.bugreport_request),
+                subtext = stringResource(Res.string.bugreport_request_info),
+                onClick = { showBugFeaturePopup = true }
+            )
+            if (showBugFeaturePopup) {
+                BugReportDialog(
+                    onDismiss = { showBugFeaturePopup = false },
+                    onSubmit = {
+                        miscSettingsViewModel.onSendBugReportEmail(it)
+                        showBugFeaturePopup = false
+                    }
+                )
+            }
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
             var showAppBrokenDialog by rememberSaveable { mutableStateOf(false) }
             SettingsOption(
                 Icons.Default.Delete,
@@ -106,6 +129,8 @@ fun MiscSettings(
             }
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+
 
 
         }
