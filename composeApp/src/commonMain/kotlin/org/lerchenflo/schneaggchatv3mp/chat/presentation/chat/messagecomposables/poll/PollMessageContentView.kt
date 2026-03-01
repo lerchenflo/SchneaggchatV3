@@ -2,8 +2,10 @@
 
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,6 +48,8 @@ import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -457,10 +461,12 @@ fun PollMessageOptionView(
         Spacer(modifier = Modifier.width(8.dp))
 
 
+        //Userview, text + progressbar
         Column(
             horizontalAlignment = Alignment.Start,
         ) {
 
+            //Row for text + userview
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -468,30 +474,29 @@ fun PollMessageOptionView(
 
                 if (option.custom) {
                     Row(
-                        modifier = Modifier.weight(1f),
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             imageVector = Icons.Default.PersonAdd,
                             contentDescription = "Custom user answer",
-                            modifier = Modifier.size(12.dp),
+                            modifier = Modifier.size(24.dp),
                             tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         Text(
                             text = option.text,
                             color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.weight(1f)
                         )
                     }
                 } else {
                     Text(
                         text = option.text,
                         color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.weight(1f)
                     )
                 }
+
+                Spacer(modifier = Modifier.weight(1f))
 
                 val pictureManager = koinInject<PictureManager>()
 
@@ -501,13 +506,14 @@ fun PollMessageOptionView(
 
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.horizontalScroll(rememberScrollState())
                 ) {
                     // Show profile pictures for identified voters
                     nonNullVoterIds.forEach { userId ->
                         ProfilePictureView(
                             filepath = pictureManager.getProfilePicFilePath(userId, false),
-                            modifier = Modifier.size(14.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                     }
 
@@ -521,6 +527,8 @@ fun PollMessageOptionView(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(2.dp))
 
             LinearProgressIndicator(
                 progress = { votePercentage },
