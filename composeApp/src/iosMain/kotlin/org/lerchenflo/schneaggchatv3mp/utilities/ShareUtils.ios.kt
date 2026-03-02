@@ -96,7 +96,7 @@ actual class ShareUtils {
 
         val url = NSURL.URLWithString(URLString = mailtoUri)
 
-        if (url != null && UIApplication.sharedApplication.canOpenURL(url as NSURL)) {
+        if (url != null && UIApplication.sharedApplication.canOpenURL(url)) {
             UIApplication.sharedApplication.openURL(
                 url,
                 options = emptyMap<Any?, Any>(),

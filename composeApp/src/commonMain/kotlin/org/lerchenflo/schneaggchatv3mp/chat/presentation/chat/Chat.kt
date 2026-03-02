@@ -73,6 +73,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
+import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
 import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
 import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
@@ -158,10 +159,17 @@ fun ChatScreen(
                         showImagePickerDialog = false
                     },
                     selectionLimit = 1,
-                    enableCrop = true,
+                    enableCrop = false,
                     cameraCaptureConfig = CameraCaptureConfig(
                         compressionLevel = CompressionLevel.HIGH,
                         preference = CapturePhotoPreference.FAST, //No flash
+                        cropConfig = CropConfig(
+                            enabled = true,
+                            aspectRatioLocked = false,
+                            circularCrop = true,
+                            squareCrop = true,
+                            freeformCrop = true
+                        ),
                         galleryConfig = GalleryConfig(
                             allowMultiple = false,
                             selectionLimit = 1,
@@ -172,6 +180,7 @@ fun ChatScreen(
         }
     }
 
+    if (!showImagePickerDialog) {
     // This effect runs when the Composable enters the composition
     DisposableEffect(Unit) {
         // You can do setup here if needed
@@ -561,6 +570,7 @@ fun ChatScreen(
 
         }
     }
+    } // end if (!showImagePickerDialog)
 }
 
 
