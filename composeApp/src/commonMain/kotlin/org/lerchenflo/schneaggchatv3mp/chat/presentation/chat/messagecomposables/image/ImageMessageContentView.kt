@@ -14,7 +14,7 @@ fun ImageMessageContentView(
 ) {
     AsyncImage(
         model = message.content,
-        modifier = Modifier.size(240.dp),
+        modifier = modifier,
         contentDescription = "image",
     )
 }
