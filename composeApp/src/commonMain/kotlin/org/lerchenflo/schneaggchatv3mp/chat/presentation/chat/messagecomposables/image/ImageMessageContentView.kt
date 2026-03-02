@@ -29,7 +29,8 @@ fun ImageMessageContentView(
             .widthIn(min = 200.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
-                    onTap = { showFullscreen = true }
+                    onTap = { showFullscreen = true },
+                    onLongPress = {}
                 )
             },
         contentDescription = "image",
