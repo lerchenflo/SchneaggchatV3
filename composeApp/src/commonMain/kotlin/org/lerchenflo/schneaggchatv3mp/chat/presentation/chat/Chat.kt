@@ -1,6 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,10 +10,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -55,6 +55,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.decodeToImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -67,18 +69,15 @@ import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
-import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
 import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
 import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -96,8 +95,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollDialog
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignupAction
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
@@ -111,7 +108,6 @@ import schneaggchatv3mp.composeapp.generated.resources.copy
 import schneaggchatv3mp.composeapp.generated.resources.delete
 import schneaggchatv3mp.composeapp.generated.resources.edit
 import schneaggchatv3mp.composeapp.generated.resources.go_back
-import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.message
 import schneaggchatv3mp.composeapp.generated.resources.message_delete_info
@@ -444,38 +440,64 @@ fun ChatScreen(
                             onValueChange = { newValue ->
                                 viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(newValue))
                             },
+                            shape = RoundedCornerShape(12.dp),
                             modifier = Modifier
                                 .weight(1f)
                                 .onPreviewKeyEvent { event ->
-                                    // Check if the key is 'Enter' and it's a 'KeyDown' event
                                     if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
                                         if (event.isShiftPressed) {
-                                            // ACTION: Shift + Enter
-                                            // add a newline
                                             viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(content.textMessage + "\n"))
-                                            return@onPreviewKeyEvent false // Let the system handle the newline
+                                            return@onPreviewKeyEvent false
                                         } else {
-                                            // ACTION: Enter (only)
-                                            // Send the message
                                             viewModel.sendMessage(
                                                 message = viewModel.currentSendContent,
                                                 replyTo = viewModel.replyMessage
                                             )
-                                            return@onPreviewKeyEvent true // Consume the event (no newline added)
+                                            return@onPreviewKeyEvent true
                                         }
                                     }
-                                    false // Pass all other events (letters, backspace, etc.) to the TextField
+                                    false
                                 },
                             placeholder = { Text(stringResource(Res.string.message) + " ...") }
                         )
                     }
 
                     is ChatViewModel.SendMessageContent.ImageContent -> {
-                        AsyncImage(
-                            model = content.imageMessage,
-                            modifier = Modifier.size(240.dp),
-                            contentDescription = "send image",
-                        )
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.outline,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                        ) {
+                            Image(
+                                painter = BitmapPainter(content.imageMessage.decodeToImageBitmap()),
+                                contentDescription = "image to send",
+                            )
+                            // Close button
+                            IconButton(
+                                onClick = {
+                                    viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(""))
+                                },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(4.dp)
+                                    .size(24.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Remove image",
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
                     }
                 }
 
