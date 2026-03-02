@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -488,21 +489,22 @@ fun ChatScreen(
                                 contentDescription = "image to send",
                             )
                             // Close button
-                            IconButton(
-                                onClick = {
-                                    viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(""))
-                                },
+                            Box(
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
                                     .padding(4.dp)
-                                    .size(24.dp)
+                                    .size(24.dp) // control the circle size here
                                     .clip(CircleShape)
                                     .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                                    .clickable {
+                                        viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(""))
+                                    },
+                                contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Close,
                                     contentDescription = "Remove image",
-                                    modifier = Modifier.size(16.dp),
+                                    modifier = Modifier.size(20.dp),
                                     tint = MaterialTheme.colorScheme.onSurface
                                 )
                             }
