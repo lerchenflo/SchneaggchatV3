@@ -14,19 +14,23 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.decodeFromJsonElement
 import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.new_message_noti_group_title
 import schneaggchatv3mp.composeapp.generated.resources.new_message_noti_single_title
+import schneaggchatv3mp.composeapp.generated.resources.poll
 import kotlin.math.absoluteValue
 
 object NotificationManager{
@@ -37,6 +41,7 @@ object NotificationManager{
         data class MessageNotification(
             val msgId: String,
             val senderName: String,
+            val messageType: MessageType,
             val groupMessage: Boolean,
             val groupName: String,
             val encodedContent: String
@@ -111,6 +116,7 @@ object NotificationManager{
                 NotificationObject.MessageNotification(
                     msgId = this.msgId,
                     senderName = this.senderName,
+                    messageType = this.messageType,
                     groupMessage = this.groupMessage,
                     groupName = this.groupName,
                     encodedContent = this.encodedContent
@@ -248,7 +254,11 @@ object NotificationManager{
                                     try {
                                         // Decrypt on IO thread
                                         val decryptedContent = withContext(Dispatchers.IO) {
-                                            notiObject.getDecodedContent(encryptionkey)
+                                            when (notiObject.messageType) {
+                                                MessageType.TEXT -> notiObject.getDecodedContent(encryptionkey)
+                                                MessageType.IMAGE -> getString(Res.string.image)
+                                                MessageType.POLL -> getString(Res.string.poll)
+                                            }
                                         }
 
                                         // Show notification

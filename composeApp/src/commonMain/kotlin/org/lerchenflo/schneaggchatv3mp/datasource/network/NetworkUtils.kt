@@ -577,6 +577,7 @@ class NetworkUtils(
             val msgId: String,
             val senderName: String,
             val groupMessage: Boolean,
+            val messageType: MessageType,
             val groupName: String,
             val encodedContent: String
         ) : NotificationResponse
