@@ -90,7 +90,7 @@ fun PlayerSelector(
                 val tabIndex = pagerState.currentPage
                 
                 // Tab Row
-                TabRow(
+                PrimaryTabRow(
                     selectedTabIndex = tabIndex,
                     modifier = Modifier.fillMaxWidth(),
                     containerColor = MaterialTheme.colorScheme.background,

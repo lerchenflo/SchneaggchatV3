@@ -24,7 +24,7 @@ class LoginViewModel(
     init {
 
         viewModelScope.launch {
-            val online =  appRepository.testServer()
+            val online =  appRepository.testServer(preferenceManager.getServerUrl())
             if (!online){
                 AppRepository.sendErrorSuspend(
                     event = AppRepository.ErrorChannel.ErrorEvent(

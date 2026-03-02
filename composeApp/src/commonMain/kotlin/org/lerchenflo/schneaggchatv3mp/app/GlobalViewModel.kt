@@ -17,7 +17,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
 
 class GlobalViewModel(
     private val appRepository: AppRepository,
-    private val preferencemanager: Preferencemanager,
+    private val preferenceManager: Preferencemanager,
     private val socketConnectionManager: SocketConnectionManager
 ): ViewModel() {
 
@@ -47,7 +47,7 @@ class GlobalViewModel(
         viewModelScope.launch {
             while (true) {
                 if (SessionCache.isLoggedInValue() && !SessionCache.isOnlineValue()) {
-                    appRepository.testServer()
+                    appRepository.testServer(preferenceManager.getServerUrl())
                 }
 
                 if (!socketConnectionManager.isConnectedNow()) {
@@ -70,7 +70,7 @@ class GlobalViewModel(
     fun startSocketConnection() {
         viewModelScope.launch {
             if (!socketConnectionManager.isConnectedNow() && SessionCache.isLoggedInValue()){
-                val serverurl = SocketConnectionManager.getSocketUrl(preferencemanager.getServerUrl())
+                val serverurl = SocketConnectionManager.getSocketUrl(preferenceManager.getServerUrl())
                 socketConnectionManager.connect(
                     serverUrl = serverurl,
                     onError = {
