@@ -76,7 +76,7 @@ class GlobalViewModel(
                     onError = {
                         //startSocketConnection()
                         if (!socketConnectionManager.isConnectedNow()) {
-                            SessionCache.updateOnline(false)
+                            //SessionCache.updateOnline(false)
                         }
                     },
                     onClose = {}
