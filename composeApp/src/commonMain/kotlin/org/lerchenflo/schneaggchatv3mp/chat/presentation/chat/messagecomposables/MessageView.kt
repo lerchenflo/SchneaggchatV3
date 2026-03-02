@@ -36,6 +36,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
@@ -319,7 +320,9 @@ fun MessageContent(
                     )
 
                     MessageType.IMAGE -> ImageMessageContentView(
-                        message = message
+                        message = message,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(15.dp))
                     )
 
                     else -> ErrorMessage()
@@ -570,6 +573,7 @@ private fun Messagepreview(){
         sendDate = "12"
     )
 
+    /*
     val pollmessage1 = Message(
         msgType = MessageType.POLL,
         senderId = "1",
@@ -648,6 +652,8 @@ private fun Messagepreview(){
         sendDate = "12"
     )
 
+     */
+
 
 
     Column(
@@ -661,6 +667,7 @@ private fun Messagepreview(){
             message = othermessage
         )
 
+        /*
         MessageViewWithActions(
             message = pollmessage1
         )
@@ -668,5 +675,7 @@ private fun Messagepreview(){
         MessageViewWithActions(
             message = pollmessage2
         )
+
+         */
     }
 }
