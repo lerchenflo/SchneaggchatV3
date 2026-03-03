@@ -388,6 +388,10 @@ class ChatViewModel(
             val resolvedColor = groupMap[message.senderId]?.color ?: 0
             message.senderColor = resolvedColor
 
+            for(reader in message.readers){
+                reader.readerName = userMap[reader.readerId]?.name ?: groupMap[reader.readerId]?.memberName ?: "Unresolved Username"
+            }
+
             // Pre-resolve reader names for this message
             val resolvedReaders = message.readers.associate { reader ->
                 reader.readerId to (userMap[reader.readerId]?.name ?: groupMap[reader.readerId]?.memberName ?: "Unknown")
