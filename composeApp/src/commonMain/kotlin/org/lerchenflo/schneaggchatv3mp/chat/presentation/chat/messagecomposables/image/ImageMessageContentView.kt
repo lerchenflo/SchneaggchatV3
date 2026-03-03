@@ -30,7 +30,7 @@ fun ImageMessageContentView(
 
     Column {
         AsyncImage(
-            model = pictureManager.getImageMessageFilePath(message.id ?: ""),
+            model = message.pictureUrl ?: "",
             modifier = modifier
                 .fillMaxWidth(0.67f)
                 .widthIn(min = 200.dp)

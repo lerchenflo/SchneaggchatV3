@@ -78,6 +78,7 @@ suspend fun handleSocketConnectionMessage(message: String) {
                     msgType = socketMessage.message.msgType,
 
                     content = socketMessage.message.content,
+                    pictureUrl = existing?.pictureUrl,
                     poll = socketMessage.message.pollResponse?.toPollMessage(),
 
                     senderId = socketMessage.message.senderId,

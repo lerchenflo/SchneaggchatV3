@@ -100,7 +100,7 @@ class MessageRepository(
         if (dbMessage != null) {
             database.messageDao().upsertMessageDto(
                 dbMessage.messageDto.copy(
-                    content = newUrl
+                    pictureUrl = newUrl
                 )
             )
         }

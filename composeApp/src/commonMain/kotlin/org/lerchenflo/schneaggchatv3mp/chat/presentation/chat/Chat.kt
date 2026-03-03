@@ -165,6 +165,7 @@ fun ChatScreen(
                     cameraCaptureConfig = CameraCaptureConfig(
                         compressionLevel = CompressionLevel.HIGH,
                         preference = CapturePhotoPreference.FAST, //No flash
+                        /*
                         cropConfig = CropConfig(
                             enabled = true,
                             aspectRatioLocked = false,
@@ -172,6 +173,8 @@ fun ChatScreen(
                             squareCrop = true,
                             freeformCrop = true
                         ),
+
+                         */
                         galleryConfig = GalleryConfig(
                             allowMultiple = false,
                             selectionLimit = 1,
@@ -479,7 +482,7 @@ fun ChatScreen(
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .weight(1f)
+                                    .fillMaxWidth()
                                     .border(
                                         width = 1.dp,
                                         color = MaterialTheme.colorScheme.outline,
@@ -501,7 +504,7 @@ fun ChatScreen(
                                         .clip(CircleShape)
                                         .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
                                         .clickable {
-                                            viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(""))
+                                            viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(content.text))
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -524,7 +527,7 @@ fun ChatScreen(
                                 },
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier
-                                    .weight(1f)
+                                    .fillMaxWidth()
                                     .onPreviewKeyEvent { event -> //TODO: Test line breaks on desktop here and for text only
                                         if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
                                             if (event.isShiftPressed) {
