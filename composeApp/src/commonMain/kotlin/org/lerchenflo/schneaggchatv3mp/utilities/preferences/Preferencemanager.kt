@@ -218,9 +218,11 @@ class Preferencemanager(
 
         // Remove existing entry for this ID to avoid duplicates
         currentDrafts.removeAll { it.chatId == draft.chatId && it.group == draft.group }
+        if(draft.string.isNotEmpty()){
+            // only add new Draft if string is not empty -> thus only deleting the entry
+            currentDrafts.add(draft)
+        }
 
-        // Add new chat
-        currentDrafts.add(draft)
 
         // Save to DataStore as JSON
         prefs.edit {
@@ -228,14 +230,6 @@ class Preferencemanager(
         }
     }
 
-    suspend fun removeDraft(chatId: String, group: Boolean) {
-        val currentDrafts = getDrafts().toMutableList()
-        currentDrafts.removeAll { it.chatId == chatId && it.group == group }
-
-        prefs.edit {
-            it[PrefsKeys.DRAFTS] = json.encodeToString(currentDrafts)
-        }
-    }
 
     fun getDraftsFlow(chatId: String, group: Boolean): Flow<String?> = prefs.data.map { prefs ->
        val draftsJson = prefs[PrefsKeys.DRAFTS] ?: ""
