@@ -390,6 +390,10 @@ class ChatViewModel(
 
             for(reader in message.readers){
                 reader.readerName = userMap[reader.readerId]?.name ?: groupMap[reader.readerId]?.memberName ?: "Unresolved Username"
+                reader.readerPicture = pictureManager.getProfilePicFilePath(
+                    reader.readerId,
+                    gruppe = false, // group cannot be reader
+                )
             }
 
             // Pre-resolve reader names for this message

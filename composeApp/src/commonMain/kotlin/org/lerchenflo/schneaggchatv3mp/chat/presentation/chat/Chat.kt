@@ -95,6 +95,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
@@ -841,13 +842,10 @@ fun ReaderRow(reader: MessageReader) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Placeholder for Avatar/Icon
-        Icon(
-            imageVector = Icons.Default.Person,
-            contentDescription = null,
+        ProfilePictureView(
+            filepath = reader.readerPicture?:"",
             modifier = Modifier.size(32.dp).padding(end = 8.dp),
-            tint = MaterialTheme.colorScheme.outline
         )
-
         Column {
             Text(
                 text = reader.readerName ?: stringResource(Res.string.unknown_user),

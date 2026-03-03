@@ -8,7 +8,8 @@ data class MessageReader(
     val readerId: String,
     val readDate: String = "", //TODO: Readdate as long
 
-    var readerName: String? = null // gets inserted later (in ChatViewModel)
+    var readerName: String? = null, // gets inserted later (in ChatViewModel)
+    var readerPicture: String? = null
 ) {
     fun getReadDateAsLong(): Long = readDate.toLongOrNull() ?: 0L
 }
