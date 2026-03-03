@@ -907,7 +907,7 @@ class AppRepository(
 
     sealed class MessageContent {
         data class TextContent(val message: String) : MessageContent()
-        data class ImageContent(val image: ByteArray) : MessageContent()
+        data class ImageContent(val image: ByteArray, val text: String) : MessageContent()
 
         data class PollContent(val poll: NetworkUtils.PollCreateRequest) : MessageContent()
     }
@@ -1037,6 +1037,7 @@ class AppRepository(
                     empfaenger = empfaenger,
                     gruppe = gruppe,
                     image = content.image,
+                    text = content.text,
                     answerid = answerid
                 )
             }

@@ -72,6 +72,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.room.util.TableInfo
 import coil3.compose.AsyncImage
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
@@ -442,7 +443,7 @@ fun ChatScreen(
 
 
 
-                //sendinput
+                //sendinput (This is a rowscope)
                 when (val content = viewModel.currentSendContent) {
                     is ChatViewModel.SendMessageContent.TextContent -> {
                         OutlinedTextField(
@@ -473,41 +474,77 @@ fun ChatScreen(
                     }
 
                     is ChatViewModel.SendMessageContent.ImageContent -> {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .border(
-                                    width = 1.dp,
-                                    color = MaterialTheme.colorScheme.outline,
-                                    shape = RoundedCornerShape(12.dp)
-                                )
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                        Column(
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Image(
-                                painter = BitmapPainter(content.imageMessage.decodeToImageBitmap()),
-                                contentDescription = "image to send",
-                            )
-                            // Close button
                             Box(
                                 modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(4.dp)
-                                    .size(24.dp) // control the circle size here
-                                    .clip(CircleShape)
+                                    .weight(1f)
+                                    .border(
+                                        width = 1.dp,
+                                        color = MaterialTheme.colorScheme.outline,
+                                        shape = RoundedCornerShape(12.dp)
+                                    )
+                                    .clip(RoundedCornerShape(12.dp))
                                     .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
-                                    .clickable {
-                                        viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(""))
-                                    },
-                                contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "Remove image",
-                                    modifier = Modifier.size(20.dp),
-                                    tint = MaterialTheme.colorScheme.onSurface
+                                Image(
+                                    painter = BitmapPainter(content.imageMessage.decodeToImageBitmap()),
+                                    contentDescription = "image to send",
                                 )
+                                // Close button
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .padding(4.dp)
+                                        .size(24.dp) // control the circle size here
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                                        .clickable {
+                                            viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(""))
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Remove image",
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
                             }
+
+                            OutlinedTextField(
+                                value = content.text,
+                                onValueChange = { newValue ->
+                                    viewModel.updateSendContent(ChatViewModel.SendMessageContent.ImageContent(
+                                        imageMessage = content.imageMessage,
+                                        text = newValue
+                                    ))
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .onPreviewKeyEvent { event -> //TODO: Test line breaks on desktop here and for text only
+                                        if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
+                                            if (event.isShiftPressed) {
+                                                viewModel.updateSendContent(ChatViewModel.SendMessageContent.ImageContent(
+                                                    imageMessage = content.imageMessage,
+                                                    text = content.text + "\n"
+                                                ))
+                                                return@onPreviewKeyEvent false
+                                            } else {
+                                                viewModel.sendMessage(
+                                                    message = viewModel.currentSendContent,
+                                                    replyTo = viewModel.replyMessage
+                                                )
+                                                return@onPreviewKeyEvent true
+                                            }
+                                        }
+                                        false
+                                    },
+                                placeholder = { Text(stringResource(Res.string.message) + " ...") }
+                            )
                         }
                     }
                 }
@@ -660,7 +697,7 @@ fun MessageOptionPopup(
                 }
             )
 
-            if (message.msgType == MessageType.TEXT) {
+            if (message.msgType == MessageType.TEXT || message.msgType == MessageType.IMAGE) {
                 DropdownMenuItem(
                     text = { Text(stringResource(Res.string.copy)) },
                     onClick = {
@@ -678,7 +715,7 @@ fun MessageOptionPopup(
 
             if (message.myMessage) {
 
-                if (message.msgType == MessageType.TEXT) {
+                if (message.msgType == MessageType.TEXT || message.msgType == MessageType.IMAGE) {
                     DropdownMenuItem(
                         text = { Text(stringResource(Res.string.edit)) },
                         onClick = {

@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.toComposeImageBitmap
 import okio.ByteString.Companion.decodeBase64
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
+import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
 import java.awt.Image
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -84,6 +85,11 @@ actual class PictureManager {
     actual fun getProfilePicFilePath(id: String, gruppe: Boolean): String {
         val filename = id + if (gruppe) GROUPPROFILEPICTURE_FILE_NAME else USERPROFILEPICTURE_FILE_NAME
 
+        return getPath(filename)
+    }
+
+    actual fun getImageMessageFilePath(messageId: String): String {
+        val filename = messageId + PICTURE_FILE_NAME
         return getPath(filename)
     }
 
