@@ -17,7 +17,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
 
 class GlobalViewModel(
     private val appRepository: AppRepository,
-    private val preferencemanager: Preferencemanager,
+    private val preferenceManager: Preferencemanager,
     private val socketConnectionManager: SocketConnectionManager
 ): ViewModel() {
 
@@ -46,20 +46,21 @@ class GlobalViewModel(
 
         viewModelScope.launch {
             while (true) {
-                if (SessionCache.isLoggedInValue()) {
-                    if (!SessionCache.isOnlineValue()) {
-                        //You are logged in, but there is no connection to the server
+                if (SessionCache.isLoggedInValue() && !SessionCache.isOnlineValue()) {
+                    appRepository.testServer(preferenceManager.getServerUrl())
+                }
 
-                        //Ping server
-                        appRepository.testServer() //If online will automatically set the online bool
-                    }
-
-                    if (!socketConnectionManager.isConnectedNow()) {
-                        startSocketConnection()
-                    }
+                if (!socketConnectionManager.isConnectedNow()) {
+                    startSocketConnection()
                 }
 
                 delay(5000)
+            }
+        }
+
+        viewModelScope.launch {
+            AppLifecycleManager.appBackgroundedEvent.collectLatest {
+                socketConnectionManager.close()
             }
         }
 
@@ -68,19 +69,15 @@ class GlobalViewModel(
 
     fun startSocketConnection() {
         viewModelScope.launch {
-            println("Socketconnection connected: ${socketConnectionManager.isConnectedNow()}")
             if (!socketConnectionManager.isConnectedNow() && SessionCache.isLoggedInValue()){
-                println("Connecting to socket connection -----------------------")
-                val serverurl = SocketConnectionManager.getSocketUrl(preferencemanager.getServerUrl())
-                println(serverurl)
+                val serverurl = SocketConnectionManager.getSocketUrl(preferenceManager.getServerUrl())
                 socketConnectionManager.connect(
                     serverUrl = serverurl,
                     onError = {
                         //startSocketConnection()
                         if (!socketConnectionManager.isConnectedNow()) {
-                            SessionCache.updateOnline(false)
+                            //SessionCache.updateOnline(false)
                         }
-                        println("SOCKETCONNECTION error: " + it.message)
                     },
                     onClose = {}
                 )

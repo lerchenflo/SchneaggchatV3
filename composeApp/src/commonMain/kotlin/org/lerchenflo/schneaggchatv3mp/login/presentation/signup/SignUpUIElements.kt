@@ -54,7 +54,9 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -74,6 +76,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.URL_PRIVACY
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
+import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -196,19 +199,8 @@ fun SignUpForm1(
                 )
 
                 Spacer(modifier = Modifier.width(4.dp))
-                val profilePicTooltipState = rememberTooltipState()
-                TooltipBox(
-                    positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                    tooltip = { PlainTooltip { Text(stringResource(Res.string.tooltip_profile_picture)) } },
-                    state = profilePicTooltipState
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
-                    )
-                }
+
+                TooltipIconButton(stringResource(Res.string.tooltip_profile_picture))
             }
 
             if (profilePicErrorText != null) {
@@ -302,19 +294,8 @@ fun SignUpForm1(
 
             }
             Spacer(modifier = Modifier.width(8.dp))
-            val dateTooltipState = rememberTooltipState()
-            TooltipBox(
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                tooltip = { PlainTooltip { Text(stringResource(Res.string.tooltip_birthdate)) } },
-                state = dateTooltipState
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
-                )
-            }
+
+            TooltipIconButton(stringResource(Res.string.tooltip_birthdate))
         }
         if (gebiErrorText != null) {
             Spacer(modifier = Modifier.height(4.dp))
@@ -427,47 +408,28 @@ fun SignUpForm2(
                     append(text1)
                 }
 
-                pushStringAnnotation(
-                    tag = "URL",
-                    annotation = URL_PRIVACY
+                val startIndex = length
+                append(text2)
+                addLink(
+                    url = LinkAnnotation.Url(
+                        url = URL_PRIVACY,
+                        styles = TextLinkStyles(
+                            style = SpanStyle(
+                                color = MaterialTheme.colorScheme.primary,
+                                textDecoration = TextDecoration.Underline
+                            )
+                        )
+                    ),
+                    start = startIndex,
+                    end = length
                 )
-                withStyle(
-                    style = SpanStyle(
-                        color = MaterialTheme.colorScheme.primary,
-                        textDecoration = TextDecoration.Underline
-                    )
-                ) {
-                    append(text2)
-                }
-                pop()
             }
 
-            ClickableText(
-                text = annotatedString,
-                onClick = { offset ->
-                    annotatedString.getStringAnnotations(
-                        tag = "URL",
-                        start = offset,
-                        end = offset
-                    ).firstOrNull()?.let { annotation ->
-                        urihandler.openUri(annotation.item)
-                    }
-                }
-            )
+            Text(text = annotatedString)
+
             Spacer(modifier = Modifier.width(8.dp))
-            val termsTooltipState = rememberTooltipState()
-            TooltipBox(
-                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                tooltip = { PlainTooltip { Text(stringResource(Res.string.tooltip_terms)) } },
-                state = termsTooltipState
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
-                )
-            }
+
+            TooltipIconButton(stringResource(Res.string.tooltip_terms))
         }
 
         if (agbErrorText != null) {

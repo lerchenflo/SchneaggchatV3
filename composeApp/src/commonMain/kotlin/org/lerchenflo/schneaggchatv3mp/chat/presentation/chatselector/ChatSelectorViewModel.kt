@@ -67,7 +67,6 @@ class ChatSelectorViewModel(
         viewModelScope.launch {
             val token = NotificationManager.getToken()
             appRepository.setFirebaseToken(token)
-            globalViewModel.startSocketConnection()
         }
 
         viewModelScope.launch {

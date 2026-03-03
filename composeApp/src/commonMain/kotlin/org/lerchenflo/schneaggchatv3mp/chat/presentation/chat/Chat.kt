@@ -1,6 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -55,6 +58,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.decodeToImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -87,6 +93,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
@@ -165,10 +172,17 @@ fun ChatScreen(
                         showImagePickerDialog = false
                     },
                     selectionLimit = 1,
-                    enableCrop = true,
+                    enableCrop = false,
                     cameraCaptureConfig = CameraCaptureConfig(
                         compressionLevel = CompressionLevel.HIGH,
                         preference = CapturePhotoPreference.FAST, //No flash
+                        cropConfig = CropConfig(
+                            enabled = true,
+                            aspectRatioLocked = false,
+                            circularCrop = true,
+                            squareCrop = true,
+                            freeformCrop = true
+                        ),
                         galleryConfig = GalleryConfig(
                             allowMultiple = false,
                             selectionLimit = 1,
@@ -179,6 +193,7 @@ fun ChatScreen(
         }
     }
 
+    if (!showImagePickerDialog) {
     // This effect runs when the Composable enters the composition
     DisposableEffect(Unit) {
         // You can do setup here if needed
@@ -464,38 +479,65 @@ fun ChatScreen(
                             onValueChange = { newValue ->
                                 viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(newValue))
                             },
+                            shape = RoundedCornerShape(12.dp),
                             modifier = Modifier
                                 .weight(1f)
                                 .onPreviewKeyEvent { event ->
-                                    // Check if the key is 'Enter' and it's a 'KeyDown' event
                                     if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
                                         if (event.isShiftPressed) {
-                                            // ACTION: Shift + Enter
-                                            // add a newline
                                             viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(content.textMessage + "\n"))
-                                            return@onPreviewKeyEvent false // Let the system handle the newline
+                                            return@onPreviewKeyEvent false
                                         } else {
-                                            // ACTION: Enter (only)
-                                            // Send the message
                                             viewModel.sendMessage(
                                                 message = viewModel.currentSendContent,
                                                 replyTo = viewModel.replyMessage
                                             )
-                                            return@onPreviewKeyEvent true // Consume the event (no newline added)
+                                            return@onPreviewKeyEvent true
                                         }
                                     }
-                                    false // Pass all other events (letters, backspace, etc.) to the TextField
+                                    false
                                 },
                             placeholder = { Text(stringResource(Res.string.message) + " ...") }
                         )
                     }
 
                     is ChatViewModel.SendMessageContent.ImageContent -> {
-                        AsyncImage(
-                            model = content.imageMessage,
-                            modifier = Modifier.size(240.dp),
-                            contentDescription = "send image",
-                        )
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.outline,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                        ) {
+                            Image(
+                                painter = BitmapPainter(content.imageMessage.decodeToImageBitmap()),
+                                contentDescription = "image to send",
+                            )
+                            // Close button
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(4.dp)
+                                    .size(24.dp) // control the circle size here
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                                    .clickable {
+                                        viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(""))
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Remove image",
+                                    modifier = Modifier.size(20.dp),
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -559,6 +601,7 @@ fun ChatScreen(
 
         }
     }
+    } // end if (!showImagePickerDialog)
 }
 
 
@@ -647,35 +690,39 @@ fun MessageOptionPopup(
                 }
             )
 
-            DropdownMenuItem(
-                text = { Text(stringResource(Res.string.copy)) },
-                onClick = {
-                    onCopy()
-                    onDismissRequest()
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.ContentCopy,
-                        contentDescription = null
-                    )
-                }
-            )
-
-            if (message.myMessage) {
-
+            if (message.msgType == MessageType.TEXT) {
                 DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.edit)) },
+                    text = { Text(stringResource(Res.string.copy)) },
                     onClick = {
-                        onEdit()
+                        onCopy()
                         onDismissRequest()
                     },
                     leadingIcon = {
                         Icon(
-                            imageVector = Icons.Default.Edit,
+                            imageVector = Icons.Default.ContentCopy,
                             contentDescription = null
                         )
                     }
                 )
+            }
+
+            if (message.myMessage) {
+
+                if (message.msgType == MessageType.TEXT) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(Res.string.edit)) },
+                        onClick = {
+                            onEdit()
+                            onDismissRequest()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = null
+                            )
+                        }
+                    )
+                }
 
                 DropdownMenuItem(
                     text = { Text(stringResource(Res.string.delete)) },
