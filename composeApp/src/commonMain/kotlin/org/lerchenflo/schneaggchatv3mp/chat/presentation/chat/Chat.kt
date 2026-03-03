@@ -93,6 +93,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.DayDivider
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReaderBar
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
@@ -266,7 +267,7 @@ fun ChatScreen(
                     when (item) {
                         is MessageDisplayItem.MessageItem -> {
                             val message = item.message
-                            println("Message read by: ${message.readers}")
+                            //println("Message read by: ${message.readers}")
 
                             var answerMessage: Message? = null
                             if (message.answerId != null) {
@@ -366,6 +367,10 @@ fun ChatScreen(
                         is MessageDisplayItem.DateDivider -> {
                             // Render date divider using pre-formatted string
                             DayDivider(item.dateMillis)
+                        }
+                        is MessageDisplayItem.ReaderBar -> {
+                            // show readers as small Profile pictures
+                            ReaderBar(item.readerList)
                         }
 
                     }
@@ -782,6 +787,14 @@ fun MessageDetailsDialog(
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+
+                // show message Id for developers
+                if(SessionCache.developer){
+                    Text(
+                    text = message.id?: "id null",
+                    style = MaterialTheme.typography.bodyMedium
+                    )
+                }
 
                 // 2. Message Preview
                 val alphaValue = 0.9f
