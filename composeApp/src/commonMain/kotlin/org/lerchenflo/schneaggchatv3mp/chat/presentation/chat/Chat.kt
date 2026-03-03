@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -33,15 +32,19 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -71,10 +74,10 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
-import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
 import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
 import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
@@ -89,6 +92,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
@@ -96,10 +100,13 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.DayDivider
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReaderBar
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.audio
@@ -113,8 +120,13 @@ import schneaggchatv3mp.composeapp.generated.resources.go_back
 import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.message
 import schneaggchatv3mp.composeapp.generated.resources.message_delete_info
+import schneaggchatv3mp.composeapp.generated.resources.message_details
+import schneaggchatv3mp.composeapp.generated.resources.no_readers
 import schneaggchatv3mp.composeapp.generated.resources.poll
+import schneaggchatv3mp.composeapp.generated.resources.read_at_time
+import schneaggchatv3mp.composeapp.generated.resources.readers
 import schneaggchatv3mp.composeapp.generated.resources.reply
+import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 import schneaggchatv3mp.composeapp.generated.resources.yes
 
 
@@ -270,7 +282,7 @@ fun ChatScreen(
                     when (item) {
                         is MessageDisplayItem.MessageItem -> {
                             val message = item.message
-                            println("Message read by: ${message.readers}")
+                            //println("Message read by: ${message.readers}")
 
                             var answerMessage: Message? = null
                             if (message.answerId != null) {
@@ -316,6 +328,7 @@ fun ChatScreen(
                                 val copiedToClipboardString = stringResource(Res.string.copied_to_clipboard)
 
                                 var showDeleteAlert by remember { mutableStateOf(false) }
+                                var showDetailsDialog by remember { mutableStateOf(false) }
 
                                 MessageOptionPopup(
                                     expanded = showMessageOptionPopup,
@@ -336,6 +349,10 @@ fun ChatScreen(
                                         viewModel.onAction(MessageAction.StartEditMessage(message))
                                         showMessageOptionPopup = false
                                     },
+                                    onDetails = {
+                                        showDetailsDialog = true
+                                        showMessageOptionPopup = false
+                                    },
                                     modifier = Modifier.align(
                                         if (message.myMessage) Alignment.TopEnd else Alignment.TopStart
                                     )
@@ -352,11 +369,23 @@ fun ChatScreen(
                                         selectedChatId = globalViewModel.selectedChat.value.id
                                     )
                                 }
+
+                                if(showDetailsDialog) {
+                                    MessageDetailsDialog(
+                                        onDismiss = { showDetailsDialog = false },
+                                        message = message,
+                                        selectedChatId = globalViewModel.selectedChat.value.id
+                                    )
+                                }
                             }
                         }
                         is MessageDisplayItem.DateDivider -> {
                             // Render date divider using pre-formatted string
                             DayDivider(item.dateMillis)
+                        }
+                        is MessageDisplayItem.ReaderBar -> {
+                            // show readers as small Profile pictures
+                            ReaderBar(item.readerList)
                         }
 
                     }
@@ -635,6 +664,7 @@ fun MessageOptionPopup(
     onCopy: () -> Unit,
     onDelete: () -> Unit,
     onEdit: () -> Unit,
+    onDetails: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -708,6 +738,20 @@ fun MessageOptionPopup(
                     }
                 )
             }
+
+            DropdownMenuItem(
+                text = { Text(stringResource(Res.string.message_details)) },
+                onClick = {
+                    onDetails()
+                    onDismissRequest()
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null
+                    )
+                }
+            )
         }
     }
 }
@@ -762,6 +806,121 @@ fun DeleteMessageAlert(
     )
 }
 
+@Composable
+fun MessageDetailsDialog(
+    onDismiss: () -> Unit,
+    message: Message,
+    selectedChatId: String,
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        // Use a Surface to provide background and elevation to the Dialog content
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 3.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 24.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // 1. Header
+                Text(
+                    text = stringResource(Res.string.message_details),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                // show message Id for developers
+                if(SessionCache.developer){
+                    Text(
+                    text = message.id?: "id null",
+                    style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
+                // 2. Message Preview
+                val alphaValue = 0.9f
+                MessageContent(
+                    modifier = Modifier
+                        .background(
+                            color = if (message.myMessage) {
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = alphaValue)
+                            } else {
+                                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = alphaValue)
+                            },
+                            shape = RoundedCornerShape(15.dp)
+                        )
+                        .padding(12.dp),
+                    message = message,
+                    useMD = false,
+                    selectedChatId = selectedChatId,
+                )
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                // 3. Readers Section
+                Text(
+                    text = stringResource(Res.string.readers),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                if (message.readers.isEmpty()) {
+                    Text(
+                        text = stringResource(Res.string.no_readers),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.weight(1f, fill = false), // Grow up to a point, then scroll
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(message.readers) { reader ->
+                            ReaderRow(reader)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ReaderRow(reader: MessageReader) {
+    val readMillis = reader.getReadDateAsLong()
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Placeholder for Avatar/Icon
+        ProfilePictureView(
+            filepath = reader.readerPicture?:"",
+            modifier = Modifier.size(32.dp).padding(end = 8.dp),
+        )
+        Column {
+            Text(
+                text = reader.readerName ?: stringResource(Res.string.unknown_user),
+                style = MaterialTheme.typography.bodyLarge
+            )
+            if (readMillis > 0L) {
+                Text(
+                    text = stringResource(Res.string.read_at_time, millisToTimeDateOrYesterday(readMillis)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
 fun copyToClipboard(text: String, clipboardManager: ClipboardManager) {
     clipboardManager.setText(AnnotatedString(text))
 }

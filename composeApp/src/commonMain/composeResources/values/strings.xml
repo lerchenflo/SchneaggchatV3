@@ -250,6 +250,10 @@
     <string name="copy">Copy</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
+    <string name="message_details">Message details</string>
+    <string name="readers">Readers</string>
+    <string name="read_at_time">read %1$s</string>
+    <string name="no_readers">No one has read this yet</string>
 
     <string name="pin_chat">Pin Chat</string>
     <string name="unpin_chat">unpin Chat</string>

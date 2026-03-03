@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -50,8 +51,11 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.theme.surfaceContainerLowDark
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
@@ -59,6 +63,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollMessageContentView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.text.TextMessageContentView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.image.ImageMessageContentView
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -542,6 +547,38 @@ fun DayDivider(millis: Long) {
             modifier = Modifier.padding(vertical = 4.dp)
         )
         HorizontalDivider(modifier = Modifier.fillMaxWidth())
+    }
+}
+
+@Composable
+fun ReaderBar(readers: List<MessageReader>) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalAlignment = Alignment.End // Aligns the Column's children to the right
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            // This is the key line to align items to the right:
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            for (reader in readers) {
+
+                val ownId by SessionCache.ownId.collectAsState()
+                if(reader.readerId != ownId){
+                    ProfilePictureView(
+                        filepath = reader.readerPicture ?: "",
+                        modifier = Modifier
+                            .padding(start = 2.dp) // Adds a tiny gap between the faces
+                            .size(16.dp),
+                    )
+                }
+
+
+            }
+        }
     }
 }
 
