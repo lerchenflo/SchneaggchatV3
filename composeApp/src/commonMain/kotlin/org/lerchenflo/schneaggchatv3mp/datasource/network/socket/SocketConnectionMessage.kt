@@ -78,6 +78,7 @@ suspend fun handleSocketConnectionMessage(message: String) {
                     msgType = socketMessage.message.msgType,
 
                     content = socketMessage.message.content,
+                    pictureUrl = existing?.pictureUrl,
                     poll = socketMessage.message.pollResponse?.toPollMessage(),
 
                     senderId = socketMessage.message.senderId,
@@ -106,10 +107,6 @@ suspend fun handleSocketConnectionMessage(message: String) {
                     messageRepository.upsertMessage(message)
                 }
 
-                if (socketMessage.message.msgType == MessageType.IMAGE) {
-                    appRepository.getPicturesForMessageIds(listOf(socketMessage.message.messageId))
-                }
-
                 //THis is a new message, show a notification
                 if (socketMessage.newMessage) {
                     if (globalViewModel.selectedChat.value.id == message.senderId && globalViewModel.selectedChat.value.isGroup == message.groupMessage){
@@ -117,6 +114,11 @@ suspend fun handleSocketConnectionMessage(message: String) {
 
                     } else {
                         NotificationManager.showNotification(message)
+                    }
+
+                    //Only get image if the message is new
+                    if (socketMessage.message.msgType == MessageType.IMAGE) {
+                        appRepository.getPicturesForMessageIds(listOf(socketMessage.message.messageId))
                     }
                 }
             }

@@ -798,6 +798,7 @@ class NetworkUtils(
         val receiverId: String,
         val groupMessage: Boolean,
         val msgType: MessageType,
+        val content: String,
         val answerId: String?
     )
 
@@ -903,6 +904,7 @@ class NetworkUtils(
         empfaenger: String,
         gruppe: Boolean,
         image: ByteArray,
+        text: String,
         answerid: String?
     ): NetworkResult<MessageResponse, NetworkError> {
 
@@ -911,6 +913,7 @@ class NetworkUtils(
             receiverId = empfaenger,
             groupMessage = gruppe,
             msgType = MessageType.IMAGE,
+            content = text,
             answerId = answerid,
         )
 

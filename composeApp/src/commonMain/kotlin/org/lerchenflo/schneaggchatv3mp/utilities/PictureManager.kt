@@ -3,6 +3,8 @@ package org.lerchenflo.schneaggchatv3mp.utilities
 import androidx.compose.ui.graphics.ImageBitmap
 
 expect class PictureManager {
+
+
     /**
      * Save a base64 encoded picture under [filename].
      * Returns a platform-specific path/uri string on success.
@@ -29,6 +31,13 @@ expect class PictureManager {
      * Get the filepath for a picture
      */
     fun getProfilePicFilePath(id: String, gruppe: Boolean) : String
+
+    /**
+     * Get the filepath for an image message.
+     * Generates the same path that savePictureToStorage would produce
+     * when saving an image message with the given [messageId].
+     */
+    fun getImageMessageFilePath(messageId: String): String
 
     /**
      * Check if a image with this name is in the storage

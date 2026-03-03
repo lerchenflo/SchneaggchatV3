@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import okio.ByteString.Companion.decodeBase64
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
+import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
 import java.io.ByteArrayOutputStream
 import java.io.File
 import androidx.core.graphics.scale
@@ -70,6 +71,11 @@ actual class PictureManager(private val context: Context) {
 
         val filename = id + if (gruppe) GROUPPROFILEPICTURE_FILE_NAME else USERPROFILEPICTURE_FILE_NAME
 
+        return File(context.filesDir, filename).absolutePath
+    }
+
+    actual fun getImageMessageFilePath(messageId: String): String {
+        val filename = messageId + PICTURE_FILE_NAME
         return File(context.filesDir, filename).absolutePath
     }
 

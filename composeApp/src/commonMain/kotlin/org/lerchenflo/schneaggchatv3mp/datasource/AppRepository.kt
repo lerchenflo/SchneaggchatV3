@@ -248,50 +248,36 @@ class AppRepository(
     /**
      * Get missing profile pics (On ios after update installation, there are no more pictures)
      */
-    suspend fun getMissingPics() {
-
-        //Check user profile pics
+    suspend fun getMissingPics() = coroutineScope {
+        // Check user profile pics
         val users = userRepository.getAllUsers()
-        var missingPpUserIds: List<String> = emptyList()
-
-        users.forEach { user ->
-            val exists = pictureManager.checkImageExists(user.profilePictureUrl)
-            if (!exists) {
-                println("Profilepic for ${user.name} does not exist: ${user.profilePictureUrl}, getting")
-                missingPpUserIds = missingPpUserIds + user.id
-            }
+        val missingPpUserIds = users.filter { user ->
+            !pictureManager.checkImageExists(user.profilePictureUrl)
+        }.map { it.id }
+        
+        if (missingPpUserIds.isNotEmpty()) {
+            launch { getProfilePicturesForUserIds(missingPpUserIds) }
         }
-        getProfilePicturesForUserIds(missingPpUserIds)
 
-
-
+        // Check group profile pics
         val groups = groupRepository.getAllGroups()
-        var missingPpGroupIds: List<String> = emptyList()
-
-        groups.forEach { group ->
-            val exists = pictureManager.checkImageExists(group.profilePictureUrl)
-            if (!exists) {
-                println("Profilepic for ${group.name} does not exist: ${group.profilePictureUrl}, getting")
-                missingPpGroupIds = missingPpGroupIds + group.id
-            }
+        val missingPpGroupIds = groups.filter { group ->
+            !pictureManager.checkImageExists(group.profilePictureUrl)
+        }.map { it.id }
+        
+        if (missingPpGroupIds.isNotEmpty()) {
+            launch { getProfilePicturesForGroupIds(missingPpGroupIds) }
         }
-        getProfilePicturesForGroupIds(missingPpGroupIds)
 
-
+        // Check image messages
         val messages = messageRepository.getImageMessages()
-        var missingImageMessageIds: List<String> = emptyList()
-
-        messages.forEach { image ->
-            if (image.id != null) {
-                val exists = pictureManager.checkImageExists(image.id + PICTURE_FILE_NAME) ||pictureManager.checkImageExists(image.content)
-                if (!exists) {
-                    println("Imagemessage picture does not exist: ${image.content}, getting")
-                    missingImageMessageIds = missingImageMessageIds + image.id!!
-                }
-            }
+        val missingImageMessageIds = messages.filter { image ->
+            image.id != null && !pictureManager.checkImageExists(image.pictureUrl ?: "")
+        }.map { it.id!! }
+        
+        if (missingImageMessageIds.isNotEmpty()) {
+            launch { getPicturesForMessageIds(missingImageMessageIds) }
         }
-        getPicturesForMessageIds(missingImageMessageIds)
-
     }
 
 
@@ -907,7 +893,7 @@ class AppRepository(
 
     sealed class MessageContent {
         data class TextContent(val message: String) : MessageContent()
-        data class ImageContent(val image: ByteArray) : MessageContent()
+        data class ImageContent(val image: ByteArray, val text: String) : MessageContent()
 
         data class PollContent(val poll: NetworkUtils.PollCreateRequest) : MessageContent()
     }
@@ -991,7 +977,7 @@ class AppRepository(
                     localPK = localpkintern,
                     id = null,
                     msgType = MessageType.IMAGE,
-                    content = "",
+                    content = content.text,
                     senderId = SessionCache.getOwnIdValue()!!,
                     receiverId = empfaenger,
                     sendDate = senddate,
@@ -1037,6 +1023,7 @@ class AppRepository(
                     empfaenger = empfaenger,
                     gruppe = gruppe,
                     image = content.image,
+                    text = content.text,
                     answerid = answerid
                 )
             }
@@ -1048,6 +1035,8 @@ class AppRepository(
                 withContext(Dispatchers.IO) {
 
                     println("Messageid returned from server: ${serverrequest.data.messageId}")
+
+                    val existing = database.messageDao().getMessageDtoById(serverrequest.data.messageId)
 
                     messageRepository.upsertMessage(
                         Message(
@@ -1068,6 +1057,7 @@ class AppRepository(
                             sent = true,
                             myMessage = true,
                             readByMe = true,
+                            pictureUrl = existing?.pictureUrl,
                             readers = serverrequest.data.readers.map {
                                 MessageReader(
                                     readerEntryId = 0L,
@@ -1111,7 +1101,9 @@ class AppRepository(
                                     }
 
                                     MessageType.IMAGE -> {
-                                        MessageContent.TextContent("") //TODO IMAGES
+                                        // TODO: This needs the image data from local storage if it's an offline message
+                                        // For now, if content stores the text, use it.
+                                        MessageContent.TextContent(m.content)
                                     }
 
                                     MessageType.POLL -> {
@@ -1204,7 +1196,8 @@ class AppRepository(
                                         localPK = existing?.localPK ?: 0L,
                                         id = messageResponse.messageId,
                                         msgType = messageResponse.msgType,
-                                        content = "",
+                                        content = messageResponse.content,
+                                        pictureUrl = existing?.pictureUrl,
                                         senderId = messageResponse.senderId,
                                         receiverId = messageResponse.receiverId,
                                         sendDate = messageResponse.sendDate.toString(),

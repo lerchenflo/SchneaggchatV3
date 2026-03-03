@@ -18,6 +18,7 @@ data class Message(
 
     var content: String = "",
     var poll: PollMessage? = null,
+    var pictureUrl: String? = null,
 
     var senderId: String,
     var receiverId: String,
@@ -107,6 +108,7 @@ fun MessageWithReadersDto.toMessage(): Message = Message(
     msgType = this.messageDto.msgType,
     content = this.messageDto.content,
     poll = this.messageDto.poll,
+    pictureUrl = this.messageDto.pictureUrl,
     senderId = this.messageDto.senderId,
     receiverId = this.messageDto.receiverId,
     sendDate = this.messageDto.sendDate,
@@ -132,6 +134,7 @@ fun Message.toDto(): MessageWithReadersDto = MessageWithReadersDto(
         msgType = this.msgType,
         content = this.content,
         poll = this.poll,
+        pictureUrl = this.pictureUrl,
         senderId = this.senderId,
         receiverId = this.receiverId,
         sendDate = this.sendDate,

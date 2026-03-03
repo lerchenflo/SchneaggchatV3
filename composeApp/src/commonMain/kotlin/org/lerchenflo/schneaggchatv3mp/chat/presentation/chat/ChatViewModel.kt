@@ -88,7 +88,7 @@ class ChatViewModel(
 
     sealed class SendMessageContent {
         data class TextContent(val textMessage: String) : SendMessageContent()
-        data class ImageContent(val imageMessage: ByteArray) : SendMessageContent()
+        data class ImageContent(val imageMessage: ByteArray, val text: String) : SendMessageContent()
     }
 
     var currentSendContent by mutableStateOf<SendMessageContent>(SendMessageContent.TextContent(""))
@@ -164,7 +164,10 @@ class ChatViewModel(
                 empfaenger = globalViewModel.selectedChat.value.id,
                 gruppe = globalViewModel.selectedChat.value.isGroup,
                 content = when(message) {
-                    is SendMessageContent.ImageContent -> AppRepository.MessageContent.ImageContent(message.imageMessage)
+                    is SendMessageContent.ImageContent -> AppRepository.MessageContent.ImageContent(
+                        image = message.imageMessage,
+                        text = message.text
+                    )
                     is SendMessageContent.TextContent -> AppRepository.MessageContent.TextContent(message.textMessage)
                 },
                 answerid = replyTo?.id,
@@ -181,7 +184,10 @@ class ChatViewModel(
             val byteArray = result.loadBytes()
             val downscaled = pictureManager.downscaleImage(byteArray)
 
-            updateSendContent(SendMessageContent.ImageContent(downscaled))
+            updateSendContent(SendMessageContent.ImageContent(
+                imageMessage = downscaled,
+                text = (currentSendContent as? SendMessageContent.TextContent)?.textMessage ?: ""
+            ))
         }
     }
 

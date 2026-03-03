@@ -16,6 +16,7 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.skia.Image
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
+import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
 import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSData
@@ -121,6 +122,11 @@ actual class PictureManager {
     actual fun getProfilePicFilePath(id: String, gruppe: Boolean): String {
         val filename = id + if(gruppe) GROUPPROFILEPICTURE_FILE_NAME else USERPROFILEPICTURE_FILE_NAME
 
+        return "$basePath/$filename"
+    }
+
+    actual fun getImageMessageFilePath(messageId: String): String {
+        val filename = messageId + PICTURE_FILE_NAME
         return "$basePath/$filename"
     }
 
