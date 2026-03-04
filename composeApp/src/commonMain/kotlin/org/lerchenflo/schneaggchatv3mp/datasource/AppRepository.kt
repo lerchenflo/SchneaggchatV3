@@ -1335,7 +1335,6 @@ class AppRepository(
 
 
     suspend fun editMessage(message: Message, newContent: String) {
-        if (!message.isText()) return
 
         if (message.id == null) {
             //edit a not sent message
@@ -1376,7 +1375,6 @@ class AppRepository(
                 }
             }
         }
-
 
     }
 

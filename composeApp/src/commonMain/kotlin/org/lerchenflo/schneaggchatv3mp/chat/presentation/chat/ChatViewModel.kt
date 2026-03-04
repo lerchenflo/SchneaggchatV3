@@ -273,9 +273,6 @@ class ChatViewModel(
             //Block empty edit
             if (content.textMessage.isBlank()) return@launch
 
-            //Only allow edits for textmessages
-            if (!message.isText()) return@launch
-
             appRepository.editMessage(
                 message = message,
                 newContent = content.textMessage
