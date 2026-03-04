@@ -19,11 +19,13 @@ It is an alternative to the tech giants stealing our data.
 - Poll show answers
 - Password reset button
 - show readers in Groups
+- Image messages
 
 #### Bugfixes
 - Navigate to chat selector when no user is selected in chat (bug when swiping back)
 - User limit of 2 warning removed for adding users to Groups
 - Poll ui fixes
+- Fix for my messages showing up as sent by other user
 
 ### 3.0.4
 #### Features
