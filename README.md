@@ -15,13 +15,15 @@ It is an alternative to the tech giants stealing our data.
 - change Group Profile Pictures
 - save Message as Draft when leaving Chat (only for Text Messages)
 - Names on replies
-- Bugreport / Featurerequest form
-- Poll ui fixes + show answers
-- Passwort reset button
+- Bugreport / Feature request form
+- Poll show answers
+- Password reset button
+- show readers in Groups
 
 #### Bugfixes
 - Navigate to chat selector when no user is selected in chat (bug when swiping back)
 - User limit of 2 warning removed for adding users to Groups
+- Poll ui fixes
 
 ### 3.0.4
 #### Features
@@ -40,7 +42,7 @@ It is an alternative to the tech giants stealing our data.
 
 #### Bugfixes
 - Register Screen fix
-- Profilepicture downscaling before sending to server
+- Profile picture downscaling before sending to server
 - Changed text color in chat
 
 
@@ -54,12 +56,12 @@ It is an alternative to the tech giants stealing our data.
 
 #### Bugfixes
 - Android Gradle Plugin 9.0.0 refactoring
-- Auto Scroll for Chat + Chatselection + Signup
+- Auto Scroll for Chat + Chat selection + Signup
 - Chatdetails + Chatselection UI fixes
 - Socketconnection crash fix
 
 ### 3.0.1
-- Quick bugfixes for IOs
+- Quick bugfixes for iOS
 
 ### 3.0.0
 - Initial release (User, Groups, Notifications, ProfilePicture)

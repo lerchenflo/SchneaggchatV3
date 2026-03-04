@@ -50,6 +50,7 @@ import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
 import io.ktor.client.plugins.api.Send
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 class ChatViewModel(
@@ -379,6 +380,24 @@ class ChatViewModel(
         val userMap = users.associateBy { it.id }
         val groupMap = groupMembers.associateBy { it.userId }
 
+        // Find the LATEST message each user has read
+        // Map<ReaderId, MessageReader>
+        val latestReadMap = mutableMapOf<String, MessageReader>()
+        messages.forEach { message ->
+            message.readers.forEach { reader ->
+                val existing = latestReadMap[reader.readerId]
+                // We update the map if this is the first time we see the user
+                // or if this reader entry has a newer timestamp
+                if (existing == null || reader.getReadDateAsLong() > existing.getReadDateAsLong()) {
+                    latestReadMap[reader.readerId] = reader
+                }
+            }
+        }
+
+        // Group those latest readers by the Message ID where they stopped
+        // Map<MessageId, List<MessageReader>>
+        val readersToDisplayPerMessage = latestReadMap.values.groupBy { it.messageId }
+
         val displayItems = mutableListOf<MessageDisplayItem>()
 
         messages.forEachIndexed { index, message ->
@@ -392,9 +411,21 @@ class ChatViewModel(
             val resolvedColor = groupMap[message.senderId]?.color ?: 0
             message.senderColor = resolvedColor
 
-            // Pre-resolve reader names for this message
             val resolvedReaders = message.readers.associate { reader ->
-                reader.readerId to (userMap[reader.readerId]?.name ?: groupMap[reader.readerId]?.memberName ?: "Unknown")
+                reader.readerName = userMap[reader.readerId]?.name ?: groupMap[reader.readerId]?.memberName ?: "Unknown"
+                reader.readerPicture = pictureManager.getProfilePicFilePath(reader.readerId, false)
+                reader.readerId to (reader.readerName ?: "Unknown")
+            }
+
+            // Use the message's unique ID to look up the grouped readers
+            val readersAtThisMessage = readersToDisplayPerMessage[message.id]
+            if (!readersAtThisMessage.isNullOrEmpty()) {
+                displayItems.add(
+                    MessageDisplayItem.ReaderBar(
+                        id = "readers_${message.id}",
+                        readerList = readersAtThisMessage
+                    )
+                )
             }
 
             displayItems.add(

@@ -29,4 +29,9 @@ sealed class MessageDisplayItem {
         val dateMillis: Long,
         val dateString: String     // Pre-formatted date string
     ) : MessageDisplayItem()
+
+    data class ReaderBar(
+        override val id: String,
+        val readerList: List<MessageReader>
+    ): MessageDisplayItem()
 }
