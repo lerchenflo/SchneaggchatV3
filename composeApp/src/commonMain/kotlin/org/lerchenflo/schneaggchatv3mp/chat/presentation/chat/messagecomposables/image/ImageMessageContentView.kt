@@ -26,7 +26,6 @@ fun ImageMessageContentView(
 ) {
     var showFullscreen by remember { mutableStateOf(false) }
 
-    val pictureManager = koinInject<PictureManager>()
 
     Column {
         AsyncImage(
@@ -43,6 +42,7 @@ fun ImageMessageContentView(
             contentDescription = "image",
             contentScale = ContentScale.FillWidth,
         )
+
 
         if (message.content.isNotEmpty()) {
             Text(

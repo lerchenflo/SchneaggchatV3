@@ -346,7 +346,6 @@ fun ChatScreen(
                                         showMessageOptionPopup = false
                                     },
                                     onDelete = {
-
                                         showDeleteAlert = true
                                         showMessageOptionPopup = false
                                     },
