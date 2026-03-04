@@ -49,6 +49,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
 import io.ktor.client.plugins.api.Send
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 class ChatViewModel(
@@ -250,7 +251,7 @@ class ChatViewModel(
             is MessageAction.DeleteMessage -> deleteMessage(action.message)
             is MessageAction.StartEditMessage -> {
                 editMessage = action.message
-                updateSendContent(SendMessageContent.TextContent(""))
+                updateSendContent(SendMessageContent.TextContent(action.message.content))
             }
             MessageAction.CancelEditMessage -> {
                 editMessage = null
