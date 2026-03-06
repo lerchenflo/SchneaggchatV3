@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache.updateUsername
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -39,6 +40,8 @@ import schneaggchatv3mp.composeapp.generated.resources.requirement_length
 import schneaggchatv3mp.composeapp.generated.resources.requirement_lowercase
 import schneaggchatv3mp.composeapp.generated.resources.requirement_special
 import schneaggchatv3mp.composeapp.generated.resources.requirement_uppercase
+import schneaggchatv3mp.composeapp.generated.resources.username_too_long
+import schneaggchatv3mp.composeapp.generated.resources.username_too_short
 import schneaggchatv3mp.composeapp.generated.resources.you_need_to_select_a_profilepicture
 
 
@@ -60,7 +63,11 @@ class SignUpViewModel(
                     state = state.copy(
                         usernameState = state.usernameState.copy(
                             text = action.newText,
-                            errorMessage = if (action.newText.isEmpty()) getString(Res.string.cannot_be_empty) else null
+                            errorMessage = when {
+                                action.newText.length <= 3 -> getString(Res.string.username_too_short)
+                                action.newText.length >= 25 -> getString(Res.string.username_too_long)
+                                else -> null
+                            }
                         )
                     )
                 }
