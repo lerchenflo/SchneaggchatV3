@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,35 +20,27 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Poll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -70,15 +63,13 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.room.util.TableInfo
-import coil3.compose.AsyncImage
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
@@ -95,15 +86,17 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.DayDivider
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReaderBar
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollDialog
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll.PollDialog
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.DeleteMessageAlert
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.MessageDetailsDialog
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.MessageOptionPopup
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.ReplyPreview
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -113,23 +106,14 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.audio
 import schneaggchatv3mp.composeapp.generated.resources.cancel
-import schneaggchatv3mp.composeapp.generated.resources.close
 import schneaggchatv3mp.composeapp.generated.resources.copied_to_clipboard
-import schneaggchatv3mp.composeapp.generated.resources.copy
-import schneaggchatv3mp.composeapp.generated.resources.delete
 import schneaggchatv3mp.composeapp.generated.resources.edit
 import schneaggchatv3mp.composeapp.generated.resources.go_back
 import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.message
-import schneaggchatv3mp.composeapp.generated.resources.message_delete_info
-import schneaggchatv3mp.composeapp.generated.resources.message_details
-import schneaggchatv3mp.composeapp.generated.resources.no_readers
 import schneaggchatv3mp.composeapp.generated.resources.poll
 import schneaggchatv3mp.composeapp.generated.resources.read_at_time
-import schneaggchatv3mp.composeapp.generated.resources.readers
-import schneaggchatv3mp.composeapp.generated.resources.reply
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
-import schneaggchatv3mp.composeapp.generated.resources.yes
 
 
 @Composable
@@ -164,7 +148,7 @@ fun ChatScreen(
 
                 GalleryPickerLauncher(
                     onPhotosSelected = {
-                        viewModel.onImageSelected(it.first())
+                        viewModel.onImageSelected(it)
                         showImagePickerDialog = false
                     },
                     onError = {
@@ -173,8 +157,8 @@ fun ChatScreen(
                     onDismiss = {
                         showImagePickerDialog = false
                     },
-                    selectionLimit = 1,
                     enableCrop = false,
+                    allowMultiple = true,
                     cameraCaptureConfig = CameraCaptureConfig(
                         compressionLevel = CompressionLevel.HIGH,
                         preference = CapturePhotoPreference.FAST, //No flash
@@ -189,8 +173,7 @@ fun ChatScreen(
 
                          */
                         galleryConfig = GalleryConfig(
-                            allowMultiple = false,
-                            selectionLimit = 1,
+                            allowMultiple = true,
                         )
                     )
                 )
@@ -509,61 +492,75 @@ fun ChatScreen(
                         Column(
                             modifier = Modifier.weight(1f)
                         ) {
-                            Box(
+                            // Multi-image preview row
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .border(
-                                        width = 1.dp,
-                                        color = MaterialTheme.colorScheme.outline,
-                                        shape = RoundedCornerShape(12.dp)
-                                    )
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                                    .horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Image(
-                                    painter = BitmapPainter(content.imageMessage.decodeToImageBitmap()),
-                                    contentDescription = "image to send",
-                                )
-                                // Close button
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .padding(4.dp)
-                                        .size(24.dp) // control the circle size here
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
-                                        .clickable {
-                                            viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(content.text))
-                                        },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Remove image",
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.onSurface
-                                    )
+                                content.images.forEach { imageBytes ->
+                                    Box(
+                                        modifier = Modifier
+                                            .size(80.dp) // fixed thumbnail size
+                                            .border(
+                                                width = 1.dp,
+                                                color = MaterialTheme.colorScheme.outline,
+                                                shape = RoundedCornerShape(12.dp)
+                                            )
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                                    ) {
+                                        Image(
+                                            painter = BitmapPainter(imageBytes.decodeToImageBitmap()),
+                                            contentDescription = "image to send",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                        // Close button per image
+                                        Box(
+                                            modifier = Modifier
+                                                .align(Alignment.TopEnd)
+                                                .padding(2.dp)
+                                                .size(20.dp)
+                                                .clip(CircleShape)
+                                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                                                .clickable {
+                                                    val remaining = content.images - imageBytes
+                                                    viewModel.updateSendContent(
+                                                        if (remaining.isEmpty())
+                                                            ChatViewModel.SendMessageContent.TextContent(content.text)
+                                                        else
+                                                            content.copy(images = remaining)
+                                                    )
+                                                },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Close,
+                                                contentDescription = "Remove image",
+                                                modifier = Modifier.size(14.dp),
+                                                tint = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                    }
                                 }
                             }
 
                             OutlinedTextField(
                                 value = content.text,
                                 onValueChange = { newValue ->
-                                    viewModel.updateSendContent(ChatViewModel.SendMessageContent.ImageContent(
-                                        imageMessage = content.imageMessage,
-                                        text = newValue
-                                    ))
+                                    viewModel.updateSendContent(
+                                        content.copy(text = newValue)
+                                    )
                                 },
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .onPreviewKeyEvent { event -> //TODO: Test line breaks on desktop here and for text only
+                                    .onPreviewKeyEvent { event ->
                                         if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
                                             if (event.isShiftPressed) {
-                                                viewModel.updateSendContent(ChatViewModel.SendMessageContent.ImageContent(
-                                                    imageMessage = content.imageMessage,
-                                                    text = content.text + "\n"
-                                                ))
+                                                viewModel.updateSendContent(content.copy(text = content.text + "\n"))
                                                 return@onPreviewKeyEvent false
                                             } else {
                                                 viewModel.sendMessage(
@@ -646,290 +643,9 @@ fun ChatScreen(
 
 
 
-@Composable
-fun ReplyPreview(viewModel: ChatViewModel, globalViewModel: GlobalViewModel){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        verticalAlignment = Alignment.Bottom
-    ) {
-        Column(
-            modifier = Modifier
-                .weight(1f)
-        ) {
-            val alphaValue = 0.8f
-            MessageContent(
-                modifier = Modifier
-                    //.wrapContentSize()
-                    .background(
-                        color = if (viewModel.replyMessage!!.myMessage) {
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = alphaValue)
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = alphaValue)
-                        },
-                        shape = RoundedCornerShape(15.dp)
-                    )
-                    .padding(6.dp),
-                message = viewModel.replyMessage!!,
-                useMD = viewModel.markdownEnabled,
-                selectedChatId = globalViewModel.selectedChat.value.id,
-                senderColor = viewModel.replyMessage!!.senderColor
-            )
-        }
-        Column {
-            IconButton(
-                onClick = {
-                    viewModel.updateReplyMessage(null)
-                },
-                modifier = Modifier
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = stringResource(Res.string.close)
-                )
-            }
-        }
 
 
-    }
-}
 
-@Composable
-fun MessageOptionPopup(
-    expanded: Boolean,
-    message: Message,
-    onDismissRequest: () -> Unit,
-    onReply: () -> Unit,
-    onCopy: () -> Unit,
-    onDelete: () -> Unit,
-    onEdit: () -> Unit,
-    onDetails: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier,
-        // contentAlignment = if (myMessage) Alignment.TopEnd else Alignment.TopStart
-    ) {
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = onDismissRequest,
-            modifier = modifier
-        ) {
-            DropdownMenuItem(
-                text = { Text(stringResource(Res.string.reply)) },
-                onClick = {
-                    onReply()
-                    onDismissRequest()
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Reply,
-                        contentDescription = null
-                    )
-                }
-            )
-
-            if (message.msgType == MessageType.TEXT || message.msgType == MessageType.IMAGE) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.copy)) },
-                    onClick = {
-                        onCopy()
-                        onDismissRequest()
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.ContentCopy,
-                            contentDescription = null
-                        )
-                    }
-                )
-            }
-
-            if (message.myMessage) {
-
-                if (message.msgType == MessageType.TEXT || message.msgType == MessageType.IMAGE) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(Res.string.edit)) },
-                        onClick = {
-                            onEdit()
-                            onDismissRequest()
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = null
-                            )
-                        }
-                    )
-                }
-
-                DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.delete)) },
-                    onClick = {
-                        onDelete()
-                        onDismissRequest()
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = null
-                        )
-                    }
-                )
-            }
-
-            DropdownMenuItem(
-                text = { Text(stringResource(Res.string.message_details)) },
-                onClick = {
-                    onDetails()
-                    onDismissRequest()
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null
-                    )
-                }
-            )
-        }
-    }
-}
-
-@Composable
-fun DeleteMessageAlert(
-    onDismiss:() -> Unit,
-    onConfirm:() -> Unit,
-    message: Message,
-    selectedChatId: String,
-){
-    AlertDialog(
-        onDismissRequest = {onDismiss()},
-        confirmButton = {
-            TextButton(
-                onClick = onConfirm
-            ) {
-                Text(stringResource(Res.string.yes))
-            }
-        },
-        dismissButton =
-            {
-                TextButton(
-                    onClick = onDismiss
-                ) {
-                    Text(stringResource(Res.string.cancel))
-                }
-            },
-        //icon = { Icon(Icons.Default.Palette, contentDescription = null) },
-        title = { Text(text = stringResource(Res.string.message_delete_info)) },
-        text = {
-            val alphaValue = 0.8f
-            MessageContent(
-                modifier = Modifier
-                    //.wrapContentSize()
-                    .background(
-                        color = if (message.myMessage) {
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = alphaValue)
-                        } else {
-                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = alphaValue)
-                        },
-                        shape = RoundedCornerShape(15.dp)
-                    )
-                    .padding(6.dp),
-                message = message,
-                useMD = false, // fertig mit markdown
-                selectedChatId = selectedChatId,
-
-            )
-        },
-        shape = MaterialTheme.shapes.large,
-    )
-}
-
-@Composable
-fun MessageDetailsDialog(
-    onDismiss: () -> Unit,
-    message: Message,
-    selectedChatId: String,
-) {
-    Dialog(onDismissRequest = onDismiss) {
-        // Use a Surface to provide background and elevation to the Dialog content
-        Surface(
-            shape = RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 3.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 24.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // 1. Header
-                Text(
-                    text = stringResource(Res.string.message_details),
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                // show message Id for developers
-                if(SessionCache.developer){
-                    Text(
-                    text = message.id?: "id null",
-                    style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-
-                // 2. Message Preview
-                val alphaValue = 0.9f
-                MessageContent(
-                    modifier = Modifier
-                        .background(
-                            color = if (message.myMessage) {
-                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = alphaValue)
-                            } else {
-                                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = alphaValue)
-                            },
-                            shape = RoundedCornerShape(15.dp)
-                        )
-                        .padding(12.dp),
-                    message = message,
-                    useMD = false,
-                    selectedChatId = selectedChatId,
-                )
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                // 3. Readers Section
-                Text(
-                    text = stringResource(Res.string.readers),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                if (message.readers.isEmpty()) {
-                    Text(
-                        text = stringResource(Res.string.no_readers),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.outline
-                    )
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.weight(1f, fill = false), // Grow up to a point, then scroll
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(message.readers) { reader ->
-                            ReaderRow(reader)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun ReaderRow(reader: MessageReader) {

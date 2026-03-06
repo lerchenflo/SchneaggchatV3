@@ -89,7 +89,7 @@ class ChatViewModel(
 
     sealed class SendMessageContent {
         data class TextContent(val textMessage: String) : SendMessageContent()
-        data class ImageContent(val imageMessage: ByteArray, val text: String) : SendMessageContent()
+        data class ImageContent(val images: List<ByteArray>, val text: String) : SendMessageContent()
     }
 
     var currentSendContent by mutableStateOf<SendMessageContent>(SendMessageContent.TextContent(""))
@@ -158,38 +158,57 @@ class ChatViewModel(
 
     fun sendMessage(message: SendMessageContent, replyTo: Message? = null) {
         if (message is SendMessageContent.TextContent && message.textMessage.isBlank()) return
-        if (message is SendMessageContent.ImageContent && message.imageMessage.isEmpty()) return
+        if (message is SendMessageContent.ImageContent && message.images.isEmpty()) return
 
-        globalViewModel.viewModelScope.launch {
-            appRepository.sendMessage(
-                empfaenger = globalViewModel.selectedChat.value.id,
-                gruppe = globalViewModel.selectedChat.value.isGroup,
-                content = when(message) {
-                    is SendMessageContent.ImageContent -> AppRepository.MessageContent.ImageContent(
-                        image = message.imageMessage,
-                        text = message.text
+        when (message) {
+            is SendMessageContent.TextContent -> {
+                globalViewModel.viewModelScope.launch {
+                    appRepository.sendMessage(
+                        empfaenger = globalViewModel.selectedChat.value.id,
+                        gruppe = globalViewModel.selectedChat.value.isGroup,
+                        content = AppRepository.MessageContent.TextContent(message.textMessage),
+                        answerid = replyTo?.id,
+                        messageId = null,
                     )
-                    is SendMessageContent.TextContent -> AppRepository.MessageContent.TextContent(message.textMessage)
-                },
-                answerid = replyTo?.id,
-                messageId = null,
-            )
+                }
+            }
 
-            updateReplyMessage(null)
-            updateSendContent(SendMessageContent.TextContent(""))
+            is SendMessageContent.ImageContent -> {
+                message.images.forEachIndexed { index, image ->
+                    globalViewModel.viewModelScope.launch {
+                        appRepository.sendMessage(
+                            empfaenger = globalViewModel.selectedChat.value.id,
+                            gruppe = globalViewModel.selectedChat.value.isGroup,
+                            content = AppRepository.MessageContent.ImageContent(
+                                image = image,
+                                text = if (index == 0) message.text else ""
+                            ),
+                            answerid = replyTo?.id,
+                            messageId = null,
+                        )
+                    }
+                }
+            }
         }
+
+        updateReplyMessage(null)
+        updateSendContent(SendMessageContent.TextContent(""))
     }
 
-    fun onImageSelected(result: GalleryPhotoResult) {
-        viewModelScope.launch {
-            val byteArray = result.loadBytes()
-            val downscaled = pictureManager.downscaleImage(byteArray)
+    fun onImageSelected(results: List<GalleryPhotoResult>) {
+
+        CoroutineScope(Dispatchers.Default).launch {
+            val byteArrays = results.map { it.loadBytes() }
+            val downscaledImages = byteArrays.map {
+                pictureManager.downscaleImage(it)
+            }
 
             updateSendContent(SendMessageContent.ImageContent(
-                imageMessage = downscaled,
+                images = downscaledImages,
                 text = (currentSendContent as? SendMessageContent.TextContent)?.textMessage ?: ""
             ))
         }
+
     }
 
     fun createPollMessage(poll: NetworkUtils.PollCreateRequest) {
@@ -257,7 +276,7 @@ class ChatViewModel(
             MessageAction.CancelEditMessage -> {
                 editMessage = null
                 updateSendContent(SendMessageContent.TextContent(""))
-                println("Update message sendtext to empty")
+                //println("Update message sendtext to empty")
             }
 
             is MessageAction.ReplyToMessage -> updateReplyMessage(action.message)
@@ -278,6 +297,8 @@ class ChatViewModel(
                 message = message,
                 newContent = content.textMessage
             )
+
+            println("Edit: Newcontent: ${content.textMessage}")
 
             //Clear text after editing message
             onAction(MessageAction.CancelEditMessage)

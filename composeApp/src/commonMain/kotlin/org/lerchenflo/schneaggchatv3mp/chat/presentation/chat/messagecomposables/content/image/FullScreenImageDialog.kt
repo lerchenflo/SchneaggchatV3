@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.image
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.image
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.rememberTransformableState
