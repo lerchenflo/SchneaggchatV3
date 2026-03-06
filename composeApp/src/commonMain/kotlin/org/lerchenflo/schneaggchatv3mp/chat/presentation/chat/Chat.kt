@@ -68,6 +68,8 @@ import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
@@ -437,7 +439,7 @@ fun ChatScreen(
                                     addMediaDropdownExpanded = false
                                     option.getAction(
                                         onPollAction = { showPollDialog = true },
-                                        onImageAction = { showImagePickerDialog = true }, // todo actions übergeaba
+                                        onImageAction = { showImagePickerDialog = true },
                                         onAudioAction = {}
                                     )
                                 }
@@ -462,7 +464,7 @@ fun ChatScreen(
                 when (val content = viewModel.currentSendContent) {
                     is ChatViewModel.SendMessageContent.TextContent -> {
                         OutlinedTextField(
-                            value = content.textMessage,
+                            value = content.textFieldValue,
                             onValueChange = { newValue ->
                                 viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(newValue))
                             },
@@ -472,8 +474,21 @@ fun ChatScreen(
                                 .onPreviewKeyEvent { event ->
                                     if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
                                         if (event.isShiftPressed) {
-                                            viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(content.textMessage + "\n"))
-                                            return@onPreviewKeyEvent false
+                                            val text = content.textMessage
+                                            val selection = content.textFieldValue.selection  // requires TextFieldValue in state
+                                            val cursorPos = selection.start
+                                            val newText = text.substring(0, cursorPos) + "\n" + text.substring(cursorPos)
+                                            val newCursorPos = cursorPos + 1
+
+                                            viewModel.updateSendContent(
+                                                ChatViewModel.SendMessageContent.TextContent(
+                                                    textFieldValue = TextFieldValue(
+                                                        text = newText,
+                                                        selection = TextRange(newCursorPos)
+                                                    )
+                                                )
+                                            )
+                                            return@onPreviewKeyEvent true  // true to consume and prevent double newline
                                         } else {
                                             viewModel.sendMessage(
                                                 message = viewModel.currentSendContent,
@@ -529,7 +544,8 @@ fun ChatScreen(
                                                     val remaining = content.images - imageBytes
                                                     viewModel.updateSendContent(
                                                         if (remaining.isEmpty())
-                                                            ChatViewModel.SendMessageContent.TextContent(content.text)
+                                                            ChatViewModel.SendMessageContent.TextContent(
+                                                                TextFieldValue(content.text))
                                                         else
                                                             content.copy(images = remaining)
                                                     )
