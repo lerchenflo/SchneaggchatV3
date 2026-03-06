@@ -113,7 +113,7 @@ fun SignUpScreen(
             modifier = modifier
         ) {
             ActivityTitle(
-                title = "Create Account",
+                title = stringResource(Res.string.create_account),
                 onBackClick = {
                     onAction(SignupAction.OnBackClicked)
                 }
@@ -130,12 +130,16 @@ fun SignUpScreen(
                 canContinue = { pageIndex ->
                     when (pageIndex) {
                         0 -> state.profilePic != null && state.profilePicErrorText == null
-                        1 -> state.usernameState.errorMessage == null && 
-                               state.emailState.errorMessage == null && 
+                        1 -> state.usernameState.errorMessage == null &&
+                                state.usernameState.text.isNotEmpty() &&
+                               state.emailState.errorMessage == null &&
+                                state.emailState.text.isNotEmpty() &&
                                state.gebiDate != null && 
                                state.gebiErrorText == null
-                        2 -> state.passwordState.errorMessage == null && 
+                        2 -> state.passwordState.errorMessage == null &&
+                                state.passwordState.text.isNotEmpty() &&
                                state.passwordRetypeState.errorMessage == null &&
+                                state.passwordRetypeState.text.isNotEmpty() &&
                                state.agbsAccepted &&
                                state.agbsErrorText == null
                         else -> true
