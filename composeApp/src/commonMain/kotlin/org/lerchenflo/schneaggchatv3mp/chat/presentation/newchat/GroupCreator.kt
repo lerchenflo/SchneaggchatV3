@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat
 
-import SwipeableCardView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.SwipeableCardView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -93,6 +93,14 @@ private fun GroupCreatorScreen(
             onBack = { onAction(GroupCreatorAction.navigateBack) },
             finishEnabled = state.creationPermitted,
             backEnabled = true,
+            canContinue = { pageIndex ->
+                when (pageIndex) {
+                    0 -> state.selectedUsers.size >= 2
+                    1 -> state.groupname.text.length in 4..<25
+                    2 -> state.profilepic != null
+                    else -> true
+                }
+            }
         ){
             //User selection card
             CardItem {
