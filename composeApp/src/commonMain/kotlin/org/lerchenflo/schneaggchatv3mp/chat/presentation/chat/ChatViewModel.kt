@@ -88,11 +88,15 @@ class ChatViewModel(
 
 
     sealed class SendMessageContent {
-        data class TextContent(val textMessage: String) : SendMessageContent()
+        data class TextContent(
+            val textFieldValue: TextFieldValue = TextFieldValue()
+        ) : SendMessageContent() {
+            val textMessage: String get() = textFieldValue.text
+        }
         data class ImageContent(val images: List<ByteArray>, val text: String) : SendMessageContent()
     }
 
-    var currentSendContent by mutableStateOf<SendMessageContent>(SendMessageContent.TextContent(""))
+    var currentSendContent by mutableStateOf<SendMessageContent>(SendMessageContent.TextContent(TextFieldValue("")))
         private set
     fun updateSendContent(newValue: SendMessageContent) {
         currentSendContent = newValue
@@ -192,7 +196,7 @@ class ChatViewModel(
         }
 
         updateReplyMessage(null)
-        updateSendContent(SendMessageContent.TextContent(""))
+        updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
     }
 
     fun onImageSelected(results: List<GalleryPhotoResult>) {
@@ -271,11 +275,11 @@ class ChatViewModel(
             is MessageAction.DeleteMessage -> deleteMessage(action.message)
             is MessageAction.StartEditMessage -> {
                 editMessage = action.message
-                updateSendContent(SendMessageContent.TextContent(action.message.content))
+                updateSendContent(SendMessageContent.TextContent(TextFieldValue(action.message.content)))
             }
             MessageAction.CancelEditMessage -> {
                 editMessage = null
-                updateSendContent(SendMessageContent.TextContent(""))
+                updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
                 //println("Update message sendtext to empty")
             }
 
@@ -510,7 +514,7 @@ class ChatViewModel(
                     loggingRepository.logWarning("ChatViewModel: Problem getting draft: ${exception.message}")
                 }
                 .collect { value ->
-                    updateSendContent(SendMessageContent.TextContent(value?: ""))
+                    updateSendContent(SendMessageContent.TextContent(TextFieldValue(value?: "")))
                 }
         }
 
