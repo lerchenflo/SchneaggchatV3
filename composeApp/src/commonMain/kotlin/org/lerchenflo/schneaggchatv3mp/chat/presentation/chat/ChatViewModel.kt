@@ -309,9 +309,12 @@ class ChatViewModel(
     // Audio Recording / Playback
     fun initAudioRecorderPlayer() {
         viewModelScope.launch {
-            if(permissionsManager.checkMicrophonePermission() == PermissionState.GRANTED){
+            val permission = permissionsManager.checkMicrophonePermission()
+            println("Permission: $permission")
+            if( permission == PermissionState.GRANTED){
                 audioRecorderPlayer = createAudioRecorderPlayer()
             }else{
+                println("Requesting Microphone permission")
                 permissionsManager.requestMicrophonePermission()
             }
         }

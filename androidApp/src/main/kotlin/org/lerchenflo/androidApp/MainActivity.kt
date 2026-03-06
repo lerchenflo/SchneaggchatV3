@@ -22,6 +22,7 @@ import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfig
 import com.mmk.kmpnotifier.permission.permissionUtil
 import org.lerchenflo.schneaggchatv3mp.androidApp.R
 import org.lerchenflo.schneaggchatv3mp.app.App
+import org.lerchenflo.schneaggchatv3mp.utilities.ActivityHolder
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 
 class MainActivity : ComponentActivity() {
@@ -58,6 +59,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+        ActivityHolder.set(this) // Register this activity
+
 
         //Noti permission
         val permissionUtil by permissionUtil()
@@ -72,5 +75,10 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         NotifierManager.onCreateOrOnNewIntent(intent)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        ActivityHolder.clear() // Prevent memory leaks!
     }
 }
