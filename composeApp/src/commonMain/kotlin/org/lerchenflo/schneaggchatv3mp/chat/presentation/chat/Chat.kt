@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -61,6 +63,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
@@ -145,7 +148,7 @@ fun ChatScreen(
 
                 GalleryPickerLauncher(
                     onPhotosSelected = {
-                        viewModel.onImageSelected(it.first())
+                        viewModel.onImageSelected(it)
                         showImagePickerDialog = false
                     },
                     onError = {
@@ -154,8 +157,8 @@ fun ChatScreen(
                     onDismiss = {
                         showImagePickerDialog = false
                     },
-                    selectionLimit = 1,
                     enableCrop = false,
+                    allowMultiple = true,
                     cameraCaptureConfig = CameraCaptureConfig(
                         compressionLevel = CompressionLevel.HIGH,
                         preference = CapturePhotoPreference.FAST, //No flash
@@ -170,8 +173,7 @@ fun ChatScreen(
 
                          */
                         galleryConfig = GalleryConfig(
-                            allowMultiple = false,
-                            selectionLimit = 1,
+                            allowMultiple = true,
                         )
                     )
                 )
@@ -490,61 +492,75 @@ fun ChatScreen(
                         Column(
                             modifier = Modifier.weight(1f)
                         ) {
-                            Box(
+                            // Multi-image preview row
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .border(
-                                        width = 1.dp,
-                                        color = MaterialTheme.colorScheme.outline,
-                                        shape = RoundedCornerShape(12.dp)
-                                    )
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                                    .horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Image(
-                                    painter = BitmapPainter(content.imageMessage.decodeToImageBitmap()),
-                                    contentDescription = "image to send",
-                                )
-                                // Close button
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .padding(4.dp)
-                                        .size(24.dp) // control the circle size here
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
-                                        .clickable {
-                                            viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(content.text))
-                                        },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Remove image",
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.onSurface
-                                    )
+                                content.images.forEach { imageBytes ->
+                                    Box(
+                                        modifier = Modifier
+                                            .size(80.dp) // fixed thumbnail size
+                                            .border(
+                                                width = 1.dp,
+                                                color = MaterialTheme.colorScheme.outline,
+                                                shape = RoundedCornerShape(12.dp)
+                                            )
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                                    ) {
+                                        Image(
+                                            painter = BitmapPainter(imageBytes.decodeToImageBitmap()),
+                                            contentDescription = "image to send",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                        // Close button per image
+                                        Box(
+                                            modifier = Modifier
+                                                .align(Alignment.TopEnd)
+                                                .padding(2.dp)
+                                                .size(20.dp)
+                                                .clip(CircleShape)
+                                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                                                .clickable {
+                                                    val remaining = content.images - imageBytes
+                                                    viewModel.updateSendContent(
+                                                        if (remaining.isEmpty())
+                                                            ChatViewModel.SendMessageContent.TextContent(content.text)
+                                                        else
+                                                            content.copy(images = remaining)
+                                                    )
+                                                },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Close,
+                                                contentDescription = "Remove image",
+                                                modifier = Modifier.size(14.dp),
+                                                tint = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                    }
                                 }
                             }
 
                             OutlinedTextField(
                                 value = content.text,
                                 onValueChange = { newValue ->
-                                    viewModel.updateSendContent(ChatViewModel.SendMessageContent.ImageContent(
-                                        imageMessage = content.imageMessage,
-                                        text = newValue
-                                    ))
+                                    viewModel.updateSendContent(
+                                        content.copy(text = newValue)
+                                    )
                                 },
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .onPreviewKeyEvent { event -> //TODO: Test line breaks on desktop here and for text only
+                                    .onPreviewKeyEvent { event ->
                                         if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
                                             if (event.isShiftPressed) {
-                                                viewModel.updateSendContent(ChatViewModel.SendMessageContent.ImageContent(
-                                                    imageMessage = content.imageMessage,
-                                                    text = content.text + "\n"
-                                                ))
+                                                viewModel.updateSendContent(content.copy(text = content.text + "\n"))
                                                 return@onPreviewKeyEvent false
                                             } else {
                                                 viewModel.sendMessage(

@@ -37,7 +37,7 @@ fun ImageMessageContentView(
     var showFullscreen by remember { mutableStateOf(false) }
 
     val imageModifier = modifier
-        .fillMaxWidth(0.67f)
+        .fillMaxWidth()
         .clip(RoundedCornerShape(15.dp))
         .pointerInput(Unit) {
             detectTapGestures(
@@ -47,7 +47,9 @@ fun ImageMessageContentView(
         }
 
 
-    Column {
+    Column(
+        modifier = Modifier.fillMaxWidth(0.67f)
+    ) {
         if (message.pictureUrl != null) {
             AsyncImage(
                 model = message.pictureUrl,
