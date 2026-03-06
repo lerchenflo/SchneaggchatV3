@@ -257,7 +257,7 @@ class ChatViewModel(
             MessageAction.CancelEditMessage -> {
                 editMessage = null
                 updateSendContent(SendMessageContent.TextContent(""))
-                println("Update message sendtext to empty")
+                //println("Update message sendtext to empty")
             }
 
             is MessageAction.ReplyToMessage -> updateReplyMessage(action.message)
@@ -278,6 +278,8 @@ class ChatViewModel(
                 message = message,
                 newContent = content.textMessage
             )
+
+            println("Edit: Newcontent: ${content.textMessage}")
 
             //Clear text after editing message
             onAction(MessageAction.CancelEditMessage)
