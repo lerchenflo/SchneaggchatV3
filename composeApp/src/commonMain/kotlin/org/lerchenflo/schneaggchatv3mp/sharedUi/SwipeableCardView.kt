@@ -1,3 +1,5 @@
+package org.lerchenflo.schneaggchatv3mp.sharedUi
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +13,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -44,6 +47,7 @@ fun SwipeableCardView(
     onBack: () -> Unit,
     finishEnabled: Boolean,
     backEnabled: Boolean,
+    canContinue: (page: Int) -> Boolean = { true },
     modifier: Modifier = Modifier,
     contentAlignment: Alignment.Vertical = Alignment.CenterVertically,
     cardElevation: Dp = 16.dp,
@@ -145,9 +149,9 @@ fun SwipeableCardView(
                         }
                     },
                     enabled = if (pagerState.currentPage == scope.cards.size - 1) {
-                        finishEnabled // Use finishEnabled parameter on last page
+                        finishEnabled
                     } else {
-                        true // Always enabled for next navigation
+                        canContinue(pagerState.currentPage) // ← reads live state directly
                     }
                 ) {
                     Text(
@@ -245,7 +249,7 @@ private fun ExampleScreen() {
 
                         // Example: Enable finish button when checkbox is checked
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            androidx.compose.material3.Checkbox(
+                            Checkbox(
                                 checked = canFinish,
                                 onCheckedChange = { canFinish = it }
                             )
