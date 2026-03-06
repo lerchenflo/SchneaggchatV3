@@ -5,6 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.hyochan.audio.AudioRecorderPlayer
+import io.github.hyochan.audio.createAudioRecorderPlayer
+import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
+import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -28,30 +32,27 @@ import kotlinx.datetime.toLocalDateTime
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
-import androidx.compose.ui.text.input.TextFieldValue
-import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
-import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
-import io.ktor.client.plugins.api.Send
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
-import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 class ChatViewModel(
     private val appRepository: AppRepository,
@@ -62,12 +63,15 @@ class ChatViewModel(
     private val globalViewModel: GlobalViewModel,
     private val navigator: Navigator,
     private val loggingRepository: LoggingRepository,
-    private val pictureManager: PictureManager
+    private val pictureManager: PictureManager,
+    private val permissionsManager: PermissionManager
 ): ViewModel() {
 
     companion object {
         private const val INITIAL_MESSAGE_COUNT = 12
     }
+
+    private var audioRecorderPlayer: AudioRecorderPlayer? = null // Object for Audio Recording / Playback
 
     // chat id und group bool wörrend im init oamol glada
     // Damit leabt des o solang wie es viewmodel o wenn des im globalviewmodel scho tötet worra isch
@@ -302,6 +306,47 @@ class ChatViewModel(
         }
     }
 
+    // Audio Recording / Playback
+    fun initAudioRecorderPlayer() {
+        viewModelScope.launch {
+            if(permissionsManager.checkMicrophonePermission() == PermissionState.GRANTED){
+                audioRecorderPlayer = createAudioRecorderPlayer()
+            }else{
+                permissionsManager.requestMicrophonePermission()
+            }
+        }
+    }
+
+
+    fun startRecording() {
+        viewModelScope.launch {
+            if(audioRecorderPlayer != null){
+                val path = "audioRec_" + getCurrentTimeMillisString()
+                val result = audioRecorderPlayer!!.startRecording(path) // des !! hoast vertrau bruder es isch ned null
+                println("Recording started at: $result")
+
+                audioRecorderPlayer!!.addRecordingListener { recordBack ->
+                    // recordBack.currentPosition contains the duration in ms
+                    println("Current record time: ${recordBack.currentPosition}")
+                }
+            }else{
+                initAudioRecorderPlayer()
+            }
+        }
+    }
+
+    fun stopRecording() {
+        viewModelScope.launch {
+            if(audioRecorderPlayer != null){
+                val result = audioRecorderPlayer!!.stopRecording()
+                audioRecorderPlayer!!.removeListeners()
+                println("Recording stopped: $result")
+            }else{
+                initAudioRecorderPlayer()
+            }
+        }
+
+    }
 
 
 

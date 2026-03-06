@@ -13,6 +13,9 @@ cryptographyProviderOptimal = "0.5.0"
 encoding = "2.6.0"
 foundation = "1.10.1"
 githubImagepickerkmp = "1.0.32"
+kmp-audio-recorder-player = "1.0.0-alpha04"
+
+moko = "0.20.1"
 
 jwtKt = "1.2.1"
 kotlin = "2.3.20-RC2"
@@ -72,6 +75,7 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 #androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
@@ -82,6 +86,10 @@ sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sql
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 datetime-wheel-picker = { module = "io.github.darkokoa:datetime-wheel-picker", version.ref = "datetime-wheel-picker" }
 material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
+kmp-audio-recorder-player = { module = "io.github.hyochan:kmp-audio-recorder-player", version.ref = "kmp-audio-recorder-player" }
+moko-permissions = { module = "dev.icerock.moko:permissions", version.ref = "moko" }
+moko-permissions-compose = { module = "dev.icerock.moko:permissions-compose", version.ref = "moko" }
+#moko-permissions-microphone = { module = "dev.icerock.moko:permissions-microphone", version.ref = "moko"}
 
 
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin-core" }

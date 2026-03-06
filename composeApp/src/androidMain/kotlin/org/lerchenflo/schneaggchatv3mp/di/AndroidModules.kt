@@ -16,6 +16,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 
 val androidUserDatabaseModule = module {
     single<RoomDatabase.Builder<AppDatabase>> { androidAppDatabaseBuilder(androidContext()) }
@@ -53,6 +54,10 @@ val androidVersionModule = module {
 
 val androidPictureManagerModule = module {
     single { PictureManager(androidContext()) }
+}
+
+val androidPermissionManagerModule = module {
+    single { PermissionManager(androidContext()) }
 }
 
 val androidShareUtilsModule = module {

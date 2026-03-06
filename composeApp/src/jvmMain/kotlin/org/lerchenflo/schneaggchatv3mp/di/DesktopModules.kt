@@ -15,6 +15,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 
 
 val desktopAppDatabaseModule = module {
@@ -43,6 +44,10 @@ val desktopVersionModule = module {
 
 val desktopPictureManagerModule = module {
     single { PictureManager() }
+}
+
+val desktopPermissionManagerModule = module {
+    single { PermissionManager() }
 }
 
 val desktopShareUtilsModule = module {

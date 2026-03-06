@@ -15,6 +15,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 
 val IosDatabaseModule = module {
     single<RoomDatabase.Builder<AppDatabase>> { iosAppDatabaseBuilder() }
@@ -43,6 +44,11 @@ val IosVersionModule = module {
 val IosPictureManagerModule = module {
     single { PictureManager() }
 }
+
+val IosPermissionManagerModule = module {
+    single { PermissionManager() }
+}
+
 
 val IosShareUtilsModule = module {
     single { ShareUtils() }

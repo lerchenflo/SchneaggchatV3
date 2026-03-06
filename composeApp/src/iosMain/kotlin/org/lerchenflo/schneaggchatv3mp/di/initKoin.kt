@@ -17,6 +17,7 @@ fun initKoin(){
 
             IosVersionModule,
             IosPictureManagerModule,
+            IosPermissionManagerModule,
             IosShareUtilsModule,
             IosLanguageManagerModule
         )

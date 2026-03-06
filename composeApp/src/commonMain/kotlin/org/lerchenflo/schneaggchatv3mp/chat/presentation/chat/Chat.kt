@@ -99,6 +99,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.Audio.DebugAudioDialog
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.DayDivider
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
@@ -156,6 +157,7 @@ fun ChatScreen(
 
     var showPollDialog by remember { mutableStateOf(false) }
     var showImagePickerDialog by remember { mutableStateOf(false) }
+    var showDebugAudioDialog by remember { mutableStateOf(false) } // Temporary solution until a better ui is created
 
 
     if (showImagePickerDialog) {
@@ -455,7 +457,7 @@ fun ChatScreen(
                                     option.getAction(
                                         onPollAction = { showPollDialog = true },
                                         onImageAction = { showImagePickerDialog = true }, // todo actions übergeaba
-                                        onAudioAction = {}
+                                        onAudioAction = {showDebugAudioDialog = true}
                                     )
                                 }
                             )
@@ -470,6 +472,14 @@ fun ChatScreen(
                             println("Poll created: $it")
                             viewModel.createPollMessage(it)
                         }
+                    )
+                }
+
+                if(showDebugAudioDialog){
+                    DebugAudioDialog(
+                        onDismiss = { showDebugAudioDialog = false },
+                        onStartRecording = viewModel::startRecording,
+                        onStopRecording = viewModel::stopRecording
                     )
                 }
 
