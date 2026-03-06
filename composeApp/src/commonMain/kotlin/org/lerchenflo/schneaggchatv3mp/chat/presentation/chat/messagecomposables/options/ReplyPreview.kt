@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables.content.MessageContent
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.close
 

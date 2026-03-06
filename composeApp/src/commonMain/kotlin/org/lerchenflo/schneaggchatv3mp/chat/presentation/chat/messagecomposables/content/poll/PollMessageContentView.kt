@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables.content.poll
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -98,11 +98,11 @@ import kotlin.time.Clock
 fun PollMessageContentView(
     message: Message,
     useMD: Boolean,
+    myMessage: Boolean,
     readerMap: Map<String, String>,
     onAction: (MessageAction) -> Unit = {}
 ){
 
-    val myMessage = message.myMessage
 
     val poll = message.poll ?: run {
         Text(

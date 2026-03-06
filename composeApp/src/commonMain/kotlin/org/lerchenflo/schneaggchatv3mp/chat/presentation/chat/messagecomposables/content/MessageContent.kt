@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables.content
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,12 +16,12 @@ import androidx.compose.ui.unit.sp
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables.ErrorMessage
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables.ReadIndicator
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables.ReadState
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables.content.image.ImageMessageContentView
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables.content.poll.PollMessageContentView
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables.content.text.TextMessageContentView
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ErrorMessage
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReadIndicator
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReadState
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.image.ImageMessageContentView
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll.PollMessageContentView
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.text.TextMessageContentView
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 
 @Composable
@@ -65,13 +65,16 @@ fun MessageContent(
                     MessageType.POLL -> PollMessageContentView(
                         message = message,
                         useMD = useMD,
+                        myMessage = mymessage,
                         onAction = onAction,
                         readerMap = readerMap
                     )
 
                     MessageType.IMAGE -> ImageMessageContentView(
                         message = message,
-                        modifier = Modifier
+                        modifier = Modifier,
+                        myMessage = mymessage,
+                        useMD = useMD
                     )
 
                     else -> ErrorMessage()

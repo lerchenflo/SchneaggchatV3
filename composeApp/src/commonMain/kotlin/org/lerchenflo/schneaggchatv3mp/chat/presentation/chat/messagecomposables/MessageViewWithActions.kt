@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -62,7 +62,7 @@ fun MessageViewWithActions(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min)
+            //.height(IntrinsicSize.Min)
     ){
         Row(
             modifier = Modifier
@@ -73,6 +73,7 @@ fun MessageViewWithActions(
         ) {
             ReplyArrow()
         }
+
         Surface(
             color = MaterialTheme.colorScheme.background,
             tonalElevation = 0.dp,

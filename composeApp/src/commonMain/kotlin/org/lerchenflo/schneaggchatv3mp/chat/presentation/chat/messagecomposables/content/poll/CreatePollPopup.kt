@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables.content.poll
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

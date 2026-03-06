@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables.content.text
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.text
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text

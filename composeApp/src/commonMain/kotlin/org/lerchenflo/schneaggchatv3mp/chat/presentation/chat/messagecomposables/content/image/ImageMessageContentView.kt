@@ -1,5 +1,6 @@
-package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables.content.image
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.image
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,12 +14,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.vectorResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables.content.text.TextMessageContentView
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.text.TextMessageContentView
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 
 @Composable
 fun ImageMessageContentView(
@@ -29,22 +36,32 @@ fun ImageMessageContentView(
 ) {
     var showFullscreen by remember { mutableStateOf(false) }
 
+    val imageModifier = modifier
+        .fillMaxWidth(0.67f)
+        .clip(RoundedCornerShape(15.dp))
+        .pointerInput(Unit) {
+            detectTapGestures(
+                onTap = { showFullscreen = true },
+                onLongPress = {}
+            )
+        }
+
+
     Column {
-        AsyncImage(
-            model = message.pictureUrl ?: "",
-            modifier = modifier
-                .fillMaxWidth(0.67f)
-                .widthIn(min = 200.dp)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = { showFullscreen = true },
-                        onLongPress = {}
-                    )
-                }
-                .clip(RoundedCornerShape(15.dp)),
-            contentDescription = "image",
-            contentScale = ContentScale.FillWidth,
-        )
+        if (message.pictureUrl != null) {
+            AsyncImage(
+                model = message.pictureUrl,
+                modifier = imageModifier,
+                contentDescription = "image",
+                //contentScale = ContentScale.FillWidth,
+            )
+        }else {
+            Image(
+                painter = painterResource(Res.drawable.icon_nutzer),
+                contentDescription = "image loading error",
+                modifier = imageModifier
+            )
+        }
 
         if (message.content.isNotEmpty()) {
             TextMessageContentView(
@@ -53,14 +70,13 @@ fun ImageMessageContentView(
                 myMessage = myMessage,
                 modifier = Modifier
                     .padding(top = 4.dp)
-                    .widthIn(min = 200.dp) // ← match image min-width so bubble doesn't collapse
             )
         }
     }
 
     if (showFullscreen) {
         FullscreenImageDialog(
-            imageUrl = message.pictureUrl ?: "", // ← also fix this while you're here
+            imageUrl = message.pictureUrl ?: "",
             onDismiss = { showFullscreen = false }
         )
     }

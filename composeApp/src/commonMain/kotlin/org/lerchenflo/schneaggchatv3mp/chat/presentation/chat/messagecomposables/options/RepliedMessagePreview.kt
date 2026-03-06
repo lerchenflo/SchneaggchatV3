@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

@@ -33,7 +33,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ReaderRow
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables.content.MessageContent
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.copy

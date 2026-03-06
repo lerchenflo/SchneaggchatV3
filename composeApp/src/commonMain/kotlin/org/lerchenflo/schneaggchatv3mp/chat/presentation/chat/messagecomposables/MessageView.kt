@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,7 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.composables.content.MessageContent
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.RepliedMessagePreview
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
 
 
 @Composable
@@ -33,7 +34,7 @@ fun MessageView(
 
     val mymessage = message.myMessage
 
-    Column(){
+    Column {
         if (replyMessage != null) {
 
             RepliedMessagePreview(
@@ -53,7 +54,7 @@ fun MessageView(
         //Ganze breite
         Row(
             modifier = modifier
-                .fillMaxWidth(), // Make sure this is here
+                .fillMaxWidth(),
             horizontalArrangement = if (mymessage) Arrangement.End else Arrangement.Start
         ) {
 
