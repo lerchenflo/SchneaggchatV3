@@ -20,6 +20,7 @@ It is an alternative to the tech giants stealing our data.
 - Password reset button
 - show readers in Groups
 - Image messages
+- Register update with swipeablecards
 
 #### Bugfixes
 - Navigate to chat selector when no user is selected in chat (bug when swiping back)
