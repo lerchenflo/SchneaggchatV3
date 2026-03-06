@@ -148,7 +148,7 @@ class SignUpViewModel(
     }
 
     private suspend fun checkenableCreateButton(): Boolean {
-        if (isInputComplete()) return true
+        if (state.isInputComplete()) return true
 
         // Load error strings once
         val cannotBeEmptyError = getString(Res.string.cannot_be_empty)
@@ -193,19 +193,7 @@ class SignUpViewModel(
     }
 
 
-    fun isInputComplete() : Boolean{
-        return state.usernameState.isCorrect()
-                && state.passwordState.isCorrect()
-                && state.passwordRetypeState.isCorrect()
-                && state.emailState.isCorrect()
-                && state.gebiDate != null
-                && state.gebiErrorText == null
-                && state.profilePic != null
-                && state.profilePicErrorText == null
-                && state.agbsAccepted
-                && state.agbsErrorText == null
-                && state.passwordState.text == state.passwordRetypeState.text
-    }
+
 
 
 
@@ -214,7 +202,7 @@ class SignUpViewModel(
         viewModelScope.launch {
             if (!checkenableCreateButton()) return@launch
 
-            if (isInputComplete() && !state.isLoading) {
+            if (state.isInputComplete() && !state.isLoading) {
                 try {
                     state = state.copy(
                         isLoading = true

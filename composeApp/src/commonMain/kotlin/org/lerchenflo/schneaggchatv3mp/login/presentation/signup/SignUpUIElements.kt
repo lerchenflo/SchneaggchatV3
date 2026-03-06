@@ -22,20 +22,13 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Cake
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.rememberTooltipState
-import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,15 +37,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -105,7 +92,6 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 //Signup element für Username und email
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpForm1(
     usernameText: String,
@@ -121,7 +107,6 @@ fun SignUpForm1(
     profilePicErrorText: String?,
     onProfilePicClick: () -> Unit,
     onBackClick: () -> Unit,
-    focus: SignupFocusRequesters,
     modifier: Modifier = Modifier
 ){
 
@@ -223,8 +208,6 @@ fun SignUpForm1(
             imeAction = ImeAction.Next,
             keyboardType = KeyboardType.Text,
             errortext = usernameerrorText,
-            focusRequester = focus.username,
-            nextFocusRequester = focus.email,
             tooltip = stringResource(Res.string.tooltip_username),
             modifier = Modifier.fillMaxWidth()
         )
@@ -239,8 +222,6 @@ fun SignUpForm1(
             imeAction = ImeAction.Next,
             keyboardType = KeyboardType.Email,
             errortext = emailerrorText,
-            focusRequester = focus.email,
-            nextFocusRequester = focus.date,
             tooltip = stringResource(Res.string.tooltip_email),
             modifier = Modifier.fillMaxWidth()
         )
@@ -264,18 +245,9 @@ fun SignUpForm1(
         ){
             Button(
                 onClick = {
-                    showDatePicker = true //todo server backend fehlt
+                    showDatePicker = true
                 },
-                modifier = Modifier
-                    .weight(1f)
-                    .focusRequester(focus.date)
-                    .onPreviewKeyEvent { event ->
-                        // Detect TAB key press
-                        if (event.key == Key.Tab && event.type == KeyEventType.KeyDown) {
-                            focus.password.requestFocus()
-                            true // we handled it
-                        } else false
-                    }
+                modifier = Modifier.weight(1f)
             ){
                 Icon(
                     imageVector = Icons.Default.Cake,
@@ -318,7 +290,6 @@ fun SignUpForm1(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpForm2(
     passwordText: String,
@@ -333,7 +304,6 @@ fun SignUpForm2(
     onCheckBoxCheckedChange: (Boolean) -> Unit,
     checkboxChecked: Boolean,
     agbErrorText: String?,
-    focus: SignupFocusRequesters,
     modifier: Modifier = Modifier
 ){
     Column(
@@ -349,8 +319,6 @@ fun SignUpForm2(
             imeAction = ImeAction.Next,
             keyboardType = KeyboardType.Password,
             errortext = passworderrorText,
-            focusRequester = focus.password,
-            nextFocusRequester = focus.password2,
             tooltip = stringResource(Res.string.tooltip_password),
             modifier = Modifier
                 .fillMaxWidth()
@@ -366,8 +334,6 @@ fun SignUpForm2(
             imeAction = ImeAction.Next,
             keyboardType = KeyboardType.Password,
             errortext = password2errorText,
-            focusRequester = focus.password2,
-            nextFocusRequester = focus.terms,
             tooltip = stringResource(Res.string.tooltip_password_repeat),
             modifier = Modifier
                 .fillMaxWidth()
@@ -381,16 +347,7 @@ fun SignUpForm2(
         ) {
             Checkbox(
                 checked = checkboxChecked,
-                onCheckedChange = {onCheckBoxCheckedChange(it)},
-                modifier = Modifier
-                    .focusRequester(focus.terms)
-                    .onPreviewKeyEvent { event ->
-                        // Detect TAB key press
-                        if (event.key == Key.Tab && event.type == KeyEventType.KeyDown) {
-                            focus.signup.requestFocus()
-                            true
-                        } else false
-                    }
+                onCheckedChange = {onCheckBoxCheckedChange(it)}
             )
 
             Spacer(modifier = Modifier.width(2.dp))
@@ -539,18 +496,6 @@ fun BirthdatePickerPopup(
 @Composable
 private fun Preview() {
     MaterialTheme {
-
-        val focus = SignupFocusRequesters(
-            profilePic = remember { FocusRequester() },
-            username = remember { FocusRequester() },
-            email = remember { FocusRequester() },
-            date = remember { FocusRequester() },
-            password = remember { FocusRequester() },
-            password2 = remember { FocusRequester() },
-            terms = remember { FocusRequester() },
-            signup = remember { FocusRequester() },
-        )
-
         SignUpForm1(
             usernameText = "",
             onusernameTextChange = {},
@@ -561,12 +506,10 @@ private fun Preview() {
             ongebidateselected = {},
             onProfilePicClick = {},
             onBackClick = {},
-            focus = focus,
             selectedgebidate = null,
             gebiErrorText = null,
             selectedProfilePic = null,
             profilePicErrorText = null
-
-            )
+        )
     }
 }
