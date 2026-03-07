@@ -26,6 +26,8 @@
     <string name="username">Nutzername</string>
     <string name="password">Passwort</string>
     <string name="password_again">Passwort wiederholen</string>
+    <string name="password_forgotten">Passwort vergessen?</string>
+
 
     <string name="email">E-mail</string>
     <string name="invalid_email">Gib eine korrekte E-mail-Adresse ein</string>
@@ -45,6 +47,8 @@
     <string name="email_exists">Ein Account mit dieser Email existiert bereits</string>
     <string name="username_exists">Ein Account mit diesem Nutzernamen existiert bereits</string>
     <string name="username_too_long">Dein Nutzername ist zu lang</string>
+    <string name="username_too_short">Dein Benutzername ist zu kurz</string>
+
     <string name="requirement_length">8 oder mehr Zeichen</string>
     <string name="requirement_digit">mindestens eine Zahl</string>
     <string name="requirement_special">mindestens ein Sonderzeichen</string>
@@ -58,6 +62,11 @@
     <string name="cancel">abbrechen</string>
     <string name="version">Version: %1$s</string>
     <string name="app_broken">App kaputt</string>
+
+    <string name="bugreport_request">Fehlermeldung / Featureanfrage</string>
+    <string name="bugreport_request_info">Melde Fehler und Dinge, die sich nicht benutzerfreundlich anfühlen, oder schlage ein neues Feature vor!</string>
+
+
     <string name="loadinginfo_messages">Lade Nachrichten...</string>
     <string name="loadinginfo_offline">Du bist derzeit offline...</string>
     <string name="read">gelesen</string>
@@ -243,6 +252,10 @@
     <string name="copy">Kopieren</string>
     <string name="edit">Bearbeiten</string>
     <string name="delete">Löschen</string>
+    <string name="message_details">Nachrichtendetails</string>
+    <string name="readers">Leser</string>
+    <string name="read_at_time">gelesen %1$s</string>
+    <string name="no_readers">Noch niemand hat das gelesen</string>
 
     <string name="pin_chat">Chat anpinnen</string>
     <string name="unpin_chat">Pin entfernen</string>
@@ -476,6 +489,7 @@
 
     <string name="poll_answer_summary">%1$s Antworten von %2$s Benutzern</string>
 
+    <string name="poll_show_answers">Antworten anzeigen</string>
 
 
 
@@ -487,7 +501,30 @@
     <string name="highscores_not_implemented_warning">Öffentliche Highscores sind noch nicht eingebaut!</string>
 
 
+    <!-- Bug Report Dialog -->
+    <string name="bugreportdialog_title_bug">Bug Report</string>
+    <string name="bugreportdialog_title_feature">Feature Request</string>
+    <string name="bugreportdialog_type_bug">Bug</string>
+    <string name="bugreportdialog_type_feature">Feature</string>
+    <string name="bugreportdialog_field_title">Titel *</string>
+    <string name="bugreportdialog_field_description">Beschreibung *</string>
+    <string name="bugreportdialog_field_steps">Schritte zum Reproduzieren</string>
+    <string name="bugreportdialog_field_steps_placeholder">1. Chat öffnen\n2. Profilbild drücken\n3. etc</string>
+    <string name="bugreportdialog_field_expected">Erwartetes Verhalten</string>
+    <string name="bugreportdialog_field_actual">Aufgetretenes Verhalten</string>
+    <string name="bugreportdialog_label_severity">Schwere</string>
 
+    <string name="bugreportdialog_severity_low">Leicht</string>
+    <string name="bugreportdialog_severity_medium">Mittel</string>
+    <string name="bugreportdialog_severity_high">Hoch</string>
+    <string name="bugreportdialog_severity_critical">Kritisch</string>
+
+    <string name="bugreportdialog_field_motivation">Warum braucht es das?</string>
+    <string name="bugreportdialog_label_priority">Priorität</string>
+
+    <string name="bugreportdialog_priority_low">Niedrig</string>
+    <string name="bugreportdialog_priority_medium">Mittel</string>
+    <string name="bugreportdialog_priority_high">Hoch</string>
 
 
     <!-- Games: Yatzi -->
