@@ -279,6 +279,7 @@ fun SignUpScreen(
                             BirthdatePickerPopup(
                                 onDateSelected = { selectedDate ->
                                     onAction(SignupAction.OnGebiDateChange(selectedDate))
+                                    showDatePicker = false
                                 },
                                 onDismiss = { showDatePicker = false }
                             )

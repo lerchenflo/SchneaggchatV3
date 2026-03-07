@@ -55,6 +55,7 @@ import dev.darkokoa.datetimewheelpicker.WheelDatePicker
 import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.number
@@ -123,22 +124,42 @@ fun BirthdatePickerPopup(
     onDateSelected: (LocalDate) -> Unit,
     onDismiss: () -> Unit,
     defaultDate: LocalDate? = null
-
 ) {
-    val today = Clock.System.now().toLocalDateTime(TimeZone.UTC).date // TimeZone.currentSystemDefault() künnt fehler uf Iphone werfa (crash)
-    val endOfCurrentYear = LocalDate(year = today.year, month = 12, day = 31)
-    val _defaultDate = defaultDate ?: today.minus(18, DateTimeUnit.YEAR)
-
-    var selectedDate by remember {
-        mutableStateOf(_defaultDate)
+    val today = remember {
+        // Avoid TimeZone.currentSystemDefault() on iOS — use UTC
+        Clock.System.now().toLocalDateTime(TimeZone.UTC).date
     }
+
+    val endOfCurrentYear = remember(today) {
+        LocalDate(year = today.year, month = 12, day = 31)
+    }
+
+    // Compute default safely: avoid .minus(DateTimeUnit.YEAR) which is unstable on iOS
+    // Manually subtract 18 years, clamping Feb 29 → Feb 28 on non-leap years
+    val safeDefaultDate = remember(defaultDate, today) {
+        defaultDate ?: run {
+            val targetYear = today.year - 18
+            val targetDay = if (today.month == Month.FEBRUARY &&
+                today.day == 29 &&
+                !LocalDate.isLeapYear(targetYear)
+            ) 28 else today.day
+            LocalDate(targetYear, today.month, targetDay)
+        }
+    }
+
+    var selectedDate by remember { mutableStateOf(safeDefaultDate) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
             TextButton(onClick = {
-                onDateSelected(selectedDate)
-                onDismiss()
+                // Clamp to valid range before confirming — guards against picker edge cases on iOS
+                val clamped = when {
+                    selectedDate < LocalDate(1900, 1, 1) -> LocalDate(1900, 1, 1)
+                    selectedDate > endOfCurrentYear -> endOfCurrentYear
+                    else -> selectedDate
+                }
+                onDateSelected(clamped)
             }) {
                 Text(stringResource(Res.string.ok))
             }
@@ -149,8 +170,6 @@ fun BirthdatePickerPopup(
             }
         },
         text = {
-            // In this library, the parameter is 'onDatelineChanged' or 'onValueChange'
-            // and the styling is handled via specific parameters, not a single 'style' object.
             WheelDatePicker(
                 modifier = Modifier.fillMaxWidth(),
                 startDate = selectedDate,
@@ -164,11 +183,17 @@ fun BirthdatePickerPopup(
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
                 ),
                 onSnappedDate = { snappedDate: LocalDate ->
-                    selectedDate = snappedDate
+                    // Guard against the picker delivering out-of-range dates on iOS
+                    if (snappedDate >= LocalDate(1900, 1, 1) && snappedDate <= endOfCurrentYear) {
+                        selectedDate = snappedDate
+                    }
                 }
             )
         }
     )
 }
 
+// Helper — kotlinx-datetime doesn't expose this directly
+private fun LocalDate.Companion.isLeapYear(year: Int): Boolean =
+    (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
 

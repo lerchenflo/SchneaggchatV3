@@ -62,7 +62,7 @@ kotlin {
 //    }
 
 
-    androidLibrary {
+    android {
         compileSdk = 36
         minSdk = 26
         namespace = "org.lerchenflo.schneaggchatv3mp.androidApp"

@@ -420,6 +420,7 @@ fun UserSettings(
                 userSettingsViewModel.changeBirthDate(
                     it.toString()
                 )
+                showChangeBirthDatePopup = false
             },
             onDismiss = { showChangeBirthDatePopup = false },
             defaultDate = ownuser?.birthDate?.let { dateString ->
