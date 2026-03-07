@@ -972,7 +972,7 @@ class AppRepository(
             }
 
             is MessageContent.ImageContent -> {
-                //TODO: save image in local storage for offline message
+
                 MessageDto(
                     localPK = localpkintern,
                     id = null,
@@ -1030,7 +1030,14 @@ class AppRepository(
         }
 
         when (serverrequest){
-            is NetworkResult.Error<*> -> println("Message senden error: ${serverrequest.error}")
+            is NetworkResult.Error<*> -> {
+                println("Message senden error: ${serverrequest.error}")
+                if (content is MessageContent.ImageContent) {
+                    println("Saving image to local storage")
+                    pictureManager.savePictureToStorage(content.image, "unsent_" + localpkintern + PICTURE_FILE_NAME)
+
+                }
+            }
             is NetworkResult.Success<MessageResponse> -> {
                 withContext(Dispatchers.IO) {
 
@@ -1071,6 +1078,8 @@ class AppRepository(
 
                     if (serverrequest.data.msgType == MessageType.IMAGE) {
                         getPicturesForMessageIds(listOf(serverrequest.data.messageId))
+
+                        pictureManager.deletePicture("unsent_" + localpkintern + PICTURE_FILE_NAME)
                     }
                 }
             }
@@ -1089,62 +1098,59 @@ class AppRepository(
 
             //Do no parallel des loft jetzt alles seriell
             for (m in messages){
-                when (m.msgType) {
-                    MessageType.TEXT -> {
-                        try {
-                            sendMessage(
-                                empfaenger = m.receiverId,
-                                gruppe = m.groupMessage,
-                                content = when (m.msgType) {
-                                    MessageType.TEXT -> {
-                                        MessageContent.TextContent(m.content)
-                                    }
+                try {
+                    sendMessage(
+                        empfaenger = m.receiverId,
+                        gruppe = m.groupMessage,
+                        content = when (m.msgType) {
+                            MessageType.TEXT -> {
+                                MessageContent.TextContent(m.content)
+                            }
 
-                                    MessageType.IMAGE -> {
-                                        // TODO: This needs the image data from local storage if it's an offline message
-                                        // For now, if content stores the text, use it.
-                                        MessageContent.TextContent(m.content)
-                                    }
+                            MessageType.IMAGE -> {
+                                val image = pictureManager.loadPictureFromStorage("unsent_" + m.localPK + PICTURE_FILE_NAME)
 
-                                    MessageType.POLL -> {
+                                if (image == null) {
+                                    MessageContent.TextContent("Offline image sending failed")
+                                } else {
+                                    MessageContent.ImageContent(
+                                        image = image,
+                                        text = m.content
+                                    )
+                                }
+                            }
 
-                                        val poll = m.poll!!
-                                        MessageContent.PollContent(
-                                            NetworkUtils.PollCreateRequest(
-                                                title = poll.title,
-                                                description = poll.description,
-                                                maxAnswers = poll.maxAnswers,
-                                                customAnswersEnabled = poll.customAnswersEnabled,
-                                                maxAllowedCustomAnswers = poll.maxAllowedCustomAnswers,
-                                                visibility = poll.visibility,
-                                                closeDate = poll.expiresAt,
-                                                voteOptions = poll.voteOptions.map {
-                                                    NetworkUtils.PollVoteOptionCreateRequest(
-                                                        text = it.text
-                                                    )
-                                                }
+                            MessageType.POLL -> {
+
+                                val poll = m.poll!!
+                                MessageContent.PollContent(
+                                    NetworkUtils.PollCreateRequest(
+                                        title = poll.title,
+                                        description = poll.description,
+                                        maxAnswers = poll.maxAnswers,
+                                        customAnswersEnabled = poll.customAnswersEnabled,
+                                        maxAllowedCustomAnswers = poll.maxAllowedCustomAnswers,
+                                        visibility = poll.visibility,
+                                        closeDate = poll.expiresAt,
+                                        voteOptions = poll.voteOptions.map {
+                                            NetworkUtils.PollVoteOptionCreateRequest(
+                                                text = it.text
                                             )
-                                        )
-                                    }
-                                },
-                                answerid = m.answerId,
-                                localpk = m.localPK,
-                                messageId = null
-                            )
-                        } catch (e: Exception){
-                            println("Retry send failed for localPK=${m.localPK}: $e")
-                            // optional: increment retry counter in DB, break or continue
-                        }
-                    }
-                    MessageType.IMAGE -> {
-                        //TODO()
-                    }
-                    MessageType.POLL -> {
-                        //TODO()
-                    }
+                                        }
+                                    )
+                                )
+                            }
+                        },
+                        answerid = m.answerId,
+                        localpk = m.localPK,
+                        messageId = null
+                    )
+                    
+                } catch (e: Exception){
+                    println("Retry send failed for localPK=${m.localPK}: $e")
+                    // optional: increment retry counter in DB, break or continue
                 }
 
-                //TODO: Offline message send for images
             }
         }
 
