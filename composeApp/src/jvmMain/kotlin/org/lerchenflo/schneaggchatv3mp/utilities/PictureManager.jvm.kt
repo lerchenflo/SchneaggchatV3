@@ -53,25 +53,12 @@ actual class PictureManager {
         return saveBytesToFile(data, filename)
     }
 
-    actual suspend fun loadPictureFromStorage(filename: String): ImageBitmap? {
+    actual suspend fun loadPictureFromStorage(filename: String): ByteArray? {
         val file = File(getPath(filename))
         if (!file.exists()) return null
 
         return try {
-            // Read the file as bytes and use Compose's native image decoding :cite[5]:cite[8]
-            val bytes = file.readBytes()
-
-            // For Compose Desktop 1.0+ use ImageBitmap.makeFromEncoded
-            // Note: This is the preferred method as it uses Skia internally
-            try {
-                // Try to use the modern API first
-                val method = ImageBitmap::class.java.getMethod("makeFromEncoded", ByteArray::class.java)
-                method.invoke(null, bytes) as ImageBitmap
-            } catch (e: NoSuchMethodException) {
-                // Fallback to BufferedImage approach for older versions
-                val bufferedImage: BufferedImage = ImageIO.read(file)
-                bufferedImage.toComposeImageBitmap()
-            }
+            file.readBytes()
         } catch (e: Exception) {
             e.printStackTrace()
             null

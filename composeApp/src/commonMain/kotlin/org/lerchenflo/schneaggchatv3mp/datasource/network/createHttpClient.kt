@@ -49,7 +49,7 @@ fun createHttpClient(
         if (useAuth){
 
             install(WebSockets) {
-                pingIntervalMillis = 20_000
+                pingIntervalMillis = 3_000
             }
 
 
@@ -76,6 +76,7 @@ fun createHttpClient(
             socketTimeoutMillis = 60000
         }
 
+        /*
         install(HttpRequestRetry) {
             //retryOnServerErrors(maxRetries = 3)
             retryOnException(maxRetries = 3)
@@ -86,6 +87,8 @@ fun createHttpClient(
                 println("Retrying request: ${request.url}")
             }
         }
+        
+         */
     }
 }
 

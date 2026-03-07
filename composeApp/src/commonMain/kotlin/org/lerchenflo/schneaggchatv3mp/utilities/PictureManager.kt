@@ -20,7 +20,7 @@ expect class PictureManager {
     /**
      * Load the picture bytes for [filename], or null if not found.
      */
-    suspend fun loadPictureFromStorage(filename: String): ImageBitmap?
+    suspend fun loadPictureFromStorage(filename: String): ByteArray?
 
     /**
      * Delete picture with [filename]. Returns true if deleted.

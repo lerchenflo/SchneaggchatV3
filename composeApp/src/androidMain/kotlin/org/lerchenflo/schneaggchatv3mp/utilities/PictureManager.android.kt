@@ -41,7 +41,7 @@ actual class PictureManager(private val context: Context) {
         return file.absolutePath
     }
 
-    actual suspend fun loadPictureFromStorage(filename: String): ImageBitmap? =
+    actual suspend fun loadPictureFromStorage(filename: String): ByteArray? =
         withContext(Dispatchers.IO) {
             val file = File(context.filesDir, filename)
             if (!file.exists()) {
@@ -50,10 +50,7 @@ actual class PictureManager(private val context: Context) {
             }
 
             try {
-                val bytes = file.readBytes()
-                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                Log.d("Android file load", "Loaded picture: $filename (${bytes.size} bytes)")
-                bitmap?.asImageBitmap()
+                file.readBytes()
             } catch (e: Exception) {
                 Log.e("Android file load", "Error loading picture: $filename", e)
                 null
