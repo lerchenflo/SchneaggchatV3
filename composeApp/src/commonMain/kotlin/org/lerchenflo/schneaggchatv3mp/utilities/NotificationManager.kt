@@ -151,6 +151,9 @@ object NotificationManager{
             return
         }
 
+        initialized = true
+
+
         try {
             NotifierManager.setLogger { message ->
                 println("KMPNotifier log: $message")
@@ -343,7 +346,6 @@ object NotificationManager{
                 }
             })
 
-            initialized = true
             println("NotificationManager initialization completed")
 
         } catch (e: Exception) {

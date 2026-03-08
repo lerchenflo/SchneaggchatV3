@@ -78,8 +78,12 @@ class Preferencemanager(
 
         // Clear all DataStore preferences
         val serverUrl = getServerUrl() // save before clearing
+        val language = getLanguageSetting()
+
         prefs.edit { it.clear() }
+
         saveServerUrl(serverUrl)       // restore after clearing
+        saveLanguageSetting(language)
     }
 
     // ========== NON-SECURE STORAGE (DataStore - Preferences) ==========

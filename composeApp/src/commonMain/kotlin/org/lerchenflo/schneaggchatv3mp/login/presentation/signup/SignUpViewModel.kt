@@ -10,6 +10,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
+import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -208,7 +210,10 @@ class SignUpViewModel(
                     if (accCreationSuccessful){
                         appRepository.login(state.usernameState.text, state.passwordState.text) { success ->
                             if (success){
-                                //Set username
+                                val globalViewModel = KoinPlatform.getKoin().get<GlobalViewModel>()
+                                globalViewModel.viewModelScope.launch {
+                                    appRepository.dataSync()
+                                }
                                 viewModelScope.launch {
                                     navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                                 }

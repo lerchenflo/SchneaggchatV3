@@ -22,14 +22,13 @@ class GlobalViewModel(
 ): ViewModel() {
 
     init {
-        //println("SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT")
-
 
         NotificationManager.initialize()
 
         // Sync when app is resumed
         viewModelScope.launch {
             AppLifecycleManager.appResumedEvent.collectLatest {
+                println("App resumed, checking loggedin status")
                 val ownId = SessionCache.requireLoggedIn()?.userId ?: return@collectLatest
 
                 if (SessionCache.isLoggedIn()) {

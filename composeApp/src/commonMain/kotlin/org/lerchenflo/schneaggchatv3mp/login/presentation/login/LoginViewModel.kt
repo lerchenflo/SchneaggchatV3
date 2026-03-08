@@ -6,6 +6,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
+import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -90,7 +93,11 @@ class LoginViewModel(
                     // Use the sharedViewModel's login function with a callback
                     appRepository.login(username, password) { success ->
                         if (success) {
-                            println("Login erfolgreich")
+                            println("Login erfolgreich, triggering data sync")
+                            val globalViewModel = KoinPlatform.getKoin().get<GlobalViewModel>()
+                            globalViewModel.viewModelScope.launch {
+                                appRepository.dataSync()
+                            }
                             viewModelScope.launch {
                                 navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                             }

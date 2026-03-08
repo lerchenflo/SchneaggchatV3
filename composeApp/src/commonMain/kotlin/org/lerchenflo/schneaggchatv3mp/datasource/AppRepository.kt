@@ -196,6 +196,7 @@ class AppRepository(
 
     var dataSyncRunning = false
     suspend fun dataSync() {
+        println("Starting datasync")
         if (dataSyncRunning) {
             println("Data sync canceled, already running")
             return
@@ -578,17 +579,17 @@ class AppRepository(
             }
             is NetworkResult.Success<NetworkUtils.TokenPair> -> {
                 onNewTokenPair(result.data)
-                onResult(true)
 
                 SessionCache.login(
                     tokens = result.data,
                     developer = preferencemanager.getDevSettings()
                 )
 
-                //New coroutine to persist when this function exits
                 CoroutineScope(Dispatchers.IO).launch {
                     dataSync()
                 }
+
+                onResult(true)
             }
         }
     }
