@@ -46,6 +46,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.sendErrorSuspend
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.trySendError
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupMemberAction
@@ -87,7 +89,7 @@ class AppRepository(
     private val loggingRepository: LoggingRepository,
 ) {
     //Errorchannel for global error events (Show in every screen)
-    companion object ErrorChannel{
+    object ErrorChannel {
 
         data class ErrorEvent (
             val errorCode: Int? = null,
@@ -126,7 +128,7 @@ class AppRepository(
             }
         }
 
-        private val _channel = Channel<ErrorEvent>(capacity = Channel.Factory.BUFFERED)
+        private val _channel = Channel<ErrorEvent>(capacity = Channel.BUFFERED)
         val errors = _channel.receiveAsFlow()
 
         suspend fun sendErrorSuspend(event: ErrorEvent) {
@@ -136,6 +138,27 @@ class AppRepository(
         fun trySendError(event: ErrorEvent) {
             _channel.trySend(event).onFailure {
                 println("Error when adding error event: $it")
+            }
+        }
+    }
+
+
+    object ActionChannel {
+
+        sealed interface ActionEvent {
+            data object Login : ActionEvent
+        }
+
+        private val _channel = Channel<ActionEvent>(capacity = Channel.BUFFERED)
+        val actions = _channel.receiveAsFlow()
+
+        suspend fun sendActionSuspend(event: ActionEvent) {
+            _channel.send(event) // suspending send
+        }
+
+        fun trySendAction(event: ActionEvent) {
+            _channel.trySend(event).onFailure {
+                println("Error when adding action event: $it")
             }
         }
     }
@@ -538,7 +561,7 @@ class AppRepository(
         //Token is expired, send errormessage
         if (!tokenDateValid && tokensNotEmpty){
             trySendError(
-                event = ErrorEvent(
+                event = ErrorChannel.ErrorEvent(
                     401,
                     errorMessageUiText = UiText.StringResourceText(Res.string.error_access_expired),
                     duration = 5000L,
@@ -570,10 +593,12 @@ class AppRepository(
             is NetworkResult.Error<*> -> {
                 println("Error: ${result.error}")
 
-                sendErrorSuspend(ErrorEvent(
-                    errorMessageUiText = UiText.StringResourceText(Res.string.error_invalid_credentials),
-                    duration = 5000L
-                ))
+                sendErrorSuspend(
+                    ErrorChannel.ErrorEvent(
+                        errorMessageUiText = UiText.StringResourceText(Res.string.error_invalid_credentials),
+                        duration = 5000L
+                    )
+                )
 
                 onResult(false)
             }
@@ -607,10 +632,12 @@ class AppRepository(
             is NetworkResult.Error -> {
                 println("Error: ${response.error}")
 
-                sendErrorSuspend(ErrorEvent(
-                    error = response.error,
-                    duration = 5000L
-                ))
+                sendErrorSuspend(
+                    ErrorChannel.ErrorEvent(
+                        error = response.error,
+                        duration = 5000L
+                    )
+                )
 
                 onResult(false)
             }
@@ -781,9 +808,11 @@ class AppRepository(
     suspend fun getAvailableUsers(searchTerm: String) : List<NetworkUtils.NewFriendsUserResponse> {
         return when (val response = networkUtils.getAvailableUsers(searchTerm)) {
             is NetworkResult.Error<RequestError> -> {
-                sendErrorSuspend(ErrorEvent(
-                    error = response.error
-                ))
+                sendErrorSuspend(
+                    ErrorChannel.ErrorEvent(
+                        error = response.error
+                    )
+                )
                 emptyList()
             }
             is NetworkResult.Success<List<NetworkUtils.NewFriendsUserResponse>> -> {
@@ -1405,7 +1434,7 @@ class AppRepository(
 
         when (request) {
             is NetworkResult.Error<RequestError> ->  {
-                sendErrorSuspend(ErrorEvent(error = request.error))
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
             }
             is NetworkResult.Success<*> -> {
                 messageRepository.deleteMessage(messageId)
@@ -1423,7 +1452,7 @@ class AppRepository(
 
         when (request) {
             is NetworkResult.Error<RequestError> ->  {
-                sendErrorSuspend(ErrorEvent(error = request.error))
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
             }
             is NetworkResult.Success<MessageResponse> -> {
                 val existing = messageRepository.getMessageById(request.data.messageId)
@@ -1468,7 +1497,7 @@ class AppRepository(
 
         return when (response){
             is NetworkResult.Error<*> -> {
-                sendErrorSuspend(ErrorEvent(error = response.error))
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = response.error))
                 null
             }
             is NetworkResult.Success<NetworkUtils.GroupResponse> -> {

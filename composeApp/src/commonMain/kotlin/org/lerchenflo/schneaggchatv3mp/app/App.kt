@@ -247,7 +247,7 @@ fun App() {
         //Error popup handling
         var currentError by remember { mutableStateOf<AppRepository.ErrorChannel.ErrorEvent?>(null) }
         LaunchedEffect(Unit) {
-            AppRepository.errors.collect { error ->
+            AppRepository.ErrorChannel.errors.collect { error ->
                 //println("Error popup thrown: $error")
                 currentError = error
                 delay(error.duration)
@@ -351,7 +351,7 @@ fun App() {
                                             println("Autologin not permitted by server, rerouting to login")
 
                                             //Throwing an error message for the user
-                                            AppRepository.trySendError(
+                                            AppRepository.ErrorChannel.trySendError(
                                                 event = AppRepository.ErrorChannel.ErrorEvent(
                                                     401,
                                                     errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
@@ -368,7 +368,7 @@ fun App() {
                                             ))
                                         }else {
                                             //Log any other error which might occur
-                                            AppRepository.trySendError(
+                                            AppRepository.ErrorChannel.trySendError(
                                                 event = AppRepository.ErrorChannel.ErrorEvent(
                                                     error = error,
                                                     duration = 15000

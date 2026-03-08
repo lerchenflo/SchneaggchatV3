@@ -18,17 +18,23 @@ public class AppUpdateChecker {
             }
         }.resume()
     }
+
     private static func showUpdateSuggestionPopUp(appStoreURL: String) {
         DispatchQueue.main.async {
             let alert = UIAlertController(
-                title: "Update Available",
-                message: "A new version of the app is available. Would you like to update now?",
+                title: "Update Required",
+                message: "A new version of the app is required to continue. Please update now.",
                 preferredStyle: .alert
             )
             alert.addAction(UIAlertAction(title: "Update", style: .default) { _ in
                 openAppStore(appStoreURL: appStoreURL)
             })
-            alert.addAction(UIAlertAction(title: "Later", style: .cancel))
+            alert.addAction(UIAlertAction(title: "Close App", style: .destructive) { _ in  // 👈
+                UIApplication.shared.perform(#selector(NSXPCConnection.suspend))           // 👈
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {                    // 👈
+                    exit(0)                                                                 // 👈
+                }                                                                          // 👈
+            })
             if let scene = UIApplication.shared.connectedScenes
                 .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
                let rootVC = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController {
@@ -36,6 +42,7 @@ public class AppUpdateChecker {
             }
         }
     }
+
     private static func openAppStore(appStoreURL: String) {
         if let url = URL(string: appStoreURL) {
             UIApplication.shared.open(url)

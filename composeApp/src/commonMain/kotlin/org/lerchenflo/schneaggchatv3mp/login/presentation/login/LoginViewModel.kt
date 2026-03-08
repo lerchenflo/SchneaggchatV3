@@ -29,7 +29,7 @@ class LoginViewModel(
         viewModelScope.launch {
             val online =  appRepository.testServer(preferenceManager.getServerUrl())
             if (!online){
-                AppRepository.sendErrorSuspend(
+                AppRepository.ErrorChannel.sendErrorSuspend(
                     event = AppRepository.ErrorChannel.ErrorEvent(
                         errorCode = 408,
                         errorMessage = "ServerUrl: " + preferenceManager.getServerUrl(),
