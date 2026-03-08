@@ -19,15 +19,15 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChatViewMode
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
+import org.lerchenflo.schneaggchatv3mp.datasource.database.PlayerDao
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
+import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
+import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerstackViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.UndercoverViewModel
-import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
-import org.lerchenflo.schneaggchatv3mp.datasource.database.PlayerDao
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
@@ -97,7 +97,7 @@ val sharedmodule = module{
     factory { ChatSelectorViewModel(get(), get(), get(), get(), get()) }
 
     viewModelOf(::ChatViewModel)
-    factory { ChatViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    factory { ChatViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
 
     viewModelOf(::ChatDetailsViewmodel)
     factory { ChatDetailsViewmodel(get(), get(), get(), get(), get(), get()) }

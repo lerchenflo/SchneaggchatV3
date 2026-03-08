@@ -6,17 +6,18 @@ import androidx.room.RoomDatabase
 import eu.anifantakis.lib.ksafe.KSafe
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
-import org.koin.dsl.module
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.qualifier.named
-import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
+import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.database.androidAppDatabaseBuilder
+import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
-import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
-import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
+import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 
 val androidUserDatabaseModule = module {
     single<RoomDatabase.Builder<AppDatabase>> { androidAppDatabaseBuilder(androidContext()) }
@@ -58,6 +59,10 @@ val androidPictureManagerModule = module {
 
 val androidPermissionManagerModule = module {
     single { PermissionManager(androidContext()) }
+}
+
+val androidAudioManagerModule = module {
+    single { AudioManager(androidContext()) }
 }
 
 val androidShareUtilsModule = module {

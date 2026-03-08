@@ -46,6 +46,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -64,7 +65,8 @@ class ChatViewModel(
     private val navigator: Navigator,
     private val loggingRepository: LoggingRepository,
     private val pictureManager: PictureManager,
-    private val permissionsManager: PermissionManager
+    private val permissionsManager: PermissionManager,
+    private val audioManager: AudioManager
 ): ViewModel() {
 
     companion object {
@@ -94,35 +96,32 @@ class ChatViewModel(
     sealed class SendMessageContent {
         data class TextContent(val textMessage: String) : SendMessageContent()
         data class ImageContent(val imageMessage: ByteArray, val text: String) : SendMessageContent()
+        data class AudioContent(val audioPath: String, val duration: Long) : SendMessageContent()
     }
 
-    var currentSendContent by mutableStateOf<SendMessageContent>(SendMessageContent.TextContent(""))
-        private set
-    fun updateSendContent(newValue: SendMessageContent) {
-        currentSendContent = newValue
-    }
+    private val _currentSendContent = MutableStateFlow<SendMessageContent>(SendMessageContent.TextContent(""))
+    val currentSendContent: SendMessageContent get() = _currentSendContent.value
 
+    fun updateSendContent(content: SendMessageContent) {
+        _currentSendContent.value = content
+    }
 
     var replyMessage by mutableStateOf<Message?>(null)
         private set
-    fun updateReplyMessage(newValue: Message?) {
-        replyMessage = newValue
+
+    fun updateReplyMessage(message: Message?) {
+        replyMessage = message
     }
 
-
-    // Track loading state
     private val _isLoadingOlderMessages = MutableStateFlow(false)
     val isLoadingOlderMessages: StateFlow<Boolean> = _isLoadingOlderMessages
 
-    // Track if we should load all messages or just initial batch
     private val _shouldLoadAllMessages = MutableStateFlow(false)
 
-
     fun setAllMessagesRead() {
-
-        CoroutineScope(Dispatchers.IO).launch {
-            // Get message IDs from current chat that need notification removal
-            val messageIdsString = messageDisplayState.value
+        viewModelScope.launch {
+            val messageDisplayItems = messageDisplayState.value
+            val messageIdsString = messageDisplayItems
                 .filterIsInstance<MessageDisplayItem.MessageItem>()
                 .filter { item -> !item.message.readByMe }
                 .mapNotNull {
@@ -174,6 +173,7 @@ class ChatViewModel(
                         text = message.text
                     )
                     is SendMessageContent.TextContent -> AppRepository.MessageContent.TextContent(message.textMessage)
+                    is SendMessageContent.AudioContent -> AppRepository.MessageContent.TextContent("Audio message not implemented") // TODO
                 },
                 answerid = replyTo?.id,
                 messageId = null,
@@ -308,47 +308,71 @@ class ChatViewModel(
 
     // Audio Recording / Playback
     fun initAudioRecorderPlayer() {
+        // Try to create the recorder only when permission is already granted.
         viewModelScope.launch {
             val permission = permissionsManager.checkMicrophonePermission()
-            println("Permission: $permission")
-            if( permission == PermissionState.GRANTED){
-                audioRecorderPlayer = createAudioRecorderPlayer()
-            }else{
-                println("Requesting Microphone permission")
+            println("initAudioRecorderPlayer - Permission: $permission")
+            if (permission == PermissionState.GRANTED) {
+                if (audioRecorderPlayer == null) {
+                    audioRecorderPlayer = createAudioRecorderPlayer()
+                    println("AudioRecorderPlayer created")
+                }
+            } else {
+                println("Requesting microphone permission (init)")
                 permissionsManager.requestMicrophonePermission()
+                // don't block here waiting for UI; we'll re-check permission in startRecording()
             }
         }
     }
 
-
     fun startRecording() {
         viewModelScope.launch {
-            if(audioRecorderPlayer != null){
-                val path = "audioRec_" + getCurrentTimeMillisString()
-                val result = audioRecorderPlayer!!.startRecording(path) // des !! hoast vertrau bruder es isch ned null
-                println("Recording started at: $result")
+            try {
+                val permission = permissionsManager.checkMicrophonePermission()
+                println("startRecording - Permission: $permission")
+                if (permission != PermissionState.GRANTED) {
+                    println("Microphone permission not granted; requesting now.")
+                    val result = permissionsManager.requestMicrophonePermission()
+                    if (result != PermissionState.GRANTED) {
+                        return@launch
+                    }
+                }
+
+                // lazy-init the recorder if not present
+                if (audioRecorderPlayer == null) {
+                    audioRecorderPlayer = createAudioRecorderPlayer()
+                    println("AudioRecorderPlayer lazy-created in startRecording()")
+                }
+
+                val filename = "audioRec_" + getCurrentTimeMillisString() + ".m4a"
+                val path = audioManager.getRecordingPath(filename)
+                
+                println("Starting recording at path: $path")
+                val result = audioRecorderPlayer!!.startRecording(path)
+                println("Recording start result: $result")
 
                 audioRecorderPlayer!!.addRecordingListener { recordBack ->
-                    // recordBack.currentPosition contains the duration in ms
                     println("Current record time: ${recordBack.currentPosition}")
                 }
-            }else{
-                initAudioRecorderPlayer()
+            } catch (e: Exception) {
+                // log full details to help debugging
+                loggingRepository.logWarning("Failed to start recording: ${e.message}")
+                e.printStackTrace()
             }
         }
     }
 
     fun stopRecording() {
         viewModelScope.launch {
-            if(audioRecorderPlayer != null){
-                val result = audioRecorderPlayer!!.stopRecording()
-                audioRecorderPlayer!!.removeListeners()
+            try {
+                val result = audioRecorderPlayer?.stopRecording()
+                audioRecorderPlayer?.removeListeners()
                 println("Recording stopped: $result")
-            }else{
-                initAudioRecorderPlayer()
+            } catch (e: Exception) {
+                loggingRepository.logWarning("Failed to stop recording: ${e.message}")
+                e.printStackTrace()
             }
         }
-
     }
 
 
@@ -569,6 +593,11 @@ class ChatViewModel(
                     setAllMessagesRead()
                 }
             }
+        }
+        // Initialize audio recorder player
+        viewModelScope.launch {
+            audioManager.initializeAudio()
+            initAudioRecorderPlayer()
         }
     }
 
