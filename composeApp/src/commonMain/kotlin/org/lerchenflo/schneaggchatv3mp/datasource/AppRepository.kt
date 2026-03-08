@@ -3,7 +3,6 @@
 package org.lerchenflo.schneaggchatv3mp.datasource
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.auth.clearAuthTokens
 import kotlinx.coroutines.CoroutineScope
@@ -62,7 +61,7 @@ import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
-import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
@@ -175,8 +174,7 @@ class AppRepository(
 
         //Clear access tokens
 
-        //TODO: Preferencemanager delete all stored variables + save storage variables
-        preferencemanager.saveTokens(tokenPair = NetworkUtils.TokenPair(accessToken = "", refreshToken = "")) // override credentials with empty string
+        preferencemanager.clearAll()
         KoinPlatform.getKoin().get<HttpClient>(qualifier = named("auth")).clearAuthTokens()
 
         SessionCache.logout()
@@ -867,7 +865,7 @@ class AppRepository(
     /**
      * Change status and description. if userid = self then only status, else only description
      */
-    suspend fun changeUserDetails( // todo flo macht a server update denn loft des
+    suspend fun changeUserDetails(
         userId: String,
         newStatus: String? = null,
         newDescription: String? = null,

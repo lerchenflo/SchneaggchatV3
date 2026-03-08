@@ -12,9 +12,9 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
-import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.utilities.preferences.ThemeSetting
-import org.lerchenflo.schneaggchatv3mp.utilities.preferences.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 
 class AppearanceSettingsViewModel(

@@ -109,7 +109,6 @@ fun UserSettings(
     Box(modifier = Modifier.fillMaxSize()) {
         if (showImagePickerDialog ) {
 
-            //TODO: Fix all strings
             GalleryPickerLauncher(
                 onPhotosSelected = {
                     userSettingsViewModel.changeProfilePicture(it.first())

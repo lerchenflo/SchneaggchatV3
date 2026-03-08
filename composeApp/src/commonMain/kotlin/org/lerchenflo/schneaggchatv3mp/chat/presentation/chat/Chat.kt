@@ -64,9 +64,12 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.NativeClipboard
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -330,6 +333,7 @@ fun ChatScreen(
                                     onDismissRequest = { showMessageOptionPopup = false },
                                     onReply = { viewModel.onAction(MessageAction.ReplyToMessage(message)) },
                                     onCopy = {
+
                                         copyToClipboard(message.content, clipboardManager)
                                         SnackbarManager.showMessage(copiedToClipboardString)
                                         showMessageOptionPopup = false

@@ -78,8 +78,6 @@ fun MessageContent(
                         myMessage = mymessage,
                         useMD = useMD
                     )
-
-                    else -> ErrorMessage()
                 }
             }
 

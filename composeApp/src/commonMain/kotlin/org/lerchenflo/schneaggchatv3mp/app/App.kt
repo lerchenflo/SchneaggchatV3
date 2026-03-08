@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -77,9 +78,10 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
-import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import org.lerchenflo.schneaggchatv3mp.utilities.preferences.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
@@ -502,8 +504,8 @@ fun App() {
                         }
 
                         entry<Route.Games> {
-                            //TODO: Shared games viewmodel for game selection
-                            val yatziViewModel: org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel = androidx.lifecycle.viewmodel.compose.viewModel { org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel() }
+                            //TODO GAMES: Shared games viewmodel for game selection
+                            val yatziViewModel: YatziViewModel = viewModel { YatziViewModel() }
 
                             val gamesList = listOf<GameScreenElement>(
                                 GameScreenElement(
@@ -514,7 +516,7 @@ fun App() {
                                 ),
                                 GameScreenElement(
                                     title = stringResource(Res.string.games_undercover_title),
-                                    icon = Icons.Default.Blind, // todo i hab noch ned verstanda um was es in deam spiel goht
+                                    icon = Icons.Default.Blind,
                                     route = Route.Games.Undercover,
                                     inDev = false
                                 ),
