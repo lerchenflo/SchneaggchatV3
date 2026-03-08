@@ -54,6 +54,8 @@ fun GameSelectorScreen(
     gamesList: List<GameScreenElement>
 
 ){
+    val dev = SessionCache.requireLoggedIn()?.developer ?: return
+
     Column{
         ActivityTitle(
             title = stringResource(Res.string.tools_and_games),
@@ -81,7 +83,7 @@ fun GameSelectorScreen(
         ) {
             items(gamesList) { game ->
                 if (game.inDev) {
-                    if (SessionCache.developer) {
+                    if (dev) {
                         GameElementView(
                             icon = game.icon,
                             text = game.title,

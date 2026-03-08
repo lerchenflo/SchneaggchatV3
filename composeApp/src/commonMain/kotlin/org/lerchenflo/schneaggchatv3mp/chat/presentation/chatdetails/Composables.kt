@@ -117,14 +117,14 @@ fun ConfirmationDialog(
 
 @Composable
 fun GroupMembersView(
+    ownId: String,
     members: List<GroupMemberWithUser>,
     navigateToChat:(selectedChat: SelectedChat)-> Unit,
     changeAdminStatus:(groupMember: GroupMember)-> Unit,
     removeMember: (memberId: String)-> Unit,
     //iAmAdmin: Boolean,
 ) {
-    val ownid = SessionCache.getOwnIdValue().toString()
-    val iAmAdmin = members.find { it.groupMember.userId == ownid }?.groupMember?.admin == true
+    val iAmAdmin = members.find { it.groupMember.userId == ownId }?.groupMember?.admin == true
 
 
     Column(
@@ -144,7 +144,7 @@ fun GroupMembersView(
             var profilePictureDialogShown by remember { mutableStateOf(false) }
             var userOptionPopupExpanded by remember { mutableStateOf(false) }
             var showRemoveMemberConfirmation by remember { mutableStateOf(false) }
-            val me = groupMember.userId == ownid
+            val me = groupMember.userId == ownId
             val userName = user?.name ?: groupMember.memberName
 
             ChatButtonView(

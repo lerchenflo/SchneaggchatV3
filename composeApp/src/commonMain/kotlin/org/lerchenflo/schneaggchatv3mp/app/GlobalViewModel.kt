@@ -30,10 +30,12 @@ class GlobalViewModel(
         // Sync when app is resumed
         viewModelScope.launch {
             AppLifecycleManager.appResumedEvent.collectLatest {
-                if (SessionCache.isLoggedInValue()) {
+                val ownId = SessionCache.requireLoggedIn()?.userId ?: return@collectLatest
+
+                if (SessionCache.isLoggedIn()) {
                     println("App resumed and logged in, triggering sync...")
                     appRepository.dataSync()
-                    appRepository.sendOfflineMessages()
+                    appRepository.sendOfflineMessages(ownId)
 
                     //On resume clear all error notis
                     NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)
@@ -46,7 +48,7 @@ class GlobalViewModel(
 
         viewModelScope.launch {
             while (true) {
-                if (SessionCache.isLoggedInValue() && !SessionCache.isOnlineValue()) {
+                if (SessionCache.isLoggedIn() && !SessionCache.isOnline()) {
                     appRepository.testServer(preferenceManager.getServerUrl())
                 }
 
@@ -69,7 +71,7 @@ class GlobalViewModel(
 
     fun startSocketConnection() {
         viewModelScope.launch {
-            if (!socketConnectionManager.isConnectedNow() && SessionCache.isLoggedInValue()){
+            if (!socketConnectionManager.isConnectedNow() && SessionCache.isLoggedIn()){
                 val serverurl = SocketConnectionManager.getSocketUrl(preferenceManager.getServerUrl())
                 socketConnectionManager.connect(
                     serverUrl = serverurl,

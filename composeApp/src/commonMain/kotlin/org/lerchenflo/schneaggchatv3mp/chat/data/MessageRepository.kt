@@ -133,13 +133,11 @@ class MessageRepository(
 
 
     @Transaction
-    suspend fun setAllChatMessagesRead(chatid: String, gruppe: Boolean, timestamp: String) {
-        val ownId = SessionCache.getOwnIdValue()
-        if (ownId != null) {
-            // Use efficient bulk updates instead of loading individual messages
-            database.messageDao().markAllChatMessagesRead(chatid, gruppe, timestamp)
-            database.messageDao().addMessageReadersForChat(chatid, gruppe, ownId, timestamp)
-        }
+    suspend fun setAllChatMessagesRead(ownId: String, chatid: String, gruppe: Boolean, timestamp: String) {
+
+        // Use efficient bulk updates instead of loading individual messages
+        database.messageDao().markAllChatMessagesRead(chatid, gruppe, timestamp)
+        database.messageDao().addMessageReadersForChat(chatid, gruppe, ownId, timestamp)
     }
 
 }

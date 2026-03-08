@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -70,9 +71,10 @@ class ChatSelectorViewModel(
         }
 
         viewModelScope.launch {
+            val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
             appRepository.getPendingFriends("").collectLatest { list ->
                 val size = list.filter {
-                    it.requesterId != SessionCache.getOwnIdValue()
+                    it.requesterId != ownId
                 }.size
 
                 _pendingFriendCount.value = size
@@ -100,6 +102,12 @@ class ChatSelectorViewModel(
 
             return
         }
+
+        val ownId = SessionCache.requireLoggedIn()?.userId ?: run {
+            println("Refresh: userid not set, aborting")
+            return
+        }
+
         updateIsLoadingMessages(true)
 
 
@@ -108,13 +116,13 @@ class ChatSelectorViewModel(
 
         refreshJob = viewModelScope.launch {
 
-            if (!SessionCache.loggedIn){
+            if (!SessionCache.isLoggedIn()){
 
                 println("Not logged in, trying to refresh token")
                 appRepository.refreshTokens()
 
                 val becameLoggedIn = withTimeoutOrNull(10_000L) {
-                    while (!SessionCache.loggedIn) {
+                    while (!SessionCache.isLoggedIn()) {
                         delay(1_000L) // retry after 1 second
                     }
                     true // logged in
@@ -130,7 +138,7 @@ class ChatSelectorViewModel(
             // at this point we're guaranteed logged in (or the condition was already true)
             try {
                 // send queued messages
-                appRepository.sendOfflineMessages()
+                appRepository.sendOfflineMessages(ownId)
 
                 appRepository.dataSync()
             } catch (e: Exception) {
@@ -217,11 +225,18 @@ class ChatSelectorViewModel(
     private val chatSelectorFlow: Flow<List<SelectedChat>> = combine(
         _searchTerm,
         _filter,
-        SessionCache.ownId //Add own id to automatically update the chats if the own id changes (On create)
-    ) { term, filter, ownid -> term to filter }
-        .flatMapLatest { (term, filter) ->
-            // repository should accept the filter param (you already implemented that)
-            appRepository.getChatSelectorFlow(term, filter)
+        SessionCache.authState
+
+    ) { term, filter, authState -> Triple(term, filter, authState) }
+        .flatMapLatest { (term, filter, authState) ->
+            val loggedIn = authState as? SessionCache.AuthState.LoggedIn
+                ?: return@flatMapLatest flowOf(emptyList())
+
+            appRepository.getChatSelectorFlow(
+                searchTerm = term,
+                userId = loggedIn.userId,
+                filter = filter
+            )
         }
         .flowOn(Dispatchers.Default)
 
@@ -229,7 +244,7 @@ class ChatSelectorViewModel(
         .distinctUntilChanged()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Companion.WhileSubscribed(5_000),
+            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
 }

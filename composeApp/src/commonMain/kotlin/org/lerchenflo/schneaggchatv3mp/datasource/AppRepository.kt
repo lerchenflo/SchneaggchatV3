@@ -3,6 +3,7 @@
 package org.lerchenflo.schneaggchatv3mp.datasource
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.auth.clearAuthTokens
 import kotlinx.coroutines.CoroutineScope
@@ -55,6 +56,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
@@ -165,17 +167,19 @@ class AppRepository(
     suspend fun deleteAllAppData(){
         database.allDatabaseDao().clearAll()
         NotificationManager.removeToken()
-        SessionCache.clear()
+        SessionCache.logout()
     }
 
     suspend fun logout(){
         deleteAllAppData() // delete all app data when logging out
 
         //Clear access tokens
+
+        //TODO: Preferencemanager delete all stored variables + save storage variables
         preferencemanager.saveTokens(tokenPair = NetworkUtils.TokenPair(accessToken = "", refreshToken = "")) // override credentials with empty string
         KoinPlatform.getKoin().get<HttpClient>(qualifier = named("auth")).clearAuthTokens()
 
-        SessionCache.clear() //Alle variabla löscja
+        SessionCache.logout()
         NotificationManager.removeToken()
         SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
     }
@@ -291,8 +295,8 @@ class AppRepository(
     /**
      * Get the currently logged in user as flow
      */
-    fun getOwnUserFlow(): Flow<User?> {
-        return database.userDao().getUserbyIdFlow(SessionCache.getOwnIdValue()).map { user ->
+    fun getUserFlow(userId: String): Flow<User?> {
+        return database.userDao().getUserbyIdFlow(userId).map { user ->
             user?.toUser()
         }
     }
@@ -330,6 +334,7 @@ class AppRepository(
      */
     fun getChatSelectorFlow(
         searchTerm: String,
+        userId: String,
         filter: ChatFilter = ChatFilter.NONE
     ): Flow<List<SelectedChat>> {
         val messagesFlow = messageRepository.getAllMessages()
@@ -340,7 +345,6 @@ class AppRepository(
         return combine(messagesFlow, usersFlow, groupsFlow, pinnedFlow) { messages, users, groups, pinnedList ->
 
             val loweredSearch = searchTerm.trim().lowercase()
-            val ownId = SessionCache.ownId
 
             // PRE-PROCESS: Build message indexes for O(1) lookup
             val messagesByUser = mutableMapOf<String, MutableList<Message>>()
@@ -356,10 +360,10 @@ class AppRepository(
                     val senderId = msg.senderId
                     val receiverId = msg.receiverId
 
-                    if (senderId != ownId.value) {
+                    if (senderId != userId) {
                         messagesByUser.getOrPut(senderId) { mutableListOf() }.add(msg)
                     }
-                    if (receiverId != ownId.value) {
+                    if (receiverId != userId) {
                         messagesByUser.getOrPut(receiverId) { mutableListOf() }.add(msg)
                     }
                 }
@@ -368,7 +372,7 @@ class AppRepository(
             // Process users - CREATE NEW IMMUTABLE OBJECTS
             val userItems = users
                 .asSequence()
-                .filter { it.id != ownId.value }
+                .filter { it.id != userId }
                 .filter { it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED }
                 .filter { loweredSearch.isEmpty() || it.name.lowercase().contains(loweredSearch) }
                 .map { user ->
@@ -487,11 +491,10 @@ class AppRepository(
             preferencemanager.saveOWNID(userid)
         }
 
-        SessionCache.updateTokenPair(tokenPair)
-        SessionCache.updateOwnId(userid)
-        SessionCache.updateLoggedIn(true)
+        SessionCache.updateTokens(tokenPair)
+
         SessionCache.updateOnline(true)
-        println(SessionCache.toString())
+        println("New token pair, Sessioncache updated: $SessionCache")
     }
 
 
@@ -510,10 +513,13 @@ class AppRepository(
 
         if (error == null) {
             println("Tokenpair refresh successful")
-            SessionCache.updateLoggedIn(true)
-            SessionCache.updateOnline(true)
         } else {
             println("Refreshing tokens failed: $error")
+
+            if (!error.isConnectionError()) {
+                //No connection error, token not valid, logout
+                SessionCache.logout()
+            }
         }
 
         refreshTokenRequestRunning = false
@@ -545,10 +551,11 @@ class AppRepository(
 
         if (credsSaved){
             println("Tokens are saved in local storage, autologin permitted")
-            SessionCache.updateOwnId(JwtUtils.getUserIdFromToken(tokens.refreshToken))
-            SessionCache.updateTokenPair(tokens)
-            SessionCache.updateLoggedIn(true)
-            SessionCache.setDeveloperValue(preferencemanager.getDevSettings())
+
+            SessionCache.login(
+                tokens = tokens,
+                developer = preferencemanager.getDevSettings()
+            )
         }
 
         return credsSaved
@@ -574,6 +581,11 @@ class AppRepository(
             is NetworkResult.Success<NetworkUtils.TokenPair> -> {
                 onNewTokenPair(result.data)
                 onResult(true)
+
+                SessionCache.login(
+                    tokens = result.data,
+                    developer = preferencemanager.getDevSettings()
+                )
 
                 //New coroutine to persist when this function exits
                 CoroutineScope(Dispatchers.IO).launch {
@@ -902,14 +914,9 @@ class AppRepository(
      * @param localpk Local pk, only pass if already in db
      *
      */
-    suspend fun sendMessage(messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long = 0){
+    suspend fun sendMessage(ownId: String, messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long = 0){
 
         var localpkintern = localpk
-
-        if (SessionCache.getOwnIdValue() == null){
-            println("Message senden abort: No OWNID")
-            return
-        }
 
         val senddate = getCurrentTimeMillisString()
 
@@ -922,7 +929,7 @@ class AppRepository(
                     msgType = MessageType.POLL,
                     content = "",
                     poll = PollMessage(
-                        creatorId = SessionCache.getOwnIdValue()!!,
+                        creatorId = ownId,
                         title = content.poll.title,
                         description = content.poll.description,
                         maxAnswers = content.poll.maxAnswers,
@@ -935,12 +942,12 @@ class AppRepository(
                                 id = index.toString(),
                                 text = request.text,
                                 custom = false,
-                                creatorId = SessionCache.getOwnIdValue()!!,
+                                creatorId = ownId,
                                 voters = emptyList()
                             )
                         }
                     ),
-                    senderId = SessionCache.getOwnIdValue()!!,
+                    senderId = ownId,
                     receiverId = empfaenger,
                     sendDate = senddate,
                     updatedAt = senddate,
@@ -958,7 +965,7 @@ class AppRepository(
                     id = messageId,
                     msgType = MessageType.TEXT,
                     content = content.message,
-                    senderId = SessionCache.getOwnIdValue()!!,
+                    senderId = ownId,
                     receiverId = empfaenger,
                     sendDate = senddate,
                     updatedAt = senddate,
@@ -978,7 +985,7 @@ class AppRepository(
                     id = null,
                     msgType = MessageType.IMAGE,
                     content = content.text,
-                    senderId = SessionCache.getOwnIdValue()!!,
+                    senderId = ownId,
                     receiverId = empfaenger,
                     sendDate = senddate,
                     updatedAt = senddate,
@@ -1052,7 +1059,7 @@ class AppRepository(
                             msgType = serverrequest.data.msgType,
 
                             content = serverrequest.data.content,
-                            poll = serverrequest.data.pollResponse?.toPollMessage(),
+                            poll = serverrequest.data.pollResponse?.toPollMessage(ownId),
 
                             senderId = serverrequest.data.senderId,
                             receiverId = serverrequest.data.receiverId,
@@ -1089,7 +1096,7 @@ class AppRepository(
 
 
 
-    fun sendOfflineMessages(){
+    fun sendOfflineMessages(ownId: String){
         CoroutineScope(Dispatchers.IO).launch {
 
             val messages = messageRepository.getUnsentMessages()
@@ -1108,7 +1115,8 @@ class AppRepository(
                             }
 
                             MessageType.IMAGE -> {
-                                val image = pictureManager.loadPictureFromStorage("unsent_" + m.localPK + PICTURE_FILE_NAME)
+                                val image =
+                                    pictureManager.loadPictureFromStorage("unsent_" + m.localPK + PICTURE_FILE_NAME)
 
                                 if (image == null) {
                                     MessageContent.TextContent("Offline image sending failed")
@@ -1143,7 +1151,8 @@ class AppRepository(
                         },
                         answerid = m.answerId,
                         localpk = m.localPK,
-                        messageId = null
+                        messageId = null,
+                        ownId = ownId
                     )
                     
                 } catch (e: Exception){
@@ -1163,6 +1172,8 @@ class AppRepository(
      */
     suspend fun messageIdSync() {
 
+        val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+
         val localmessages = messageRepository.getmessagechangeid()
         val imagesToGet = mutableListOf<String>()
 
@@ -1175,11 +1186,6 @@ class AppRepository(
                 messageIds = localmessages.map { NetworkUtils.IdTimeStamp(it.id, it.updatedAt) },
                 page = currentPage
             )
-
-            if (SessionCache.getOwnIdValue() == null) {
-                println("MESSAGEIDSYNC ABORT -- Ownid")
-                return //Exit the sync when the own id is not set (Prevent messages from getting inserted with myMessage bool wrong)
-            }
 
 
             when (messageSyncResponse) {
@@ -1212,8 +1218,8 @@ class AppRepository(
                                         groupMessage = messageResponse.groupMessage,
                                         answerId = messageResponse.answerId,
                                         sent = true,
-                                        myMessage = messageResponse.senderId == SessionCache.getOwnIdValue(),
-                                        readByMe = messageResponse.readers.any { it.userId == SessionCache.ownId.value },
+                                        myMessage = messageResponse.senderId == ownId,
+                                        readByMe = messageResponse.readers.any { it.userId == ownId },
                                         senderAsString = "",
                                         senderColor = 0,
                                         readers = messageResponse.readers.map {
@@ -1245,8 +1251,8 @@ class AppRepository(
                                         groupMessage = messageResponse.groupMessage,
                                         answerId = messageResponse.answerId,
                                         sent = true,
-                                        myMessage = messageResponse.senderId == SessionCache.getOwnIdValue(),
-                                        readByMe = messageResponse.readers.any { it.userId == SessionCache.ownId.value },
+                                        myMessage = messageResponse.senderId == ownId,
+                                        readByMe = messageResponse.readers.any { it.userId == ownId },
                                         senderAsString = "",
                                         senderColor = 0,
                                         readers = messageResponse.readers.map {
@@ -1269,7 +1275,7 @@ class AppRepository(
                                     id = messageResponse.messageId,
                                     msgType = messageResponse.msgType,
                                     content = messageResponse.content,
-                                    poll = messageResponse.pollResponse?.toPollMessage(),
+                                    poll = messageResponse.pollResponse?.toPollMessage(ownId),
                                     senderId = messageResponse.senderId,
                                     receiverId = messageResponse.receiverId,
                                     sendDate = messageResponse.sendDate.toString(),
@@ -1278,8 +1284,8 @@ class AppRepository(
                                     groupMessage = messageResponse.groupMessage,
                                     answerId = messageResponse.answerId,
                                     sent = true,
-                                    myMessage = messageResponse.senderId == SessionCache.getOwnIdValue(),
-                                    readByMe = messageResponse.readers.any { it.userId == SessionCache.ownId.value },
+                                    myMessage = messageResponse.senderId == ownId,
+                                    readByMe = messageResponse.readers.any { it.userId == ownId },
                                     senderAsString = "",
                                     senderColor = 0,
                                     readers = messageResponse.readers.map {
@@ -1333,8 +1339,13 @@ class AppRepository(
     }
 
 
-    suspend fun setAllChatMessagesRead(chatid: String, gruppe: Boolean, timestamp: String){
-        messageRepository.setAllChatMessagesRead(chatid, gruppe, timestamp)
+    suspend fun setAllChatMessagesRead(ownId: String, chatid: String, gruppe: Boolean, timestamp: String){
+        messageRepository.setAllChatMessagesRead(
+            ownId = ownId,
+            chatid = chatid,
+            gruppe = gruppe,
+            timestamp = timestamp
+        )
 
         networkUtils.setMessagesRead(chatid, gruppe, timestamp.toLong())
     }
@@ -1406,7 +1417,7 @@ class AppRepository(
 
 
 
-    suspend fun votePoll(pollVoteRequest: NetworkUtils.PollVoteRequest) {
+    suspend fun votePoll(ownId: String, pollVoteRequest: NetworkUtils.PollVoteRequest) {
         val request = networkUtils.votePoll(
             pollVoteRequest
         )
@@ -1419,7 +1430,7 @@ class AppRepository(
                 val existing = messageRepository.getMessageById(request.data.messageId)
                 if (existing != null) {
                     messageRepository.upsertMessage(existing.copy(
-                        poll = request.data.pollResponse?.toPollMessage(),
+                        poll = request.data.pollResponse?.toPollMessage(ownId),
                         changeDate = request.data.lastChanged.toString(),
                     ))
                 }

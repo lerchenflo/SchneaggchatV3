@@ -131,6 +131,8 @@ fun ChatScreen(
     val clipboardManager = LocalClipboardManager.current
     val selectedChat by globalViewModel.selectedChat.collectAsStateWithLifecycle()
 
+    val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+
     // Des funkat amol besser wie der LaunchedEffekt was o immer der do dunna macht
     if(selectedChat.isNotSelected()){
         println("Unselected chat, navigating back")
@@ -239,6 +241,7 @@ fun ChatScreen(
                     onClickGes = {
                         viewModel.onChatDetailsClick()
                     },
+                    ownId = ownId,
                 )
             }
         },
@@ -312,7 +315,8 @@ fun ChatScreen(
                                         showMessageOptionPopup = true
                                     },
                                     onAction = viewModel::onAction,
-                                    readerMap = item.resolvedReaders
+                                    readerMap = item.resolvedReaders,
+                                    ownId = ownId
                                 )
 
                                 val copiedToClipboardString = stringResource(Res.string.copied_to_clipboard)
@@ -355,7 +359,8 @@ fun ChatScreen(
                                             showDeleteAlert = false
                                         },
                                         message = message,
-                                        selectedChatId = globalViewModel.selectedChat.value.id
+                                        selectedChatId = globalViewModel.selectedChat.value.id,
+                                        ownId = ownId
                                     )
                                 }
 
@@ -363,7 +368,8 @@ fun ChatScreen(
                                     MessageDetailsDialog(
                                         onDismiss = { showDetailsDialog = false },
                                         message = message,
-                                        selectedChatId = globalViewModel.selectedChat.value.id
+                                        selectedChatId = globalViewModel.selectedChat.value.id,
+                                        ownId = ownId
                                     )
                                 }
                             }
@@ -383,7 +389,7 @@ fun ChatScreen(
 
             // Reply view
             if (viewModel.replyMessage != null) {
-                ReplyPreview(viewModel, globalViewModel)
+                ReplyPreview(ownId, viewModel, globalViewModel)
             }
 
             //Inputrow for sending messages
@@ -417,7 +423,9 @@ fun ChatScreen(
                     ) {
                         AddMediaOptions.entries.forEach { option ->
 
-                            if(!SessionCache.developer) {
+                            val dev = SessionCache.requireLoggedIn()?.developer ?: return@DropdownMenu
+
+                            if(!dev) {
                                 if (option == AddMediaOptions.AUDIO) return@forEach //Removes audio if no dev
                             }
 

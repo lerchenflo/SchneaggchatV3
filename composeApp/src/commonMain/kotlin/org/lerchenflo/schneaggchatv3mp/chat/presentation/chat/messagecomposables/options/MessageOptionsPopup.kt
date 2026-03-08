@@ -149,6 +149,7 @@ fun MessageOptionPopup(
 
 @Composable
 fun DeleteMessageAlert(
+    ownId: String,
     onDismiss:() -> Unit,
     onConfirm:() -> Unit,
     message: Message,
@@ -190,8 +191,8 @@ fun DeleteMessageAlert(
                 message = message,
                 useMD = false, // fertig mit markdown
                 selectedChatId = selectedChatId,
-
-                )
+                ownId = ownId,
+            )
         },
         shape = MaterialTheme.shapes.large,
     )
@@ -199,6 +200,7 @@ fun DeleteMessageAlert(
 
 @Composable
 fun MessageDetailsDialog(
+    ownId: String,
     onDismiss: () -> Unit,
     message: Message,
     selectedChatId: String,
@@ -226,14 +228,6 @@ fun MessageDetailsDialog(
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
-                // show message Id for developers
-                if(SessionCache.developer){
-                    Text(
-                        text = message.id?: "id null",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-
                 // 2. Message Preview
                 val alphaValue = 0.9f
                 MessageContent(
@@ -250,6 +244,7 @@ fun MessageDetailsDialog(
                     message = message,
                     useMD = false,
                     selectedChatId = selectedChatId,
+                    ownId = ownId,
                 )
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))

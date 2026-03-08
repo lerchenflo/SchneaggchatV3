@@ -1,27 +1,15 @@
 package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 
-import androidx.compose.foundation.Image
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import coil3.Image
-import coil3.compose.LocalPlatformContext
-import coil3.request.ImageRequest
-import coil3.size.Scale
 import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
-import io.ktor.http.ContentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.jetbrains.compose.resources.getString
-import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache.updateUsername
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -34,12 +22,6 @@ import schneaggchatv3mp.composeapp.generated.resources.cannot_be_empty
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
 import schneaggchatv3mp.composeapp.generated.resources.must_be_accepted
 import schneaggchatv3mp.composeapp.generated.resources.password_needs_to_be_the_same
-import schneaggchatv3mp.composeapp.generated.resources.requirement_digit
-import schneaggchatv3mp.composeapp.generated.resources.requirement_forbidden
-import schneaggchatv3mp.composeapp.generated.resources.requirement_length
-import schneaggchatv3mp.composeapp.generated.resources.requirement_lowercase
-import schneaggchatv3mp.composeapp.generated.resources.requirement_special
-import schneaggchatv3mp.composeapp.generated.resources.requirement_uppercase
 import schneaggchatv3mp.composeapp.generated.resources.username_too_long
 import schneaggchatv3mp.composeapp.generated.resources.username_too_short
 import schneaggchatv3mp.composeapp.generated.resources.you_need_to_select_a_profilepicture
@@ -227,7 +209,6 @@ class SignUpViewModel(
                         appRepository.login(state.usernameState.text, state.passwordState.text) { success ->
                             if (success){
                                 //Set username
-                                updateUsername(state.usernameState.text)
                                 viewModelScope.launch {
                                     navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                                 }

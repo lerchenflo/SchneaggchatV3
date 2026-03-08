@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.ktor.util.collections.getValue
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -83,6 +84,10 @@ fun DayDivider(millis: Long) {
 
 @Composable
 fun ReaderBar(readers: List<MessageReader>) {
+
+    val loggedIn = SessionCache.authStateValue as? SessionCache.AuthState.LoggedIn
+        ?: return
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -95,20 +100,17 @@ fun ReaderBar(readers: List<MessageReader>) {
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            for (reader in readers) {
 
-                val ownId by SessionCache.ownId.collectAsState()
-                if(reader.readerId != ownId){
+            readers
+                .filter { it.readerId != loggedIn.userId }
+                .forEach { reader ->
                     ProfilePictureView(
                         filepath = reader.readerPicture ?: "",
                         modifier = Modifier
-                            .padding(start = 2.dp) // Adds a tiny gap between the faces
+                            .padding(start = 2.dp)
                             .size(16.dp),
                     )
                 }
-
-
-            }
         }
     }
 }

@@ -126,6 +126,7 @@ fun Chatauswahlscreen(
     var profilePictureDialogShown by remember { mutableStateOf(false) }
     var profilePictureFilePathTemp by remember { mutableStateOf("") }
 
+    val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
     val connectionToServer = SessionCache.onlineFlow.collectAsStateWithLifecycle()
 
@@ -541,7 +542,8 @@ fun Chatauswahlscreen(
                                     profilePictureDialogShown = true
                                     profilePictureFilePathTemp = gegner.profilePictureUrl
                                 },
-                                showPin = true
+                                showPin = true,
+                                ownId = ownId
 
                             )
                             HorizontalDivider(

@@ -120,6 +120,8 @@ class ChatViewModel(
 
     fun setAllMessagesRead() {
 
+        val userId = SessionCache.requireLoggedIn()?.userId ?: return
+
         CoroutineScope(Dispatchers.IO).launch {
             // Get message IDs from current chat that need notification removal
             val messageIdsString = messageDisplayState.value
@@ -140,6 +142,7 @@ class ChatViewModel(
 
         CoroutineScope(Dispatchers.IO).launch {
             appRepository.setAllChatMessagesRead(
+                ownId = userId,
                 chatId,
                 isGroup,
                 getCurrentTimeMillisString()
@@ -161,6 +164,9 @@ class ChatViewModel(
     }
 
     fun sendMessage(message: SendMessageContent, replyTo: Message? = null) {
+
+        val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+
         if (message is SendMessageContent.TextContent && message.textMessage.isBlank()) return
         if (message is SendMessageContent.ImageContent && message.images.isEmpty()) return
 
@@ -173,6 +179,7 @@ class ChatViewModel(
                         content = AppRepository.MessageContent.TextContent(message.textMessage),
                         answerid = replyTo?.id,
                         messageId = null,
+                        ownId = ownId,
                     )
                 }
             }
@@ -189,6 +196,7 @@ class ChatViewModel(
                             ),
                             answerid = replyTo?.id,
                             messageId = null,
+                            ownId = ownId
                         )
                     }
                 }
@@ -216,13 +224,17 @@ class ChatViewModel(
     }
 
     fun createPollMessage(poll: NetworkUtils.PollCreateRequest) {
+
+        val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+
         globalViewModel.viewModelScope.launch {
             appRepository.sendMessage(
                 empfaenger = chatId,
                 gruppe = isGroup,
                 content = AppRepository.MessageContent.PollContent(poll),
                 answerid = replyMessage?.id,
-                messageId = null
+                messageId = null,
+                ownId = ownId
             )
 
             replyMessage = null
@@ -246,16 +258,20 @@ class ChatViewModel(
      * Composables only need a single `onAction: (MessageAction) -> Unit` callback.
      */
     fun onAction(action: MessageAction) {
+
+        val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+
         when (action) {
             is MessageAction.VotePoll -> {
                 viewModelScope.launch {
                     appRepository.votePoll(
-                        NetworkUtils.PollVoteRequest(
+                        pollVoteRequest = NetworkUtils.PollVoteRequest(
                             messageId = action.messageId,
                             id = action.optionId,
                             text = null,
                             selected = action.checked
-                        )
+                        ),
+                        ownId = ownId
                     )
                 }
             }
@@ -263,7 +279,8 @@ class ChatViewModel(
             is MessageAction.AddCustomPollOption -> {
                 viewModelScope.launch {
                     appRepository.votePoll(
-                        NetworkUtils.PollVoteRequest(
+                        ownId = ownId,
+                        pollVoteRequest = NetworkUtils.PollVoteRequest(
                             messageId = action.messageId,
                             id = null,
                             text = action.text,
@@ -533,7 +550,7 @@ class ChatViewModel(
         //Set all messages read on app resumed
         viewModelScope.launch {
             AppLifecycleManager.appResumedEvent.collectLatest {
-                if (SessionCache.isLoggedInValue()) {
+                if (SessionCache.isLoggedIn()) {
                     setAllMessagesRead()
                 }
             }
