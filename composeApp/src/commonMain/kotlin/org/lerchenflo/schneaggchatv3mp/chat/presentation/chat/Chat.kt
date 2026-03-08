@@ -65,9 +65,8 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.ClipEntry
-import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.platform.LocalClipboard
-import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.NativeClipboard
 import androidx.compose.ui.text.AnnotatedString
@@ -84,6 +83,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
@@ -104,6 +104,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.ReplyPreview
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
@@ -131,12 +132,13 @@ fun ChatScreen(
     val loggingRepository = koinInject<LoggingRepository>()
     val displayItems by viewModel.messageDisplayState.collectAsStateWithLifecycle()
     val focusManager = LocalFocusManager.current
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current.nativeClipboard
     val selectedChat by globalViewModel.selectedChat.collectAsStateWithLifecycle()
 
+    //Leave chat when not logged in
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
-    // Des funkat amol besser wie der LaunchedEffekt was o immer der do dunna macht
+    // Leave chat when not selected
     if(selectedChat.isNotSelected()){
         println("Unselected chat, navigating back")
         viewModel.onBackClick()
@@ -334,7 +336,7 @@ fun ChatScreen(
                                     onReply = { viewModel.onAction(MessageAction.ReplyToMessage(message)) },
                                     onCopy = {
 
-                                        copyToClipboard(message.content, clipboardManager)
+                                        copyToClipboard(message.content, clipboard)
                                         SnackbarManager.showMessage(copiedToClipboardString)
                                         showMessageOptionPopup = false
                                     },
@@ -705,8 +707,9 @@ fun ReaderRow(reader: MessageReader) {
         }
     }
 }
-fun copyToClipboard(text: String, clipboardManager: ClipboardManager) {
-    clipboardManager.setText(AnnotatedString(text))
+fun copyToClipboard(text: String, clipboard: NativeClipboard) {
+    val shareUtils = KoinPlatform.getKoin().get<ShareUtils>()
+    shareUtils.copyToClipboard(text, clipboard)
 }
 
 enum class AddMediaOptions{
