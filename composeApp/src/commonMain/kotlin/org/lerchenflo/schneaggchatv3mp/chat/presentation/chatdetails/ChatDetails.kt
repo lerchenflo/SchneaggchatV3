@@ -31,13 +31,12 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorAction
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
-import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
-import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
@@ -48,10 +47,8 @@ import schneaggchatv3mp.composeapp.generated.resources.description_info_user
 import schneaggchatv3mp.composeapp.generated.resources.group_description
 import schneaggchatv3mp.composeapp.generated.resources.leave_group
 import schneaggchatv3mp.composeapp.generated.resources.no_description
-import schneaggchatv3mp.composeapp.generated.resources.no_status
 import schneaggchatv3mp.composeapp.generated.resources.others_say_about
 import schneaggchatv3mp.composeapp.generated.resources.remove_friend
-import schneaggchatv3mp.composeapp.generated.resources.status
 import schneaggchatv3mp.composeapp.generated.resources.status_info
 
 
@@ -92,8 +89,7 @@ fun ChatDetails(
         ProfilePictureBigDialog(
             onDismiss = {profilePictureDialogShown = false},
             filepath = chatDetails.profilePictureUrl,
-            showEditButton = true,
-            //showEditButton = group, // if only admins are able to change the profile picture use this line instead
+            showEditButton = group,
             onEdit = {
                 profilePictureDialogShown = false
                 showImagePickerDialog = true
