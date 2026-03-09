@@ -374,7 +374,7 @@ fun LoginFormSection(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TooltipIconButton(tooltip: String) {
-    val tooltipState = rememberTooltipState()
+    val tooltipState = rememberTooltipState(isPersistent = true)
     val scope = rememberCoroutineScope()
 
     TooltipBox(
