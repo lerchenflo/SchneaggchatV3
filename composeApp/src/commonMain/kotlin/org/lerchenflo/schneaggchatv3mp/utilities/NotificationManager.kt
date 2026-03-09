@@ -15,6 +15,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.decodeFromJsonElement
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
@@ -269,7 +270,13 @@ object NotificationManager{
 
                                         //Start datasync (May get cancelled but we dont care)
                                         val appRepository = KoinPlatform.getKoin().get<AppRepository>()
-                                        //TODO: Check if sessioncache loggedin
+
+                                        //Login for userid etc in message sync
+                                        SessionCache.login(
+                                            tokens = preferenceManager.getTokens(),
+                                            developer = false
+                                        )
+
                                         appRepository.messageIdSync()
 
                                     } catch (e: Exception) {
