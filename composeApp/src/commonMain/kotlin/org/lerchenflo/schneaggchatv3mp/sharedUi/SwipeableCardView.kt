@@ -24,11 +24,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -65,14 +71,45 @@ fun SwipeableCardView(
     Column(
         modifier = modifier
     ) {
-        // Content - Display current card
+        val canContinueState = rememberUpdatedState(canContinue)
+        val pagerStateRef = rememberUpdatedState(pagerState)
+
+        val nestedScrollConnection = remember {
+            var dragWasBlocked = false
+            object : NestedScrollConnection {
+                override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                    return if (available.x < 0
+                        && source == NestedScrollSource.UserInput
+                        && !canContinueState.value(pagerStateRef.value.currentPage)
+                    ) {
+                        dragWasBlocked = true
+                        available
+                    } else {
+                        if (source == NestedScrollSource.Drag) dragWasBlocked = false
+                        Offset.Zero
+                    }
+                }
+
+                override suspend fun onPreFling(available: Velocity): Velocity {
+                    return if (available.x < 0 && dragWasBlocked) {
+                        dragWasBlocked = false
+                        available
+                    } else {
+                        dragWasBlocked = false
+                        Velocity.Zero
+                    }
+                }
+            }
+        }
+
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
                 .weight(1f)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .nestedScroll(nestedScrollConnection),
             verticalAlignment = contentAlignment,
-            userScrollEnabled = true // Allow swiping between cards
+            userScrollEnabled = true // keep true, direction control is handled above
         ) { page ->
             Box(
                 modifier = Modifier
