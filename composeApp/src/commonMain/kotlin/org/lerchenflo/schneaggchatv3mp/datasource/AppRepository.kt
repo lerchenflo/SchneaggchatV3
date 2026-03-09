@@ -537,11 +537,6 @@ class AppRepository(
             println("Tokenpair refresh successful")
         } else {
             println("Refreshing tokens failed: $error")
-
-            if (!error.isConnectionError()) {
-                //No connection error, token not valid, logout
-                SessionCache.logout()
-            }
         }
 
         refreshTokenRequestRunning = false
