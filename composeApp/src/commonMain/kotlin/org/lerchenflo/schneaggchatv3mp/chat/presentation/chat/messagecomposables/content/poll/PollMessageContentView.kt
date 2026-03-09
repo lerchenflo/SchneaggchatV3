@@ -96,6 +96,7 @@ import kotlin.time.Clock
 
 @Composable
 fun PollMessageContentView(
+    ownId: String,
     message: Message,
     useMD: Boolean,
     myMessage: Boolean,
@@ -114,7 +115,7 @@ fun PollMessageContentView(
     }
 
 
-    //TODO: MD Support für alle texte??
+    //TODO: MD Support für alle texte!!
     Column(
         modifier = Modifier.padding(4.dp)
     ) {
@@ -188,12 +189,15 @@ fun PollMessageContentView(
                 myMessage = myMessage,
                 voterIds = option.getVoterIdsForOption(),
                 onOptionSelected = {
-                    onAction(MessageAction.VotePoll(
-                        messageId = message.id!!,
-                        optionId = option.id,
-                        checked = it
-                    ))
-                }
+                    onAction(
+                        MessageAction.VotePoll(
+                            messageId = message.id!!,
+                            optionId = option.id,
+                            checked = it
+                        )
+                    )
+                },
+                ownId = ownId
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -259,7 +263,7 @@ fun PollMessageContentView(
         Spacer(modifier = Modifier.height(8.dp))
 
 
-        if (poll.visibility == PollVisibility.PUBLIC || (poll.visibility == PollVisibility.PRIVATE && poll.creatorId == SessionCache.getOwnIdValue())) {
+        if (poll.visibility == PollVisibility.PUBLIC || (poll.visibility == PollVisibility.PRIVATE && poll.creatorId == ownId)) {
             var showVoterDialog by remember { mutableStateOf(false) }
 
             Row {
@@ -414,6 +418,7 @@ fun CustomPollOptionDialog(
 
 @Composable
 fun PollMessageOptionView(
+    ownId: String,
     option: PollVoteOption,
     multipleAnswers: Boolean,
     votePercentage: Float,
@@ -421,8 +426,8 @@ fun PollMessageOptionView(
     voterIds: List<String?>,
     onOptionSelected: (Boolean) -> Unit
 ) {
-
-    val optionCheckedByMe = option.voters.any { it.userId == SessionCache.getOwnIdValue() }
+    
+    val optionCheckedByMe = option.voters.any { it.userId == ownId }
 
 
     Row(

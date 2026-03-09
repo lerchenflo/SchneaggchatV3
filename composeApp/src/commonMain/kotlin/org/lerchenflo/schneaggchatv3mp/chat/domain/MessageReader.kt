@@ -6,7 +6,7 @@ data class MessageReader(
     val readerEntryId: Long = 0L,
     val messageId: String,
     val readerId: String,
-    val readDate: String = "", //TODO: Readdate as long
+    val readDate: String = "",
 
     var readerName: String? = null, // gets inserted later (in ChatViewModel)
     var readerPicture: String? = null

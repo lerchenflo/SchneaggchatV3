@@ -23,7 +23,14 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.close
 
 @Composable
-fun ReplyPreview(viewModel: ChatViewModel, globalViewModel: GlobalViewModel){
+fun ReplyPreview(
+    ownId: String,
+    //TODO: Remove viewmodel from this preview and pass replymessage etc
+    viewModel: ChatViewModel,
+    globalViewModel: GlobalViewModel
+){
+
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -50,7 +57,8 @@ fun ReplyPreview(viewModel: ChatViewModel, globalViewModel: GlobalViewModel){
                 message = viewModel.replyMessage!!,
                 useMD = viewModel.markdownEnabled,
                 selectedChatId = globalViewModel.selectedChat.value.id,
-                senderColor = viewModel.replyMessage!!.senderColor
+                senderColor = viewModel.replyMessage!!.senderColor,
+                ownId = ownId,
             )
         }
         Column {

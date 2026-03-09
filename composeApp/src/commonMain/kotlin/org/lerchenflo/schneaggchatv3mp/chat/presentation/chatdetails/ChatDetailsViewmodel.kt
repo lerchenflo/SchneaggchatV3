@@ -14,6 +14,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
@@ -100,8 +102,13 @@ class ChatDetailsViewmodel(
      * - For groups: groupMembers list
      * - For users: commonGroups list
      */
-    val chatDetails: StateFlow<SelectedChat> = globalViewModel.selectedChat
-        .flatMapLatest { chat ->
+    val chatDetails: StateFlow<SelectedChat> = combine(
+        globalViewModel.selectedChat,
+        SessionCache.authState
+    ) { chat, authState -> chat to authState }
+        .flatMapLatest { (chat, authState) ->
+            val loggedIn = authState as? SessionCache.AuthState.LoggedIn
+
             when {
                 chat.isGroup -> {
                     groupRepository.getGroupFlow(chat.id).map { updatedGroup ->
@@ -117,7 +124,13 @@ class ChatDetailsViewmodel(
                 }
                 !chat.isNotSelected() -> {
                     userRepository.getUserFlow(chat.id).map { updatedUser ->
-                        val commonGroups = groupRepository.getCommonGroups(chat.id)
+                        val commonGroups = loggedIn?.let {
+                            groupRepository.getCommonGroups(
+                                ownId = it.userId,
+                                otherUserId = chat.id
+                            )
+                        } ?: emptyList()
+
                         updatedUser?.toSelectedChat(
                             unreadCount = chat.unreadMessageCount,
                             unsentCount = chat.unsentMessageCount,
@@ -125,7 +138,7 @@ class ChatDetailsViewmodel(
                         )?.toUser()?.copy(commonGroups = commonGroups) ?: chat
                     }
                 }
-                else -> flow { emit(chat) } // NotSelected - pass through
+                else -> flow { emit(chat) }
             }
         }
         .stateIn(

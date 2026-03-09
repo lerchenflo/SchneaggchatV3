@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
-import org.lerchenflo.schneaggchatv3mp.utilities.preferences.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 
 expect class LanguageManager {
     suspend fun applyLanguage(language: LanguageSetting)

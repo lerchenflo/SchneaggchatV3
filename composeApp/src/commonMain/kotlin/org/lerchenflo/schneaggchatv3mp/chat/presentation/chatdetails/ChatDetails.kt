@@ -77,6 +77,8 @@ fun ChatDetails(
 
     val group = chatDetails.isGroup
 
+    val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+
     var profilePictureDialogShown by remember { mutableStateOf(false) }
     var showLeaveGroupConfirmation by remember { mutableStateOf(false) }
     var showRemoveFriendConfirmation by remember { mutableStateOf(false) }
@@ -207,7 +209,8 @@ fun ChatDetails(
                         members = groupChat.groupMembersWithUsers,
                         navigateToChat = chatdetailsViewmodel::navigateToChat,
                         changeAdminStatus = chatdetailsViewmodel::changeAdminStatus,
-                        removeMember = chatdetailsViewmodel::removeMember
+                        removeMember = chatdetailsViewmodel::removeMember,
+                        ownId = ownId
                     )
                 }
             }else{
@@ -225,8 +228,8 @@ fun ChatDetails(
 
 
             if(group){
-                val ownid = SessionCache.getOwnIdValue().toString()
-                val iAmAdmin = chatDetails.toGroup()?.groupMembersWithUsers?.find { it.groupMember.userId == ownid }?.groupMember?.admin == true
+
+                val iAmAdmin = chatDetails.toGroup()?.groupMembersWithUsers?.find { it.groupMember.userId == ownId }?.groupMember?.admin == true
 
                 if(iAmAdmin) {
                     // add partypeople
@@ -259,7 +262,7 @@ fun ChatDetails(
                     ConfirmationDialog(
                         message = stringResource(Res.string.confirm_leave_group),
                         onConfirm = {
-                            chatdetailsViewmodel.removeMember(SessionCache.getOwnIdValue().toString())
+                            chatdetailsViewmodel.removeMember(ownId)
                             chatdetailsViewmodel.navigateChatSelExitAllPrevious()
                         },
                         onDismiss = {

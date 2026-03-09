@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
@@ -61,8 +62,10 @@ fun MemberSelector(
     minUsers: Int = 2,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
+    val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
+
+    Column(modifier = modifier) {
 
         // Selected users horizontal scroll view
         if (selectedUsers.isNotEmpty()) {
@@ -204,7 +207,8 @@ fun MemberSelector(
                         } else {
                             onUserSelected(user)
                         }
-                    }
+                    },
+                    ownId = ownId
                 )
                 HorizontalDivider(
                     thickness = 0.5.dp

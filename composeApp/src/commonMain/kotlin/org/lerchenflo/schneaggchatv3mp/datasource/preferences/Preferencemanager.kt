@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.utilities.preferences
+package org.lerchenflo.schneaggchatv3mp.datasource.preferences
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -69,10 +69,21 @@ class Preferencemanager(
         return securePrefs.get(SecureKey.OWN_ID.key, "")
     }
 
-    suspend fun clearSecureData() {
+
+    suspend fun clearAll() {
+        // Clear secure storage (tokens, encryption key, ownId)
         SecureKey.entries.forEach { secureKey ->
             securePrefs.delete(secureKey.key)
         }
+
+        // Clear all DataStore preferences
+        val serverUrl = getServerUrl() // save before clearing
+        val language = getLanguageSetting()
+
+        prefs.edit { it.clear() }
+
+        saveServerUrl(serverUrl)       // restore after clearing
+        saveLanguageSetting(language)
     }
 
     // ========== NON-SECURE STORAGE (DataStore - Preferences) ==========

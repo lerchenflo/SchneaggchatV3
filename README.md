@@ -15,6 +15,9 @@ It is an alternative to the tech giants stealing our data.
 
 #### Bugfixes
 - Fix for my messages showing up as sent by other user
+- Fix for login but no data sync
+- iOS notification badge fix
+- iOS update Checker fix
 
 
 ### 3.0.5

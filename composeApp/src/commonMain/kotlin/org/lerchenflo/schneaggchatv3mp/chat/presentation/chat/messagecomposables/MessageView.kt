@@ -19,6 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 
 @Composable
 fun MessageView(
+    ownId: String,
     modifier: Modifier = Modifier,
     message: Message,
     useMD: Boolean = false,
@@ -66,7 +67,7 @@ fun MessageView(
                         top = 0.dp,
                         bottom = 5.dp
                     )
-                     //.wrapContentSize()
+                    //.wrapContentSize()
                     .background(
                         color = if (mymessage) {
                             MaterialTheme.colorScheme.primaryContainer
@@ -84,8 +85,8 @@ fun MessageView(
                 senderName = senderName,
                 senderColor = senderColor,
                 readerMap = readerMap,
-                onAction = onAction
-
+                onAction = onAction,
+                ownId = ownId
             )
 
         }

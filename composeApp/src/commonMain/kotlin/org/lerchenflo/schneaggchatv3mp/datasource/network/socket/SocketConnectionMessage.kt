@@ -56,7 +56,7 @@ sealed interface SocketConnectionMessage {
 }
 
 
-suspend fun handleSocketConnectionMessage(message: String) {
+suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
     val appRepository = KoinPlatform.getKoin().get<AppRepository>()
     val userRepository = KoinPlatform.getKoin().get<UserRepository>()
@@ -79,7 +79,7 @@ suspend fun handleSocketConnectionMessage(message: String) {
 
                     content = socketMessage.message.content,
                     pictureUrl = existing?.pictureUrl,
-                    poll = socketMessage.message.pollResponse?.toPollMessage(),
+                    poll = socketMessage.message.pollResponse?.toPollMessage(ownId),
 
                     senderId = socketMessage.message.senderId,
                     receiverId = socketMessage.message.receiverId,
@@ -89,8 +89,8 @@ suspend fun handleSocketConnectionMessage(message: String) {
                     groupMessage = socketMessage.message.groupMessage,
                     answerId = socketMessage.message.answerId,
                     sent = true,
-                    myMessage = socketMessage.message.senderId == SessionCache.getOwnIdValue(),
-                    readByMe =socketMessage.message.readers.any { it.userId == SessionCache.ownId.value },
+                    myMessage = socketMessage.message.senderId == ownId,
+                    readByMe =socketMessage.message.readers.any { it.userId == ownId },
                     readers = socketMessage.message.readers.map {
                         MessageReader(
                             readerEntryId = 0L,

@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.ACTION_SEND
@@ -50,5 +52,11 @@ actual class ShareUtils(private val context: Context) {
                 println("No mail client available on this device: ${e2.message}")
             }
         }
+    }
+    
+    actual fun copyToClipboard(text: String, clipboard: Any) {
+        val manager = clipboard as ClipboardManager
+        val clip = ClipData.newPlainText("text", text)
+        manager.setPrimaryClip(clip)
     }
 }

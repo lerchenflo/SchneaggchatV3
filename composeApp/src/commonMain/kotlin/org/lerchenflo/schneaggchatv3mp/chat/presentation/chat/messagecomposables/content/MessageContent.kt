@@ -26,6 +26,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 
 @Composable
 fun MessageContent(
+    ownId: String,
     modifier: Modifier = Modifier,
     message: Message,
     useMD: Boolean = false,
@@ -67,7 +68,8 @@ fun MessageContent(
                         useMD = useMD,
                         myMessage = mymessage,
                         onAction = onAction,
-                        readerMap = readerMap
+                        readerMap = readerMap,
+                        ownId = ownId
                     )
 
                     MessageType.IMAGE -> ImageMessageContentView(
@@ -76,8 +78,6 @@ fun MessageContent(
                         myMessage = mymessage,
                         useMD = useMD
                     )
-
-                    else -> ErrorMessage()
                 }
             }
 

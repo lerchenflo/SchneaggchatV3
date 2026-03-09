@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
@@ -24,8 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogType
+import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 
 @Composable
 fun LogsDialog(
@@ -162,7 +165,7 @@ fun LogsDialog(
 
 @Composable
 private fun LogEntryItem(log: LogEntry) {
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current.nativeClipboard
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -215,7 +218,9 @@ private fun LogEntryItem(log: LogEntry) {
             // Copy button
             IconButton(
                 onClick = {
-                    clipboardManager.setText(AnnotatedString(log.message))
+                    val shareUtils = KoinPlatform.getKoin().get<ShareUtils>()
+                    shareUtils.copyToClipboard(log.message, clipboard)
+
                 },
                 modifier = Modifier.size(32.dp)
             ) {

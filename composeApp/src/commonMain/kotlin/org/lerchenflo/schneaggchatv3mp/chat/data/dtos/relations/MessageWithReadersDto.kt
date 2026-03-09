@@ -37,7 +37,7 @@ data class MessageWithReadersDto(
     /**
      * Was this message sent into this chat?
      */
-    fun isThisChatMessage(chatID: String, gruppe : Boolean) : Boolean {
+    fun isThisChatMessage(ownId: String, chatID: String, gruppe : Boolean) : Boolean {
         if (gruppe){
             if (messageDto.receiverId == chatID && messageDto.groupMessage){
                 return true
@@ -45,7 +45,7 @@ data class MessageWithReadersDto(
         }else {
             if (messageDto.myMessage && messageDto.receiverId == chatID && !messageDto.groupMessage){
                 return true
-            }else if (messageDto.senderId == chatID && messageDto.receiverId == SessionCache.getOwnIdValue() && !messageDto.groupMessage){
+            }else if (messageDto.senderId == chatID && messageDto.receiverId == ownId && !messageDto.groupMessage){
                 return true
             }
         }

@@ -19,8 +19,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -34,6 +36,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.InputfieldState
@@ -134,21 +137,25 @@ class GroupCreatorViewModel (
 
     init {
         viewModelScope.launch {
-            _searchTermFlow
-                .flatMapLatest { searchTerm ->
-                    // This will cancel the previous flow and start a new one
-                    // whenever searchTerm changes
-                    appRepository.getChatSelectorFlow(searchTerm)
+
+            combine(_searchTermFlow, SessionCache.authState) { searchTerm, authState ->
+                searchTerm to authState
+            }
+                .flatMapLatest { (searchTerm, authState) ->
+                    val loggedIn = authState as? SessionCache.AuthState.LoggedIn
+                        ?: return@flatMapLatest flowOf(emptyList())
+
+                    appRepository.getChatSelectorFlow(
+                        searchTerm = searchTerm,
+                        userId = loggedIn.userId,
+                        filter = ChatFilter.NONE
+                    )
                 }
                 .map { chats ->
-                    chats.filter { chat ->
-                                !chat.isGroup
-                    }
+                    chats.filter { !it.isGroup }
                 }
                 .collect { filteredUsers ->
-                    state = state.copy(
-                        availableUsers = filteredUsers
-                    )
+                    state = state.copy(availableUsers = filteredUsers)
                 }
         }
     }

@@ -51,4 +51,9 @@ actual class ShareUtils {
             println("Please use this link manually: $mailtoUri")
         }
     }
+    
+    actual fun copyToClipboard(text: String, clipboard: Any) {
+        val selection = java.awt.Toolkit.getDefaultToolkit().systemClipboard
+        selection.setContents(java.awt.datatransfer.StringSelection(text), null)
+    }
 }

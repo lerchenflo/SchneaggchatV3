@@ -12,8 +12,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
-import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
-import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
 class TokenManager(
     private val preferenceManager: Preferencemanager,
@@ -52,11 +51,8 @@ class TokenManager(
 
             preferenceManager.saveTokens(responseTokens)
 
-            val userId = JwtUtils.getUserIdFromToken(responseTokens.refreshToken)
-            if (userId.isNotBlank()) {
-                SessionCache.updateOwnId(userId)
-            }
-            SessionCache.updateTokenPair(responseTokens)
+
+            SessionCache.updateTokens(responseTokens)
 
             BearerTokens(
                 accessToken = responseTokens.accessToken,
@@ -68,15 +64,14 @@ class TokenManager(
     suspend fun refreshTokenPairLocked(networkUtils: NetworkUtils): RequestError? {
         return refreshMutex.withLock {
             when (val result = networkUtils.refresh(preferenceManager.getTokens().refreshToken)) {
-                is org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult.Error<*> -> result.error
+                is org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult.Error<*> -> {
+                    println("token refresh failed: ${result.error}")
+                    result.error
+                }
                 is org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult.Success<NetworkUtils.TokenPair> -> {
                     preferenceManager.saveTokens(result.data)
-                    val userId = JwtUtils.getUserIdFromToken(result.data.refreshToken)
-                    if (userId.isNotBlank()) {
-                        preferenceManager.saveOWNID(userId)
-                        SessionCache.updateOwnId(userId)
-                    }
-                    SessionCache.updateTokenPair(result.data)
+
+                    SessionCache.updateTokens(result.data)
                     null
                 }
             }

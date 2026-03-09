@@ -96,6 +96,8 @@ fun UserSettings(
 
     val ownuser = sharedSettingsViewmodel.ownUser
 
+    val dev = SessionCache.requireLoggedIn()?.developer ?: return
+
     var showChangeUsernamePopup by remember { mutableStateOf(false) }
 
     var showChangeStatusPopup by remember { mutableStateOf(false) }
@@ -107,7 +109,6 @@ fun UserSettings(
     Box(modifier = Modifier.fillMaxSize()) {
         if (showImagePickerDialog ) {
 
-            //TODO: Fix all strings
             GalleryPickerLauncher(
                 onPhotosSelected = {
                     userSettingsViewModel.changeProfilePicture(it.first())
@@ -272,7 +273,7 @@ fun UserSettings(
 
                  */
 
-                if (SessionCache.developer) {
+                if (dev) {
 
                     SettingsOption(
                         icon = Icons.Default.Mail,

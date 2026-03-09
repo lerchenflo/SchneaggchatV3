@@ -8,4 +8,7 @@ expect class ShareUtils {
     //Open mail client with mailto link
     fun openMailClient(recipient: String, subject: String = "", body: String = "")
 
+    //Copy text to clipboard
+    fun copyToClipboard(text: String, clipboard: Any)
+
 }

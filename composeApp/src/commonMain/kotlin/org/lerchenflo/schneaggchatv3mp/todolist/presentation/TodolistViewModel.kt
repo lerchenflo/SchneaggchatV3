@@ -125,7 +125,7 @@ class TodolistViewModel(
             // Filter according to the selected sort type
             val filtered = when (sort) {
                 BugSorttype.MINE -> {
-                    list.filter { it.senderId == SessionCache.getOwnIdValue() }
+                    list.filter { it.senderId == SessionCache.requireLoggedIn()?.userId }
                 }
                 BugSorttype.UNFINISHED -> {
                     // assume a boolean property 'finished' (replace with your actual name, e.g. isDone/isCompleted)

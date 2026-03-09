@@ -34,6 +34,7 @@ import kotlin.math.roundToInt
 
 @Composable
 fun MessageViewWithActions(
+    ownId: String,
     useMD: Boolean = false,
     selectedChatId: String = "",
     message: Message,
@@ -138,7 +139,8 @@ fun MessageViewWithActions(
                 readerMap = readerMap,
                 replyMessage = replyMessage,
                 replyMessageOnClick = replyMessageOnClick,
-                onAction = onAction
+                onAction = onAction,
+                ownId = ownId
             )
         }
     }

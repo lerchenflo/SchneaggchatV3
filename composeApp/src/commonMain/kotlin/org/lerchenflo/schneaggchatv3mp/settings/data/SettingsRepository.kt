@@ -1,8 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.settings.data
 
 import kotlinx.coroutines.flow.Flow
-import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Draft
-import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Draft
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
 class SettingsRepository(
     private val preferencemanager: Preferencemanager

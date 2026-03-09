@@ -13,6 +13,7 @@ import platform.UIKit.UIAlertActionStyleDefault
 import platform.UIKit.UIAlertController
 import platform.UIKit.UIAlertControllerStyleAlert
 import platform.UIKit.UIApplication
+import platform.UIKit.UIPasteboard
 import platform.UIKit.UIViewController
 import platform.UIKit.UIWindow
 import platform.UIKit.UIWindowScene
@@ -119,5 +120,10 @@ actual class ShareUtils {
             )
             topVC?.presentViewController(alert, animated = true, completion = null)
         }
+    }
+    
+    actual fun copyToClipboard(text: String, clipboard: Any) {
+        val pasteboard = UIPasteboard.generalPasteboard
+        pasteboard.string = text
     }
 }

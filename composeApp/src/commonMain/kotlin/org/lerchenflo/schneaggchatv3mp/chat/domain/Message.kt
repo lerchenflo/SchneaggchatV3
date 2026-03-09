@@ -51,14 +51,14 @@ data class Message(
      * @param chatID id of the chat (group id or user id)
      * @param gruppe true if chatID refers to a group
      */
-    fun isThisChatMessage(chatID: String, gruppe: Boolean): Boolean {
+    fun isThisChatMessage(ownId: String, chatID: String, gruppe: Boolean): Boolean {
         return if (gruppe) {
             receiverId == chatID && groupMessage
         } else {
             if (myMessage && receiverId == chatID && !groupMessage) {
                 true
             } else if (senderId == chatID &&
-                receiverId == SessionCache.getOwnIdValue() &&
+                receiverId == ownId &&
                 !groupMessage
             ) {
                 true
