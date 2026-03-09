@@ -172,7 +172,7 @@ object NotificationManager{
                     //Inject preferencemanager
                     val preferenceManager = KoinPlatform.getKoin().get<Preferencemanager>()
 
-                    val notiThread = CoroutineScope(Dispatchers.IO).launch {
+                    runBlocking {
                         try {
                             //get notiobject from payload data
                             val notiObject = data.toNotificationObject()
@@ -185,7 +185,7 @@ object NotificationManager{
                                     notiId = NotiId.Integ(NotiIdType.ERROR.baseId)
 
                                 )
-                                return@launch
+                                return@runBlocking
                             }
 
                             //println("[NotificationManager] Parsed notification: $notiObject")
@@ -240,7 +240,7 @@ object NotificationManager{
                                             bodytext = "New message received (decryption key not available)",
                                             notiId = NotiId.Integ(NotiIdType.ERROR.baseId)
                                         )
-                                        return@launch
+                                        return@runBlocking
                                     }
 
                                     // Build title string for message notifications
@@ -252,14 +252,11 @@ object NotificationManager{
 
                                     // Try to decrypt and show notification
                                     try {
-                                        // Decrypt on IO thread
-                                        val decryptedContent = withContext(Dispatchers.IO) {
-                                            when (notiObject.messageType) {
+                                        val decryptedContent = when (notiObject.messageType) {
                                                 MessageType.TEXT -> notiObject.getDecodedContent(encryptionkey)
                                                 MessageType.IMAGE -> getString(Res.string.image)
                                                 MessageType.POLL -> getString(Res.string.poll)
                                             }
-                                        }
 
                                         // Show notification
                                         showNotification(
@@ -270,7 +267,9 @@ object NotificationManager{
 
                                         //Start datasync (May get cancelled but we dont care)
                                         val appRepository = KoinPlatform.getKoin().get<AppRepository>()
-                                        appRepository.dataSync()
+                                        //TODO: Check if sessioncache loggedin
+                                        appRepository.messageIdSync()
+
                                     } catch (e: Exception) {
                                         KoinPlatform.getKoin().get<LoggingRepository>().logWarning("[NotificationManager] Decryption failed: ${e.message}")
 
@@ -320,10 +319,7 @@ object NotificationManager{
                         }
                     }
 
-                    // Wait for the notification process to complete to prevent process death
-                    runBlocking {
-                        notiThread.join()
-                    }
+
 
                     // Sync data (Ignore if app is open or not etc)
                     /*val appRepository = KoinPlatform.getKoin().get<AppRepository>()
