@@ -1336,13 +1336,14 @@ class AppRepository(
                     deletedMessages.forEach { id ->
                         messageRepository.deleteMessage(id)
                     }
+
+                    println("MessageIdSync finished, new messages: ${updatedMessages.size}")
                 }
             }
 
             currentPage++
         }
 
-        println("Messagesync completed. Total pages: $currentPage")
 
 
         if (imagesToGet.isNotEmpty()) {
