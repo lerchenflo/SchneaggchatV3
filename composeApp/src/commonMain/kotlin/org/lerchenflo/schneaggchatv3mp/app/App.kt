@@ -42,6 +42,7 @@ import kotlinx.serialization.modules.polymorphic
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.ObserveAsEvents
@@ -97,6 +98,7 @@ fun App() {
     val languageService = koinInject<LanguageService>()
     val themeSetting by preferenceManager.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
 
+    val loggingRepository = koinInject<LoggingRepository>()
 
     // Apply saved language on app startup
     LaunchedEffect(Unit) {
@@ -239,6 +241,30 @@ fun App() {
                         rootBackStack.removeAt(rootBackStack.size - 1)
                     }
 
+                }
+            }
+        }
+
+
+        ObserveAsEvents(
+            flow = AppRepository.ActionChannel.actions,
+        ) { action ->
+            scope.launch {
+                when (action) {
+                    AppRepository.ActionChannel.ActionEvent.Login -> {
+                        val error = appRepository.refreshTokens()
+                        if (error != null && !error.isConnectionError()) {
+                            
+                            //Token refresh failed, log the user out
+                            println("token refresh failed, rerouting to login")
+                            loggingRepository.logWarning("Logging out: Token refresh failed when trying to access a ressource with restricted access")
+                            appRepository.logout()
+                            navigator.navigate(
+                                Route.Login,
+                                navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -616,7 +642,7 @@ fun App() {
                                     }
 
                                     entry <Route.Games.Tetris> {
-                                        val tetrisViewModel: TetrisViewModel = androidx.lifecycle.viewmodel.compose.viewModel { TetrisViewModel() }
+                                        val tetrisViewModel: TetrisViewModel = viewModel { TetrisViewModel() }
                                         TetrisScreen(
                                             onBackClick = {
                                                 if (gamesBackStack.size > 1){
