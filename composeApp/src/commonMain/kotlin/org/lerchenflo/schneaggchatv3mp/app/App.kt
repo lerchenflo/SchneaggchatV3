@@ -254,7 +254,7 @@ fun App() {
                     AppRepository.ActionChannel.ActionEvent.Login -> {
                         val error = appRepository.refreshTokens()
                         if (error != null && !error.isConnectionError()) {
-                            
+
                             //Token refresh failed, log the user out
                             println("token refresh failed, rerouting to login")
                             loggingRepository.logWarning("Logging out: Token refresh failed when trying to access a ressource with restricted access")
