@@ -67,7 +67,10 @@ class ChatSelectorViewModel(
 
         viewModelScope.launch {
             val token = NotificationManager.getToken()
-            appRepository.setFirebaseToken(token)
+
+            if (token.isNotEmpty()) {
+                appRepository.setFirebaseToken(token)
+            }
         }
 
         viewModelScope.launch {
@@ -95,7 +98,7 @@ class ChatSelectorViewModel(
 
     fun refresh() {
 
-        println("Chatselector: Pull to refresh")
+        //println("Chatselector: Pull to refresh")
         // if a refresh is already running, do nothing
         if (refreshJob?.isActive == true) {
             println("Refreshjob already running, abort")
@@ -111,7 +114,7 @@ class ChatSelectorViewModel(
         updateIsLoadingMessages(true)
 
 
-        println("refreshjob starting")
+        //println("refreshjob starting")
 
 
         refreshJob = viewModelScope.launch {

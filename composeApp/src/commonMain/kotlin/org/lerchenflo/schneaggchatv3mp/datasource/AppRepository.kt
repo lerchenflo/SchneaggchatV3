@@ -147,6 +147,7 @@ class AppRepository(
 
         sealed interface ActionEvent {
             data object Login : ActionEvent
+            data object AuthInvalidated : ActionEvent
         }
 
         private val _channel = Channel<ActionEvent>(capacity = Channel.BUFFERED)
@@ -219,7 +220,7 @@ class AppRepository(
 
     var dataSyncRunning = false
     suspend fun dataSync() {
-        println("Starting datasync")
+        //println("Starting datasync")
         if (dataSyncRunning) {
             println("Data sync canceled, already running")
             return
@@ -662,9 +663,11 @@ class AppRepository(
         val profilePicsToGet = emptyList<String>().toMutableList()
 
         when (userSyncResponse) {
-            is NetworkResult.Error<*> -> {println("userid sync error")}
+            is NetworkResult.Error<*> -> {
+                println("userid sync error: ${userSyncResponse.error}")
+            }
             is NetworkResult.Success<NetworkUtils.UserSyncResponse> -> {
-                println("Userid sync response: ${userSyncResponse.data.toString()}")
+                //println("Userid sync response: ${userSyncResponse.data.toString()}")
 
                 val updatedUsers = userSyncResponse.data.updatedUsers
                 val deletedUsers = userSyncResponse.data.deletedUsers
@@ -1124,7 +1127,7 @@ class AppRepository(
 
             val messages = messageRepository.getUnsentMessages()
 
-            println("Unsent message count: $messages")
+            //println("Unsent message count: $messages")
 
             //Do no parallel des loft jetzt alles seriell
             for (m in messages){
@@ -1339,6 +1342,7 @@ class AppRepository(
             currentPage++
         }
 
+        //println("Messagesync completed. Total pages: $currentPage")
 
 
         if (imagesToGet.isNotEmpty()) {
@@ -1521,7 +1525,7 @@ class AppRepository(
             }
 
             is NetworkResult.Success<NetworkUtils.GroupSyncResponse> -> {
-                println("GroupIdSync sync response: ${groupSyncResponse.data.toString()}")
+                //println("GroupIdSync sync response: ${groupSyncResponse.data.toString()}")
 
                 groupSyncResponse.data.updatedGroups.forEach { groupResponse ->
                     val existing = groupRepository.getGroupById(groupResponse.id)

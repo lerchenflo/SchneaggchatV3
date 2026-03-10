@@ -39,6 +39,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -77,6 +78,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
@@ -253,17 +255,30 @@ fun App() {
                 when (action) {
                     AppRepository.ActionChannel.ActionEvent.Login -> {
                         val error = appRepository.refreshTokens()
-                        if (error != null && !error.isConnectionError()) {
+                        if (error is NetworkError.Unauthorized) {
 
                             //Token refresh failed, log the user out
                             println("token refresh failed, rerouting to login")
                             loggingRepository.logWarning("Logging out: Token refresh failed when trying to access a ressource with restricted access")
-                            appRepository.logout()
-                            navigator.navigate(
-                                Route.Login,
-                                navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
-                            )
+
+                            AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
                         }
+                    }
+
+                    AppRepository.ActionChannel.ActionEvent.AuthInvalidated -> {
+                        //Throwing an error message for the user
+                        AppRepository.ErrorChannel.trySendError(
+                            event = AppRepository.ErrorChannel.ErrorEvent(
+                                401,
+                                errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
+                                duration = 5000L,
+                            )
+                        )
+                        appRepository.logout()
+                        navigator.navigate(
+                            Route.Login,
+                            navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
+                        )
                     }
                 }
             }
