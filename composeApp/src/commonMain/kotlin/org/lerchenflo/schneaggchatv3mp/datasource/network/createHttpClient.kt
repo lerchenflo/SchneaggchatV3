@@ -27,6 +27,7 @@ fun createHttpClient(
     useAuth: Boolean
 ) : HttpClient {
 
+
     return HttpClient(engine) {
         install(Logging){
             logger = object : Logger {
@@ -61,7 +62,18 @@ fun createHttpClient(
                     }
 
                     refreshTokens {
-                        tokenManager.refreshBearerTokens(client, oldTokens)
+
+                        val plainClient = HttpClient(engine) {
+                            install(ContentNegotiation) {
+                                json(json = AppJson.instance)
+                            }
+                            install(HttpTimeout) {
+                                requestTimeoutMillis = 30000
+                                connectTimeoutMillis = 10000
+                            }
+                        }
+
+                        tokenManager.refreshBearerTokens(plainClient, oldTokens)
                     }
 
                 }
@@ -92,11 +104,6 @@ fun createHttpClient(
     }
 }
 
-private val RefreshTokenRequestAttributeKey = AttributeKey<Unit>("RefreshTokenRequest")
-
-fun HttpRequestBuilder.markAsRefreshTokenRequest() {
-    attributes.put(RefreshTokenRequestAttributeKey, Unit)
-}
 
 /**
  * Deserializer for all polymorphic json objects
