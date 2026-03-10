@@ -58,10 +58,13 @@ fun createHttpClient(
                 bearer {
 
                     loadTokens {
-                        tokenManager.loadBearerTokens()
+                        val tokens = tokenManager.loadBearerTokens()
+                        tokens
                     }
 
                     refreshTokens {
+
+                        println("HTTPCLIENT Refreshing Tokens...")
 
                         val plainClient = HttpClient(engine) {
                             install(ContentNegotiation) {
