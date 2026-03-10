@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.auth.authProviders
+import io.ktor.client.plugins.auth.clearAuthTokens
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.defaultTransformers
 import io.ktor.client.request.post

@@ -516,6 +516,8 @@ class AppRepository(
 
         SessionCache.updateTokens(tokenPair)
 
+        //KoinPlatform.getKoin().get<HttpClient>(qualifier = named("api")).clearAuthTokens()
+
         SessionCache.updateOnline(true)
         println("New token pair, Sessioncache updated: $SessionCache")
     }
@@ -536,6 +538,7 @@ class AppRepository(
 
         if (error == null) {
             println("Tokenpair refresh successful")
+            KoinPlatform.getKoin().get<HttpClient>(qualifier = named("api")).clearAuthTokens()
         } else {
             println("Refreshing tokens failed: $error")
         }
@@ -605,10 +608,6 @@ class AppRepository(
                     tokens = result.data,
                     developer = preferencemanager.getDevSettings()
                 )
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    dataSync()
-                }
 
                 onResult(true)
             }

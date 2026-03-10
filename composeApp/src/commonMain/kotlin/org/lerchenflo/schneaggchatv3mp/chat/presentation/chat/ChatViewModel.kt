@@ -559,7 +559,7 @@ class ChatViewModel(
         //Set all messages read on message change
         viewModelScope.launch {
             messageDisplayState.collectLatest { displayItems ->
-                if (displayItems.isNotEmpty()) {
+                if (displayItems.isNotEmpty() && AppLifecycleManager.isAppInForeground) {
                     setAllMessagesRead()
                 }
             }
