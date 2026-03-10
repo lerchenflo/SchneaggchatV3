@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
@@ -110,8 +111,10 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                 //THis is a new message, show a notification
                 if (socketMessage.newMessage) {
                     if (globalViewModel.selectedChat.value.id == message.senderId && globalViewModel.selectedChat.value.isGroup == message.groupMessage){
-                        println("Notification is in current chat, skipping display of socketmessage")
-
+                        if (!AppLifecycleManager.isAppInForeground) {
+                            println("Noti in current chat, but app is minimized, showing noti")
+                            NotificationManager.showNotification(message)
+                        }
                     } else {
                         NotificationManager.showNotification(message)
                     }
