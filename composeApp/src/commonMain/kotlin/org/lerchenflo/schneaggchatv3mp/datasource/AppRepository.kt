@@ -1334,6 +1334,8 @@ class AppRepository(
                     deletedMessages.forEach { id ->
                         messageRepository.deleteMessage(id)
                     }
+
+                    println("MessageIdSync finished, new messages: ${updatedMessages.size}")
                 }
             }
 

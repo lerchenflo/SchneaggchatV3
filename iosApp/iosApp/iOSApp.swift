@@ -46,23 +46,22 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct iOSApp: App {
 
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @Environment(\.scenePhase) var scenePhase  // ← Add this
 
     var body: some Scene {
         WindowGroup {
-                    ContentView()
-                        .onAppear {
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                                AppUpdateChecker.checkForUpdate()
-                            }
-
-                            UIApplication.shared.applicationIconBadgeNumber = 0
-                        }
-                        }
-                .onChange(of: scenePhase) { phase in   // 👈 Add this block
-                    if phase == .active {
-                        UIApplication.shared.applicationIconBadgeNumber = 0
+            ContentView()
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        AppUpdateChecker.checkForUpdate()
                     }
+                    UIApplication.shared.applicationIconBadgeNumber = 0
                 }
+        }
+        .onChange(of: scenePhase) { phase in  // ← Note: .onChange should be on WindowGroup, not ContentView
+            if phase == .active {
+                UIApplication.shared.applicationIconBadgeNumber = 0
+            }
+        }
     }
 }
-
