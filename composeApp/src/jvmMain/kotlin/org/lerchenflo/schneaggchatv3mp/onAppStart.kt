@@ -6,6 +6,7 @@ import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfig
 import org.koin.core.context.startKoin
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.di.desktopAppDatabaseModule
+import org.lerchenflo.schneaggchatv3mp.di.desktopAudioManagerModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopDataStoreModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopHttpAuthModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopHttpModule
@@ -33,6 +34,7 @@ fun onAppStart() {
                 desktopVersionModule,
                 desktopPictureManagerModule,
                 desktopPermissionManagerModule,
+                desktopAudioManagerModule,
                 desktopShareUtilsModule,
                 desktopLanguageManagerModule
             )

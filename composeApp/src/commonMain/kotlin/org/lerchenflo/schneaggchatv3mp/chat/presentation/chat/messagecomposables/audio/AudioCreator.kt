@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,7 +32,6 @@ fun DebugAudioDialog( // chatbot mit mehr chatbot aaa
     onPlay: () -> Unit = {},
     onPause: () -> Unit = {},
     onSend: () -> Unit = {},
-    sendMessageContent: ChatViewModel.SendMessageContent
 ) {
 
     var isRecording by remember { mutableStateOf(false) }

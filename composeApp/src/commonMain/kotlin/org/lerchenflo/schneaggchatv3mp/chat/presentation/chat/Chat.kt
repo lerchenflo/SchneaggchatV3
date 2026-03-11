@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -34,7 +35,10 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Poll
+import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -44,12 +48,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,6 +65,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -106,6 +113,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.formatMillis
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
@@ -409,18 +417,23 @@ fun ChatScreen(
             ) {
                 // button zum züg addden
 
+                val currentContent by viewModel.currentSendContent.collectAsState()
+                val currentContentNotEmpty = currentContent !is ChatViewModel.SendMessageContent.TextContent
+                        || (currentContent as? ChatViewModel.SendMessageContent.TextContent)?.textMessage?.isNotEmpty() == true
 
 
+                if(!currentContentNotEmpty){
+                    IconButton(
+                        onClick = { addMediaDropdownExpanded = true },
+                        modifier = Modifier
+                            .padding(5.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AttachFile,
+                            contentDescription = stringResource(Res.string.add)
+                        )
+                    }
 
-                IconButton(
-                    onClick = { addMediaDropdownExpanded = true },
-                    modifier = Modifier
-                        .padding(5.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AttachFile,
-                        contentDescription = stringResource(Res.string.add)
-                    )
                 }
 
 
@@ -477,15 +490,14 @@ fun ChatScreen(
                         onDismiss = { showDebugAudioDialog = false },
                         onStartRecording = viewModel::startRecording,
                         onStopRecording = viewModel::stopRecording,
-                        onPlay = viewModel::playAudio,
-                        sendMessageContent = viewModel.currentSendContent
+                        onPlay = viewModel::playAudio
                     )
                 }
 
 
 
                 //sendinput (This is a rowscope)
-                when (val content = viewModel.currentSendContent) {
+                when (val content = currentContent) {
                     is ChatViewModel.SendMessageContent.TextContent -> {
                         OutlinedTextField(
                             value = content.textMessage,
@@ -502,7 +514,7 @@ fun ChatScreen(
                                             return@onPreviewKeyEvent false
                                         } else {
                                             viewModel.sendMessage(
-                                                message = viewModel.currentSendContent,
+                                                message = viewModel.currentSendContent.value,
                                                 replyTo = viewModel.replyMessage
                                             )
                                             return@onPreviewKeyEvent true
@@ -576,7 +588,7 @@ fun ChatScreen(
                                                 return@onPreviewKeyEvent false
                                             } else {
                                                 viewModel.sendMessage(
-                                                    message = viewModel.currentSendContent,
+                                                    message = viewModel.currentSendContent.value,
                                                     replyTo = viewModel.replyMessage
                                                 )
                                                 return@onPreviewKeyEvent true
@@ -589,29 +601,144 @@ fun ChatScreen(
                         }
                     }
                     is ChatViewModel.SendMessageContent.AudioContent -> {
-                        Text(text = "Audio (todo)")
+                        Row(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(56.dp) // Match standard TextField height
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+                                .padding(horizontal = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if(content.isRecording){
+                                // Recording Dot (You could add an InfiniteTransition animation here for pulsing)
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.Red)
+                                )
+
+                                Spacer(Modifier.width(8.dp))
+
+                                // Timer
+                                Text(
+                                    text = formatMillis(content.duration),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+
+                                // Visualizer Placeholder
+                                // todo actual visualizer
+                                Row(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(horizontal = 12.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    // Simple static bars to represent audio levels
+                                    repeat(15) { index ->
+                                        Box(
+                                            modifier = Modifier
+                                                .width(3.dp)
+                                                .height((10..24).random().dp)
+                                                .clip(CircleShape)
+                                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.6f))
+                                        )
+                                    }
+                                }
+                                IconButton(
+                                    onClick = {
+                                        // Reset to empty text or previous state
+                                        viewModel.stopRecording()
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.StopCircle,
+                                        contentDescription = "Discard recording",
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }else{
+                                IconButton(
+                                    onClick = {
+                                        viewModel.playAudio()
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.PlayArrow,
+                                        contentDescription = "play",
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                                val progress by viewModel.getPlaybackProgress().collectAsState()
+                                Slider(
+                                    modifier = Modifier.weight(1f),
+                                    value = progress.currentPosition.toFloat(),
+                                    valueRange = 0f..progress.duration.toFloat(),
+                                    onValueChange = { /* seek logic */ }
+                                )
+
+                            }
+
+
+                            // Delete/Discard Button
+                            IconButton(
+                                onClick = {
+                                    // Reset to empty text or previous state
+                                    viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(""))
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Discard recording",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
                     }
                 }
 
 
 
                 if(viewModel.editMessage == null){ // schoua ob mir gad a nachricht bearbeitend
-                    // send button
-                    IconButton(
-                        onClick = {
-                            viewModel.sendMessage(
-                                message = viewModel.currentSendContent,
-                                replyTo = viewModel.replyMessage
+
+                    if(currentContentNotEmpty || !SessionCache.developer){ // todo open to public
+                        // send button
+                        IconButton(
+                            onClick = {
+                                viewModel.sendMessage(
+                                    message = viewModel.currentSendContent.value,
+                                    replyTo = viewModel.replyMessage
+                                )
+                            },
+                            modifier = Modifier
+                                .padding(5.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Send,
+                                contentDescription = null,
                             )
-                                  },
-                        modifier = Modifier
-                            .padding(5.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Send,
-                            contentDescription = stringResource(Res.string.add),
-                        )
+                        }
+                    }else{
+                        IconButton(
+                            onClick = {
+                                viewModel.startRecording()
+                                // todo record audio message
+                            },
+                            modifier = Modifier
+                                .padding(5.dp)
+
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Mic,
+                                contentDescription = null,
+                            )
+                        }
                     }
+
+
                 }else{
 
                     //Cancel reply button
@@ -633,7 +760,7 @@ fun ChatScreen(
                         onClick = {
                             viewModel.editMessage(
                                 message = viewModel.editMessage,
-                                content = viewModel.currentSendContent
+                                content = viewModel.currentSendContent.value
                             )
                         },
                         modifier = Modifier

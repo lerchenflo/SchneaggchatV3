@@ -7,6 +7,9 @@ import io.github.hyochan.audio.AudioRecorderPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class AudioPlayer(
@@ -27,6 +30,9 @@ class AudioPlayer(
     var isPlaying by mutableStateOf(false)
         private set
 
+    private val _playbackProgress = MutableStateFlow(PlaybackProgress())
+    val playbackProgress: StateFlow<PlaybackProgress> = _playbackProgress.asStateFlow()
+
     suspend fun playAudio(messageId: String, path: String) {
 
         try {
@@ -39,6 +45,7 @@ class AudioPlayer(
             if (currentlyPlayingId == messageId && !isPlaying) {
                 audioRecorderPlayer?.resumePlaying()
                 isPlaying = true
+                _playbackProgress.value = _playbackProgress.value.copy(isPlaying = true)
                 println("this audio is already playing")
                 return
             }
@@ -58,15 +65,21 @@ class AudioPlayer(
             println("started playing ...")
 
             // 5. Listen for progress updates
+            // Update Flow inside the listener
             audioRecorderPlayer?.addPlaybackListener { progress ->
-                currentPlaybackPosition = progress.currentPosition
-                totalPlaybackDuration = progress.duration
-                println("Playing audio : ${progress.currentPosition} / ${progress.duration}")
+                _playbackProgress.value = PlaybackProgress(
+                    currentPosition = progress.currentPosition,
+                    duration = progress.duration,
+                    isPlaying = true,
+                    messageId = messageId
+                )
 
-                // Reset state when audio finishes
+                // Reset state when finished
                 if (progress.currentPosition >= progress.duration && progress.duration > 0) {
                     CoroutineScope(Dispatchers.IO).launch {
                         stopAudio()
+                        // Reset flow state
+                        _playbackProgress.value = PlaybackProgress()
                     }
                 }
             }
@@ -105,3 +118,10 @@ class AudioPlayer(
         totalPlaybackDuration = 0L
     }
 }
+
+data class PlaybackProgress(
+    val currentPosition: Long = 0L,
+    val duration: Long = 0L,
+    val isPlaying: Boolean = false,
+    val messageId: String? = null
+)

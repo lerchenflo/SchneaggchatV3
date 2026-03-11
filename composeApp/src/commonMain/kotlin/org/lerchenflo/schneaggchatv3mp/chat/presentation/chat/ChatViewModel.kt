@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -52,6 +53,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -98,11 +100,16 @@ class ChatViewModel(
     sealed class SendMessageContent {
         data class TextContent(val textMessage: String) : SendMessageContent()
         data class ImageContent(val imageMessage: ByteArray, val text: String) : SendMessageContent()
-        data class AudioContent(val audioPath: String, val duration: Long) : SendMessageContent()
+        data class AudioContent(
+            val audioPath: String,
+            val duration: Long,
+            val isRecording: Boolean = false
+        ) : SendMessageContent()
     }
 
+    // In your ViewModel
     private val _currentSendContent = MutableStateFlow<SendMessageContent>(SendMessageContent.TextContent(""))
-    val currentSendContent: SendMessageContent get() = _currentSendContent.value
+    val currentSendContent: StateFlow<SendMessageContent> = _currentSendContent.asStateFlow()
 
     fun updateSendContent(content: SendMessageContent) {
         _currentSendContent.value = content
@@ -151,11 +158,11 @@ class ChatViewModel(
     fun saveDraft(){
         CoroutineScope(Dispatchers.IO).launch {
             // todo wenn bild oder sprachnachricht oder so künnt ma des speichera
-            if(currentSendContent is SendMessageContent.TextContent) { // schoua ob es textfeld leer isch
+            if(currentSendContent.value is SendMessageContent.TextContent) { // schoua ob es textfeld leer isch
                 settingsRepository.saveDraft(
                     chatId = chatId,
                     group = isGroup,
-                    string = (currentSendContent as SendMessageContent.TextContent).textMessage
+                    string = (currentSendContent.value as SendMessageContent.TextContent).textMessage
                 )
             }
         }
@@ -193,7 +200,7 @@ class ChatViewModel(
 
             updateSendContent(SendMessageContent.ImageContent(
                 imageMessage = downscaled,
-                text = (currentSendContent as? SendMessageContent.TextContent)?.textMessage ?: ""
+                text = (currentSendContent.value as? SendMessageContent.TextContent)?.textMessage ?: ""
             ))
         }
     }
@@ -312,13 +319,16 @@ class ChatViewModel(
     fun initAudioRecorderPlayer() {
         // Try to create the recorder only when permission is already granted.
         viewModelScope.launch {
+            audioRecorderPlayer = createAudioRecorderPlayer()
+            //set not null audioRecoderPlayer for the audioPlayer
+            audioPlayer.audioRecorderPlayer = audioRecorderPlayer
+
+
+            /* only request microphone permission when actually starting a recording
             val permission = permissionsManager.checkMicrophonePermission()
             println("initAudioRecorderPlayer - Permission: $permission")
             if (permission == PermissionState.GRANTED) {
                 if (audioRecorderPlayer == null) {
-                    audioRecorderPlayer = createAudioRecorderPlayer()
-                    //set not null audioRecoderPlayer for the audioPlayer
-                    audioPlayer.audioRecorderPlayer = audioRecorderPlayer
                     println("AudioRecorderPlayer created")
                 }
             } else {
@@ -326,6 +336,8 @@ class ChatViewModel(
                 permissionsManager.requestMicrophonePermission()
                 // don't block here waiting for UI; we'll re-check permission in startRecording()
             }
+
+             */
         }
     }
 
@@ -358,7 +370,11 @@ class ChatViewModel(
 
                 audioRecorderPlayer!!.addRecordingListener { recordBack ->
                     println("Current record time: ${recordBack.currentPosition}")
-                    updateSendContent(SendMessageContent.AudioContent(path, recordBack.currentPosition))
+                    updateSendContent(SendMessageContent.AudioContent(
+                        audioPath = path,
+                        duration =  recordBack.currentPosition,
+                        isRecording = true
+                    ))
                 }
             } catch (e: Exception) {
                 // log full details to help debugging
@@ -373,6 +389,11 @@ class ChatViewModel(
             try {
                 val result = audioRecorderPlayer?.stopRecording()
                 audioRecorderPlayer?.removeListeners()
+                updateSendContent(SendMessageContent.AudioContent(
+                    audioPath = (currentSendContent.value as SendMessageContent.AudioContent).audioPath,
+                    duration =  (currentSendContent.value as SendMessageContent.AudioContent).duration,
+                    isRecording = false
+                ))
                 println("Recording stopped: $result")
             } catch (e: Exception) {
                 loggingRepository.logWarning("Failed to stop recording: ${e.message}")
@@ -383,14 +404,18 @@ class ChatViewModel(
 
     fun playAudio() {
         viewModelScope.launch {
-            if(currentSendContent is SendMessageContent.AudioContent){
+            if(currentSendContent.value is SendMessageContent.AudioContent){
                 audioPlayer.playAudio(
                     messageId = "audio_record_tmp",
-                    path = (currentSendContent as SendMessageContent.AudioContent).audioPath
+                    path = (currentSendContent.value as SendMessageContent.AudioContent).audioPath
                 )
             }
 
         }
+    }
+
+    fun getPlaybackProgress(): StateFlow<PlaybackProgress>{
+        return audioPlayer.playbackProgress
     }
 
 
