@@ -47,6 +47,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
+import org.lerchenflo.schneaggchatv3mp.utilities.AudioPlayer
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -74,6 +75,7 @@ class ChatViewModel(
     }
 
     private var audioRecorderPlayer: AudioRecorderPlayer? = null // Object for Audio Recording / Playback
+    private var audioPlayer: AudioPlayer = AudioPlayer()
 
     // chat id und group bool wörrend im init oamol glada
     // Damit leabt des o solang wie es viewmodel o wenn des im globalviewmodel scho tötet worra isch
@@ -315,6 +317,8 @@ class ChatViewModel(
             if (permission == PermissionState.GRANTED) {
                 if (audioRecorderPlayer == null) {
                     audioRecorderPlayer = createAudioRecorderPlayer()
+                    //set not null audioRecoderPlayer for the audioPlayer
+                    audioPlayer.audioRecorderPlayer = audioRecorderPlayer
                     println("AudioRecorderPlayer created")
                 }
             } else {
@@ -350,9 +354,11 @@ class ChatViewModel(
                 println("Starting recording at path: $path")
                 val result = audioRecorderPlayer!!.startRecording(path)
                 println("Recording start result: $result")
+                //updateSendContent(SendMessageContent.AudioContent(path, 0L))
 
                 audioRecorderPlayer!!.addRecordingListener { recordBack ->
                     println("Current record time: ${recordBack.currentPosition}")
+                    updateSendContent(SendMessageContent.AudioContent(path, recordBack.currentPosition))
                 }
             } catch (e: Exception) {
                 // log full details to help debugging
@@ -372,6 +378,18 @@ class ChatViewModel(
                 loggingRepository.logWarning("Failed to stop recording: ${e.message}")
                 e.printStackTrace()
             }
+        }
+    }
+
+    fun playAudio() {
+        viewModelScope.launch {
+            if(currentSendContent is SendMessageContent.AudioContent){
+                audioPlayer.playAudio(
+                    messageId = "audio_record_tmp",
+                    path = (currentSendContent as SendMessageContent.AudioContent).audioPath
+                )
+            }
+
         }
     }
 

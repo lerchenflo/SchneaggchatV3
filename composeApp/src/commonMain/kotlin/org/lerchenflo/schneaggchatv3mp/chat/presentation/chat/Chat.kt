@@ -96,11 +96,11 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.Audio.DebugAudioDialog
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.DayDivider
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReaderBar
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.audio.DebugAudioDialog
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
@@ -476,7 +476,9 @@ fun ChatScreen(
                     DebugAudioDialog(
                         onDismiss = { showDebugAudioDialog = false },
                         onStartRecording = viewModel::startRecording,
-                        onStopRecording = viewModel::stopRecording
+                        onStopRecording = viewModel::stopRecording,
+                        onPlay = viewModel::playAudio,
+                        sendMessageContent = viewModel.currentSendContent
                     )
                 }
 

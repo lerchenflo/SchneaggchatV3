@@ -1,14 +1,27 @@
-package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.Audio
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.audio
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import io.github.hyochan.audio.AudioSource
-import kotlinx.io.IOException
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -20,11 +33,11 @@ fun DebugAudioDialog( // chatbot mit mehr chatbot aaa
     onPlay: () -> Unit = {},
     onPause: () -> Unit = {},
     onSend: () -> Unit = {},
+    sendMessageContent: ChatViewModel.SendMessageContent
 ) {
 
     var isRecording by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(false) }
-    var audioFile by remember { mutableStateOf<AudioSource.File?>(null) }
 
 
     // Ensure resources are released when the dialog is removed from composition.
@@ -93,7 +106,7 @@ fun DebugAudioDialog( // chatbot mit mehr chatbot aaa
                             onPlay()
                             isPlaying = true
                         },
-                        enabled = audioFile != null && !isPlaying,
+                        enabled = !isPlaying,
                         modifier = Modifier.weight(1f)
                     ) {
                         Text("Play")
@@ -115,8 +128,7 @@ fun DebugAudioDialog( // chatbot mit mehr chatbot aaa
                     text = when {
                         isRecording -> "🔴 Recording..."
                         isPlaying -> "▶️ Playing..."
-                        audioFile != null -> "✅ Recording saved"
-                        else -> "No recording"
+                        else -> "else"
                     },
                     style = MaterialTheme.typography.bodyMedium
                 )
