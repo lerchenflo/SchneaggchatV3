@@ -47,11 +47,11 @@ class GlobalViewModel(
 
         viewModelScope.launch {
             while (true) {
-                if (SessionCache.isLoggedIn() && !SessionCache.isOnline()) {
+                if (!SessionCache.isOnline()) {
                     appRepository.testServer(preferenceManager.getServerUrl())
                 }
 
-                if (!socketConnectionManager.isConnectedNow()) {
+                if (SessionCache.isLoggedIn() && !socketConnectionManager.isConnectedNow()) {
                     startSocketConnection()
                 }
 

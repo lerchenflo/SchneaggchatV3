@@ -6,12 +6,11 @@ Neue Version in CMP mit Multiplatform für Android, IOs und Desktop
 
 ## What is Schneaggchat?
 Schneaggchat is an innovative chatting platform. 
-It is an alternative to the tech giants stealing our data.
 
 # Changelog
-
 ### 3.0.6
 #### Features
+
 
 #### Bugfixes
 - Fix for my messages showing up as sent by other user
