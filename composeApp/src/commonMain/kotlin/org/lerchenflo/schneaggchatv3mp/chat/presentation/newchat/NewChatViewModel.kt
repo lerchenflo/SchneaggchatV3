@@ -26,7 +26,6 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.mp.KoinPlatform
-import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
@@ -35,6 +34,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
@@ -49,7 +49,8 @@ class NewChatViewModel (
     private val appRepository: AppRepository,
     private val navigator: Navigator,
     private val loggingRepository: LoggingRepository,
-    private val shareUtils: ShareUtils
+    private val shareUtils: ShareUtils,
+    private val preferencemanager: Preferencemanager
 ): ViewModel() {
 
     private val _searchTerm = MutableStateFlow("")
@@ -168,7 +169,8 @@ class NewChatViewModel (
     fun onInviteFriendClick() {
 
         viewModelScope.launch {
-            shareUtils.shareString(getString(Res.string.invitation_text) + "\n$BASE_SERVER_URL")
+            val serverUrl = preferencemanager.getServerUrl()
+            shareUtils.shareString(getString(Res.string.invitation_text) + "\n$serverUrl")
 
             if (appRepository.appVersion.isDesktop()) {
                 SnackbarManager.showMessage(getString(Res.string.copied_to_clipboard))

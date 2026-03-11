@@ -85,7 +85,7 @@ fun SwipeableCardView(
                         dragWasBlocked = true
                         available
                     } else {
-                        if (source == NestedScrollSource.Drag) dragWasBlocked = false
+                        if (source == NestedScrollSource.UserInput) dragWasBlocked = false
                         Offset.Zero
                     }
                 }

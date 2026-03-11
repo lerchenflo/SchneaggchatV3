@@ -45,6 +45,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.runBlocking
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
 import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
@@ -53,14 +54,16 @@ import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.SwipeableCardView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.URL_PRIVACY
+import org.lerchenflo.schneaggchatv3mp.getPrivacyPolicyUrl
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt1
 import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt2
@@ -106,6 +109,7 @@ fun SignUpScreen(
     onAction : (SignupAction) -> Unit = {},
     state: SignupState = SignupState()
 ){
+    val preferencemanager = koinInject<Preferencemanager>()
     SchneaggchatTheme {
         var showImagePickerDialog by remember { mutableStateOf(false) }
 
@@ -129,13 +133,15 @@ fun SignUpScreen(
                 modifier = Modifier.fillMaxSize(),
                 canContinue = { pageIndex ->
                     when (pageIndex) {
-                        0 -> state.profilePic != null && state.profilePicErrorText == null
-                        1 -> state.usernameState.errorMessage == null &&
+                        0 -> state.usernameState.errorMessage == null &&
                                 state.usernameState.text.isNotEmpty() &&
-                               state.emailState.errorMessage == null &&
+                                state.emailState.errorMessage == null &&
                                 state.emailState.text.isNotEmpty() &&
-                               state.gebiDate != null && 
-                               state.gebiErrorText == null
+                                state.gebiDate != null &&
+                                state.gebiErrorText == null
+
+                        1 -> state.profilePic != null && state.profilePicErrorText == null
+
                         2 -> state.passwordState.errorMessage == null &&
                                 state.passwordState.text.isNotEmpty() &&
                                state.passwordRetypeState.errorMessage == null &&
@@ -146,64 +152,6 @@ fun SignUpScreen(
                     }
                 }
             ) {
-                // Profile Picture Card
-                CardItem {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            Text(
-                                text = stringResource(Res.string.profile_picture),
-                                style = MaterialTheme.typography.headlineSmall
-                            )
-
-                            Box(modifier = Modifier.size(200.dp)) {
-                                Image(
-                                    painter = if (state.profilePic != null) BitmapPainter(state.profilePic.decodeToImageBitmap()) else painterResource(Res.drawable.icon_nutzer),
-                                    contentDescription = stringResource(Res.string.profile_picture),
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .clip(CircleShape)
-                                        .clickable {
-                                            showImagePickerDialog = true
-                                        }
-                                )
-
-                                if (state.profilePic == null) {
-                                    Icon(
-                                        imageVector = Icons.Default.AddAPhoto,
-                                        contentDescription = "Add photo",
-                                        modifier = Modifier
-                                            .align(Alignment.BottomEnd)
-                                            .padding(8.dp)
-                                            .size(32.dp)
-                                            .clip(CircleShape)
-                                            .background(MaterialTheme.colorScheme.primaryContainer)
-                                            .padding(8.dp),
-                                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                }
-                            }
-
-                            Text(
-                                text = stringResource(Res.string.select_profile_pic),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-
-                            if (state.profilePicErrorText != null) {
-                                Text(
-                                    text = state.profilePicErrorText,
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        }
-                    }
-                }
 
                 // User Info Card
                 CardItem {
@@ -287,6 +235,65 @@ fun SignUpScreen(
                     }
                 }
 
+                // Profile Picture Card
+                CardItem {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.profile_picture),
+                                style = MaterialTheme.typography.headlineSmall
+                            )
+
+                            Box(modifier = Modifier.size(200.dp)) {
+                                Image(
+                                    painter = if (state.profilePic != null) BitmapPainter(state.profilePic.decodeToImageBitmap()) else painterResource(Res.drawable.icon_nutzer),
+                                    contentDescription = stringResource(Res.string.profile_picture),
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(CircleShape)
+                                        .clickable {
+                                            showImagePickerDialog = true
+                                        }
+                                )
+
+                                if (state.profilePic == null) {
+                                    Icon(
+                                        imageVector = Icons.Default.AddAPhoto,
+                                        contentDescription = "Add photo",
+                                        modifier = Modifier
+                                            .align(Alignment.BottomEnd)
+                                            .padding(8.dp)
+                                            .size(32.dp)
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.primaryContainer)
+                                            .padding(8.dp),
+                                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                }
+                            }
+
+                            Text(
+                                text = stringResource(Res.string.select_profile_pic),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+
+                            if (state.profilePicErrorText != null) {
+                                Text(
+                                    text = state.profilePicErrorText,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                    }
+                }
+
                 // Password & Terms Card
                 CardItem {
                     Column(
@@ -347,7 +354,7 @@ fun SignUpScreen(
                                 append(text2)
                                 addLink(
                                     url = LinkAnnotation.Url(
-                                        url = URL_PRIVACY,
+                                        url = getPrivacyPolicyUrl(runBlocking { preferencemanager.getServerUrl() }),
                                         styles = TextLinkStyles(
                                             style = SpanStyle(
                                                 color = MaterialTheme.colorScheme.primary,

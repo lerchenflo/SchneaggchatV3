@@ -62,7 +62,6 @@ import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.URL_PRIVACY
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle

@@ -50,12 +50,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
-import org.lerchenflo.schneaggchatv3mp.URL_PASSWORD_RESET
+import org.lerchenflo.schneaggchatv3mp.getPasswordResetUrl
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChangeDialog
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
@@ -73,6 +74,7 @@ fun LoginScreen(
 ){
     val viewModel = koinViewModel<LoginViewModel>()
     val appRepository = koinInject<AppRepository>()
+    val preferencemanager = koinInject<Preferencemanager>()
 
     SchneaggchatTheme {
 
@@ -165,7 +167,8 @@ fun LoginScreen(
                                             if (menuExpanded) {
                                                 menuExpanded = false
                                             } else {
-                                                uriHandler.openUri(BASE_SERVER_URL)
+                                                val serverUrl = runBlocking { preferencemanager.getServerUrl() }
+                                                uriHandler.openUri(serverUrl)
                                             }
                                         },
                                         onLongPress = {
@@ -260,7 +263,8 @@ fun LoginScreen(
                             passwordFocusRequester = passwordFocusRequester,
                             loginFocusRequester = loginFocusRequester,
                             onPasswordForgotClick = {
-                                uriHandler.openUri(URL_PASSWORD_RESET)
+                                val serverUrl = runBlocking { preferencemanager.getServerUrl() }
+                                uriHandler.openUri(getPasswordResetUrl(serverUrl))
                             }
                         )
 
@@ -304,7 +308,8 @@ fun LoginScreen(
                                 passwordFocusRequester = passwordFocusRequester,
                                 loginFocusRequester = loginFocusRequester,
                                 onPasswordForgotClick = {
-                                    uriHandler.openUri(URL_PASSWORD_RESET)
+                                    val baseUrl = runBlocking { preferencemanager.getServerUrl() }
+                                    uriHandler.openUri(getPasswordResetUrl(baseUrl))
                                 }
                             )
                         }
@@ -345,7 +350,8 @@ fun LoginScreen(
                             passwordFocusRequester = passwordFocusRequester,
                             loginFocusRequester = loginFocusRequester,
                             onPasswordForgotClick = {
-                                uriHandler.openUri(URL_PASSWORD_RESET)
+                                val serverUrl = runBlocking { preferencemanager.getServerUrl() }
+                                uriHandler.openUri(getPasswordResetUrl(serverUrl))
                             }
                         )
 
