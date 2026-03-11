@@ -45,6 +45,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.runBlocking
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
 import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
@@ -53,14 +54,16 @@ import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.SwipeableCardView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.URL_PRIVACY
+import org.lerchenflo.schneaggchatv3mp.getPrivacyPolicyUrl
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt1
 import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt2
@@ -106,6 +109,7 @@ fun SignUpScreen(
     onAction : (SignupAction) -> Unit = {},
     state: SignupState = SignupState()
 ){
+    val preferencemanager = koinInject<Preferencemanager>()
     SchneaggchatTheme {
         var showImagePickerDialog by remember { mutableStateOf(false) }
 
@@ -350,7 +354,7 @@ fun SignUpScreen(
                                 append(text2)
                                 addLink(
                                     url = LinkAnnotation.Url(
-                                        url = URL_PRIVACY,
+                                        url = getPrivacyPolicyUrl(runBlocking { preferencemanager.getServerUrl() }),
                                         styles = TextLinkStyles(
                                             style = SpanStyle(
                                                 color = MaterialTheme.colorScheme.primary,

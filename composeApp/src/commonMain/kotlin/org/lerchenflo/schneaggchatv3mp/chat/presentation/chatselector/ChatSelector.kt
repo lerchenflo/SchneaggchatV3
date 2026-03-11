@@ -84,13 +84,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
+import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
@@ -118,6 +120,7 @@ fun Chatauswahlscreen(
 ) {
 
     val viewModel = koinViewModel<ChatSelectorViewModel>()
+    val preferencemanager = koinInject<Preferencemanager>()
     val availablegegners by viewModel.chatSelectorState.collectAsStateWithLifecycle(emptyList())
     val searchterm by viewModel.searchTerm.collectAsStateWithLifecycle()
 
@@ -242,7 +245,8 @@ fun Chatauswahlscreen(
                         .size(touchSize)
                         .clip(CircleShape)
                         .clickable {
-                            uriHandler.openUri(BASE_SERVER_URL)
+                            val serverUrl = runBlocking { preferencemanager.getServerUrl() }
+                            uriHandler.openUri(serverUrl)
                         },
                     contentAlignment = Alignment.Center
                 ) {
