@@ -28,6 +28,8 @@ fun startKoinAndroid(androidContext: Context) {
 
             androidVersionModule,
             androidPictureManagerModule,
+            androidPermissionManagerModule,
+            androidAudioManagerModule,
             androidShareUtilsModule,
             androidLanguageManagerModule
         )
