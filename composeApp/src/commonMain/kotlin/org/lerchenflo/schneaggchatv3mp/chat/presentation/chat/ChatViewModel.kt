@@ -332,9 +332,14 @@ class ChatViewModel(
     fun onBackClick() {
         saveDraft()
         viewModelScope.launch {
+            /*
             navigator.navigateBack(navigationOptions = Navigator.NavigationOptions(
                 removeAllScreensByRoute = listOf(Route.ChatDetails, Route.Chat)
             ))
+
+            */
+            navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
+                removeAllScreensByRoute = listOf(Route.ChatDetails, Route.Chat)))
         }
     }
 
