@@ -695,5 +695,10 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        saveDraft()
+        globalViewModel.onLeaveChat()
+    }
 
 }

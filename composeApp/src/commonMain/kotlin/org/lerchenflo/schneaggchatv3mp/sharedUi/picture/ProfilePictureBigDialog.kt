@@ -49,6 +49,7 @@ fun ProfilePictureBigDialog(
         var offsetX by remember { mutableStateOf(0f) }
         var offsetY by remember { mutableStateOf(0f) }
 
+        @Suppress("DEPRECATION")
         val transformableState = rememberTransformableState { zoomChange, panChange, _ ->
             val newScale = (scale * zoomChange).coerceIn(1f, 5f)
             scale = newScale
