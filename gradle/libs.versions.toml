@@ -13,7 +13,7 @@ cryptographyProviderOptimal = "0.5.0"
 encoding = "2.6.0"
 foundation = "1.10.1"
 githubImagepickerkmp = "1.0.32"
-kmp-audio-recorder-player = "1.0.0-alpha04"
+kmp-audio-recorder-player = "1.0.0-alpha05"
 
 moko = "0.20.1"
 
@@ -28,7 +28,7 @@ room = "2.8.4"
 
 runtime = "1.10.1"
 sqlite = "2.6.2"
-kotlinx-datetime = "0.7.1"
+kotlinx-datetime = "0.7.1-0.6.x-compat"
 datetime-wheel-picker = "1.1.0"
 
 koin-core = "4.2.0-RC1"
