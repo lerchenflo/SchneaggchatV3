@@ -71,6 +71,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToDuration
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.cancel
@@ -762,7 +764,7 @@ fun PollCountdownTimer(expiresAt: Long, myMessage: Boolean) {
         }
     }
 
-    val formattedTime = formatTimeRemaining(timeRemaining)
+    val formattedTime ="${millisToDuration(timeRemaining)})"
 
     Text(
         text = if (timeRemaining > 0) {
@@ -779,11 +781,3 @@ private fun calculateTimeRemaining(expiresAt: Long): Long {
     return maxOf(0, expiresAt - Clock.System.now().toEpochMilliseconds())
 }
 
-private fun formatTimeRemaining(milliseconds: Long): String {
-    val totalSeconds = milliseconds / 1000
-    val hours = totalSeconds / 3600
-    val minutes = (totalSeconds % 3600) / 60
-    val seconds = totalSeconds % 60
-
-    return "${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}"
-}

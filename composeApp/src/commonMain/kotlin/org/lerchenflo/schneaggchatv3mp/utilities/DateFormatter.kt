@@ -63,20 +63,45 @@ fun iso8601DateFormatter(
 }
 
 @OptIn(ExperimentalTime::class)
-@Composable
-fun millisToDuration(millis: Long): String {
-    val instant = kotlin.time.Instant.fromEpochMilliseconds(millis)
-    val now = kotlin.time.Clock.System.now()
-    val duration = now - instant
+fun millisToDuration(
+    millis: Long,
+    showYears: Boolean = true,
+    showMonths: Boolean = true,
+    showWeeks: Boolean = true,
+    showDays: Boolean = true,
+    showHours: Boolean = true,
+    showMinutes: Boolean = true,
+    showSeconds: Boolean = true,
+): String {
+    val SECOND = 1L
+    val MINUTE = 60 * SECOND
+    val HOUR   = 60 * MINUTE
+    val DAY    = 24 * HOUR
+    val WEEK   =  7 * DAY
+    val MONTH  = 30 * DAY
+    val YEAR   = 365 * DAY
 
-    return when {
-        duration.inWholeDays > 7 -> "${duration.inWholeDays / 7}w"
-        duration.inWholeDays > 0 -> "${duration.inWholeDays}d"
-        duration.inWholeHours > 0 -> "${duration.inWholeHours}h"
-        duration.inWholeMinutes > 0 -> "${duration.inWholeMinutes}min"
-        else -> stringResource(Res.string.just_now)
-    }
+    var remaining = millis / 1000  // total seconds
+
+    val years   = remaining / YEAR;   remaining %= YEAR
+    val months  = remaining / MONTH;  remaining %= MONTH
+    val weeks   = remaining / WEEK;   remaining %= WEEK
+    val days    = remaining / DAY;    remaining %= DAY
+    val hours   = remaining / HOUR;   remaining %= HOUR
+    val minutes = remaining / MINUTE; remaining %= MINUTE
+    val seconds = remaining / SECOND
+
+    return listOfNotNull(
+        if (showYears   && years   > 0) "${years}y"     else null,
+        if (showMonths  && months  > 0) "${months}mo"   else null,
+        if (showWeeks   && weeks   > 0) "${weeks}w"     else null,
+        if (showDays    && days    > 0) "${days}d"      else null,
+        if (showHours   && hours   > 0) "${hours}h"     else null,
+        if (showMinutes && minutes > 0) "${minutes}min" else null,
+        if (showSeconds && seconds > 0) "${seconds}s"   else null,
+    ).joinToString(" ").ifEmpty { "0s" }
 }
+
 
 @OptIn(FormatStringsInDatetimeFormats::class, ExperimentalTime::class)
 @Composable
