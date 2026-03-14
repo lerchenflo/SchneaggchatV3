@@ -54,6 +54,8 @@ fun ShowAddPopup(
     var typeExpanded by remember { mutableStateOf(false) }
     var platformExpanded by remember { mutableStateOf(false) }
 
+    val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -164,7 +166,7 @@ fun ShowAddPopup(
         confirmButton = {
             val newtodo = TodoEntry(
                 id = "",
-                senderId = SessionCache.getOwnIdValue() ?: "",
+                senderId = ownId,
                 platform = selectedPlatform.value,
                 type = selectedType.value,
                 editorId = 0,

@@ -10,7 +10,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoter
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 
 
-fun PollResponse.toPollMessage(): PollMessage {
+fun PollResponse.toPollMessage(ownId: String): PollMessage {
 
     return PollMessage(
         creatorId = this.creatorId,
@@ -44,7 +44,7 @@ fun PollResponse.toPollMessage(): PollMessage {
                     creatorId = this.creatorId, // Not available in anonymous response
                     voters = option.voters.map { voter ->
                         PollVoter(
-                            userId = if (voter.myAnswer) SessionCache.getOwnIdValue() else null, // Anonymous — no userId
+                            userId = if (voter.myAnswer) ownId else null, // Anonymous — no userId
                             votedAt = voter.votedAt
                         )
                     }

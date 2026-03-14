@@ -78,12 +78,11 @@ actual class PictureManager {
         return filePath
     }
 
-    actual suspend fun loadPictureFromStorage(filename: String): ImageBitmap? =
+    actual suspend fun loadPictureFromStorage(filename: String): ByteArray? =
         withContext(Dispatchers.Default) {
             val filePath = "$basePath/$filename"
             val data = NSData.dataWithContentsOfFile(filePath) ?: return@withContext null
-            val uiImage = UIImage.imageWithData(data) ?: return@withContext null
-            return@withContext uiImage.toImageBitmap()
+            return@withContext data.toByteArray()
         }
 
     actual suspend fun deletePicture(filename: String): Boolean =

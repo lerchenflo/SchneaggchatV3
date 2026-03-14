@@ -85,6 +85,7 @@ fun NewChat(
     val pendingFriends by viewModel.pendingFriends.collectAsStateWithLifecycle()
     val pendingFriendPopup by viewModel.pendingFriendPopup.collectAsStateWithLifecycle()
 
+    val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
     Scaffold {
         Column(
@@ -189,7 +190,8 @@ fun NewChat(
                         useOnClickGes = true,
                         onClickGes = {
                             viewModel.onPendingFriendRequestClick(friend)
-                        }
+                        },
+                        ownId = ownId
                     )
                     HorizontalDivider(
                         thickness = 0.5.dp
@@ -256,7 +258,7 @@ fun NewChat(
 
             //You are no friends with this person, but he sent you a friend request, you can accept it
             //selectedChat.requesterId!! != SessionCache.getOwnIdValue()
-            val incomingRequest = selectedChat.requesterId!! != SessionCache.getOwnIdValue()
+            val incomingRequest = selectedChat.requesterId!! != ownId
 
 
             //You sent the friend request to this user, and it is still pending, you can cancel it

@@ -62,7 +62,7 @@ fun TodolistScreen(
                     viewModel.deleteItem(selectedTodo!!.id)
                     viewModel.hidePopup()
                 },
-                editable = SessionCache.developer
+                editable = SessionCache.requireLoggedIn()?.developer ?: false
             )
         }else{
             ShowAddPopup(

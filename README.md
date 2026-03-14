@@ -6,9 +6,20 @@ Neue Version in CMP mit Multiplatform für Android, IOs und Desktop
 
 ## What is Schneaggchat?
 Schneaggchat is an innovative chatting platform. 
-It is an alternative to the tech giants stealing our data.
 
 # Changelog
+### 3.0.6
+#### Features
+
+
+#### Bugfixes
+- Fix for my messages showing up as sent by other user
+- Fix for login but no data sync
+- Auto logout on invalid tokens
+- Fix for notifications not showing when app in background
+- iOS notification badge fix
+- iOS update Checker fix
+
 
 ### 3.0.5
 #### Features
@@ -20,12 +31,12 @@ It is an alternative to the tech giants stealing our data.
 - Password reset button
 - show readers in Groups
 - Image messages
+- Register update with swipeablecards
 
 #### Bugfixes
 - Navigate to chat selector when no user is selected in chat (bug when swiping back)
 - User limit of 2 warning removed for adding users to Groups
 - Poll ui fixes
-- Fix for my messages showing up as sent by other user
 
 ### 3.0.4
 #### Features

@@ -27,6 +27,7 @@ fun createHttpClient(
     useAuth: Boolean
 ) : HttpClient {
 
+
     return HttpClient(engine) {
         install(Logging){
             logger = object : Logger {
@@ -49,7 +50,7 @@ fun createHttpClient(
         if (useAuth){
 
             install(WebSockets) {
-                pingIntervalMillis = 20_000
+                pingIntervalMillis = 3_000
             }
 
 
@@ -57,11 +58,25 @@ fun createHttpClient(
                 bearer {
 
                     loadTokens {
-                        tokenManager.loadBearerTokens()
+                        val tokens = tokenManager.loadBearerTokens()
+                        tokens
                     }
 
                     refreshTokens {
-                        tokenManager.refreshBearerTokens(client, oldTokens)
+
+                        println("HTTPCLIENT Refreshing Tokens...")
+
+                        val plainClient = HttpClient(engine) {
+                            install(ContentNegotiation) {
+                                json(json = AppJson.instance)
+                            }
+                            install(HttpTimeout) {
+                                requestTimeoutMillis = 30000
+                                connectTimeoutMillis = 10000
+                            }
+                        }
+
+                        tokenManager.refreshBearerTokens(plainClient, oldTokens)
                     }
 
                 }
@@ -76,6 +91,7 @@ fun createHttpClient(
             socketTimeoutMillis = 60000
         }
 
+        /*
         install(HttpRequestRetry) {
             //retryOnServerErrors(maxRetries = 3)
             retryOnException(maxRetries = 3)
@@ -86,14 +102,11 @@ fun createHttpClient(
                 println("Retrying request: ${request.url}")
             }
         }
+
+         */
     }
 }
 
-private val RefreshTokenRequestAttributeKey = AttributeKey<Unit>("RefreshTokenRequest")
-
-fun HttpRequestBuilder.markAsRefreshTokenRequest() {
-    attributes.put(RefreshTokenRequestAttributeKey, Unit)
-}
 
 /**
  * Deserializer for all polymorphic json objects

@@ -1,8 +1,7 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -48,8 +47,6 @@ import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -99,13 +96,14 @@ import kotlin.time.Clock
 
 @Composable
 fun PollMessageContentView(
+    ownId: String,
     message: Message,
     useMD: Boolean,
+    myMessage: Boolean,
     readerMap: Map<String, String>,
     onAction: (MessageAction) -> Unit = {}
 ){
 
-    val myMessage = message.myMessage
 
     val poll = message.poll ?: run {
         Text(
@@ -117,7 +115,7 @@ fun PollMessageContentView(
     }
 
 
-    //TODO: MD Support für alle texte??
+    //TODO: MD Support für alle texte!!
     Column(
         modifier = Modifier.padding(4.dp)
     ) {
@@ -191,12 +189,15 @@ fun PollMessageContentView(
                 myMessage = myMessage,
                 voterIds = option.getVoterIdsForOption(),
                 onOptionSelected = {
-                    onAction(MessageAction.VotePoll(
-                        messageId = message.id!!,
-                        optionId = option.id,
-                        checked = it
-                    ))
-                }
+                    onAction(
+                        MessageAction.VotePoll(
+                            messageId = message.id!!,
+                            optionId = option.id,
+                            checked = it
+                        )
+                    )
+                },
+                ownId = ownId
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -262,7 +263,7 @@ fun PollMessageContentView(
         Spacer(modifier = Modifier.height(8.dp))
 
 
-        if (poll.visibility == PollVisibility.PUBLIC || (poll.visibility == PollVisibility.PRIVATE && poll.creatorId == SessionCache.getOwnIdValue())) {
+        if (poll.visibility == PollVisibility.PUBLIC || (poll.visibility == PollVisibility.PRIVATE && poll.creatorId == ownId)) {
             var showVoterDialog by remember { mutableStateOf(false) }
 
             Row {
@@ -417,6 +418,7 @@ fun CustomPollOptionDialog(
 
 @Composable
 fun PollMessageOptionView(
+    ownId: String,
     option: PollVoteOption,
     multipleAnswers: Boolean,
     votePercentage: Float,
@@ -424,8 +426,8 @@ fun PollMessageOptionView(
     voterIds: List<String?>,
     onOptionSelected: (Boolean) -> Unit
 ) {
-
-    val optionCheckedByMe = option.voters.any { it.userId == SessionCache.getOwnIdValue() }
+    
+    val optionCheckedByMe = option.voters.any { it.userId == ownId }
 
 
     Row(

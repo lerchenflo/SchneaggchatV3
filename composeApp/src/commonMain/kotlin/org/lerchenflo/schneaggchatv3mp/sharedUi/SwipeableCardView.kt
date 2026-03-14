@@ -1,3 +1,5 @@
+package org.lerchenflo.schneaggchatv3mp.sharedUi
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +13,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -21,11 +24,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -44,6 +53,7 @@ fun SwipeableCardView(
     onBack: () -> Unit,
     finishEnabled: Boolean,
     backEnabled: Boolean,
+    canContinue: (page: Int) -> Boolean = { true },
     modifier: Modifier = Modifier,
     contentAlignment: Alignment.Vertical = Alignment.CenterVertically,
     cardElevation: Dp = 16.dp,
@@ -61,14 +71,45 @@ fun SwipeableCardView(
     Column(
         modifier = modifier
     ) {
-        // Content - Display current card
+        val canContinueState = rememberUpdatedState(canContinue)
+        val pagerStateRef = rememberUpdatedState(pagerState)
+
+        val nestedScrollConnection = remember {
+            var dragWasBlocked = false
+            object : NestedScrollConnection {
+                override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                    return if (available.x < 0
+                        && source == NestedScrollSource.UserInput
+                        && !canContinueState.value(pagerStateRef.value.currentPage)
+                    ) {
+                        dragWasBlocked = true
+                        available
+                    } else {
+                        if (source == NestedScrollSource.UserInput) dragWasBlocked = false
+                        Offset.Zero
+                    }
+                }
+
+                override suspend fun onPreFling(available: Velocity): Velocity {
+                    return if (available.x < 0 && dragWasBlocked) {
+                        dragWasBlocked = false
+                        available
+                    } else {
+                        dragWasBlocked = false
+                        Velocity.Zero
+                    }
+                }
+            }
+        }
+
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
                 .weight(1f)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .nestedScroll(nestedScrollConnection),
             verticalAlignment = contentAlignment,
-            userScrollEnabled = true // Allow swiping between cards
+            userScrollEnabled = true // keep true, direction control is handled above
         ) { page ->
             Box(
                 modifier = Modifier
@@ -145,9 +186,9 @@ fun SwipeableCardView(
                         }
                     },
                     enabled = if (pagerState.currentPage == scope.cards.size - 1) {
-                        finishEnabled // Use finishEnabled parameter on last page
+                        finishEnabled
                     } else {
-                        true // Always enabled for next navigation
+                        canContinue(pagerState.currentPage) // ← reads live state directly
                     }
                 ) {
                     Text(
@@ -245,7 +286,7 @@ private fun ExampleScreen() {
 
                         // Example: Enable finish button when checkbox is checked
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            androidx.compose.material3.Checkbox(
+                            Checkbox(
                                 checked = canFinish,
                                 onCheckedChange = { canFinish = it }
                             )

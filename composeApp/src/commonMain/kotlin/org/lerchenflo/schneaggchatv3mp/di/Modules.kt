@@ -40,7 +40,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSe
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
-import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
 val sharedmodule = module{
 
@@ -103,7 +103,7 @@ val sharedmodule = module{
     factory { ChatDetailsViewmodel(get(), get(), get(), get(), get(), get()) }
 
     viewModelOf(::NewChatViewModel)
-    factory { NewChatViewModel(get(), get(), get(),get()) }
+    factory { NewChatViewModel(get(), get(), get(),get(), get()) }
 
     viewModelOf(::GroupCreatorViewModel)
     factory { GroupCreatorViewModel(get(), get(), get()) }

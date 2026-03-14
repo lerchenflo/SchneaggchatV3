@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.runBlocking
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
 import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
@@ -48,8 +49,10 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
-import org.lerchenflo.schneaggchatv3mp.URL_DEL_ACC
+import org.koin.compose.koinInject
+import org.lerchenflo.schneaggchatv3mp.getDeleteAccountUrl
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
@@ -93,8 +96,11 @@ fun UserSettings(
     sharedSettingsViewmodel: SharedSettingsViewmodel,
     onBackClick : () -> Unit
 ) {
+    val preferencemanager = koinInject<Preferencemanager>()
 
     val ownuser = sharedSettingsViewmodel.ownUser
+
+    val dev = SessionCache.requireLoggedIn()?.developer ?: return
 
     var showChangeUsernamePopup by remember { mutableStateOf(false) }
 
@@ -107,7 +113,6 @@ fun UserSettings(
     Box(modifier = Modifier.fillMaxSize()) {
         if (showImagePickerDialog ) {
 
-            //TODO: Fix all strings
             GalleryPickerLauncher(
                 onPhotosSelected = {
                     userSettingsViewModel.changeProfilePicture(it.first())
@@ -272,7 +277,7 @@ fun UserSettings(
 
                  */
 
-                if (SessionCache.developer) {
+                if (dev) {
 
                     SettingsOption(
                         icon = Icons.Default.Mail,
@@ -347,7 +352,8 @@ fun UserSettings(
                 DeleteButton(
                     text = stringResource(Res.string.delete_account),
                     onClick = {
-                        uriHandler.openUri(URL_DEL_ACC)
+                        val serverUrl = runBlocking { preferencemanager.getServerUrl() }
+                        uriHandler.openUri(getDeleteAccountUrl(serverUrl))
                     },
                     modifier = Modifier
                         .padding(top = 8.dp,
@@ -420,6 +426,7 @@ fun UserSettings(
                 userSettingsViewModel.changeBirthDate(
                     it.toString()
                 )
+                showChangeBirthDatePopup = false
             },
             onDismiss = { showChangeBirthDatePopup = false },
             defaultDate = ownuser?.birthDate?.let { dateString ->

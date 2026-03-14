@@ -2,11 +2,11 @@ package org.lerchenflo.schneaggchatv3mp
 
 val BASE_SERVER_URL = "https://schneaggchatv3.lerchenflo.eu"
 
-val URL_PRIVACY = "$BASE_SERVER_URL/privacypolicy.html"
+fun getPrivacyPolicyUrl(baseUrl: String) = "$baseUrl/privacypolicy.html"
 
-val URL_DEL_ACC = "$BASE_SERVER_URL/delete_account.html"
+fun getDeleteAccountUrl(baseUrl: String) = "$baseUrl/delete_account.html"
 
-val URL_PASSWORD_RESET = "$BASE_SERVER_URL/reset_password.html"
+fun getPasswordResetUrl(baseUrl: String) = "$baseUrl/reset_password.html"
 
 var URL_INSTAGRAM = "https://www.instagram.com/schneaggchat?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
 

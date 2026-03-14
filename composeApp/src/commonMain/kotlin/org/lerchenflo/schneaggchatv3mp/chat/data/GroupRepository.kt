@@ -95,14 +95,11 @@ class GroupRepository(
      *   chat.toUser()?.commonGroups = groupRepository.getCommonGroups(chat.id) // Together with own id
      */
     @Transaction
-    suspend fun getCommonGroups(otherUserId: String): List<Group> {
-        val ownId = SessionCache.getOwnIdValue()
-        if (ownId.isNullOrBlank()) return emptyList()
+    suspend fun getCommonGroups(ownId: String, otherUserId: String): List<Group> {
 
         val commonDtos = database.groupDao().getCommonGroupsWithMembers(ownId, otherUserId)
         return commonDtos.map { it.toGroup() }
     }
-
 
 
 }

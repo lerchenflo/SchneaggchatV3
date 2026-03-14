@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,17 +21,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Image
@@ -40,9 +39,9 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -51,7 +50,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -76,12 +74,16 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.ClipboardManager
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.Clipboard
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.NativeClipboard
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
@@ -92,6 +94,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
@@ -99,18 +102,22 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.DayDivider
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReaderBar
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.audio.DebugAudioDialog
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollDialog
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll.PollDialog
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.DeleteMessageAlert
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.MessageDetailsDialog
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.MessageOptionPopup
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.ReplyPreview
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.formatMillis
@@ -119,23 +126,14 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.audio
 import schneaggchatv3mp.composeapp.generated.resources.cancel
-import schneaggchatv3mp.composeapp.generated.resources.close
 import schneaggchatv3mp.composeapp.generated.resources.copied_to_clipboard
-import schneaggchatv3mp.composeapp.generated.resources.copy
-import schneaggchatv3mp.composeapp.generated.resources.delete
 import schneaggchatv3mp.composeapp.generated.resources.edit
 import schneaggchatv3mp.composeapp.generated.resources.go_back
 import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.message
-import schneaggchatv3mp.composeapp.generated.resources.message_delete_info
-import schneaggchatv3mp.composeapp.generated.resources.message_details
-import schneaggchatv3mp.composeapp.generated.resources.no_readers
 import schneaggchatv3mp.composeapp.generated.resources.poll
 import schneaggchatv3mp.composeapp.generated.resources.read_at_time
-import schneaggchatv3mp.composeapp.generated.resources.readers
-import schneaggchatv3mp.composeapp.generated.resources.reply
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
-import schneaggchatv3mp.composeapp.generated.resources.yes
 
 
 @Composable
@@ -148,10 +146,13 @@ fun ChatScreen(
     val loggingRepository = koinInject<LoggingRepository>()
     val displayItems by viewModel.messageDisplayState.collectAsStateWithLifecycle()
     val focusManager = LocalFocusManager.current
-    val clipboardManager = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current.nativeClipboard
     val selectedChat by globalViewModel.selectedChat.collectAsStateWithLifecycle()
 
-    // Des funkat amol besser wie der LaunchedEffekt was o immer der do dunna macht
+    //Leave chat when not logged in
+    val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+
+    // Leave chat when not selected
     if(selectedChat.isNotSelected()){
         println("Unselected chat, navigating back")
         viewModel.onBackClick()
@@ -171,7 +172,7 @@ fun ChatScreen(
 
                 GalleryPickerLauncher(
                     onPhotosSelected = {
-                        viewModel.onImageSelected(it.first())
+                        viewModel.onImageSelected(it)
                         showImagePickerDialog = false
                     },
                     onError = {
@@ -180,8 +181,8 @@ fun ChatScreen(
                     onDismiss = {
                         showImagePickerDialog = false
                     },
-                    selectionLimit = 1,
                     enableCrop = false,
+                    allowMultiple = true,
                     cameraCaptureConfig = CameraCaptureConfig(
                         compressionLevel = CompressionLevel.HIGH,
                         preference = CapturePhotoPreference.FAST, //No flash
@@ -196,8 +197,7 @@ fun ChatScreen(
 
                          */
                         galleryConfig = GalleryConfig(
-                            allowMultiple = false,
-                            selectionLimit = 1,
+                            allowMultiple = true,
                         )
                     )
                 )
@@ -261,6 +261,7 @@ fun ChatScreen(
                     onClickGes = {
                         viewModel.onChatDetailsClick()
                     },
+                    ownId = ownId,
                 )
             }
         },
@@ -334,7 +335,8 @@ fun ChatScreen(
                                         showMessageOptionPopup = true
                                     },
                                     onAction = viewModel::onAction,
-                                    readerMap = item.resolvedReaders
+                                    readerMap = item.resolvedReaders,
+                                    ownId = ownId
                                 )
 
                                 val copiedToClipboardString = stringResource(Res.string.copied_to_clipboard)
@@ -348,7 +350,8 @@ fun ChatScreen(
                                     onDismissRequest = { showMessageOptionPopup = false },
                                     onReply = { viewModel.onAction(MessageAction.ReplyToMessage(message)) },
                                     onCopy = {
-                                        copyToClipboard(message.content, clipboardManager)
+
+                                        copyToClipboard(message.content, clipboard)
                                         SnackbarManager.showMessage(copiedToClipboardString)
                                         showMessageOptionPopup = false
                                     },
@@ -377,7 +380,8 @@ fun ChatScreen(
                                             showDeleteAlert = false
                                         },
                                         message = message,
-                                        selectedChatId = globalViewModel.selectedChat.value.id
+                                        selectedChatId = globalViewModel.selectedChat.value.id,
+                                        ownId = ownId
                                     )
                                 }
 
@@ -385,7 +389,8 @@ fun ChatScreen(
                                     MessageDetailsDialog(
                                         onDismiss = { showDetailsDialog = false },
                                         message = message,
-                                        selectedChatId = globalViewModel.selectedChat.value.id
+                                        selectedChatId = globalViewModel.selectedChat.value.id,
+                                        ownId = ownId
                                     )
                                 }
                             }
@@ -405,7 +410,7 @@ fun ChatScreen(
 
             // Reply view
             if (viewModel.replyMessage != null) {
-                ReplyPreview(viewModel, globalViewModel)
+                ReplyPreview(ownId, viewModel, globalViewModel)
             }
 
             //Inputrow for sending messages
@@ -444,7 +449,9 @@ fun ChatScreen(
                     ) {
                         AddMediaOptions.entries.forEach { option ->
 
-                            if(!SessionCache.developer) {
+                            val dev = SessionCache.requireLoggedIn()?.developer ?: return@DropdownMenu
+
+                            if(!dev) {
                                 if (option == AddMediaOptions.AUDIO) return@forEach //Removes audio if no dev
                             }
 
@@ -500,7 +507,7 @@ fun ChatScreen(
                 when (val content = currentContent) {
                     is ChatViewModel.SendMessageContent.TextContent -> {
                         OutlinedTextField(
-                            value = content.textMessage,
+                            value = content.textFieldValue,
                             onValueChange = { newValue ->
                                 viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(newValue))
                             },
@@ -510,8 +517,21 @@ fun ChatScreen(
                                 .onPreviewKeyEvent { event ->
                                     if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
                                         if (event.isShiftPressed) {
-                                            viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(content.textMessage + "\n"))
-                                            return@onPreviewKeyEvent false
+                                            val text = content.textMessage
+                                            val selection = content.textFieldValue.selection  // requires TextFieldValue in state
+                                            val cursorPos = selection.start
+                                            val newText = text.substring(0, cursorPos) + "\n" + text.substring(cursorPos)
+                                            val newCursorPos = cursorPos + 1
+
+                                            viewModel.updateSendContent(
+                                                ChatViewModel.SendMessageContent.TextContent(
+                                                    textFieldValue = TextFieldValue(
+                                                        text = newText,
+                                                        selection = TextRange(newCursorPos)
+                                                    )
+                                                )
+                                            )
+                                            return@onPreviewKeyEvent true  // true to consume and prevent double newline
                                         } else {
                                             viewModel.sendMessage(
                                                 message = viewModel.currentSendContent.value,
@@ -530,61 +550,76 @@ fun ChatScreen(
                         Column(
                             modifier = Modifier.weight(1f)
                         ) {
-                            Box(
+                            // Multi-image preview row
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .border(
-                                        width = 1.dp,
-                                        color = MaterialTheme.colorScheme.outline,
-                                        shape = RoundedCornerShape(12.dp)
-                                    )
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                                    .horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Image(
-                                    painter = BitmapPainter(content.imageMessage.decodeToImageBitmap()),
-                                    contentDescription = "image to send",
-                                )
-                                // Close button
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .padding(4.dp)
-                                        .size(24.dp) // control the circle size here
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
-                                        .clickable {
-                                            viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(content.text))
-                                        },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Remove image",
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.onSurface
-                                    )
+                                content.images.forEach { imageBytes ->
+                                    Box(
+                                        modifier = Modifier
+                                            .size(80.dp) // fixed thumbnail size
+                                            .border(
+                                                width = 1.dp,
+                                                color = MaterialTheme.colorScheme.outline,
+                                                shape = RoundedCornerShape(12.dp)
+                                            )
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                                    ) {
+                                        Image(
+                                            painter = BitmapPainter(imageBytes.decodeToImageBitmap()),
+                                            contentDescription = "image to send",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                        // Close button per image
+                                        Box(
+                                            modifier = Modifier
+                                                .align(Alignment.TopEnd)
+                                                .padding(2.dp)
+                                                .size(20.dp)
+                                                .clip(CircleShape)
+                                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                                                .clickable {
+                                                    val remaining = content.images - imageBytes
+                                                    viewModel.updateSendContent(
+                                                        if (remaining.isEmpty())
+                                                            ChatViewModel.SendMessageContent.TextContent(
+                                                                TextFieldValue(content.text))
+                                                        else
+                                                            content.copy(images = remaining)
+                                                    )
+                                                },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Close,
+                                                contentDescription = "Remove image",
+                                                modifier = Modifier.size(14.dp),
+                                                tint = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                    }
                                 }
                             }
 
                             OutlinedTextField(
                                 value = content.text,
                                 onValueChange = { newValue ->
-                                    viewModel.updateSendContent(ChatViewModel.SendMessageContent.ImageContent(
-                                        imageMessage = content.imageMessage,
-                                        text = newValue
-                                    ))
+                                    viewModel.updateSendContent(
+                                        content.copy(text = newValue)
+                                    )
                                 },
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .onPreviewKeyEvent { event -> //TODO: Test line breaks on desktop here and for text only
+                                    .onPreviewKeyEvent { event ->
                                         if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
                                             if (event.isShiftPressed) {
-                                                viewModel.updateSendContent(ChatViewModel.SendMessageContent.ImageContent(
-                                                    imageMessage = content.imageMessage,
-                                                    text = content.text + "\n"
-                                                ))
+                                                viewModel.updateSendContent(content.copy(text = content.text + "\n"))
                                                 return@onPreviewKeyEvent false
                                             } else {
                                                 viewModel.sendMessage(
@@ -785,290 +820,9 @@ fun ChatScreen(
 
 
 
-@Composable
-fun ReplyPreview(viewModel: ChatViewModel, globalViewModel: GlobalViewModel){
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        verticalAlignment = Alignment.Bottom
-    ) {
-        Column(
-            modifier = Modifier
-                .weight(1f)
-        ) {
-            val alphaValue = 0.8f
-            MessageContent(
-                modifier = Modifier
-                    //.wrapContentSize()
-                    .background(
-                        color = if (viewModel.replyMessage!!.myMessage) {
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = alphaValue)
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = alphaValue)
-                        },
-                        shape = RoundedCornerShape(15.dp)
-                    )
-                    .padding(6.dp),
-                message = viewModel.replyMessage!!,
-                useMD = viewModel.markdownEnabled,
-                selectedChatId = globalViewModel.selectedChat.value.id,
-                senderColor = viewModel.replyMessage!!.senderColor
-            )
-        }
-        Column {
-            IconButton(
-                onClick = {
-                    viewModel.updateReplyMessage(null)
-                },
-                modifier = Modifier
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = stringResource(Res.string.close)
-                )
-            }
-        }
 
 
-    }
-}
 
-@Composable
-fun MessageOptionPopup(
-    expanded: Boolean,
-    message: Message,
-    onDismissRequest: () -> Unit,
-    onReply: () -> Unit,
-    onCopy: () -> Unit,
-    onDelete: () -> Unit,
-    onEdit: () -> Unit,
-    onDetails: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier,
-        // contentAlignment = if (myMessage) Alignment.TopEnd else Alignment.TopStart
-    ) {
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = onDismissRequest,
-            modifier = modifier
-        ) {
-            DropdownMenuItem(
-                text = { Text(stringResource(Res.string.reply)) },
-                onClick = {
-                    onReply()
-                    onDismissRequest()
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Reply,
-                        contentDescription = null
-                    )
-                }
-            )
-
-            if (message.msgType == MessageType.TEXT || message.msgType == MessageType.IMAGE) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.copy)) },
-                    onClick = {
-                        onCopy()
-                        onDismissRequest()
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.ContentCopy,
-                            contentDescription = null
-                        )
-                    }
-                )
-            }
-
-            if (message.myMessage) {
-
-                if (message.msgType == MessageType.TEXT || message.msgType == MessageType.IMAGE) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(Res.string.edit)) },
-                        onClick = {
-                            onEdit()
-                            onDismissRequest()
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = null
-                            )
-                        }
-                    )
-                }
-
-                DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.delete)) },
-                    onClick = {
-                        onDelete()
-                        onDismissRequest()
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = null
-                        )
-                    }
-                )
-            }
-
-            DropdownMenuItem(
-                text = { Text(stringResource(Res.string.message_details)) },
-                onClick = {
-                    onDetails()
-                    onDismissRequest()
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null
-                    )
-                }
-            )
-        }
-    }
-}
-
-@Composable
-fun DeleteMessageAlert(
-    onDismiss:() -> Unit,
-    onConfirm:() -> Unit,
-    message: Message,
-    selectedChatId: String,
-){
-    AlertDialog(
-        onDismissRequest = {onDismiss()},
-        confirmButton = {
-            TextButton(
-                onClick = onConfirm
-            ) {
-                Text(stringResource(Res.string.yes))
-            }
-        },
-        dismissButton =
-            {
-                TextButton(
-                    onClick = onDismiss
-                ) {
-                    Text(stringResource(Res.string.cancel))
-                }
-            },
-        //icon = { Icon(Icons.Default.Palette, contentDescription = null) },
-        title = { Text(text = stringResource(Res.string.message_delete_info)) },
-        text = {
-            val alphaValue = 0.8f
-            MessageContent(
-                modifier = Modifier
-                    //.wrapContentSize()
-                    .background(
-                        color = if (message.myMessage) {
-                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = alphaValue)
-                        } else {
-                            MaterialTheme.colorScheme.secondaryContainer.copy(alpha = alphaValue)
-                        },
-                        shape = RoundedCornerShape(15.dp)
-                    )
-                    .padding(6.dp),
-                message = message,
-                useMD = false, // fertig mit markdown
-                selectedChatId = selectedChatId,
-
-            )
-        },
-        shape = MaterialTheme.shapes.large,
-    )
-}
-
-@Composable
-fun MessageDetailsDialog(
-    onDismiss: () -> Unit,
-    message: Message,
-    selectedChatId: String,
-) {
-    Dialog(onDismissRequest = onDismiss) {
-        // Use a Surface to provide background and elevation to the Dialog content
-        Surface(
-            shape = RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 3.dp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 24.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // 1. Header
-                Text(
-                    text = stringResource(Res.string.message_details),
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                // show message Id for developers
-                if(SessionCache.developer){
-                    Text(
-                    text = message.id?: "id null",
-                    style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-
-                // 2. Message Preview
-                val alphaValue = 0.9f
-                MessageContent(
-                    modifier = Modifier
-                        .background(
-                            color = if (message.myMessage) {
-                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = alphaValue)
-                            } else {
-                                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = alphaValue)
-                            },
-                            shape = RoundedCornerShape(15.dp)
-                        )
-                        .padding(12.dp),
-                    message = message,
-                    useMD = false,
-                    selectedChatId = selectedChatId,
-                )
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                // 3. Readers Section
-                Text(
-                    text = stringResource(Res.string.readers),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                if (message.readers.isEmpty()) {
-                    Text(
-                        text = stringResource(Res.string.no_readers),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.outline
-                    )
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.weight(1f, fill = false), // Grow up to a point, then scroll
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(message.readers) { reader ->
-                            ReaderRow(reader)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun ReaderRow(reader: MessageReader) {
@@ -1100,8 +854,9 @@ fun ReaderRow(reader: MessageReader) {
         }
     }
 }
-fun copyToClipboard(text: String, clipboardManager: ClipboardManager) {
-    clipboardManager.setText(AnnotatedString(text))
+fun copyToClipboard(text: String, clipboard: NativeClipboard) {
+    val shareUtils = KoinPlatform.getKoin().get<ShareUtils>()
+    shareUtils.copyToClipboard(text, clipboard)
 }
 
 enum class AddMediaOptions{

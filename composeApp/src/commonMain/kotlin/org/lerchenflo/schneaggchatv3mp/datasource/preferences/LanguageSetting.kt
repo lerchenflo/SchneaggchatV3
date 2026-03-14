@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.utilities.preferences
+package org.lerchenflo.schneaggchatv3mp.datasource.preferences
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Contrast

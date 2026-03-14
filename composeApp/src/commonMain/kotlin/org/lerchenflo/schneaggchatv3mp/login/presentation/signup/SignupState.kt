@@ -22,6 +22,21 @@ data class SignupState(
     val agbsErrorText: String? = null
 
     ) {
+
+    fun isInputComplete() : Boolean{
+        return usernameState.isCorrect()
+                && passwordState.isCorrect()
+                && passwordRetypeState.isCorrect()
+                && emailState.isCorrect()
+                && gebiDate != null
+                && gebiErrorText == null
+                && profilePic != null
+                && profilePicErrorText == null
+                && agbsAccepted
+                && agbsErrorText == null
+                && passwordState.text == passwordRetypeState.text
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false

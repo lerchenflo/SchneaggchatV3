@@ -26,6 +26,8 @@
     <string name="username">Nama</string>
     <string name="password">Passwort</string>
     <string name="password_again">Passwort noml</string>
+    <string name="password_forgotten">Passwort vergeassa?</string>
+
 
     <string name="email">Email</string>
     <string name="invalid_email">Du musch a richtige email agia</string>
@@ -45,6 +47,8 @@
     <string name="email_exists">Es git scho an Account mit derra Email</string>
     <string name="username_exists">Es git scho an Account mit deam Nama</string>
     <string name="username_too_long">Din Nama isch z lang</string>
+    <string name="username_too_short">Din Nama isch z kurz</string>
+
     <string name="requirement_length">8 oder meh Zeicha</string>
     <string name="requirement_digit">mindestens ua Zahl</string>
     <string name="requirement_special">mindestens ua Sonderzeicha</string>
@@ -58,6 +62,11 @@
     <string name="cancel">abbreacha</string>
     <string name="version">Version: %1$s</string>
     <string name="app_broken">App isch kaputt</string>
+
+    <string name="bugreport_request">Bugreport / Featurerequest</string>
+    <string name="bugreport_request_info">Schick alls was da ned gfallt oda wasd gern hia würdesch</string>
+
+
     <string name="loadinginfo_messages">Nachrichta werrand glada...</string>
     <string name="loadinginfo_offline">Du bisch offline...</string>
     <string name="read">gleasa</string>
@@ -243,6 +252,10 @@
     <string name="copy">Kopiera</string>
     <string name="edit">Bearbeita</string>
     <string name="delete">Löscha</string>
+    <string name="message_details">Nochrichtadetails</string>
+    <string name="readers">Leser</string>
+    <string name="read_at_time">gleasa %1$s</string>
+    <string name="no_readers">No niemand hot des gleasa</string>
 
     <string name="pin_chat">Chat apinna</string>
     <string name="unpin_chat">Pin entferna</string>
@@ -474,6 +487,7 @@
 
     <string name="poll_answer_summary">%1$s Antworta von %2$s Benutzern</string>
 
+    <string name="poll_show_answers">Antworta azoaga</string>
 
 
 
@@ -485,7 +499,30 @@
     <string name="highscores_not_implemented_warning">Öffentliche Highscores kummand bald!</string>
 
 
+    <!-- Bug Report Dialog -->
+    <string name="bugreportdialog_title_bug">Bug Report</string>
+    <string name="bugreportdialog_title_feature">Feature Request</string>
+    <string name="bugreportdialog_type_bug">Bug</string>
+    <string name="bugreportdialog_type_feature">Feature</string>
+    <string name="bugreportdialog_field_title">Titel *</string>
+    <string name="bugreportdialog_field_description">Beschreibung *</string>
+    <string name="bugreportdialog_field_steps">Schritt zums nochmacha</string>
+    <string name="bugreportdialog_field_steps_placeholder">1. Chat öffna\n2. Profilbild drucka\n3. etc</string>
+    <string name="bugreportdialog_field_expected">Erwartetes Verhalta</string>
+    <string name="bugreportdialog_field_actual">Uftreatanes Verhalta</string>
+    <string name="bugreportdialog_label_severity">Schwere</string>
 
+    <string name="bugreportdialog_severity_low">Leicht</string>
+    <string name="bugreportdialog_severity_medium">Mittel</string>
+    <string name="bugreportdialog_severity_high">Hoch</string>
+    <string name="bugreportdialog_severity_critical">Kritisch</string>
+
+    <string name="bugreportdialog_field_motivation">Warum bruchts des?</string>
+    <string name="bugreportdialog_label_priority">Priorität</string>
+
+    <string name="bugreportdialog_priority_low">Niedrig</string>
+    <string name="bugreportdialog_priority_medium">Mittel</string>
+    <string name="bugreportdialog_priority_high">Hoch</string>
 
 
     <!-- Games: Yatzi -->

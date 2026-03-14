@@ -6,10 +6,13 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
+import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.server_not_reachable
@@ -26,7 +29,7 @@ class LoginViewModel(
         viewModelScope.launch {
             val online =  appRepository.testServer(preferenceManager.getServerUrl())
             if (!online){
-                AppRepository.sendErrorSuspend(
+                AppRepository.ErrorChannel.sendErrorSuspend(
                     event = AppRepository.ErrorChannel.ErrorEvent(
                         errorCode = 408,
                         errorMessage = "ServerUrl: " + preferenceManager.getServerUrl(),
@@ -90,7 +93,11 @@ class LoginViewModel(
                     // Use the sharedViewModel's login function with a callback
                     appRepository.login(username, password) { success ->
                         if (success) {
-                            println("Login erfolgreich")
+                            println("Login erfolgreich, triggering data sync")
+                            val globalViewModel = KoinPlatform.getKoin().get<GlobalViewModel>()
+                            globalViewModel.viewModelScope.launch {
+                                appRepository.dataSync()
+                            }
                             viewModelScope.launch {
                                 navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                             }

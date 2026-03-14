@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
@@ -56,7 +57,7 @@ sealed interface SocketConnectionMessage {
 }
 
 
-suspend fun handleSocketConnectionMessage(message: String) {
+suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
     val appRepository = KoinPlatform.getKoin().get<AppRepository>()
     val userRepository = KoinPlatform.getKoin().get<UserRepository>()
@@ -79,7 +80,7 @@ suspend fun handleSocketConnectionMessage(message: String) {
 
                     content = socketMessage.message.content,
                     pictureUrl = existing?.pictureUrl,
-                    poll = socketMessage.message.pollResponse?.toPollMessage(),
+                    poll = socketMessage.message.pollResponse?.toPollMessage(ownId),
 
                     senderId = socketMessage.message.senderId,
                     receiverId = socketMessage.message.receiverId,
@@ -89,8 +90,8 @@ suspend fun handleSocketConnectionMessage(message: String) {
                     groupMessage = socketMessage.message.groupMessage,
                     answerId = socketMessage.message.answerId,
                     sent = true,
-                    myMessage = socketMessage.message.senderId == SessionCache.getOwnIdValue(),
-                    readByMe =socketMessage.message.readers.any { it.userId == SessionCache.ownId.value },
+                    myMessage = socketMessage.message.senderId == ownId,
+                    readByMe =socketMessage.message.readers.any { it.userId == ownId },
                     readers = socketMessage.message.readers.map {
                         MessageReader(
                             readerEntryId = 0L,
@@ -110,8 +111,10 @@ suspend fun handleSocketConnectionMessage(message: String) {
                 //THis is a new message, show a notification
                 if (socketMessage.newMessage) {
                     if (globalViewModel.selectedChat.value.id == message.senderId && globalViewModel.selectedChat.value.isGroup == message.groupMessage){
-                        println("Notification is in current chat, skipping display of socketmessage")
-
+                        if (!AppLifecycleManager.isAppInForeground) {
+                            println("Noti in current chat, but app is minimized, showing noti")
+                            NotificationManager.showNotification(message)
+                        }
                     } else {
                         NotificationManager.showNotification(message)
                     }

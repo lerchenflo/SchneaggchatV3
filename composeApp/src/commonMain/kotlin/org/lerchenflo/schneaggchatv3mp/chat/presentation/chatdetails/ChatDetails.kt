@@ -31,13 +31,12 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorAction
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
-import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
-import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
@@ -48,10 +47,8 @@ import schneaggchatv3mp.composeapp.generated.resources.description_info_user
 import schneaggchatv3mp.composeapp.generated.resources.group_description
 import schneaggchatv3mp.composeapp.generated.resources.leave_group
 import schneaggchatv3mp.composeapp.generated.resources.no_description
-import schneaggchatv3mp.composeapp.generated.resources.no_status
 import schneaggchatv3mp.composeapp.generated.resources.others_say_about
 import schneaggchatv3mp.composeapp.generated.resources.remove_friend
-import schneaggchatv3mp.composeapp.generated.resources.status
 import schneaggchatv3mp.composeapp.generated.resources.status_info
 
 
@@ -77,6 +74,8 @@ fun ChatDetails(
 
     val group = chatDetails.isGroup
 
+    val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+
     var profilePictureDialogShown by remember { mutableStateOf(false) }
     var showLeaveGroupConfirmation by remember { mutableStateOf(false) }
     var showRemoveFriendConfirmation by remember { mutableStateOf(false) }
@@ -90,8 +89,7 @@ fun ChatDetails(
         ProfilePictureBigDialog(
             onDismiss = {profilePictureDialogShown = false},
             filepath = chatDetails.profilePictureUrl,
-            showEditButton = true,
-            //showEditButton = group, // if only admins are able to change the profile picture use this line instead
+            showEditButton = group,
             onEdit = {
                 profilePictureDialogShown = false
                 showImagePickerDialog = true
@@ -207,7 +205,8 @@ fun ChatDetails(
                         members = groupChat.groupMembersWithUsers,
                         navigateToChat = chatdetailsViewmodel::navigateToChat,
                         changeAdminStatus = chatdetailsViewmodel::changeAdminStatus,
-                        removeMember = chatdetailsViewmodel::removeMember
+                        removeMember = chatdetailsViewmodel::removeMember,
+                        ownId = ownId
                     )
                 }
             }else{
@@ -225,8 +224,8 @@ fun ChatDetails(
 
 
             if(group){
-                val ownid = SessionCache.getOwnIdValue().toString()
-                val iAmAdmin = chatDetails.toGroup()?.groupMembersWithUsers?.find { it.groupMember.userId == ownid }?.groupMember?.admin == true
+
+                val iAmAdmin = chatDetails.toGroup()?.groupMembersWithUsers?.find { it.groupMember.userId == ownId }?.groupMember?.admin == true
 
                 if(iAmAdmin) {
                     // add partypeople
@@ -259,7 +258,7 @@ fun ChatDetails(
                     ConfirmationDialog(
                         message = stringResource(Res.string.confirm_leave_group),
                         onConfirm = {
-                            chatdetailsViewmodel.removeMember(SessionCache.getOwnIdValue().toString())
+                            chatdetailsViewmodel.removeMember(ownId)
                             chatdetailsViewmodel.navigateChatSelExitAllPrevious()
                         },
                         onDismiss = {

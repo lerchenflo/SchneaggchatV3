@@ -13,7 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
-import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_username_must_not_be_empty
@@ -31,7 +31,6 @@ class UserSettingsViewModel(
 ): ViewModel() {
 
     var lastEmailVerificationTime: Instant = Instant.DISTANT_PAST
-
 
 
     fun changeProfilePicture(newImage: GalleryPhotoResult){
@@ -68,6 +67,9 @@ class UserSettingsViewModel(
 
     fun updateUsernameOnServer(newUsername: String){
 
+        val userId = SessionCache.requireLoggedIn()?.userId ?: return
+
+
         if(newUsername.isEmpty()){ // check if username is not empty
             viewModelScope.launch {
                 SnackbarManager.showMessage(getString(Res.string.error_username_must_not_be_empty))
@@ -81,22 +83,28 @@ class UserSettingsViewModel(
     }
 
     fun changeEmail(newEmail: String){
+        val userId = SessionCache.requireLoggedIn()?.userId ?: return
+
         viewModelScope.launch {
-            appRepository.changeUserDetails(newEmail = newEmail, userId = SessionCache.getOwnIdValue() ?: "")
+            appRepository.changeUserDetails(newEmail = newEmail, userId = userId)
             appRepository.dataSync()
         }
     }
 
     fun changeStatus(newStatus: String) {
         viewModelScope.launch {
-            appRepository.changeUserDetails(newStatus = newStatus, userId = SessionCache.getOwnIdValue() ?: "")
+            val userId = SessionCache.requireLoggedIn()?.userId ?: return@launch
+
+            appRepository.changeUserDetails(newStatus = newStatus, userId = userId)
             appRepository.dataSync()
         }
     }
 
     fun changeBirthDate(newBirthDate: String) {
+        val userId = SessionCache.requireLoggedIn()?.userId ?: return
+
         viewModelScope.launch {
-            appRepository.changeUserDetails(newBirthDate = newBirthDate, userId = SessionCache.getOwnIdValue() ?: "")
+            appRepository.changeUserDetails(newBirthDate = newBirthDate, userId = userId)
             appRepository.dataSync()
         }
     }

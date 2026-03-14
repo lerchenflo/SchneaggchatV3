@@ -1,9 +1,8 @@
-package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.text
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.text
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.model.DefaultMarkdownColors
@@ -18,12 +17,8 @@ fun TextMessageContentView(
 ){
 
     if(useMD){ // get setting if if md is enabled
-        // Cache markdown rendering to avoid re-parsing on every recomposition
-        val content = remember(message.content) {
-            message.content
-        }
         Markdown(
-            content = content,
+            content = message.content,
             modifier = modifier,
             //TODO: Nocham neua theme do die message text color flicka
 
@@ -40,7 +35,8 @@ fun TextMessageContentView(
     }else{
         Text(
             text = message.content,
-            color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+            color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = modifier
         )
     }
 

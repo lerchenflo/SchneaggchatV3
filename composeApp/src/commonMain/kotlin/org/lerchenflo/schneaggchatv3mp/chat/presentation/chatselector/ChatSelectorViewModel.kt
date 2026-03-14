@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -40,8 +41,8 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
-import org.lerchenflo.schneaggchatv3mp.utilities.preferences.PinnedChat
-import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.groups
@@ -66,13 +67,17 @@ class ChatSelectorViewModel(
 
         viewModelScope.launch {
             val token = NotificationManager.getToken()
-            appRepository.setFirebaseToken(token)
+
+            if (token.isNotEmpty()) {
+                appRepository.setFirebaseToken(token)
+            }
         }
 
         viewModelScope.launch {
+            val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
             appRepository.getPendingFriends("").collectLatest { list ->
                 val size = list.filter {
-                    it.requesterId != SessionCache.getOwnIdValue()
+                    it.requesterId != ownId
                 }.size
 
                 _pendingFriendCount.value = size
@@ -93,28 +98,34 @@ class ChatSelectorViewModel(
 
     fun refresh() {
 
-        println("Chatselector: Pull to refresh")
+        //println("Chatselector: Pull to refresh")
         // if a refresh is already running, do nothing
         if (refreshJob?.isActive == true) {
             println("Refreshjob already running, abort")
 
             return
         }
+
+        val ownId = SessionCache.requireLoggedIn()?.userId ?: run {
+            println("Refresh: userid not set, aborting")
+            return
+        }
+
         updateIsLoadingMessages(true)
 
 
-        println("refreshjob starting")
+        //println("refreshjob starting")
 
 
         refreshJob = viewModelScope.launch {
 
-            if (!SessionCache.loggedIn){
+            if (!SessionCache.isLoggedIn()){
 
                 println("Not logged in, trying to refresh token")
                 appRepository.refreshTokens()
 
                 val becameLoggedIn = withTimeoutOrNull(10_000L) {
-                    while (!SessionCache.loggedIn) {
+                    while (!SessionCache.isLoggedIn()) {
                         delay(1_000L) // retry after 1 second
                     }
                     true // logged in
@@ -130,7 +141,7 @@ class ChatSelectorViewModel(
             // at this point we're guaranteed logged in (or the condition was already true)
             try {
                 // send queued messages
-                appRepository.sendOfflineMessages()
+                appRepository.sendOfflineMessages(ownId)
 
                 appRepository.dataSync()
             } catch (e: Exception) {
@@ -217,11 +228,18 @@ class ChatSelectorViewModel(
     private val chatSelectorFlow: Flow<List<SelectedChat>> = combine(
         _searchTerm,
         _filter,
-        SessionCache.ownId //Add own id to automatically update the chats if the own id changes (On create)
-    ) { term, filter, ownid -> term to filter }
-        .flatMapLatest { (term, filter) ->
-            // repository should accept the filter param (you already implemented that)
-            appRepository.getChatSelectorFlow(term, filter)
+        SessionCache.authState
+
+    ) { term, filter, authState -> Triple(term, filter, authState) }
+        .flatMapLatest { (term, filter, authState) ->
+            val loggedIn = authState as? SessionCache.AuthState.LoggedIn
+                ?: return@flatMapLatest flowOf(emptyList())
+
+            appRepository.getChatSelectorFlow(
+                searchTerm = term,
+                userId = loggedIn.userId,
+                filter = filter
+            )
         }
         .flowOn(Dispatchers.Default)
 
@@ -229,7 +247,7 @@ class ChatSelectorViewModel(
         .distinctUntilChanged()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Companion.WhileSubscribed(5_000),
+            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
 }

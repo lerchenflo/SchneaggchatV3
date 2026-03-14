@@ -61,6 +61,7 @@ import schneaggchatv3mp.composeapp.generated.resources.you_sender
 
 @Composable
 fun UserButton(
+    ownId : String,
     selectedChat: SelectedChat,
     showProfilePicture: Boolean = true,
     lastMessage: Message? = null,
@@ -267,7 +268,7 @@ fun UserButton(
                             .size(24.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (selectedChat.requesterId == SessionCache.getOwnIdValue()) {
+                        if (selectedChat.requesterId == ownId) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.CallMade,
                                 contentDescription = "outgoing friend request",

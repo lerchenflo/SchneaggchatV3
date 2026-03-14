@@ -13,7 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
-import org.lerchenflo.schneaggchatv3mp.utilities.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
 class GlobalViewModel(
     private val appRepository: AppRepository,
@@ -22,18 +22,19 @@ class GlobalViewModel(
 ): ViewModel() {
 
     init {
-        //println("SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT + SHAREDVIEWMODEL INIT")
-
 
         NotificationManager.initialize()
 
         // Sync when app is resumed
         viewModelScope.launch {
             AppLifecycleManager.appResumedEvent.collectLatest {
-                if (SessionCache.isLoggedInValue()) {
+                println("App resumed, checking loggedin status")
+                val ownId = SessionCache.requireLoggedIn()?.userId ?: return@collectLatest
+
+                if (SessionCache.isLoggedIn()) {
                     println("App resumed and logged in, triggering sync...")
                     appRepository.dataSync()
-                    appRepository.sendOfflineMessages()
+                    appRepository.sendOfflineMessages(ownId)
 
                     //On resume clear all error notis
                     NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)
@@ -46,11 +47,11 @@ class GlobalViewModel(
 
         viewModelScope.launch {
             while (true) {
-                if (SessionCache.isLoggedInValue() && !SessionCache.isOnlineValue()) {
+                if (!SessionCache.isOnline()) {
                     appRepository.testServer(preferenceManager.getServerUrl())
                 }
 
-                if (!socketConnectionManager.isConnectedNow()) {
+                if (SessionCache.isLoggedIn() && !socketConnectionManager.isConnectedNow()) {
                     startSocketConnection()
                 }
 
@@ -69,7 +70,7 @@ class GlobalViewModel(
 
     fun startSocketConnection() {
         viewModelScope.launch {
-            if (!socketConnectionManager.isConnectedNow() && SessionCache.isLoggedInValue()){
+            if (!socketConnectionManager.isConnectedNow() && SessionCache.isLoggedIn()){
                 val serverurl = SocketConnectionManager.getSocketUrl(preferenceManager.getServerUrl())
                 socketConnectionManager.connect(
                     serverUrl = serverurl,

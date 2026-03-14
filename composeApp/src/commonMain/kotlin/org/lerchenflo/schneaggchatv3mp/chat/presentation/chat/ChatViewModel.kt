@@ -128,9 +128,12 @@ class ChatViewModel(
     private val _shouldLoadAllMessages = MutableStateFlow(false)
 
     fun setAllMessagesRead() {
-        viewModelScope.launch {
-            val messageDisplayItems = messageDisplayState.value
-            val messageIdsString = messageDisplayItems
+
+        val userId = SessionCache.requireLoggedIn()?.userId ?: return
+
+        CoroutineScope(Dispatchers.IO).launch {
+            // Get message IDs from current chat that need notification removal
+            val messageIdsString = messageDisplayState.value
                 .filterIsInstance<MessageDisplayItem.MessageItem>()
                 .filter { item -> !item.message.readByMe }
                 .mapNotNull {
@@ -148,6 +151,7 @@ class ChatViewModel(
 
         CoroutineScope(Dispatchers.IO).launch {
             appRepository.setAllChatMessagesRead(
+                ownId = userId,
                 chatId,
                 isGroup,
                 getCurrentTimeMillisString()
@@ -169,17 +173,22 @@ class ChatViewModel(
     }
 
     fun sendMessage(message: SendMessageContent, replyTo: Message? = null) {
-        if (message is SendMessageContent.TextContent && message.textMessage.isBlank()) return
-        if (message is SendMessageContent.ImageContent && message.imageMessage.isEmpty()) return
 
-        globalViewModel.viewModelScope.launch {
-            appRepository.sendMessage(
-                empfaenger = globalViewModel.selectedChat.value.id,
-                gruppe = globalViewModel.selectedChat.value.isGroup,
-                content = when(message) {
-                    is SendMessageContent.ImageContent -> AppRepository.MessageContent.ImageContent(
-                        image = message.imageMessage,
-                        text = message.text
+        val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+
+        if (message is SendMessageContent.TextContent && message.textMessage.isBlank()) return
+        if (message is SendMessageContent.ImageContent && message.images.isEmpty()) return
+
+        when (message) {
+            is SendMessageContent.TextContent -> {
+                globalViewModel.viewModelScope.launch {
+                    appRepository.sendMessage(
+                        empfaenger = globalViewModel.selectedChat.value.id,
+                        gruppe = globalViewModel.selectedChat.value.isGroup,
+                        content = AppRepository.MessageContent.TextContent(message.textMessage),
+                        answerid = replyTo?.id,
+                        messageId = null,
+                        ownId = ownId,
                     )
                     is SendMessageContent.TextContent -> AppRepository.MessageContent.TextContent(message.textMessage)
                     is SendMessageContent.AudioContent -> AppRepository.MessageContent.TextContent("Audio message not implemented") // TODO
@@ -188,31 +197,57 @@ class ChatViewModel(
                 messageId = null,
             )
 
-            updateReplyMessage(null)
-            updateSendContent(SendMessageContent.TextContent(""))
+            is SendMessageContent.ImageContent -> {
+                message.images.forEachIndexed { index, image ->
+                    globalViewModel.viewModelScope.launch {
+                        appRepository.sendMessage(
+                            empfaenger = globalViewModel.selectedChat.value.id,
+                            gruppe = globalViewModel.selectedChat.value.isGroup,
+                            content = AppRepository.MessageContent.ImageContent(
+                                image = image,
+                                text = if (index == 0) message.text else ""
+                            ),
+                            answerid = replyTo?.id,
+                            messageId = null,
+                            ownId = ownId
+                        )
+                    }
+                }
+            }
         }
+
+        updateReplyMessage(null)
+        updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
     }
 
-    fun onImageSelected(result: GalleryPhotoResult) {
-        viewModelScope.launch {
-            val byteArray = result.loadBytes()
-            val downscaled = pictureManager.downscaleImage(byteArray)
+    fun onImageSelected(results: List<GalleryPhotoResult>) {
+
+        CoroutineScope(Dispatchers.Default).launch {
+            val byteArrays = results.map { it.loadBytes() }
+            val downscaledImages = byteArrays.map {
+                pictureManager.downscaleImage(it)
+            }
 
             updateSendContent(SendMessageContent.ImageContent(
                 imageMessage = downscaled,
                 text = (currentSendContent.value as? SendMessageContent.TextContent)?.textMessage ?: ""
             ))
         }
+
     }
 
     fun createPollMessage(poll: NetworkUtils.PollCreateRequest) {
+
+        val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+
         globalViewModel.viewModelScope.launch {
             appRepository.sendMessage(
                 empfaenger = chatId,
                 gruppe = isGroup,
                 content = AppRepository.MessageContent.PollContent(poll),
                 answerid = replyMessage?.id,
-                messageId = null
+                messageId = null,
+                ownId = ownId
             )
 
             replyMessage = null
@@ -236,16 +271,20 @@ class ChatViewModel(
      * Composables only need a single `onAction: (MessageAction) -> Unit` callback.
      */
     fun onAction(action: MessageAction) {
+
+        val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+
         when (action) {
             is MessageAction.VotePoll -> {
                 viewModelScope.launch {
                     appRepository.votePoll(
-                        NetworkUtils.PollVoteRequest(
+                        pollVoteRequest = NetworkUtils.PollVoteRequest(
                             messageId = action.messageId,
                             id = action.optionId,
                             text = null,
                             selected = action.checked
-                        )
+                        ),
+                        ownId = ownId
                     )
                 }
             }
@@ -253,7 +292,8 @@ class ChatViewModel(
             is MessageAction.AddCustomPollOption -> {
                 viewModelScope.launch {
                     appRepository.votePoll(
-                        NetworkUtils.PollVoteRequest(
+                        ownId = ownId,
+                        pollVoteRequest = NetworkUtils.PollVoteRequest(
                             messageId = action.messageId,
                             id = null,
                             text = action.text,
@@ -265,12 +305,12 @@ class ChatViewModel(
             is MessageAction.DeleteMessage -> deleteMessage(action.message)
             is MessageAction.StartEditMessage -> {
                 editMessage = action.message
-                updateSendContent(SendMessageContent.TextContent(action.message.content))
+                updateSendContent(SendMessageContent.TextContent(TextFieldValue(action.message.content)))
             }
             MessageAction.CancelEditMessage -> {
                 editMessage = null
-                updateSendContent(SendMessageContent.TextContent(""))
-                println("Update message sendtext to empty")
+                updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
+                //println("Update message sendtext to empty")
             }
 
             is MessageAction.ReplyToMessage -> updateReplyMessage(action.message)
@@ -292,6 +332,8 @@ class ChatViewModel(
                 newContent = content.textMessage
             )
 
+            println("Edit: Newcontent: ${content.textMessage}")
+
             //Clear text after editing message
             onAction(MessageAction.CancelEditMessage)
         }
@@ -303,9 +345,14 @@ class ChatViewModel(
     fun onBackClick() {
         saveDraft()
         viewModelScope.launch {
+            /*
             navigator.navigateBack(navigationOptions = Navigator.NavigationOptions(
                 removeAllScreensByRoute = listOf(Route.ChatDetails, Route.Chat)
             ))
+
+            */
+            navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
+                removeAllScreensByRoute = listOf(Route.ChatDetails, Route.Chat)))
         }
     }
 
@@ -604,7 +651,7 @@ class ChatViewModel(
                     loggingRepository.logWarning("ChatViewModel: Problem getting draft: ${exception.message}")
                 }
                 .collect { value ->
-                    updateSendContent(SendMessageContent.TextContent(value?: ""))
+                    updateSendContent(SendMessageContent.TextContent(TextFieldValue(value?: "")))
                 }
         }
 
@@ -623,7 +670,7 @@ class ChatViewModel(
         //Set all messages read on app resumed
         viewModelScope.launch {
             AppLifecycleManager.appResumedEvent.collectLatest {
-                if (SessionCache.isLoggedInValue()) {
+                if (SessionCache.isLoggedIn()) {
                     setAllMessagesRead()
                 }
             }
@@ -632,7 +679,7 @@ class ChatViewModel(
         //Set all messages read on message change
         viewModelScope.launch {
             messageDisplayState.collectLatest { displayItems ->
-                if (displayItems.isNotEmpty()) {
+                if (displayItems.isNotEmpty() && AppLifecycleManager.isAppInForeground) {
                     setAllMessagesRead()
                 }
             }

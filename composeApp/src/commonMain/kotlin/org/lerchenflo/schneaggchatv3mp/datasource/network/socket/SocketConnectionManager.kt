@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import kotlin.math.min
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
@@ -105,6 +106,9 @@ class SocketConnectionManager(
         onError: (Throwable) -> Unit,
         onClose: () -> Unit
     ): Boolean {
+
+        val ownId = SessionCache.requireLoggedIn()?.userId ?: return false
+
         lastServerUrl = serverUrl
         lastOnError = onError
         lastOnClose = onClose
@@ -128,7 +132,10 @@ class SocketConnectionManager(
                     serverUrl = serverUrl,
                     onMessage = {
                         scope.launch {
-                            handleSocketConnectionMessage(it)
+                            handleSocketConnectionMessage(
+                                ownId = ownId,
+                                message = it
+                            )
                         }
                     },
                     onError = { throwable ->
