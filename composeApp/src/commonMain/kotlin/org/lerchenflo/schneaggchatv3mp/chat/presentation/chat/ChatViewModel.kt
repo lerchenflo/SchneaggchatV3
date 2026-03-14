@@ -99,7 +99,7 @@ class ChatViewModel(
 
     sealed class SendMessageContent {
         data class TextContent(val textMessage: String) : SendMessageContent()
-        data class ImageContent(val imageMessage: ByteArray, val text: String) : SendMessageContent()
+        data class ImageContent(val images: List<ByteArray>, val text: String) : SendMessageContent()
         data class AudioContent(
             val audioPath: String,
             val duration: Long,
@@ -190,12 +190,8 @@ class ChatViewModel(
                         messageId = null,
                         ownId = ownId,
                     )
-                    is SendMessageContent.TextContent -> AppRepository.MessageContent.TextContent(message.textMessage)
-                    is SendMessageContent.AudioContent -> AppRepository.MessageContent.TextContent("Audio message not implemented") // TODO
-                },
-                answerid = replyTo?.id,
-                messageId = null,
-            )
+                }
+            }
 
             is SendMessageContent.ImageContent -> {
                 message.images.forEachIndexed { index, image ->
@@ -214,10 +210,12 @@ class ChatViewModel(
                     }
                 }
             }
+
+            is SendMessageContent.AudioContent -> AppRepository.MessageContent.TextContent("Audio message not implemented") // TODO
         }
 
         updateReplyMessage(null)
-        updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
+        updateSendContent(SendMessageContent.TextContent(""))
     }
 
     fun onImageSelected(results: List<GalleryPhotoResult>) {
@@ -229,7 +227,7 @@ class ChatViewModel(
             }
 
             updateSendContent(SendMessageContent.ImageContent(
-                imageMessage = downscaled,
+                images = downscaledImages,
                 text = (currentSendContent.value as? SendMessageContent.TextContent)?.textMessage ?: ""
             ))
         }
@@ -305,11 +303,11 @@ class ChatViewModel(
             is MessageAction.DeleteMessage -> deleteMessage(action.message)
             is MessageAction.StartEditMessage -> {
                 editMessage = action.message
-                updateSendContent(SendMessageContent.TextContent(TextFieldValue(action.message.content)))
+                updateSendContent(SendMessageContent.TextContent(action.message.content))
             }
             MessageAction.CancelEditMessage -> {
                 editMessage = null
-                updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
+                updateSendContent(SendMessageContent.TextContent(""))
                 //println("Update message sendtext to empty")
             }
 
@@ -651,7 +649,7 @@ class ChatViewModel(
                     loggingRepository.logWarning("ChatViewModel: Problem getting draft: ${exception.message}")
                 }
                 .collect { value ->
-                    updateSendContent(SendMessageContent.TextContent(TextFieldValue(value?: "")))
+                    updateSendContent(SendMessageContent.TextContent(value?: ""))
                 }
         }
 
