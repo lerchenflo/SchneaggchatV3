@@ -102,7 +102,8 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
-            export("io.github.mirzemehdi:kmpnotifier:1.6.1")
+            binaryOption("bundleId", "org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp")
+            export("io.github.mirzemehdi:kmpnotifier:1.6.1") //Is needed even tough there is a warning while compiling
         }
 
 
