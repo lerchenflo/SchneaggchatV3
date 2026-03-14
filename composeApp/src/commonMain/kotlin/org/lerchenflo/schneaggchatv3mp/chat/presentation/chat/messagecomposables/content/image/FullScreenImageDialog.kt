@@ -41,6 +41,7 @@ fun FullscreenImageDialog(
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
 
+    @Suppress("DEPRECATION")
     val transformableState = rememberTransformableState { zoomChange, panChange, _ ->
         val newScale = (scale * zoomChange).coerceIn(1f, 5f)
         scale = newScale
@@ -126,3 +127,10 @@ fun FullscreenImageDialog(
         }
     }
 }
+
+
+/*
+
+w: file:///C:/Users/Flo/Desktop/SchneaggchatV3/composeApp/src/commonMain/kotlin/org/lerchenflo/schneaggchatv3mp/chat/presentation/chat/messagecomposables/content/image/FullScreenImageDialog.kt:46:30 'fun rememberTransformableState(onTransformation: (Float, Offset, Float) -> Unit): TransformableState' is deprecated. Prefer remembering a TransformableState with a onTransformation lambda that takes the centroid. This centroid (if specified) is the point at which zooming or rotation should happen around which allows for more natural transformations.
+
+ */
