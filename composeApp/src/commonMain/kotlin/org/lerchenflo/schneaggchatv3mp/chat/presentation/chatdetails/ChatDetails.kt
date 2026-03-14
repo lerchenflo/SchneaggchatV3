@@ -34,6 +34,9 @@ import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
 import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -46,7 +49,9 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
 import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToDuration
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
@@ -59,6 +64,7 @@ import schneaggchatv3mp.composeapp.generated.resources.no_description
 import schneaggchatv3mp.composeapp.generated.resources.others_say_about
 import schneaggchatv3mp.composeapp.generated.resources.remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.status_info
+import kotlin.time.Clock
 
 
 @Composable
@@ -148,30 +154,52 @@ fun ChatDetails(
                 HorizontalDivider()
                 // Birthdate
 
-                ListItem(
-                    headlineContent = {
-                        Text(
-                            text = iso8601DateFormatter(chatdetailsViewmodel.selectedUser?.birthDate ?: ""),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    },
-                    /*
-                    overlineContent = {
-                        Text(stringResource(Res.string.birthdate))
-                    },
+                chatdetailsViewmodel.selectedUser?.birthDate?.let {birthDate ->
+                    ListItem(
+                        headlineContent = {
 
-                     */
-                    leadingContent = {
-                        Icon(
-                            imageVector = Icons.Default.Cake, // Or Icons.Default.Event
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
+                            val gebidate = iso8601DateFormatter(
+                                iso8601Format = birthDate,
+                                format = "dd.MM."
+                            )
+
+                            val today = Clock.System.now().toLocalDateTime(TimeZone.UTC).date
+                            val birth = LocalDate.parse(birthDate)
+                            val birthdayThisYear = LocalDate(today.year, birth.month, birth.dayOfMonth)
+
+                            val targetDate = if (birthdayThisYear >= today) birthdayThisYear
+                            else LocalDate(today.year + 1, birth.month, birth.dayOfMonth)
+
+                            val daysUntilBirthday = (targetDate.toEpochDays() - today.toEpochDays())
+
+                            val timeUntilGebiDate = millisToDuration(
+                                millis = daysUntilBirthday * 24 * 60 * 60 * 1000L,
+                                showSeconds = false
+                            )
+
+                            Text(
+                                text = "$gebidate ($timeUntilGebiDate)",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        },
+                        /*
+                        overlineContent = {
+                            Text(stringResource(Res.string.birthdate))
+                        },
+
+                         */
+                        leadingContent = {
+                            Icon(
+                                imageVector = Icons.Default.Cake, // Or Icons.Default.Event
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        colors = ListItemDefaults.colors(
+                            containerColor = Color.Transparent
                         )
-                    },
-                    colors = ListItemDefaults.colors(
-                        containerColor = Color.Transparent
                     )
-                )
+                }
 
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 // Status
