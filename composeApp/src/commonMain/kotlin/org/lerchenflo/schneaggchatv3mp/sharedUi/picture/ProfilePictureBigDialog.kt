@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,7 +30,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import coil3.compose.AsyncImage
-import io.ktor.client.request.invoke
 
 // Zoagt es Profilbild groß a
 @Composable
@@ -51,7 +49,7 @@ fun ProfilePictureBigDialog(
         var offsetX by remember { mutableStateOf(0f) }
         var offsetY by remember { mutableStateOf(0f) }
 
-        val transformableState = rememberTransformableState { centroid, zoomChange, panChange, _ ->
+        val transformableState = rememberTransformableState { zoomChange, panChange, _ ->
             val newScale = (scale * zoomChange).coerceIn(1f, 5f)
             scale = newScale
 

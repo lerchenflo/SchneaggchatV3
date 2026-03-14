@@ -11,5 +11,7 @@
 		<string>remote-notification</string>
 		<string>fetch</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+    <string>We need access to your microphone to record Voice Messages</string>
 </dict>
 </plist>

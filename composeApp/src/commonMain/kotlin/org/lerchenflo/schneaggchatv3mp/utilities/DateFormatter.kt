@@ -121,3 +121,12 @@ fun millisToTimeDateOrYesterday(
         }
     }
 }
+
+fun formatMillis(millis: Long): String {
+    val totalSeconds = millis / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+
+    // padStart ensures the seconds always have two digits (e.g., 0:05 instead of 0:5)
+    return "$minutes:${seconds.toString().padStart(2, '0')}"
+}

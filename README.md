@@ -2,7 +2,7 @@
 https://schneaggchatv3.lerchenflo.eu/
 
 # Schneaggchat V3
-Neue Version in CMP mit Multiplatform für Android, IOs und Desktop
+Neue Version in CMP mit Multiplatform für Android, iOS und Desktop
 
 ## What is Schneaggchat?
 Schneaggchat is an innovative chatting platform. 
@@ -18,6 +18,8 @@ Schneaggchat is an innovative chatting platform.
 - Fix for login but no data sync
 - Auto logout on invalid tokens
 - Fix for notifications not showing when app in background
+- Fix for navigating out of chat (unselected chat)
+
 - iOS notification badge fix
 - iOS update Checker fix
 

@@ -8,13 +8,15 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.darwin.Darwin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
-import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.database.iosAppDatabaseBuilder
+import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
-import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
 
 val IosDatabaseModule = module {
     single<RoomDatabase.Builder<AppDatabase>> { iosAppDatabaseBuilder() }
@@ -43,6 +45,15 @@ val IosVersionModule = module {
 val IosPictureManagerModule = module {
     single { PictureManager() }
 }
+
+val IosPermissionManagerModule = module {
+    single { PermissionManager() }
+}
+
+val IosAudioManagerModule = module {
+    single { AudioManager() }
+}
+
 
 val IosShareUtilsModule = module {
     single { ShareUtils() }

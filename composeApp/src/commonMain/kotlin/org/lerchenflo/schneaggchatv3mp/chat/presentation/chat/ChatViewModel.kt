@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.hyochan.audio.AudioRecorderPlayer
+import io.github.hyochan.audio.createAudioRecorderPlayer
 import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
 import kotlinx.coroutines.CoroutineScope
@@ -17,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -25,6 +28,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -45,8 +49,13 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
+import org.lerchenflo.schneaggchatv3mp.utilities.AudioPlayer
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -60,12 +69,17 @@ class ChatViewModel(
     private val globalViewModel: GlobalViewModel,
     private val navigator: Navigator,
     private val loggingRepository: LoggingRepository,
-    private val pictureManager: PictureManager
+    private val pictureManager: PictureManager,
+    private val permissionsManager: PermissionManager,
+    private val audioManager: AudioManager
 ): ViewModel() {
 
     companion object {
         private const val INITIAL_MESSAGE_COUNT = 12
     }
+
+    private var audioRecorderPlayer: AudioRecorderPlayer? = null // Object for Audio Recording / Playback
+    private var audioPlayer: AudioPlayer = AudioPlayer()
 
     // chat id und group bool wörrend im init oamol glada
     // Damit leabt des o solang wie es viewmodel o wenn des im globalviewmodel scho tötet worra isch
@@ -86,35 +100,34 @@ class ChatViewModel(
 
 
     sealed class SendMessageContent {
-        data class TextContent(
-            val textFieldValue: TextFieldValue = TextFieldValue()
-        ) : SendMessageContent() {
-            val textMessage: String get() = textFieldValue.text
-        }
+        data class TextContent(val textMessage: String) : SendMessageContent()
         data class ImageContent(val images: List<ByteArray>, val text: String) : SendMessageContent()
+        data class AudioContent(
+            val audioPath: String,
+            val duration: Long,
+            val isRecording: Boolean = false
+        ) : SendMessageContent()
     }
 
-    var currentSendContent by mutableStateOf<SendMessageContent>(SendMessageContent.TextContent(TextFieldValue("")))
-        private set
-    fun updateSendContent(newValue: SendMessageContent) {
-        currentSendContent = newValue
-    }
+    // In your ViewModel
+    private val _currentSendContent = MutableStateFlow<SendMessageContent>(SendMessageContent.TextContent(""))
+    val currentSendContent: StateFlow<SendMessageContent> = _currentSendContent.asStateFlow()
 
+    fun updateSendContent(content: SendMessageContent) {
+        _currentSendContent.value = content
+    }
 
     var replyMessage by mutableStateOf<Message?>(null)
         private set
-    fun updateReplyMessage(newValue: Message?) {
-        replyMessage = newValue
+
+    fun updateReplyMessage(message: Message?) {
+        replyMessage = message
     }
 
-
-    // Track loading state
     private val _isLoadingOlderMessages = MutableStateFlow(false)
     val isLoadingOlderMessages: StateFlow<Boolean> = _isLoadingOlderMessages
 
-    // Track if we should load all messages or just initial batch
     private val _shouldLoadAllMessages = MutableStateFlow(false)
-
 
     fun setAllMessagesRead() {
 
@@ -151,11 +164,11 @@ class ChatViewModel(
     fun saveDraft(){
         CoroutineScope(Dispatchers.IO).launch {
             // todo wenn bild oder sprachnachricht oder so künnt ma des speichera
-            if(currentSendContent is SendMessageContent.TextContent) { // schoua ob es textfeld leer isch
+            if(currentSendContent.value is SendMessageContent.TextContent) { // schoua ob es textfeld leer isch
                 settingsRepository.saveDraft(
                     chatId = chatId,
                     group = isGroup,
-                    string = (currentSendContent as SendMessageContent.TextContent).textMessage
+                    string = (currentSendContent.value as SendMessageContent.TextContent).textMessage
                 )
             }
         }
@@ -199,10 +212,12 @@ class ChatViewModel(
                     }
                 }
             }
+
+            is SendMessageContent.AudioContent -> AppRepository.MessageContent.TextContent("Audio message not implemented") // TODO
         }
 
         updateReplyMessage(null)
-        updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
+        updateSendContent(SendMessageContent.TextContent(""))
     }
 
     fun onImageSelected(results: List<GalleryPhotoResult>) {
@@ -215,7 +230,7 @@ class ChatViewModel(
 
             updateSendContent(SendMessageContent.ImageContent(
                 images = downscaledImages,
-                text = (currentSendContent as? SendMessageContent.TextContent)?.textMessage ?: ""
+                text = (currentSendContent.value as? SendMessageContent.TextContent)?.textMessage ?: ""
             ))
         }
 
@@ -290,11 +305,11 @@ class ChatViewModel(
             is MessageAction.DeleteMessage -> deleteMessage(action.message)
             is MessageAction.StartEditMessage -> {
                 editMessage = action.message
-                updateSendContent(SendMessageContent.TextContent(TextFieldValue(action.message.content)))
+                updateSendContent(SendMessageContent.TextContent(action.message.content))
             }
             MessageAction.CancelEditMessage -> {
                 editMessage = null
-                updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
+                updateSendContent(SendMessageContent.TextContent(""))
                 //println("Update message sendtext to empty")
             }
 
@@ -331,13 +346,17 @@ class ChatViewModel(
         saveDraft()
         viewModelScope.launch {
             /*
+
+navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
+                removeAllScreensByRoute = listOf(Route.ChatDetails, Route.Chat)))
+            */
+
+        }
+
+        runBlocking {
             navigator.navigateBack(navigationOptions = Navigator.NavigationOptions(
                 removeAllScreensByRoute = listOf(Route.ChatDetails, Route.Chat)
             ))
-
-            */
-            navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
-                removeAllScreensByRoute = listOf(Route.ChatDetails, Route.Chat)))
         }
     }
 
@@ -347,6 +366,108 @@ class ChatViewModel(
         }
     }
 
+    // Audio Recording / Playback
+    fun initAudioRecorderPlayer() {
+        // Try to create the recorder only when permission is already granted.
+        viewModelScope.launch {
+            audioRecorderPlayer = createAudioRecorderPlayer()
+            //set not null audioRecoderPlayer for the audioPlayer
+            audioPlayer.audioRecorderPlayer = audioRecorderPlayer
+
+
+            /* only request microphone permission when actually starting a recording
+            val permission = permissionsManager.checkMicrophonePermission()
+            println("initAudioRecorderPlayer - Permission: $permission")
+            if (permission == PermissionState.GRANTED) {
+                if (audioRecorderPlayer == null) {
+                    println("AudioRecorderPlayer created")
+                }
+            } else {
+                println("Requesting microphone permission (init)")
+                permissionsManager.requestMicrophonePermission()
+                // don't block here waiting for UI; we'll re-check permission in startRecording()
+            }
+
+             */
+        }
+    }
+
+    fun startRecording() {
+        viewModelScope.launch {
+            try {
+                val permission = permissionsManager.checkMicrophonePermission()
+                println("startRecording - Permission: $permission")
+                if (permission != PermissionState.GRANTED) {
+                    println("Microphone permission not granted; requesting now.")
+                    val result = permissionsManager.requestMicrophonePermission()
+                    if (result != PermissionState.GRANTED) {
+                        return@launch
+                    }
+                }
+
+                // lazy-init the recorder if not present
+                if (audioRecorderPlayer == null) {
+                    audioRecorderPlayer = createAudioRecorderPlayer()
+                    println("AudioRecorderPlayer lazy-created in startRecording()")
+                }
+
+                val filename = "audioRec_" + getCurrentTimeMillisString() + ".m4a"
+                val path = audioManager.getRecordingPath(filename)
+                
+                println("Starting recording at path: $path")
+                val result = audioRecorderPlayer!!.startRecording(path)
+                println("Recording start result: $result")
+                //updateSendContent(SendMessageContent.AudioContent(path, 0L))
+
+                audioRecorderPlayer!!.addRecordingListener { recordBack ->
+                    println("Current record time: ${recordBack.currentPosition}")
+                    updateSendContent(SendMessageContent.AudioContent(
+                        audioPath = path,
+                        duration =  recordBack.currentPosition,
+                        isRecording = true
+                    ))
+                }
+            } catch (e: Exception) {
+                // log full details to help debugging
+                loggingRepository.logWarning("Failed to start recording: ${e.message}")
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun stopRecording() {
+        viewModelScope.launch {
+            try {
+                val result = audioRecorderPlayer?.stopRecording()
+                audioRecorderPlayer?.removeListeners()
+                updateSendContent(SendMessageContent.AudioContent(
+                    audioPath = (currentSendContent.value as SendMessageContent.AudioContent).audioPath,
+                    duration =  (currentSendContent.value as SendMessageContent.AudioContent).duration,
+                    isRecording = false
+                ))
+                println("Recording stopped: $result")
+            } catch (e: Exception) {
+                loggingRepository.logWarning("Failed to stop recording: ${e.message}")
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun playAudio() {
+        viewModelScope.launch {
+            if(currentSendContent.value is SendMessageContent.AudioContent){
+                audioPlayer.playAudio(
+                    messageId = "audio_record_tmp",
+                    path = (currentSendContent.value as SendMessageContent.AudioContent).audioPath
+                )
+            }
+
+        }
+    }
+
+    fun getPlaybackProgress(): StateFlow<PlaybackProgress>{
+        return audioPlayer.playbackProgress
+    }
 
 
 
@@ -534,7 +655,7 @@ class ChatViewModel(
                     loggingRepository.logWarning("ChatViewModel: Problem getting draft: ${exception.message}")
                 }
                 .collect { value ->
-                    updateSendContent(SendMessageContent.TextContent(TextFieldValue(value?: "")))
+                    updateSendContent(SendMessageContent.TextContent(value?: ""))
                 }
         }
 
@@ -566,6 +687,11 @@ class ChatViewModel(
                     setAllMessagesRead()
                 }
             }
+        }
+        // Initialize audio recorder player
+        viewModelScope.launch {
+            audioManager.initializeAudio()
+            initAudioRecorderPlayer()
         }
     }
 

@@ -161,6 +161,11 @@ kotlin {
             implementation(libs.jetbrains.navigation3.ui)
             implementation(libs.jetbrains.lifecycle.viewmodel.nav3)
 
+            // Permissions
+            //api(libs.moko.permissions)
+            //api(libs.moko.permissions.compose)
+            //api(libs.moko.permissions.microphone)
+
             //Old navigation (Not used anymore)
             //implementation(libs.jetbrains.compose.navigation)
             //implementation(libs.kotlinx.serialization.json)
@@ -173,6 +178,9 @@ kotlin {
 
             //Image picker
             implementation(libs.github.imagepickerkmp)
+
+            // Audio Recorder / Player
+            implementation(libs.kmp.audio.recorder.player)
 
             //Jwt parsing
             implementation(libs.jwt.kt)

@@ -44,7 +44,4 @@ class MainApp: Application() {
 
 
     }
-
-
-
 }
