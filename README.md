@@ -10,6 +10,7 @@ Schneaggchat is an innovative chatting platform.
 # Changelog
 ### 3.0.6
 #### Features
+- Show birthdate of others
 
 
 #### Bugfixes

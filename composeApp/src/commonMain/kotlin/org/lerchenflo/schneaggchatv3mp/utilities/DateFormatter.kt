@@ -4,6 +4,7 @@ package org.lerchenflo.schneaggchatv3mp.utilities
 
 import androidx.compose.runtime.Composable
 import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
@@ -41,13 +42,24 @@ fun millisToString(
 @OptIn(FormatStringsInDatetimeFormats::class)
 fun iso8601DateFormatter(
     iso8601Format: String,
-    format: String = "dd.MM.yyyy HH:mm:ss"
+    format: String = "dd.MM.yyyy"
 ): String {
-    val instant = kotlin.time.Instant.parse(iso8601Format)
-    val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+    if(iso8601Format.isEmpty()){
+        return ""
+    }
+    return try {
+        // Parse the ISO string (e.g., "2004-08-13")
+        val date = LocalDate.parse(iso8601Format)
 
-    val formatter = LocalDateTime.Format { byUnicodePattern(format) }
-    return localDateTime.format(formatter)
+        // Define the output format
+        val formatter = LocalDate.Format { byUnicodePattern(format) }
+
+        date.format(formatter)
+    } catch (e: Exception) {
+        println("Error parsing date: ${e.message}")
+        ""
+    }
+
 }
 
 @OptIn(ExperimentalTime::class)
