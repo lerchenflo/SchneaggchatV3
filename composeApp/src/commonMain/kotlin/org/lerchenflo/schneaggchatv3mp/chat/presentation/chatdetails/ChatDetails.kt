@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,8 +39,10 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
+import schneaggchatv3mp.composeapp.generated.resources.birthdate
 import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.description_info_group
@@ -136,6 +139,12 @@ fun ChatDetails(
 
             // Status only for user
             if(!group){
+                HorizontalDivider()
+                // Birthdate
+                Text(
+                    text = stringResource(Res.string.birthdate,  iso8601DateFormatter(chatdetailsViewmodel.selectedUser?.birthDate ?: "")),
+                )
+
                 HorizontalDivider()
                 // Status
                 val statusInfoString = stringResource(Res.string.status_info)

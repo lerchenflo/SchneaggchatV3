@@ -38,6 +38,18 @@ fun millisToString(
     return localDateTime.format(formatter)
 }
 
+@OptIn(FormatStringsInDatetimeFormats::class)
+fun iso8601DateFormatter(
+    iso8601Format: String,
+    format: String = "dd.MM.yyyy HH:mm:ss"
+): String {
+    val instant = kotlin.time.Instant.parse(iso8601Format)
+    val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+
+    val formatter = LocalDateTime.Format { byUnicodePattern(format) }
+    return localDateTime.format(formatter)
+}
+
 @OptIn(ExperimentalTime::class)
 @Composable
 fun millisToDuration(millis: Long): String {
