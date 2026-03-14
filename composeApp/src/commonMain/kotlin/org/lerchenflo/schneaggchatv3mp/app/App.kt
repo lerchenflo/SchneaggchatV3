@@ -43,6 +43,7 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.component.getScopeName
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -86,6 +87,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.toFormattedString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
@@ -201,6 +203,20 @@ fun App() {
         ObserveAsEvents(
             flow = navigator.navigationActions
         ){  action ->
+
+            /*
+            println("NAVIGATION: Navigating ${when (action) {
+                is NavigationAction.Navigate -> {
+                    "to " + action.destination
+                }
+                is NavigationAction.NavigateBack -> {
+                    "back"
+                }
+            }
+            } \n${rootBackStack.toFormattedString()}")
+
+             */
+
             val navigationOptions = action.navigationOptions
 
             if (navigationOptions.exitPreviousScreen){
@@ -242,7 +258,6 @@ fun App() {
                     if (rootBackStack.size > 1){
                         rootBackStack.removeAt(rootBackStack.size - 1)
                     }
-
                 }
             }
         }

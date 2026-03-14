@@ -153,7 +153,7 @@ fun ChatScreen(
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
     // Leave chat when not selected
-    if(selectedChat.isNotSelected()){
+    if (selectedChat.isNotSelected()) {
         println("Unselected chat, navigating back")
         viewModel.onBackClick()
     }
@@ -196,9 +196,7 @@ fun ChatScreen(
                         ),
 
                          */
-                        galleryConfig = GalleryConfig(
-                            allowMultiple = true,
-                        )
+
                     )
                 )
             }
@@ -212,7 +210,9 @@ fun ChatScreen(
 
         onDispose {
             // This block runs when the screen is closed or navigated away from
+            println("Chat ondispose running...")
             viewModel.saveDraft()
+            globalViewModel.onLeaveChat()
         }
     }
 

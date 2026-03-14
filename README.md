@@ -17,8 +17,10 @@ Schneaggchat is an innovative chatting platform.
 - Fix for login but no data sync
 - Auto logout on invalid tokens
 - Fix for notifications not showing when app in background
+
 - iOS notification badge fix
 - iOS update Checker fix
+- Android 16+ Navigation fix
 
 
 ### 3.0.5

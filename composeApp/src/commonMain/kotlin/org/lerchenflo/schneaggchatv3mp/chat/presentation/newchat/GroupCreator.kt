@@ -217,7 +217,7 @@ private fun GroupCreatorScreen(
                 onDismiss = {
                     showImagePickerDialog = false
                 },
-                selectionLimit = 1,
+                allowMultiple = false,
                 enableCrop = true,
                 cameraCaptureConfig = CameraCaptureConfig(
                     compressionLevel = CompressionLevel.HIGH,
@@ -229,10 +229,6 @@ private fun GroupCreatorScreen(
                         squareCrop = false,
                         freeformCrop = false
                     ),
-                    galleryConfig = GalleryConfig(
-                        allowMultiple = false,
-                        selectionLimit = 1,
-                    )
                 )
             )
         }

@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -344,13 +345,17 @@ class ChatViewModel(
         saveDraft()
         viewModelScope.launch {
             /*
+
+navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
+                removeAllScreensByRoute = listOf(Route.ChatDetails, Route.Chat)))
+            */
+
+        }
+
+        runBlocking {
             navigator.navigateBack(navigationOptions = Navigator.NavigationOptions(
                 removeAllScreensByRoute = listOf(Route.ChatDetails, Route.Chat)
             ))
-
-            */
-            navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
-                removeAllScreensByRoute = listOf(Route.ChatDetails, Route.Chat)))
         }
     }
 
