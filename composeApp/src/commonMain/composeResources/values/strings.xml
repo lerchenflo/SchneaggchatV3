@@ -103,6 +103,8 @@
     <string name="description_info_user">All friends of %1$s can edit this text, but %1$s cannot.</string>
     <string name="description_info_group">Change the description of this Group</string>
 
+    <string name="birthdate">Birthdate</string>
+
     <string name="no_description">No description</string>
     <string name="remove_friend">remove friend</string>
     <string name="save">save</string>

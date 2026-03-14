@@ -9,7 +9,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,6 +25,7 @@ import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
@@ -38,6 +46,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
@@ -137,6 +146,34 @@ fun ChatDetails(
             // Status only for user
             if(!group){
                 HorizontalDivider()
+                // Birthdate
+
+                ListItem(
+                    headlineContent = {
+                        Text(
+                            text = iso8601DateFormatter(chatdetailsViewmodel.selectedUser?.birthDate ?: ""),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    /*
+                    overlineContent = {
+                        Text(stringResource(Res.string.birthdate))
+                    },
+
+                     */
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Default.Cake, // Or Icons.Default.Event
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    colors = ListItemDefaults.colors(
+                        containerColor = Color.Transparent
+                    )
+                )
+
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 // Status
                 val statusInfoString = stringResource(Res.string.status_info)
 

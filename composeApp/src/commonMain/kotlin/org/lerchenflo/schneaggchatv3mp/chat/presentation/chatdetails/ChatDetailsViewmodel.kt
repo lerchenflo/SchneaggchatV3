@@ -58,6 +58,7 @@ class ChatDetailsViewmodel(
 ) : ViewModel() {
 
     var availableNewMembers by mutableStateOf<List<User>>(emptyList())
+    var selectedUser by mutableStateOf<User?>(null)
 
 
     init {
@@ -76,6 +77,10 @@ class ChatDetailsViewmodel(
                     availableNewMembers = allFriends.filter { friend ->
                         !members.any { member -> member.userId == friend.id }
                     }                }
+            }
+        }else{
+            viewModelScope.launch {
+                selectedUser = userRepository.getUserById(globalViewModel.selectedChat.value.id)
             }
         }
     }
