@@ -133,11 +133,14 @@ fun Chatauswahlscreen(
 
     val connectionToServer = SessionCache.onlineFlow.collectAsStateWithLifecycle()
 
-    //Clear chat when this screen comes to the foreground
+    /*
+    //Clear chat when this screen comes to the foreground (Navigation breaks and with the preview the chat can be not selected
     DisposableEffect(Unit) {
         viewModel.clearChat()
         onDispose { }
     }
+
+     */
 
     Scaffold(
         modifier = modifier,

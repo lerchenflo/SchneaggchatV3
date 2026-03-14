@@ -318,7 +318,7 @@ fun ChatDetails(
             onDismiss = {
                 showImagePickerDialog = false
             },
-            selectionLimit = 1,
+            allowMultiple = false,
             enableCrop = true,
             cameraCaptureConfig = CameraCaptureConfig(
                 compressionLevel = CompressionLevel.HIGH,
@@ -330,10 +330,6 @@ fun ChatDetails(
                     squareCrop = false,
                     freeformCrop = false
                 ),
-                galleryConfig = GalleryConfig(
-                    allowMultiple = false,
-                    selectionLimit = 1,
-                )
             )
         )
     }
