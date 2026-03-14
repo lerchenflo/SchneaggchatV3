@@ -30,6 +30,7 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Image
@@ -109,7 +110,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReaderBar
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.audio.DebugAudioDialog
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.poll.PollDialog
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll.PollDialog
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.DeleteMessageAlert
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.MessageDetailsDialog
@@ -507,7 +507,7 @@ fun ChatScreen(
                 when (val content = currentContent) {
                     is ChatViewModel.SendMessageContent.TextContent -> {
                         OutlinedTextField(
-                            value = content.textFieldValue,
+                            value = content.textMessage,
                             onValueChange = { newValue ->
                                 viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(newValue))
                             },
@@ -517,6 +517,8 @@ fun ChatScreen(
                                 .onPreviewKeyEvent { event ->
                                     if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
                                         if (event.isShiftPressed) {
+                                            // Todo wida vo string uf TextFieldValue Umbaua
+                                            /*
                                             val text = content.textMessage
                                             val selection = content.textFieldValue.selection  // requires TextFieldValue in state
                                             val cursorPos = selection.start
@@ -531,6 +533,8 @@ fun ChatScreen(
                                                     )
                                                 )
                                             )
+
+                                             */
                                             return@onPreviewKeyEvent true  // true to consume and prevent double newline
                                         } else {
                                             viewModel.sendMessage(
@@ -588,7 +592,7 @@ fun ChatScreen(
                                                     viewModel.updateSendContent(
                                                         if (remaining.isEmpty())
                                                             ChatViewModel.SendMessageContent.TextContent(
-                                                                TextFieldValue(content.text))
+                                                                content.text)
                                                         else
                                                             content.copy(images = remaining)
                                                     )
@@ -739,7 +743,7 @@ fun ChatScreen(
 
                 if(viewModel.editMessage == null){ // schoua ob mir gad a nachricht bearbeitend
 
-                    if(currentContentNotEmpty || !SessionCache.developer){ // todo open to public
+                    if(currentContentNotEmpty || !(SessionCache.requireLoggedIn()?.developer ?: false)){ // todo open to public
                         // send button
                         IconButton(
                             onClick = {
