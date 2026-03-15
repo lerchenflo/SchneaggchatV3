@@ -426,7 +426,7 @@ fun App() {
                                             //Log any other error which might occur
                                             AppRepository.ErrorChannel.trySendError(
                                                 event = AppRepository.ErrorChannel.ErrorEvent(
-                                                    error = error,
+                                                    errorCode = error.errorCode,
                                                     duration = 15000
                                                 )
                                             )

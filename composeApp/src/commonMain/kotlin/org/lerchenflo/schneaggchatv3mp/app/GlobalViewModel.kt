@@ -33,12 +33,11 @@ class GlobalViewModel(
 
                 if (SessionCache.isLoggedIn()) {
                     println("App resumed and logged in, triggering sync...")
-                    appRepository.dataSync()
                     appRepository.sendOfflineMessages(ownId)
+                    appRepository.dataSync()
 
                     //On resume clear all error notis
                     NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)
-
 
                     startSocketConnection()
                 }
@@ -53,6 +52,12 @@ class GlobalViewModel(
 
                 if (SessionCache.isLoggedIn() && !socketConnectionManager.isConnectedNow()) {
                     startSocketConnection()
+                }
+
+                if (SessionCache.isLoggedIn() && SessionCache.isOnline()) {
+                    SessionCache.requireLoggedIn()?.userId?.let {
+                        appRepository.sendOfflineMessages(it)
+                    }
                 }
 
                 delay(5000)

@@ -8,10 +8,18 @@ Neue Version in CMP mit Multiplatform für Android, iOS und Desktop
 Schneaggchat is an innovative chatting platform. 
 
 # Changelog
+
+### 3.0.7
+#### Features
+- 
+
+#### Bugfixes
+- Offline message sending fix
+
+
 ### 3.0.6
 #### Features
 - Show birthdate of others
-
 
 #### Bugfixes
 - Fix for my messages showing up as sent by other user

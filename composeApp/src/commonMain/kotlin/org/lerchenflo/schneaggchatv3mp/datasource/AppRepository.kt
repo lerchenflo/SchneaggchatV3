@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.getString
 import org.koin.core.qualifier.named
@@ -1121,9 +1122,15 @@ class AppRepository(
 
 
 
-    fun sendOfflineMessages(ownId: String){
-        CoroutineScope(Dispatchers.IO).launch {
+    private val sendOfflineLock = Mutex()
 
+    suspend fun sendOfflineMessages(ownId: String){
+        if (!sendOfflineLock.tryLock()) {
+            println("Offline sending locked, returning")
+            return
+        }
+
+        try {
             val messages = messageRepository.getUnsentMessages()
 
             //println("Unsent message count: $messages")
@@ -1179,15 +1186,16 @@ class AppRepository(
                         messageId = null,
                         ownId = ownId
                     )
-                    
+
                 } catch (e: Exception){
                     println("Retry send failed for localPK=${m.localPK}: $e")
                     // optional: increment retry counter in DB, break or continue
                 }
 
             }
+        }finally {
+            sendOfflineLock.unlock()
         }
-
     }
 
 

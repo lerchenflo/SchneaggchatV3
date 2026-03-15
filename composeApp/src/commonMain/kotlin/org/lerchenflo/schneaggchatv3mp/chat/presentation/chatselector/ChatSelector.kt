@@ -25,6 +25,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Info
@@ -92,6 +93,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
@@ -446,8 +448,30 @@ fun Chatauswahlscreen(
                 }
 
 
+                val appRepository = koinInject<AppRepository>()
+
+                //Reload button for desktop only
+                if (appRepository.appVersion.isDesktop()) {
+                    Spacer(Modifier.width(10.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .padding(2.dp)
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .clickable { viewModel.refresh() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Autorenew,
+                            contentDescription = "reload data",
+                            modifier = Modifier.size(28.dp),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+
                 /*
-                Spacer(Modifier.width(10.dp))
 
                 Button(
                     onClick = { onNewChatClick() },
