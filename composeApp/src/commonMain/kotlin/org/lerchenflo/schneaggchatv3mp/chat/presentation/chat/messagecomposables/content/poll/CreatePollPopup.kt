@@ -410,7 +410,7 @@ fun PollDialog(
                             WheelDateTimePicker(
                                 modifier = Modifier.fillMaxWidth(),
                                 rowCount = 3,
-                                minDateTime = Clock.System.now().toLocalDateTime(TimeZone.UTC),
+                                minDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
                                 textColor = MaterialTheme.colorScheme.onSurface,
                                 selectorProperties = WheelPickerDefaults.selectorProperties(
                                     enabled = true,
@@ -459,7 +459,7 @@ fun PollDialog(
                                     customAnswersEnabled = allowCustomAnswers,
                                     maxAllowedCustomAnswers = if (allowedCustomAnswerCount == 10) null else allowedCustomAnswerCount,
                                     visibility = visibility,
-                                    closeDate = expiresAt?.toInstant(TimeZone.UTC)
+                                    closeDate = expiresAt?.toInstant(TimeZone.currentSystemDefault())
                                         ?.toEpochMilliseconds(),
                                     voteOptions = options
                                         .filter { it.trim().isNotEmpty() }
