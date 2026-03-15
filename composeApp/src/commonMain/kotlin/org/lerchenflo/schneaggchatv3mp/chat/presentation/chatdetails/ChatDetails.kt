@@ -1,6 +1,13 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails
 
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,11 +18,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cake
+import androidx.compose.material.icons.filled.Celebration
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,7 +34,9 @@ import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
@@ -64,6 +75,7 @@ import schneaggchatv3mp.composeapp.generated.resources.no_description
 import schneaggchatv3mp.composeapp.generated.resources.others_say_about
 import schneaggchatv3mp.composeapp.generated.resources.remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.status_info
+import schneaggchatv3mp.composeapp.generated.resources.today
 import kotlin.time.Clock
 
 
@@ -152,52 +164,73 @@ fun ChatDetails(
             // Status only for user
             if(!group){
                 HorizontalDivider()
-                // Birthdate
 
-                chatdetailsViewmodel.selectedUser?.birthDate?.let {birthDate ->
+                // Birthdate
+                chatdetailsViewmodel.selectedUser?.birthDate?.let { birthDate ->
+
+                    val birthdateParsed = remember { LocalDate.parse(birthDate) }
+                    val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
+
+                    val isToday = birthdateParsed.month == today.month && birthdateParsed.day == today.day
+
+                    val infiniteTransition = rememberInfiniteTransition(label = "birthday")
+                    val animatedAlpha by infiniteTransition.animateFloat(
+                        initialValue = 0.7f,
+                        targetValue = 1f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(800, easing = EaseInOut),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "pulse"
+                    )
+
                     ListItem(
                         headlineContent = {
-
-                            val gebidate = iso8601DateFormatter(
+                            val formattedDate = iso8601DateFormatter(
                                 iso8601Format = birthDate,
                                 format = "dd.MM."
                             )
-
-                            val today = Clock.System.now().toLocalDateTime(TimeZone.UTC).date
-                            val birth = LocalDate.parse(birthDate)
-                            val birthdayThisYear = LocalDate(today.year, birth.month, birth.dayOfMonth)
-
-                            val targetDate = if (birthdayThisYear >= today) birthdayThisYear
-                            else LocalDate(today.year + 1, birth.month, birth.dayOfMonth)
-
-                            val daysUntilBirthday = (targetDate.toEpochDays() - today.toEpochDays())
-
-                            val timeUntilGebiDate = millisToDuration(
-                                millis = daysUntilBirthday * 24 * 60 * 60 * 1000L,
-                                showSeconds = false
-                            )
-
-                            Text(
-                                text = "$gebidate ($timeUntilGebiDate)",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = formattedDate,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal
+                                )
+                                if (isToday) {
+                                    Surface(
+                                        shape = MaterialTheme.shapes.small,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    ) {
+                                        Text(
+                                            text = "🎂 " + stringResource(Res.string.today),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onPrimary,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+                            }
                         },
-                        /*
-                        overlineContent = {
-                            Text(stringResource(Res.string.birthdate))
-                        },
-
-                         */
                         leadingContent = {
                             Icon(
-                                imageVector = Icons.Default.Cake, // Or Icons.Default.Event
+                                imageVector = Icons.Default.Cake,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = if (isToday)
+                                    MaterialTheme.colorScheme.primary.copy(alpha = animatedAlpha)
+                                else
+                                    MaterialTheme.colorScheme.primary,
+                                modifier = if (isToday) Modifier.size(28.dp) else Modifier
                             )
                         },
                         colors = ListItemDefaults.colors(
-                            containerColor = Color.Transparent
-                        )
+                            containerColor = if (isToday)
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                            else
+                                Color.Transparent
+                        ),
                     )
                 }
 
