@@ -22,7 +22,7 @@ kotlin = "2.3.20-RC3"
 ksp = "2.3.5"
 
 kotlinx-coroutines = "1.10.2"
-material3 = "1.11.0-alpha04"
+material3 = "1.11.0-alpha03" #Test for ios input crashes when updating (IRLinkage error)
 materialIconsExtended = "1.7.3"
 room = "2.8.4"
 

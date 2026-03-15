@@ -125,8 +125,7 @@ fun BirthdatePickerPopup(
     defaultDate: LocalDate? = null
 ) {
     val today = remember {
-        // Avoid TimeZone.currentSystemDefault() on iOS — use UTC
-        Clock.System.now().toLocalDateTime(TimeZone.UTC).date
+        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     }
 
     val endOfCurrentYear = remember(today) {
