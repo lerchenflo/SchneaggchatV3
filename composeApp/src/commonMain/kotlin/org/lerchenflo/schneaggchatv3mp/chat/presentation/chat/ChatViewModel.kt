@@ -3,7 +3,6 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.hyochan.audio.AudioRecorderPlayer
@@ -32,6 +31,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -56,6 +56,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
+import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -180,6 +181,7 @@ class ChatViewModel(
 
         if (message is SendMessageContent.TextContent && message.textMessage.isBlank()) return
         if (message is SendMessageContent.ImageContent && message.images.isEmpty()) return
+        if (message is SendMessageContent.AudioContent && message.audioPath.isEmpty()) return
 
         when (message) {
             is SendMessageContent.TextContent -> {
@@ -213,7 +215,20 @@ class ChatViewModel(
                 }
             }
 
-            is SendMessageContent.AudioContent -> AppRepository.MessageContent.TextContent("Audio message not implemented") // TODO
+            is SendMessageContent.AudioContent -> {
+                globalViewModel.viewModelScope.launch {
+                    appRepository.sendMessage(
+                        empfaenger = globalViewModel.selectedChat.value.id,
+                        gruppe = globalViewModel.selectedChat.value.isGroup,
+                        content = AppRepository.MessageContent.AudioContent(
+                            audio = getAudioBytes(message.audioPath)
+                        ),
+                        answerid = replyTo?.id,
+                        messageId = null,
+                        ownId = ownId
+                    )
+                }
+            }
         }
 
         updateReplyMessage(null)
@@ -302,6 +317,17 @@ class ChatViewModel(
                     )
                 }
             }
+            is MessageAction.PlayAudio -> {
+                val filePath = action.audioPath
+                //val playPath = (if (filePath.startsWith("/")) "file:/$filePath" else filePath).trim()
+                //println("DEBUG: Checking file permissions for path (viewmodel)")
+                //val playPath = audioManager.copyToCache(filePath)
+                playAudio(
+                    messageId = action.messageId,
+                    path = filePath
+                )
+            }
+
             is MessageAction.DeleteMessage -> deleteMessage(action.message)
             is MessageAction.StartEditMessage -> {
                 editMessage = action.message
@@ -411,7 +437,7 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                     println("AudioRecorderPlayer lazy-created in startRecording()")
                 }
 
-                val filename = "audioRec_" + getCurrentTimeMillisString() + ".m4a"
+                val filename = getCurrentTimeMillisString() + VOICEMSG_FILE_NAME
                 val path = audioManager.getRecordingPath(filename)
                 
                 println("Starting recording at path: $path")
@@ -453,15 +479,12 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
         }
     }
 
-    fun playAudio() {
+    fun playAudio(messageId: String, path: String) {
         viewModelScope.launch {
-            if(currentSendContent.value is SendMessageContent.AudioContent){
-                audioPlayer.playAudio(
-                    messageId = "audio_record_tmp",
-                    path = (currentSendContent.value as SendMessageContent.AudioContent).audioPath
-                )
-            }
-
+            audioPlayer.playAudio(
+                messageId = messageId,
+                path = path
+            )
         }
     }
 

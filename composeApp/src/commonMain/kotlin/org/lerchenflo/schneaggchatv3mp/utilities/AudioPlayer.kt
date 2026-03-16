@@ -11,6 +11,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.io.buffered
+import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
+import kotlinx.io.readByteArray
 
 class AudioPlayer(
 
@@ -125,3 +129,13 @@ data class PlaybackProgress(
     val isPlaying: Boolean = false,
     val messageId: String? = null
 )
+
+fun getAudioBytes(filePath: String): ByteArray {
+    if(filePath.isEmpty()) return byteArrayOf()
+
+    val path = Path(filePath)
+    val fileSource = SystemFileSystem.source(path).buffered()
+
+    // Read the entire file into a ByteArray
+    return fileSource.readByteArray()
+}

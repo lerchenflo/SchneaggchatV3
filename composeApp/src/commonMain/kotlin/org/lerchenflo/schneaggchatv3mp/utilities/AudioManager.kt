@@ -12,4 +12,7 @@ expect class AudioManager {
      * returns a valid Path (no JVM Impementation)
      */
     fun getRecordingPath(filename: String): String
+
+    suspend fun saveAudioToStorage(audioBytes: ByteArray, filename: String) : String
+
 }

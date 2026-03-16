@@ -1,13 +1,13 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 
 enum class MessageType {
     TEXT,
     IMAGE,
-    POLL
+    POLL,
+    AUDIO
 }
 
 
@@ -19,6 +19,7 @@ data class Message(
     var content: String = "",
     var poll: PollMessage? = null,
     var pictureUrl: String? = null,
+    var audioPath: String? = null,
 
     var senderId: String,
     var receiverId: String,
@@ -109,6 +110,7 @@ fun MessageWithReadersDto.toMessage(): Message = Message(
     content = this.messageDto.content,
     poll = this.messageDto.poll,
     pictureUrl = this.messageDto.pictureUrl,
+    audioPath = this.messageDto.audioPath,
     senderId = this.messageDto.senderId,
     receiverId = this.messageDto.receiverId,
     sendDate = this.messageDto.sendDate,

@@ -34,13 +34,10 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material.icons.filled.StopCircle
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -49,10 +46,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -76,18 +71,12 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.ClipEntry
-import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.NativeClipboard
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
-import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
 import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
@@ -106,6 +95,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel.SendMessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.DayDivider
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReaderBar
@@ -485,7 +475,12 @@ fun ChatScreen(
                         onDismiss = { showDebugAudioDialog = false },
                         onStartRecording = viewModel::startRecording,
                         onStopRecording = viewModel::stopRecording,
-                        onPlay = viewModel::playAudio
+                        onPlay = {
+                            viewModel.playAudio(
+                                messageId = "audio_record_tmp",
+                                path = (viewModel.currentSendContent.value as SendMessageContent.AudioContent).audioPath
+                            )
+                        }
                     )
                 }
 
@@ -690,7 +685,10 @@ fun ChatScreen(
                             }else{
                                 IconButton(
                                     onClick = {
-                                        viewModel.playAudio()
+                                        viewModel.playAudio(
+                                            messageId = "audio_record_tmp",
+                                            path = (viewModel.currentSendContent.value as SendMessageContent.AudioContent).audioPath
+                                        )
                                     }
                                 ) {
                                     Icon(

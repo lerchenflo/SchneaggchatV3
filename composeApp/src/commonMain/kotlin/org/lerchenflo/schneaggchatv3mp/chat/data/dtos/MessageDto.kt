@@ -25,6 +25,7 @@ data class MessageDto(
     var content: String = "",
     var poll: PollMessage? = null,
     var pictureUrl: String? = null,
+    var audioPath: String? = null,
 
     var senderId: String,
 

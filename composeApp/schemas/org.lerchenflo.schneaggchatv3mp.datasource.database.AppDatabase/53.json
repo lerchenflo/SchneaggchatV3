@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 52,
-    "identityHash": "df7c363ff51580cd33d8251a652346ea",
+    "version": 53,
+    "identityHash": "7c8f929c03422b67af8ebb6a096fccbd",
     "entities": [
       {
         "tableName": "users",
@@ -126,7 +126,7 @@
       },
       {
         "tableName": "messages",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localPK` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT, `msgType` TEXT NOT NULL, `content` TEXT NOT NULL, `poll` TEXT, `pictureUrl` TEXT, `audiPath` TEXT, `senderId` TEXT NOT NULL, `receiverId` TEXT NOT NULL, `sendDate` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, `deleted` INTEGER NOT NULL, `myMessage` INTEGER NOT NULL, `readByMe` INTEGER NOT NULL, `groupMessage` INTEGER NOT NULL, `answerId` TEXT, `sent` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localPK` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT, `msgType` TEXT NOT NULL, `content` TEXT NOT NULL, `poll` TEXT, `pictureUrl` TEXT, `audioPath` TEXT, `senderId` TEXT NOT NULL, `receiverId` TEXT NOT NULL, `sendDate` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, `deleted` INTEGER NOT NULL, `myMessage` INTEGER NOT NULL, `readByMe` INTEGER NOT NULL, `groupMessage` INTEGER NOT NULL, `answerId` TEXT, `sent` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "localPK",
@@ -162,8 +162,8 @@
             "affinity": "TEXT"
           },
           {
-            "fieldPath": "audiPath",
-            "columnName": "audiPath",
+            "fieldPath": "audioPath",
+            "columnName": "audioPath",
             "affinity": "TEXT"
           },
           {
@@ -547,7 +547,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'df7c363ff51580cd33d8251a652346ea')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7c8f929c03422b67af8ebb6a096fccbd')"
     ]
   }
 }

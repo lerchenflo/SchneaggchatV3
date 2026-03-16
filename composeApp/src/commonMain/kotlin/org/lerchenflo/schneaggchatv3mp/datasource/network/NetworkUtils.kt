@@ -5,11 +5,15 @@ import io.ktor.client.call.body
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
-import io.ktor.client.request.*
+import io.ktor.client.request.delete
 import io.ktor.client.request.forms.FormBuilder
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
+import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.put
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.Headers
@@ -22,16 +26,16 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText.*
+import org.lerchenflo.schneaggchatv3mp.utilities.UiText.StringResourceText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.accepted
 import schneaggchatv3mp.composeapp.generated.resources.blocked
@@ -801,6 +805,16 @@ class NetworkUtils(
         val content: String,
         val answerId: String?
     )
+    @Serializable
+    data class AudioMessageRequest(
+        val messageId: String?, //Objectid
+
+        val receiverId: String,
+        val groupMessage: Boolean,
+        val msgType: MessageType,
+        //val content: String,
+        val answerId: String?
+    )
 
     @Serializable
     data class PollMessageRequest(
@@ -939,6 +953,43 @@ class NetworkUtils(
         )
     }
 
+    suspend fun sendAudioMessageToServer(
+        empfaenger: String,
+        gruppe: Boolean,
+        audio: ByteArray,
+        answerid: String?
+    ): NetworkResult<MessageResponse, NetworkError> {
+
+        val messageRequest = AudioMessageRequest(
+            messageId = null,
+            receiverId = empfaenger,
+            groupMessage = gruppe,
+            msgType = MessageType.IMAGE,
+            answerId = answerid,
+        )
+
+        return safePostMultipart(
+            endpoint = "/messages/send/audio",
+            parts = {
+                append(
+                    key = "audio",
+                    value = audio,
+                    headers = Headers.build {
+                        append(HttpHeaders.ContentType, "audio/mp4")
+                        append(HttpHeaders.ContentDisposition, "filename=\"message_audio.m4a\"")
+                    }
+                )
+                append(
+                    key = "request",
+                    value = AppJson.instance.encodeToString(AudioMessageRequest.serializer(), messageRequest),
+                    headers = Headers.build {
+                        append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    }
+                )
+            }
+        )
+    }
+
 
     suspend fun sendPollMessageToServer(empfaenger: String, gruppe: Boolean, content: PollCreateRequest, answerid: String?) : NetworkResult<MessageResponse, NetworkError> {
         val pollRequest = PollMessageRequest(
@@ -1008,6 +1059,12 @@ class NetworkUtils(
     suspend fun getImageForImageMessage(messageId: String) : NetworkResult<ByteArray, NetworkError> {
         return safeGet(
             endpoint = "/messages/images/$messageId"
+        )
+    }
+
+    suspend fun getAudioForAudioMessage(messageId: String) : NetworkResult<ByteArray, NetworkError> {
+        return safeGet(
+            endpoint = "/messages/audios/$messageId"
         )
     }
 

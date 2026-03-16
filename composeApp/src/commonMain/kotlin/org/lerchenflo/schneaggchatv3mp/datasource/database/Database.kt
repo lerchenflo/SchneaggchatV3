@@ -18,7 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 @Database(
     entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, TodoEntityDto::class, LogEntry::class, PlayerEntity::class],
     exportSchema = true,
-    version = 52
+    version = 54
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)

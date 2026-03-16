@@ -3,7 +3,6 @@ package org.lerchenflo.schneaggchatv3mp.chat.data
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
@@ -101,6 +100,17 @@ class MessageRepository(
             database.messageDao().upsertMessageDto(
                 dbMessage.messageDto.copy(
                     pictureUrl = newUrl
+                )
+            )
+        }
+    }
+
+    suspend fun updateAudioPath(messageId: String, newPath: String) {
+        val dbMessage = database.messageDao().getMessageById(messageId)
+        if (dbMessage != null) {
+            database.messageDao().upsertMessageDto(
+                dbMessage.messageDto.copy(
+                    audioPath = newPath
                 )
             )
         }
