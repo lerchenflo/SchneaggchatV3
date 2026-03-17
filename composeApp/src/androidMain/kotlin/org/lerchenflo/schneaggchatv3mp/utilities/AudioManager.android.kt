@@ -27,6 +27,13 @@ actual class AudioManager(private val context: Context){
             saveAudioBytes(audioBytes, filename)
         }
 
+    actual suspend fun deleteAudio(filename: String): Boolean =
+        withContext(Dispatchers.IO) {
+            val file = File(context.filesDir, filename)
+            if (!file.exists()) return@withContext false
+            file.delete()
+        }
+
     /*
     actual fun checkFilePermissions(yourPathString: String){
         println("DEBUG: Checking file permissions for path: $yourPathString")

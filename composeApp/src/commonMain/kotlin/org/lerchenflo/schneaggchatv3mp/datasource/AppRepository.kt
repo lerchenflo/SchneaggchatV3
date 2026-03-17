@@ -1099,7 +1099,8 @@ class AppRepository(
                 if (content is MessageContent.ImageContent) {
                     println("Saving image to local storage")
                     pictureManager.savePictureToStorage(content.image, "unsent_" + localpkintern + PICTURE_FILE_NAME)
-
+                }else if (content is MessageContent.AudioContent){
+                    audioManager.saveAudioToStorage(content.audio, "unsent_" + localpkintern + VOICEMSG_FILE_NAME)
                 }
             }
             is NetworkResult.Success<MessageResponse> -> {
@@ -1129,6 +1130,7 @@ class AppRepository(
                             myMessage = true,
                             readByMe = true,
                             pictureUrl = existing?.pictureUrl,
+                            audioPath = existing?.audioPath,
                             readers = serverrequest.data.readers.map {
                                 MessageReader(
                                     readerEntryId = 0L,
@@ -1144,6 +1146,10 @@ class AppRepository(
                         getPicturesForMessageIds(listOf(serverrequest.data.messageId))
 
                         pictureManager.deletePicture("unsent_" + localpkintern + PICTURE_FILE_NAME)
+                    } else if (serverrequest.data.msgType == MessageType.AUDIO) {
+                        getAudiosForMessageIds(listOf(serverrequest.data.messageId))
+
+                        audioManager.deleteAudio("unsent_" + localpkintern + VOICEMSG_FILE_NAME)
                     }
                 }
             }
@@ -1194,7 +1200,7 @@ class AppRepository(
                                 if(m.audioPath == null){
                                     MessageContent.TextContent("Offline audio sending failed")
                                 }
-                                val audio = getAudioBytes(m.audioPath?: "")
+                                val audio = getAudioBytes("unsent_" + m.localPK + VOICEMSG_FILE_NAME)
 
                                 MessageContent.AudioContent(
                                     audio = audio

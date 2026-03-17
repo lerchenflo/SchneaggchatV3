@@ -27,6 +27,10 @@ actual class AudioManager {
     actual suspend fun saveAudioToStorage(audioBytes: ByteArray, filename: String): String {
         return saveBytesToFile(audioBytes, filename)
     }
+
+    actual suspend fun deleteAudio(filename: String): Boolean {
+        return File(getPath(filename)).delete()
+    }
     private fun saveBytesToFile(data: ByteArray, filename: String): String {
         val file = File(getPath(filename))
         file.parentFile?.mkdirs()

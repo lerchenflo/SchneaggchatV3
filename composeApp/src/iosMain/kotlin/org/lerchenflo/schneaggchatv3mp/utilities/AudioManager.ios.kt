@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import platform.Foundation.NSData
 import platform.Foundation.NSDocumentDirectory
+import platform.Foundation.NSFileManager
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSUserDomainMask
 import platform.Foundation.create
@@ -36,6 +37,12 @@ actual class AudioManager {
         withContext(Dispatchers.Default) {
             val nsData = audioBytes.toNSData()
             return@withContext saveData(nsData, filename)
+        }
+    actual suspend fun deleteAudio(filename: String): Boolean =
+        withContext(Dispatchers.Default) {
+            val fileManager = NSFileManager.defaultManager
+            val filePath = "$basePath/$filename"
+            return@withContext fileManager.removeItemAtPath(filePath, null)
         }
 
     private fun saveData(data: NSData, filename: String): String {

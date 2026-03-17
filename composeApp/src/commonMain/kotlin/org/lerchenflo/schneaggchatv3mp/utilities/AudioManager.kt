@@ -15,4 +15,5 @@ expect class AudioManager {
 
     suspend fun saveAudioToStorage(audioBytes: ByteArray, filename: String) : String
 
+    suspend fun deleteAudio(filename: String) : Boolean
 }
