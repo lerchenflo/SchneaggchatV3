@@ -71,12 +71,7 @@ class AudioPlayer(
             // 5. Listen for progress updates
             // Update Flow inside the listener
             audioRecorderPlayer?.addPlaybackListener { progress ->
-                _playbackProgress.value = PlaybackProgress(
-                    currentPosition = progress.currentPosition,
-                    duration = progress.duration,
-                    isPlaying = true,
-                    messageId = messageId
-                )
+
 
                 // Reset state when finished
                 if (progress.currentPosition >= progress.duration && progress.duration > 0) {
@@ -85,6 +80,13 @@ class AudioPlayer(
                         // Reset flow state
                         _playbackProgress.value = PlaybackProgress()
                     }
+                }else{
+                    _playbackProgress.value = PlaybackProgress(
+                        currentPosition = progress.currentPosition,
+                        duration = progress.duration,
+                        isPlaying = true,
+                        messageId = messageId
+                    )
                 }
             }
         } catch (e: Exception) {
@@ -98,9 +100,18 @@ class AudioPlayer(
         try {
             audioRecorderPlayer?.pausePlaying()
             isPlaying = false
+            _playbackProgress.value = _playbackProgress.value.copy(isPlaying = false)
         } catch (e: Exception) {
             //loggingRepository.logWarning("Failed to pause audio: ${e.message}")
             println("Failed to pause audio: ${e.message}")
+        }
+    }
+
+    suspend fun seekTo(position: Long) {
+        try {
+            audioRecorderPlayer?.seekTo(position)
+        }catch (e: Exception) {
+            println("Failed to seeking audio: ${e.message}")
         }
     }
 

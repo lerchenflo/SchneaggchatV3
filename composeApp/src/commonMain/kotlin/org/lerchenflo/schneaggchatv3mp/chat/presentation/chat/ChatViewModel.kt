@@ -326,7 +326,18 @@ class ChatViewModel(
                     messageId = action.messageId,
                     path = filePath
                 )
+                //action.playbackProgress = audioPlayer.playbackProgress
             }
+            is MessageAction.PauseAudio -> {
+                pauseAudio()
+            }
+            is MessageAction.GetPlayback -> {
+                action.playback.value = audioPlayer.playbackProgress.value
+            }
+            is MessageAction.SeekAudio -> {
+                seekAudio(action.position)
+            }
+
 
             is MessageAction.DeleteMessage -> deleteMessage(action.message)
             is MessageAction.StartEditMessage -> {
@@ -485,6 +496,18 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                 messageId = messageId,
                 path = path
             )
+        }
+    }
+
+    fun pauseAudio() {
+        viewModelScope.launch {
+            audioPlayer.pauseAudio()
+        }
+    }
+
+    fun seekAudio(position: Long) {
+        viewModelScope.launch {
+            audioPlayer.seekTo(position)
         }
     }
 

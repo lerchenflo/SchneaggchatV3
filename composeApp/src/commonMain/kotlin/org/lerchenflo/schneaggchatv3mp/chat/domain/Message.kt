@@ -37,6 +37,7 @@ data class Message(
     var readers : List<MessageReader>
 ) {
     fun isPicture(): Boolean = msgType == MessageType.IMAGE
+    fun isAudio(): Boolean = msgType == MessageType.AUDIO
 
     fun isText() : Boolean = msgType == MessageType.TEXT
 

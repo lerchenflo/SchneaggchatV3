@@ -35,7 +35,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material.icons.filled.StopCircle
 import androidx.compose.material3.DropdownMenu
@@ -45,7 +44,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -100,6 +98,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReaderBar
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.audio.DebugAudioDialog
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.audio.AudioPlayerView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll.PollDialog
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.DeleteMessageAlert
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.MessageDetailsDialog
@@ -313,6 +312,7 @@ fun ChatScreen(
                                         showMessageOptionPopup = true
                                     },
                                     onAction = viewModel::onAction,
+                                    playbackProgress = viewModel.getPlaybackProgress(),
                                     readerMap = item.resolvedReaders,
                                     ownId = ownId
                                 )
@@ -401,8 +401,8 @@ fun ChatScreen(
                 // button zum züg addden
 
                 val currentContent by viewModel.currentSendContent.collectAsState()
-                val currentContentNotEmpty = currentContent !is ChatViewModel.SendMessageContent.TextContent
-                        || (currentContent as? ChatViewModel.SendMessageContent.TextContent)?.textMessage?.isNotEmpty() == true
+                val currentContentNotEmpty = currentContent !is SendMessageContent.TextContent
+                        || (currentContent as? SendMessageContent.TextContent)?.textMessage?.isNotEmpty() == true
 
 
                 if(!currentContentNotEmpty){
@@ -488,11 +488,11 @@ fun ChatScreen(
 
                 //sendinput (This is a rowscope)
                 when (val content = currentContent) {
-                    is ChatViewModel.SendMessageContent.TextContent -> {
+                    is SendMessageContent.TextContent -> {
                         OutlinedTextField(
                             value = content.textMessage,
                             onValueChange = { newValue ->
-                                viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(newValue))
+                                viewModel.updateSendContent(SendMessageContent.TextContent(newValue))
                             },
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier
@@ -533,7 +533,7 @@ fun ChatScreen(
                         )
                     }
 
-                    is ChatViewModel.SendMessageContent.ImageContent -> {
+                    is SendMessageContent.ImageContent -> {
                         Column(
                             modifier = Modifier.weight(1f)
                         ) {
@@ -574,7 +574,7 @@ fun ChatScreen(
                                                     val remaining = content.images - imageBytes
                                                     viewModel.updateSendContent(
                                                         if (remaining.isEmpty())
-                                                            ChatViewModel.SendMessageContent.TextContent(
+                                                            SendMessageContent.TextContent(
                                                                 content.text)
                                                         else
                                                             content.copy(images = remaining)
@@ -622,7 +622,7 @@ fun ChatScreen(
                             )
                         }
                     }
-                    is ChatViewModel.SendMessageContent.AudioContent -> {
+                    is SendMessageContent.AudioContent -> {
                         Row(
                             modifier = Modifier
                                 .weight(1f)
@@ -683,26 +683,29 @@ fun ChatScreen(
                                     )
                                 }
                             }else{
-                                IconButton(
-                                    onClick = {
+                                val tmpMsgId = "audio_record_tmp"
+                                val progress by viewModel.getPlaybackProgress().collectAsState()
+                                val isThisMessagePlaying = progress.messageId == tmpMsgId
+                                val currentPosition = if (isThisMessagePlaying) progress.currentPosition else 0L
+                                val duration = if (isThisMessagePlaying) progress.duration else 0L
+                                val isPlaying = isThisMessagePlaying && progress.isPlaying
+                                AudioPlayerView(
+                                    isPlaying = isPlaying,
+                                    currentPosition = currentPosition,
+                                    duration = duration,
+                                    onPlay = {
                                         viewModel.playAudio(
-                                            messageId = "audio_record_tmp",
+                                            messageId = tmpMsgId,
                                             path = (viewModel.currentSendContent.value as SendMessageContent.AudioContent).audioPath
                                         )
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.PlayArrow,
-                                        contentDescription = "play",
-                                        tint = MaterialTheme.colorScheme.error
-                                    )
-                                }
-                                val progress by viewModel.getPlaybackProgress().collectAsState()
-                                Slider(
-                                    modifier = Modifier.weight(1f),
-                                    value = progress.currentPosition.toFloat(),
-                                    valueRange = 0f..progress.duration.toFloat(),
-                                    onValueChange = { /* seek logic */ }
+                                    },
+                                    onPause = {
+                                        viewModel.pauseAudio()
+                                    },
+                                    onSeek = {
+                                        viewModel.seekAudio(it)
+                                    },
+                                    modifier = Modifier.weight(1f)
                                 )
 
                             }
@@ -712,7 +715,7 @@ fun ChatScreen(
                             IconButton(
                                 onClick = {
                                     // Reset to empty text or previous state
-                                    viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(""))
+                                    viewModel.updateSendContent(SendMessageContent.TextContent(""))
                                 }
                             ) {
                                 Icon(

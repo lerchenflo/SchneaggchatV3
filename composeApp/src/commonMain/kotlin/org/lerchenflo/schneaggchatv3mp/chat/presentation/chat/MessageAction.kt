@@ -1,6 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 
 sealed interface MessageAction {
     // Poll actions
@@ -8,7 +10,12 @@ sealed interface MessageAction {
     data class AddCustomPollOption(val messageId: String, val text: String) : MessageAction
 
     // Audio action
-    data class PlayAudio(val messageId: String, val audioPath: String) : MessageAction
+    data class PlayAudio(val messageId: String, val audioPath: String, ) : MessageAction
+    data class PauseAudio(val dummy: Boolean = true) : MessageAction
+
+    data class SeekAudio(val position: Long) : MessageAction
+
+    data class GetPlayback(var playback: MutableStateFlow<PlaybackProgress?>) : MessageAction
 
 
     // Message actions (moving existing ones to be consistent)
