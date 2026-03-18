@@ -32,7 +32,6 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Poll
@@ -97,7 +96,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel.Send
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.DayDivider
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReaderBar
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.audio.DebugAudioDialog
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.audio.AudioPlayerView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll.PollDialog
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.DeleteMessageAlert
@@ -113,7 +111,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.formatMillis
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
-import schneaggchatv3mp.composeapp.generated.resources.audio
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.copied_to_clipboard
 import schneaggchatv3mp.composeapp.generated.resources.edit
@@ -152,7 +149,6 @@ fun ChatScreen(
 
     var showPollDialog by remember { mutableStateOf(false) }
     var showImagePickerDialog by remember { mutableStateOf(false) }
-    var showDebugAudioDialog by remember { mutableStateOf(false) } // Temporary solution until a better ui is created
 
 
     if (showImagePickerDialog) {
@@ -427,11 +423,13 @@ fun ChatScreen(
                     ) {
                         AddMediaOptions.entries.forEach { option ->
 
+                            /*
                             val dev = SessionCache.requireLoggedIn()?.developer ?: return@DropdownMenu
-
                             if(!dev) {
                                 if (option == AddMediaOptions.AUDIO) return@forEach //Removes audio if no dev
                             }
+
+                             */
 
 
                             DropdownMenuItem(
@@ -452,7 +450,6 @@ fun ChatScreen(
                                     option.getAction(
                                         onPollAction = { showPollDialog = true },
                                         onImageAction = { showImagePickerDialog = true }, // todo actions übergeaba
-                                        onAudioAction = {showDebugAudioDialog = true}
                                     )
                                 }
                             )
@@ -469,22 +466,6 @@ fun ChatScreen(
                         }
                     )
                 }
-
-                if(showDebugAudioDialog){
-                    DebugAudioDialog(
-                        onDismiss = { showDebugAudioDialog = false },
-                        onStartRecording = viewModel::startRecording,
-                        onStopRecording = viewModel::stopRecording,
-                        onPlay = {
-                            viewModel.playAudio(
-                                messageId = "audio_record_tmp",
-                                path = (viewModel.currentSendContent.value as SendMessageContent.AudioContent).audioPath
-                            )
-                        }
-                    )
-                }
-
-
 
                 //sendinput (This is a rowscope)
                 when (val content = currentContent) {
@@ -732,7 +713,8 @@ fun ChatScreen(
 
                 if(viewModel.editMessage == null){ // schoua ob mir gad a nachricht bearbeitend
 
-                    if(currentContentNotEmpty || !(SessionCache.requireLoggedIn()?.developer ?: false)){ // todo open to public
+                    // show send when content is not empty or on desktop (no microphone implementation for desktop)
+                    if(currentContentNotEmpty || !(SessionCache.requireLoggedIn()?.developer ?: false) || viewModel.isDesktop()){ // todo open to public
                         // send button
                         IconButton(
                             onClick = {
@@ -854,27 +836,26 @@ fun copyToClipboard(text: String, clipboard: NativeClipboard) {
 
 enum class AddMediaOptions{
     IMAGE,
-    POLL,
-    AUDIO;
+    POLL;
 
     fun toUiText(): UiText = when (this) {
         IMAGE -> UiText.StringResourceText(Res.string.image)
         POLL -> UiText.StringResourceText(Res.string.poll)
-        AUDIO   -> UiText.StringResourceText(Res.string.audio)
+        //AUDIO   -> UiText.StringResourceText(Res.string.audio)
     }
     fun getIcon(): ImageVector = when (this) {
         IMAGE -> Icons.Default.Image
         POLL -> Icons.Default.Poll
-        AUDIO   -> Icons.Default.Headphones
+        //AUDIO   -> Icons.Default.Headphones
     }
 
     fun getAction(
         onImageAction: () -> Unit,
         onPollAction: () -> Unit,
-        onAudioAction: () -> Unit,
+        //onAudioAction: () -> Unit,
     ): Unit = when (this) {
         IMAGE -> onImageAction()
         POLL -> onPollAction()
-        AUDIO -> onAudioAction()
+        //AUDIO -> onAudioAction()
     }
 }

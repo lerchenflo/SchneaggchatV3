@@ -13,7 +13,19 @@ expect class AudioManager {
      */
     fun getRecordingPath(filename: String): String
 
+    /**
+     * saves an audio to storage
+     */
     suspend fun saveAudioToStorage(audioBytes: ByteArray, filename: String) : String
 
+    /**
+     * deletes file from storage
+     */
     suspend fun deleteAudio(filename: String) : Boolean
+
+    /**
+     * checks if file exists
+     */
+
+    fun checkAudioExists(filePath: String) : Boolean
 }

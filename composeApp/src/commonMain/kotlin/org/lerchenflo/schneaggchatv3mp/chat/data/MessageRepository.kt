@@ -54,6 +54,12 @@ class MessageRepository(
         }
     }
 
+    suspend fun getAudioMessages(): List<Message> {
+        return database.messageDao().getAudioMessages().map {
+            it.toMessage()
+        }
+    }
+
     suspend fun getMessageById(id: String) : Message? {
         return database.messageDao().getMessageById(id)?.toMessage()
     }

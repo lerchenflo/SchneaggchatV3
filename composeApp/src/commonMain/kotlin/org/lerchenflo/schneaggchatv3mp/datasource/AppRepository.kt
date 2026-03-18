@@ -268,6 +268,8 @@ class AppRepository(
                     getMissingPics()
                 }
                 awaitAll(errorProfilePicJob)
+
+                // todo picture sync
             }
 
             println("Data sync completed")
@@ -308,6 +310,18 @@ class AppRepository(
         
         if (missingImageMessageIds.isNotEmpty()) {
             launch { getPicturesForMessageIds(missingImageMessageIds) }
+        }
+    }
+
+    suspend fun getMissingAudios() = coroutineScope {
+        // Check audio messages
+        val messages = messageRepository.getAudioMessages()
+        val missingImageMessageIds = messages.filter { audio ->
+            audio.id != null && !audioManager.checkAudioExists(audio.audioPath ?: "")
+        }.map { it.id!! }
+
+        if (missingImageMessageIds.isNotEmpty()) {
+            launch { getAudiosForMessageIds(missingImageMessageIds) }
         }
     }
 

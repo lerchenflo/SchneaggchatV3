@@ -747,4 +747,8 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
         globalViewModel.onLeaveChat()
     }
 
+    fun isDesktop(): Boolean{
+        return appRepository.appVersion.isDesktop()
+    }
+
 }

@@ -34,6 +34,11 @@ actual class AudioManager(private val context: Context){
             file.delete()
         }
 
+    actual fun checkAudioExists(filePath: String): Boolean {
+        val file = File(filePath)
+        return file.exists()
+    }
+
     /*
     actual fun checkFilePermissions(yourPathString: String){
         println("DEBUG: Checking file permissions for path: $yourPathString")

@@ -398,11 +398,20 @@ object NotificationManager{
 
 
     fun showNotification(message: Message) {
-        
-        val senderstring = message.senderAsString
-        val content = if (message.isPicture()) "Pic" else message.content
 
-        showNotification(senderstring, content, NotiId.HexString(message.id!!))
+        runBlocking { // getString is suspend function
+            val senderstring = message.senderAsString
+            //val content = if (message.isPicture()) "Pic" else message.content
+            val content = when (message.msgType) {
+                MessageType.TEXT -> message.content
+                MessageType.IMAGE -> getString(Res.string.image)
+                MessageType.POLL -> getString(Res.string.poll)
+                MessageType.AUDIO -> getString(Res.string.audio)
+            }
+
+            showNotification(senderstring, content, NotiId.HexString(message.id!!))
+        }
+
     }
 
     /**

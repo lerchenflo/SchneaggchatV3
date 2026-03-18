@@ -45,6 +45,11 @@ actual class AudioManager {
             return@withContext fileManager.removeItemAtPath(filePath, null)
         }
 
+    actual fun checkAudioExists(filePath: String): Boolean {
+        val fileManager = NSFileManager.defaultManager
+        return fileManager.fileExistsAtPath(filePath)
+    }
+
     private fun saveData(data: NSData, filename: String): String {
         val filePath = "$basePath/$filename"
         val success = data.writeToFile(

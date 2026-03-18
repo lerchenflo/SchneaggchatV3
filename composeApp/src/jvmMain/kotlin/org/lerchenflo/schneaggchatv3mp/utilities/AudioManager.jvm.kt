@@ -31,6 +31,11 @@ actual class AudioManager {
     actual suspend fun deleteAudio(filename: String): Boolean {
         return File(getPath(filename)).delete()
     }
+
+    actual fun checkAudioExists(filePath: String): Boolean {
+        return File(filePath).exists()
+    }
+
     private fun saveBytesToFile(data: ByteArray, filename: String): String {
         val file = File(getPath(filename))
         file.parentFile?.mkdirs()
