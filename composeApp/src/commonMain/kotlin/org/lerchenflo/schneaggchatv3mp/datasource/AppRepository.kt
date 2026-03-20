@@ -13,6 +13,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.getString
 import org.koin.core.qualifier.named
@@ -931,93 +933,99 @@ class AppRepository(
         data class PollContent(val poll: NetworkUtils.PollCreateRequest) : MessageContent()
     }
 
+
+    val sendMessageLock = Mutex()
+
     /**
      * @param localpk Local pk, only pass if already in db
      *
      */
     suspend fun sendMessage(ownId: String, messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long = 0){
 
-        var localpkintern = localpk
+        sendMessageLock.withLock {
+            var localpkintern = localpk
 
-        val senddate = getCurrentTimeMillisString()
+            val senddate = getCurrentTimeMillisString()
 
-        //Interne message macha die ned alles hot
-        val messageDto = when(content) {
-            is MessageContent.PollContent -> {
-                MessageDto(
-                    localPK = localpkintern,
-                    id = null,
-                    msgType = MessageType.POLL,
-                    content = "",
-                    poll = PollMessage(
-                        creatorId = ownId,
-                        title = content.poll.title,
-                        description = content.poll.description,
-                        maxAnswers = content.poll.maxAnswers,
-                        customAnswersEnabled = content.poll.customAnswersEnabled,
-                        maxAllowedCustomAnswers = content.poll.maxAllowedCustomAnswers,
-                        visibility = content.poll.visibility,
-                        expiresAt = content.poll.closeDate,
-                        voteOptions = content.poll.voteOptions.mapIndexed { index, request ->
-                            PollVoteOption(
-                                id = index.toString(),
-                                text = request.text,
-                                custom = false,
-                                creatorId = ownId,
-                                voters = emptyList()
-                            )
-                        }
-                    ),
-                    senderId = ownId,
-                    receiverId = empfaenger,
-                    sendDate = senddate,
-                    updatedAt = senddate,
-                    deleted = false,
-                    groupMessage = gruppe,
-                    answerId = answerid,
-                    sent = false,
-                    myMessage = true,
-                    readByMe = true
-                )
+            //Interne message macha die ned alles hot
+            val messageDto = when(content) {
+                is MessageContent.PollContent -> {
+                    MessageDto(
+                        localPK = localpkintern,
+                        id = null,
+                        msgType = MessageType.POLL,
+                        content = "",
+                        poll = PollMessage(
+                            creatorId = ownId,
+                            title = content.poll.title,
+                            description = content.poll.description,
+                            maxAnswers = content.poll.maxAnswers,
+                            customAnswersEnabled = content.poll.customAnswersEnabled,
+                            maxAllowedCustomAnswers = content.poll.maxAllowedCustomAnswers,
+                            visibility = content.poll.visibility,
+                            expiresAt = content.poll.closeDate,
+                            voteOptions = content.poll.voteOptions.mapIndexed { index, request ->
+                                PollVoteOption(
+                                    id = index.toString(),
+                                    text = request.text,
+                                    custom = false,
+                                    creatorId = ownId,
+                                    voters = emptyList()
+                                )
+                            }
+                        ),
+                        senderId = ownId,
+                        receiverId = empfaenger,
+                        sendDate = senddate,
+                        updatedAt = senddate,
+                        deleted = false,
+                        groupMessage = gruppe,
+                        answerId = answerid,
+                        sent = false,
+                        myMessage = true,
+                        readByMe = true
+                    )
+                }
+                is MessageContent.TextContent -> {
+                    MessageDto(
+                        localPK = localpkintern,
+                        id = messageId,
+                        msgType = MessageType.TEXT,
+                        content = content.message,
+                        senderId = ownId,
+                        receiverId = empfaenger,
+                        sendDate = senddate,
+                        updatedAt = senddate,
+                        deleted = false,
+                        groupMessage = gruppe,
+                        answerId = answerid,
+                        sent = false,
+                        myMessage = true,
+                        readByMe = true
+                    )
+                }
+
+                is MessageContent.ImageContent -> {
+
+                    MessageDto(
+                        localPK = localpkintern,
+                        id = null,
+                        msgType = MessageType.IMAGE,
+                        content = content.text,
+                        senderId = ownId,
+                        receiverId = empfaenger,
+                        sendDate = senddate,
+                        updatedAt = senddate,
+                        deleted = false,
+                        groupMessage = gruppe,
+                        answerId = answerid,
+                        sent = false,
+                        myMessage = true,
+                        readByMe = true
+                    )
+                }
             }
-            is MessageContent.TextContent -> {
-                MessageDto(
-                    localPK = localpkintern,
-                    id = messageId,
-                    msgType = MessageType.TEXT,
-                    content = content.message,
-                    senderId = ownId,
-                    receiverId = empfaenger,
-                    sendDate = senddate,
-                    updatedAt = senddate,
-                    deleted = false,
-                    groupMessage = gruppe,
-                    answerId = answerid,
-                    sent = false,
-                    myMessage = true,
-                    readByMe = true
-                )
-            }
-
-            is MessageContent.ImageContent -> {
-
-                MessageDto(
-                    localPK = localpkintern,
-                    id = null,
-                    msgType = MessageType.IMAGE,
-                    content = content.text,
-                    senderId = ownId,
-                    receiverId = empfaenger,
-                    sendDate = senddate,
-                    updatedAt = senddate,
-                    deleted = false,
-                    groupMessage = gruppe,
-                    answerId = answerid,
-                    sent = false,
-                    myMessage = true,
-                    readByMe = true
-                )
-            }
+            
             is MessageContent.AudioContent -> {
 
                 MessageDto(
@@ -1039,102 +1047,92 @@ class AppRepository(
             }
         }
 
-        //Nachricht hot scho a pk vo da db, also scho din
-        if (localpkintern == 0L){
-            localpkintern = database.messageDao().insertMessageDto(messageDto)
-            println("LocalPK: $localpkintern")
-        }
-
-
-        val serverrequest = when (content) {
-            is MessageContent.PollContent -> {
-                networkUtils.sendPollMessageToServer(
-                    empfaenger = empfaenger,
-                    gruppe = gruppe,
-                    content = content.poll,
-                    answerid = answerid
-                )
-            }
-            is MessageContent.TextContent -> {
-                networkUtils.sendTextMessageToServer(
-                    messageId = messageId,
-                    empfaenger = empfaenger,
-                    gruppe = gruppe,
-                    content = content.message,
-                    answerid = answerid
-                )
+            //Nachricht hot scho a pk vo da db, also scho din
+            if (localpkintern == 0L){
+                localpkintern = database.messageDao().insertMessageDto(messageDto)
+                println("LocalPK: $localpkintern")
             }
 
-            is MessageContent.ImageContent -> {
-                networkUtils.sendImageMessageToServer(
-                    empfaenger = empfaenger,
-                    gruppe = gruppe,
-                    image = content.image,
-                    text = content.text,
-                    answerid = answerid
-                )
-            }
-            is MessageContent.AudioContent -> {
-                networkUtils.sendAudioMessageToServer(
-                    empfaenger = empfaenger,
-                    gruppe = gruppe,
-                    audio = content.audio,
-                    answerid = answerid
-                )
-            }
-        }
 
-        when (serverrequest){
-            is NetworkResult.Error<*> -> {
-                println("Message senden error: ${serverrequest.error}")
-                if (content is MessageContent.ImageContent) {
-                    println("Saving image to local storage")
-                    pictureManager.savePictureToStorage(content.image, "unsent_" + localpkintern + PICTURE_FILE_NAME)
-                }else if (content is MessageContent.AudioContent){
-                    audioManager.saveAudioToStorage(content.audio, "unsent_" + localpkintern + VOICEMSG_FILE_NAME)
+            val serverrequest = when (content) {
+                is MessageContent.PollContent -> {
+                    networkUtils.sendPollMessageToServer(
+                        empfaenger = empfaenger,
+                        gruppe = gruppe,
+                        content = content.poll,
+                        answerid = answerid
+                    )
+                }
+                is MessageContent.TextContent -> {
+                    networkUtils.sendTextMessageToServer(
+                        messageId = messageId,
+                        empfaenger = empfaenger,
+                        gruppe = gruppe,
+                        content = content.message,
+                        answerid = answerid
+                    )
+                }
+
+                is MessageContent.ImageContent -> {
+                    networkUtils.sendImageMessageToServer(
+                        empfaenger = empfaenger,
+                        gruppe = gruppe,
+                        image = content.image,
+                        text = content.text,
+                        answerid = answerid
+                    )
                 }
             }
-            is NetworkResult.Success<MessageResponse> -> {
-                withContext(Dispatchers.IO) {
 
-                    println("Messageid returned from server: ${serverrequest.data.messageId}")
+            when (serverrequest){
+                is NetworkResult.Error<*> -> {
+                    println("Message senden error: ${serverrequest.error}")
+                    if (content is MessageContent.ImageContent) {
+                        println("Saving image to local storage")
+                        pictureManager.savePictureToStorage(content.image, "unsent_" + localpkintern + PICTURE_FILE_NAME)
 
-                    val existing = database.messageDao().getMessageDtoById(serverrequest.data.messageId)
+                    }
+                }
+                is NetworkResult.Success<MessageResponse> -> {
+                    withContext(Dispatchers.IO) {
 
-                    messageRepository.upsertMessage(
-                        Message(
-                            localPK = localpkintern,
-                            id = serverrequest.data.messageId,
-                            msgType = serverrequest.data.msgType,
+                        println("Messageid returned from server: ${serverrequest.data.messageId}")
 
-                            content = serverrequest.data.content,
-                            poll = serverrequest.data.pollResponse?.toPollMessage(ownId),
+                        val existing = database.messageDao().getMessageDtoById(serverrequest.data.messageId)
 
-                            senderId = serverrequest.data.senderId,
-                            receiverId = serverrequest.data.receiverId,
-                            sendDate = serverrequest.data.sendDate.toString(),
-                            changeDate = serverrequest.data.lastChanged.toString(),
-                            deleted = serverrequest.data.deleted,
-                            groupMessage = serverrequest.data.groupMessage,
-                            answerId = serverrequest.data.answerId,
-                            sent = true,
-                            myMessage = true,
-                            readByMe = true,
-                            pictureUrl = existing?.pictureUrl,
-                            audioPath = existing?.audioPath,
-                            readers = serverrequest.data.readers.map {
-                                MessageReader(
-                                    readerEntryId = 0L,
-                                    messageId = serverrequest.data.messageId,
-                                    readerId = it.userId,
-                                    readDate = it.readAt.toString()
-                                )
-                            }
+                        messageRepository.upsertMessage(
+                            Message(
+                                localPK = localpkintern,
+                                id = serverrequest.data.messageId,
+                                msgType = serverrequest.data.msgType,
+
+                                content = serverrequest.data.content,
+                                poll = serverrequest.data.pollResponse?.toPollMessage(ownId),
+
+                                senderId = serverrequest.data.senderId,
+                                receiverId = serverrequest.data.receiverId,
+                                sendDate = serverrequest.data.sendDate.toString(),
+                                changeDate = serverrequest.data.lastChanged.toString(),
+                                deleted = serverrequest.data.deleted,
+                                groupMessage = serverrequest.data.groupMessage,
+                                answerId = serverrequest.data.answerId,
+                                sent = true,
+                                myMessage = true,
+                                readByMe = true,
+                                pictureUrl = existing?.pictureUrl,
+                                readers = serverrequest.data.readers.map {
+                                    MessageReader(
+                                        readerEntryId = 0L,
+                                        messageId = serverrequest.data.messageId,
+                                        readerId = it.userId,
+                                        readDate = it.readAt.toString()
+                                    )
+                                }
+                            )
                         )
-                    )
 
-                    if (serverrequest.data.msgType == MessageType.IMAGE) {
-                        getPicturesForMessageIds(listOf(serverrequest.data.messageId))
+                        if (serverrequest.data.msgType == MessageType.IMAGE) {
+                            getPicturesForMessageIds(listOf(serverrequest.data.messageId))
 
                         pictureManager.deletePicture("unsent_" + localpkintern + PICTURE_FILE_NAME)
                     } else if (serverrequest.data.msgType == MessageType.AUDIO) {
@@ -1152,87 +1150,85 @@ class AppRepository(
 
     private val sendOfflineLock = Mutex()
 
+    /**
+     * Send offline messages. Locks this function, and calls the sendmessage for every message.
+     * No async, because multiple messages could be sent at the same time.
+     * Always wait for the send lock to be unlocked, that way there can not be an unsent message
+     * be retrieved from the db as unsent while it is already sending.
+     */
     suspend fun sendOfflineMessages(ownId: String){
-        if (!sendOfflineLock.tryLock()) {
-            println("Offline sending locked, returning")
-            return
-        }
+        sendOfflineLock.withLock {
 
-        try {
-            val messages = messageRepository.getUnsentMessages()
+            while (true) {
 
-            //println("Unsent message count: $messages")
-
-            //Do no parallel des loft jetzt alles seriell
-            for (m in messages){
-                try {
-                    sendMessage(
-                        empfaenger = m.receiverId,
-                        gruppe = m.groupMessage,
-                        content = when (m.msgType) {
-                            MessageType.TEXT -> {
-                                MessageContent.TextContent(m.content)
-                            }
-
-                            MessageType.IMAGE -> {
-                                val image =
-                                    pictureManager.loadPictureFromStorage("unsent_" + m.localPK + PICTURE_FILE_NAME)
-
-                                if (image == null) {
-                                    MessageContent.TextContent("Offline image sending failed")
-                                } else {
-                                    MessageContent.ImageContent(
-                                        image = image,
-                                        text = m.content
-                                    )
-                                }
-                            }
-                            MessageType.AUDIO -> {
-                                if(m.audioPath == null){
-                                    MessageContent.TextContent("Offline audio sending failed")
-                                }
-                                val audio = getAudioBytes("unsent_" + m.localPK + VOICEMSG_FILE_NAME)
-
-                                MessageContent.AudioContent(
-                                    audio = audio
-                                )
-                            }
-
-                            MessageType.POLL -> {
-
-                                val poll = m.poll!!
-                                MessageContent.PollContent(
-                                    NetworkUtils.PollCreateRequest(
-                                        title = poll.title,
-                                        description = poll.description,
-                                        maxAnswers = poll.maxAnswers,
-                                        customAnswersEnabled = poll.customAnswersEnabled,
-                                        maxAllowedCustomAnswers = poll.maxAllowedCustomAnswers,
-                                        visibility = poll.visibility,
-                                        closeDate = poll.expiresAt,
-                                        voteOptions = poll.voteOptions.map {
-                                            NetworkUtils.PollVoteOptionCreateRequest(
-                                                text = it.text
-                                            )
-                                        }
-                                    )
-                                )
-                            }
-                        },
-                        answerid = m.answerId,
-                        localpk = m.localPK,
-                        messageId = null,
-                        ownId = ownId
-                    )
-
-                } catch (e: Exception){
-                    println("Retry send failed for localPK=${m.localPK}: $e")
-                    // optional: increment retry counter in DB, break or continue
+                while (sendMessageLock.isLocked) {
+                    //If the message sending lock is active, do not send offline messages
+                    //println("OFFLINE MESSAGE SENDING: Sending in progress, waiting for lock")
+                    delay(5)
                 }
 
+
+                val messages = messageRepository.getUnsentMessages()
+                if (messages.isEmpty()) {
+                    //println("OFFLINE MESSAGE SENDING: NO UNSENT MESSAGES")
+                    return
+                }
+
+                val m = messages.first()
+
+                sendMessage(
+                    empfaenger = m.receiverId,
+                    gruppe = m.groupMessage,
+                    content = when (m.msgType) {
+                        MessageType.TEXT -> {
+                            MessageContent.TextContent(m.content)
+                        }
+
+                        MessageType.IMAGE -> {
+                            val image =
+                                pictureManager.loadPictureFromStorage("unsent_" + m.localPK + PICTURE_FILE_NAME)
+
+                            if (image == null) {
+                                MessageContent.TextContent("Offline image sending failed")
+                            } else {
+                                MessageContent.ImageContent(
+                                    image = image,
+                                    text = m.content
+                                )
+                            }
+                        }
+
+                        MessageType.POLL -> {
+
+                            val poll = m.poll!!
+                            MessageContent.PollContent(
+                                NetworkUtils.PollCreateRequest(
+                                    title = poll.title,
+                                    description = poll.description,
+                                    maxAnswers = poll.maxAnswers,
+                                    customAnswersEnabled = poll.customAnswersEnabled,
+                                    maxAllowedCustomAnswers = poll.maxAllowedCustomAnswers,
+                                    visibility = poll.visibility,
+                                    closeDate = poll.expiresAt,
+                                    voteOptions = poll.voteOptions.map {
+                                        NetworkUtils.PollVoteOptionCreateRequest(
+                                            text = it.text
+                                        )
+                                    }
+                                )
+                            )
+                        }
+                    },
+                    answerid = m.answerId,
+                    localpk = m.localPK,
+                    messageId = null,
+                    ownId = ownId
+                )
+
+
             }
-        }finally {
-            sendOfflineLock.unlock()
+
+
         }
     }
 

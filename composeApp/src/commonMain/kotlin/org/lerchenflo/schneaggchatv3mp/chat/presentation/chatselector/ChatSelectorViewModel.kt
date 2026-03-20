@@ -104,11 +104,6 @@ class ChatSelectorViewModel(
 
         updateIsLoadingMessages(true)
 
-
-        //println("refreshjob starting")
-
-        //TODO: FIX THIS CODE FLO
-
         refreshJob = viewModelScope.launch {
 
             try {
@@ -120,6 +115,8 @@ class ChatSelectorViewModel(
                 ensureActive()
                 loggingRepository.logWarning("ChatSelector refresh failed: ${e.message}")
             }
+
+            delay(200) //Debounce
 
             updateIsLoadingMessages(false)
         }

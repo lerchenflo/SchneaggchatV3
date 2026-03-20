@@ -37,6 +37,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import org.jetbrains.compose.resources.getString
@@ -347,42 +348,39 @@ fun App() {
 
                         //Authentication
                         entry<Route.AutoLoginCredChecker> {
-                            //Content of this screen
-
                             val globalViewModel = koinInject<GlobalViewModel>()
 
-                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
 
-                            //Load initial credentials
-                            LaunchedEffect(this) { //THis key to relaunch on notification click (Launchedeffekt triggered again) -> User not stuck in infinite loading screen
-                                //Load saved credentials (Tokens, Userid)
-                                val savedCreds = appRepository.loadSavedLoginConfig() //Returns boolean
-
-                                if (!savedCreds){
-                                    //No tokens are saved, we navigate to the login
-                                    navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(
-                                        exitAllPreviousScreens = true
-                                    ))
-                                }else {
-
-                                    //At this point there were credentials loaded from storage
-                                    //Navigate to the chat
-                                    navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(
-                                        exitAllPreviousScreens = true
-                                    ))
-
-                                    //Launch data sync async
-                                    globalViewModel.viewModelScope.launch {
-                                        // Data sync will automatically trigger token refresh if needed
-                                        try {
-                                            appRepository.dataSync()
-                                        } catch (e: Exception) {
-                                            println("Data sync error: ${e.message}")
+                            LaunchedEffect(Unit) {
+                                if (SessionCache.isLoggedIn()) { //If already logged in reroute to chatselector
+                                    println("LOGGED IN; rerouting to chatselector")
+                                    scope.launch {
+                                        navigator.navigate(
+                                            Route.ChatSelector,
+                                            navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
+                                        )
+                                    }
+                                } else {
+                                    val savedCreds = appRepository.loadSavedLoginConfig()
+                                    if (!savedCreds) {
+                                        navigator.navigate(
+                                            Route.Login,
+                                            navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
+                                        )
+                                    } else {
+                                        navigator.navigate(
+                                            Route.ChatSelector,
+                                            navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
+                                        )
+                                        globalViewModel.viewModelScope.launch {
+                                            try { appRepository.dataSync() }
+                                            catch (e: Exception) { println("Data sync error: ${e.message}") }
                                         }
                                     }
                                 }
-
-
                             }
                         }
 
