@@ -51,6 +51,11 @@ val sharedmodule = module{
 
     singleOf(::TokenManager)
 
+    //Network utils must be created before HttpClients to avoid circular dependency
+    single<NetworkUtils> {
+        NetworkUtils(get(named("api")), get(named("auth")), get(), get())
+    }
+
     single <HttpClient>(named("api")) { createHttpClient(get(), get(), true) }
 
     single <HttpClient>(named("auth")) { createHttpClient(get(), get(), false) }
@@ -70,10 +75,6 @@ val sharedmodule = module{
     singleOf(::TodoRepository)
     singleOf(::LoggingRepository)
 
-
-    single<NetworkUtils> {
-        NetworkUtils(get(named("api")), get(named("auth")), get(), get())
-    }
 
     // Socket Connection Manager
     single<SocketConnectionManager> {

@@ -86,14 +86,6 @@ class ChatSelectorViewModel(
     }
 
 
-
-    fun clearChat(){
-        viewModelScope.launch {
-            globalViewModel.onLeaveChat()
-        }
-    }
-
-
     private var refreshJob: Job? = null
 
     fun refresh() {
@@ -102,7 +94,6 @@ class ChatSelectorViewModel(
         // if a refresh is already running, do nothing
         if (refreshJob?.isActive == true) {
             println("Refreshjob already running, abort")
-
             return
         }
 
@@ -116,29 +107,10 @@ class ChatSelectorViewModel(
 
         //println("refreshjob starting")
 
+        //TODO: FIX THIS CODE FLO
 
         refreshJob = viewModelScope.launch {
 
-            if (!SessionCache.isLoggedIn()){
-
-                println("Not logged in, trying to refresh token")
-                appRepository.refreshTokens()
-
-                val becameLoggedIn = withTimeoutOrNull(10_000L) {
-                    while (!SessionCache.isLoggedIn()) {
-                        delay(1_000L) // retry after 1 second
-                    }
-                    true // logged in
-                } ?: false // timed out -> false
-
-                if (!becameLoggedIn) {
-                    // timed out waiting for login — exit silently or log
-                    println("refresh() aborted: user did not log in within 10s")
-                    return@launch
-                }
-            }
-
-            // at this point we're guaranteed logged in (or the condition was already true)
             try {
                 // send queued messages
                 appRepository.sendOfflineMessages(ownId)

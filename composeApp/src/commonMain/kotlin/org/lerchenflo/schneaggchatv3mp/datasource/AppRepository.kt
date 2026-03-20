@@ -541,29 +541,6 @@ class AppRepository(
     }
 
 
-    var refreshTokenRequestRunning = false //Stop concurrent requests
-    /**
-     * Function to refresh the tokens
-     */
-    suspend fun refreshTokens() : RequestError? {
-        if (refreshTokenRequestRunning){
-            return null
-        }
-        refreshTokenRequestRunning = true
-
-        println("Tokenmanager refreshing tokenbs")
-        val error = tokenManager.refreshTokenPairLocked(networkUtils)
-
-        if (error == null) {
-            println("Tokenpair refresh successful")
-            KoinPlatform.getKoin().get<HttpClient>(qualifier = named("api")).clearAuthTokens()
-        } else {
-            println("Refreshing tokens failed: $error")
-        }
-
-        refreshTokenRequestRunning = false
-        return error
-    }
 
     /**
      * Function to load all initial data on app start
