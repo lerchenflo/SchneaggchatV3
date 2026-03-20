@@ -16,6 +16,8 @@ Schneaggchat is an innovative chatting platform.
 #### Bugfixes
 - Offline message sending fix
 - Access token validity fix
+- Infinite loading screen on notification click fix
+- Login crash fix
 
 
 ### 3.0.6
