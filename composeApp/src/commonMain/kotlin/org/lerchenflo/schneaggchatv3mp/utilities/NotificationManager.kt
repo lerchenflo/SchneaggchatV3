@@ -2,10 +2,8 @@ package org.lerchenflo.schneaggchatv3mp.utilities
 
 import com.mmk.kmpnotifier.notification.NotifierManager
 import com.mmk.kmpnotifier.notification.PayloadData
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -23,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.audio
 import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti_body
@@ -259,6 +258,7 @@ object NotificationManager{
                                                 MessageType.TEXT -> notiObject.getDecodedContent(encryptionkey)
                                                 MessageType.IMAGE -> getString(Res.string.image)
                                                 MessageType.POLL -> getString(Res.string.poll)
+                                                MessageType.AUDIO -> getString(Res.string.audio)
                                             }
 
                                         // Show notification
@@ -398,11 +398,20 @@ object NotificationManager{
 
 
     fun showNotification(message: Message) {
-        
-        val senderstring = message.senderAsString
-        val content = if (message.isPicture()) "Pic" else message.content
 
-        showNotification(senderstring, content, NotiId.HexString(message.id!!))
+        runBlocking { // getString is suspend function
+            val senderstring = message.senderAsString
+            //val content = if (message.isPicture()) "Pic" else message.content
+            val content = when (message.msgType) {
+                MessageType.TEXT -> message.content
+                MessageType.IMAGE -> getString(Res.string.image)
+                MessageType.POLL -> getString(Res.string.poll)
+                MessageType.AUDIO -> getString(Res.string.audio)
+            }
+
+            showNotification(senderstring, content, NotiId.HexString(message.id!!))
+        }
+
     }
 
     /**
