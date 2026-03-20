@@ -52,8 +52,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.sendErrorSuspend
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.trySendError
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.*
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.*
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
@@ -949,7 +951,7 @@ class AppRepository(
 
             //Interne message macha die ned alles hot
             val messageDto = when(content) {
-                is MessageContent.PollContent -> {
+                is PollContent -> {
                     MessageDto(
                         localPK = localpkintern,
                         id = null,
@@ -986,7 +988,7 @@ class AppRepository(
                         readByMe = true
                     )
                 }
-                is MessageContent.TextContent -> {
+                is TextContent -> {
                     MessageDto(
                         localPK = localpkintern,
                         id = messageId,
@@ -1005,7 +1007,7 @@ class AppRepository(
                     )
                 }
 
-                is MessageContent.ImageContent -> {
+                is ImageContent -> {
 
                     MessageDto(
                         localPK = localpkintern,
@@ -1024,28 +1026,28 @@ class AppRepository(
                         readByMe = true
                     )
                 }
-            }
-            
-            is MessageContent.AudioContent -> {
 
-                MessageDto(
-                    localPK = localpkintern,
-                    id = null,
-                    msgType = MessageType.AUDIO,
-                    //content = content.text,
-                    senderId = ownId,
-                    receiverId = empfaenger,
-                    sendDate = senddate,
-                    updatedAt = senddate,
-                    deleted = false,
-                    groupMessage = gruppe,
-                    answerId = answerid,
-                    sent = false,
-                    myMessage = true,
-                    readByMe = true
-                )
+                is MessageContent.AudioContent -> {
+
+                    MessageDto(
+                        localPK = localpkintern,
+                        id = null,
+                        msgType = MessageType.AUDIO,
+                        //content = content.text,
+                        senderId = ownId,
+                        receiverId = empfaenger,
+                        sendDate = senddate,
+                        updatedAt = senddate,
+                        deleted = false,
+                        groupMessage = gruppe,
+                        answerId = answerid,
+                        sent = false,
+                        myMessage = true,
+                        readByMe = true
+                    )
+                }
             }
-        }
+
 
             //Nachricht hot scho a pk vo da db, also scho din
             if (localpkintern == 0L){
@@ -1055,7 +1057,7 @@ class AppRepository(
 
 
             val serverrequest = when (content) {
-                is MessageContent.PollContent -> {
+                is PollContent -> {
                     networkUtils.sendPollMessageToServer(
                         empfaenger = empfaenger,
                         gruppe = gruppe,
@@ -1063,7 +1065,7 @@ class AppRepository(
                         answerid = answerid
                     )
                 }
-                is MessageContent.TextContent -> {
+                is TextContent -> {
                     networkUtils.sendTextMessageToServer(
                         messageId = messageId,
                         empfaenger = empfaenger,
@@ -1073,12 +1075,21 @@ class AppRepository(
                     )
                 }
 
-                is MessageContent.ImageContent -> {
+                is ImageContent -> {
                     networkUtils.sendImageMessageToServer(
                         empfaenger = empfaenger,
                         gruppe = gruppe,
                         image = content.image,
                         text = content.text,
+                        answerid = answerid
+                    )
+                }
+
+                is MessageContent.AudioContent -> {
+                    networkUtils.sendAudioMessageToServer(
+                        empfaenger = empfaenger,
+                        gruppe = gruppe,
+                        audio = content.audio,
                         answerid = answerid
                     )
                 }
@@ -1098,7 +1109,8 @@ class AppRepository(
 
                         println("Messageid returned from server: ${serverrequest.data.messageId}")
 
-                        val existing = database.messageDao().getMessageDtoById(serverrequest.data.messageId)
+                        val existing =
+                            database.messageDao().getMessageDtoById(serverrequest.data.messageId)
 
                         messageRepository.upsertMessage(
                             Message(
@@ -1133,12 +1145,12 @@ class AppRepository(
 
                         if (serverrequest.data.msgType == MessageType.IMAGE) {
                             getPicturesForMessageIds(listOf(serverrequest.data.messageId))
+                            pictureManager.deletePicture("unsent_" + localpkintern + PICTURE_FILE_NAME)
+                        } else if (serverrequest.data.msgType == MessageType.AUDIO) {
+                            getAudiosForMessageIds(listOf(serverrequest.data.messageId))
 
-                        pictureManager.deletePicture("unsent_" + localpkintern + PICTURE_FILE_NAME)
-                    } else if (serverrequest.data.msgType == MessageType.AUDIO) {
-                        getAudiosForMessageIds(listOf(serverrequest.data.messageId))
-
-                        audioManager.deleteAudio("unsent_" + localpkintern + VOICEMSG_FILE_NAME)
+                            audioManager.deleteAudio("unsent_" + localpkintern + VOICEMSG_FILE_NAME)
+                        }
                     }
                 }
             }
@@ -1181,7 +1193,7 @@ class AppRepository(
                     gruppe = m.groupMessage,
                     content = when (m.msgType) {
                         MessageType.TEXT -> {
-                            MessageContent.TextContent(m.content)
+                            TextContent(m.content)
                         }
 
                         MessageType.IMAGE -> {
@@ -1189,9 +1201,9 @@ class AppRepository(
                                 pictureManager.loadPictureFromStorage("unsent_" + m.localPK + PICTURE_FILE_NAME)
 
                             if (image == null) {
-                                MessageContent.TextContent("Offline image sending failed")
+                                TextContent("Offline image sending failed")
                             } else {
-                                MessageContent.ImageContent(
+                                ImageContent(
                                     image = image,
                                     text = m.content
                                 )
@@ -1201,8 +1213,8 @@ class AppRepository(
                         MessageType.POLL -> {
 
                             val poll = m.poll!!
-                            MessageContent.PollContent(
-                                NetworkUtils.PollCreateRequest(
+                            PollContent(
+                                PollCreateRequest(
                                     title = poll.title,
                                     description = poll.description,
                                     maxAnswers = poll.maxAnswers,
@@ -1211,11 +1223,22 @@ class AppRepository(
                                     visibility = poll.visibility,
                                     closeDate = poll.expiresAt,
                                     voteOptions = poll.voteOptions.map {
-                                        NetworkUtils.PollVoteOptionCreateRequest(
+                                        PollVoteOptionCreateRequest(
                                             text = it.text
                                         )
                                     }
                                 )
+                            )
+                        }
+
+                        MessageType.AUDIO -> {
+                            if(m.audioPath == null){
+                                MessageContent.TextContent("Offline audio sending failed")
+                            }
+                            val audio = getAudioBytes("unsent_" + m.localPK + VOICEMSG_FILE_NAME)
+
+                            MessageContent.AudioContent(
+                                audio = audio
                             )
                         }
                     },
