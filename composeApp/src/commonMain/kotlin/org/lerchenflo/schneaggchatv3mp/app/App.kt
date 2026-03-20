@@ -269,15 +269,8 @@ fun App() {
             scope.launch {
                 when (action) {
                     AppRepository.ActionChannel.ActionEvent.Login -> {
-                        val error = appRepository.refreshTokens()
-                        if (error is NetworkError.Unauthorized) {
-
-                            //Token refresh failed, log the user out
-                            println("token refresh failed, rerouting to login")
-                            loggingRepository.logWarning("Logging out: Token refresh failed when trying to access a ressource with restricted access")
-
-                            AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
-                        }
+                        // Login action handled automatically by HTTP client refresh
+                        // No manual refresh needed
                     }
 
                     AppRepository.ActionChannel.ActionEvent.AuthInvalidated -> {
@@ -378,58 +371,13 @@ fun App() {
                                         exitAllPreviousScreens = true
                                     ))
 
-                                    //Launch a token refresh async
+                                    //Launch data sync async
                                     globalViewModel.viewModelScope.launch {
-
-                                        //Refresh the tokens (If there is an error which is not a network error (Access denied, tokens invalidated) we need to log out again)
-                                        val error = appRepository.refreshTokens()
-
-                                        //If no error happenend, sync all data with the server and return
-                                        if (error == null) {
+                                        // Data sync will automatically trigger token refresh if needed
+                                        try {
                                             appRepository.dataSync()
-                                            return@launch
-                                        }
-
-                                        //At this point an error happened during token refresh
-                                        println("Autologin token refresh error: $error")
-
-                                        //Is the error a connection error (Connection to the server could not be established)
-                                        if (error.isConnectionError()){
-                                            println("Autologin connection error")
-
-                                            //No sense to sync data, return
-                                            return@launch
-                                        }
-
-
-                                        //Now there should only be real server errors left
-                                        if (error is NetworkError.Unauthorized){
-                                            println("Autologin not permitted by server, rerouting to login")
-
-                                            //Throwing an error message for the user
-                                            AppRepository.ErrorChannel.trySendError(
-                                                event = AppRepository.ErrorChannel.ErrorEvent(
-                                                    401,
-                                                    errorMessageUiText = UiText.StringResourceText(Res.string.error_access_not_permitted),
-                                                    duration = 5000L,
-                                                )
-                                            )
-
-                                            //deleting all saved credentials, they will be invalid on next app start too
-                                            appRepository.logout()
-
-                                            //Navigate back to the loginscreen
-                                            navigator.navigate(Route.Login, navigationOptions = Navigator.NavigationOptions(
-                                                exitAllPreviousScreens = true
-                                            ))
-                                        }else {
-                                            //Log any other error which might occur
-                                            AppRepository.ErrorChannel.trySendError(
-                                                event = AppRepository.ErrorChannel.ErrorEvent(
-                                                    errorCode = error.errorCode,
-                                                    duration = 15000
-                                                )
-                                            )
+                                        } catch (e: Exception) {
+                                            println("Data sync error: ${e.message}")
                                         }
                                     }
                                 }

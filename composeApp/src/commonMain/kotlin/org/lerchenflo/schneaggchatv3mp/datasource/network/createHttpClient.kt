@@ -58,25 +58,17 @@ fun createHttpClient(
                 bearer {
 
                     loadTokens {
+                        println("HTTPCLIENT: Loading Tokens...")
                         val tokens = tokenManager.loadBearerTokens()
                         tokens
                     }
 
                     refreshTokens {
-
-                        println("HTTPCLIENT Refreshing Tokens...")
-
-                        val plainClient = HttpClient(engine) {
-                            install(ContentNegotiation) {
-                                json(json = AppJson.instance)
-                            }
-                            install(HttpTimeout) {
-                                requestTimeoutMillis = 30000
-                                connectTimeoutMillis = 10000
-                            }
-                        }
-
-                        tokenManager.refreshBearerTokens(plainClient, oldTokens)
+                        println("HTTPCLIENT: Automatic token refresh triggered")
+                        tokenManager.refreshTokens()
+                        // Load fresh tokens after refresh
+                        println("HTTPCLIENT: Refresh finished, loading")
+                        tokenManager.loadBearerTokens()
                     }
 
                 }

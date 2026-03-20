@@ -19,6 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
 class TokenManager(
@@ -35,72 +36,51 @@ class TokenManager(
         }
     }
 
-    suspend fun refreshBearerTokens(client: HttpClient, oldTokens: BearerTokens?): BearerTokens? {
+    suspend fun refreshTokens(): RequestError? {
         return refreshMutex.withLock {
-
-            println("BEARERTOKENREFRESH: START")
-
-            val current = loadBearerTokens()
-            if (current != null && oldTokens != null && current.refreshToken != oldTokens.refreshToken) {
-                println("BEARERTOKENREFRESH: EXIT 1")
-                return@withLock current
-            }
-
-            val refreshRequest = NetworkUtils.RefreshRequest(oldTokens?.refreshToken ?: "")
-
-            val response = client.post(preferenceManager.buildServerUrl("/auth/refresh")) {
-                contentType(ContentType.Application.Json)
-                setBody(refreshRequest)
-            }
-
-            if (response.status.value == 401) {
-                println("BEARERTOKENREFRESH: 401 LOGOUT")
-
-                AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
-
-                println("BEARERTOKENREFRESH: LOGOUT FINISHED")
-
+            println("TOKENREFRESH: START")
+            
+            val currentTokens = preferenceManager.getTokens()
+            if (currentTokens.refreshToken.isBlank()) {
+                println("TOKENREFRESH: EXIT - No refresh token")
                 return@withLock null
             }
 
-            val rawBody = response.body<String>()
-
-            val responseTokens = runCatching {
-                Json.decodeFromString<NetworkUtils.TokenPair>(rawBody)
-            }.getOrNull() ?: run {
-                println("BEARERTOKENREFRESH: EXIT 2")
-
-                return@withLock null
-            }
-
-            preferenceManager.saveTokens(responseTokens)
-
-
-            SessionCache.updateTokens(responseTokens)
-
-            println("BEARERTOKENREFRESH: FINISHED")
-
-            BearerTokens(
-                accessToken = responseTokens.accessToken,
-                refreshToken = responseTokens.refreshToken
-            )
-        }
-    }
-
-    suspend fun refreshTokenPairLocked(networkUtils: NetworkUtils): RequestError? {
-        return refreshMutex.withLock {
-            when (val result = networkUtils.refresh(preferenceManager.getTokens().refreshToken)) {
-                is NetworkResult.Error<*> -> {
-                    println("token refresh failed: ${result.error}")
-                    result.error
+            try {
+                // Use the existing "auth" HttpClient to avoid circular dependency
+                val authClient = KoinPlatform.getKoin().get<HttpClient>(qualifier = named("auth"))
+                val response = authClient.post(preferenceManager.buildServerUrl("/auth/refresh")) {
+                    contentType(ContentType.Application.Json)
+                    setBody(NetworkUtils.RefreshRequest(currentTokens.refreshToken))
                 }
-                is NetworkResult.Success<NetworkUtils.TokenPair> -> {
-                    preferenceManager.saveTokens(result.data)
-
-                    SessionCache.updateTokens(result.data)
-
-                    null
+                
+                if (response.status.value == 401) {
+                    println("TOKENREFRESH: 401 LOGOUT")
+                    AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
+                    return@withLock null
                 }
+
+                val rawBody = response.body<String>()
+                val responseTokens = runCatching {
+                    Json.decodeFromString<NetworkUtils.TokenPair>(rawBody)
+                }.getOrNull() ?: run {
+                    println("TOKENREFRESH: FAILED - Invalid response")
+                    return@withLock null
+                }
+
+                println("TOKENREFRESH: SUCCESS")
+                
+                // Save new tokens
+                preferenceManager.saveTokens(responseTokens)
+                SessionCache.updateTokens(responseTokens)
+                
+                // Clear auth tokens from HTTP client to force reload
+                //KoinPlatform.getKoin().get<HttpClient>(qualifier = named("api")).clearAuthTokens()
+                
+                null
+            } catch (e: Exception) {
+                println("TOKENREFRESH: FAILED - ${e.message}")
+                null
             }
         }
     }
