@@ -500,6 +500,7 @@
 
 
     <string name="highscores_not_implemented_warning">Public highscores are not yet implemented!</string>
+    <string name="audio_playback_on_desktop_not_supported_yet">Audio playback is not supported on Desktop yet</string>
 
 
     <!-- Bug Report Dialog -->

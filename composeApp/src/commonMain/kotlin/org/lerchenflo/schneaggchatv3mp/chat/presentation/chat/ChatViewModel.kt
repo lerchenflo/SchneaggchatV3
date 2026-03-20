@@ -5,7 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.hyochan.audio.AudioEncoderAndroidType
 import io.github.hyochan.audio.AudioRecorderPlayer
+import io.github.hyochan.audio.AudioSourceAndroidType
+import io.github.hyochan.audio.OutputFormatAndroidType
+import io.github.hyochan.audio.RecorderAudioSet
 import io.github.hyochan.audio.createAudioRecorderPlayer
 import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
@@ -80,7 +84,7 @@ class ChatViewModel(
     }
 
     private var audioRecorderPlayer: AudioRecorderPlayer? = null // Object for Audio Recording / Playback
-    private var audioPlayer: AudioPlayer = AudioPlayer()
+    private var audioPlayer: AudioPlayer = AudioPlayer(isDesktop = isDesktop())
 
     // chat id und group bool wörrend im init oamol glada
     // Damit leabt des o solang wie es viewmodel o wenn des im globalviewmodel scho tötet worra isch
@@ -408,6 +412,18 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
         // Try to create the recorder only when permission is already granted.
         viewModelScope.launch {
             audioRecorderPlayer = createAudioRecorderPlayer()
+
+            // Audio quality settings recommended by gemini
+            val recorderSettings = RecorderAudioSet(
+                audioSourceAndroid = AudioSourceAndroidType.VOICE_COMMUNICATION,
+                outputFormatAndroid = OutputFormatAndroidType.MPEG_4, // Opus is often wrapped in MP4/OGG
+                audioEncoderAndroid = AudioEncoderAndroidType.OPUS,
+                audioEncodingBitRateAndroid = 64000,   // 64kbps is the "sweet spot" for mono voice
+                audioSamplingRateAndroid = 16000,      // 16kHz is "HD Voice" standard
+                audioChannelsAndroid = 1               // Always use Mono for voice
+            )
+            audioRecorderPlayer?.setRecorderProperties(recorderSettings)
+
             //set not null audioRecoderPlayer for the audioPlayer
             audioPlayer.audioRecorderPlayer = audioRecorderPlayer
 
@@ -457,7 +473,7 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                 //updateSendContent(SendMessageContent.AudioContent(path, 0L))
 
                 audioRecorderPlayer!!.addRecordingListener { recordBack ->
-                    println("Current record time: ${recordBack.currentPosition}")
+                    //println("Current record time: ${recordBack.currentPosition}")
                     updateSendContent(SendMessageContent.AudioContent(
                         audioPath = path,
                         duration =  recordBack.currentPosition,

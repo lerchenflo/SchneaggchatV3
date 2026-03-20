@@ -15,9 +15,12 @@ import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.readByteArray
+import org.jetbrains.compose.resources.getString
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.audio_playback_on_desktop_not_supported_yet
 
 class AudioPlayer(
-
+    val isDesktop: Boolean = false
 ) {
     var audioRecorderPlayer: AudioRecorderPlayer? = null
     // Track which message is currently being played
@@ -38,61 +41,65 @@ class AudioPlayer(
     val playbackProgress: StateFlow<PlaybackProgress> = _playbackProgress.asStateFlow()
 
     suspend fun playAudio(messageId: String, path: String) {
-
-        try {
-            if (audioRecorderPlayer == null) {
-            println("audioRecorderPlayer is not initialized")
-            return
-            }
-
-            // 1. If we are already playing this specific audio, just resume it
-            if (currentlyPlayingId == messageId && !isPlaying) {
-                audioRecorderPlayer?.resumePlaying()
-                isPlaying = true
-                _playbackProgress.value = _playbackProgress.value.copy(isPlaying = true)
-                println("this audio is already playing")
-                return
-            }
-
-            // 2. If a different audio was playing, stop it first
-            if (currentlyPlayingId != null) {
-                stopAudio()
-                println("stopped other audio playing")
-            }
-
-
-            currentlyPlayingId = messageId
-            isPlaying = true
-
-            // 4. Start playback
-            audioRecorderPlayer?.startPlaying(path)
-            println("started playing ...")
-
-            // 5. Listen for progress updates
-            // Update Flow inside the listener
-            audioRecorderPlayer?.addPlaybackListener { progress ->
-
-
-                // Reset state when finished
-                if (progress.currentPosition >= progress.duration && progress.duration > 0) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        stopAudio()
-                        // Reset flow state
-                        _playbackProgress.value = PlaybackProgress()
-                    }
-                }else{
-                    _playbackProgress.value = PlaybackProgress(
-                        currentPosition = progress.currentPosition,
-                        duration = progress.duration,
-                        isPlaying = true,
-                        messageId = messageId
-                    )
+        if(isDesktop){
+            SnackbarManager.showMessage(getString(Res.string.audio_playback_on_desktop_not_supported_yet))
+        }else {
+            try {
+                if (audioRecorderPlayer == null) {
+                    println("audioRecorderPlayer is not initialized")
+                    return
                 }
+
+                // 1. If we are already playing this specific audio, just resume it
+                if (currentlyPlayingId == messageId && !isPlaying) {
+                    audioRecorderPlayer?.resumePlaying()
+                    isPlaying = true
+                    _playbackProgress.value = _playbackProgress.value.copy(isPlaying = true)
+                    println("this audio is already playing")
+                    return
+                }
+
+                // 2. If a different audio was playing, stop it first
+                if (currentlyPlayingId != null) {
+                    stopAudio()
+                    println("stopped other audio playing")
+                }
+
+
+                currentlyPlayingId = messageId
+                isPlaying = true
+
+                // 4. Start playback
+                audioRecorderPlayer?.startPlaying(path)
+                println("started playing ...")
+
+                // 5. Listen for progress updates
+                // Update Flow inside the listener
+                audioRecorderPlayer?.addPlaybackListener { progress ->
+
+
+                    // Reset state when finished
+                    if (progress.currentPosition >= progress.duration && progress.duration > 0) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            //stopAudio()
+                            resetPlaybackState()
+                            // Reset flow state
+                            _playbackProgress.value = PlaybackProgress()
+                        }
+                    } else {
+                        _playbackProgress.value = PlaybackProgress(
+                            currentPosition = progress.currentPosition,
+                            duration = progress.duration,
+                            isPlaying = true,
+                            messageId = messageId
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                //loggingRepository.logWarning("Failed to play audio: ${e.message}")
+                println("Failed to play audio: ${e.message}")
+                stopAudio()
             }
-        } catch (e: Exception) {
-            //loggingRepository.logWarning("Failed to play audio: ${e.message}")
-            println("Failed to play audio: ${e.message}")
-            stopAudio()
         }
     }
 
