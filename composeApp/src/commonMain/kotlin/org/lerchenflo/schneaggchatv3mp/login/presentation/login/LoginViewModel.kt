@@ -24,26 +24,6 @@ class LoginViewModel(
     private val navigator: Navigator
 ): ViewModel() {
 
-    init {
-
-        viewModelScope.launch {
-            val online =  appRepository.testServer(preferenceManager.getServerUrl())
-            if (!online){
-                AppRepository.ErrorChannel.sendErrorSuspend(
-                    event = AppRepository.ErrorChannel.ErrorEvent(
-                        errorCode = 408,
-                        errorMessage = "ServerUrl: " + preferenceManager.getServerUrl(),
-                        errorMessageUiText = UiText.StringResourceText(Res.string.server_not_reachable),
-                        duration = 6000L
-                    )
-                )
-            }
-        }
-
-        viewModelScope.launch {
-            serverUrl = preferenceManager.getServerUrl()
-        }
-    }
 
     var username by mutableStateOf("")
         private set
@@ -82,6 +62,34 @@ class LoginViewModel(
             preferenceManager.saveServerUrl(newValue)
         }
     }
+
+
+
+
+
+    init {
+
+        viewModelScope.launch {
+            val online =  appRepository.testServer(preferenceManager.getServerUrl())
+            if (!online){
+                AppRepository.ErrorChannel.sendErrorSuspend(
+                    event = AppRepository.ErrorChannel.ErrorEvent(
+                        errorCode = 408,
+                        errorMessage = "ServerUrl: " + preferenceManager.getServerUrl(),
+                        errorMessageUiText = UiText.StringResourceText(Res.string.server_not_reachable),
+                        duration = 6000L
+                    )
+                )
+            }
+        }
+
+        viewModelScope.launch {
+            serverUrl = preferenceManager.getServerUrl()
+        }
+    }
+
+
+
 
     // Handle login logic
     fun login() {
