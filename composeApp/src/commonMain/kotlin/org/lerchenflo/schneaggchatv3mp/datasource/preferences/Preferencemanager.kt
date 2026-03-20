@@ -96,6 +96,7 @@ class Preferencemanager(
         val DEVELOPER_SETTINGS = booleanPreferencesKey("developer_settings")
         val PINNED_CHATS = stringPreferencesKey("pinned_chats")
         val DRAFTS = stringPreferencesKey("drafts")
+        val LAST_STARTED_VERSION = stringPreferencesKey("last_started_version")
     }
 
     // Markdown Format
@@ -169,6 +170,17 @@ class Preferencemanager(
     fun getDevSettingsFlow(): Flow<Boolean> = prefs.data.map { prefs ->
         prefs[PrefsKeys.DEVELOPER_SETTINGS] ?: false
     }
+
+
+    suspend fun saveLastStartedVersion(value: String) {
+        prefs.edit { it[PrefsKeys.LAST_STARTED_VERSION] = value }
+    }
+
+    suspend fun getLastStartedVersion(): String {
+        return prefs.data.first()[PrefsKeys.LAST_STARTED_VERSION] ?: ""
+    }
+
+
 
     // Pinned Chats - Stored as JSON
     suspend fun addPinnedChat(chat: PinnedChat) {
