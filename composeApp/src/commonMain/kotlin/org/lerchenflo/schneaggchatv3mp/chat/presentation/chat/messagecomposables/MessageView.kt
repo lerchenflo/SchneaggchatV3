@@ -11,10 +11,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.StateFlow
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.RepliedMessagePreview
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.RepliedMessagePreview
+import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 
 
 @Composable
@@ -30,6 +32,7 @@ fun MessageView(
     replyMessage: Message? = null,
     replyMessageOnClick: () -> Unit = {},
     onAction: (MessageAction) -> Unit = {},
+    playbackProgress: StateFlow<PlaybackProgress>? = null,
 )
 {
 
@@ -86,6 +89,7 @@ fun MessageView(
                 senderColor = senderColor,
                 readerMap = readerMap,
                 onAction = onAction,
+                playbackProgress = playbackProgress,
                 ownId = ownId
             )
 

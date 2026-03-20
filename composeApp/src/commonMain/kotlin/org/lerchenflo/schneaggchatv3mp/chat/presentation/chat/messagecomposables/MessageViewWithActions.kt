@@ -6,11 +6,9 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -27,9 +25,11 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
+import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 import kotlin.math.roundToInt
 
 @Composable
@@ -46,6 +46,7 @@ fun MessageViewWithActions(
     onReplyCall: () -> Unit = {},
     onLongPress: () -> Unit = {},
     onAction: (MessageAction) -> Unit = {},
+    playbackProgress: StateFlow<PlaybackProgress>? = null,
     modifier: Modifier = Modifier
         .fillMaxWidth()
 ){
@@ -140,6 +141,7 @@ fun MessageViewWithActions(
                 replyMessage = replyMessage,
                 replyMessageOnClick = replyMessageOnClick,
                 onAction = onAction,
+                playbackProgress = playbackProgress,
                 ownId = ownId
             )
         }

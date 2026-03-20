@@ -28,6 +28,7 @@ import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
+import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
@@ -40,12 +41,12 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
+import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.sendErrorSuspend
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.trySendError
@@ -58,15 +59,16 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
@@ -80,6 +82,7 @@ class AppRepository(
     private val tokenManager: TokenManager,
     private val preferencemanager: Preferencemanager,
     private val pictureManager: PictureManager,
+    private val audioManager: AudioManager,
 
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
@@ -265,6 +268,8 @@ class AppRepository(
                     getMissingPics()
                 }
                 awaitAll(errorProfilePicJob)
+
+                // todo picture sync
             }
 
             println("Data sync completed")
@@ -305,6 +310,18 @@ class AppRepository(
         
         if (missingImageMessageIds.isNotEmpty()) {
             launch { getPicturesForMessageIds(missingImageMessageIds) }
+        }
+    }
+
+    suspend fun getMissingAudios() = coroutineScope {
+        // Check audio messages
+        val messages = messageRepository.getAudioMessages()
+        val missingImageMessageIds = messages.filter { audio ->
+            audio.id != null && !audioManager.checkAudioExists(audio.audioPath ?: "")
+        }.map { it.id!! }
+
+        if (missingImageMessageIds.isNotEmpty()) {
+            launch { getAudiosForMessageIds(missingImageMessageIds) }
         }
     }
 
@@ -932,6 +949,7 @@ class AppRepository(
     sealed class MessageContent {
         data class TextContent(val message: String) : MessageContent()
         data class ImageContent(val image: ByteArray, val text: String) : MessageContent()
+        data class AudioContent(val audio: ByteArray) : MessageContent()
 
         data class PollContent(val poll: NetworkUtils.PollCreateRequest) : MessageContent()
     }
@@ -1023,6 +1041,25 @@ class AppRepository(
                     readByMe = true
                 )
             }
+            is MessageContent.AudioContent -> {
+
+                MessageDto(
+                    localPK = localpkintern,
+                    id = null,
+                    msgType = MessageType.AUDIO,
+                    //content = content.text,
+                    senderId = ownId,
+                    receiverId = empfaenger,
+                    sendDate = senddate,
+                    updatedAt = senddate,
+                    deleted = false,
+                    groupMessage = gruppe,
+                    answerId = answerid,
+                    sent = false,
+                    myMessage = true,
+                    readByMe = true
+                )
+            }
         }
 
         //Nachricht hot scho a pk vo da db, also scho din
@@ -1060,6 +1097,14 @@ class AppRepository(
                     answerid = answerid
                 )
             }
+            is MessageContent.AudioContent -> {
+                networkUtils.sendAudioMessageToServer(
+                    empfaenger = empfaenger,
+                    gruppe = gruppe,
+                    audio = content.audio,
+                    answerid = answerid
+                )
+            }
         }
 
         when (serverrequest){
@@ -1068,7 +1113,8 @@ class AppRepository(
                 if (content is MessageContent.ImageContent) {
                     println("Saving image to local storage")
                     pictureManager.savePictureToStorage(content.image, "unsent_" + localpkintern + PICTURE_FILE_NAME)
-
+                }else if (content is MessageContent.AudioContent){
+                    audioManager.saveAudioToStorage(content.audio, "unsent_" + localpkintern + VOICEMSG_FILE_NAME)
                 }
             }
             is NetworkResult.Success<MessageResponse> -> {
@@ -1098,6 +1144,7 @@ class AppRepository(
                             myMessage = true,
                             readByMe = true,
                             pictureUrl = existing?.pictureUrl,
+                            audioPath = existing?.audioPath,
                             readers = serverrequest.data.readers.map {
                                 MessageReader(
                                     readerEntryId = 0L,
@@ -1113,6 +1160,10 @@ class AppRepository(
                         getPicturesForMessageIds(listOf(serverrequest.data.messageId))
 
                         pictureManager.deletePicture("unsent_" + localpkintern + PICTURE_FILE_NAME)
+                    } else if (serverrequest.data.msgType == MessageType.AUDIO) {
+                        getAudiosForMessageIds(listOf(serverrequest.data.messageId))
+
+                        audioManager.deleteAudio("unsent_" + localpkintern + VOICEMSG_FILE_NAME)
                     }
                 }
             }
@@ -1158,6 +1209,16 @@ class AppRepository(
                                         text = m.content
                                     )
                                 }
+                            }
+                            MessageType.AUDIO -> {
+                                if(m.audioPath == null){
+                                    MessageContent.TextContent("Offline audio sending failed")
+                                }
+                                val audio = getAudioBytes("unsent_" + m.localPK + VOICEMSG_FILE_NAME)
+
+                                MessageContent.AudioContent(
+                                    audio = audio
+                                )
                             }
 
                             MessageType.POLL -> {
@@ -1209,6 +1270,7 @@ class AppRepository(
 
         val localmessages = messageRepository.getmessagechangeid()
         val imagesToGet = mutableListOf<String>()
+        val audiosToGet = mutableListOf<String>()
 
         var currentPage = 0
         var moreMessages = true
@@ -1266,6 +1328,40 @@ class AppRepository(
                                     )
                                 )
                                 imagesToGet += messageResponse.messageId
+                            }
+
+                            MessageType.AUDIO -> {
+                                val existing = database.messageDao().getMessageDtoById(messageResponse.messageId)
+                                messageRepository.upsertMessage(
+                                    Message(
+                                        localPK = existing?.localPK ?: 0L,
+                                        id = messageResponse.messageId,
+                                        msgType = messageResponse.msgType,
+                                        content = messageResponse.content,
+                                        audioPath = existing?.audioPath,
+                                        senderId = messageResponse.senderId,
+                                        receiverId = messageResponse.receiverId,
+                                        sendDate = messageResponse.sendDate.toString(),
+                                        changeDate = messageResponse.lastChanged.toString(),
+                                        deleted = messageResponse.deleted,
+                                        groupMessage = messageResponse.groupMessage,
+                                        answerId = messageResponse.answerId,
+                                        sent = true,
+                                        myMessage = messageResponse.senderId == ownId,
+                                        readByMe = messageResponse.readers.any { it.userId == ownId },
+                                        senderAsString = "",
+                                        senderColor = 0,
+                                        readers = messageResponse.readers.map {
+                                            MessageReader(
+                                                readerEntryId = 0L,
+                                                messageId = messageResponse.messageId,
+                                                readerId = it.userId,
+                                                readDate = it.readAt.toString()
+                                            )
+                                        }
+                                    )
+                                )
+                                audiosToGet += messageResponse.messageId
                             }
 
                             MessageType.TEXT -> {
@@ -1356,6 +1452,11 @@ class AppRepository(
             println("Images to fetch: ${imagesToGet.size}")
             getPicturesForMessageIds(imagesToGet)
         }
+
+        if (audiosToGet.isNotEmpty()) {
+            println("Audios to fetch: ${audiosToGet.size}")
+            getAudiosForMessageIds(audiosToGet)
+        }
     }
 
     suspend fun getPicturesForMessageIds(ids: List<String>){
@@ -1368,6 +1469,22 @@ class AppRepository(
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
 
                     messageRepository.updatePictureUrl(messageId, filepath)
+                }
+            }
+        }
+    }
+
+    suspend fun getAudiosForMessageIds(ids: List<String>){
+        ids.forEach { messageId ->
+            val savefilename = messageId + VOICEMSG_FILE_NAME
+            println("Fetching Audio for messageid $messageId")
+
+            when (val audio = networkUtils.getAudioForAudioMessage(messageId)) {
+                is NetworkResult.Error<*> -> {println("Audio error for messageid $messageId")}
+                is NetworkResult.Success<ByteArray> -> {
+                    val filepath = audioManager.saveAudioToStorage(audio.data, savefilename)
+                    println("Audio saved to $filepath")
+                    messageRepository.updateAudioPath(messageId, filepath)
                 }
             }
         }

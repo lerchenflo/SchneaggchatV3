@@ -32,15 +32,10 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Headphones
 import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material.icons.filled.StopCircle
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -48,11 +43,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -76,18 +68,12 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.ClipEntry
-import androidx.compose.ui.platform.Clipboard
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.NativeClipboard
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
-import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
 import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
@@ -106,10 +92,11 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel.SendMessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.DayDivider
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReaderBar
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.audio.DebugAudioDialog
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.audio.AudioPlayerView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll.PollDialog
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.DeleteMessageAlert
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.MessageDetailsDialog
@@ -124,7 +111,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.formatMillis
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
-import schneaggchatv3mp.composeapp.generated.resources.audio
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.copied_to_clipboard
 import schneaggchatv3mp.composeapp.generated.resources.edit
@@ -163,7 +149,6 @@ fun ChatScreen(
 
     var showPollDialog by remember { mutableStateOf(false) }
     var showImagePickerDialog by remember { mutableStateOf(false) }
-    var showDebugAudioDialog by remember { mutableStateOf(false) } // Temporary solution until a better ui is created
 
 
     if (showImagePickerDialog) {
@@ -323,6 +308,7 @@ fun ChatScreen(
                                         showMessageOptionPopup = true
                                     },
                                     onAction = viewModel::onAction,
+                                    playbackProgress = viewModel.getPlaybackProgress(),
                                     readerMap = item.resolvedReaders,
                                     ownId = ownId
                                 )
@@ -411,8 +397,8 @@ fun ChatScreen(
                 // button zum züg addden
 
                 val currentContent by viewModel.currentSendContent.collectAsState()
-                val currentContentNotEmpty = currentContent !is ChatViewModel.SendMessageContent.TextContent
-                        || (currentContent as? ChatViewModel.SendMessageContent.TextContent)?.textMessage?.isNotEmpty() == true
+                val currentContentNotEmpty = currentContent !is SendMessageContent.TextContent
+                        || (currentContent as? SendMessageContent.TextContent)?.textMessage?.isNotEmpty() == true
 
 
                 if(!currentContentNotEmpty){
@@ -437,11 +423,13 @@ fun ChatScreen(
                     ) {
                         AddMediaOptions.entries.forEach { option ->
 
+                            /*
                             val dev = SessionCache.requireLoggedIn()?.developer ?: return@DropdownMenu
-
                             if(!dev) {
                                 if (option == AddMediaOptions.AUDIO) return@forEach //Removes audio if no dev
                             }
+
+                             */
 
 
                             DropdownMenuItem(
@@ -462,7 +450,6 @@ fun ChatScreen(
                                     option.getAction(
                                         onPollAction = { showPollDialog = true },
                                         onImageAction = { showImagePickerDialog = true }, // todo actions übergeaba
-                                        onAudioAction = {showDebugAudioDialog = true}
                                     )
                                 }
                             )
@@ -480,24 +467,13 @@ fun ChatScreen(
                     )
                 }
 
-                if(showDebugAudioDialog){
-                    DebugAudioDialog(
-                        onDismiss = { showDebugAudioDialog = false },
-                        onStartRecording = viewModel::startRecording,
-                        onStopRecording = viewModel::stopRecording,
-                        onPlay = viewModel::playAudio
-                    )
-                }
-
-
-
                 //sendinput (This is a rowscope)
                 when (val content = currentContent) {
-                    is ChatViewModel.SendMessageContent.TextContent -> {
+                    is SendMessageContent.TextContent -> {
                         OutlinedTextField(
                             value = content.textMessage,
                             onValueChange = { newValue ->
-                                viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(newValue))
+                                viewModel.updateSendContent(SendMessageContent.TextContent(newValue))
                             },
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier
@@ -538,7 +514,7 @@ fun ChatScreen(
                         )
                     }
 
-                    is ChatViewModel.SendMessageContent.ImageContent -> {
+                    is SendMessageContent.ImageContent -> {
                         Column(
                             modifier = Modifier.weight(1f)
                         ) {
@@ -579,7 +555,7 @@ fun ChatScreen(
                                                     val remaining = content.images - imageBytes
                                                     viewModel.updateSendContent(
                                                         if (remaining.isEmpty())
-                                                            ChatViewModel.SendMessageContent.TextContent(
+                                                            SendMessageContent.TextContent(
                                                                 content.text)
                                                         else
                                                             content.copy(images = remaining)
@@ -627,7 +603,7 @@ fun ChatScreen(
                             )
                         }
                     }
-                    is ChatViewModel.SendMessageContent.AudioContent -> {
+                    is SendMessageContent.AudioContent -> {
                         Row(
                             modifier = Modifier
                                 .weight(1f)
@@ -688,23 +664,29 @@ fun ChatScreen(
                                     )
                                 }
                             }else{
-                                IconButton(
-                                    onClick = {
-                                        viewModel.playAudio()
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.PlayArrow,
-                                        contentDescription = "play",
-                                        tint = MaterialTheme.colorScheme.error
-                                    )
-                                }
+                                val tmpMsgId = "audio_record_tmp"
                                 val progress by viewModel.getPlaybackProgress().collectAsState()
-                                Slider(
-                                    modifier = Modifier.weight(1f),
-                                    value = progress.currentPosition.toFloat(),
-                                    valueRange = 0f..progress.duration.toFloat(),
-                                    onValueChange = { /* seek logic */ }
+                                val isThisMessagePlaying = progress.messageId == tmpMsgId
+                                val currentPosition = if (isThisMessagePlaying) progress.currentPosition else 0L
+                                val duration = if (isThisMessagePlaying) progress.duration else 0L
+                                val isPlaying = isThisMessagePlaying && progress.isPlaying
+                                AudioPlayerView(
+                                    isPlaying = isPlaying,
+                                    currentPosition = currentPosition,
+                                    duration = duration,
+                                    onPlay = {
+                                        viewModel.playAudio(
+                                            messageId = tmpMsgId,
+                                            path = (viewModel.currentSendContent.value as SendMessageContent.AudioContent).audioPath
+                                        )
+                                    },
+                                    onPause = {
+                                        viewModel.pauseAudio()
+                                    },
+                                    onSeek = {
+                                        viewModel.seekAudio(it)
+                                    },
+                                    modifier = Modifier.weight(1f)
                                 )
 
                             }
@@ -714,7 +696,7 @@ fun ChatScreen(
                             IconButton(
                                 onClick = {
                                     // Reset to empty text or previous state
-                                    viewModel.updateSendContent(ChatViewModel.SendMessageContent.TextContent(""))
+                                    viewModel.updateSendContent(SendMessageContent.TextContent(""))
                                 }
                             ) {
                                 Icon(
@@ -731,7 +713,8 @@ fun ChatScreen(
 
                 if(viewModel.editMessage == null){ // schoua ob mir gad a nachricht bearbeitend
 
-                    if(currentContentNotEmpty || !(SessionCache.requireLoggedIn()?.developer ?: false)){ // todo open to public
+                    // show send when content is not empty or on desktop (no microphone implementation for desktop)
+                    if(currentContentNotEmpty || !(SessionCache.requireLoggedIn()?.developer ?: false) || viewModel.isDesktop()){ // todo open to public
                         // send button
                         IconButton(
                             onClick = {
@@ -853,27 +836,26 @@ fun copyToClipboard(text: String, clipboard: NativeClipboard) {
 
 enum class AddMediaOptions{
     IMAGE,
-    POLL,
-    AUDIO;
+    POLL;
 
     fun toUiText(): UiText = when (this) {
         IMAGE -> UiText.StringResourceText(Res.string.image)
         POLL -> UiText.StringResourceText(Res.string.poll)
-        AUDIO   -> UiText.StringResourceText(Res.string.audio)
+        //AUDIO   -> UiText.StringResourceText(Res.string.audio)
     }
     fun getIcon(): ImageVector = when (this) {
         IMAGE -> Icons.Default.Image
         POLL -> Icons.Default.Poll
-        AUDIO   -> Icons.Default.Headphones
+        //AUDIO   -> Icons.Default.Headphones
     }
 
     fun getAction(
         onImageAction: () -> Unit,
         onPollAction: () -> Unit,
-        onAudioAction: () -> Unit,
+        //onAudioAction: () -> Unit,
     ): Unit = when (this) {
         IMAGE -> onImageAction()
         POLL -> onPollAction()
-        AUDIO -> onAudioAction()
+        //AUDIO -> onAudioAction()
     }
 }

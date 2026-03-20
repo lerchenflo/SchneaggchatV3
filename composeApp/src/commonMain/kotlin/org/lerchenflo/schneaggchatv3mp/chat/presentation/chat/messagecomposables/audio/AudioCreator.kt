@@ -29,7 +29,9 @@ fun DebugAudioDialog( // chatbot mit mehr chatbot aaa
     onDismiss: () -> Unit = {},
     onStartRecording: () -> Unit = {},
     onStopRecording: () -> Unit = {},
-    onPlay: () -> Unit = {},
+    onPlay: (
+
+            ) -> Unit = {},
     onPause: () -> Unit = {},
     onSend: () -> Unit = {},
 ) {

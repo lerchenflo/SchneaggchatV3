@@ -6,7 +6,6 @@ import org.jetbrains.compose.resources.getString
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
@@ -110,6 +109,13 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
                 //THis is a new message, show a notification
                 if (socketMessage.newMessage) {
+                    // resolve username / groupname
+                    message.senderAsString = if(message.groupMessage) {
+                        groupRepository.getGroupById(message.receiverId)?.name ?: ""
+                    } else {
+                        userRepository.getUserById(message.senderId)?.name ?: ""
+                    }
+
                     if (globalViewModel.selectedChat.value.id == message.senderId && globalViewModel.selectedChat.value.isGroup == message.groupMessage){
                         if (!AppLifecycleManager.isAppInForeground) {
                             println("Noti in current chat, but app is minimized, showing noti")
@@ -122,6 +128,11 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     //Only get image if the message is new
                     if (socketMessage.message.msgType == MessageType.IMAGE) {
                         appRepository.getPicturesForMessageIds(listOf(socketMessage.message.messageId))
+                    }
+
+                    if (socketMessage.message.msgType == MessageType.AUDIO) {
+                        appRepository.getAudiosForMessageIds(listOf(socketMessage.message.messageId))
+                        println("fething audio in Socketconecction")
                     }
                 }
             }

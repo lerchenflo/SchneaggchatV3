@@ -13,15 +13,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.flow.StateFlow
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ErrorMessage
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReadIndicator
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReadState
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.audio.AudioMessageContentView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.image.ImageMessageContentView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll.PollMessageContentView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.text.TextMessageContentView
+import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 
 @Composable
@@ -35,7 +37,8 @@ fun MessageContent(
     senderName: String? = null,
     senderColor: Int = 0,
     readerMap: Map<String, String> = emptyMap(),
-    onAction: (MessageAction) -> Unit = {}
+    onAction: (MessageAction) -> Unit = {},
+    playbackProgress: StateFlow<PlaybackProgress>? = null,
 ){
     //Farbiger kasten
     Box(
@@ -78,6 +81,18 @@ fun MessageContent(
                         myMessage = mymessage,
                         useMD = useMD
                     )
+
+                    MessageType.AUDIO ->{
+                        AudioMessageContentView(
+                            message = message,
+                            modifier = Modifier,
+                            myMessage = mymessage,
+                            useMD = useMD,
+                            onAction = onAction,
+                            playbackProgress = playbackProgress
+                        )
+                    }
+
                 }
             }
 

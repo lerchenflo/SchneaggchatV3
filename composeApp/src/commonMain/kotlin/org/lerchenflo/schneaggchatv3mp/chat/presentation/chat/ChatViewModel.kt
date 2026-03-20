@@ -3,10 +3,13 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.hyochan.audio.AudioEncoderAndroidType
 import io.github.hyochan.audio.AudioRecorderPlayer
+import io.github.hyochan.audio.AudioSourceAndroidType
+import io.github.hyochan.audio.OutputFormatAndroidType
+import io.github.hyochan.audio.RecorderAudioSet
 import io.github.hyochan.audio.createAudioRecorderPlayer
 import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
@@ -32,6 +35,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -56,6 +60,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
+import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -79,7 +84,7 @@ class ChatViewModel(
     }
 
     private var audioRecorderPlayer: AudioRecorderPlayer? = null // Object for Audio Recording / Playback
-    private var audioPlayer: AudioPlayer = AudioPlayer()
+    private var audioPlayer: AudioPlayer = AudioPlayer(isDesktop = isDesktop())
 
     // chat id und group bool wörrend im init oamol glada
     // Damit leabt des o solang wie es viewmodel o wenn des im globalviewmodel scho tötet worra isch
@@ -180,6 +185,7 @@ class ChatViewModel(
 
         if (message is SendMessageContent.TextContent && message.textMessage.isBlank()) return
         if (message is SendMessageContent.ImageContent && message.images.isEmpty()) return
+        if (message is SendMessageContent.AudioContent && message.audioPath.isEmpty()) return
 
         when (message) {
             is SendMessageContent.TextContent -> {
@@ -213,7 +219,20 @@ class ChatViewModel(
                 }
             }
 
-            is SendMessageContent.AudioContent -> AppRepository.MessageContent.TextContent("Audio message not implemented") // TODO
+            is SendMessageContent.AudioContent -> {
+                globalViewModel.viewModelScope.launch {
+                    appRepository.sendMessage(
+                        empfaenger = globalViewModel.selectedChat.value.id,
+                        gruppe = globalViewModel.selectedChat.value.isGroup,
+                        content = AppRepository.MessageContent.AudioContent(
+                            audio = getAudioBytes(message.audioPath)
+                        ),
+                        answerid = replyTo?.id,
+                        messageId = null,
+                        ownId = ownId
+                    )
+                }
+            }
         }
 
         updateReplyMessage(null)
@@ -302,6 +321,28 @@ class ChatViewModel(
                     )
                 }
             }
+            is MessageAction.PlayAudio -> {
+                val filePath = action.audioPath
+                //val playPath = (if (filePath.startsWith("/")) "file:/$filePath" else filePath).trim()
+                //println("DEBUG: Checking file permissions for path (viewmodel)")
+                //val playPath = audioManager.copyToCache(filePath)
+                playAudio(
+                    messageId = action.messageId,
+                    path = filePath
+                )
+                //action.playbackProgress = audioPlayer.playbackProgress
+            }
+            is MessageAction.PauseAudio -> {
+                pauseAudio()
+            }
+            is MessageAction.GetPlayback -> {
+                action.playback.value = audioPlayer.playbackProgress.value
+            }
+            is MessageAction.SeekAudio -> {
+                seekAudio(action.position)
+            }
+
+
             is MessageAction.DeleteMessage -> deleteMessage(action.message)
             is MessageAction.StartEditMessage -> {
                 editMessage = action.message
@@ -371,6 +412,18 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
         // Try to create the recorder only when permission is already granted.
         viewModelScope.launch {
             audioRecorderPlayer = createAudioRecorderPlayer()
+
+            // Audio quality settings recommended by gemini
+            val recorderSettings = RecorderAudioSet(
+                audioSourceAndroid = AudioSourceAndroidType.VOICE_COMMUNICATION,
+                outputFormatAndroid = OutputFormatAndroidType.MPEG_4, // Opus is often wrapped in MP4/OGG
+                audioEncoderAndroid = AudioEncoderAndroidType.OPUS,
+                audioEncodingBitRateAndroid = 64000,   // 64kbps is the "sweet spot" for mono voice
+                audioSamplingRateAndroid = 16000,      // 16kHz is "HD Voice" standard
+                audioChannelsAndroid = 1               // Always use Mono for voice
+            )
+            audioRecorderPlayer?.setRecorderProperties(recorderSettings)
+
             //set not null audioRecoderPlayer for the audioPlayer
             audioPlayer.audioRecorderPlayer = audioRecorderPlayer
 
@@ -411,7 +464,7 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                     println("AudioRecorderPlayer lazy-created in startRecording()")
                 }
 
-                val filename = "audioRec_" + getCurrentTimeMillisString() + ".m4a"
+                val filename = getCurrentTimeMillisString() + VOICEMSG_FILE_NAME
                 val path = audioManager.getRecordingPath(filename)
                 
                 println("Starting recording at path: $path")
@@ -420,7 +473,7 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                 //updateSendContent(SendMessageContent.AudioContent(path, 0L))
 
                 audioRecorderPlayer!!.addRecordingListener { recordBack ->
-                    println("Current record time: ${recordBack.currentPosition}")
+                    //println("Current record time: ${recordBack.currentPosition}")
                     updateSendContent(SendMessageContent.AudioContent(
                         audioPath = path,
                         duration =  recordBack.currentPosition,
@@ -453,15 +506,24 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
         }
     }
 
-    fun playAudio() {
+    fun playAudio(messageId: String, path: String) {
         viewModelScope.launch {
-            if(currentSendContent.value is SendMessageContent.AudioContent){
-                audioPlayer.playAudio(
-                    messageId = "audio_record_tmp",
-                    path = (currentSendContent.value as SendMessageContent.AudioContent).audioPath
-                )
-            }
+            audioPlayer.playAudio(
+                messageId = messageId,
+                path = path
+            )
+        }
+    }
 
+    fun pauseAudio() {
+        viewModelScope.launch {
+            audioPlayer.pauseAudio()
+        }
+    }
+
+    fun seekAudio(position: Long) {
+        viewModelScope.launch {
+            audioPlayer.seekTo(position)
         }
     }
 
@@ -699,6 +761,10 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
         super.onCleared()
         saveDraft()
         globalViewModel.onLeaveChat()
+    }
+
+    fun isDesktop(): Boolean{
+        return appRepository.appVersion.isDesktop()
     }
 
 }
