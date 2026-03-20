@@ -226,16 +226,18 @@ class AppRepository(
     }
 
 
-    var dataSyncRunning = false
+    val dataSyncLock = Mutex()
+
     suspend fun dataSync() {
-        //println("Starting datasync")
-        if (dataSyncRunning) {
-            println("Data sync canceled, already running")
+
+        if (dataSyncLock.isLocked) {
+            println("Datasync running, canceling")
             return
         }
-        dataSyncRunning = true
 
-        try {
+        dataSyncLock.withLock {
+            println("Starting datasync")
+            
             coroutineScope {
                 // Launch all sync operations concurrently
                 val userJob = async {
@@ -273,12 +275,9 @@ class AppRepository(
                 }
                 awaitAll(errorProfilePicJob)
 
-                // todo picture sync
             }
 
             println("Data sync completed")
-        } finally {
-            dataSyncRunning = false
         }
     }
 
