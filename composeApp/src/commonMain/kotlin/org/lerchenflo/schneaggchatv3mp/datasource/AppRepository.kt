@@ -5,9 +5,9 @@ package org.lerchenflo.schneaggchatv3mp.datasource
 import androidx.compose.runtime.Composable
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.auth.clearAuthTokens
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
@@ -548,7 +548,7 @@ class AppRepository(
      * Suspend version of onNewTokenPair that persists tokens synchronously.
      * Use this from refresh flows where we must ensure tokens are written before returning.
      */
-    suspend fun onNewTokenPairSync(tokenPair: NetworkUtils.TokenPair){
+    suspend fun onNewTokenPair(tokenPair: TokenPair){
         loggingRepository.logDebug("Token save started: Processing new token pair")
         
         try {
@@ -630,8 +630,10 @@ class AppRepository(
 
                 onResult(false)
             }
-            is NetworkResult.Success<NetworkUtils.TokenPair> -> {
-                onNewTokenPairSync(result.data)
+            is NetworkResult.Success<TokenPair> -> {
+                withContext(NonCancellable) {
+                    onNewTokenPair(result.data)
+                }
 
                 SessionCache.login(
                     tokens = result.data,
