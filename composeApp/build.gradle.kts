@@ -266,7 +266,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "Schneaggchat v3"
-            packageVersion = "3.0.0"
+            packageVersion = "3.0.8"
             copyright = "© 2026"
             vendor = "lerchenflo"
             modules("jdk.unsupported")
