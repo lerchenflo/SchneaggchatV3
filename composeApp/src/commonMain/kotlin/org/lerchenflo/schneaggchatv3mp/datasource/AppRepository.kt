@@ -549,16 +549,29 @@ class AppRepository(
      * Use this from refresh flows where we must ensure tokens are written before returning.
      */
     suspend fun onNewTokenPairSync(tokenPair: NetworkUtils.TokenPair){
-        //Parse the token to get the user id
-        val userid = JwtUtils.getUserIdFromToken(tokenPair.refreshToken)
+        loggingRepository.logDebug("Token save started: Processing new token pair")
+        
+        try {
+            //Parse the token to get the user id
+            loggingRepository.logDebug("Token save: Extracting user ID from refresh token")
+            val userid = JwtUtils.getUserIdFromToken(tokenPair.refreshToken)
+            loggingRepository.logInfo("Token save: User ID extracted: $userid")
 
-        preferencemanager.saveTokens(tokenPair)
-        preferencemanager.saveOWNID(userid)
+            loggingRepository.logDebug("Token save: Saving tokens to secure storage")
+            preferencemanager.saveTokens(tokenPair)
+            
+            loggingRepository.logDebug("Token save: Saving user ID to preferences")
+            preferencemanager.saveOWNID(userid)
 
-        SessionCache.updateTokens(tokenPair)
-
-        SessionCache.updateOnline(true)
-        println("New token pair (sync), Sessioncache updated: $SessionCache")
+            loggingRepository.logDebug("Token save: Updating session cache")
+            SessionCache.updateTokens(tokenPair)
+            SessionCache.updateOnline(true)
+            
+            loggingRepository.logInfo("Token save completed successfully: Session cache updated")
+        } catch (e: Exception) {
+            loggingRepository.logError("Token save failed: ${e.message}")
+            throw e // Re-throw to maintain existing error handling behavior
+        }
     }
 
 
