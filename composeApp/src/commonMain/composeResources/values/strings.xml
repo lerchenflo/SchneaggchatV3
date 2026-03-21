@@ -104,6 +104,9 @@
     <string name="description_info_user">All friends of %1$s can edit this text, but %1$s cannot.</string>
     <string name="description_info_group">Change the description of this Group</string>
 
+    <string name="become_beta_tester">Become a Beta Tester</string>
+    <string name="become_beta_tester_desc">Get early access to new features/bugfixes before release</string>
+
     <string name="birthdate">Birthdate</string>
 
     <string name="no_description">No description</string>
