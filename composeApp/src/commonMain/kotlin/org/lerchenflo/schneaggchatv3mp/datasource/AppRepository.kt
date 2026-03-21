@@ -27,6 +27,7 @@ import org.jetbrains.compose.resources.getString
 import org.koin.core.qualifier.named
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
+import org.lerchenflo.schneaggchatv3mp.GITHUB_URL
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
@@ -67,6 +68,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
+import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
+import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogParser
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
@@ -196,6 +199,9 @@ class AppRepository(
      * Delete all app data (for example on appdatadelete or logout)
      */
     suspend fun deleteAllAppData(){
+
+        preferencemanager.saveLastStartedVersion("")
+
         database.allDatabaseDao().clearAll()
         NotificationManager.removeToken()
         SessionCache.logout()
@@ -325,6 +331,21 @@ class AppRepository(
 
         if (missingImageMessageIds.isNotEmpty()) {
             launch { getAudiosForMessageIds(missingImageMessageIds) }
+        }
+    }
+
+
+    suspend fun getChangeLog(version: String) : ChangelogEntry? {
+        val networkResult = networkUtils.getChangeLog("$GITHUB_URL/main/README.md")
+        return when (networkResult) {
+            is NetworkResult.Error<*> -> {
+                println("get changelog network error: ${networkResult.error.message}")
+                null
+            }
+            is NetworkResult.Success<*> -> {
+                val changelog = ChangelogParser.getParsedChangelog(networkResult.data.toString(), version)
+                changelog
+            }
         }
     }
 

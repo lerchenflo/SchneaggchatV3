@@ -99,6 +99,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangelogPopup
+import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
@@ -132,7 +133,7 @@ fun Chatauswahlscreen(
     val pendingFriendCount by viewModel.pendingFriendCount.collectAsStateWithLifecycle()
 
     var profilePictureDialogShown by remember { mutableStateOf(false) }
-    var changeLogDialogShown by remember { mutableStateOf(false) }
+    var changeLogDialogContent by remember { mutableStateOf<ChangelogEntry?>(null) }
 
     var profilePictureFilePathTemp by remember { mutableStateOf("") }
 
@@ -152,8 +153,18 @@ fun Chatauswahlscreen(
 
     LaunchedEffect(Unit) {
         val lastStartedVersion = preferencemanager.getLastStartedVersion()
-        if (lastStartedVersion != appRepository.appVersion.getVersionName()) {
-            changeLogDialogShown = true
+        val currentVersion = appRepository.appVersion.getVersionName()
+
+        if (lastStartedVersion != currentVersion) {
+
+            println("showing changelog")
+
+            val changelogContent = viewModel.getChangelog()
+
+            changeLogDialogContent = changelogContent
+
+            preferencemanager.saveLastStartedVersion(currentVersion)
+
         }
 
     }
@@ -648,13 +659,13 @@ fun Chatauswahlscreen(
             )
         }
 
-        if (changeLogDialogShown) {
+
+        changeLogDialogContent?.let {
             ChangelogPopup(
-                onDismiss = { changeLogDialogShown = false },
-                content = //TODO: Fetch the readme from the github for the current version and show here
+                onDismiss = { changeLogDialogContent = null },
+                content = it
             )
         }
-
 
 
     }
