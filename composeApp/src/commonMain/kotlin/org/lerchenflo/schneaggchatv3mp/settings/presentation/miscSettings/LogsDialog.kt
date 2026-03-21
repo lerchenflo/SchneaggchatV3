@@ -34,7 +34,8 @@ import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 fun LogsDialog(
     logs: List<LogEntry>,
     onDismiss: () -> Unit,
-    onClearLogs: () -> Unit
+    onClearLogs: () -> Unit,
+    onCopyAllLogs: (List<LogEntry>) -> Unit
 ) {
     var selectedFilter by remember { mutableStateOf<LogType?>(null) }
 
@@ -86,6 +87,20 @@ fun LogsDialog(
                     )
 
                     Row {
+
+
+                        IconButton(
+                            onClick = {
+                                onCopyAllLogs(filteredLogs)
+                            },
+                            enabled = filteredLogs.isNotEmpty()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ContentCopy,
+                                contentDescription = "Copy all logs"
+                            )
+                        }
+
                         IconButton(
                             onClick = onClearLogs,
                             enabled = logs.isNotEmpty()
@@ -237,9 +252,9 @@ private fun LogEntryItem(log: LogEntry) {
 @Composable
 private fun getLogColor(type: LogType): Color {
     return when (type) {
-        LogType.INFO -> Color(0xFF2196F3)
-        LogType.WARNING -> Color(0xFFFFA726)
-        LogType.ERROR -> Color(0xFFEF5350)
-        LogType.DEBUG -> Color(0xFF66BB6A)
+        LogType.INFO -> Color(0xFF03A9F4)
+        LogType.WARNING -> Color(0xFFFFC107)
+        LogType.ERROR -> Color(0xFFB00020)
+        LogType.DEBUG -> Color(0xFF8BC34A)
     }
 }

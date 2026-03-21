@@ -8,7 +8,9 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
@@ -71,7 +73,9 @@ class TokenManager(
                     val tokensAfter = preferenceManager.getTokens()
                     if (tokensAfter.refreshToken.isNotBlank()) {
                         loggingRepository.logDebug("Token refresh: Reloaded tokens after conflict")
-                        KoinPlatform.getKoin().get<AppRepository>().onNewTokenPairSync(tokensAfter)
+                        withContext(NonCancellable) {
+                            KoinPlatform.getKoin().get<AppRepository>().onNewTokenPair(tokensAfter)
+                        }
                     } else {
                         loggingRepository.logError("Token refresh: No tokens available after conflict resolution")
                     }
@@ -97,7 +101,9 @@ class TokenManager(
                 
                 // Save new tokens via AppRepository to ensure single source of truth
                 loggingRepository.logDebug("Token refresh: Saving new tokens")
-                KoinPlatform.getKoin().get<AppRepository>().onNewTokenPairSync(responseTokens)
+                withContext(NonCancellable) {
+                    KoinPlatform.getKoin().get<AppRepository>().onNewTokenPair(responseTokens)
+                }
                 loggingRepository.logInfo("Token refresh: Tokens saved successfully")
 
                 null
