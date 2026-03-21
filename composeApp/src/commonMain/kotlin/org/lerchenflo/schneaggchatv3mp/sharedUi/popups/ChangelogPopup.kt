@@ -28,6 +28,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.NewReleases
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,11 +43,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.changelog_bug_fixes
+import schneaggchatv3mp.composeapp.generated.resources.changelog_features
+import schneaggchatv3mp.composeapp.generated.resources.changelog_got_it
+import schneaggchatv3mp.composeapp.generated.resources.changelog_no_details
+import schneaggchatv3mp.composeapp.generated.resources.changelog_version
+import schneaggchatv3mp.composeapp.generated.resources.changelog_whats_new
+import schneaggchatv3mp.composeapp.generated.resources.close
 
 @Composable
 fun ChangelogPopup(
@@ -54,7 +67,10 @@ fun ChangelogPopup(
 ) {
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            dismissOnClickOutside = false
+        )
     ) {
         Box(
             modifier = Modifier
@@ -88,21 +104,21 @@ fun ChangelogPopup(
                                 Icon(
                                     imageVector = Icons.Default.NewReleases,
                                     contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.5f),
                                     modifier = Modifier.size(22.dp)
                                 )
                                 Spacer(Modifier.width(8.dp))
                                 Text(
-                                    text = "What's New",
+                                    text = stringResource(Res.string.changelog_whats_new),
                                     style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.primary,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     fontWeight = FontWeight.SemiBold,
                                     letterSpacing = 1.sp
                                 )
                             }
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                text = "Version ${content.version}",
+                                text = stringResource(Res.string.changelog_version, content.version),
                                 style = MaterialTheme.typography.headlineSmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontWeight = FontWeight.Bold
@@ -115,11 +131,10 @@ fun ChangelogPopup(
                                 .align(Alignment.TopEnd)
                                 .size(32.dp)
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Close",
+                                contentDescription = stringResource(Res.string.close),
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                 modifier = Modifier.size(16.dp)
                             )
@@ -136,7 +151,7 @@ fun ChangelogPopup(
                     ) {
                         if (content.features.isNotEmpty()) {
                             ChangelogSection(
-                                title = "Features",
+                                title = stringResource(Res.string.changelog_features),
                                 icon = Icons.Default.Star,
                                 iconTint = MaterialTheme.colorScheme.primary,
                                 items = content.features
@@ -144,12 +159,16 @@ fun ChangelogPopup(
                         }
 
                         if (content.features.isNotEmpty() && content.bugfixes.isNotEmpty()) {
-                            Divider(color = MaterialTheme.colorScheme.outlineVariant)
+                            HorizontalDivider(
+                                Modifier,
+                                DividerDefaults.Thickness,
+                                color = MaterialTheme.colorScheme.outlineVariant
+                            )
                         }
 
                         if (content.bugfixes.isNotEmpty()) {
                             ChangelogSection(
-                                title = "Bug Fixes",
+                                title = stringResource(Res.string.changelog_bug_fixes),
                                 icon = Icons.Default.BugReport,
                                 iconTint = MaterialTheme.colorScheme.error,
                                 items = content.bugfixes
@@ -158,7 +177,7 @@ fun ChangelogPopup(
 
                         if (content.features.isEmpty() && content.bugfixes.isEmpty()) {
                             Text(
-                                text = "No details available for this version.",
+                                text = stringResource(Res.string.changelog_no_details),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -173,7 +192,9 @@ fun ChangelogPopup(
                         contentAlignment = Alignment.CenterEnd
                     ) {
                         TextButton(onClick = onDismiss) {
-                            Text("Got it")
+                            Text(
+                                text = stringResource(Res.string.changelog_got_it)
+                            )
                         }
                     }
                 }
@@ -225,5 +246,32 @@ private fun ChangelogSection(
                 )
             }
         }
+    }
+}
+
+
+
+@Preview
+@Composable
+private fun ChangelogPopupPreview() {
+    SchneaggchatTheme {
+        ChangelogPopup(
+            onDismiss = {},
+            content = ChangelogEntry(
+                version = "3.0.6",
+                features = listOf(
+                    "Show birthdate of others"
+                ),
+                bugfixes = listOf(
+                    "Fix for my messages showing up as sent by other user",
+                    "Fix for login but no data sync",
+                    "Auto logout on invalid tokens",
+                    "Fix for notifications not showing when app in background",
+                    "Fix for navigating out of chat (unselected chat)",
+                    "iOS notification badge fix",
+                    "iOS update checker fix"
+                )
+            )
+        )
     }
 }
