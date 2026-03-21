@@ -102,7 +102,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
-            binaryOption("bundleId", "org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp")
+            binaryOption("bundleId", "org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp") //Removes compile warning
             export("io.github.mirzemehdi:kmpnotifier:1.6.1") //Is needed even tough there is a warning while compiling
         }
 
@@ -259,6 +259,9 @@ kotlin {
 
 
 
+//Add version info to desktop builds
+val desktopVersion = "3.0.8"
+
 compose.desktop {
     application {
         mainClass = "org.lerchenflo.schneaggchatv3mp.MainKt"
@@ -266,7 +269,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "Schneaggchat v3"
-            packageVersion = "3.0.8"
+            packageVersion = desktopVersion
             copyright = "© 2026"
             vendor = "lerchenflo"
             modules("jdk.unsupported")
@@ -291,6 +294,16 @@ compose.desktop {
 
             }
         }
+    }
+}
+
+tasks.withType<Jar> {
+    manifest {
+        attributes(
+            "Implementation-Title" to "Schneaggchat",
+            "Implementation-Version" to desktopVersion,
+            "Implementation-Vendor" to "lerchenflo"
+        )
     }
 }
 

@@ -201,7 +201,6 @@ class ChatSelectorViewModel(
 
         val appversion = appRepository.appVersion.getVersionName()
         val changelogEntry = appRepository.getChangeLog(appversion)
-        println("CHANGELOG: $changelogEntry")
         return changelogEntry
     }
 

@@ -2,11 +2,11 @@ package org.lerchenflo.schneaggchatv3mp.settings.data
 
 actual class AppVersion {
     actual fun getVersionName(): String {
-        return "Desktop"
+        return this::class.java.`package`.implementationVersion ?: "Desktop"
     }
 
     actual fun getVersionCode(): String {
-        return "???"
+        return "1"
     }
 
     actual fun isMobile(): Boolean {
