@@ -43,6 +43,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.groups
@@ -82,6 +83,10 @@ class ChatSelectorViewModel(
 
                 _pendingFriendCount.value = size
             }
+        }
+
+        viewModelScope.launch {
+            getChangelog()
         }
     }
 
@@ -190,6 +195,15 @@ class ChatSelectorViewModel(
     }
 
 
+
+
+    suspend fun getChangelog(): ChangelogEntry? {
+
+        val appversion = appRepository.appVersion.getVersionName()
+        val changelogEntry = appRepository.getChangeLog(appversion)
+        println("CHANGELOG: $changelogEntry")
+        return changelogEntry
+    }
 
 
 
