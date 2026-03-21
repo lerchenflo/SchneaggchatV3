@@ -543,25 +543,22 @@ class AppRepository(
     **************************************************************************
      */
 
-    /**
-     * Actions to execute when the tokenpair is updated
-     */
-    fun onNewTokenPair(tokenPair: NetworkUtils.TokenPair){
 
+    /**
+     * Suspend version of onNewTokenPair that persists tokens synchronously.
+     * Use this from refresh flows where we must ensure tokens are written before returning.
+     */
+    suspend fun onNewTokenPairSync(tokenPair: NetworkUtils.TokenPair){
         //Parse the token to get the user id
         val userid = JwtUtils.getUserIdFromToken(tokenPair.refreshToken)
 
-        CoroutineScope(Dispatchers.IO).launch {
-            preferencemanager.saveTokens(tokenPair)
-            preferencemanager.saveOWNID(userid)
-        }
+        preferencemanager.saveTokens(tokenPair)
+        preferencemanager.saveOWNID(userid)
 
         SessionCache.updateTokens(tokenPair)
 
-        //KoinPlatform.getKoin().get<HttpClient>(qualifier = named("api")).clearAuthTokens()
-
         SessionCache.updateOnline(true)
-        println("New token pair, Sessioncache updated: $SessionCache")
+        println("New token pair (sync), Sessioncache updated: $SessionCache")
     }
 
 
@@ -621,7 +618,7 @@ class AppRepository(
                 onResult(false)
             }
             is NetworkResult.Success<NetworkUtils.TokenPair> -> {
-                onNewTokenPair(result.data)
+                onNewTokenPairSync(result.data)
 
                 SessionCache.login(
                     tokens = result.data,

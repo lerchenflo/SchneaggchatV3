@@ -2,14 +2,13 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.auth.authProviders
-import io.ktor.client.plugins.auth.clearAuthTokens
 import io.ktor.client.plugins.auth.providers.BearerTokens
-import io.ktor.client.plugins.defaultTransformers
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
@@ -17,9 +16,7 @@ import org.koin.core.qualifier.named
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
 class TokenManager(
@@ -60,6 +57,23 @@ class TokenManager(
                     return@withLock null
                 }
 
+                if (response.status.value == 409) {
+                    println("TOKENREFRESH: 409 CONFLICT - Already refreshing")
+                    // Another in-flight refresh likely succeeded and persisted new tokens.
+                    // Give it a moment to finish writing, then reload from storage.
+                    delay(200)
+                    val tokensAfter = preferenceManager.getTokens()
+                    if (tokensAfter.refreshToken.isNotBlank()) {
+                        KoinPlatform.getKoin().get<AppRepository>().onNewTokenPairSync(tokensAfter)
+                    }
+                    return@withLock null
+                }
+
+                if (!response.status.isSuccess()) {
+                    println("TOKENREFRESH: FAILED - HTTP ${response.status.value}")
+                    return@withLock null
+                }
+
                 val rawBody = response.body<String>()
                 val responseTokens = runCatching {
                     Json.decodeFromString<NetworkUtils.TokenPair>(rawBody)
@@ -70,13 +84,9 @@ class TokenManager(
 
                 println("TOKENREFRESH: SUCCESS")
                 
-                // Save new tokens
-                preferenceManager.saveTokens(responseTokens)
-                SessionCache.updateTokens(responseTokens)
-                
-                // Clear auth tokens from HTTP client to force reload
-                //KoinPlatform.getKoin().get<HttpClient>(qualifier = named("api")).clearAuthTokens()
-                
+                // Save new tokens via AppRepository to ensure single source of truth
+                KoinPlatform.getKoin().get<AppRepository>().onNewTokenPairSync(responseTokens)
+
                 null
             } catch (e: Exception) {
                 println("TOKENREFRESH: FAILED - ${e.message}")
