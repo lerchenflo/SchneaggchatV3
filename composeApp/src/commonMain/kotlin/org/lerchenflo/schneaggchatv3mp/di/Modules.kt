@@ -83,7 +83,9 @@ val sharedmodule = module{
 
 
     //Preferences
-    singleOf(::Preferencemanager)
+    single {
+        Preferencemanager(get(), get(), get())
+    }
     
     //Language
     singleOf(::LanguageService)

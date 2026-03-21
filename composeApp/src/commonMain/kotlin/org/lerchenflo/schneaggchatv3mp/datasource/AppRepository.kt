@@ -543,25 +543,35 @@ class AppRepository(
     **************************************************************************
      */
 
+
     /**
-     * Actions to execute when the tokenpair is updated
+     * Suspend version of onNewTokenPair that persists tokens synchronously.
+     * Use this from refresh flows where we must ensure tokens are written before returning.
      */
-    fun onNewTokenPair(tokenPair: NetworkUtils.TokenPair){
+    suspend fun onNewTokenPairSync(tokenPair: NetworkUtils.TokenPair){
+        loggingRepository.logDebug("Token save started: Processing new token pair")
+        
+        try {
+            //Parse the token to get the user id
+            loggingRepository.logDebug("Token save: Extracting user ID from refresh token")
+            val userid = JwtUtils.getUserIdFromToken(tokenPair.refreshToken)
+            loggingRepository.logInfo("Token save: User ID extracted: $userid")
 
-        //Parse the token to get the user id
-        val userid = JwtUtils.getUserIdFromToken(tokenPair.refreshToken)
-
-        CoroutineScope(Dispatchers.IO).launch {
+            loggingRepository.logDebug("Token save: Saving tokens to secure storage")
             preferencemanager.saveTokens(tokenPair)
+            
+            loggingRepository.logDebug("Token save: Saving user ID to preferences")
             preferencemanager.saveOWNID(userid)
+
+            loggingRepository.logDebug("Token save: Updating session cache")
+            SessionCache.updateTokens(tokenPair)
+            SessionCache.updateOnline(true)
+            
+            loggingRepository.logInfo("Token save completed successfully: Session cache updated")
+        } catch (e: Exception) {
+            loggingRepository.logError("Token save failed: ${e.message}")
+            throw e // Re-throw to maintain existing error handling behavior
         }
-
-        SessionCache.updateTokens(tokenPair)
-
-        //KoinPlatform.getKoin().get<HttpClient>(qualifier = named("api")).clearAuthTokens()
-
-        SessionCache.updateOnline(true)
-        println("New token pair, Sessioncache updated: $SessionCache")
     }
 
 
@@ -621,7 +631,7 @@ class AppRepository(
                 onResult(false)
             }
             is NetworkResult.Success<NetworkUtils.TokenPair> -> {
-                onNewTokenPair(result.data)
+                onNewTokenPairSync(result.data)
 
                 SessionCache.login(
                     tokens = result.data,
