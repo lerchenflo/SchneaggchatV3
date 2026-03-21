@@ -278,6 +278,7 @@ class AppRepository(
 
                 val errorProfilePicJob = async {
                     getMissingPics()
+                    getMissingAudios()
                 }
                 awaitAll(errorProfilePicJob)
 
