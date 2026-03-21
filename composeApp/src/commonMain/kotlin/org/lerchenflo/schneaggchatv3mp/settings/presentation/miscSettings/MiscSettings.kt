@@ -9,11 +9,8 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Science
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,15 +18,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalUriHandler
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.PLAYSTORE_TESTER_URI
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
+import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -41,10 +39,7 @@ import schneaggchatv3mp.composeapp.generated.resources.become_beta_tester_desc
 import schneaggchatv3mp.composeapp.generated.resources.bugreport_request
 import schneaggchatv3mp.composeapp.generated.resources.bugreport_request_info
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings
-import schneaggchatv3mp.composeapp.generated.resources.no
-import schneaggchatv3mp.composeapp.generated.resources.settings
 import schneaggchatv3mp.composeapp.generated.resources.show_logs
-import schneaggchatv3mp.composeapp.generated.resources.yes
 
 @Composable
 fun MiscSettings(
@@ -85,6 +80,9 @@ fun MiscSettings(
                 }
             )
             if (showLogsDialog) {
+
+                val clipboard = LocalClipboard.current.nativeClipboard
+
                 LogsDialog(
                     logs = miscSettingsViewModel.logs,
                     onDismiss = {
@@ -92,6 +90,11 @@ fun MiscSettings(
                     },
                     onClearLogs = {
                         miscSettingsViewModel.onClearLogs()
+                    },
+                    onCopyAllLogs = { filteredLogs ->
+                        val formattedLogs = miscSettingsViewModel.formatAllLogs(filteredLogs)
+                        val shareUtils = KoinPlatform.getKoin().get<ShareUtils>()
+                        shareUtils.copyToClipboard(formattedLogs, clipboard)
                     }
                 )
             }

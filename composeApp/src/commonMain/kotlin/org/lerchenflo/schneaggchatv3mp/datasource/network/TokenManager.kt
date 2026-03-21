@@ -102,7 +102,7 @@ class TokenManager(
                 // Save new tokens via AppRepository to ensure single source of truth
                 loggingRepository.logDebug("Token refresh: Saving new tokens")
                 withContext(NonCancellable) {
-                    KoinPlatform.getKoin().get<AppRepository>().onNewTokenPairSync(responseTokens)
+                    KoinPlatform.getKoin().get<AppRepository>().onNewTokenPair(responseTokens)
                 }
                 loggingRepository.logInfo("Token refresh: Tokens saved successfully")
 
