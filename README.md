@@ -13,9 +13,10 @@ Schneaggchat is an innovative chatting platform.
 #### Features
 - Beta Tester Knopf in Einstellungen
 - Changelog-Anzeige beim Start
+- Sprachnachrichten
 
 #### Bugfixes
-- Token sync fix
+- Token sync fix (Auto logout)
 
 ### 3.0.7
 #### Features

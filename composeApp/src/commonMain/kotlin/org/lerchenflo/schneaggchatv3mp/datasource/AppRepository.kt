@@ -371,7 +371,7 @@ class AppRepository(
         return userRepository.getAllUsersFlow(searchTerm)
             .map { list ->
                 list.filter {
-                    it.friendshipStatus == NetworkUtils.FriendshipStatus.PENDING
+                    it.friendshipStatus == FriendshipStatus.PENDING
                 }
             }
     }
@@ -380,7 +380,7 @@ class AppRepository(
     suspend fun getFriends(searchTerm: String): List<User> {
         return userRepository.getAllUsers().filter {
             it.name.contains(searchTerm)
-                    && it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED
+                    && it.friendshipStatus == FriendshipStatus.ACCEPTED
                     && !it.isGroup
         }
     }
@@ -388,7 +388,7 @@ class AppRepository(
     fun getFriendsFlow(searchTerm: String): Flow<List<User>> {
         return userRepository.getAllUsersFlow(searchTerm).map { users ->
             users.filter {
-                it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED
+                it.friendshipStatus == FriendshipStatus.ACCEPTED
                         && !it.isGroup
             }
         }
@@ -439,7 +439,7 @@ class AppRepository(
             val userItems = users
                 .asSequence()
                 .filter { it.id != userId }
-                .filter { it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED }
+                .filter { it.friendshipStatus == FriendshipStatus.ACCEPTED }
                 .filter { loweredSearch.isEmpty() || it.name.lowercase().contains(loweredSearch) }
                 .map { user ->
                     val userMessages = messagesByUser[user.id] ?: emptyList()
@@ -689,7 +689,7 @@ class AppRepository(
     suspend fun userIdSync() {
         val localusers = userRepository.getuserchangeid()
 
-        val userSyncResponse = networkUtils.userIdSync(localusers.map { (id, changedate) -> NetworkUtils.IdTimeStamp(id, changedate) })
+        val userSyncResponse = networkUtils.userIdSync(localusers.map { (id, changedate) -> IdTimeStamp(id, changedate) })
 
         val profilePicsToGet = emptyList<String>().toMutableList()
 
@@ -697,7 +697,7 @@ class AppRepository(
             is NetworkResult.Error<*> -> {
                 println("userid sync error: ${userSyncResponse.error}")
             }
-            is NetworkResult.Success<NetworkUtils.UserSyncResponse> -> {
+            is NetworkResult.Success<UserSyncResponse> -> {
                 //println("Userid sync response: ${userSyncResponse.data.toString()}")
 
                 val updatedUsers = userSyncResponse.data.updatedUsers
@@ -705,7 +705,7 @@ class AppRepository(
 
                 updatedUsers.forEach { newUser ->
                     when (newUser) {
-                        is NetworkUtils.UserResponse.FriendUserResponse -> {
+                        is UserResponse.FriendUserResponse -> {
                             val existing = database.userDao().getUserbyId(newUser.id)
                             database.userDao().upsert(UserDto(
                                 id = newUser.id,
@@ -714,7 +714,7 @@ class AppRepository(
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
                                 birthDate = newUser.birthDate,
-                                frienshipStatus = NetworkUtils.FriendshipStatus.ACCEPTED,
+                                frienshipStatus = FriendshipStatus.ACCEPTED,
                                 requesterId = newUser.requesterId,
 
                                 // Preserve existing values:
@@ -735,7 +735,7 @@ class AppRepository(
                                 profilePicsToGet += newUser.id
                             }
                         }
-                        is NetworkUtils.UserResponse.SelfUserResponse -> {
+                        is UserResponse.SelfUserResponse -> {
                             val existing = database.userDao().getUserbyId(newUser.id)
                             database.userDao().upsert(UserDto(
                                 id = newUser.id,
@@ -764,7 +764,7 @@ class AppRepository(
                             if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
                                 profilePicsToGet += newUser.id
                             }                        }
-                        is NetworkUtils.UserResponse.SimpleUserResponse -> {
+                        is UserResponse.SimpleUserResponse -> {
                             val existing = database.userDao().getUserbyId(newUser.id)
                             database.userDao().upsert(UserDto(
                                 id = newUser.id,
@@ -834,7 +834,7 @@ class AppRepository(
      * Get all availavble users from the server
      * @param searchTerm the searchterm which the user entered
      */
-    suspend fun getAvailableUsers(searchTerm: String) : List<NetworkUtils.NewFriendsUserResponse> {
+    suspend fun getAvailableUsers(searchTerm: String) : List<NewFriendsUserResponse> {
         return when (val response = networkUtils.getAvailableUsers(searchTerm)) {
             is NetworkResult.Error<RequestError> -> {
                 sendErrorSuspend(
@@ -844,7 +844,7 @@ class AppRepository(
                 )
                 emptyList()
             }
-            is NetworkResult.Success<List<NetworkUtils.NewFriendsUserResponse>> -> {
+            is NetworkResult.Success<List<NewFriendsUserResponse>> -> {
                 response.data
             }
         }
@@ -965,7 +965,7 @@ class AppRepository(
         data class ImageContent(val image: ByteArray, val text: String) : MessageContent()
         data class AudioContent(val audio: ByteArray) : MessageContent()
 
-        data class PollContent(val poll: NetworkUtils.PollCreateRequest) : MessageContent()
+        data class PollContent(val poll: PollCreateRequest) : MessageContent()
     }
 
 
@@ -1060,7 +1060,7 @@ class AppRepository(
                     )
                 }
 
-                is MessageContent.AudioContent -> {
+                is AudioContent -> {
 
                     MessageDto(
                         localPK = localpkintern,
@@ -1118,7 +1118,7 @@ class AppRepository(
                     )
                 }
 
-                is MessageContent.AudioContent -> {
+                is AudioContent -> {
                     networkUtils.sendAudioMessageToServer(
                         empfaenger = empfaenger,
                         gruppe = gruppe,
@@ -1131,11 +1131,23 @@ class AppRepository(
             when (serverrequest){
                 is NetworkResult.Error<*> -> {
                     println("Message senden error: ${serverrequest.error}")
-                    if (content is MessageContent.ImageContent) {
-                        println("Saving image to local storage")
-                        pictureManager.savePictureToStorage(content.image, "unsent_" + localpkintern + PICTURE_FILE_NAME)
 
+                    when (content) {
+                        is ImageContent -> {
+                            pictureManager.savePictureToStorage(content.image, "unsent_" + localpkintern + PICTURE_FILE_NAME)
+
+                        }
+
+                        is AudioContent -> {
+                            audioManager.saveAudioToStorage(
+                                audioBytes = content.audio,
+                                filename = "unsent_" + localpkintern + VOICEMSG_FILE_NAME
+                            )
+                        }
+
+                        else -> {}
                     }
+
                 }
                 is NetworkResult.Success<MessageResponse> -> {
                     withContext(Dispatchers.IO) {
@@ -1266,11 +1278,11 @@ class AppRepository(
 
                         MessageType.AUDIO -> {
                             if(m.audioPath == null){
-                                MessageContent.TextContent("Offline audio sending failed")
+                                TextContent("Offline audio sending failed")
                             }
                             val audio = getAudioBytes("unsent_" + m.localPK + VOICEMSG_FILE_NAME)
 
-                            MessageContent.AudioContent(
+                            AudioContent(
                                 audio = audio
                             )
                         }
@@ -1282,6 +1294,8 @@ class AppRepository(
                 )
 
 
+                val nextMessages = messageRepository.getUnsentMessages()
+                if (nextMessages.firstOrNull()?.localPK == m.localPK) return
             }
 
 
@@ -1307,7 +1321,7 @@ class AppRepository(
         while (moreMessages) {
 
             val messageSyncResponse = networkUtils.messageSync(
-                messageIds = localmessages.map { NetworkUtils.IdTimeStamp(it.id, it.updatedAt) },
+                messageIds = localmessages.map { IdTimeStamp(it.id, it.updatedAt) },
                 page = currentPage
             )
 
@@ -1318,7 +1332,7 @@ class AppRepository(
                     break // Stop on error
                 }
 
-                is NetworkResult.Success<NetworkUtils.MessageSyncResponse> -> {
+                is NetworkResult.Success<MessageSyncResponse> -> {
                     val updatedMessages = messageSyncResponse.data.updatedMessages
                     val deletedMessages = messageSyncResponse.data.deletedMessages
                     moreMessages = messageSyncResponse.data.moreMessages
@@ -1598,7 +1612,7 @@ class AppRepository(
 
 
 
-    suspend fun votePoll(ownId: String, pollVoteRequest: NetworkUtils.PollVoteRequest) {
+    suspend fun votePoll(ownId: String, pollVoteRequest: PollVoteRequest) {
         val request = networkUtils.votePoll(
             pollVoteRequest
         )
@@ -1653,7 +1667,7 @@ class AppRepository(
                 sendErrorSuspend(ErrorChannel.ErrorEvent(error = response.error))
                 null
             }
-            is NetworkResult.Success<NetworkUtils.GroupResponse> -> {
+            is NetworkResult.Success<GroupResponse> -> {
                 response.data.id
             }
         }
@@ -1667,7 +1681,7 @@ class AppRepository(
 
         val groupSyncResponse = networkUtils.groupIdSync(
             groupIds = localgroups.map {
-                NetworkUtils.IdTimeStamp(it.id, it.updatedAt)
+                IdTimeStamp(it.id, it.updatedAt)
             }
         )
 
@@ -1677,7 +1691,7 @@ class AppRepository(
                 println("groupid sync error")
             }
 
-            is NetworkResult.Success<NetworkUtils.GroupSyncResponse> -> {
+            is NetworkResult.Success<GroupSyncResponse> -> {
                 //println("GroupIdSync sync response: ${groupSyncResponse.data.toString()}")
 
                 groupSyncResponse.data.updatedGroups.forEach { groupResponse ->
