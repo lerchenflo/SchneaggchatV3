@@ -213,7 +213,7 @@ class AppRepository(
         //Clear access tokens
 
         preferencemanager.clearAll()
-        KoinPlatform.getKoin().get<HttpClient>(qualifier = named("auth")).clearAuthTokens()
+        KoinPlatform.getKoin().get<HttpClient>(qualifier = named("api")).clearAuthTokens()
 
         SessionCache.logout()
         NotificationManager.removeToken()

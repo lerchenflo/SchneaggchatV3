@@ -35,6 +35,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
@@ -60,8 +61,11 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.message_too_long
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -183,9 +187,33 @@ class ChatViewModel(
 
         val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
-        if (message is SendMessageContent.TextContent && message.textMessage.isBlank()) return
-        if (message is SendMessageContent.ImageContent && message.images.isEmpty()) return
-        if (message is SendMessageContent.AudioContent && message.audioPath.isEmpty()) return
+        //Validation of message
+        when (message) {
+            is SendMessageContent.TextContent -> {
+                require(message.textMessage.isNotEmpty()) { return }
+                require(message.textMessage.length < 10000) {
+                    runBlocking {
+                        SnackbarManager.showMessage(getString(Res.string.message_too_long))
+                    }
+                    return
+                }
+            }
+            is SendMessageContent.ImageContent -> {
+                require(message.images.isNotEmpty()) { return }
+
+                require(message.text.length < 10000) {
+                    runBlocking {
+                        SnackbarManager.showMessage(getString(Res.string.message_too_long))
+                    }
+                    return
+                }
+            }
+            is SendMessageContent.AudioContent -> {
+                require(message.audioPath.isNotEmpty()) {return}
+            }
+
+        }
+
 
         when (message) {
             is SendMessageContent.TextContent -> {
