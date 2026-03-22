@@ -81,6 +81,7 @@ class ChatViewModel(
 
     companion object {
         private const val INITIAL_MESSAGE_COUNT = 12
+        private const val MAX_VOICE_MSG_TIME = 2*60*1000L
     }
 
     private var audioRecorderPlayer: AudioRecorderPlayer? = null // Object for Audio Recording / Playback
@@ -185,6 +186,7 @@ class ChatViewModel(
 
         if (message is SendMessageContent.TextContent && message.textMessage.isBlank()) return
         if (message is SendMessageContent.ImageContent && message.images.isEmpty()) return
+        if (message is SendMessageContent.AudioContent && message.isRecording) return // if recording is still running don't send
         if (message is SendMessageContent.AudioContent && message.audioPath.isEmpty()) return
 
         when (message) {
@@ -335,9 +337,6 @@ class ChatViewModel(
             is MessageAction.PauseAudio -> {
                 pauseAudio()
             }
-            is MessageAction.GetPlayback -> {
-                action.playback.value = audioPlayer.playbackProgress.value
-            }
             is MessageAction.SeekAudio -> {
                 seekAudio(action.position)
             }
@@ -471,14 +470,21 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                 val result = audioRecorderPlayer!!.startRecording(path)
                 println("Recording start result: $result")
                 //updateSendContent(SendMessageContent.AudioContent(path, 0L))
-
+                updateSendContent(SendMessageContent.AudioContent(
+                    audioPath = path,
+                    duration =  0L,
+                    isRecording = true
+                ))
                 audioRecorderPlayer!!.addRecordingListener { recordBack ->
                     //println("Current record time: ${recordBack.currentPosition}")
-                    updateSendContent(SendMessageContent.AudioContent(
-                        audioPath = path,
-                        duration =  recordBack.currentPosition,
-                        isRecording = true
-                    ))
+                    (currentSendContent.value as? SendMessageContent.AudioContent)?.let { audio ->
+                        updateSendContent(audio.copy(duration = recordBack.currentPosition))
+                    }
+                    audioRecorderPlayer
+
+                    if(recordBack.currentPosition > MAX_VOICE_MSG_TIME){ // maximum of [2 min] for audio recordings
+                        stopRecording()
+                    }
                 }
             } catch (e: Exception) {
                 // log full details to help debugging
@@ -493,11 +499,9 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
             try {
                 val result = audioRecorderPlayer?.stopRecording()
                 audioRecorderPlayer?.removeListeners()
-                updateSendContent(SendMessageContent.AudioContent(
-                    audioPath = (currentSendContent.value as SendMessageContent.AudioContent).audioPath,
-                    duration =  (currentSendContent.value as SendMessageContent.AudioContent).duration,
-                    isRecording = false
-                ))
+                (currentSendContent.value as? SendMessageContent.AudioContent)?.let { audio ->
+                    updateSendContent(audio.copy(isRecording = false))
+                }
                 println("Recording stopped: $result")
             } catch (e: Exception) {
                 loggingRepository.logWarning("Failed to stop recording: ${e.message}")
@@ -529,6 +533,10 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
 
     fun getPlaybackProgress(): StateFlow<PlaybackProgress>{
         return audioPlayer.playbackProgress
+    }
+
+    fun getMAX_VOICE_MSG_TIME(): Long{
+        return MAX_VOICE_MSG_TIME
     }
 
 

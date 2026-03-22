@@ -651,18 +651,18 @@ fun ChatScreen(
                                         )
                                     }
                                 }
-                                IconButton(
-                                    onClick = {
-                                        // Reset to empty text or previous state
-                                        viewModel.stopRecording()
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.StopCircle,
-                                        contentDescription = "Discard recording",
-                                        tint = MaterialTheme.colorScheme.error
+
+                                val maxVoiceMsgTime = viewModel.getMAX_VOICE_MSG_TIME()
+
+                                if(content.duration > maxVoiceMsgTime*0.8){
+                                    Text(
+                                        text = formatMillis(maxVoiceMsgTime - content.duration),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.error
                                     )
                                 }
+
+
                             }else{
                                 val tmpMsgId = "audio_record_tmp"
                                 val progress by viewModel.getPlaybackProgress().collectAsState()
@@ -696,6 +696,7 @@ fun ChatScreen(
                             IconButton(
                                 onClick = {
                                     // Reset to empty text or previous state
+                                    viewModel.stopRecording()
                                     viewModel.updateSendContent(SendMessageContent.TextContent(""))
                                 }
                             ) {
@@ -715,27 +716,42 @@ fun ChatScreen(
 
                     // show send when content is not empty or on desktop (no microphone implementation for desktop)
                     if(currentContentNotEmpty || !(SessionCache.requireLoggedIn()?.developer ?: false) || viewModel.isDesktop()){ // todo open to public
-                        // send button
-                        IconButton(
-                            onClick = {
-                                viewModel.sendMessage(
-                                    message = viewModel.currentSendContent.value,
-                                    replyTo = viewModel.replyMessage
+                        if((currentContent as? SendMessageContent.AudioContent)?.isRecording ?: false){
+                            IconButton(
+                                onClick = {
+                                    // Reset to empty text or previous state
+                                    viewModel.stopRecording()
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.StopCircle,
+                                    contentDescription = "Discard recording",
+                                    //tint = MaterialTheme.colorScheme.error
                                 )
-                            },
-                            modifier = Modifier
-                                .padding(5.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Send,
-                                contentDescription = null,
-                            )
+                            }
+                        }else {
+
+                            // send button
+                            IconButton(
+                                onClick = {
+                                    viewModel.sendMessage(
+                                        message = viewModel.currentSendContent.value,
+                                        replyTo = viewModel.replyMessage
+                                    )
+                                },
+                                modifier = Modifier
+                                    .padding(5.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.Send,
+                                    contentDescription = null,
+                                )
+                            }
                         }
                     }else{
                         IconButton(
                             onClick = {
                                 viewModel.startRecording()
-                                // todo record audio message
                             },
                             modifier = Modifier
                                 .padding(5.dp)
