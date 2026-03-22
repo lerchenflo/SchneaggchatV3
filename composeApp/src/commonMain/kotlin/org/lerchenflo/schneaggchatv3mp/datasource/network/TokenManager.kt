@@ -38,11 +38,20 @@ class TokenManager(
         }
     }
 
-    suspend fun refreshTokens(): RequestError? {
+    suspend fun refreshTokens(oldAccessToken: String? = null): RequestError? {
         return refreshMutex.withLock {
             loggingRepository.logDebug("Token refresh started")
             
             val currentTokens = preferenceManager.getTokens()
+            
+            // If the token that caused the 401 is different from the token we currently have 
+            // in preferences, it means another thread ALREADY refreshed the token while we 
+            // were waiting for the Mutex lock!
+            if (oldAccessToken != null && currentTokens.accessToken != oldAccessToken) {
+                loggingRepository.logInfo("Token refresh skipped: Token was already refreshed by another thread")
+                return@withLock null
+            }
+
             if (currentTokens.refreshToken.isBlank()) {
                 loggingRepository.logWarning("Token refresh aborted: No refresh token available")
                 return@withLock null
