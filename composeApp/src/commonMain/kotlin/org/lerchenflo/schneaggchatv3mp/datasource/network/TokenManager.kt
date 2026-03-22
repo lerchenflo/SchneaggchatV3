@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 
 class TokenManager(
     private val preferenceManager: Preferencemanager,
@@ -51,7 +52,7 @@ class TokenManager(
 
             try {
                 // Use the existing "auth" HttpClient to avoid circular dependency
-                val authClient = KoinPlatform.getKoin().get<HttpClient>(qualifier = named("auth"))
+                val authClient = KoinPlatform.getKoin().get<HttpClient>(qualifier = named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))
                 val response = authClient.post(preferenceManager.buildServerUrl("/auth/refresh")) {
                     contentType(ContentType.Application.Json)
                     setBody(NetworkUtils.RefreshRequest(currentTokens.refreshToken))
