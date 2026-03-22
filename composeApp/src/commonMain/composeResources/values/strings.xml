@@ -74,6 +74,7 @@
     <string name="useMarkdown">use Markdown formatting</string>
     <string name="markdownInfo">This will add Markdown formatting to messages, but slow down Message loading in chat.</string>
     <string name="something_wrong_message">Something went wrong with this message</string>
+    <string name="message_too_long">Message is too long!</string>
     <string name="log_out_successfully">Successfully logged out</string>
     <string name="accept_agb_pt1">I agree to the </string>
     <string name="accept_agb_pt2">Terms and Conditions and the Privacy Policy</string>
@@ -103,6 +104,9 @@
     <string name="status_info">This Text is written by the user himself</string>
     <string name="description_info_user">All friends of %1$s can edit this text, but %1$s cannot.</string>
     <string name="description_info_group">Change the description of this Group</string>
+
+    <string name="become_beta_tester">Become a Beta Tester</string>
+    <string name="become_beta_tester_desc">Get early access to new features/bugfixes before everyone else</string>
 
     <string name="birthdate">Birthdate</string>
 
@@ -549,5 +553,13 @@
     <string name="yatzi_total">Total</string>
     <string name="yatzi_roll_dice">Roll Dice, %1$d left</string>
     <string name="yatzi_roll_again">Roll Again, %1$d left</string>
+
+    <!-- Changelog Popup -->
+    <string name="changelog_whats_new">What's New</string>
+    <string name="changelog_version">Version %1$s</string>
+    <string name="changelog_features">Features</string>
+    <string name="changelog_bug_fixes">Bug Fixes</string>
+    <string name="changelog_no_details">No details available for this version.</string>
+    <string name="changelog_got_it">Got it</string>
 
 </resources>

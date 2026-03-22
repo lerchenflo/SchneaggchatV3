@@ -42,6 +42,12 @@ import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 
+enum class HTTPCLIENTTYPE {
+    AUTHENTICATED,
+    NOT_AUTHENTICATED
+}
+
+
 val sharedmodule = module{
 
     //Database
@@ -53,12 +59,12 @@ val sharedmodule = module{
 
     //Network utils must be created before HttpClients to avoid circular dependency
     single<NetworkUtils> {
-        NetworkUtils(get(named("api")), get(named("auth")), get(), get())
+        NetworkUtils(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get())
     }
 
-    single <HttpClient>(named("api")) { createHttpClient(get(), get(), true) }
+    single <HttpClient>(named(HTTPCLIENTTYPE.AUTHENTICATED)) { createHttpClient(get(), get(), true) }
 
-    single <HttpClient>(named("auth")) { createHttpClient(get(), get(), false) }
+    single <HttpClient>(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)) { createHttpClient(get(), get(), false) }
 
 
     singleOf(::Navigator)
@@ -78,12 +84,14 @@ val sharedmodule = module{
 
     // Socket Connection Manager
     single<SocketConnectionManager> {
-        SocketConnectionManager(get(named("api")), get(), get(), get(), get(), get())
+        SocketConnectionManager(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get(), get(), get(), get())
     }
 
 
     //Preferences
-    singleOf(::Preferencemanager)
+    single {
+        Preferencemanager(get(), get(), get())
+    }
     
     //Language
     singleOf(::LanguageService)

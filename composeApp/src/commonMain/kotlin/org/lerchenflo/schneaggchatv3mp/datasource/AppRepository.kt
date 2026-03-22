@@ -5,9 +5,9 @@ package org.lerchenflo.schneaggchatv3mp.datasource
 import androidx.compose.runtime.Composable
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.auth.clearAuthTokens
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
@@ -27,6 +27,7 @@ import org.jetbrains.compose.resources.getString
 import org.koin.core.qualifier.named
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
+import org.lerchenflo.schneaggchatv3mp.GITHUB_URL
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
@@ -36,6 +37,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
@@ -67,6 +69,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
+import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
+import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogParser
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
@@ -196,6 +200,9 @@ class AppRepository(
      * Delete all app data (for example on appdatadelete or logout)
      */
     suspend fun deleteAllAppData(){
+
+        preferencemanager.saveLastStartedVersion("")
+
         database.allDatabaseDao().clearAll()
         NotificationManager.removeToken()
         SessionCache.logout()
@@ -207,7 +214,7 @@ class AppRepository(
         //Clear access tokens
 
         preferencemanager.clearAll()
-        KoinPlatform.getKoin().get<HttpClient>(qualifier = named("auth")).clearAuthTokens()
+        KoinPlatform.getKoin().get<HttpClient>(qualifier = named(HTTPCLIENTTYPE.AUTHENTICATED)).clearAuthTokens()
 
         SessionCache.logout()
         NotificationManager.removeToken()
@@ -272,6 +279,7 @@ class AppRepository(
 
                 val errorProfilePicJob = async {
                     getMissingPics()
+                    getMissingAudios()
                 }
                 awaitAll(errorProfilePicJob)
 
@@ -329,6 +337,21 @@ class AppRepository(
     }
 
 
+    suspend fun getChangeLog(version: String) : ChangelogEntry? {
+        val networkResult = networkUtils.getChangeLog("$GITHUB_URL/main/README.md")
+        return when (networkResult) {
+            is NetworkResult.Error<*> -> {
+                println("get changelog network error: ${networkResult.error.message}")
+                null
+            }
+            is NetworkResult.Success<*> -> {
+                val changelog = ChangelogParser.getParsedChangelog(networkResult.data.toString(), version)
+                changelog
+            }
+        }
+    }
+
+
     /*
     **************************************************************************
 
@@ -349,7 +372,7 @@ class AppRepository(
         return userRepository.getAllUsersFlow(searchTerm)
             .map { list ->
                 list.filter {
-                    it.friendshipStatus == NetworkUtils.FriendshipStatus.PENDING
+                    it.friendshipStatus == FriendshipStatus.PENDING
                 }
             }
     }
@@ -358,7 +381,7 @@ class AppRepository(
     suspend fun getFriends(searchTerm: String): List<User> {
         return userRepository.getAllUsers().filter {
             it.name.contains(searchTerm)
-                    && it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED
+                    && it.friendshipStatus == FriendshipStatus.ACCEPTED
                     && !it.isGroup
         }
     }
@@ -366,7 +389,7 @@ class AppRepository(
     fun getFriendsFlow(searchTerm: String): Flow<List<User>> {
         return userRepository.getAllUsersFlow(searchTerm).map { users ->
             users.filter {
-                it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED
+                it.friendshipStatus == FriendshipStatus.ACCEPTED
                         && !it.isGroup
             }
         }
@@ -417,7 +440,7 @@ class AppRepository(
             val userItems = users
                 .asSequence()
                 .filter { it.id != userId }
-                .filter { it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED }
+                .filter { it.friendshipStatus == FriendshipStatus.ACCEPTED }
                 .filter { loweredSearch.isEmpty() || it.name.lowercase().contains(loweredSearch) }
                 .map { user ->
                     val userMessages = messagesByUser[user.id] ?: emptyList()
@@ -522,25 +545,35 @@ class AppRepository(
     **************************************************************************
      */
 
+
     /**
-     * Actions to execute when the tokenpair is updated
+     * Suspend version of onNewTokenPair that persists tokens synchronously.
+     * Use this from refresh flows where we must ensure tokens are written before returning.
      */
-    fun onNewTokenPair(tokenPair: NetworkUtils.TokenPair){
+    suspend fun onNewTokenPair(tokenPair: TokenPair){
+        loggingRepository.logDebug("Token save started: Processing new token pair")
+        
+        try {
+            //Parse the token to get the user id
+            loggingRepository.logDebug("Token save: Extracting user ID from refresh token")
+            val userid = JwtUtils.getUserIdFromToken(tokenPair.refreshToken)
+            loggingRepository.logInfo("Token save: User ID extracted: $userid")
 
-        //Parse the token to get the user id
-        val userid = JwtUtils.getUserIdFromToken(tokenPair.refreshToken)
-
-        CoroutineScope(Dispatchers.IO).launch {
+            loggingRepository.logDebug("Token save: Saving tokens to secure storage")
             preferencemanager.saveTokens(tokenPair)
+            
+            loggingRepository.logDebug("Token save: Saving user ID to preferences")
             preferencemanager.saveOWNID(userid)
+
+            loggingRepository.logDebug("Token save: Updating session cache")
+            SessionCache.updateTokens(tokenPair)
+            SessionCache.updateOnline(true)
+            
+            loggingRepository.logInfo("Token save completed successfully: Session cache updated")
+        } catch (e: Exception) {
+            loggingRepository.logError("Token save failed: ${e.message}")
+            throw e // Re-throw to maintain existing error handling behavior
         }
-
-        SessionCache.updateTokens(tokenPair)
-
-        //KoinPlatform.getKoin().get<HttpClient>(qualifier = named("api")).clearAuthTokens()
-
-        SessionCache.updateOnline(true)
-        println("New token pair, Sessioncache updated: $SessionCache")
     }
 
 
@@ -599,8 +632,10 @@ class AppRepository(
 
                 onResult(false)
             }
-            is NetworkResult.Success<NetworkUtils.TokenPair> -> {
-                onNewTokenPair(result.data)
+            is NetworkResult.Success<TokenPair> -> {
+                withContext(NonCancellable) {
+                    onNewTokenPair(result.data)
+                }
 
                 SessionCache.login(
                     tokens = result.data,
@@ -655,7 +690,7 @@ class AppRepository(
     suspend fun userIdSync() {
         val localusers = userRepository.getuserchangeid()
 
-        val userSyncResponse = networkUtils.userIdSync(localusers.map { (id, changedate) -> NetworkUtils.IdTimeStamp(id, changedate) })
+        val userSyncResponse = networkUtils.userIdSync(localusers.map { (id, changedate) -> IdTimeStamp(id, changedate) })
 
         val profilePicsToGet = emptyList<String>().toMutableList()
 
@@ -663,7 +698,7 @@ class AppRepository(
             is NetworkResult.Error<*> -> {
                 println("userid sync error: ${userSyncResponse.error}")
             }
-            is NetworkResult.Success<NetworkUtils.UserSyncResponse> -> {
+            is NetworkResult.Success<UserSyncResponse> -> {
                 //println("Userid sync response: ${userSyncResponse.data.toString()}")
 
                 val updatedUsers = userSyncResponse.data.updatedUsers
@@ -671,7 +706,7 @@ class AppRepository(
 
                 updatedUsers.forEach { newUser ->
                     when (newUser) {
-                        is NetworkUtils.UserResponse.FriendUserResponse -> {
+                        is UserResponse.FriendUserResponse -> {
                             val existing = database.userDao().getUserbyId(newUser.id)
                             database.userDao().upsert(UserDto(
                                 id = newUser.id,
@@ -680,7 +715,7 @@ class AppRepository(
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
                                 birthDate = newUser.birthDate,
-                                frienshipStatus = NetworkUtils.FriendshipStatus.ACCEPTED,
+                                frienshipStatus = FriendshipStatus.ACCEPTED,
                                 requesterId = newUser.requesterId,
 
                                 // Preserve existing values:
@@ -701,7 +736,7 @@ class AppRepository(
                                 profilePicsToGet += newUser.id
                             }
                         }
-                        is NetworkUtils.UserResponse.SelfUserResponse -> {
+                        is UserResponse.SelfUserResponse -> {
                             val existing = database.userDao().getUserbyId(newUser.id)
                             database.userDao().upsert(UserDto(
                                 id = newUser.id,
@@ -730,7 +765,7 @@ class AppRepository(
                             if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
                                 profilePicsToGet += newUser.id
                             }                        }
-                        is NetworkUtils.UserResponse.SimpleUserResponse -> {
+                        is UserResponse.SimpleUserResponse -> {
                             val existing = database.userDao().getUserbyId(newUser.id)
                             database.userDao().upsert(UserDto(
                                 id = newUser.id,
@@ -800,7 +835,7 @@ class AppRepository(
      * Get all availavble users from the server
      * @param searchTerm the searchterm which the user entered
      */
-    suspend fun getAvailableUsers(searchTerm: String) : List<NetworkUtils.NewFriendsUserResponse> {
+    suspend fun getAvailableUsers(searchTerm: String) : List<NewFriendsUserResponse> {
         return when (val response = networkUtils.getAvailableUsers(searchTerm)) {
             is NetworkResult.Error<RequestError> -> {
                 sendErrorSuspend(
@@ -810,7 +845,7 @@ class AppRepository(
                 )
                 emptyList()
             }
-            is NetworkResult.Success<List<NetworkUtils.NewFriendsUserResponse>> -> {
+            is NetworkResult.Success<List<NewFriendsUserResponse>> -> {
                 response.data
             }
         }
@@ -931,7 +966,7 @@ class AppRepository(
         data class ImageContent(val image: ByteArray, val text: String) : MessageContent()
         data class AudioContent(val audio: ByteArray) : MessageContent()
 
-        data class PollContent(val poll: NetworkUtils.PollCreateRequest) : MessageContent()
+        data class PollContent(val poll: PollCreateRequest) : MessageContent()
     }
 
 
@@ -1026,7 +1061,7 @@ class AppRepository(
                     )
                 }
 
-                is MessageContent.AudioContent -> {
+                is AudioContent -> {
 
                     MessageDto(
                         localPK = localpkintern,
@@ -1084,7 +1119,7 @@ class AppRepository(
                     )
                 }
 
-                is MessageContent.AudioContent -> {
+                is AudioContent -> {
                     networkUtils.sendAudioMessageToServer(
                         empfaenger = empfaenger,
                         gruppe = gruppe,
@@ -1097,11 +1132,23 @@ class AppRepository(
             when (serverrequest){
                 is NetworkResult.Error<*> -> {
                     println("Message senden error: ${serverrequest.error}")
-                    if (content is MessageContent.ImageContent) {
-                        println("Saving image to local storage")
-                        pictureManager.savePictureToStorage(content.image, "unsent_" + localpkintern + PICTURE_FILE_NAME)
 
+                    when (content) {
+                        is ImageContent -> {
+                            pictureManager.savePictureToStorage(content.image, "unsent_" + localpkintern + PICTURE_FILE_NAME)
+
+                        }
+
+                        is AudioContent -> {
+                            audioManager.saveAudioToStorage(
+                                audioBytes = content.audio,
+                                filename = "unsent_" + localpkintern + VOICEMSG_FILE_NAME
+                            )
+                        }
+
+                        else -> {}
                     }
+
                 }
                 is NetworkResult.Success<MessageResponse> -> {
                     withContext(Dispatchers.IO) {
@@ -1232,11 +1279,11 @@ class AppRepository(
 
                         MessageType.AUDIO -> {
                             if(m.audioPath == null){
-                                MessageContent.TextContent("Offline audio sending failed")
+                                TextContent("Offline audio sending failed")
                             }
                             val audio = getAudioBytes("unsent_" + m.localPK + VOICEMSG_FILE_NAME)
 
-                            MessageContent.AudioContent(
+                            AudioContent(
                                 audio = audio
                             )
                         }
@@ -1248,6 +1295,8 @@ class AppRepository(
                 )
 
 
+                val nextMessages = messageRepository.getUnsentMessages()
+                if (nextMessages.firstOrNull()?.localPK == m.localPK) return
             }
 
 
@@ -1273,7 +1322,7 @@ class AppRepository(
         while (moreMessages) {
 
             val messageSyncResponse = networkUtils.messageSync(
-                messageIds = localmessages.map { NetworkUtils.IdTimeStamp(it.id, it.updatedAt) },
+                messageIds = localmessages.map { IdTimeStamp(it.id, it.updatedAt) },
                 page = currentPage
             )
 
@@ -1284,7 +1333,7 @@ class AppRepository(
                     break // Stop on error
                 }
 
-                is NetworkResult.Success<NetworkUtils.MessageSyncResponse> -> {
+                is NetworkResult.Success<MessageSyncResponse> -> {
                     val updatedMessages = messageSyncResponse.data.updatedMessages
                     val deletedMessages = messageSyncResponse.data.deletedMessages
                     moreMessages = messageSyncResponse.data.moreMessages
@@ -1564,7 +1613,7 @@ class AppRepository(
 
 
 
-    suspend fun votePoll(ownId: String, pollVoteRequest: NetworkUtils.PollVoteRequest) {
+    suspend fun votePoll(ownId: String, pollVoteRequest: PollVoteRequest) {
         val request = networkUtils.votePoll(
             pollVoteRequest
         )
@@ -1619,7 +1668,7 @@ class AppRepository(
                 sendErrorSuspend(ErrorChannel.ErrorEvent(error = response.error))
                 null
             }
-            is NetworkResult.Success<NetworkUtils.GroupResponse> -> {
+            is NetworkResult.Success<GroupResponse> -> {
                 response.data.id
             }
         }
@@ -1633,7 +1682,7 @@ class AppRepository(
 
         val groupSyncResponse = networkUtils.groupIdSync(
             groupIds = localgroups.map {
-                NetworkUtils.IdTimeStamp(it.id, it.updatedAt)
+                IdTimeStamp(it.id, it.updatedAt)
             }
         )
 
@@ -1643,7 +1692,7 @@ class AppRepository(
                 println("groupid sync error")
             }
 
-            is NetworkResult.Success<NetworkUtils.GroupSyncResponse> -> {
+            is NetworkResult.Success<GroupSyncResponse> -> {
                 //println("GroupIdSync sync response: ${groupSyncResponse.data.toString()}")
 
                 groupSyncResponse.data.updatedGroups.forEach { groupResponse ->

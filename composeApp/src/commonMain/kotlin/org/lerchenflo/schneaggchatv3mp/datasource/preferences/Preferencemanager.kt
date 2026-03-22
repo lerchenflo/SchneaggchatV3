@@ -13,11 +13,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 class Preferencemanager(
     private val prefs: DataStore<Preferences>,
-    private val securePrefs: KSafe
+    private val securePrefs: KSafe,
+    private val loggingRepository: LoggingRepository,
 ) {
 
     private val json = Json {
@@ -42,10 +44,24 @@ class Preferencemanager(
     }
 
     suspend fun saveTokens(tokenPair: NetworkUtils.TokenPair) {
-        securePrefs.put(SecureKey.ACCESS_TOKEN.key, tokenPair.accessToken)
-        securePrefs.put(SecureKey.REFRESH_TOKEN.key, tokenPair.refreshToken)
-        tokenPair.encryptionKey?.let {
-            securePrefs.put(SecureKey.ENCRYPTION_KEY.key, it)
+        try {
+            loggingRepository.logDebug("Secure storage: Saving access token")
+            securePrefs.put(SecureKey.ACCESS_TOKEN.key, tokenPair.accessToken)
+            
+            loggingRepository.logDebug("Secure storage: Saving refresh token")
+            securePrefs.put(SecureKey.REFRESH_TOKEN.key, tokenPair.refreshToken)
+            
+            tokenPair.encryptionKey?.let { encryptionKey ->
+                loggingRepository.logDebug("Secure storage: Saving encryption key")
+                securePrefs.put(SecureKey.ENCRYPTION_KEY.key, encryptionKey)
+            } ?: run {
+                loggingRepository.logDebug("Secure storage: No encryption key to save")
+            }
+            
+            loggingRepository.logInfo("Secure storage: All tokens saved successfully")
+        } catch (e: Exception) {
+            loggingRepository.logError("Secure storage: Failed to save tokens - ${e.message}")
+            throw e // Re-throw to maintain existing error handling behavior
         }
     }
 
@@ -96,6 +112,7 @@ class Preferencemanager(
         val DEVELOPER_SETTINGS = booleanPreferencesKey("developer_settings")
         val PINNED_CHATS = stringPreferencesKey("pinned_chats")
         val DRAFTS = stringPreferencesKey("drafts")
+        val LAST_STARTED_VERSION = stringPreferencesKey("last_started_version")
     }
 
     // Markdown Format
@@ -169,6 +186,17 @@ class Preferencemanager(
     fun getDevSettingsFlow(): Flow<Boolean> = prefs.data.map { prefs ->
         prefs[PrefsKeys.DEVELOPER_SETTINGS] ?: false
     }
+
+
+    suspend fun saveLastStartedVersion(value: String) {
+        prefs.edit { it[PrefsKeys.LAST_STARTED_VERSION] = value }
+    }
+
+    suspend fun getLastStartedVersion(): String {
+        return prefs.data.first()[PrefsKeys.LAST_STARTED_VERSION] ?: ""
+    }
+
+
 
     // Pinned Chats - Stored as JSON
     suspend fun addPinnedChat(chat: PinnedChat) {

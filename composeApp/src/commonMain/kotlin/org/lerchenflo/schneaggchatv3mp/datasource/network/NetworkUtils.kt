@@ -203,10 +203,15 @@ class NetworkUtils(
 
     private suspend inline fun <reified T, reified R> safeAuthGet(
         endpoint: String,
-        body: T
+        body: T,
+        url: String? = null
     ): NetworkResult<R, NetworkError> {
+
+        val serverUrl = url ?: preferenceManager.buildServerUrl(endpoint)
+
+
         return safeCall {
-            authHttpClient.get(preferenceManager.buildServerUrl(endpoint)) {
+            authHttpClient.get(serverUrl) {
                 contentType(ContentType.Application.Json)
                 setBody(body)
             }
@@ -220,6 +225,15 @@ class NetworkUtils(
         return safeCall {
             authHttpClient.get("$serverUrl/public/test")
         }
+    }
+
+
+    suspend fun getChangeLog(githubUrl: String) : NetworkResult<String, NetworkError> {
+        return safeAuthGet(
+            endpoint = "",
+            body = null,
+            url = githubUrl
+        )
     }
 
 

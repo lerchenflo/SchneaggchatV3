@@ -98,6 +98,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangelogPopup
+import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
@@ -123,12 +125,16 @@ fun Chatauswahlscreen(
 
     val viewModel = koinViewModel<ChatSelectorViewModel>()
     val preferencemanager = koinInject<Preferencemanager>()
+    val appRepository = koinInject<AppRepository>()
+
     val availablegegners by viewModel.chatSelectorState.collectAsStateWithLifecycle(emptyList())
     val searchterm by viewModel.searchTerm.collectAsStateWithLifecycle()
 
     val pendingFriendCount by viewModel.pendingFriendCount.collectAsStateWithLifecycle()
 
     var profilePictureDialogShown by remember { mutableStateOf(false) }
+    var changeLogDialogContent by remember { mutableStateOf<ChangelogEntry?>(null) }
+
     var profilePictureFilePathTemp by remember { mutableStateOf("") }
 
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
@@ -143,6 +149,28 @@ fun Chatauswahlscreen(
     }
 
      */
+
+
+    LaunchedEffect(Unit) {
+        val lastStartedVersion = preferencemanager.getLastStartedVersion()
+        val currentVersion = appRepository.appVersion.getVersionName()
+
+        if (lastStartedVersion != currentVersion) {
+
+            println("showing changelog")
+
+            val changelogContent = viewModel.getChangelog()
+
+            changeLogDialogContent = changelogContent
+
+            preferencemanager.saveLastStartedVersion(currentVersion)
+
+        }
+
+    }
+
+
+
 
     Scaffold(
         modifier = modifier,
@@ -631,6 +659,13 @@ fun Chatauswahlscreen(
             )
         }
 
+
+        changeLogDialogContent?.let {
+            ChangelogPopup(
+                onDismiss = { changeLogDialogContent = null },
+                content = it
+            )
+        }
 
 
     }

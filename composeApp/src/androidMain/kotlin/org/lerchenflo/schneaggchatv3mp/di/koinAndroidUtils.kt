@@ -11,28 +11,30 @@ import java.io.PrintWriter
 import java.io.StringWriter
 
 fun startKoinAndroid(androidContext: Context) {
-    startKoin {
-        //androidLogger(Level.DEBUG) // Enable Koin logging
-        androidContext(androidContext)
+    if (KoinPlatform.getKoinOrNull() == null) {
+        startKoin {
+            //androidLogger(Level.DEBUG) // Enable Koin logging
+            androidContext(androidContext)
 
-        //Modules für room Userdatabase
-        modules(androidUserDatabaseModule, sharedmodule)
+            //Modules für room Userdatabase
+            modules(androidUserDatabaseModule, sharedmodule)
 
-        //Modules für Httpclient
-        modules(
-            androidHttpModule,
-            androidHttpAuthModule,
+            //Modules für Httpclient
+            modules(
+                androidHttpModule,
+                androidHttpAuthModule,
 
-            androidDataStoreModule,
-            androidKsafeModule,
+                androidDataStoreModule,
+                androidKsafeModule,
 
-            androidVersionModule,
-            androidPictureManagerModule,
-            androidPermissionManagerModule,
-            androidAudioManagerModule,
-            androidShareUtilsModule,
-            androidLanguageManagerModule
-        )
+                androidVersionModule,
+                androidPictureManagerModule,
+                androidPermissionManagerModule,
+                androidAudioManagerModule,
+                androidShareUtilsModule,
+                androidLanguageManagerModule
+            )
+        }
     }
 }
 
