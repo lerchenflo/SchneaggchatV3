@@ -21,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 
 class TokenManager(
     private val preferenceManager: Preferencemanager,
@@ -37,11 +38,20 @@ class TokenManager(
         }
     }
 
-    suspend fun refreshTokens(): RequestError? {
+    suspend fun refreshTokens(oldAccessToken: String? = null): RequestError? {
         return refreshMutex.withLock {
             loggingRepository.logDebug("Token refresh started")
             
             val currentTokens = preferenceManager.getTokens()
+            
+            // If the token that caused the 401 is different from the token we currently have 
+            // in preferences, it means another thread ALREADY refreshed the token while we 
+            // were waiting for the Mutex lock!
+            if (oldAccessToken != null && currentTokens.accessToken != oldAccessToken) {
+                loggingRepository.logInfo("Token refresh skipped: Token was already refreshed by another thread")
+                return@withLock null
+            }
+
             if (currentTokens.refreshToken.isBlank()) {
                 loggingRepository.logWarning("Token refresh aborted: No refresh token available")
                 return@withLock null
@@ -51,7 +61,7 @@ class TokenManager(
 
             try {
                 // Use the existing "auth" HttpClient to avoid circular dependency
-                val authClient = KoinPlatform.getKoin().get<HttpClient>(qualifier = named("auth"))
+                val authClient = KoinPlatform.getKoin().get<HttpClient>(qualifier = named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))
                 val response = authClient.post(preferenceManager.buildServerUrl("/auth/refresh")) {
                     contentType(ContentType.Application.Json)
                     setBody(NetworkUtils.RefreshRequest(currentTokens.refreshToken))

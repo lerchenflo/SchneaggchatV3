@@ -9,6 +9,7 @@ import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.database.desktopAppDatabaseBuilder
+import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
@@ -24,11 +25,11 @@ val desktopAppDatabaseModule = module {
 }
 
 val desktopHttpModule = module {
-    single<HttpClient>(named("api")) {createHttpClient(OkHttp.create(), get(),true)}
+    single<HttpClient>(named(HTTPCLIENTTYPE.AUTHENTICATED)) {createHttpClient(OkHttp.create(), get(),true)}
 }
 
 val desktopHttpAuthModule = module {
-    single<HttpClient>(named("auth")) {createHttpClient(OkHttp.create(), get(),false)}
+    single<HttpClient>(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)) {createHttpClient(OkHttp.create(), get(),false)}
 }
 
 val desktopDataStoreModule = module {
