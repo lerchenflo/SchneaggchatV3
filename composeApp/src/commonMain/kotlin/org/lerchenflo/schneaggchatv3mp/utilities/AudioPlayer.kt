@@ -149,11 +149,16 @@ data class PlaybackProgress(
 )
 
 fun getAudioBytes(filePath: String): ByteArray {
-    if(filePath.isEmpty()) return byteArrayOf()
+    try {
+        if (filePath.isEmpty()) return byteArrayOf()
 
-    val path = Path(filePath)
-    val fileSource = SystemFileSystem.source(path).buffered()
+        val path = Path(filePath)
+        val fileSource = SystemFileSystem.source(path).buffered()
 
-    // Read the entire file into a ByteArray
-    return fileSource.readByteArray()
+        // Read the entire file into a ByteArray
+        return fileSource.readByteArray()
+    } catch (e: Exception) {
+        println("Failed to read audio file: ${e.message}")
+        return byteArrayOf()
+    }
 }

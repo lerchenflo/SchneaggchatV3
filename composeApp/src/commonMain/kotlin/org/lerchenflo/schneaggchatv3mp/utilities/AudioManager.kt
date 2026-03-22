@@ -28,4 +28,9 @@ expect class AudioManager {
      */
 
     fun checkAudioExists(filePath: String) : Boolean
+
+    /**
+     * returns audio duration
+     */
+    suspend fun getMediaDuration(path: String): Long
 }

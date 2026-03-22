@@ -5,6 +5,7 @@ import io.github.hyochan.audio.initializeAudioRecorderPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import android.media.MediaMetadataRetriever
 
 actual class AudioManager(private val context: Context){
     actual fun initializeAudio() {
@@ -37,6 +38,19 @@ actual class AudioManager(private val context: Context){
     actual fun checkAudioExists(filePath: String): Boolean {
         val file = File(filePath)
         return file.exists()
+    }
+
+    actual suspend fun getMediaDuration(path: String): Long {
+        val retriever = MediaMetadataRetriever()
+        return try {
+            retriever.setDataSource(path)
+            val time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+            time?.toLong() ?: 0L
+        } catch (e: Exception) {
+            0L
+        } finally {
+            retriever.release()
+        }
     }
 
     /*

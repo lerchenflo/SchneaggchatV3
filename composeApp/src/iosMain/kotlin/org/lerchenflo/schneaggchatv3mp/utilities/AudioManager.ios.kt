@@ -14,6 +14,9 @@ import platform.Foundation.NSSearchPathForDirectoriesInDomains
 import platform.Foundation.NSUserDomainMask
 import platform.Foundation.create
 import platform.Foundation.writeToFile
+import platform.AVFoundation.AVURLAsset
+import platform.Foundation.NSURL
+import platform.CoreMedia.CMTimeGetSeconds
 
 @OptIn(BetaInteropApi::class)
 actual class AudioManager {
@@ -48,6 +51,14 @@ actual class AudioManager {
     actual fun checkAudioExists(filePath: String): Boolean {
         val fileManager = NSFileManager.defaultManager
         return fileManager.fileExistsAtPath(filePath)
+    }
+
+    actual suspend fun getMediaDuration(path: String): Long {
+        val url = NSURL.fileURLWithPath(path)
+        val asset = AVURLAsset.assetWithURL(url)
+        val duration = asset.duration
+        val seconds = CMTimeGetSeconds(duration)
+        return (seconds * 1000).toLong() // Convert to milliseconds
     }
 
     private fun saveData(data: NSData, filename: String): String {
