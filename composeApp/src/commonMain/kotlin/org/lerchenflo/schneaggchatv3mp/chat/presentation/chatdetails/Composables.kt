@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.RemoveModerator
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -33,7 +32,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,30 +46,28 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
-import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_member
 import schneaggchatv3mp.composeapp.generated.resources.add_description_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.admin
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.change
 import schneaggchatv3mp.composeapp.generated.resources.common_groups
+import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_member
 import schneaggchatv3mp.composeapp.generated.resources.group_description
 import schneaggchatv3mp.composeapp.generated.resources.groupmembers
 import schneaggchatv3mp.composeapp.generated.resources.make_admin
@@ -80,7 +76,6 @@ import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.open_chat
 import schneaggchatv3mp.composeapp.generated.resources.remove_admin_status
 import schneaggchatv3mp.composeapp.generated.resources.remove_from_group
-import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 import schneaggchatv3mp.composeapp.generated.resources.user_description
 import schneaggchatv3mp.composeapp.generated.resources.yes
 import schneaggchatv3mp.composeapp.generated.resources.you_with_brackets
@@ -560,13 +555,15 @@ fun DescriptionStatusRow(
 fun AddUserToGroupPopup(
     onDismiss: () -> Unit,
     onSuccess: (List<SelectedChat>) -> Unit,
-    availableUsers: List<SelectedChat>
-
+    availableUsers: List<SelectedChat>,
+    selectedUsers: List<SelectedChat>,
+    searchterm: String,
+    onSearchTermChange: (String) -> Unit,
+    onUserSelected: (SelectedChat) -> Unit,
+    onUserDeselected: (SelectedChat) -> Unit,
 ) {
 
-    val selectedUsers = remember {
-        mutableStateListOf<SelectedChat>()
-    }
+
 
 
     AlertDialog(
@@ -586,17 +583,15 @@ fun AddUserToGroupPopup(
             }
         },
         text = {
-            var searchterm by remember {
-                mutableStateOf("")
-            }
+
 
             MemberSelector(
                 availableUsers = availableUsers,
                 selectedUsers = selectedUsers,
                 searchTerm = searchterm,
-                onSearchTermChange = {searchterm = it},
-                onUserSelected = {selectedUsers += it},
-                onUserDeselected = {selectedUsers -= it},
+                onSearchTermChange = onSearchTermChange,
+                onUserSelected = onUserSelected,
+                onUserDeselected = onUserDeselected,
                 minUsers = 1
             )
         }

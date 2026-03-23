@@ -11,13 +11,16 @@ import androidx.lifecycle.viewModelScope
 import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
@@ -57,8 +60,45 @@ class ChatDetailsViewmodel(
     private val pictureManager: PictureManager,
 ) : ViewModel() {
 
-    var availableNewMembers by mutableStateOf<List<User>>(emptyList())
+
+    var selectedNewMembers  by mutableStateOf<List<SelectedChat>>(emptyList())
+    private val _searchTerm = MutableStateFlow("")
+    val searchterm = _searchTerm.asStateFlow()
     var selectedUser by mutableStateOf<User?>(null)
+
+    val availableNewMembers: StateFlow<List<User>> = combine(
+        _searchTerm,
+        SessionCache.authState,
+        globalViewModel.selectedChat
+    ) { term, auth, chat -> Triple(term, auth, chat) }
+        .flatMapLatest { (term, auth, chat) ->
+            val loggedIn = auth as? SessionCache.AuthState.LoggedIn
+
+            // If not logged in or not a group, we don't need to show "New Members"
+            if (loggedIn == null || !chat.isGroup) {
+                println("Not logged in or not a group, returning empty list")
+                return@flatMapLatest flowOf(emptyList())
+            }
+
+            // 1. Get friends from repository (filtered by search term if supported)
+            appRepository.getFriendsFlow(term).map { friends ->
+                // 2. Get current group members to filter them out
+                val currentMemberIds = groupRepository.getGroupMembers(chat.id)
+                    .map { it.userId }
+                    .toSet()
+
+                // 3. Only show friends who are NOT already in the group
+                friends.filter { friend -> friend.id !in currentMemberIds }
+            }
+        }
+        .onEach { list ->
+            println("Flow emitted new members: ${list.size} found")
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
 
     init {
@@ -70,7 +110,12 @@ class ChatDetailsViewmodel(
         }
 
 
-        if (globalViewModel.selectedChat.value.isGroup) {
+        if (!globalViewModel.selectedChat.value.isGroup) {
+            viewModelScope.launch {
+                selectedUser = userRepository.getUserById(globalViewModel.selectedChat.value.id)
+            }
+        }else{
+            /*
             viewModelScope.launch {
                 appRepository.getFriendsFlow("").collectLatest { allFriends ->
                     val members = groupRepository.getGroupMembers(globalViewModel.selectedChat.value.id)
@@ -78,14 +123,22 @@ class ChatDetailsViewmodel(
                         !members.any { member -> member.userId == friend.id }
                     }                }
             }
-        }else{
-            viewModelScope.launch {
-                selectedUser = userRepository.getUserById(globalViewModel.selectedChat.value.id)
-            }
+            */
         }
     }
 
 
+    fun onSearchTermChange(newValue: String) {
+
+        _searchTerm.value = newValue
+    }
+
+    fun onUserSelected(user: SelectedChat){
+        selectedNewMembers = selectedNewMembers + user
+    }
+    fun onUserDeSelected(user: SelectedChat){
+        selectedNewMembers = selectedNewMembers - user
+    }
 
 
     fun onBackClick(){

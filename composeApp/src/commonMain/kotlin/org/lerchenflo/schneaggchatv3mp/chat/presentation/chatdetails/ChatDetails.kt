@@ -18,7 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cake
-import androidx.compose.material.icons.filled.Celebration
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -34,14 +33,12 @@ import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
-import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
 import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
@@ -60,9 +57,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
 import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToDuration
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
@@ -88,6 +83,8 @@ fun ChatDetails(
     val chatdetailsViewmodel = koinViewModel<ChatDetailsViewmodel>()
 
     val chatDetails by chatdetailsViewmodel.chatDetails.collectAsStateWithLifecycle()
+    val availableMembers by chatdetailsViewmodel.availableNewMembers.collectAsStateWithLifecycle()
+    val searchTerm by chatdetailsViewmodel.searchterm.collectAsStateWithLifecycle()
     
     // Early return if chat not selected - don't render anything
     /*
@@ -338,14 +335,19 @@ fun ChatDetails(
 
                     if (showAddMemberPopup) {
                         AddUserToGroupPopup(
-                            onDismiss = {showAddMemberPopup = false},
+                            onDismiss = { showAddMemberPopup = false },
                             onSuccess = {
                                 it.forEach { user ->
                                     chatdetailsViewmodel.addMember(user.id)
                                 }
                                 showAddMemberPopup = false
                             },
-                            availableUsers = chatdetailsViewmodel.availableNewMembers
+                            availableUsers = availableMembers,
+                            selectedUsers = chatdetailsViewmodel.selectedNewMembers,
+                            searchterm = searchTerm,
+                            onSearchTermChange = chatdetailsViewmodel::onSearchTermChange,
+                            onUserSelected = chatdetailsViewmodel::onUserSelected,
+                            onUserDeselected = chatdetailsViewmodel::onUserDeSelected,
                         )
                     }
 
