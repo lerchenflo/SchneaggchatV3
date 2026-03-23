@@ -191,6 +191,7 @@ private fun LogEntryItem(log: LogEntry) {
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         )
     ) {
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -231,31 +232,30 @@ private fun LogEntryItem(log: LogEntry) {
                     fontFamily = FontFamily.Monospace,
                     fontSize = 13.sp
                 )
-            }
 
-            Column {
-                // Copy button
-                IconButton(
-                    onClick = {
-                        val shareUtils = KoinPlatform.getKoin().get<ShareUtils>()
-                        shareUtils.copyToClipboard(log.message, clipboard)
-
-                    },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ContentCopy, // or use a custom icon
-                        contentDescription = "Copy log message",
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-
-
-                //Date text
                 Text(
                     text = millisToString(log.timeStamp, format = "dd.MM HH:mm:ss.SSS"),
-                    textAlign = TextAlign.End,
-                    fontSize = 12.sp,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontFamily = FontFamily.Monospace,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.End
+                )
+            }
+
+            // Copy button
+            IconButton(
+                onClick = {
+                    val shareUtils = KoinPlatform.getKoin().get<ShareUtils>()
+                    shareUtils.copyToClipboard(log.message, clipboard)
+
+                },
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ContentCopy, // or use a custom icon
+                    contentDescription = "Copy log message",
+                    modifier = Modifier.size(16.dp)
                 )
             }
         }
