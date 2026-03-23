@@ -71,6 +71,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.NativeClipboard
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
@@ -398,7 +400,7 @@ fun ChatScreen(
 
                 val currentContent by viewModel.currentSendContent.collectAsState()
                 val currentContentNotEmpty = currentContent !is SendMessageContent.TextContent
-                        || (currentContent as? SendMessageContent.TextContent)?.textMessage?.isNotEmpty() == true
+                        || (currentContent as? SendMessageContent.TextContent)?.textMessage?.text?.isNotEmpty() == true
 
 
                 if(!currentContentNotEmpty){
@@ -481,24 +483,22 @@ fun ChatScreen(
                                 .onPreviewKeyEvent { event ->
                                     if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
                                         if (event.isShiftPressed) {
-                                            // Todo wida vo string uf TextFieldValue Umbaua
-                                            /*
-                                            val text = content.textMessage
-                                            val selection = content.textFieldValue.selection  // requires TextFieldValue in state
+                                            val text = content.textMessage.text
+                                            val selection = content.textMessage.selection  // requires TextFieldValue in state
                                             val cursorPos = selection.start
                                             val newText = text.substring(0, cursorPos) + "\n" + text.substring(cursorPos)
                                             val newCursorPos = cursorPos + 1
 
                                             viewModel.updateSendContent(
                                                 ChatViewModel.SendMessageContent.TextContent(
-                                                    textFieldValue = TextFieldValue(
+                                                    textMessage = TextFieldValue(
                                                         text = newText,
                                                         selection = TextRange(newCursorPos)
                                                     )
                                                 )
                                             )
 
-                                             */
+
                                             return@onPreviewKeyEvent true  // true to consume and prevent double newline
                                         } else {
                                             viewModel.sendMessage(
@@ -585,10 +585,26 @@ fun ChatScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .onPreviewKeyEvent { event ->
+
                                         if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
                                             if (event.isShiftPressed) {
-                                                viewModel.updateSendContent(content.copy(text = content.text + "\n"))
-                                                return@onPreviewKeyEvent false
+                                                val text = content.text.text
+                                                val selection = content.text.selection  // requires TextFieldValue in state
+                                                val cursorPos = selection.start
+                                                val newText = text.substring(0, cursorPos) + "\n" + text.substring(cursorPos)
+                                                val newCursorPos = cursorPos + 1
+
+                                                viewModel.updateSendContent(
+                                                    ChatViewModel.SendMessageContent.TextContent(
+                                                        textMessage = TextFieldValue(
+                                                            text = newText,
+                                                            selection = TextRange(newCursorPos)
+                                                        )
+                                                    )
+                                                )
+
+
+                                                return@onPreviewKeyEvent true  // true to consume and prevent double newline
                                             } else {
                                                 viewModel.sendMessage(
                                                     message = viewModel.currentSendContent.value,
@@ -697,7 +713,7 @@ fun ChatScreen(
                                 onClick = {
                                     // Reset to empty text or previous state
                                     viewModel.stopRecording()
-                                    viewModel.updateSendContent(SendMessageContent.TextContent(""))
+                                    viewModel.updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
                                 }
                             ) {
                                 Icon(
