@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.hyochan.audio.AudioEncoderAndroidType
@@ -110,8 +111,8 @@ class ChatViewModel(
 
 
     sealed class SendMessageContent {
-        data class TextContent(val textMessage: String) : SendMessageContent()
-        data class ImageContent(val images: List<ByteArray>, val text: String) : SendMessageContent()
+        data class TextContent(val textMessage: TextFieldValue) : SendMessageContent()
+        data class ImageContent(val images: List<ByteArray>, val text: TextFieldValue) : SendMessageContent()
         data class AudioContent(
             val audioPath: String,
             val duration: Long,
@@ -120,7 +121,7 @@ class ChatViewModel(
     }
 
     // In your ViewModel
-    private val _currentSendContent = MutableStateFlow<SendMessageContent>(SendMessageContent.TextContent(""))
+    private val _currentSendContent = MutableStateFlow<SendMessageContent>(SendMessageContent.TextContent(TextFieldValue("")))
     val currentSendContent: StateFlow<SendMessageContent> = _currentSendContent.asStateFlow()
 
     fun updateSendContent(content: SendMessageContent) {
@@ -178,7 +179,7 @@ class ChatViewModel(
                 settingsRepository.saveDraft(
                     chatId = chatId,
                     group = isGroup,
-                    string = (currentSendContent.value as SendMessageContent.TextContent).textMessage
+                    string = (currentSendContent.value as SendMessageContent.TextContent).textMessage.text
                 )
             }
         }
@@ -191,8 +192,8 @@ class ChatViewModel(
         //Validation of message
         when (message) {
             is SendMessageContent.TextContent -> {
-                require(message.textMessage.isNotEmpty()) { return }
-                require(message.textMessage.length < 10000) {
+                require(message.textMessage.text.isNotEmpty()) { return }
+                require(message.textMessage.text.length < 10000) {
                     runBlocking {
                         SnackbarManager.showMessage(getString(Res.string.message_too_long))
                     }
@@ -202,7 +203,7 @@ class ChatViewModel(
             is SendMessageContent.ImageContent -> {
                 require(message.images.isNotEmpty()) { return }
 
-                require(message.text.length < 10000) {
+                require(message.text.text.length < 10000) {
                     runBlocking {
                         SnackbarManager.showMessage(getString(Res.string.message_too_long))
                     }
@@ -223,7 +224,7 @@ class ChatViewModel(
                     appRepository.sendMessage(
                         empfaenger = globalViewModel.selectedChat.value.id,
                         gruppe = globalViewModel.selectedChat.value.isGroup,
-                        content = AppRepository.MessageContent.TextContent(message.textMessage),
+                        content = AppRepository.MessageContent.TextContent(message.textMessage.text),
                         answerid = replyTo?.id,
                         messageId = null,
                         ownId = ownId,
@@ -239,7 +240,7 @@ class ChatViewModel(
                             gruppe = globalViewModel.selectedChat.value.isGroup,
                             content = AppRepository.MessageContent.ImageContent(
                                 image = image,
-                                text = if (index == 0) message.text else ""
+                                text = if (index == 0) message.text.text else ""
                             ),
                             answerid = replyTo?.id,
                             messageId = null,
@@ -266,7 +267,7 @@ class ChatViewModel(
         }
 
         updateReplyMessage(null)
-        updateSendContent(SendMessageContent.TextContent(""))
+        updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
     }
 
     fun onImageSelected(results: List<GalleryPhotoResult>) {
@@ -279,7 +280,7 @@ class ChatViewModel(
 
             updateSendContent(SendMessageContent.ImageContent(
                 images = downscaledImages,
-                text = (currentSendContent.value as? SendMessageContent.TextContent)?.textMessage ?: ""
+                text = (currentSendContent.value as? SendMessageContent.TextContent)?.textMessage ?: TextFieldValue("")
             ))
         }
 
@@ -373,11 +374,11 @@ class ChatViewModel(
             is MessageAction.DeleteMessage -> deleteMessage(action.message)
             is MessageAction.StartEditMessage -> {
                 editMessage = action.message
-                updateSendContent(SendMessageContent.TextContent(action.message.content))
+                updateSendContent(SendMessageContent.TextContent(TextFieldValue(action.message.content)))
             }
             MessageAction.CancelEditMessage -> {
                 editMessage = null
-                updateSendContent(SendMessageContent.TextContent(""))
+                updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
                 //println("Update message sendtext to empty")
             }
 
@@ -393,11 +394,11 @@ class ChatViewModel(
             if (message == null) return@launch
 
             //Block empty edit
-            if (content.textMessage.isBlank()) return@launch
+            if (content.textMessage.text.isBlank()) return@launch
 
             appRepository.editMessage(
                 message = message,
-                newContent = content.textMessage
+                newContent = content.textMessage.text
             )
 
             println("Edit: Newcontent: ${content.textMessage}")
@@ -753,7 +754,7 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                     loggingRepository.logWarning("ChatViewModel: Problem getting draft: ${exception.message}")
                 }
                 .collect { value ->
-                    updateSendContent(SendMessageContent.TextContent(value?: ""))
+                    updateSendContent(SendMessageContent.TextContent(TextFieldValue(value?: "")))
                 }
         }
 
