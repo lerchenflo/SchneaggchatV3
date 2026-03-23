@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.app.logging
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
+import kotlin.time.Clock
 
 @Serializable
 enum class LogType {
@@ -14,5 +15,6 @@ data class LogEntry(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0L,
     val type: LogType,
-    val message: String
+    val message: String,
+    val timeStamp: Long = Clock.System.now().toEpochMilliseconds()
 )

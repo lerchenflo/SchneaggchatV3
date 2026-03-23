@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -29,6 +30,8 @@ import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogType
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import kotlin.text.toLong
 
 @Composable
 fun LogsDialog(
@@ -230,19 +233,29 @@ private fun LogEntryItem(log: LogEntry) {
                 )
             }
 
-            // Copy button
-            IconButton(
-                onClick = {
-                    val shareUtils = KoinPlatform.getKoin().get<ShareUtils>()
-                    shareUtils.copyToClipboard(log.message, clipboard)
+            Column {
+                // Copy button
+                IconButton(
+                    onClick = {
+                        val shareUtils = KoinPlatform.getKoin().get<ShareUtils>()
+                        shareUtils.copyToClipboard(log.message, clipboard)
 
-                },
-                modifier = Modifier.size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ContentCopy, // or use a custom icon
-                    contentDescription = "Copy log message",
-                    modifier = Modifier.size(16.dp)
+                    },
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ContentCopy, // or use a custom icon
+                        contentDescription = "Copy log message",
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+
+
+                //Date text
+                Text(
+                    text = millisToString(log.timeStamp, format = "dd.MM HH:mm:ss.SSS"),
+                    textAlign = TextAlign.End,
+                    fontSize = 12.sp,
                 )
             }
         }
