@@ -10,7 +10,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -43,6 +46,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.error_friend_request
+import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 import schneaggchatv3mp.composeapp.generated.resources.please_restart_app
 
 
@@ -295,6 +300,15 @@ class ChatDetailsViewmodel(
                 action = NetworkUtils.GroupMemberAction.REMOVE_USER,
                 memberId = memberId,
                 groupId = chatDetails.value.id
+            )
+        }
+    }
+
+    fun sendFriendRequest(id: String){
+        CoroutineScope(Dispatchers.IO).launch { //Launch in coroutinescope to not access the db on main thread
+            val success = appRepository.sendFriendRequest(id)
+            SnackbarManager.showMessage(
+                if (success) getString(Res.string.friend_request_sent) else getString(Res.string.error_friend_request)
             )
         }
     }

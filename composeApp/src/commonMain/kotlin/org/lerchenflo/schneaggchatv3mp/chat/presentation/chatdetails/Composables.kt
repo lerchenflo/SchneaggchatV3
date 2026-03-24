@@ -56,6 +56,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.FriendRequestAlert
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
@@ -76,6 +78,7 @@ import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.open_chat
 import schneaggchatv3mp.composeapp.generated.resources.remove_admin_status
 import schneaggchatv3mp.composeapp.generated.resources.remove_from_group
+import schneaggchatv3mp.composeapp.generated.resources.send_friend_request
 import schneaggchatv3mp.composeapp.generated.resources.user_description
 import schneaggchatv3mp.composeapp.generated.resources.yes
 import schneaggchatv3mp.composeapp.generated.resources.you_with_brackets
@@ -117,6 +120,7 @@ fun GroupMembersView(
     navigateToChat:(selectedChat: SelectedChat)-> Unit,
     changeAdminStatus:(groupMember: GroupMember)-> Unit,
     removeMember: (memberId: String)-> Unit,
+    sendFriendRequest:(id: String) -> Unit,
     //iAmAdmin: Boolean,
 ) {
     val iAmAdmin = members.find { it.groupMember.userId == ownId }?.groupMember?.admin == true
@@ -139,6 +143,7 @@ fun GroupMembersView(
             var profilePictureDialogShown by remember { mutableStateOf(false) }
             var userOptionPopupExpanded by remember { mutableStateOf(false) }
             var showRemoveMemberConfirmation by remember { mutableStateOf(false) }
+            var showFriendRequestAlert by remember { mutableStateOf(false) }
             val me = groupMember.userId == ownId
             val userName = user?.name ?: groupMember.memberName
 
@@ -181,6 +186,19 @@ fun GroupMembersView(
                 )
             }
 
+            if(showFriendRequestAlert){
+                FriendRequestAlert(
+                    onDismiss = {
+                        showFriendRequestAlert = false
+                    },
+                    onConfirm = {
+                        showFriendRequestAlert = false
+                        sendFriendRequest(groupMember.userId)
+                    },
+                    friendName = userName
+                )
+            }
+
             UserOptionPopup(
                 expanded = userOptionPopupExpanded,
                 iAmAdmin = iAmAdmin,
@@ -200,6 +218,9 @@ fun GroupMembersView(
                 onRemoveUser = {
                     showRemoveMemberConfirmation = true  // Show confirmation instead of directly removing
                 },
+                onSendFriendRequest = {
+                    showFriendRequestAlert = true
+                }
             )
 
 
@@ -334,6 +355,7 @@ fun UserOptionPopup(
     onOpenChat: () -> Unit,
     onAdminStatusChange: () -> Unit,
     onRemoveUser: () -> Unit,
+    onSendFriendRequest: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -346,11 +368,26 @@ fun UserOptionPopup(
             modifier = modifier
         ) {
 
-            if(user != null) {
+            if(user != null && user.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED) {
                 DropdownMenuItem(
                     text = { Text(stringResource(Res.string.open_chat)) },
                     onClick = {
                         onOpenChat()
+                        onDismissRequest()
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                            contentDescription = stringResource(Res.string.open_chat)
+                        )
+                    }
+                )
+            }else if (user == null){
+                // send Friend request if user is not already friend -> friend would be in database
+                DropdownMenuItem(
+                    text = { Text(stringResource(Res.string.send_friend_request)) },
+                    onClick = {
+                        onSendFriendRequest()
                         onDismissRequest()
                     },
                     leadingIcon = {
