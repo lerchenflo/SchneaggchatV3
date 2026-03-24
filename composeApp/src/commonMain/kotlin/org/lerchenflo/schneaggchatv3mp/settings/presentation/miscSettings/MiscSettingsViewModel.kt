@@ -18,6 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 
 @OptIn(FormatStringsInDatetimeFormats::class)
 class MiscSettingsViewModel(
@@ -81,6 +82,8 @@ class MiscSettingsViewModel(
             """
             [${log.type}] ${log.id}
             Message: ${log.message}
+            
+            timestamp: ${millisToString(log.timeStamp, format = "dd.MM HH:mm:ss.SSS")}
             ---
             """.trimIndent()
         }
