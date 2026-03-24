@@ -27,18 +27,20 @@ class TokenManager(
     private val preferenceManager: Preferencemanager,
     private val loggingRepository: LoggingRepository,
 ) {
-    private val refreshMutex = Mutex()
+    companion object {
+        private val refreshMutex = Mutex()
+    }
 
     suspend fun loadBearerTokens(): BearerTokens? {
         val tokens = preferenceManager.getTokens()
         return if (tokens.refreshToken.isBlank()) {
             null
         } else {
-            BearerTokens(tokens.accessToken, tokens.refreshToken)
+            BearerTokens("tokens.accessToken", tokens.refreshToken)
         }
     }
 
-    suspend fun refreshTokens(oldAccessToken: String? = null): RequestError? {
+    suspend fun refreshTokens(oldRefreshToken: String? = null): RequestError? {
         return refreshMutex.withLock {
             loggingRepository.logDebug("Token refresh started")
             
@@ -47,7 +49,7 @@ class TokenManager(
             // If the token that caused the 401 is different from the token we currently have 
             // in preferences, it means another thread ALREADY refreshed the token while we 
             // were waiting for the Mutex lock!
-            if (oldAccessToken != null && currentTokens.accessToken != oldAccessToken) {
+            if (oldRefreshToken != null && currentTokens.refreshToken != oldRefreshToken) {
                 loggingRepository.logInfo("Token refresh skipped: Token was already refreshed by another thread")
                 return@withLock null
             }
@@ -72,23 +74,6 @@ class TokenManager(
                 if (response.status.value == 401) {
                     loggingRepository.logError("Token refresh failed: Authentication invalidated (401)")
                     AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
-                    return@withLock null
-                }
-
-                if (response.status.value == 409) {
-                    loggingRepository.logWarning("Token refresh conflict: Another refresh in progress (409)")
-                    // Another in-flight refresh likely succeeded and persisted new tokens.
-                    // Give it a moment to finish writing, then reload from storage.
-                    delay(200)
-                    val tokensAfter = preferenceManager.getTokens()
-                    if (tokensAfter.refreshToken.isNotBlank()) {
-                        loggingRepository.logDebug("Token refresh: Reloaded tokens after conflict")
-                        withContext(NonCancellable) {
-                            KoinPlatform.getKoin().get<AppRepository>().onNewTokenPair(tokensAfter)
-                        }
-                    } else {
-                        loggingRepository.logError("Token refresh: No tokens available after conflict resolution")
-                    }
                     return@withLock null
                 }
 

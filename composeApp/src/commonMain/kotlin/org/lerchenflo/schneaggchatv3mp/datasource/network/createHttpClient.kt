@@ -66,9 +66,9 @@ fun createHttpClient(
                     refreshTokens {
                         println("HTTPCLIENT: Automatic token refresh triggered")
                         
-                        // Pass the failing access token downstream
-                        val oldAccessToken = this.oldTokens?.accessToken
-                        tokenManager.refreshTokens(oldAccessToken)
+                        // Pass the failing refresh token downstream
+                        val oldRefreshToken = this.oldTokens?.refreshToken
+                        tokenManager.refreshTokens(oldRefreshToken)
                         
                         // Load fresh tokens after refresh
                         println("HTTPCLIENT: Refresh finished, loading")
