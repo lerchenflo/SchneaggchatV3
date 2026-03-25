@@ -25,6 +25,7 @@ import schneaggchatv3mp.composeapp.generated.resources.go_back
 @Composable
 fun ActivityTitle(
     title: String = "ActivityTitle",
+    alternativeTitleComposable: (@Composable () -> Unit)? = null,
     onBackClick: () -> Unit = {},
 ){
     Row(
@@ -45,19 +46,23 @@ fun ActivityTitle(
             )
         }
 
+        if(alternativeTitleComposable != null){
+            alternativeTitleComposable()
+        }else{
+            Text(
+                text = title,
+                modifier = Modifier
+                    .weight(1f)
+                    .align(alignment = Alignment.CenterVertically)
+                    .padding(start = 10.dp),
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = 20.sp,
+                    maxFontSize = 30.sp
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
 
-        Text(
-            text = title,
-            modifier = Modifier
-                .weight(1f)
-                .align(alignment = Alignment.CenterVertically)
-                .padding(start = 10.dp),
-            autoSize = TextAutoSize.StepBased(
-                minFontSize = 20.sp,
-                maxFontSize = 30.sp
-            ),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
     }
 }

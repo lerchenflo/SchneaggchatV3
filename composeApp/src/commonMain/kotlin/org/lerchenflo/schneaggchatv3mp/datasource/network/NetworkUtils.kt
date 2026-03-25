@@ -763,6 +763,13 @@ class NetworkUtils(
         )
     }
 
+    suspend fun changeGroupName(newName: String, groupId: String) : NetworkResult<Any, NetworkError> {
+        return safePost(
+            endpoint = "/groups/setGroupName?groupid=$groupId",
+            body = newName
+        )
+    }
+
 
     enum class GroupMemberAction {
         ADD_USER,

@@ -1,7 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
-import androidx.compose.ui.graphics.ImageBitmap
-
 expect class PictureManager {
 
 
@@ -52,4 +50,13 @@ expect class PictureManager {
      * @return Downscaled image bytes as JPEG
      */
     suspend fun downscaleImage(imageBytes: ByteArray, targetSizeBytes: Int = 500_000): ByteArray
+
+    /**
+     * Saves a ByteArray image to the device's external storage / photo gallery.
+     * @return The path or URI string where the file was saved.
+     */
+    suspend fun downloadImage(
+        filePath: String,
+        fileName: String
+    ): String
 }

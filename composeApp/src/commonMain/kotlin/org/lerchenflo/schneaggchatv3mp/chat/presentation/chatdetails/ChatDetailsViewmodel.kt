@@ -27,6 +27,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
+import org.lerchenflo.schneaggchatv3mp.MAX_GROUPNAME_LENGTH
+import org.lerchenflo.schneaggchatv3mp.MIN_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -43,6 +45,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -301,6 +304,16 @@ class ChatDetailsViewmodel(
                 memberId = memberId,
                 groupId = chatDetails.value.id
             )
+        }
+    }
+
+    fun validateGroupName(name: String): ErrorMessage? {
+        return if (name.length > MAX_GROUPNAME_LENGTH) ErrorMessage.NAME_TO_LONG else if (name.length < MIN_GROUPNAME_LENGTH) ErrorMessage.NAME_TO_SHORT else null
+    }
+
+    fun updateGroupName(name: String){
+        viewModelScope.launch {
+            appRepository.changeGroupName(chatDetails.value.id, name)
         }
     }
 

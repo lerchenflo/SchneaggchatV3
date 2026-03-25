@@ -4,12 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -33,7 +35,8 @@ import coil3.compose.AsyncImage
 @Composable
 fun FullscreenImageDialog(
     imageUrl: String,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onDownload: () -> Unit
 ) {
     var containerWidth by remember { mutableStateOf(0f) }
     var containerHeight by remember { mutableStateOf(0f) }
@@ -111,18 +114,34 @@ fun FullscreenImageDialog(
                     }
             )
 
-            IconButton(
-                onClick = onDismiss,
+            // Top-right icons container
+            Row(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(16.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Close",
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
-                )
+                // Download button
+                IconButton(
+                    onClick = onDownload,
+                    modifier = Modifier.padding(end = 8.dp) // Adjust padding as needed
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Download,
+                        contentDescription = "Download",
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+
+                // Close button
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = Color.White,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
             }
         }
     }

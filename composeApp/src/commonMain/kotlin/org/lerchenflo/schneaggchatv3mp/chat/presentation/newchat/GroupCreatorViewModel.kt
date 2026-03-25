@@ -3,7 +3,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -14,38 +13,26 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
-import org.jetbrains.compose.resources.stringResource
-import org.koin.viewmodel.emptyState
+import org.lerchenflo.schneaggchatv3mp.MAX_GROUPNAME_LENGTH
+import org.lerchenflo.schneaggchatv3mp.MIN_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.InputfieldState
-import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignupState
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.name_too_long
 import schneaggchatv3mp.composeapp.generated.resources.name_too_short
-import kotlin.emptyArray
 
 data class GroupCreatorState(
     val searchterm: String,
@@ -177,7 +164,7 @@ class GroupCreatorViewModel (
                     state = state.copy(
                         groupname = state.groupname.copy(
                             text = newtext,
-                            errorMessage = if (newtext.length > 25) getString(Res.string.name_too_long) else if (newtext.length < 3) getString(Res.string.name_too_short) else null
+                            errorMessage = if (newtext.length > MAX_GROUPNAME_LENGTH) getString(Res.string.name_too_long) else if (newtext.length < MIN_GROUPNAME_LENGTH) getString(Res.string.name_too_short) else null
                         )
                     )
                 }

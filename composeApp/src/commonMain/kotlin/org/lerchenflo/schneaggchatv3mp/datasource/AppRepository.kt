@@ -1771,6 +1771,16 @@ class AppRepository(
         }
     }
 
+    suspend fun changeGroupName(groupId: String, newName: String) : Boolean {
+        when (val success = networkUtils.changeGroupName(newName, groupId)){
+            is NetworkResult.Error<*> -> return false
+            is NetworkResult.Success<*> -> {
+                dataSync()
+                return true
+            }
+        }
+    }
+
     suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String) : Boolean {
         when (val success = networkUtils.changeGroupMembers(
             action = action,

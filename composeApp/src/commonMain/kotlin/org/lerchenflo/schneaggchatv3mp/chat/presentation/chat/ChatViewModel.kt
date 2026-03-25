@@ -369,6 +369,13 @@ class ChatViewModel(
             is MessageAction.SeekAudio -> {
                 seekAudio(action.position)
             }
+            is MessageAction.DownloadImage -> {
+                viewModelScope.launch {
+                    val savePath = pictureManager.downloadImage(action.pictureUrl, action.filename + ".jpeg")
+                    //SnackbarManager.showMessage("Image saved as ${action.filename}")
+                    println("Image saved to $savePath")
+                }
+            }
 
 
             is MessageAction.DeleteMessage -> deleteMessage(action.message)

@@ -1,20 +1,16 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
-import java.io.File
-import java.util.Base64
-import javax.imageio.ImageIO
-import java.awt.image.BufferedImage
-import androidx.compose.ui.graphics.toComposeImageBitmap
 import okio.ByteString.Companion.decodeBase64
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
-import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
+import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import java.awt.Image
+import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.File
 import javax.imageio.IIOImage
+import javax.imageio.ImageIO
 import javax.imageio.ImageWriteParam
 import javax.imageio.ImageWriter
 
@@ -188,5 +184,44 @@ actual class PictureManager {
 
         println("Desktop downscale: ${imageBytes.size} bytes -> ${resultBytes.size} bytes")
         return resultBytes
+    }
+
+    actual suspend fun downloadImage(
+        filePath: String,
+        fileName: String
+    ): String = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        val sourceFile = File(filePath)
+        if (!sourceFile.exists()) {
+            println("Desktop Download: Source file not found: $filePath")
+            return@withContext ""
+        }
+
+        try {
+            // 1. Determine the user's Downloads folder
+            val userHome = System.getProperty("user.home")
+            val downloadsDir = File(userHome, "Downloads")
+
+            if (!downloadsDir.exists()) {
+                downloadsDir.mkdirs()
+            }
+
+            // 2. Prepare the destination file
+            // Use the fileName provided, ensuring it doesn't conflict easily
+            val destinationFile = File(downloadsDir, fileName)
+
+            // 3. Copy the file
+            // java.nio.file.Files.copy is efficient for OS-level file transfers
+            sourceFile.inputStream().use { input ->
+                destinationFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+
+            println("Desktop Download: File exported to ${destinationFile.absolutePath}")
+            destinationFile.absolutePath
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ""
+        }
     }
 }
