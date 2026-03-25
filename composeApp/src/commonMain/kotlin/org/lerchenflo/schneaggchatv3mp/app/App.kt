@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -80,6 +81,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
+import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
@@ -103,6 +105,7 @@ fun App() {
     val languageService = koinInject<LanguageService>()
     val themeSetting by preferenceManager.getThemeFlow().collectAsState(initial = ThemeSetting.SYSTEM)
 
+    val tokenManager = koinInject<TokenManager>()
     val loggingRepository = koinInject<LoggingRepository>()
 
     // Apply saved language on app startup
@@ -271,7 +274,13 @@ fun App() {
                 when (action) {
                     AppRepository.ActionChannel.ActionEvent.Login -> {
                         // Login action handled automatically by HTTP client refresh
-                        // No manual refresh needed
+                        if (rootBackStack.contains(Route.ChatSelector)){
+                            val error = tokenManager.refreshTokens(preferenceManager.getTokens().refreshToken)
+
+                            if (error != null && !error.isConnectionError()){
+                                AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
+                            }
+                        }
                     }
 
                     AppRepository.ActionChannel.ActionEvent.AuthInvalidated -> {
@@ -328,8 +337,10 @@ fun App() {
                     .padding(innerpadding),
             ) {
 
+                val online by SessionCache.onlineFlow.collectAsStateWithLifecycle()
+
                 //Show offline bar when offline
-                if (!SessionCache.isOnline()) {
+                if (!online) {
                     OfflineBar(
                         modifier = Modifier
                             .fillMaxWidth()

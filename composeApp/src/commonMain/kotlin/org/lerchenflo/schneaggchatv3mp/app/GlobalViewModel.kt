@@ -46,18 +46,24 @@ class GlobalViewModel(
 
         viewModelScope.launch {
             while (true) {
-                if (!SessionCache.isOnline()) {
-                    appRepository.testServer(preferenceManager.getServerUrl())
-                }
 
-                if (SessionCache.isLoggedIn() && !socketConnectionManager.isConnectedNow()) {
-                    startSocketConnection()
-                }
-
-                if (SessionCache.isLoggedIn() && SessionCache.isOnline()) {
-                    SessionCache.requireLoggedIn()?.userId?.let {
-                        appRepository.sendOfflineMessages(it)
+                if (SessionCache.isOnline()) {
+                    if (!socketConnectionManager.isConnectedNow()) {
+                        startSocketConnection()
                     }
+
+                    if (SessionCache.isLoggedIn()) {
+                        SessionCache.requireLoggedIn()?.userId?.let {
+                            appRepository.sendOfflineMessages(it)
+                        }
+                    } else {
+                        AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.Login)
+                    }
+
+                } else {
+                    //Offline
+                    appRepository.testServer(preferenceManager.getServerUrl())
+
                 }
 
                 delay(5000)

@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 
@@ -93,7 +94,7 @@ object SessionCache {
         val loggedIn = _authState.value as? AuthState.LoggedIn
         if (loggedIn == null) {
             println("user not logged in, sending login request")
-            //_authEvents.tryEmit(AuthEvent.RequireLogin)
+            AppRepository.ActionChannel.trySendAction(AppRepository.ActionChannel.ActionEvent.Login)
         }
         return loggedIn
     }
