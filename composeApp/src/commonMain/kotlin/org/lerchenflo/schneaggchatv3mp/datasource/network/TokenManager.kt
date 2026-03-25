@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.auth.clearAuthTokens
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -113,6 +114,9 @@ class TokenManager(
                 }
 
                 loggingRepository.logInfo("TokenManager: Tokens saved successfully")
+
+                //Clear tokens to force reload
+                KoinPlatform.getKoin().get<HttpClient>(named(HTTPCLIENTTYPE.AUTHENTICATED)).clearAuthTokens()
 
                 null
             } catch (e: Exception) {
