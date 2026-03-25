@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cake
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -35,7 +37,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
@@ -56,15 +60,19 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangeStringDialog
+import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
+import schneaggchatv3mp.composeapp.generated.resources.change_group_name
 import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.description_info_group
 import schneaggchatv3mp.composeapp.generated.resources.description_info_user
 import schneaggchatv3mp.composeapp.generated.resources.group_description
+import schneaggchatv3mp.composeapp.generated.resources.group_name
 import schneaggchatv3mp.composeapp.generated.resources.leave_group
 import schneaggchatv3mp.composeapp.generated.resources.no_description
 import schneaggchatv3mp.composeapp.generated.resources.others_say_about
@@ -106,6 +114,7 @@ fun ChatDetails(
 
     var showAddMemberPopup by remember { mutableStateOf(false) }
     var showImagePickerDialog by remember { mutableStateOf(false) }
+    var showGroupRenameDialog by remember { mutableStateOf(false) }
 
 
     // Profilbild größer azoaga
@@ -121,6 +130,27 @@ fun ChatDetails(
         )
     }
 
+    if(showGroupRenameDialog){
+        var errorMessage by remember { mutableStateOf<ErrorMessage?>(null) }
+
+        ChangeStringDialog(
+            title = stringResource(Res.string.change_group_name),
+            oldString = chatDetails.name,
+            maxLines = 1,
+            placeholder = stringResource(Res.string.group_name),
+            errorMessage = errorMessage,
+            onDismiss = {showGroupRenameDialog = false},
+            updateString = { newString ->
+                val error = chatdetailsViewmodel.validateGroupName(newString)
+                errorMessage = error
+                if (error == null){
+                    chatdetailsViewmodel.updateGroupName(newString)
+                    showGroupRenameDialog = false
+                }
+            }
+        )
+    }
+
 
 
     Column(
@@ -129,6 +159,39 @@ fun ChatDetails(
 
         ActivityTitle(
             title = chatDetails.name,
+            alternativeTitleComposable = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable{
+                            showGroupRenameDialog = true
+                        },
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Text(
+                        text = chatDetails.name,
+                        modifier = Modifier
+                            // fill = false prevents the Text from forcing itself to be wide
+                            .weight(1f, fill = false)
+                            .padding(start = 10.dp),
+                        autoSize = TextAutoSize.StepBased(
+                            minFontSize = 20.sp,
+                            maxFontSize = 30.sp
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit group name",
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+
+
+                }
+
+            },
             onBackClick = {
                 chatdetailsViewmodel.onBackClick()
             }

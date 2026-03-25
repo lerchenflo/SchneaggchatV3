@@ -23,6 +23,8 @@ var PICTURE_FILE_NAME = "_bild.drawable"
 
 var VOICEMSG_FILE_NAME = "_voicemsg.m4a"
 
+val MIN_GROUPNAME_LENGTH = 3
+val MAX_GROUPNAME_LENGTH = 25
 
 
 

@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat
 
-import org.lerchenflo.schneaggchatv3mp.sharedUi.SwipeableCardView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,16 +33,18 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
-import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
 import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.MAX_GROUPNAME_LENGTH
+import org.lerchenflo.schneaggchatv3mp.MIN_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
-import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
+import org.lerchenflo.schneaggchatv3mp.sharedUi.SwipeableCardView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.group_description
 import schneaggchatv3mp.composeapp.generated.resources.group_name
@@ -96,7 +97,7 @@ private fun GroupCreatorScreen(
             canContinue = { pageIndex ->
                 when (pageIndex) {
                     0 -> state.selectedUsers.size >= 2
-                    1 -> state.groupname.text.length in 4..<25
+                    1 -> state.groupname.text.length in MIN_GROUPNAME_LENGTH..< MAX_GROUPNAME_LENGTH
                     2 -> state.profilepic != null
                     else -> true
                 }
