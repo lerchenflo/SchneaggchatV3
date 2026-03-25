@@ -79,7 +79,8 @@ fun MessageContent(
                         message = message,
                         modifier = Modifier,
                         myMessage = mymessage,
-                        useMD = useMD
+                        useMD = useMD,
+                        onAction = onAction
                     )
 
                     MessageType.AUDIO ->{

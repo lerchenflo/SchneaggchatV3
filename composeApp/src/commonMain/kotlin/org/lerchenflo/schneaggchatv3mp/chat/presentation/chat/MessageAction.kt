@@ -7,11 +7,14 @@ sealed interface MessageAction {
     data class VotePoll(val messageId: String, val optionId: String, val checked: Boolean) : MessageAction
     data class AddCustomPollOption(val messageId: String, val text: String) : MessageAction
 
-    // Audio action
+    // Audio actions
     data class PlayAudio(val messageId: String, val audioPath: String, ) : MessageAction
     data class PauseAudio(val dummy: Boolean = true) : MessageAction
 
     data class SeekAudio(val position: Long) : MessageAction
+
+    // Image actions
+    data class DownloadImage(val pictureUrl: String, val filename: String) : MessageAction
 
 
     // Message actions (moving existing ones to be consistent)

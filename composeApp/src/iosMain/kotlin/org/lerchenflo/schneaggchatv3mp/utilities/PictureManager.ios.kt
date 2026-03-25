@@ -15,8 +15,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.skia.Image
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
-import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
+import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSData
@@ -33,6 +33,7 @@ import platform.UIKit.UIGraphicsEndImageContext
 import platform.UIKit.UIGraphicsGetImageFromCurrentImageContext
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
+import platform.UIKit.UIImageWriteToSavedPhotosAlbum
 import platform.posix.memcpy
 
 @OptIn(BetaInteropApi::class)
@@ -239,5 +240,38 @@ actual class PictureManager {
         val finalBytes = finalData.toByteArray()
 
         return@withContext finalBytes
+    }
+
+    actual suspend fun downloadImage(
+        filePath: String,
+        fileName: String
+    ): String = withContext(Dispatchers.Default) {
+        // 1. Check if the file exists at the provided path
+        val fileManager = NSFileManager.defaultManager
+        if (!fileManager.fileExistsAtPath(filePath)) {
+            println("iOS Download: Source file not found: $filePath")
+            return@withContext ""
+        }
+
+        // 2. Load the data from the internal storage path
+        val data = NSData.dataWithContentsOfFile(filePath)
+            ?: return@withContext ""
+
+        // 3. Convert data to UIImage
+        val image = UIImage.imageWithData(data)
+            ?: return@withContext ""
+
+        // 4. Save to the iOS Photos Album
+        // Note: This requires 'NSPhotoLibraryAddUsageDescription' in your Info.plist
+        try {
+            UIImageWriteToSavedPhotosAlbum(image, null, null, null)
+            println("iOS Download: Successfully exported $fileName to Photos")
+
+            // Return a success string or the original path as an identifier
+            "Saved to Photos"
+        } catch (e: Exception) {
+            println("iOS Download: Error saving to photos: ${e.message}")
+            ""
+        }
     }
 }

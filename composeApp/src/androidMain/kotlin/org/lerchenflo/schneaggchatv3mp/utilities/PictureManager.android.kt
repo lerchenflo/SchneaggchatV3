@@ -1,20 +1,21 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.scale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okio.ByteString.Companion.decodeBase64
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
-import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
+import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import java.io.ByteArrayOutputStream
 import java.io.File
-import androidx.core.graphics.scale
 
 actual class PictureManager(private val context: Context) {
 
@@ -153,5 +154,69 @@ actual class PictureManager(private val context: Context) {
 
         Log.d("Android downscale", "Downscaled image from ${imageBytes.size} to ${resultBytes.size} bytes")
         return@withContext resultBytes
+    }
+
+    actual suspend fun downloadImage(
+        filePath: String,
+        fileName: String
+    ): String = withContext(Dispatchers.IO) {
+        val sourceFile = File(filePath)
+        if (!sourceFile.exists()) {
+            Log.e("PictureManager", "Source file not found: $filePath")
+            return@withContext ""
+        }
+
+        val mimeType = when {
+            fileName.endsWith(".png", true) -> "image/png"
+            fileName.endsWith(".webp", true) -> "image/webp"
+            else -> "image/jpeg"
+        }
+
+        val contentResolver = context.contentResolver
+
+        // Prepare metadata for the MediaStore
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+            put(MediaStore.MediaColumns.MIME_TYPE, mimeType) // Adjust if you support PNG/WebP
+            // On Android 10 (API 29) and above, we use the Relative Path
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/Schneaggchat")
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
+            }
+        }
+
+        // Insert the record into MediaStore
+        val imageUri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+
+        if (imageUri == null) {
+            Log.e("PictureManager", "Failed to create MediaStore entry")
+            return@withContext ""
+        }
+
+        try {
+            // Copy bytes from internal storage to the public MediaStore URI
+            contentResolver.openOutputStream(imageUri).use { outputStream ->
+                if (outputStream == null) throw Exception("Could not open output stream")
+
+                sourceFile.inputStream().use { inputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+
+            // Reveal the file to the system once writing is complete (API 29+)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                contentValues.clear()
+                contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
+                contentResolver.update(imageUri, contentValues, null, null)
+            }
+
+            Log.d("PictureManager", "Image exported successfully to Gallery: $imageUri")
+            imageUri.toString()
+        } catch (e: Exception) {
+            Log.e("PictureManager", "Error downloading image", e)
+            // Clean up the failed entry
+            contentResolver.delete(imageUri, null, null)
+            ""
+        }
     }
 }

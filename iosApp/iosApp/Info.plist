@@ -13,5 +13,7 @@
 	</array>
 	<key>NSMicrophoneUsageDescription</key>
     <string>We need access to your microphone to record Voice Messages</string>
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>We need permission to save downloaded images to your photo library.</string>
 </dict>
 </plist>
