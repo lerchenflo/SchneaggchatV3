@@ -22,6 +22,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
+import kotlin.time.Clock
+import kotlin.time.TimeSource
 
 class TokenManager(
     private val preferenceManager: Preferencemanager,
@@ -36,74 +38,85 @@ class TokenManager(
         return if (tokens.refreshToken.isBlank()) {
             null
         } else {
-            BearerTokens("tokens.accessToken", tokens.refreshToken)
+            BearerTokens(tokens.accessToken, tokens.refreshToken)
         }
     }
 
     suspend fun refreshTokens(oldRefreshToken: String? = null): RequestError? {
+
         return refreshMutex.withLock {
-            loggingRepository.logDebug("Token refresh started")
-            
+
             val currentTokens = preferenceManager.getTokens()
             
             // If the token that caused the 401 is different from the token we currently have 
             // in preferences, it means another thread ALREADY refreshed the token while we 
             // were waiting for the Mutex lock!
             if (oldRefreshToken != null && currentTokens.refreshToken != oldRefreshToken) {
-                loggingRepository.logInfo("Token refresh skipped: Token was already refreshed by another thread")
+                loggingRepository.logInfo("TokenManager: Token refresh skipped - already refreshed by another thread")
+                return@withLock null
+            }
+
+            if (oldRefreshToken == null && currentTokens.refreshToken.isNotBlank()) {
+                // Another thread likely already refreshed — bail out
                 return@withLock null
             }
 
             if (currentTokens.refreshToken.isBlank()) {
-                loggingRepository.logWarning("Token refresh aborted: No refresh token available")
+                loggingRepository.logError("TokenManager: Token refresh aborted - no refresh token available")
                 return@withLock null
             }
 
-            loggingRepository.logDebug("Token refresh: Sending request to server")
+            loggingRepository.logDebug("TokenManager: Sending refresh request to server")
 
             try {
                 // Use the existing "auth" HttpClient to avoid circular dependency
                 val authClient = KoinPlatform.getKoin().get<HttpClient>(qualifier = named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))
-                val response = authClient.post(preferenceManager.buildServerUrl("/auth/refresh")) {
+                val serverUrl = preferenceManager.buildServerUrl("/auth/refresh")
+
+                val response = authClient.post(serverUrl) {
                     contentType(ContentType.Application.Json)
                     setBody(NetworkUtils.RefreshRequest(currentTokens.refreshToken))
                 }
                 
-                loggingRepository.logDebug("Token refresh: Received response with status ${response.status.value}")
-                
+
                 if (response.status.value == 401) {
-                    loggingRepository.logError("Token refresh failed: Authentication invalidated (401)")
+                    loggingRepository.logError("TokenManager: Authentication invalidated (401) - refresh token likely expired")
                     AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
                     return@withLock null
                 }
 
+                if (response.status.value == 409) {
+                    loggingRepository.logInfo("TokenManager: Concurrent refresh detected - reloading tokens from storage")
+                    return@withLock null  // skip saving, just fall through to loadBearerTokens()
+                }
+
                 if (!response.status.isSuccess()) {
-                    loggingRepository.logError("Token refresh failed: HTTP ${response.status.value}")
+                    val errorBody = response.body<String>()
+                    loggingRepository.logError("TokenManager: HTTP error ${response.status.value}: ${errorBody.take(200)}")
                     return@withLock null
                 }
 
                 val rawBody = response.body<String>()
-                loggingRepository.logDebug("Token refresh: Parsing response body")
-                
+
                 val responseTokens = runCatching {
                     Json.decodeFromString<NetworkUtils.TokenPair>(rawBody)
                 }.getOrNull() ?: run {
-                    loggingRepository.logError("Token refresh failed: Invalid response format")
+                    loggingRepository.logError("TokenManager: Invalid response format - JSON parsing failed")
                     return@withLock null
                 }
 
-                loggingRepository.logInfo("Token refresh successful: New tokens received")
-                
                 // Save new tokens via AppRepository to ensure single source of truth
-                loggingRepository.logDebug("Token refresh: Saving new tokens")
+                loggingRepository.logDebug("TokenManager: Saving new tokens to storage")
+
                 withContext(NonCancellable) {
                     KoinPlatform.getKoin().get<AppRepository>().onNewTokenPair(responseTokens)
                 }
-                loggingRepository.logInfo("Token refresh: Tokens saved successfully")
+
+                loggingRepository.logInfo("TokenManager: Tokens saved successfully")
 
                 null
             } catch (e: Exception) {
-                loggingRepository.logError("Token refresh failed: ${e.message}")
+                loggingRepository.logError("TokenManager: Exception stack trace: ${e.stackTraceToString()}")
                 null
             }
         }
