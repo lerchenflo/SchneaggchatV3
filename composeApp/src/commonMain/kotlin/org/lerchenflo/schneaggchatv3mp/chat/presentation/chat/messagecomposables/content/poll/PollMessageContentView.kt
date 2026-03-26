@@ -464,7 +464,6 @@ fun PollMessageOptionView(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-
         //Userview, text + progressbar
         Column(
             horizontalAlignment = Alignment.Start,
@@ -472,35 +471,40 @@ fun PollMessageOptionView(
 
             //Row for text + userview
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
 
+                Box(modifier = Modifier.weight(1f)) {
+                    if (option.custom) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
 
-                if (option.custom) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.PersonAdd,
-                            contentDescription = "Custom user answer",
-                            modifier = Modifier.size(24.dp),
-                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                            Icon(
+                                imageVector = Icons.Default.PersonAdd,
+                                contentDescription = "Custom user answer",
+                                modifier = Modifier.size(24.dp),
+                                tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
 
+                            Text(
+                                text = option.text,
+                                color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    } else {
                         Text(
                             text = option.text,
                             color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                } else {
-                    Text(
-                        text = option.text,
-                        color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
+
+
+                //Spacer(modifier = Modifier.weight(1f))
 
                 val pictureManager = koinInject<PictureManager>()
 
