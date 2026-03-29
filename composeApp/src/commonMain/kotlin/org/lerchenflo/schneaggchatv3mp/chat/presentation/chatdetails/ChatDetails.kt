@@ -159,39 +159,41 @@ fun ChatDetails(
 
         ActivityTitle(
             title = chatDetails.name,
-            alternativeTitleComposable = {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable{
-                            showGroupRenameDialog = true
-                        },
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically
-                ){
-                    Text(
-                        text = chatDetails.name,
+            alternativeTitleComposable = if (group) {
+                {
+                    Row(
                         modifier = Modifier
-                            // fill = false prevents the Text from forcing itself to be wide
-                            .weight(1f, fill = false)
-                            .padding(start = 10.dp),
-                        autoSize = TextAutoSize.StepBased(
-                            minFontSize = 20.sp,
-                            maxFontSize = 30.sp
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit group name",
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
+                            .fillMaxWidth()
+                            .clickable {
+                                showGroupRenameDialog = true
+                            },
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = chatDetails.name,
+                            modifier = Modifier
+                                // fill = false prevents the Text from forcing itself to be wide
+                                .weight(1f, fill = false)
+                                .padding(start = 10.dp),
+                            autoSize = TextAutoSize.StepBased(
+                                minFontSize = 20.sp,
+                                maxFontSize = 30.sp
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit group name",
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
 
+
+                    }
 
                 }
-
-            },
+            }else null,
             onBackClick = {
                 chatdetailsViewmodel.onBackClick()
             }
