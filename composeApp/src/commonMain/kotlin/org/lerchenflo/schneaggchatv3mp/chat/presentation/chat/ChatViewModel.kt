@@ -57,6 +57,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioPlayer
+import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -761,7 +762,9 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                     loggingRepository.logWarning("ChatViewModel: Problem getting draft: ${exception.message}")
                 }
                 .collect { value ->
-                    updateSendContent(SendMessageContent.TextContent(TextFieldValue(value?: "")))
+                    if(value != null && (currentSendContent.value as SendMessageContent.TextContent).textMessage.text.isNotEmpty()){
+                        updateSendContent(SendMessageContent.TextContent(TextFieldValue(value)))
+                    }
                 }
         }
 
@@ -799,6 +802,14 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
             audioManager.initializeAudio()
             initAudioRecorderPlayer()
         }
+
+        println("ChatViewModel Incoming Data: ${IncomingDataManager.sharedText.value}")
+        if(IncomingDataManager.isNewDataAvailable()){
+            // todo falls es amol sowit kummt dass ma bilder o teilen kann halt je nach dem ändera
+            updateSendContent(SendMessageContent.TextContent(TextFieldValue(IncomingDataManager.sharedText.value ?: "")))
+            IncomingDataManager.updateText(null)
+        }
+
     }
 
     override fun onCleared() {

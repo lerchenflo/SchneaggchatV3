@@ -16,12 +16,14 @@ import com.mmk.kmpnotifier.notification.NotifierManager
 import com.mmk.kmpnotifier.permission.permissionUtil
 import org.lerchenflo.schneaggchatv3mp.app.App
 import org.lerchenflo.schneaggchatv3mp.utilities.ActivityHolder
+import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        handleIntent(intent)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         NotifierManager.onCreateOrOnNewIntent(this.intent)
@@ -66,11 +68,19 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        handleIntent(intent)
         NotifierManager.onCreateOrOnNewIntent(intent)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         ActivityHolder.clear() // Prevent memory leaks!
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.action == Intent.ACTION_SEND && intent.type == "text/plain") {
+            val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
+            IncomingDataManager.updateText(sharedText)
+        }
     }
 }

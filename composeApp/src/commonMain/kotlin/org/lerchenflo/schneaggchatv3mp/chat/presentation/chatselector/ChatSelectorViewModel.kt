@@ -32,7 +32,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
@@ -40,10 +39,10 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
+import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.groups
@@ -144,6 +143,25 @@ class ChatSelectorViewModel(
 
             globalViewModel.onSelectChat(selectedChat)
             navigator.navigate(Route.Chat)
+        }
+    }
+
+    // for MessageChatSelector
+    fun onBackClick() {
+        viewModelScope.launch {
+            navigator.navigateBack()
+        }
+    }
+
+
+    fun onChatSelectedWithMessage(selectedChat: SelectedChat) {
+        viewModelScope.launch {
+
+            //Chat opened, clear searchterm
+            _searchTerm.value = ""
+
+            globalViewModel.onSelectChat(selectedChat)
+            navigator.navigate(Route.Chat, navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true))
         }
     }
 
