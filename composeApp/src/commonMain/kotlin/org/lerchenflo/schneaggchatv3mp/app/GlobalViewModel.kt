@@ -14,6 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 
 class GlobalViewModel(
     private val appRepository: AppRepository,
@@ -38,6 +39,8 @@ class GlobalViewModel(
 
                     //On resume clear all error notis
                     NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)
+
+                    println("Incoming Data from app resume: ${IncomingDataManager.sharedText.value}")
 
                     startSocketConnection()
                 }
