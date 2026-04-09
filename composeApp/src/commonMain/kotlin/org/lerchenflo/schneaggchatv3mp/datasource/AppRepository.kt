@@ -712,6 +712,7 @@ class AppRepository(
                                 id = newUser.id,
                                 updatedAt = newUser.updatedAt,
                                 name = newUser.username,
+                                nickName = newUser.nickName,
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
                                 birthDate = newUser.birthDate,
