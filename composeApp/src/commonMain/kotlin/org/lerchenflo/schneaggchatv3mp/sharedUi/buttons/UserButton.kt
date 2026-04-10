@@ -144,7 +144,7 @@ fun UserButton(
 
 
                     Text(
-                        text = selectedChat.name
+                        text = getDisplayName(selectedChat)
                             .takeIf { it.isNotBlank() }
                             ?: stringResource(Res.string.unknown_user),
                         style = MaterialTheme.typography.titleMedium,
@@ -300,5 +300,18 @@ fun UserButton(
                 }
             }
         }
+    }
+}
+
+/**
+ * Returns the display name for a SelectedChat, prioritizing nickname over default name
+ */
+@Composable
+private fun getDisplayName(selectedChat: SelectedChat): String {
+    return if (!selectedChat.isGroup) {
+        val userChat = selectedChat as? org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
+        userChat?.nickName ?: selectedChat.name
+    } else {
+        selectedChat.name
     }
 }
