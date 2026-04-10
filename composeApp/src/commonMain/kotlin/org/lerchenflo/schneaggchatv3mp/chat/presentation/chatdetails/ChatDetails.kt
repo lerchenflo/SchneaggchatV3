@@ -230,7 +230,8 @@ fun ChatDetails(
                             text = buildAnnotatedString {
                                 append(selectedChat.name)
 
-                                if (selectedChat is UserChat) {
+                                //Show nickname if set
+                                if (selectedChat is UserChat && (selectedChat as UserChat).nickName != null) {
                                     append(" (\"")
 
                                     withStyle(
