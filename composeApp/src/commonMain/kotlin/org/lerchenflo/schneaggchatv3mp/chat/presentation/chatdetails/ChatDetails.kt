@@ -22,11 +22,13 @@ import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,16 +73,20 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
+import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.change_group_name
+import schneaggchatv3mp.composeapp.generated.resources.change_nickname
 import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.description_info_group
 import schneaggchatv3mp.composeapp.generated.resources.description_info_user
+import schneaggchatv3mp.composeapp.generated.resources.enter_nickname
 import schneaggchatv3mp.composeapp.generated.resources.group_description
 import schneaggchatv3mp.composeapp.generated.resources.group_name
 import schneaggchatv3mp.composeapp.generated.resources.leave_group
 import schneaggchatv3mp.composeapp.generated.resources.no_description
 import schneaggchatv3mp.composeapp.generated.resources.others_say_about
+import schneaggchatv3mp.composeapp.generated.resources.remove
 import schneaggchatv3mp.composeapp.generated.resources.remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.status_info
 import schneaggchatv3mp.composeapp.generated.resources.today
@@ -153,7 +159,8 @@ fun ChatDetails(
                     chatdetailsViewmodel.updateGroupName(newString)
                     showGroupRenameDialog = false
                 }
-            }
+            },
+
         )
     }
 
@@ -162,15 +169,29 @@ fun ChatDetails(
         val currentNickname = chatdetailsViewmodel.selectedUser?.nickName ?: chatdetailsViewmodel.selectedUser?.name ?: "Unknown"
 
         ChangeStringDialog(
-            title = "Change Nickname",
+            title = stringResource(Res.string.change_nickname),
             oldString = currentNickname,
             maxLines = 1,
-            placeholder = "Enter nickname",
+            placeholder = stringResource(Res.string.enter_nickname),
             errorMessage = errorMessage,
             onDismiss = { showNicknameDialog = false },
             updateString = { newString ->
                 chatdetailsViewmodel.updateNickname(newString)
                 showNicknameDialog = false
+            },
+
+            //Remove nickname button
+            thirdButton = {
+                TextButton(
+                    onClick = {
+                        chatdetailsViewmodel.updateNickname("")
+                        showNicknameDialog = false
+                    },
+                ) {
+                    Text(
+                        text = stringResource(Res.string.remove)
+                    )
+                }
             }
         )
     }

@@ -79,7 +79,9 @@
     <string name="accept_agb_pt1">I agree to the </string>
     <string name="accept_agb_pt2">Terms and Conditions and the Privacy Policy</string>
 
-    
+    <string name="change_nickname">Change Nickname</string>
+    <string name="enter_nickname">Enter Nickname</string>
+    <string name="remove">remove</string>
 
     <string name="requirement_lowercase">At least one lowercase character</string>
     <string name="requirement_uppercase">At least one uppercase character</string>
