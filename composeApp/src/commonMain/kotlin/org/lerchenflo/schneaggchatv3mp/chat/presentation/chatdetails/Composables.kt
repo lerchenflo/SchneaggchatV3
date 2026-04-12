@@ -145,7 +145,7 @@ fun GroupMembersView(
             var showRemoveMemberConfirmation by remember { mutableStateOf(false) }
             var showFriendRequestAlert by remember { mutableStateOf(false) }
             val me = groupMember.userId == ownId
-            val userName = user?.name ?: groupMember.memberName
+            val userName = user?.nickName ?: user?.name ?: groupMember.memberName
 
             ChatButtonView(
                 profilePictureFilePath = user?.profilePictureUrl ?: "",

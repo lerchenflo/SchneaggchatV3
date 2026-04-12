@@ -425,7 +425,10 @@ class NetworkUtils(
             val userDescription: String,
             val userStatus: String,
 
-            ) : UserResponse
+            val nickName: String?
+
+
+        ) : UserResponse
 
         //Response for yourself (You request your own data)
         @Serializable

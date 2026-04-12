@@ -333,4 +333,23 @@ class ChatDetailsViewmodel(
     }
 
 
+    fun updateNickname(newNickname: String) {
+        viewModelScope.launch {
+            val userId = chatDetails.value.id
+            val nicknameToSet = newNickname.ifEmpty { null }
+            
+            val success = appRepository.changeUserDetails(
+                userId = userId,
+                newNickName = nicknameToSet
+            )
+            
+            if (success) {
+                SnackbarManager.showMessage("Nickname updated successfully")
+            } else {
+                SnackbarManager.showMessage("Failed to update nickname")
+            }
+        }
+    }
+
+
 }

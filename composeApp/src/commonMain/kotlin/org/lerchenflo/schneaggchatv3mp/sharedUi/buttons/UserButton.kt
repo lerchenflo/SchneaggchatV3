@@ -36,6 +36,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
@@ -144,9 +145,12 @@ fun UserButton(
 
 
                     Text(
-                        text = selectedChat.name
-                            .takeIf { it.isNotBlank() }
-                            ?: stringResource(Res.string.unknown_user),
+                        text = if (!selectedChat.isGroup) {
+                            val userChat = selectedChat as? UserChat
+                            userChat?.nickName ?: selectedChat.name
+                        } else {
+                            selectedChat.name
+                        }.takeIf { it.isNotBlank() } ?: stringResource(Res.string.unknown_user),
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

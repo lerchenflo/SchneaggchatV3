@@ -18,6 +18,7 @@ data class UserDto(
     val profilePicUpdatedAt: Long,
 
     var name: String = "",
+    var nickName: String? = null,
 
     var description: String? = null,
 
