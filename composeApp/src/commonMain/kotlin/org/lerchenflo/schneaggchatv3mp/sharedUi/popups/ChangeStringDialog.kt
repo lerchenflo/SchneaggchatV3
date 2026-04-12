@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.sharedUi.popups
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -47,20 +49,12 @@ fun ChangeStringDialog(
     errorMessage: ErrorMessage? = null,
     onDismiss: () -> Unit,
     updateString: (String) -> Unit,
+    thirdButton: @Composable (() -> Unit)? = null
 ){
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current // Also helpful to hide keyboard
 
     var stringValue by retain { mutableStateOf(TextFieldValue(oldString)) } // remembersaveable to survive screen rotation
-
-
-
-    /*
-    LaunchedEffect(selectedChat) {
-        updateDescriptionText(TextFieldValue(selectedChat.description ?: ""))
-    }
-
-     */
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -76,12 +70,20 @@ fun ChangeStringDialog(
             }
         },
         dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-            ) {
-                Text(
-                    text = stringResource(Res.string.cancel)
-                )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                TextButton(
+                    onClick = onDismiss,
+                ) {
+                    Text(
+                        text = stringResource(Res.string.cancel)
+                    )
+                }
+
+                if (thirdButton != null) {
+                    thirdButton()
+                }
             }
         },
         title = {

@@ -168,6 +168,7 @@ class ChatDetailsViewmodel(
      * - For groups: groupMembers list
      * - For users: commonGroups list
      */
+    //TODO: Use selectedchat from globalbiewmodel???
     val chatDetails: StateFlow<SelectedChat> = combine(
         globalViewModel.selectedChat,
         SessionCache.authState
@@ -336,18 +337,11 @@ class ChatDetailsViewmodel(
     fun updateNickname(newNickname: String) {
         viewModelScope.launch {
             val userId = chatDetails.value.id
-            val nicknameToSet = newNickname.ifEmpty { null }
             
             val success = appRepository.changeUserDetails(
                 userId = userId,
-                newNickName = nicknameToSet
+                newNickName = newNickname
             )
-            
-            if (success) {
-                SnackbarManager.showMessage("Nickname updated successfully")
-            } else {
-                SnackbarManager.showMessage("Failed to update nickname")
-            }
         }
     }
 
