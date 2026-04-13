@@ -160,6 +160,9 @@
     <string name="dark_theme">dark theme</string>
     <string name="light_theme">light theme</string>
     <string name="ph_theme">Ph theme</string>
+    <string name="variant1">Dark Variant 1</string>
+    <string name="variant2">Light Variant 2</string>
+    <string name="neon_pulse_theme">Neon Pulse (Dark)</string>
 
     <string name="common_friends">common friends: %1$s</string>
     <string name="create_group">Create Group</string>
