@@ -80,8 +80,6 @@ class NetworkUtils(
     ): NetworkResult<R, NetworkError> {
         return try {
             val response = block()
-
-            // If we got a response (even an error response), we have connectivity
             SessionCache.updateOnline(true)
 
             if (response.status.isSuccess()) {
@@ -90,41 +88,55 @@ class NetworkUtils(
                 NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
             }
         } catch (e: UnresolvedAddressException) {
-            // DNS resolution failed - definitely offline
             println("Going offline: DNS resolution failed - ${e.message}")
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: ConnectTimeoutException) {
-            // Could be offline or slow network - mark as offline
             println("Going offline: Connection timeout - ${e.message}")
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.RequestTimeout())
-        } catch (e: SocketTimeoutException) {
-            // Socket timeout - conservative approach marks as offline
-            SessionCache.updateOnline(false)
-            NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: HttpRequestTimeoutException) {
-            // Request timeout - conservative approach marks as offline
             println("Going offline: HTTP request timeout - ${e.message}")
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: IOException) {
-            // IO exceptions (including UnknownHostException) indicate network problems
+            // Covers SocketTimeoutException, UnknownHostException, etc. on JVM/Android
             println("Going offline: IO exception - ${e.message}")
             e.printStackTrace()
             SessionCache.updateOnline(false)
             NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: SerializationException) {
-            // Serialization errors are NOT network issues - don't change online state
             println("Serialization error (staying online): ${e.message}")
-            loggingRepository.logWarning("SerializationException (not changing online state): ${e.message}")
+            loggingRepository.logWarning("SerializationException: ${e.message}")
             NetworkResult.Error(NetworkError.Serialization(message = e.message))
         } catch (e: Exception) {
-            // Unknown errors are NOT necessarily network issues - don't mark as offline
-            println("Unknown exception (staying online): ${e.message}")
-            loggingRepository.logWarning("NetworkUtils safeCall failed (not changing online state): ${e.message}")
-            NetworkResult.Error(NetworkError.Unknown(message = e.message))
+            // ✅ Detect platform-specific network errors by message/type name
+            // on iOS, NSURLErrorDomain errors land here as they don't extend IOException
+            val isNetworkError = isNetworkException(e)
+            if (isNetworkError) {
+                println("Going offline: Platform network exception - ${e.message}")
+                SessionCache.updateOnline(false)
+                NetworkResult.Error(NetworkError.NoInternet())
+            } else {
+                println("Unknown exception (staying online): ${e.message}")
+                loggingRepository.logWarning("safeCall failed: ${e.message}")
+                NetworkResult.Error(NetworkError.Unknown(message = e.message))
+            }
         }
+    }
+
+    // Inspect exception type name since iOS network errors don't have a common base class
+    private fun isNetworkException(e: Exception): Boolean {
+        val name = e::class.simpleName ?: ""
+        val message = e.message ?: ""
+        return name.contains("NSURLError", ignoreCase = true)
+                || name.contains("Network", ignoreCase = true)
+                || name.contains("Socket", ignoreCase = true)
+                || name.contains("Connection", ignoreCase = true)
+                || message.contains("network", ignoreCase = true)
+                || message.contains("internet", ignoreCase = true)
+                || message.contains("offline", ignoreCase = true)
+                || message.contains("unreachable", ignoreCase = true)
     }
 
     // Helper function to map HTTP status codes to NetworkError
