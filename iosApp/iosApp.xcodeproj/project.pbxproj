@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		05FC0F7F2F7D21E7003032F9 /* SchneaggchatShareExtention.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 05FC0F752F7D21E7003032F9 /* SchneaggchatShareExtention.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		5CA4A3F02E7B1F43007FFF47 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5CA4A3EF2E7B1F43007FFF47 /* FirebaseCore */; };
 		5CA4A3F22E7B1F43007FFF47 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 5CA4A3F12E7B1F43007FFF47 /* FirebaseMessaging */; };
-		05FC0F7F2F7D21E7003032F9 /* SchneaggchatShareExtention.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 05FC0F752F7D21E7003032F9 /* SchneaggchatShareExtention.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -129,9 +129,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 05FC0F832F7D21E7003032F9 /* Build configuration list for PBXNativeTarget "SchneaggchatShareExtention" */;
 			buildPhases = (
-				05FC0F712F7D21E7003032F9 /* Sources */,
-				05FC0F722F7D21E7003032F9 /* Frameworks */,
 				05FC0F732F7D21E7003032F9 /* Resources */,
+				5C8012982F8FFB7300DC9908 /* Sources */,
 			);
 			buildRules = (
 			);
@@ -255,6 +254,13 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		5C8012982F8FFB7300DC9908 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B9DA97AD2DC1472C00A4DA20 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -280,7 +286,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5M56QD2FUV;
+				DEVELOPMENT_TEAM = VQ9RSMGZ8L;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SchneaggchatShareExtention/Info.plist;
@@ -293,7 +299,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.fabi.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtention;
+				PRODUCT_BUNDLE_IDENTIFIER = org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtention;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
