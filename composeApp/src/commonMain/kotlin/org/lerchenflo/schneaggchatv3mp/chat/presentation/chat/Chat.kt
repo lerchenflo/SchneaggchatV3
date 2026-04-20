@@ -731,7 +731,7 @@ fun ChatScreen(
                 if(viewModel.editMessage == null){ // schoua ob mir gad a nachricht bearbeitend
 
                     // show send when content is not empty or on desktop (no microphone implementation for desktop)
-                    if(currentContentNotEmpty || !(SessionCache.requireLoggedIn()?.developer ?: false) || viewModel.isDesktop()){ // todo open to public
+                    if(currentContentNotEmpty || viewModel.isDesktop()){
                         if((currentContent as? SendMessageContent.AudioContent)?.isRecording ?: false){
                             IconButton(
                                 onClick = {
