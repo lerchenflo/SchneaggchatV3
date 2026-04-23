@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
@@ -23,6 +25,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -30,6 +33,7 @@ class GlobalViewModel(
     private val appRepository: AppRepository,
     private val preferenceManager: Preferencemanager,
     private val socketConnectionManager: SocketConnectionManager,
+    private val navigator: Navigator
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
     private val messageRepository: MessageRepository
@@ -52,6 +56,11 @@ class GlobalViewModel(
 
                     //On resume clear all error notis
                     NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)
+
+                    println("Incoming Data from app resume: ${IncomingDataManager.sharedText.value}")
+                    if(IncomingDataManager.isNewDataAvailable()){
+                        navigator.navigate(Route.MessageChatSelector) // todo build backstack?
+                    }
 
                     startSocketConnection()
                 }
