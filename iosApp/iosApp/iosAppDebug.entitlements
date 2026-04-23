@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp</string>
+		<string>group.org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtention</string>
 	</array>
 </dict>
 </plist>
