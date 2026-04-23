@@ -143,12 +143,47 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     userRepository.deleteUser(socketMessage.user.id)
                 } else {
                     when (val newUser = socketMessage.user) {
+                        is NetworkUtils.UserResponse.SimpleUserResponse -> {
+                            val existing = userRepository.getUserById(newUser.id)
+                            userRepository.upsertUser(UserDto(
+                                id = newUser.id,
+                                updatedAt = newUser.updatedAt,
+                                profilePicUpdatedAt = newUser.profilePicUpdatedAt,
+                                name = newUser.username,
+                                description = null,
+                                status = null,
+
+                                locationLat = null,
+                                locationLong = null,
+                                locationDate = null,
+                                locationShared = false,
+                                wakeupEnabled = false,
+                                lastOnline = null,
+                                frienshipStatus = newUser.friendShipStatus,
+                                requesterId = newUser.requesterId,
+                                notisMuted = false,
+                                birthDate = null,
+                                email = null,
+                                emailVerifiedAt = null,
+                                createdAt = null,
+                                profilePictureUrl = ""
+                            ))
+
+                            //Update profile picture if user is new or the profile pic got updated
+                            if (existing == null || existing.profilePicUpdatedAt < socketMessage.user.profilePicUpdatedAt) {
+                                appRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
+                            }
+
+
+                        }
+
                         is NetworkUtils.UserResponse.FriendUserResponse -> {
                             val existing = userRepository.getUserById(newUser.id)
                             userRepository.upsertUser(UserDto(
                                 id = newUser.id,
                                 updatedAt = newUser.updatedAt,
                                 name = newUser.username,
+                                nickName = newUser.nickName,
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
                                 birthDate = newUser.birthDate,
@@ -206,39 +241,6 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                             if (existing == null || existing.profilePicUpdatedAt < socketMessage.user.profilePicUpdatedAt) {
                                 appRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
                             }
-                        }
-                        is NetworkUtils.UserResponse.SimpleUserResponse -> {
-                            val existing = userRepository.getUserById(newUser.id)
-                            userRepository.upsertUser(UserDto(
-                                id = newUser.id,
-                                updatedAt = newUser.updatedAt,
-                                profilePicUpdatedAt = newUser.profilePicUpdatedAt,
-                                name = newUser.username,
-                                description = null,
-                                status = null,
-
-                                locationLat = null,
-                                locationLong = null,
-                                locationDate = null,
-                                locationShared = false,
-                                wakeupEnabled = false,
-                                lastOnline = null,
-                                frienshipStatus = newUser.friendShipStatus,
-                                requesterId = newUser.requesterId,
-                                notisMuted = false,
-                                birthDate = null,
-                                email = null,
-                                emailVerifiedAt = null,
-                                createdAt = null,
-                                profilePictureUrl = ""
-                            ))
-
-                            //Update profile picture if user is new or the profile pic got updated
-                            if (existing == null || existing.profilePicUpdatedAt < socketMessage.user.profilePicUpdatedAt) {
-                                appRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
-                            }
-
-
                         }
                     }
 

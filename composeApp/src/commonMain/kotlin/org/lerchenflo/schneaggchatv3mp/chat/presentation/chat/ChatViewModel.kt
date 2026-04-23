@@ -679,13 +679,15 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                 messages[index + 1].sendDate.toLongOrNull()?.toLocalDate()
             } else null
 
-            val senderName = userMap[message.senderId]?.name ?: groupMap[message.senderId]?.memberName ?: "Unresolved Username"
+            val user = userMap[message.senderId]
+            val senderName = user?.nickName ?: user?.name ?: groupMap[message.senderId]?.memberName ?: "Unresolved Username"
             message.senderAsString = senderName
             val resolvedColor = groupMap[message.senderId]?.color ?: 0
             message.senderColor = resolvedColor
 
             val resolvedReaders = message.readers.associate { reader ->
-                reader.readerName = userMap[reader.readerId]?.name ?: groupMap[reader.readerId]?.memberName ?: "Unknown"
+                val readerUser = userMap[reader.readerId]
+                reader.readerName = readerUser?.nickName ?: readerUser?.name ?: groupMap[reader.readerId]?.memberName ?: "Unknown"
                 reader.readerPicture = pictureManager.getProfilePicFilePath(reader.readerId, false)
                 reader.readerId to (reader.readerName ?: "Unknown")
             }

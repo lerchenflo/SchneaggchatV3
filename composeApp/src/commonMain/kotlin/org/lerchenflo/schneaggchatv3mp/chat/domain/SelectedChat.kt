@@ -50,6 +50,7 @@ data class UserChat(
     override val friendshipStatus: NetworkUtils.FriendshipStatus?,
     override val requesterId: String?,
     override val pinned: Long = 0L,
+    val nickName: String? = null,
 
     val commonGroups : List<Group> = emptyList()
 ) : SelectedChat {
@@ -96,7 +97,8 @@ fun User.toSelectedChat(
     lastmessage = lastMessage,
     friendshipStatus = this.friendshipStatus,
     requesterId = this.requesterId,
-    pinned = pinned
+    pinned = pinned,
+    nickName = this.nickName
 
 )
 

@@ -58,6 +58,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mikepenz.markdown.m3.Markdown
+import com.mikepenz.markdown.model.DefaultMarkdownColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -117,7 +119,6 @@ fun PollMessageContentView(
     }
 
 
-    //TODO: MD Support für alle texte!!
     Column(
         modifier = Modifier.padding(4.dp)
     ) {
@@ -129,12 +130,26 @@ fun PollMessageContentView(
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = poll.title,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.weight(1f),
-                color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            if (useMD) {
+                Markdown(
+                    content = poll.title,
+                    modifier = Modifier.weight(1f),
+                    colors = DefaultMarkdownColors(
+                        text = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        inlineCodeBackground = MaterialTheme.colorScheme.error,
+                        dividerColor = MaterialTheme.colorScheme.onPrimary,
+                        tableBackground = MaterialTheme.colorScheme.onSurface,
+                        codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                )
+            } else {
+                Text(
+                    text = poll.title,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.weight(1f),
+                    color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             Spacer(modifier = Modifier.width(4.dp))
 
@@ -172,11 +187,24 @@ fun PollMessageContentView(
 
         //Description
         poll.description?.let {
-            Text(
-                text = poll.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            if (useMD) {
+                Markdown(
+                    content = poll.description,
+                    colors = DefaultMarkdownColors(
+                        text = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        inlineCodeBackground = MaterialTheme.colorScheme.error,
+                        dividerColor = MaterialTheme.colorScheme.onPrimary,
+                        tableBackground = MaterialTheme.colorScheme.onSurface,
+                        codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                )
+            } else {
+                Text(
+                    text = poll.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
@@ -199,7 +227,8 @@ fun PollMessageContentView(
                         )
                     )
                 },
-                ownId = ownId
+                ownId = ownId,
+                useMD = useMD
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -426,16 +455,17 @@ fun PollMessageOptionView(
     votePercentage: Float,
     myMessage: Boolean,
     voterIds: List<String?>,
-    onOptionSelected: (Boolean) -> Unit
+    onOptionSelected: (Boolean) -> Unit,
+    useMD: Boolean = false
 ) {
     
     val optionCheckedByMe = option.voters.any { it.userId == ownId }
 
 
     Row(
-        modifier = Modifier.clickable {
-            onOptionSelected(!optionCheckedByMe)
-        }
+        modifier = Modifier
+            .clickable { onOptionSelected(!optionCheckedByMe) },
+        verticalAlignment = Alignment.CenterVertically
     ) {
 
         //Start checkbox / radiobutton
@@ -464,7 +494,6 @@ fun PollMessageOptionView(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-
         //Userview, text + progressbar
         Column(
             horizontalAlignment = Alignment.Start,
@@ -472,35 +501,66 @@ fun PollMessageOptionView(
 
             //Row for text + userview
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
 
+                Box(modifier = Modifier.weight(1f)) {
+                    if (option.custom) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
 
-                if (option.custom) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.PersonAdd,
-                            contentDescription = "Custom user answer",
-                            modifier = Modifier.size(24.dp),
-                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                            Icon(
+                                imageVector = Icons.Default.PersonAdd,
+                                contentDescription = "Custom user answer",
+                                modifier = Modifier.size(24.dp),
+                                tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
 
-                        Text(
-                            text = option.text,
-                            color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                            if (useMD) {
+                                Markdown(
+                                    content = option.text,
+                                    colors = DefaultMarkdownColors(
+                                        text = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        inlineCodeBackground = MaterialTheme.colorScheme.error,
+                                        dividerColor = MaterialTheme.colorScheme.onPrimary,
+                                        tableBackground = MaterialTheme.colorScheme.onSurface,
+                                        codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                )
+                            } else {
+                                Text(
+                                    text = option.text,
+                                    color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    } else {
+                        if (useMD) {
+                            Markdown(
+                                content = option.text,
+                                colors = DefaultMarkdownColors(
+                                    text = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    inlineCodeBackground = MaterialTheme.colorScheme.error,
+                                    dividerColor = MaterialTheme.colorScheme.onPrimary,
+                                    tableBackground = MaterialTheme.colorScheme.onSurface,
+                                    codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            )
+                        } else {
+                            Text(
+                                text = option.text,
+                                color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
-                } else {
-                    Text(
-                        text = option.text,
-                        color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
+
+
+                //Spacer(modifier = Modifier.weight(1f))
 
                 val pictureManager = koinInject<PictureManager>()
 

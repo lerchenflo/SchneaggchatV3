@@ -168,6 +168,7 @@ class ChatDetailsViewmodel(
      * - For groups: groupMembers list
      * - For users: commonGroups list
      */
+    //TODO: Use selectedchat from globalbiewmodel???
     val chatDetails: StateFlow<SelectedChat> = combine(
         globalViewModel.selectedChat,
         SessionCache.authState
@@ -329,6 +330,18 @@ class ChatDetailsViewmodel(
     fun navigateChatSelExitAllPrevious(){
         viewModelScope.launch {
             navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
+        }
+    }
+
+
+    fun updateNickname(newNickname: String) {
+        viewModelScope.launch {
+            val userId = chatDetails.value.id
+            
+            val success = appRepository.changeUserDetails(
+                userId = userId,
+                newNickName = newNickname
+            )
         }
     }
 

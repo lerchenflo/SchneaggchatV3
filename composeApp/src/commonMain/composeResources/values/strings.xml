@@ -79,7 +79,9 @@
     <string name="accept_agb_pt1">I agree to the </string>
     <string name="accept_agb_pt2">Terms and Conditions and the Privacy Policy</string>
 
-    
+    <string name="change_nickname">Change Nickname</string>
+    <string name="enter_nickname">Enter Nickname</string>
+    <string name="remove">remove</string>
 
     <string name="requirement_lowercase">At least one lowercase character</string>
     <string name="requirement_uppercase">At least one uppercase character</string>
@@ -161,6 +163,9 @@
     <string name="dark_theme">dark theme</string>
     <string name="light_theme">light theme</string>
     <string name="ph_theme">Ph theme</string>
+    <string name="variant1">Dark Variant 1</string>
+    <string name="variant2">Light Variant 2</string>
+    <string name="neon_pulse_theme">Neon Pulse (Dark)</string>
 
     <string name="common_friends">common friends: %1$s</string>
     <string name="create_group">Create Group</string>
