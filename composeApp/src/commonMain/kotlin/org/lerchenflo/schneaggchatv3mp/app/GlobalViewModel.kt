@@ -33,7 +33,7 @@ class GlobalViewModel(
     private val appRepository: AppRepository,
     private val preferenceManager: Preferencemanager,
     private val socketConnectionManager: SocketConnectionManager,
-    private val navigator: Navigator
+    private val navigator: Navigator,
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
     private val messageRepository: MessageRepository

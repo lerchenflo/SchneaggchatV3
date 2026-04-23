@@ -14,6 +14,8 @@ Schneaggchat is an innovative chatting platform.
 - Nicknames
 - Umfrage Markdown Support
 - Gruppe umbenennen
+- Sprachnachrichten public
+- Teilen mit Schneaggchat
 
 #### Bugfixes
 - Umfragen Profilbilder
