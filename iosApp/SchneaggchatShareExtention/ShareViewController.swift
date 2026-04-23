@@ -5,9 +5,7 @@ import os
 
 extension Bundle {
     var appGroupID: String {
-        // If we are in the extension, we need to strip the suffix
-        let baseId = bundleIdentifier?.replacingOccurrences(of: ".SchneaggchatShareExtention", with: "") ?? ""
-        return "group.\(baseId)"
+        return "group.org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtention"
     }
 }
 
