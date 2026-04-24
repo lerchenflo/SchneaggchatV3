@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.Blind
+import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
@@ -28,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -88,12 +88,15 @@ import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
+import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.toFormattedString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
+import schneaggchatv3mp.composeapp.generated.resources.games_morse_title
 import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
 
@@ -181,6 +184,7 @@ fun App() {
                         subclass(Route.Games.YatziSetup::class, Route.Games.YatziSetup.serializer())
                         subclass(Route.Games.YatziGame::class, Route.Games.YatziGame.serializer())
                         subclass(Route.Games.Tetris::class, Route.Games.Tetris.serializer())
+                        subclass(Route.Games.Morse::class, Route.Games.Morse.serializer())
 
 
                     }
@@ -518,7 +522,7 @@ fun App() {
 
                         entry<Route.Games> {
                             //TODO GAMES: Shared games viewmodel for game selection
-                            val yatziViewModel: YatziViewModel = viewModel { YatziViewModel() }
+                            val yatziViewModel: YatziViewModel = koinViewModel<YatziViewModel>()
 
                             val gamesList = listOf<GameScreenElement>(
                                 GameScreenElement(
@@ -549,6 +553,12 @@ fun App() {
                                     title = "Tetris",
                                     icon = Icons.Default.Menu, // Placeholder
                                     route = Route.Games.Tetris,
+                                    inDev = false
+                                ),
+                                GameScreenElement(
+                                    title = stringResource(Res.string.games_morse_title),
+                                    icon = Icons.Default.GraphicEq,
+                                    route = Route.Games.Morse,
                                     inDev = false
                                 ),
 
@@ -629,7 +639,7 @@ fun App() {
                                     }
 
                                     entry <Route.Games.Tetris> {
-                                        val tetrisViewModel: TetrisViewModel = viewModel { TetrisViewModel() }
+                                        val tetrisViewModel: TetrisViewModel = koinViewModel<TetrisViewModel>()
                                         TetrisScreen(
                                             onBackClick = {
                                                 if (gamesBackStack.size > 1){
@@ -637,6 +647,18 @@ fun App() {
                                                 }
                                             },
                                             viewModel = tetrisViewModel
+                                        )
+                                    }
+
+                                    entry <Route.Games.Morse> {
+                                        val morseViewModel: MorseViewModel = koinViewModel()
+                                        MorseScreen(
+                                            onBackClick = {
+                                                if (gamesBackStack.size > 1){
+                                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                                }
+                                            },
+                                            viewModel = morseViewModel
                                         )
                                     }
                                 }
