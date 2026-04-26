@@ -27,7 +27,10 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectio
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerstackViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.UndercoverViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
@@ -148,6 +151,12 @@ val sharedmodule = module{
     factory { TowerstackViewModel() }
     viewModelOf(::UndercoverViewModel)
     factory { UndercoverViewModel(get()) }
+    viewModelOf(::YatziViewModel)
+    factory { YatziViewModel() }
+    viewModelOf(::TetrisViewModel)
+    factory { TetrisViewModel() }
+    viewModelOf(::MorseViewModel)
+    factory { MorseViewModel() }
     
     viewModelOf(::PlayerSelectorViewModel)
     factory { PlayerSelectorViewModel(get(), get()) }

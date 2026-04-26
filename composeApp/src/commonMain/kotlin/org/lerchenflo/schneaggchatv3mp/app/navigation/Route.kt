@@ -76,6 +76,9 @@ sealed interface Route : NavKey {
 
         @Serializable
         data object Tetris: Route, NavKey
+
+        @Serializable
+        data object Morse: Route, NavKey
     }
 }
 
