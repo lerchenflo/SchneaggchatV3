@@ -87,7 +87,6 @@ import kotlin.time.ExperimentalTime
 class AppRepository(
     private val database: AppDatabase,
     private val networkUtils: NetworkUtils,
-    private val tokenManager: TokenManager,
     private val preferencemanager: Preferencemanager,
     private val pictureManager: PictureManager,
     private val audioManager: AudioManager,
@@ -95,7 +94,6 @@ class AppRepository(
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
     private val messageRepository: MessageRepository,
-    private val todoRepository: TodoRepository,
 
     val appVersion: AppVersion,
     private val loggingRepository: LoggingRepository,
@@ -441,7 +439,7 @@ class AppRepository(
                 .asSequence()
                 .filter { it.id != userId }
                 .filter { it.friendshipStatus == FriendshipStatus.ACCEPTED }
-                .filter { loweredSearch.isEmpty() || it.name.lowercase().contains(loweredSearch) }
+                .filter { loweredSearch.isEmpty() || it.name.lowercase().contains(loweredSearch) || it.nickName?.lowercase()?.contains(loweredSearch) == true }
                 .map { user ->
                     val userMessages = messagesByUser[user.id] ?: emptyList()
 

@@ -2,8 +2,8 @@ package org.lerchenflo.schneaggchatv3mp.app.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 
@@ -121,6 +121,80 @@ private val phTheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDark,
 )
 
+private val darkVariant1 = darkColorScheme(
+    primary = electricViolet,
+    onPrimary = etherealMidnight,
+    primaryContainer = electricVioletDim,
+    onPrimaryContainer = etherealText,
+    secondary = etherealTeal,
+    onSecondary = etherealMidnight,
+    background = etherealMidnight,
+    onBackground = etherealText,
+    surface = etherealMidnight,
+    onSurface = etherealText,
+    surfaceVariant = etherealMidnightHigh.copy(alpha = 0.6f), // Glassmorphism base
+    onSurfaceVariant = etherealText.copy(alpha = 0.7f),       // For Label-SM/Timestamps
+    surfaceContainerLowest = etherealMidnight,
+    surfaceContainerLow = etherealMidnightLow,               // Sidebars/Contact lists
+    surfaceContainer = etherealMidnight,
+    surfaceContainerHigh = etherealMidnightHigh,             // Hover states/Active backgrounds
+    surfaceContainerHighest = etherealMidnightHighest,       // Receiver message bubbles
+    outlineVariant = etherealText.copy(alpha = 0.15f),       // The "Ghost Border"
+)
+
+private val lightVariant2 = lightColorScheme(
+    primary = curatorPrimary,
+    onPrimary = curatorOnPrimary,
+    primaryContainer = curatorPrimaryContainer,
+    onPrimaryContainer = curatorPrimary,
+
+    background = curatorSurface,
+    onBackground = curatorOnSurface,
+
+    surface = curatorSurface,
+    onSurface = curatorOnSurface,
+    onSurfaceVariant = curatorOnSurfaceVariant,
+
+    // Tonal Stacking Logic
+    surfaceContainerLowest = curatorSurfaceLowest,
+    surfaceContainerLow = curatorSurfaceLow,
+    surfaceContainer = curatorSurface,
+    surfaceContainerHigh = curatorSurfaceHigh,
+    surfaceContainerHighest = curatorSurfaceHighest,
+
+    outlineVariant = curatorGhostBorder // The "Ghost Border"
+)
+
+private val neonPulseScheme = darkColorScheme(
+    primary = neonPrimary,
+    onPrimary = neonOnPrimary,
+    primaryContainer = neonPrimaryContainer,
+    onPrimaryContainer = neonOnPrimary,
+
+    secondary = neonSecondary,
+    onSecondary = neonOnSecondary,
+    secondaryContainer = neonSecondaryContainer,
+    onSecondaryContainer = neonOnSecondary,
+
+    tertiary = neonTertiary,
+
+    background = neonSurfaceLowest,
+    onBackground = neonPrimary, // High-contrast headers
+
+    surface = neonSurface,
+    onSurface = neonPrimary,
+    onSurfaceVariant = neonOnSurfaceVariant,
+
+    // Tonal Layering Implementation
+    surfaceContainerLowest = neonSurfaceLowest,
+    surfaceContainerLow = neonSurfaceLow,
+    surfaceContainer = neonSurfaceContainer,
+    surfaceContainerHigh = neonSurfaceHigh,
+    surfaceContainerHighest = neonSurfaceHighest,
+
+    outlineVariant = neonGhostBorder // Critical accessibility containment
+)
+
 @Composable
 fun SchneaggchatTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -134,6 +208,14 @@ fun SchneaggchatTheme(
       }
   }else if(themeSetting == ThemeSetting.DARK){
       darkScheme
+  }else if(themeSetting == ThemeSetting.VARIANT1){
+      darkVariant1
+  }
+  else if(themeSetting == ThemeSetting.VARIANT2){
+      lightVariant2
+  }
+  else if(themeSetting == ThemeSetting.NEONPULSE){
+      neonPulseScheme
   }
   /*else if(themeSetting == ThemeSetting.PHTHEME){
       phTheme

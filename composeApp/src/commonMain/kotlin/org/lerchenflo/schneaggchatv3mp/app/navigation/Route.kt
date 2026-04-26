@@ -9,6 +9,8 @@ sealed interface Route : NavKey {
     @Serializable
     data object ChatSelector: Route, NavKey
     @Serializable
+    data object MessageChatSelector: Route, NavKey
+    @Serializable
     data object Chat: Route, NavKey
     @Serializable
     data object NewChat: Route, NavKey

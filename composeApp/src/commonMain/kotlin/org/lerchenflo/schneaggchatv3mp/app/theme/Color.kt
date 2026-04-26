@@ -228,5 +228,55 @@ val phWhite = Color(0xFFFFFFFF)
 val phOrangeLightVariant = Color(0xFFffbb57)
 
 
+// Ethereal Signal - Variant 1 Colors
+val etherealMidnight = Color(0xFF060E20)       // Base Background
+val etherealMidnightLow = Color(0xFF091328)    // surface-container-low
+val etherealMidnightHigh = Color(0xFF141F38)   // surface-container-high
+val etherealMidnightHighest = Color(0xFF1C2844) // surface-container-highest (inferred depth)
+
+val electricViolet = Color(0xFFBA9EFF)         // Primary
+val electricVioletDim = Color(0xFF8455EF)      // Primary Dim / Container
+val etherealTeal = Color(0xFF53DDFC)           // Secondary (Status)
+val etherealText = Color(0xFFDEE5FF)           // on-background / on-surface
 
 
+// The Digital Curator - Dark Variant 2
+val curatorPrimary = Color(0xFF6A37D4)          // The active pulse
+val curatorPrimaryContainer = Color(0xFFAE8DFF) // For gradients/hero moments
+val curatorOnPrimary = Color(0xFFF8F0FF)        // Text on primary
+
+val curatorSurface = Color(0xFFF5F7FA)          // Foundational "gallery wall"
+val curatorOnSurface = Color(0xFF2C2F32)        // High-contrast "Ink"
+val curatorOnSurfaceVariant = Color(0xFF595C5E) // For labels/metadata
+
+// Tonal Layers
+val curatorSurfaceLowest = Color(0xFFFFFFFF)    // Interactive cards (White)
+val curatorSurfaceLow = Color(0xFFEEF1F4)       // De-emphasized areas/Sidebars
+val curatorSurfaceHigh = Color(0xFFDFE3E7)      // Elevated overlays
+val curatorSurfaceHighest = Color(0xFFD1D5D9)   // Inferred for received bubbles
+
+// Accessibility Fallback
+val curatorGhostBorder = Color(0x26ABADB0)      // Outline-variant at 15% opacity
+
+
+// The Neon Pulse - Core Palette
+val neonPrimary = Color(0xFFF8FFB6)          // Radioactive primary
+val neonPrimaryContainer = Color(0xFFE3F700) // Gradient secondary
+val neonOnPrimary = Color(0xFF5B6400)        // High-contrast label
+
+val neonSecondary = Color(0xFF2FF801)        // Radioactive signal
+val neonOnSecondary = Color(0xFF0B5800)      // High-contrast secondary label
+val neonSecondaryContainer = Color(0xFF106E00) // Outgoing chat bubble
+
+val neonTertiary = Color(0xFFFFE086)         // Interactive signal elements
+
+// Surface Hierarchy (Stepped Depth)
+val neonSurfaceLowest = Color(0xFF000000)    // Main chat background
+val neonSurface = Color(0xFF0E0E0E)          // Base layer
+val neonSurfaceLow = Color(0xFF131313)       // Sidebar background
+val neonSurfaceContainer = Color(0xFF1A1919) // Main content areas
+val neonSurfaceHigh = Color(0xFF201F1F)      // Incoming chat bubbles
+val neonSurfaceHighest = Color(0xFF262626)   // Active bubbles/modals
+
+val neonOnSurfaceVariant = Color(0xFFADAAAA) // Secondary body text
+val neonGhostBorder = Color(0x26494847)      // Outline-variant at 15% opacity

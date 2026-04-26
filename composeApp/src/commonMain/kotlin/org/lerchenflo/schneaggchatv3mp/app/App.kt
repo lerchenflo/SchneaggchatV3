@@ -38,36 +38,38 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
-import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.component.getScopeName
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.ObserveAsEvents
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.Chatauswahlscreen
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.MessageChatSelector
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameScreenElement
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
-import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
-import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziGameScreen
-import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziSetupScreen
-import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
+import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
+import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziGameScreen
+import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziSetupScreen
+import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
@@ -80,19 +82,15 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSe
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
-import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
-import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
+import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
-import org.lerchenflo.schneaggchatv3mp.utilities.toFormattedString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
@@ -137,6 +135,7 @@ fun App() {
                         subclass(Route.ChatSelector::class, Route.ChatSelector.serializer())
                         subclass(Route.Chat::class, Route.Chat.serializer())
                         subclass(Route.NewChat::class, Route.NewChat.serializer())
+                        subclass(Route.MessageChatSelector::class, Route.MessageChatSelector.serializer())
                         subclass(Route.GroupCreator::class, Route.GroupCreator.serializer())
                         subclass(Route.SignUp::class, Route.SignUp.serializer())
                         subclass(Route.ChatDetails::class, Route.ChatDetails.serializer())
@@ -368,16 +367,43 @@ fun App() {
                             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 CircularProgressIndicator()
                             }
+                            /*
+                         (already logged in? [app open])
+                             True                       false
+                                /                            \
+                              /                                       \
+                         Incoming Data?                             Tokens saved?
+                          /       \                                     /       \
+                         true       false                          true      false
+                         /                \                           /          \
+                        chatselector    sendDataSelector    Incoming Data?      Login Screen
+                                                            /        \
+                                                           True     false
+                                                            /          \
+                                                      chatselector     sendDataSelector
+                             */
 
                             LaunchedEffect(Unit) {
                                 if (SessionCache.isLoggedIn()) { //If already logged in reroute to chatselector
                                     println("LOGGED IN; rerouting to chatselector")
-                                    scope.launch {
-                                        navigator.navigate(
-                                            Route.ChatSelector,
-                                            navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
-                                        )
+
+                                    if(IncomingDataManager.isNewDataAvailable()){
+                                        scope.launch {
+                                            // manually navigate to messageChatselecotor to add Chatselector to backstack
+                                            rootBackStack.clear()
+                                            rootBackStack.add(Route.ChatSelector)
+                                            rootBackStack.add(Route.MessageChatSelector)
+                                        }
+                                    }else{
+                                        scope.launch {
+                                            navigator.navigate(
+                                                Route.ChatSelector,
+                                                navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
+                                            )
+                                        }
                                     }
+
+
                                 } else {
                                     val savedCreds = appRepository.loadSavedLoginConfig()
                                     if (!savedCreds) {
@@ -386,10 +412,19 @@ fun App() {
                                             navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
                                         )
                                     } else {
-                                        navigator.navigate(
-                                            Route.ChatSelector,
-                                            navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
-                                        )
+                                        println("IncomingDataManager text : ${IncomingDataManager.sharedText.value}")
+                                        if(IncomingDataManager.isNewDataAvailable()){
+                                            // manually navigate to messageChatselecotor to add Chatselector to backstack
+                                            rootBackStack.clear()
+                                            rootBackStack.add(Route.ChatSelector)
+                                            rootBackStack.add(Route.MessageChatSelector)
+                                        }else{
+                                            navigator.navigate(
+                                                Route.ChatSelector,
+                                                navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
+                                            )
+                                        }
+
                                         globalViewModel.viewModelScope.launch {
                                             try { appRepository.dataSync() }
                                             catch (e: Exception) { println("Data sync error: ${e.message}") }
@@ -419,6 +454,9 @@ fun App() {
                         }
                         entry<Route.ChatDetails> {
                             ChatDetails()
+                        }
+                        entry<Route.MessageChatSelector> {
+                            MessageChatSelector()
                         }
 
 
