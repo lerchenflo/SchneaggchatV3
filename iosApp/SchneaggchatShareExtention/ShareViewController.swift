@@ -1,11 +1,11 @@
 import UIKit
 import Social
-import MobileCoreServices
+import UniformTypeIdentifiers
 import os
 
 extension Bundle {
     var appGroupID: String {
-        return "group.org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtention"
+        return "group.org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtension"
     }
 }
 
@@ -19,8 +19,8 @@ class ShareViewController: UIViewController {
         if let item = extensionContext?.inputItems.first as? NSExtensionItem,
            let attachment = item.attachments?.first {
             
-            let typeURL = kUTTypeURL as String
-            let typeText = kUTTypePlainText as String
+            let typeURL = UTType.url.identifier
+            let typeText = UTType.plainText.identifier
 
             if attachment.hasItemConformingToTypeIdentifier(typeURL) {
                 attachment.loadItem(forTypeIdentifier: typeURL, options: nil) { [weak self] (data, error) in
