@@ -16,9 +16,11 @@ Schneaggchat is an innovative chatting platform.
 - Gruppe umbenennen
 - Sprachnachrichten public
 - Teilen mit Schneaggchat
+- Neue Themes
 
 #### Bugfixes
 - Umfragen Profilbilder
+- vieles mehr
 
 ### 3.0.8
 #### Features
