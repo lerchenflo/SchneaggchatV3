@@ -59,7 +59,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameScreenElement
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
@@ -69,7 +68,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackS
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziGameScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziSetupScreen
-import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
@@ -597,7 +595,7 @@ fun App() {
                                     title = stringResource(Res.string.games_morse_title),
                                     icon = Icons.Default.GraphicEq,
                                     route = Route.Games.Morse,
-                                    inDev = false
+                                    inDev = true
                                 ),
 
                             )
