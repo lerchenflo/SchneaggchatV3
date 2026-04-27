@@ -9,6 +9,14 @@ Schneaggchat is an innovative chatting platform.
 
 # Changelog
 
+### 3.0.10
+#### Features
+- 
+
+#### Bugfixes
+- Entwicklerstatus direkt übernehmen
+
+
 ### 3.0.9
 #### Features
 - Nicknames
