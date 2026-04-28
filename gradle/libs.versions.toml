@@ -44,7 +44,6 @@ uiToolingPreview = "1.10.3"
 
 cmpNavigation3 = "1.1.0"
 appUpdateKtx = "2.1.0"
-#maps = "0.12.1"
 coreKtx = "1.18.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
@@ -55,11 +54,16 @@ composeBom = "2026.04.01"
 
 ksafe = "1.8.1"
 
+#Schneaggmap
+map = "0.12.1"
+
 
 [libraries]
+#Schneaggmap
+maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "map" }
+
 
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
-#maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maps" }
 
 
 components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "componentsResources" }

@@ -70,7 +70,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziGameScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziSetupScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
@@ -552,8 +551,9 @@ fun App() {
                         }
 
 
+
                         entry<Route.Schneaggmap> {
-                            SchneaggmapScreenRoot()
+                            //SchneaggmapScreenRoot()
                         }
 
                         entry<Route.Games> {

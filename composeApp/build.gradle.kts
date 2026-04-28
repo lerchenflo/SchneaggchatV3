@@ -1,5 +1,8 @@
 
+import io.github.frankois944.spmForKmp.swiftPackageConfig
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.commonizer.OptimisticNumberCommonizationEnabledKey.alias
+import java.net.URI
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -11,7 +14,8 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.serialization)
     alias(libs.plugins.androidKmpLibrary)
     alias(libs.plugins.koin.compiler)
-    //id("io.github.frankois944.spmForKmp")
+
+    id("io.github.frankois944.spmForKmp") //Swift package manager for map
 }
 
 
@@ -83,21 +87,22 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
 
-        /*
+
+        //Maplibre map export for ios
         iosTarget.swiftPackageConfig(cinteropName = "spmMaplibre") {
             dependency {
                 remotePackageVersion(
                     url = URI("https://github.com/maplibre/maplibre-gl-native-distribution.git"),
-                    products = { add("MapLibre") }, alias(libs.plugins.koin.compiler)
+                    products = { add("MapLibre") },
 
                     version = "6.17.1",
                 )
 
             }
-
         }
 
-         */
+
+
 
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
@@ -215,8 +220,8 @@ kotlin {
             //Image loading async
             implementation(libs.coil3.coil.compose)
 
-            //maps
-            //implementation(libs.maplibre.compose)
+            //map
+            implementation(libs.maplibre.compose)
 
         }
         commonTest.dependencies {
