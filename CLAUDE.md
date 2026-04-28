@@ -4,19 +4,19 @@ Privacy-focused chat platform built with Kotlin Multiplatform and Compose Multip
 
 ## Tech Stack
 
-| Area | Technology | Version |
-|---|---|---|
-| Language | Kotlin | 2.3.20 |
-| UI | Compose Multiplatform | 1.10.3 |
-| DI | Koin | 4.2.0 |
-| Database | Room + SQLite Bundled | 2.8.4 |
-| Networking | Ktor Client | 3.4.2 |
-| Local Storage | DataStore | 1.2.1 |
-| Navigation | Jetpack Navigation 3 | 1.1.0-beta01 |
-| Annotation Processing | KSP | 2.3.5 |
-| JVM | 21 |  |
-| Android Target SDK | 36 |  |
-| Android Min SDK | 26 |  |
+| Area                  | Technology            | Version      |
+|-----------------------|-----------------------|--------------|
+| Language              | Kotlin                | 2.3.20       |
+| UI                    | Compose Multiplatform | 1.10.3       |
+| DI                    | Koin                  | 4.2.0        |
+| Database              | Room + SQLite Bundled | 2.8.4        |
+| Networking            | Ktor Client           | 3.4.2        |
+| Local Storage         | DataStore             | 1.2.1        |
+| Navigation            | Jetpack Navigation 3  | 1.1.0-beta01 |
+| Annotation Processing | KSP                   | 2.3.5        |
+| JVM                   | 21                    |              |
+| Android Target SDK    | 37                    |              |
+| Android Min SDK       | 26                    |              |
 
 ## Project Structure
 
@@ -85,3 +85,4 @@ When a task matches a skill, read and follow it.
 - Do not create documentation files (README, ARCHITECTURE, etc.) unless explicitly asked.
 - Do not refactor or restructure code you were not asked to touch.
 - Do not add tests unless explicitly asked.
+- Run the readme-changelog-updater agent after every fix (Add even small fixes, the user will remove them again if unnecessary.)
