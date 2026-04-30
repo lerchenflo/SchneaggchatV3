@@ -25,6 +25,7 @@ import kotlinx.io.IOException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
@@ -51,6 +52,12 @@ class NetworkUtils(
     private val loggingRepository: LoggingRepository
 ) {
 
+
+    private fun setOffline() {
+        if (AppLifecycleManager.isAppInForeground) {
+            SessionCache.updateOnline(false)
+        }
+    }
 
     // Base methods that return HttpResponse
     private suspend inline fun <reified T> get(endpoint: String): HttpResponse {
@@ -89,21 +96,21 @@ class NetworkUtils(
             }
         } catch (e: UnresolvedAddressException) {
             println("Going offline: DNS resolution failed - ${e.message}")
-            SessionCache.updateOnline(false)
+            setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: ConnectTimeoutException) {
             println("Going offline: Connection timeout - ${e.message}")
-            SessionCache.updateOnline(false)
+            setOffline()
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: HttpRequestTimeoutException) {
             println("Going offline: HTTP request timeout - ${e.message}")
-            SessionCache.updateOnline(false)
+            setOffline()
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: IOException) {
             // Covers SocketTimeoutException, UnknownHostException, etc. on JVM/Android
             println("Going offline: IO exception - ${e.message}")
             e.printStackTrace()
-            SessionCache.updateOnline(false)
+            setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: SerializationException) {
             println("Serialization error (staying online): ${e.message}")
@@ -115,7 +122,7 @@ class NetworkUtils(
             val isNetworkError = isNetworkException(e)
             if (isNetworkError) {
                 println("Going offline: Platform network exception - ${e.message}")
-                SessionCache.updateOnline(false)
+                setOffline()
                 NetworkResult.Error(NetworkError.NoInternet())
             } else {
                 println("Unknown exception (staying online): ${e.message}")
@@ -316,7 +323,7 @@ class NetworkUtils(
         } catch (e: SerializationException) {
             NetworkResult.Error(NetworkError.Serialization())
         } catch (e: IOException) { // This catches UnknownHostException too
-            SessionCache.updateOnline(false)
+            setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         }catch (e: Exception) {
             loggingRepository.logWarning("NetworkUtils register failed: ${e.message}")
@@ -546,21 +553,21 @@ class NetworkUtils(
                 NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
             }
         } catch (e: UnresolvedAddressException) {
-            SessionCache.updateOnline(false)
+            setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: HttpRequestTimeoutException) {
-            SessionCache.updateOnline(false)
+            setOffline()
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: SocketTimeoutException) {
-            SessionCache.updateOnline(false)
+            setOffline()
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: ConnectTimeoutException) {
-            SessionCache.updateOnline(false)
+            setOffline()
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: SerializationException) {
             NetworkResult.Error(NetworkError.Serialization(message = e.message))
         } catch (e: IOException) {
-            SessionCache.updateOnline(false)
+            setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: Exception) {
             loggingRepository.logWarning("NetworkUtils changeProfilePic failed: ${e.message}")
@@ -709,7 +716,7 @@ class NetworkUtils(
         } catch (e: SerializationException) {
             NetworkResult.Error(NetworkError.Serialization())
         } catch (e: IOException) { // This catches UnknownHostException too
-            SessionCache.updateOnline(false)
+            setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         }catch (e: Exception) {
             loggingRepository.logWarning("NetworkUtils createGroup failed: ${e.message}")
@@ -749,21 +756,21 @@ class NetworkUtils(
                 NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
             }
         } catch (e: UnresolvedAddressException) {
-            SessionCache.updateOnline(false)
+            setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: HttpRequestTimeoutException) {
-            SessionCache.updateOnline(false)
+            setOffline()
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: SocketTimeoutException) {
-            SessionCache.updateOnline(false)
+            setOffline()
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: ConnectTimeoutException) {
-            SessionCache.updateOnline(false)
+            setOffline()
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: SerializationException) {
             NetworkResult.Error(NetworkError.Serialization(message = e.message))
         } catch (e: IOException) {
-            SessionCache.updateOnline(false)
+            setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: Exception) {
             loggingRepository.logWarning("NetworkUtils changeGroupProfilePic failed: ${e.message}")
