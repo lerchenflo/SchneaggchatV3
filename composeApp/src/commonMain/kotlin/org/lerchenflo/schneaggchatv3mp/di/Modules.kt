@@ -41,6 +41,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DevSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettingsViewModel
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewModel
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
@@ -129,8 +130,8 @@ val sharedmodule = module{
     viewModelOf(::TodolistViewModel)
     factory { TodolistViewModel(get(), get(), get()) }
 
-    //viewModelOf(::SchneaggmapViewmodel)
-    //factory { SchneaggmapViewmodel(get()) }
+    viewModelOf(::SchneaggmapViewModel)
+    factory { SchneaggmapViewModel(get()) }
 
 
 
