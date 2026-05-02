@@ -22,7 +22,8 @@ fun initKoin(){
                 IosPermissionManagerModule,
                 IosAudioManagerModule,
                 IosShareUtilsModule,
-                IosLanguageManagerModule
+                IosLanguageManagerModule,
+                IosNotifierModule
             )
         }
     }

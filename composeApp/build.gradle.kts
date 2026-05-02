@@ -107,8 +107,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
-            binaryOption("bundleId", "org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp") //Removes compile warning
-            export("io.github.mirzemehdi:kmpnotifier:1.6.1") //Is needed even tough there is a warning while compiling
+            binaryOption("bundleId", "org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp")
         }
 
 
@@ -133,8 +132,9 @@ kotlin {
 
             //App update
             implementation(libs.app.update.ktx)
-            //implementation(libs.core.ktx)
 
+            //Firebase push
+            implementation(libs.firebase.messaging.ktx)
         }
 
 
@@ -178,9 +178,6 @@ kotlin {
 
             //Internet
             implementation(libs.bundles.ktor)
-
-            //Firebase
-            api(libs.kmpnotifier)
 
             //Image picker
             implementation(libs.github.imagepickerkmp)
