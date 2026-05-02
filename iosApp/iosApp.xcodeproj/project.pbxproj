@@ -20,6 +20,13 @@
 			remoteGlobalIDString = 05FC0F742F7D21E7003032F9;
 			remoteInfo = SchneaggchatShareExtension;
 		};
+		5C8914D52FA66ED400000DC4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B9DA97A92DC1472C00A4DA20 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5C8914CF2FA66ED400000DC4;
+			remoteInfo = SchneaggchatNotiExtension;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -49,6 +56,13 @@
 			);
 			target = 05FC0F742F7D21E7003032F9 /* SchneaggchatShareExtension */;
 		};
+		5C8914DB2FA66ED400000DC4 /* Exceptions for "SchneaggchatNotiExtension" folder in "SchneaggchatNotiExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 5C8914CF2FA66ED400000DC4 /* SchneaggchatNotiExtension */;
+		};
 		B99700CA2DC9B8D800C7335B /* Exceptions for "iosApp" folder in "iosApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -67,6 +81,14 @@
 			path = SchneaggchatShareExtension;
 			sourceTree = "<group>";
 		};
+		5C8914D12FA66ED400000DC4 /* SchneaggchatNotiExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5C8914DB2FA66ED400000DC4 /* Exceptions for "SchneaggchatNotiExtension" folder in "SchneaggchatNotiExtension" target */,
+			);
+			path = SchneaggchatNotiExtension;
+			sourceTree = "<group>";
+		};
 		B9DA97B32DC1472C00A4DA20 /* iosApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -83,6 +105,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		5C8914CD2FA66ED400000DC4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B9DA97AE2DC1472C00A4DA20 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -146,6 +175,28 @@
 			productReference = 05FC0F752F7D21E7003032F9 /* SchneaggchatShareExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		5C8914CF2FA66ED400000DC4 /* SchneaggchatNotiExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5C8914DA2FA66ED400000DC4 /* Build configuration list for PBXNativeTarget "SchneaggchatNotiExtension" */;
+			buildPhases = (
+				5C8914CC2FA66ED400000DC4 /* Sources */,
+				5C8914CD2FA66ED400000DC4 /* Frameworks */,
+				5C8914CE2FA66ED400000DC4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				5C8914D12FA66ED400000DC4 /* SchneaggchatNotiExtension */,
+			);
+			name = SchneaggchatNotiExtension;
+			packageProductDependencies = (
+			);
+			productName = SchneaggchatNotiExtension;
+			productReference = 5C8914D02FA66ED400000DC4 /* SchneaggchatNotiExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		B9DA97B02DC1472C00A4DA20 /* iosApp */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B9DA97BF2DC1472D00A4DA20 /* Build configuration list for PBXNativeTarget "iosApp" */;
@@ -160,6 +211,7 @@
 			);
 			dependencies = (
 				05FC0F7E2F7D21E7003032F9 /* PBXTargetDependency */,
+				5C8914D62FA66ED400000DC4 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				B9DA97B32DC1472C00A4DA20 /* iosApp */,
@@ -184,6 +236,9 @@
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					05FC0F742F7D21E7003032F9 = {
+						CreatedOnToolsVersion = 26.3;
+					};
+					5C8914CF2FA66ED400000DC4 = {
 						CreatedOnToolsVersion = 26.3;
 					};
 					B9DA97B02DC1472C00A4DA20 = {
@@ -216,6 +271,13 @@
 
 /* Begin PBXResourcesBuildPhase section */
 		05FC0F732F7D21E7003032F9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5C8914CE2FA66ED400000DC4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -261,6 +323,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5C8914CC2FA66ED400000DC4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B9DA97AD2DC1472C00A4DA20 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -275,6 +344,11 @@
 			isa = PBXTargetDependency;
 			target = 05FC0F742F7D21E7003032F9 /* SchneaggchatShareExtension */;
 			targetProxy = 05FC0F7D2F7D21E7003032F9 /* PBXContainerItemProxy */;
+		};
+		5C8914D62FA66ED400000DC4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5C8914CF2FA66ED400000DC4 /* SchneaggchatNotiExtension */;
+			targetProxy = 5C8914D52FA66ED400000DC4 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -332,6 +406,68 @@
 				);
 				MARKETING_VERSION = 3.0.9;
 				PRODUCT_BUNDLE_IDENTIFIER = org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		5C8914D82FA66ED400000DC4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VQ9RSMGZ8L;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SchneaggchatNotiExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = SchneaggchatNotiExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 3.0.10;
+				PRODUCT_BUNDLE_IDENTIFIER = org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatNotiExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5C8914D92FA66ED400000DC4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VQ9RSMGZ8L;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SchneaggchatNotiExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = SchneaggchatNotiExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 3.0.10;
+				PRODUCT_BUNDLE_IDENTIFIER = org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatNotiExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -500,7 +636,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.0.9;
+				MARKETING_VERSION = 3.0.10;
 				PRODUCT_BUNDLE_IDENTIFIER = org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -544,7 +680,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.0.9;
+				MARKETING_VERSION = 3.0.10;
 				PRODUCT_BUNDLE_IDENTIFIER = org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -560,6 +696,15 @@
 			buildConfigurations = (
 				05FC0F812F7D21E7003032F9 /* Debug */,
 				05FC0F822F7D21E7003032F9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5C8914DA2FA66ED400000DC4 /* Build configuration list for PBXNativeTarget "SchneaggchatNotiExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5C8914D82FA66ED400000DC4 /* Debug */,
+				5C8914D92FA66ED400000DC4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

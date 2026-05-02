@@ -66,6 +66,7 @@ class SharedSettingsViewmodel(
     fun updateDevSettings(newValue: Boolean){
         CoroutineScope(Dispatchers.IO).launch {
             preferenceManager.saveDevSettings(newValue)
+            SessionCache.updateDeveloper(newValue)
         }
     }
 

@@ -69,7 +69,7 @@ class ChatSelectorViewModel(
             val token = NotificationManager.getToken()
 
             if (token.isNotEmpty()) {
-                appRepository.setFirebaseToken(token)
+                appRepository.setNotificationToken(token)
             }
         }
 

@@ -18,6 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 
 
 val desktopAppDatabaseModule = module {
@@ -62,4 +63,8 @@ val desktopShareUtilsModule = module {
 
 val desktopLanguageManagerModule = module {
     single { LanguageManager(get()) }
+}
+
+val desktopNotifierModule = module {
+    single { Notifier() }
 }

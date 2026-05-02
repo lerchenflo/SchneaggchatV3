@@ -11,9 +11,9 @@ import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.UpdateAvailability
-import com.mmk.kmpnotifier.extensions.onCreateOrOnNewIntent
-import com.mmk.kmpnotifier.notification.NotifierManager
-import com.mmk.kmpnotifier.permission.permissionUtil
+import android.Manifest
+import android.os.Build
+import androidx.activity.result.contract.ActivityResultContracts
 import org.lerchenflo.schneaggchatv3mp.app.App
 import org.lerchenflo.schneaggchatv3mp.utilities.ActivityHolder
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
@@ -25,8 +25,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         handleIntent(intent)
         WindowCompat.setDecorFitsSystemWindows(window, false)
-
-        NotifierManager.onCreateOrOnNewIntent(this.intent)
 
 
         val appUpdateManager = AppUpdateManagerFactory.create(this)
@@ -54,11 +52,11 @@ class MainActivity : ComponentActivity() {
             }
 
         ActivityHolder.set(this) // Register this activity
-        //initializeAudio(this)
 
-        //Noti permission
-        val permissionUtil by permissionUtil()
-        permissionUtil.askNotificationPermission()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+                .launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
 
 
         setContent {
@@ -69,7 +67,6 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntent(intent)
-        NotifierManager.onCreateOrOnNewIntent(intent)
     }
 
     override fun onDestroy() {

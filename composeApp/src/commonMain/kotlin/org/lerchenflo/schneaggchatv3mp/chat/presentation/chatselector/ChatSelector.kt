@@ -295,30 +295,6 @@ fun Chatauswahlscreen(
                 Spacer(Modifier.width(gap))
 
 
-                /*
-                //Schneaggmap beta feature
-                if (SessionCache.developer){
-                    Box(
-                        modifier = Modifier
-                            .padding(2.dp)
-                            .size(touchSize)
-                            .clip(CircleShape)
-                            .clickable { viewModel.onMapClick()},
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Map,
-                            contentDescription = stringResource(Res.string.schneaggmap),
-                            modifier = Modifier.size(iconSize),
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
-                    Spacer(Modifier.width(gap))
-                }
-
-                 */
-
                 //tools and games
                 Box(
                     modifier = Modifier
@@ -338,6 +314,23 @@ fun Chatauswahlscreen(
 
                 Spacer(Modifier.width(gap))
 
+                Box(
+                    modifier = Modifier
+                        .padding(2.dp)
+                        .size(touchSize)
+                        .clip(CircleShape)
+                        .clickable { viewModel.onMapClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Map,
+                        contentDescription = stringResource(Res.string.schneaggmap),
+                        modifier = Modifier.size(iconSize),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                Spacer(Modifier.width(gap))
 
                 Box(
                     modifier = Modifier

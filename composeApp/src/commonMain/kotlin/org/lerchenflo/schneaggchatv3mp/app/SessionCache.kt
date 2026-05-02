@@ -78,6 +78,16 @@ object SessionCache {
         authStateValue = _authState.value
     }
 
+    fun updateDeveloper(developer: Boolean) {
+        _authState.update { currentState ->
+            when (currentState) {
+                is AuthState.LoggedIn -> currentState.copy(developer = developer)
+                is AuthState.LoggedOut -> currentState
+            }
+        }
+        authStateValue = _authState.value
+    }
+
     // --------------------- online ---------------------
     private val _onlineFlow = MutableStateFlow(true)
     val onlineFlow: StateFlow<Boolean> = _onlineFlow.asStateFlow()

@@ -1,0 +1,1 @@
+- [Changelog patterns](project_changelog_patterns.md) — version format, structure, language for README.md changelog
