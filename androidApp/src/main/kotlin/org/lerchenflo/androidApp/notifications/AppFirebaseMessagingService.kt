@@ -25,13 +25,11 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
         if (remoteMessage.data.isEmpty()) return
         runBlocking {
             try {
-                val koin = KoinPlatform.getKoin()
-                val preferencemanager = koin.get<Preferencemanager>()
-                val encryptionKey = preferencemanager.getEncryptionKey()
-
-                val content = NotificationContentBuilder.fromMap(remoteMessage.data, encryptionKey) ?: return@runBlocking
+                val content = NotificationContentBuilder.fromMap(remoteMessage.data) ?: return@runBlocking
                 showNotification(content.id, content.title, content.body, content.channelId)
 
+                val koin = KoinPlatform.getKoin()
+                val preferencemanager = koin.get<Preferencemanager>()
                 SessionCache.login(tokens = preferencemanager.getTokens(), developer = false)
                 koin.get<AppRepository>().messageIdSync()
             } catch (e: Exception) {

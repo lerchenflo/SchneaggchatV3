@@ -619,7 +619,6 @@ class NetworkUtils(
             val groupMessage: Boolean,
             val messageType: MessageType,
             val groupName: String,
-            val encodedContent: String
         ) : NotificationResponse
 
         //Response for a friend request notification

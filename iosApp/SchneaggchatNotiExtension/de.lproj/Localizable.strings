@@ -1,0 +1,10 @@
+/* Benachrichtigungs-Strings — sync halten mit composeResources/values-de/strings.xml */
+"image" = "Bild";
+"audio" = "Audio";
+"poll" = "Umfrage";
+"new_message_noti_single_title" = "Neuer Chat von %@";
+"new_message_noti_group_title" = "Neuer Chat von %1$@ in %2$@";
+"new_friend_request_noti" = "Freundschaftsanfrage von %@";
+"new_friend_request_noti_body" = "%@ will dein Freund sein";
+"new_friend_accepted_noti" = "Freundschaftsanfrage akzeptiert";
+"new_friend_accepted_noti_body" = "%@ ist jetzt dein Freund";

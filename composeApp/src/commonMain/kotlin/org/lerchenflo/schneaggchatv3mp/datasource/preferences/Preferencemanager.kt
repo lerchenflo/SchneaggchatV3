@@ -15,8 +15,6 @@ import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.utilities.notifications.clearEncryptionKeyForExtension
-import org.lerchenflo.schneaggchatv3mp.utilities.notifications.saveEncryptionKeyForExtension
 
 class Preferencemanager(
     private val prefs: DataStore<Preferences>,
@@ -56,7 +54,6 @@ class Preferencemanager(
             tokenPair.encryptionKey?.let { encryptionKey ->
                 loggingRepository.logDebug("Secure storage: Saving encryption key")
                 securePrefs.put(SecureKey.ENCRYPTION_KEY.key, encryptionKey)
-                saveEncryptionKeyForExtension(encryptionKey)
             } ?: run {
                 loggingRepository.logDebug("Secure storage: No encryption key to save")
             }
@@ -90,7 +87,6 @@ class Preferencemanager(
 
 
     suspend fun clearAll() {
-        clearEncryptionKeyForExtension()
         // Clear secure storage (tokens, encryption key, ownId)
         SecureKey.entries.forEach { secureKey ->
             securePrefs.delete(secureKey.key)
