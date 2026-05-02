@@ -13,12 +13,11 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiId
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiIdType
@@ -72,33 +71,11 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
             //A message got updated
             is SocketConnectionMessage.MessageChange -> {
                 val existing = messageRepository.getMessageById(socketMessage.message.messageId)
-                val message = Message(
-                    localPK = existing?.localPK ?: 0L,
-                    id = socketMessage.message.messageId,
-                    msgType = socketMessage.message.msgType,
-
-                    content = socketMessage.message.content,
-                    pictureUrl = existing?.pictureUrl,
-                    poll = socketMessage.message.pollResponse?.toPollMessage(ownId),
-
-                    senderId = socketMessage.message.senderId,
-                    receiverId = socketMessage.message.receiverId,
-                    sendDate = socketMessage.message.sendDate.toString(),
-                    changeDate = socketMessage.message.lastChanged.toString(),
-                    deleted = false,
-                    groupMessage = socketMessage.message.groupMessage,
-                    answerId = socketMessage.message.answerId,
-                    sent = true,
-                    myMessage = socketMessage.message.senderId == ownId,
-                    readByMe =socketMessage.message.readers.any { it.userId == ownId },
-                    readers = socketMessage.message.readers.map {
-                        MessageReader(
-                            readerEntryId = 0L,
-                            messageId = socketMessage.message.messageId,
-                            readerId = it.userId,
-                            readDate = it.readAt.toString()
-                        )
-                    }
+                val message = socketMessage.message.toDomainMessage(
+                    ownId = ownId,
+                    existingLocalPK = existing?.localPK ?: 0L,
+                    existingPictureUrl = existing?.pictureUrl,
+                    existingAudioPath = existing?.audioPath
                 )
 
                 if (socketMessage.deleted) {

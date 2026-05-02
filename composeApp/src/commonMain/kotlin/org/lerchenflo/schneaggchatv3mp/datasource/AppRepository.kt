@@ -61,6 +61,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.*
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupMemberAction
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
@@ -1338,141 +1339,19 @@ class AppRepository(
                     moreMessages = messageSyncResponse.data.moreMessages
 
                     updatedMessages.forEach { messageResponse ->
+                        val existing = database.messageDao().getMessageDtoById(messageResponse.messageId)
+                        messageRepository.upsertMessage(
+                            messageResponse.toDomainMessage(
+                                ownId = ownId,
+                                existingLocalPK = existing?.localPK ?: 0L,
+                                existingPictureUrl = existing?.pictureUrl,
+                                existingAudioPath = existing?.audioPath
+                            )
+                        )
                         when (messageResponse.msgType) {
-                            MessageType.IMAGE -> {
-                                val existing = database.messageDao().getMessageDtoById(messageResponse.messageId)
-                                messageRepository.upsertMessage(
-                                    Message(
-                                        localPK = existing?.localPK ?: 0L,
-                                        id = messageResponse.messageId,
-                                        msgType = messageResponse.msgType,
-                                        content = messageResponse.content,
-                                        pictureUrl = existing?.pictureUrl,
-                                        senderId = messageResponse.senderId,
-                                        receiverId = messageResponse.receiverId,
-                                        sendDate = messageResponse.sendDate.toString(),
-                                        changeDate = messageResponse.lastChanged.toString(),
-                                        deleted = messageResponse.deleted,
-                                        groupMessage = messageResponse.groupMessage,
-                                        answerId = messageResponse.answerId,
-                                        sent = true,
-                                        myMessage = messageResponse.senderId == ownId,
-                                        readByMe = messageResponse.readers.any { it.userId == ownId },
-                                        senderAsString = "",
-                                        senderColor = 0,
-                                        readers = messageResponse.readers.map {
-                                            MessageReader(
-                                                readerEntryId = 0L,
-                                                messageId = messageResponse.messageId,
-                                                readerId = it.userId,
-                                                readDate = it.readAt.toString()
-                                            )
-                                        }
-                                    )
-                                )
-                                imagesToGet += messageResponse.messageId
-                            }
-
-                            MessageType.AUDIO -> {
-                                val existing = database.messageDao().getMessageDtoById(messageResponse.messageId)
-                                messageRepository.upsertMessage(
-                                    Message(
-                                        localPK = existing?.localPK ?: 0L,
-                                        id = messageResponse.messageId,
-                                        msgType = messageResponse.msgType,
-                                        content = messageResponse.content,
-                                        audioPath = existing?.audioPath,
-                                        senderId = messageResponse.senderId,
-                                        receiverId = messageResponse.receiverId,
-                                        sendDate = messageResponse.sendDate.toString(),
-                                        changeDate = messageResponse.lastChanged.toString(),
-                                        deleted = messageResponse.deleted,
-                                        groupMessage = messageResponse.groupMessage,
-                                        answerId = messageResponse.answerId,
-                                        sent = true,
-                                        myMessage = messageResponse.senderId == ownId,
-                                        readByMe = messageResponse.readers.any { it.userId == ownId },
-                                        senderAsString = "",
-                                        senderColor = 0,
-                                        readers = messageResponse.readers.map {
-                                            MessageReader(
-                                                readerEntryId = 0L,
-                                                messageId = messageResponse.messageId,
-                                                readerId = it.userId,
-                                                readDate = it.readAt.toString()
-                                            )
-                                        }
-                                    )
-                                )
-                                audiosToGet += messageResponse.messageId
-                            }
-
-                            MessageType.TEXT -> {
-                                val existing = database.messageDao().getMessageDtoById(messageResponse.messageId)
-                                messageRepository.upsertMessage(
-                                    Message(
-                                        localPK = existing?.localPK ?: 0L,
-                                        id = messageResponse.messageId,
-                                        msgType = messageResponse.msgType,
-                                        content = messageResponse.content,
-                                        senderId = messageResponse.senderId,
-                                        receiverId = messageResponse.receiverId,
-                                        sendDate = messageResponse.sendDate.toString(),
-                                        changeDate = messageResponse.lastChanged.toString(),
-                                        deleted = messageResponse.deleted,
-                                        groupMessage = messageResponse.groupMessage,
-                                        answerId = messageResponse.answerId,
-                                        sent = true,
-                                        myMessage = messageResponse.senderId == ownId,
-                                        readByMe = messageResponse.readers.any { it.userId == ownId },
-                                        senderAsString = "",
-                                        senderColor = 0,
-                                        readers = messageResponse.readers.map {
-                                            MessageReader(
-                                                readerEntryId = 0L,
-                                                messageId = messageResponse.messageId,
-                                                readerId = it.userId,
-                                                readDate = it.readAt.toString()
-                                            )
-                                        }
-                                    )
-                                )
-                            }
-
-                            MessageType.POLL -> {
-                                val existing = database.messageDao().getMessageDtoById(messageResponse.messageId)
-
-                                val savedMessage = Message(
-                                    localPK = existing?.localPK ?: 0L,
-                                    id = messageResponse.messageId,
-                                    msgType = messageResponse.msgType,
-                                    content = messageResponse.content,
-                                    poll = messageResponse.pollResponse?.toPollMessage(ownId),
-                                    senderId = messageResponse.senderId,
-                                    receiverId = messageResponse.receiverId,
-                                    sendDate = messageResponse.sendDate.toString(),
-                                    changeDate = messageResponse.lastChanged.toString(),
-                                    deleted = messageResponse.deleted,
-                                    groupMessage = messageResponse.groupMessage,
-                                    answerId = messageResponse.answerId,
-                                    sent = true,
-                                    myMessage = messageResponse.senderId == ownId,
-                                    readByMe = messageResponse.readers.any { it.userId == ownId },
-                                    senderAsString = "",
-                                    senderColor = 0,
-                                    readers = messageResponse.readers.map {
-                                        MessageReader(
-                                            readerEntryId = 0L,
-                                            messageId = messageResponse.messageId,
-                                            readerId = it.userId,
-                                            readDate = it.readAt.toString()
-                                        )
-                                    }
-                                )
-                                messageRepository.upsertMessage(
-                                    savedMessage
-                                )
-                            }
+                            MessageType.IMAGE -> imagesToGet += messageResponse.messageId
+                            MessageType.AUDIO -> audiosToGet += messageResponse.messageId
+                            else -> {}
                         }
                     }
 
