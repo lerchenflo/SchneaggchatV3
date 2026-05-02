@@ -32,18 +32,16 @@ actual class Notifier(private val context: Context) {
         NotificationManagerCompat.from(context).notify(content.id, notification)
     }
 
-    actual suspend fun getToken(): String {
-        return try {
-            FirebaseMessaging.getInstance().token.await()
-        } catch (_: Exception) {
-            ""
-        }
+    actual suspend fun getToken(): String = suspendCancellableCoroutine { cont ->
+        FirebaseMessaging.getInstance().token
+            .addOnSuccessListener { token -> cont.resume(token) }
+            .addOnFailureListener { cont.resume("") }
     }
 
-    actual suspend fun deleteToken() {
-        try {
-            FirebaseMessaging.getInstance().deleteToken().await()
-        } catch (_: Exception) {}
+    actual suspend fun deleteToken(): Unit = suspendCancellableCoroutine { cont ->
+        FirebaseMessaging.getInstance().deleteToken()
+            .addOnSuccessListener { cont.resume(Unit) }
+            .addOnFailureListener { cont.resume(Unit) }
     }
 
     actual fun initialize() {

@@ -11,7 +11,9 @@ Schneaggchat is an innovative chatting platform.
 
 ### 3.0.10
 #### Features
-- 
+- Direct APNs (iOS) + Direct FCM (Android) push notifications with shared content builder
+- iOS Notification Service Extension for decrypting killed-app pushes
+- Unified notification handling via shared `NotificationContentBuilder` for localized, decrypted content
 
 #### Bugfixes
 - Entwicklerstatus direkt übernehmen
