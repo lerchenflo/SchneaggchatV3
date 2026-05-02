@@ -9,7 +9,6 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.utilities.CryptoUtil
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.audio
 import schneaggchatv3mp.composeapp.generated.resources.image
@@ -28,34 +27,26 @@ object NotificationContentBuilder {
         classDiscriminator = "type"
     }
 
-    suspend fun build(
-        response: NetworkUtils.NotificationResponse,
-        encryptionKey: String,
-    ): NotificationContent? = when (response) {
-        is NetworkUtils.NotificationResponse.MessageNotificationResponse -> buildMessage(response, encryptionKey)
+    suspend fun build(response: NetworkUtils.NotificationResponse): NotificationContent? = when (response) {
+        is NetworkUtils.NotificationResponse.MessageNotificationResponse -> buildMessage(response)
         is NetworkUtils.NotificationResponse.FriendRequestNotificationResponse -> buildFriendRequest(response)
         is NetworkUtils.NotificationResponse.SystemNotificationResponse -> buildSystem(response)
     }
 
     private suspend fun buildMessage(
         r: NetworkUtils.NotificationResponse.MessageNotificationResponse,
-        encryptionKey: String,
     ): NotificationContent {
         val title = if (r.groupMessage) {
             getString(Res.string.new_message_noti_group_title, r.senderName, r.groupName)
         } else {
             getString(Res.string.new_message_noti_single_title, r.senderName)
         }
-
         val body = when (r.messageType) {
-            MessageType.TEXT -> if (encryptionKey.isNotEmpty()) {
-                try { CryptoUtil.decrypt(r.encodedContent, encryptionKey) } catch (_: Exception) { "..." }
-            } else "..."
+            MessageType.TEXT -> ""
             MessageType.IMAGE -> getString(Res.string.image)
             MessageType.POLL -> getString(Res.string.poll)
             MessageType.AUDIO -> getString(Res.string.audio)
         }
-
         return NotificationContent(
             id = r.msgId.toNotificationId(),
             title = title,
@@ -92,9 +83,9 @@ object NotificationContentBuilder {
             channelId = NotificationChannels.SYSTEM,
         )
 
-    fun fromMap(data: Map<String, Any?>, encryptionKey: String): NotificationContent? {
+    fun fromMap(data: Map<String, Any?>, encryptionKey: String = ""): NotificationContent? {
         val response = parseMap(data) ?: return null
-        return runBlocking { build(response, encryptionKey) }
+        return runBlocking { build(response) }
     }
 
     fun parseMap(data: Map<String, Any?>): NetworkUtils.NotificationResponse? {

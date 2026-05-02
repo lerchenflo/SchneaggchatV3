@@ -1,0 +1,10 @@
+/* Notification strings — keep in sync with composeResources/values/strings.xml */
+"image" = "Image";
+"audio" = "Audio message";
+"poll" = "Poll";
+"new_message_noti_single_title" = "New chat from %@";
+"new_message_noti_group_title" = "New chat from %1$@ in %2$@";
+"new_friend_request_noti" = "Friend request from %@";
+"new_friend_request_noti_body" = "%@ wants to be your friend";
+"new_friend_accepted_noti" = "Friend request accepted";
+"new_friend_accepted_noti_body" = "%@ is now your friend";
