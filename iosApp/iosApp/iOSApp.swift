@@ -23,7 +23,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     }
 
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        let hexToken = deviceToken.map { String(format: "%02x", $0) }.joined()
+        let hexToken = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
         print("[APNs] Token received: \(hexToken)")
         IosPushDelegateBridge().onTokenReceived(hexToken: hexToken)
     }
