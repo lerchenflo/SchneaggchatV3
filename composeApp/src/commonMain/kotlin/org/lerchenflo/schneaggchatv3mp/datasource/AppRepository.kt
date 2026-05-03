@@ -76,6 +76,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
 import schneaggchatv3mp.composeapp.generated.resources.error_invalid_credentials
@@ -202,7 +203,7 @@ class AppRepository(
         preferencemanager.saveLastStartedVersion("")
 
         database.allDatabaseDao().clearAll()
-        KoinPlatform.getKoin().get<org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier>().removeToken()
+        KoinPlatform.getKoin().get<Notifier>().removeToken()
         SessionCache.logout()
     }
 
@@ -215,7 +216,7 @@ class AppRepository(
         KoinPlatform.getKoin().get<HttpClient>(qualifier = named(HTTPCLIENTTYPE.AUTHENTICATED)).clearAuthTokens()
 
         SessionCache.logout()
-        KoinPlatform.getKoin().get<org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier>().removeToken()
+        KoinPlatform.getKoin().get<Notifier>().removeToken()
         SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
     }
 
