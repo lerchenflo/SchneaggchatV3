@@ -1,0 +1,77 @@
+package org.lerchenflo.schneaggchatv3mp.utilities.notifications
+
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+
+private const val CHANNEL_ID = "schneaggchat_messages"
+private const val CHANNEL_NAME = "Messages"
+
+actual class Notifier(private val context: Context) {
+
+    actual suspend fun getToken(): String? = suspendCancellableCoroutine { cont ->
+        FirebaseMessaging.getInstance().token
+            .addOnSuccessListener { token -> cont.resume(token) }
+            .addOnFailureListener { cont.resume(null) }
+    }
+
+    actual suspend fun removeToken(): Unit = suspendCancellableCoroutine { cont ->
+        FirebaseMessaging.getInstance().deleteToken()
+            .addOnCompleteListener { cont.resume(Unit) }
+    }
+
+    actual suspend fun hasPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+    }
+
+    actual fun showLocalNotification(content: NotificationContent) {
+        createChannelIfNeeded()
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(NotificationConfig.iconResId)
+            .setContentTitle(content.title)
+            .setContentText(content.body)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .build()
+        if (hasNotificationPermission()) {
+            NotificationManagerCompat.from(context).notify(content.id, notification)
+        }
+    }
+
+    actual fun cancelNotification(id: Int) {
+        NotificationManagerCompat.from(context).cancel(id)
+    }
+
+    actual fun cancelNotifications(ids: List<Int>) {
+        ids.forEach { NotificationManagerCompat.from(context).cancel(it) }
+    }
+
+    private fun createChannelIfNeeded() {
+        val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH)
+        val manager = context.getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(channel)
+    }
+
+    private fun hasNotificationPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+    }
+}

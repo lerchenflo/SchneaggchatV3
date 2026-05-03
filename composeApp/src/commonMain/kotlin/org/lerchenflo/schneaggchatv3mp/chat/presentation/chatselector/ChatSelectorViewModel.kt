@@ -42,7 +42,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
-import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
+import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.groups
@@ -66,10 +67,12 @@ class ChatSelectorViewModel(
     init {
 
         viewModelScope.launch {
-            val token = NotificationManager.getToken()
+            val token = KoinPlatform.getKoin().get<Notifier>().getToken()
 
-            if (token.isNotEmpty()) {
-                appRepository.setFirebaseToken(token)
+            println("Chatselector notificationtoken: $token")
+
+            if (!token.isNullOrEmpty()) {
+                appRepository.setNotificationToken(token)
             }
         }
 

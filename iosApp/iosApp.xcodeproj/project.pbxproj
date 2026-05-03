@@ -7,9 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		05FC0F7F2F7D21E7003032F9 /* SchneaggchatShareExtention.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 05FC0F752F7D21E7003032F9 /* SchneaggchatShareExtention.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		5CA4A3F02E7B1F43007FFF47 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5CA4A3EF2E7B1F43007FFF47 /* FirebaseCore */; };
-		5CA4A3F22E7B1F43007FFF47 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 5CA4A3F12E7B1F43007FFF47 /* FirebaseMessaging */; };
+		05FC0F7F2F7D21E7003032F9 /* SchneaggchatShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 05FC0F752F7D21E7003032F9 /* SchneaggchatShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -18,7 +16,7 @@
 			containerPortal = B9DA97A92DC1472C00A4DA20 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 05FC0F742F7D21E7003032F9;
-			remoteInfo = SchneaggchatShareExtention;
+			remoteInfo = SchneaggchatShareExtension;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -29,7 +27,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				05FC0F7F2F7D21E7003032F9 /* SchneaggchatShareExtention.appex in Embed Foundation Extensions */,
+				05FC0F7F2F7D21E7003032F9 /* SchneaggchatShareExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -37,17 +35,17 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		05FC0F752F7D21E7003032F9 /* SchneaggchatShareExtention.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SchneaggchatShareExtention.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		05FC0F752F7D21E7003032F9 /* SchneaggchatShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SchneaggchatShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9DA97B12DC1472C00A4DA20 /* SchneaggchatV3mp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SchneaggchatV3mp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		05FC0F842F7D21E7003032F9 /* Exceptions for "SchneaggchatShareExtention" folder in "SchneaggchatShareExtention" target */ = {
+		05FC0F842F7D21E7003032F9 /* Exceptions for "SchneaggchatShareExtension" folder in "SchneaggchatShareExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 05FC0F742F7D21E7003032F9 /* SchneaggchatShareExtention */;
+			target = 05FC0F742F7D21E7003032F9 /* SchneaggchatShareExtension */;
 		};
 		B99700CA2DC9B8D800C7335B /* Exceptions for "iosApp" folder in "iosApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -59,12 +57,12 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		05FC0F762F7D21E7003032F9 /* SchneaggchatShareExtention */ = {
+		05FC0F762F7D21E7003032F9 /* SchneaggchatShareExtension */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				05FC0F842F7D21E7003032F9 /* Exceptions for "SchneaggchatShareExtention" folder in "SchneaggchatShareExtention" target */,
+				05FC0F842F7D21E7003032F9 /* Exceptions for "SchneaggchatShareExtension" folder in "SchneaggchatShareExtension" target */,
 			);
-			path = SchneaggchatShareExtention;
+			path = SchneaggchatShareExtension;
 			sourceTree = "<group>";
 		};
 		B9DA97B32DC1472C00A4DA20 /* iosApp */ = {
@@ -87,8 +85,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5CA4A3F22E7B1F43007FFF47 /* FirebaseMessaging in Frameworks */,
-				5CA4A3F02E7B1F43007FFF47 /* FirebaseCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -107,7 +103,7 @@
 			children = (
 				B9DA98002DC14AA900A4DA20 /* Configuration */,
 				B9DA97B32DC1472C00A4DA20 /* iosApp */,
-				05FC0F762F7D21E7003032F9 /* SchneaggchatShareExtention */,
+				05FC0F762F7D21E7003032F9 /* SchneaggchatShareExtension */,
 				5C7EAE082F097F9F004B044F /* Frameworks */,
 				B9DA97B22DC1472C00A4DA20 /* Products */,
 			);
@@ -117,7 +113,7 @@
 			isa = PBXGroup;
 			children = (
 				B9DA97B12DC1472C00A4DA20 /* SchneaggchatV3mp.app */,
-				05FC0F752F7D21E7003032F9 /* SchneaggchatShareExtention.appex */,
+				05FC0F752F7D21E7003032F9 /* SchneaggchatShareExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -125,9 +121,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		05FC0F742F7D21E7003032F9 /* SchneaggchatShareExtention */ = {
+		05FC0F742F7D21E7003032F9 /* SchneaggchatShareExtension */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 05FC0F832F7D21E7003032F9 /* Build configuration list for PBXNativeTarget "SchneaggchatShareExtention" */;
+			buildConfigurationList = 05FC0F832F7D21E7003032F9 /* Build configuration list for PBXNativeTarget "SchneaggchatShareExtension" */;
 			buildPhases = (
 				05FC0F732F7D21E7003032F9 /* Resources */,
 				5C8012982F8FFB7300DC9908 /* Sources */,
@@ -137,13 +133,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				05FC0F762F7D21E7003032F9 /* SchneaggchatShareExtention */,
+				05FC0F762F7D21E7003032F9 /* SchneaggchatShareExtension */,
 			);
-			name = SchneaggchatShareExtention;
+			name = SchneaggchatShareExtension;
 			packageProductDependencies = (
 			);
-			productName = SchneaggchatShareExtention;
-			productReference = 05FC0F752F7D21E7003032F9 /* SchneaggchatShareExtention.appex */;
+			productName = SchneaggchatShareExtension;
+			productReference = 05FC0F752F7D21E7003032F9 /* SchneaggchatShareExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 		B9DA97B02DC1472C00A4DA20 /* iosApp */ = {
@@ -166,8 +162,6 @@
 			);
 			name = iosApp;
 			packageProductDependencies = (
-				5CA4A3EF2E7B1F43007FFF47 /* FirebaseCore */,
-				5CA4A3F12E7B1F43007FFF47 /* FirebaseMessaging */,
 			);
 			productName = iosApp;
 			productReference = B9DA97B12DC1472C00A4DA20 /* SchneaggchatV3mp.app */;
@@ -201,7 +195,6 @@
 			mainGroup = B9DA97A82DC1472C00A4DA20;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				5CA4A3EE2E7B1F43007FFF47 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B9DA97B22DC1472C00A4DA20 /* Products */;
@@ -209,7 +202,7 @@
 			projectRoot = "";
 			targets = (
 				B9DA97B02DC1472C00A4DA20 /* iosApp */,
-				05FC0F742F7D21E7003032F9 /* SchneaggchatShareExtention */,
+				05FC0F742F7D21E7003032F9 /* SchneaggchatShareExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -273,7 +266,7 @@
 /* Begin PBXTargetDependency section */
 		05FC0F7E2F7D21E7003032F9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 05FC0F742F7D21E7003032F9 /* SchneaggchatShareExtention */;
+			target = 05FC0F742F7D21E7003032F9 /* SchneaggchatShareExtension */;
 			targetProxy = 05FC0F7D2F7D21E7003032F9 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -282,14 +275,14 @@
 		05FC0F812F7D21E7003032F9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = SchneaggchatShareExtention/SchneaggchatShareExtentionDebug.entitlements;
+				CODE_SIGN_ENTITLEMENTS = SchneaggchatShareExtension/SchneaggchatShareExtensionDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = VQ9RSMGZ8L;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SchneaggchatShareExtention/Info.plist;
+				INFOPLIST_FILE = SchneaggchatShareExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Schneaggchat;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
@@ -299,7 +292,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtention;
+				PRODUCT_BUNDLE_IDENTIFIER = org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -314,14 +307,14 @@
 		05FC0F822F7D21E7003032F9 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = SchneaggchatShareExtention/SchneaggchatShareExtention.entitlements;
+				CODE_SIGN_ENTITLEMENTS = SchneaggchatShareExtension/SchneaggchatShareExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = VQ9RSMGZ8L;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SchneaggchatShareExtention/Info.plist;
+				INFOPLIST_FILE = SchneaggchatShareExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Schneaggchat;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
@@ -331,7 +324,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtention;
+				PRODUCT_BUNDLE_IDENTIFIER = org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -555,7 +548,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		05FC0F832F7D21E7003032F9 /* Build configuration list for PBXNativeTarget "SchneaggchatShareExtention" */ = {
+		05FC0F832F7D21E7003032F9 /* Build configuration list for PBXNativeTarget "SchneaggchatShareExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				05FC0F812F7D21E7003032F9 /* Debug */,
@@ -583,30 +576,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		5CA4A3EE2E7B1F43007FFF47 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 12.3.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		5CA4A3EF2E7B1F43007FFF47 /* FirebaseCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 5CA4A3EE2E7B1F43007FFF47 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseCore;
-		};
-		5CA4A3F12E7B1F43007FFF47 /* FirebaseMessaging */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 5CA4A3EE2E7B1F43007FFF47 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseMessaging;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B9DA97A92DC1472C00A4DA20 /* Project object */;
 }

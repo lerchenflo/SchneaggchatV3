@@ -1,0 +1,1 @@
+- [Schneaggchat V3 Project Structure](project_structure.md) — Version 3.0.10, README changelog at line 10, German+English mixed

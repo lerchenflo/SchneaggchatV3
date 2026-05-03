@@ -39,7 +39,8 @@ adaptive = "1.2.0"
 datastore = "1.2.1"
 
 mikepenz-markdown = "0.40.2"
-kmpnotifier = "1.6.1"
+firebase-messaging-version = "24.1.1"
+google-services = "4.4.2"
 uiToolingPreview = "1.10.3"
 
 cmpNavigation3 = "1.1.0"
@@ -72,7 +73,7 @@ cryptography-provider-optimal = { module = "dev.whyoleg.cryptography:cryptograph
 foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "foundation" }
 github-imagepickerkmp = { module = "io.github.ismoy:imagepickerkmp", version.ref = "githubImagepickerkmp" }
 jwt-kt = { module = "com.appstractive:jwt-kt", version.ref = "jwtKt" }
-kmpnotifier = { module = "io.github.mirzemehdi:kmpnotifier", version.ref = "kmpnotifier"}
+firebase-messaging = { module = "com.google.firebase:firebase-messaging-ktx", version.ref = "firebase-messaging-version" }
 base64 = { module = "io.matthewnelson.encoding:base64", version.ref = "encoding" }
 coil3-coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilComposeVersion" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -156,6 +157,7 @@ jetbrains-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serializati
 androidKmpLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 koin-compiler = { id = "io.insert-koin.compiler.plugin", version.ref = "koin-plugin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
 
 
 [bundles]

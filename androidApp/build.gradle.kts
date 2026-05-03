@@ -3,7 +3,7 @@ import org.jetbrains.compose.ComposeBuildConfig.composeVersion
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
-    id("com.google.gms.google-services")
+    alias(libs.plugins.google.services)
 
 }
 
@@ -86,4 +86,5 @@ dependencies {
     // splash screen
     implementation(libs.androidx.core.splashscreen)
 
+    implementation(libs.firebase.messaging)
 }
