@@ -1,12 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 
 import platform.UIKit.UIApplication
-import platform.UserNotifications.UNAuthorizationOptionAlert
-import platform.UserNotifications.UNAuthorizationOptionBadge
-import platform.UserNotifications.UNAuthorizationOptionSound
 import platform.UserNotifications.UNAuthorizationStatusAuthorized
 import platform.UserNotifications.UNMutableNotificationContent
 import platform.UserNotifications.UNNotificationRequest
+import platform.UserNotifications.UNNotificationSound
 import platform.UserNotifications.UNUserNotificationCenter
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -29,11 +27,10 @@ actual class Notifier {
 
     actual fun showLocalNotification(content: NotificationContent) {
         val unc = UNUserNotificationCenter.currentNotificationCenter()
-        val notifContent = UNMutableNotificationContent().apply {
-            setTitle(content.title)
-            setBody(content.body)
-            setSound(platform.UserNotifications.UNNotificationSound.defaultSound)
-        }
+        val notifContent = UNMutableNotificationContent()
+        notifContent.title = content.title
+        notifContent.body = content.body
+        notifContent.sound = UNNotificationSound.defaultSound()
         val request = UNNotificationRequest.requestWithIdentifier(
             identifier = content.id.toString(),
             content = notifContent,
