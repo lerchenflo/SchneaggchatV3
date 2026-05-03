@@ -98,7 +98,7 @@ struct iOSApp: App {
     }
 
     private func handleIncomingShare() {
-        let suiteName = "group.org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtention"
+        let suiteName = "group.org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtension"
         logger.info("DEBUG: App side suite name: \(suiteName, privacy: .public)")
 
         guard let userDefaults = UserDefaults(suiteName: suiteName) else {

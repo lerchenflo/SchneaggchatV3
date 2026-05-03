@@ -5,7 +5,7 @@ import os
 
 extension Bundle {
     var appGroupID: String {
-        return "group.org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtention"
+        return "group.org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtension"
     }
 }
 

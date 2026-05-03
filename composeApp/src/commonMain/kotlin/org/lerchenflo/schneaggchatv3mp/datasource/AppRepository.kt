@@ -183,8 +183,10 @@ class AppRepository(
 
     suspend fun setNotificationToken(token: String) {
         if (token.isEmpty()) return
-        println("Sending firebase token to server...")
-        networkUtils.setNotificationToken(token, appVersion.isAndroid())
+
+        val android = appVersion.isAndroid()
+        println("Sending notification token to server... Android: $android")
+        networkUtils.setNotificationToken(token, android)
     }
 
     suspend fun sendEmailVerify(){

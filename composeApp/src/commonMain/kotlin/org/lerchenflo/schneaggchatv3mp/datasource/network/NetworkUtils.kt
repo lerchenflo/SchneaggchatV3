@@ -349,11 +349,19 @@ class NetworkUtils(
         )
     }
 
+    @Serializable
+    data class NotificationTokenRequest(
+        val token: String,
+        val isAndroid: Boolean
+    )
 
     suspend fun setNotificationToken(token: String, isAndroid: Boolean) : NetworkResult<Any, NetworkError> {
         return safePost(
-            endpoint = "/users/setnotificationtoken?token=$token&isAndroid=$isAndroid",
-            body = ""
+            endpoint = "/users/setnotificationtoken",
+            body = NotificationTokenRequest(
+                token = token,
+                isAndroid = isAndroid
+            )
         )
     }
 
