@@ -220,9 +220,8 @@ class NetworkUtils(
         }
     }
 
-    private suspend inline fun <reified T, reified R> safeAuthGet(
+    private suspend inline fun <reified R> safeAuthGet(
         endpoint: String,
-        body: T,
         url: String? = null
     ): NetworkResult<R, NetworkError> {
 
@@ -250,7 +249,6 @@ class NetworkUtils(
     suspend fun getChangeLog(githubUrl: String) : NetworkResult<String, NetworkError> {
         return safeAuthGet(
             endpoint = "",
-            body = null,
             url = githubUrl
         )
     }
