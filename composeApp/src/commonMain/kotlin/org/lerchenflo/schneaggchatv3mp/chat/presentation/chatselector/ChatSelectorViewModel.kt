@@ -69,8 +69,10 @@ class ChatSelectorViewModel(
         viewModelScope.launch {
             val token = KoinPlatform.getKoin().get<Notifier>().getToken()
 
+            println("Chatselector notificationtoken: $token")
+
             if (!token.isNullOrEmpty()) {
-                appRepository.setFirebaseToken(token)
+                appRepository.setNotificationToken(token)
             }
         }
 

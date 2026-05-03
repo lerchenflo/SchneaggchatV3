@@ -30,7 +30,7 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
-                KoinPlatform.getKoin().get<AppRepository>().setFirebaseToken(token)
+                KoinPlatform.getKoin().get<AppRepository>().setNotificationToken(token)
             }
         }
     }

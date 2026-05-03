@@ -352,16 +352,9 @@ class NetworkUtils(
     }
 
 
-    suspend fun setFirebaseToken(token: String) : NetworkResult<Any, NetworkError> {
+    suspend fun setNotificationToken(token: String, isAndroid: Boolean) : NetworkResult<Any, NetworkError> {
         return safePost(
-            endpoint = "/users/setfirebasetoken?token=$token",
-            body = ""
-        )
-    }
-
-    suspend fun setApnsToken(token: String) : NetworkResult<Any, NetworkError> {
-        return safePost(
-            endpoint = "/users/setnotificationtoken?token=$token&isAndroid=false",
+            endpoint = "/users/setnotificationtoken?token=$token&isAndroid=$isAndroid",
             body = ""
         )
     }
