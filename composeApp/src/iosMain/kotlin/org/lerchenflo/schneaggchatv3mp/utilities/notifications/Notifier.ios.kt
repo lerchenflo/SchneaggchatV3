@@ -1,6 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 
 import platform.UIKit.UIApplication
+import platform.UIKit.unregisterForRemoteNotifications
+import platform.UserNotifications.UNAuthorizationOptionAlert
+import platform.UserNotifications.UNAuthorizationOptionBadge
+import platform.UserNotifications.UNAuthorizationOptionSound
 import platform.UserNotifications.UNAuthorizationStatusAuthorized
 import platform.UserNotifications.UNMutableNotificationContent
 import platform.UserNotifications.UNNotificationRequest
