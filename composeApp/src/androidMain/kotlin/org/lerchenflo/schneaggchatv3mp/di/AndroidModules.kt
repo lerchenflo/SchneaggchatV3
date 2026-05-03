@@ -19,6 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 
 val androidUserDatabaseModule = module {
     single<RoomDatabase.Builder<AppDatabase>> { androidAppDatabaseBuilder(androidContext()) }
@@ -75,5 +76,5 @@ val androidLanguageManagerModule = module {
 }
 
 val androidNotifierModule = module {
-    single { org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier(androidContext()) }
+    single { Notifier(androidContext()) }
 }
