@@ -63,3 +63,7 @@ val IosShareUtilsModule = module {
 val IosLanguageManagerModule = module {
     single { LanguageManager(get()) }
 }
+
+val IosNotifierModule = module {
+    single { org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier() }
+}

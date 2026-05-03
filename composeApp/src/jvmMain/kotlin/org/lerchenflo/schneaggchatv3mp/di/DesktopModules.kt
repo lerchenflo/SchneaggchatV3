@@ -63,3 +63,7 @@ val desktopShareUtilsModule = module {
 val desktopLanguageManagerModule = module {
     single { LanguageManager(get()) }
 }
+
+val desktopNotifierModule = module {
+    single { org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier() }
+}

@@ -73,7 +73,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogParser
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
-import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
@@ -190,6 +189,12 @@ class AppRepository(
         networkUtils.setFirebaseToken(token)
     }
 
+    suspend fun setApnsToken(token: String) {
+        if (token.isEmpty()) return
+        println("Sending APNs token to server...")
+        networkUtils.setApnsToken(token)
+    }
+
     suspend fun sendEmailVerify(){
         networkUtils.sendEmailVerify()
     }
@@ -203,7 +208,7 @@ class AppRepository(
         preferencemanager.saveLastStartedVersion("")
 
         database.allDatabaseDao().clearAll()
-        NotificationManager.removeToken()
+        KoinPlatform.getKoin().get<org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier>().removeToken()
         SessionCache.logout()
     }
 
@@ -216,7 +221,7 @@ class AppRepository(
         KoinPlatform.getKoin().get<HttpClient>(qualifier = named(HTTPCLIENTTYPE.AUTHENTICATED)).clearAuthTokens()
 
         SessionCache.logout()
-        NotificationManager.removeToken()
+        KoinPlatform.getKoin().get<org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier>().removeToken()
         SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
     }
 

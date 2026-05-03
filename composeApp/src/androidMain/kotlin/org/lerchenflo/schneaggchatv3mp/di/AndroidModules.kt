@@ -73,3 +73,7 @@ val androidShareUtilsModule = module {
 val androidLanguageManagerModule = module {
     single<LanguageManager> { LanguageManager(androidContext(), get()) }
 }
+
+val androidNotifierModule = module {
+    single { org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier(androidContext()) }
+}

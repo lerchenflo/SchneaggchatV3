@@ -359,6 +359,13 @@ class NetworkUtils(
         )
     }
 
+    suspend fun setApnsToken(token: String) : NetworkResult<Any, NetworkError> {
+        return safePost(
+            endpoint = "/users/setnotificationtoken?token=$token&isAndroid=false",
+            body = ""
+        )
+    }
+
 
 
 
