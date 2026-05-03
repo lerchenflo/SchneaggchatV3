@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 
+import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.UIKit.UIApplication
 import platform.UIKit.unregisterForRemoteNotifications
 import platform.UserNotifications.UNAuthorizationOptionAlert
@@ -22,7 +23,7 @@ actual class Notifier {
         UIApplication.sharedApplication.unregisterForRemoteNotifications()
     }
 
-    actual suspend fun hasPermission(): Boolean = suspendCoroutine { cont ->
+    actual suspend fun hasPermission(): Boolean = suspendCancellableCoroutine { cont ->
         UNUserNotificationCenter.currentNotificationCenter()
             .getNotificationSettingsWithCompletionHandler { settings ->
                 cont.resume(settings?.authorizationStatus == UNAuthorizationStatusAuthorized)
@@ -31,10 +32,11 @@ actual class Notifier {
 
     actual fun showLocalNotification(content: NotificationContent) {
         val unc = UNUserNotificationCenter.currentNotificationCenter()
-        val notifContent = UNMutableNotificationContent()
-        notifContent.title = content.title
-        notifContent.body = content.body
-        notifContent.sound = UNNotificationSound.defaultSound()
+        val notifContent = UNMutableNotificationContent().apply {
+            setTitle(content.title)
+            setBody(content.body)
+            setSound(UNNotificationSound.defaultSound())
+        }
         val request = UNNotificationRequest.requestWithIdentifier(
             identifier = content.id.toString(),
             content = notifContent,

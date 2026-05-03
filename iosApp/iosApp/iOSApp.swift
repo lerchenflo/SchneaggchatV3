@@ -22,9 +22,9 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
         return true
     }
 
-    func application(_ application: UIApplication,
-                     didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        let hexToken = deviceToken.map { String(format: "%02x", $0) }.joined()
+    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        let hexToken = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
+        print("[APNs] Token received: \(hexToken)")
         IosPushDelegateBridge().onTokenReceived(hexToken: hexToken)
     }
 
@@ -98,7 +98,7 @@ struct iOSApp: App {
     }
 
     private func handleIncomingShare() {
-        let suiteName = "group.org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtention"
+        let suiteName = "group.org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtension"
         logger.info("DEBUG: App side suite name: \(suiteName, privacy: .public)")
 
         guard let userDefaults = UserDefaults(suiteName: suiteName) else {

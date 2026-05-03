@@ -17,7 +17,7 @@ class IosPushDelegateBridge {
             runCatching {
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
                 SessionCache.login(tokens = prefs.getTokens(), developer = false)
-                KoinPlatform.getKoin().get<AppRepository>().setApnsToken(hexToken)
+                KoinPlatform.getKoin().get<AppRepository>().setNotificationToken(hexToken)
             }
         }
     }

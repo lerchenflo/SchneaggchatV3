@@ -220,9 +220,8 @@ class NetworkUtils(
         }
     }
 
-    private suspend inline fun <reified T, reified R> safeAuthGet(
+    private suspend inline fun <reified R> safeAuthGet(
         endpoint: String,
-        body: T,
         url: String? = null
     ): NetworkResult<R, NetworkError> {
 
@@ -250,7 +249,6 @@ class NetworkUtils(
     suspend fun getChangeLog(githubUrl: String) : NetworkResult<String, NetworkError> {
         return safeAuthGet(
             endpoint = "",
-            body = null,
             url = githubUrl
         )
     }
@@ -351,18 +349,19 @@ class NetworkUtils(
         )
     }
 
+    @Serializable
+    data class NotificationTokenRequest(
+        val token: String,
+        val isAndroid: Boolean
+    )
 
-    suspend fun setFirebaseToken(token: String) : NetworkResult<Any, NetworkError> {
+    suspend fun setNotificationToken(token: String, isAndroid: Boolean) : NetworkResult<Any, NetworkError> {
         return safePost(
-            endpoint = "/users/setfirebasetoken?token=$token",
-            body = ""
-        )
-    }
-
-    suspend fun setApnsToken(token: String) : NetworkResult<Any, NetworkError> {
-        return safePost(
-            endpoint = "/users/setnotificationtoken?token=$token&isAndroid=false",
-            body = ""
+            endpoint = "/users/setnotificationtoken",
+            body = NotificationTokenRequest(
+                token = token,
+                isAndroid = isAndroid
+            )
         )
     }
 
