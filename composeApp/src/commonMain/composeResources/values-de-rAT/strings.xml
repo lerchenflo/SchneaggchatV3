@@ -241,6 +241,11 @@
     <string name="new_friend_accepted_noti">Freundschaftafrog agno</string>
     <string name="new_friend_accepted_noti_body">%1$s isch jetzt din Freund</string>
 
+    <string name="own_birthday_noti_title">Alles Gute zum Geburtstag! 🎂</string>
+    <string name="own_birthday_noti_body">Viel Spaß und an schöna Tag!</string>
+    <string name="friend_birthday_noti_title">%1$s hot hüt Geburtstag! 🎂</string>
+    <string name="friend_birthday_noti_body">Vergiss ned zum gratuliera!</string>
+
     <string name="tooltip_username">Wähl an Benutzernama dean andere Benutzer seahand</string>
     <string name="tooltip_email">Wird zum Wiederherstella vo da Zugangsdaten und zur Löschung vom Account verwendet</string>
     <string name="tooltip_birthdate">Wird verwendet zum dine Freunde zum informiera wenn du Geburtstag hosch</string>
