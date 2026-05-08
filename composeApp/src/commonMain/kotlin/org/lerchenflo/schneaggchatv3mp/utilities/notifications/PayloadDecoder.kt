@@ -22,6 +22,12 @@ sealed interface DecodedNotification {
         val title: String,
         val message: String,
     ) : DecodedNotification
+
+    data class Birthday(
+        val birthdayUserId: String,
+        val birthdayUserName: String,
+        val ownBirthday: Boolean,
+    ) : DecodedNotification
 }
 
 object PayloadDecoder {
@@ -44,6 +50,11 @@ object PayloadDecoder {
             "system" -> DecodedNotification.System(
                 title = data["title"] ?: "Schneaggchat",
                 message = data["message"] ?: "",
+            )
+            "birthday" -> DecodedNotification.Birthday(
+                birthdayUserId = data["birthdayUserId"] ?: "",
+                birthdayUserName = data["birthdayUserName"] ?: "",
+                ownBirthday = data["ownBirthday"]?.toBoolean() ?: false,
             )
             else -> null
         }

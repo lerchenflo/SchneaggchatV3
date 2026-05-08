@@ -33,7 +33,8 @@ object NotificationManager {
     enum class NotiIdType(val baseId: Int) {
         ERROR(1),
         SERVERMESSAGE(2),
-        FRIEND_REQUEST(3)
+        FRIEND_REQUEST(3),
+        BIRTHDAY(4)
     }
 
     fun showNotification(titletext: String, bodytext: String, notiId: NotiId) {

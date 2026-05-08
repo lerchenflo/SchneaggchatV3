@@ -241,6 +241,11 @@
     <string name="new_friend_accepted_noti">Freundschaftsanfrage akzeptiert</string>
     <string name="new_friend_accepted_noti_body">%1$s ist jetzt dein Freund</string>
 
+    <string name="own_birthday_noti_title">Alles Gute zum Geburtstag! 🎂</string>
+    <string name="own_birthday_noti_body">Alles Liebe und einen schönen Tag!</string>
+    <string name="friend_birthday_noti_title">%1$s hat heute Geburtstag! 🎂</string>
+    <string name="friend_birthday_noti_body">Vergiss nicht zu gratulieren!</string>
+
     <string name="tooltip_username">Wähle einen Benutzernamen den andere Benutzer sehen</string>
     <string name="tooltip_email">Wird zum Wiederherstellen der Zugangsdaten und zur Löschung des Accounts verwendet</string>
     <string name="tooltip_birthdate">Wird benutzt, um deine Freunde zu informieren, wenn du Geburtstag hast</string>

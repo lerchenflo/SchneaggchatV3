@@ -17,10 +17,14 @@ import org.lerchenflo.schneaggchatv3mp.utilities.CryptoUtil
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.audio
 import schneaggchatv3mp.composeapp.generated.resources.image
+import schneaggchatv3mp.composeapp.generated.resources.friend_birthday_noti_body
+import schneaggchatv3mp.composeapp.generated.resources.friend_birthday_noti_title
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti_body
+import schneaggchatv3mp.composeapp.generated.resources.own_birthday_noti_body
+import schneaggchatv3mp.composeapp.generated.resources.own_birthday_noti_title
 import schneaggchatv3mp.composeapp.generated.resources.poll
 import schneaggchatv3mp.composeapp.generated.resources.you_have_new_messages
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
@@ -111,6 +115,25 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
                                 id = NotificationManager.NotiIdType.SERVERMESSAGE.baseId,
                                 title = decoded.title,
                                 body = decoded.message,
+                            )
+                        )
+                    }
+
+                    is DecodedNotification.Birthday -> {
+                        val title: String
+                        val body: String
+                        if (decoded.ownBirthday) {
+                            title = getString(Res.string.own_birthday_noti_title)
+                            body = getString(Res.string.own_birthday_noti_body)
+                        } else {
+                            title = getString(Res.string.friend_birthday_noti_title, decoded.birthdayUserName)
+                            body = getString(Res.string.friend_birthday_noti_body)
+                        }
+                        notifier.showLocalNotification(
+                            NotificationContent(
+                                id = NotificationManager.NotiIdType.BIRTHDAY.baseId,
+                                title = title,
+                                body = body,
                             )
                         )
                     }
