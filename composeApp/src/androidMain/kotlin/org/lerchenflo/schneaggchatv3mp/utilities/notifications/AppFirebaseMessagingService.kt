@@ -14,6 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.CryptoUtil
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.audio
 import schneaggchatv3mp.composeapp.generated.resources.image
@@ -45,6 +46,9 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
 
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
+                val languageService = KoinPlatform.getKoin().get<LanguageService>()
+                languageService.applyLanguage(languageService.getCurrentLanguage())
+
                 val notifier = KoinPlatform.getKoin().get<Notifier>()
                 val logger = KoinPlatform.getKoin().get<LoggingRepository>()
 
