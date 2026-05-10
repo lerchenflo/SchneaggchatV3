@@ -579,4 +579,8 @@
     <string name="changelog_no_details">No details available for this version.</string>
     <string name="changelog_got_it">Got it</string>
 
+
+    <string name="custom_reaction">Custom reaction</string>
+    <string name="enter_reaction">Enter reaction</string>
+
 </resources>

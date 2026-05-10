@@ -1,13 +1,18 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Reply
@@ -16,16 +21,24 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import org.jetbrains.compose.resources.stringResource
@@ -34,11 +47,15 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ReaderRow
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
+import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.copy
+import schneaggchatv3mp.composeapp.generated.resources.custom_reaction
 import schneaggchatv3mp.composeapp.generated.resources.delete
 import schneaggchatv3mp.composeapp.generated.resources.edit
+import schneaggchatv3mp.composeapp.generated.resources.enter_reaction
 import schneaggchatv3mp.composeapp.generated.resources.message_delete_info
 import schneaggchatv3mp.composeapp.generated.resources.message_details
 import schneaggchatv3mp.composeapp.generated.resources.no_readers
@@ -56,6 +73,7 @@ fun MessageOptionPopup(
     onDelete: () -> Unit,
     onEdit: () -> Unit,
     onDetails: () -> Unit,
+    onReact: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -67,6 +85,8 @@ fun MessageOptionPopup(
             onDismissRequest = onDismissRequest,
             modifier = modifier
         ) {
+
+            //reply
             DropdownMenuItem(
                 text = { Text(stringResource(Res.string.reply)) },
                 onClick = {
@@ -80,6 +100,112 @@ fun MessageOptionPopup(
                     )
                 }
             )
+
+            //Add reaction
+            DropdownMenuItem(
+                text = {
+
+                    //Quick reactions
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                    ) {
+
+                        NormalButton(
+                            text = "♥",
+                            onClick = { onReact("♥"); onDismissRequest() },
+                            primary = false
+                        )
+
+                        NormalButton(
+                            text = "👍",
+                            onClick = { onReact("👍"); onDismissRequest() },
+                            primary = false
+                        )
+
+                        NormalButton(
+                            text = "👎",
+                            onClick = { onReact("👎"); onDismissRequest() },
+                            primary = false
+                        )
+
+                        NormalButton(
+                            text = "🍻",
+                            onClick = { onReact("🍻"); onDismissRequest() },
+                            primary = false
+                        )
+
+                        var showCustomReactionDialog by remember { mutableStateOf(false) }
+                        var customReactionInput by remember { mutableStateOf("") }
+                        val maxChars = 10
+
+                        // Show custom input dialog with max 10 chars
+                        NormalButton(
+                            text = "✏️",
+                            onClick = { showCustomReactionDialog = true },
+                            primary = false
+                        )
+
+                        if (showCustomReactionDialog) {
+                            AlertDialog(
+                                onDismissRequest = {
+                                    showCustomReactionDialog = false
+                                    customReactionInput = ""
+                                },
+                                title = { Text(stringResource(Res.string.custom_reaction)) },
+                                text = {
+                                    Column {
+                                        OutlinedTextField(
+                                            value = customReactionInput,
+                                            onValueChange = { if (it.length <= maxChars) customReactionInput = it },
+                                            label = { Text(stringResource(Res.string.enter_reaction)) },
+                                            singleLine = true,
+                                            supportingText = {
+                                                Text(
+                                                    text = "${customReactionInput.length} / $maxChars",
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    textAlign = TextAlign.End
+                                                )
+                                            },
+                                            isError = customReactionInput.length == maxChars
+                                        )
+                                    }
+                                },
+                                confirmButton = {
+                                    NormalButton(
+                                        text = stringResource(Res.string.add),
+                                        onClick = {
+                                            if (customReactionInput.isNotBlank()) {
+                                                onReact(customReactionInput)
+                                                onDismissRequest()
+                                                showCustomReactionDialog = false
+                                                customReactionInput = ""
+                                            }
+                                        },
+                                        primary = true
+                                    )
+                                },
+                                dismissButton = {
+                                    NormalButton(
+                                        text = stringResource(Res.string.cancel),
+                                        onClick = {
+                                            showCustomReactionDialog = false
+                                            customReactionInput = ""
+                                        },
+                                        primary = false
+                                    )
+                                }
+                            )
+                        }
+
+                    }
+                },
+                onClick = {
+                    onDismissRequest()
+                }
+            )
+
+
 
             if (message.msgType == MessageType.TEXT || message.msgType == MessageType.IMAGE) {
                 DropdownMenuItem(
