@@ -13,12 +13,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
@@ -33,15 +37,24 @@ fun ReactionView(
     if (reactions.isEmpty()) return
     
     // Group reactions by emoji and count them
-    val groupedReactions = reactions.groupBy { it.content }
-        .map { (emoji, reactionList) ->
-            ReactionBadge(
-                reaction = emoji,
-                count = reactionList.size,
-                hasReacted = reactionList.any { it.userId == SessionCache.requireLoggedIn()?.userId } // Assuming current user is user1
-            )
+    val groupedReactions by produceState(
+        initialValue = emptyList(),
+        key1 = reactions
+    ) {
+        value = withContext(Dispatchers.Default) {
+            reactions.groupBy { it.content }
+                .map { (emoji, reactionList) ->
+                    ReactionBadge(
+                        reaction = emoji,
+                        count = reactionList.size,
+                        hasReacted = reactionList.any {
+                            it.userId == SessionCache.requireLoggedIn()?.userId
+                        }
+                    )
+                }
+                .sortedBy { it.reaction }
         }
-        .sortedBy { it.reaction }
+    }
     
     Row(
         modifier = Modifier
@@ -53,8 +66,8 @@ fun ReactionView(
         horizontalArrangement = if (myMessage) Arrangement.End else Arrangement.Start
     ) {
         FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy((2).dp),
+            verticalArrangement = Arrangement.spacedBy((2).dp)
         ) {
             groupedReactions.forEach { reactionBadge ->
                 ReactionBadgeItem(
@@ -74,10 +87,11 @@ fun ReactionView(
 @Composable
 private fun ReactionBadgeItem(
     reactionBadge: ReactionBadge,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .background(
                 if (reactionBadge.hasReacted) {
