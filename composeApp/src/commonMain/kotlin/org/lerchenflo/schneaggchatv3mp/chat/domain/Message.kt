@@ -1,7 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
+import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
+
+@Serializable
+data class Reaction(val userId: String, val content: String)
 
 enum class MessageType {
     TEXT,
@@ -34,7 +38,8 @@ data class Message(
     var readByMe: Boolean,
     var senderAsString: String = "",
     var senderColor: Int = 0,
-    var readers : List<MessageReader>
+    var readers : List<MessageReader>,
+    var reactions: List<Reaction> = emptyList()
 ) {
     fun isPicture(): Boolean = msgType == MessageType.IMAGE
     fun isAudio(): Boolean = msgType == MessageType.AUDIO
@@ -127,6 +132,7 @@ fun MessageWithReadersDto.toMessage(): Message = Message(
     readers = this.readers.map { readerDto ->
         readerDto.toMessageReader()
     },
+    reactions = this.messageDto.reactions,
 )
 
 /** Domain -> DTO */
@@ -147,7 +153,8 @@ fun Message.toDto(): MessageWithReadersDto = MessageWithReadersDto(
         answerId = this.answerId,
         sent = this.sent,
         myMessage = this.myMessage,
-        readByMe = this.readByMe
+        readByMe = this.readByMe,
+        reactions = this.reactions
     ),
     readers = this.readers.map { reader ->
         reader.toDto()

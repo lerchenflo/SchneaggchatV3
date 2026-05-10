@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCl
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 fun NetworkUtils.MessageResponse.toDomainMessage(
@@ -35,5 +36,6 @@ fun NetworkUtils.MessageResponse.toDomainMessage(
             readerId = it.userId,
             readDate = it.readAt.toString()
         )
-    }
+    },
+    reactions = reactions.map { Reaction(userId = it.userId, content = it.content) }
 )

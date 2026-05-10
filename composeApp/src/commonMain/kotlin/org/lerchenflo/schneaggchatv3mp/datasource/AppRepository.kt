@@ -44,6 +44,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
@@ -1486,6 +1487,26 @@ class AppRepository(
                 messageRepository.deleteMessage(messageId)
             }
 
+        }
+    }
+
+    suspend fun reactToMessage(messageId: String, content: String) {
+        val  request = networkUtils.reactToMessage(messageId = messageId, content = content)
+        when (request) {
+            is NetworkResult.Error -> sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
+            is NetworkResult.Success -> {
+                val existing = messageRepository.getMessageById(request.data.messageId)
+                if (existing != null) {
+                    messageRepository.upsertMessage(
+                        existing.copy(
+                            reactions = request.data.reactions.map {
+                                Reaction(userId = it.userId, content = it.content)
+                            },
+                            changeDate = request.data.lastChanged.toString()
+                        )
+                    )
+                }
+            }
         }
     }
 
