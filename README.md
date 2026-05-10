@@ -14,9 +14,6 @@ Schneaggchat is an innovative chatting platform.
 - Native Benachrichtigungen (iOS Priorität wie bei WhatsApp, Snapchat, etc)
 - Nachrichten Reaktionen
 - Geburtstags Benachrichtigung
-- iOS push notifications now display titles and bodies localized via commonMain Compose Resources (German, Austrian German, English) even when app is terminated
-- New iOS Notification Service Extension target for payload decryption and localization
-- Refactored Android FCM service to share localization logic with iOS via new common `NotificationContentResolver`
 
 #### Bugfixes
 - Entwicklerstatus direkt übernehmen
