@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		05FC0F7F2F7D21E7003032F9 /* SchneaggchatShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 05FC0F752F7D21E7003032F9 /* SchneaggchatShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A1B0000100010001000F0002 /* SchneaggchatNotificationServiceExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A1B0000100010001000F0001 /* SchneaggchatNotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -17,6 +18,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 05FC0F742F7D21E7003032F9;
 			remoteInfo = SchneaggchatShareExtension;
+		};
+		A1B0000100010001000F0008 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B9DA97A92DC1472C00A4DA20 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1B0000100010001000F0005;
+			remoteInfo = SchneaggchatNotificationServiceExtension;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -28,6 +36,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				05FC0F7F2F7D21E7003032F9 /* SchneaggchatShareExtension.appex in Embed Foundation Extensions */,
+				A1B0000100010001000F0002 /* SchneaggchatNotificationServiceExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -36,6 +45,7 @@
 
 /* Begin PBXFileReference section */
 		05FC0F752F7D21E7003032F9 /* SchneaggchatShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SchneaggchatShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1B0000100010001000F0001 /* SchneaggchatNotificationServiceExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SchneaggchatNotificationServiceExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9DA97B12DC1472C00A4DA20 /* SchneaggchatV3mp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SchneaggchatV3mp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -46,6 +56,13 @@
 				Info.plist,
 			);
 			target = 05FC0F742F7D21E7003032F9 /* SchneaggchatShareExtension */;
+		};
+		A1B0000100010001000F0004 /* Exceptions for "SchneaggchatNotificationServiceExtension" folder in "SchneaggchatNotificationServiceExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A1B0000100010001000F0005 /* SchneaggchatNotificationServiceExtension */;
 		};
 		B99700CA2DC9B8D800C7335B /* Exceptions for "iosApp" folder in "iosApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -65,6 +82,14 @@
 			path = SchneaggchatShareExtension;
 			sourceTree = "<group>";
 		};
+		A1B0000100010001000F0003 /* SchneaggchatNotificationServiceExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A1B0000100010001000F0004 /* Exceptions for "SchneaggchatNotificationServiceExtension" folder in "SchneaggchatNotificationServiceExtension" target */,
+			);
+			path = SchneaggchatNotificationServiceExtension;
+			sourceTree = "<group>";
+		};
 		B9DA97B32DC1472C00A4DA20 /* iosApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -81,6 +106,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		A1B0000100010001000F0010 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B9DA97AE2DC1472C00A4DA20 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -104,6 +136,7 @@
 				B9DA98002DC14AA900A4DA20 /* Configuration */,
 				B9DA97B32DC1472C00A4DA20 /* iosApp */,
 				05FC0F762F7D21E7003032F9 /* SchneaggchatShareExtension */,
+				A1B0000100010001000F0003 /* SchneaggchatNotificationServiceExtension */,
 				5C7EAE082F097F9F004B044F /* Frameworks */,
 				B9DA97B22DC1472C00A4DA20 /* Products */,
 			);
@@ -114,6 +147,7 @@
 			children = (
 				B9DA97B12DC1472C00A4DA20 /* SchneaggchatV3mp.app */,
 				05FC0F752F7D21E7003032F9 /* SchneaggchatShareExtension.appex */,
+				A1B0000100010001000F0001 /* SchneaggchatNotificationServiceExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -142,6 +176,29 @@
 			productReference = 05FC0F752F7D21E7003032F9 /* SchneaggchatShareExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		A1B0000100010001000F0005 /* SchneaggchatNotificationServiceExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1B0000100010001000F000C /* Build configuration list for PBXNativeTarget "SchneaggchatNotificationServiceExtension" */;
+			buildPhases = (
+				A1B0000100010001000F000D /* Compile Kotlin Framework */,
+				A1B0000100010001000F0006 /* Sources */,
+				A1B0000100010001000F0010 /* Frameworks */,
+				A1B0000100010001000F0007 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A1B0000100010001000F0003 /* SchneaggchatNotificationServiceExtension */,
+			);
+			name = SchneaggchatNotificationServiceExtension;
+			packageProductDependencies = (
+			);
+			productName = SchneaggchatNotificationServiceExtension;
+			productReference = A1B0000100010001000F0001 /* SchneaggchatNotificationServiceExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		B9DA97B02DC1472C00A4DA20 /* iosApp */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B9DA97BF2DC1472D00A4DA20 /* Build configuration list for PBXNativeTarget "iosApp" */;
@@ -156,6 +213,7 @@
 			);
 			dependencies = (
 				05FC0F7E2F7D21E7003032F9 /* PBXTargetDependency */,
+				A1B0000100010001000F0009 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				B9DA97B32DC1472C00A4DA20 /* iosApp */,
@@ -180,6 +238,9 @@
 					05FC0F742F7D21E7003032F9 = {
 						CreatedOnToolsVersion = 26.3;
 					};
+					A1B0000100010001000F0005 = {
+						CreatedOnToolsVersion = 16.2;
+					};
 					B9DA97B02DC1472C00A4DA20 = {
 						CreatedOnToolsVersion = 16.2;
 					};
@@ -203,12 +264,20 @@
 			targets = (
 				B9DA97B02DC1472C00A4DA20 /* iosApp */,
 				05FC0F742F7D21E7003032F9 /* SchneaggchatShareExtension */,
+				A1B0000100010001000F0005 /* SchneaggchatNotificationServiceExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		05FC0F732F7D21E7003032F9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1B0000100010001000F0007 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -225,6 +294,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		A1B0000100010001000F000D /* Compile Kotlin Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Compile Kotlin Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :composeApp:embedAndSignAppleFrameworkForXcode\n";
+		};
 		B9DA97F42DC1497100A4DA20 /* Compile Kotlin Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -254,6 +342,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A1B0000100010001000F0006 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B9DA97AD2DC1472C00A4DA20 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -268,6 +363,11 @@
 			isa = PBXTargetDependency;
 			target = 05FC0F742F7D21E7003032F9 /* SchneaggchatShareExtension */;
 			targetProxy = 05FC0F7D2F7D21E7003032F9 /* PBXContainerItemProxy */;
+		};
+		A1B0000100010001000F0009 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1B0000100010001000F0005 /* SchneaggchatNotificationServiceExtension */;
+			targetProxy = A1B0000100010001000F0008 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -331,6 +431,72 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A1B0000100010001000F000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = SchneaggchatNotificationServiceExtension/SchneaggchatNotificationServiceExtensionDebug.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VQ9RSMGZ8L;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../composeApp/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SchneaggchatNotificationServiceExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Schneaggchat;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.NotificationService;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A1B0000100010001000F000B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = SchneaggchatNotificationServiceExtension/SchneaggchatNotificationServiceExtension.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VQ9RSMGZ8L;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../composeApp/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SchneaggchatNotificationServiceExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Schneaggchat;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.NotificationService;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -553,6 +719,15 @@
 			buildConfigurations = (
 				05FC0F812F7D21E7003032F9 /* Debug */,
 				05FC0F822F7D21E7003032F9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1B0000100010001000F000C /* Build configuration list for PBXNativeTarget "SchneaggchatNotificationServiceExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1B0000100010001000F000A /* Debug */,
+				A1B0000100010001000F000B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
