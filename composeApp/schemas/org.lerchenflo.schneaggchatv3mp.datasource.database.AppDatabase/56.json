@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 56,
-    "identityHash": "4c354db390ce9a690ece1d4739e44c56",
+    "identityHash": "52fa8a96db86b5f4a25f9c833fc1aac9",
     "entities": [
       {
         "tableName": "users",
@@ -131,7 +131,7 @@
       },
       {
         "tableName": "messages",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localPK` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT, `msgType` TEXT NOT NULL, `content` TEXT NOT NULL, `poll` TEXT, `pictureUrl` TEXT, `audioPath` TEXT, `senderId` TEXT NOT NULL, `receiverId` TEXT NOT NULL, `sendDate` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, `deleted` INTEGER NOT NULL, `myMessage` INTEGER NOT NULL, `readByMe` INTEGER NOT NULL, `groupMessage` INTEGER NOT NULL, `answerId` TEXT, `sent` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localPK` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT, `msgType` TEXT NOT NULL, `content` TEXT NOT NULL, `poll` TEXT, `pictureUrl` TEXT, `audioPath` TEXT, `senderId` TEXT NOT NULL, `receiverId` TEXT NOT NULL, `sendDate` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, `deleted` INTEGER NOT NULL, `myMessage` INTEGER NOT NULL, `readByMe` INTEGER NOT NULL, `groupMessage` INTEGER NOT NULL, `answerId` TEXT, `sent` INTEGER NOT NULL, `reactions` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "localPK",
@@ -229,6 +229,12 @@
             "columnName": "sent",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "reactions",
+            "columnName": "reactions",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -248,16 +254,33 @@
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_messages_id` ON `${TABLE_NAME}` (`id`)"
           },
           {
-            "name": "index_messages_myMessage_groupMessage_sent_readByMe",
+            "name": "index_messages_groupMessage_sent_readByMe",
             "unique": false,
             "columnNames": [
-              "myMessage",
               "groupMessage",
               "sent",
               "readByMe"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_myMessage_groupMessage_sent_readByMe` ON `${TABLE_NAME}` (`myMessage`, `groupMessage`, `sent`, `readByMe`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_groupMessage_sent_readByMe` ON `${TABLE_NAME}` (`groupMessage`, `sent`, `readByMe`)"
+          },
+          {
+            "name": "index_messages_senderId",
+            "unique": false,
+            "columnNames": [
+              "senderId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_senderId` ON `${TABLE_NAME}` (`senderId`)"
+          },
+          {
+            "name": "index_messages_receiverId",
+            "unique": false,
+            "columnNames": [
+              "receiverId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_receiverId` ON `${TABLE_NAME}` (`receiverId`)"
           }
         ]
       },
@@ -295,7 +318,18 @@
           "columnNames": [
             "readerEntryId"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_message_readers_messageId",
+            "unique": false,
+            "columnNames": [
+              "messageId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_message_readers_messageId` ON `${TABLE_NAME}` (`messageId`)"
+          }
+        ]
       },
       {
         "tableName": "groups",
@@ -409,7 +443,27 @@
           "columnNames": [
             "localPk"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_group_members_groupId",
+            "unique": false,
+            "columnNames": [
+              "groupId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_group_members_groupId` ON `${TABLE_NAME}` (`groupId`)"
+          },
+          {
+            "name": "index_group_members_userId",
+            "unique": false,
+            "columnNames": [
+              "userId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_group_members_userId` ON `${TABLE_NAME}` (`userId`)"
+          }
+        ]
       },
       {
         "tableName": "TodoEntityDto",
@@ -558,7 +612,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4c354db390ce9a690ece1d4739e44c56')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '52fa8a96db86b5f4a25f9c833fc1aac9')"
     ]
   }
 }
