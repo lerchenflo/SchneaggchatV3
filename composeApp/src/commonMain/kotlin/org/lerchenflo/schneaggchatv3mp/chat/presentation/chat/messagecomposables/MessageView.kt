@@ -10,11 +10,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.StateFlow
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.ReactionView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.RepliedMessagePreview
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 
@@ -79,7 +81,6 @@ fun MessageView(
                         },
                         shape = RoundedCornerShape(15.dp)
                     )
-                    //.clickable {println(message)}
                     .padding(6.dp),
                 message = message,
                 useMD = useMD,
@@ -92,8 +93,15 @@ fun MessageView(
                 playbackProgress = playbackProgress,
                 ownId = ownId
             )
-
         }
+
+        ReactionView(
+            reactions = message.reactions,
+            myMessage = mymessage,
+            messageId = message.id ?: "",
+            onAction = onAction
+        )
+
     }
 }
 

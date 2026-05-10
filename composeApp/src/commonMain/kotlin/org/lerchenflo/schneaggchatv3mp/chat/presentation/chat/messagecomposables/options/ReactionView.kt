@@ -1,0 +1,116 @@
+package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
+
+@Composable
+fun ReactionView(
+    reactions: List<Reaction>,
+    myMessage: Boolean,
+    messageId: String,
+    onAction: (MessageAction) -> Unit
+) {
+    if (reactions.isEmpty()) return
+    
+    // Group reactions by emoji and count them
+    val groupedReactions = reactions.groupBy { it.content }
+        .map { (emoji, reactionList) ->
+            ReactionBadge(
+                reaction = emoji,
+                count = reactionList.size,
+                hasReacted = reactionList.any { it.userId == SessionCache.requireLoggedIn()?.userId } // Assuming current user is user1
+            )
+        }
+        .sortedBy { it.reaction }
+    
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = if (myMessage) Arrangement.End else Arrangement.Start
+    ) {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            groupedReactions.forEach { reactionBadge ->
+                ReactionBadgeItem(
+                    reactionBadge = reactionBadge,
+                    onClick = {
+                        onAction(MessageAction.ToggleReaction(
+                            messageId = messageId,
+                            reaction = reactionBadge.reaction
+                        ))
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReactionBadgeItem(
+    reactionBadge: ReactionBadge,
+    onClick: () -> Unit = {}
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(
+                if (reactionBadge.hasReacted) {
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                } else {
+                    MaterialTheme.colorScheme.surfaceVariant
+                }
+            )
+            .clickable(onClick = {onClick()})
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = reactionBadge.reaction,
+                fontSize = 14.sp
+            )
+            
+            if (reactionBadge.count > 1) {
+                Text(
+                    text = reactionBadge.count.toString(),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = if (reactionBadge.hasReacted) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                )
+            }
+        }
+    }
+}
+
+private data class ReactionBadge(
+    val reaction: String,
+    val count: Int,
+    val hasReacted: Boolean
+)
