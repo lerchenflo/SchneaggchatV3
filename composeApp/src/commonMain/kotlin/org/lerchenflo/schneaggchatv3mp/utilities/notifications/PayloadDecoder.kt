@@ -10,6 +10,7 @@ sealed interface DecodedNotification {
         val messageType: MessageType,
         val groupMessage: Boolean,
         val encodedContent: String,
+        val reaction: Boolean = false,
     ) : DecodedNotification
 
     data class FriendRequest(
@@ -41,6 +42,7 @@ object PayloadDecoder {
                     .getOrDefault(MessageType.TEXT),
                 groupMessage = data["groupMessage"]?.toBoolean() ?: false,
                 encodedContent = data["encodedContent"] ?: "",
+                reaction = data["reaction"]?.toBoolean() ?: false,
             )
             "friend_request" -> DecodedNotification.FriendRequest(
                 requesterId = data["requesterId"] ?: "",

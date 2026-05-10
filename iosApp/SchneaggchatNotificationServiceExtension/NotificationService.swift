@@ -53,7 +53,28 @@ class NotificationService: UNNotificationServiceExtension {
         encryptionKey: String?
     ) -> (title: String?, body: String?) {
         switch decoded {
-        case let .message(_, senderName, groupName, messageType, groupMessage, encodedContent):
+        case let .message(_, senderName, groupName, messageType, groupMessage, encodedContent, reaction):
+            if reaction {
+                let typeKey: NotificationStringKey
+                switch messageType {
+                case .TEXT:  typeKey = .message
+                case .IMAGE: typeKey = .image
+                case .AUDIO: typeKey = .audio
+                case .POLL:  typeKey = .poll
+                }
+                let typeWord = NotificationStrings.get(typeKey, language: language)
+                let reactionTitle = NotificationStrings.get(.newMessageReaction, language: language, senderName, typeWord)
+                let reactionBody: String
+                if let key = encryptionKey, !key.isEmpty,
+                   let plaintext = NotificationCrypto.decrypt(base64Ciphertext: encodedContent, key: key),
+                   !plaintext.isEmpty {
+                    reactionBody = plaintext
+                } else {
+                    reactionBody = ""
+                }
+                return (reactionTitle, reactionBody)
+            }
+
             let title: String
             if groupMessage && !groupName.isEmpty {
                 title = NotificationStrings.get(.newMessageGroupTitle, language: language, senderName, groupName)

@@ -10,14 +10,17 @@ import schneaggchatv3mp.composeapp.generated.resources.audio
 import schneaggchatv3mp.composeapp.generated.resources.friend_birthday_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.friend_birthday_noti_title
 import schneaggchatv3mp.composeapp.generated.resources.image
+import schneaggchatv3mp.composeapp.generated.resources.message
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti_body
+import schneaggchatv3mp.composeapp.generated.resources.new_message_reaction
 import schneaggchatv3mp.composeapp.generated.resources.own_birthday_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.own_birthday_noti_title
 import schneaggchatv3mp.composeapp.generated.resources.poll
 import schneaggchatv3mp.composeapp.generated.resources.you_have_new_messages
+import kotlin.math.absoluteValue
 
 suspend fun resolveLocalizedContent(
     decoded: DecodedNotification,
@@ -60,6 +63,34 @@ private suspend fun resolveMessage(
     )
     return msg.toNotificationContent(
         fallbackGroupName = decoded.groupName.ifEmpty { null }
+    )
+}
+
+private suspend fun resolveReaction(
+    decoded: DecodedNotification.Message,
+    encryptionKey: String?,
+): NotificationContent {
+    val reactionEmoji = if (!encryptionKey.isNullOrEmpty()) {
+        runCatching { CryptoUtil.decrypt(decoded.encodedContent, encryptionKey) }.getOrDefault("")
+    } else {
+        ""
+    }
+
+    val typeWord = getString(
+        when (decoded.messageType) {
+            MessageType.TEXT  -> Res.string.message
+            MessageType.IMAGE -> Res.string.image
+            MessageType.AUDIO -> Res.string.audio
+            MessageType.POLL  -> Res.string.poll
+        }
+    )
+
+    val title = getString(Res.string.new_message_reaction, decoded.senderName, typeWord)
+
+    return NotificationContent(
+        id = "reaction:${decoded.msgId}:${decoded.senderName}:$reactionEmoji".hashCode().absoluteValue,
+        title = title,
+        body = reactionEmoji,
     )
 }
 

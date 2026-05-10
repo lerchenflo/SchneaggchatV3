@@ -23,4 +23,6 @@ sealed interface MessageAction {
 
     data object CancelEditMessage: MessageAction
     data class ReplyToMessage(val message: Message) : MessageAction
+
+    data class ToggleReaction(val messageId: String, val reaction: String) : MessageAction
 }

@@ -1,7 +1,7 @@
 import Foundation
 
 enum DecodedNotification {
-    case message(msgId: String, senderName: String, groupName: String, messageType: MessageType, groupMessage: Bool, encodedContent: String)
+    case message(msgId: String, senderName: String, groupName: String, messageType: MessageType, groupMessage: Bool, encodedContent: String, reaction: Bool)
     case friendRequest(requesterName: String, accepted: Bool)
     case system(title: String, message: String)
     case birthday(birthdayUserName: String, ownBirthday: Bool)
@@ -30,7 +30,8 @@ enum NotificationPayloadDecoder {
                 groupName: payload["groupName"] ?? "",
                 messageType: MessageType.parse(payload["messageType"]),
                 groupMessage: parseBool(payload["groupMessage"]),
-                encodedContent: payload["encodedContent"] ?? ""
+                encodedContent: payload["encodedContent"] ?? "",
+                reaction: parseBool(payload["reaction"])
             )
         case "friend_request":
             return .friendRequest(
