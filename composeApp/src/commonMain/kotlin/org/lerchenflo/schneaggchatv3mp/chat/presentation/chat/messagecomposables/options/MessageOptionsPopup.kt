@@ -107,8 +107,8 @@ fun MessageOptionPopup(
                     ) {
 
                         NormalButton(
-                            text = "♥",
-                            onClick = { onReact("♥"); onDismissRequest() },
+                            text = "❤\uFE0F",
+                            onClick = { onReact("❤\uFE0F"); onDismissRequest() },
                             primary = false
                         )
 
