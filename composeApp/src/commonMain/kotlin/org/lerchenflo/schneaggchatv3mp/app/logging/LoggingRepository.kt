@@ -18,6 +18,11 @@ class LoggingRepository(
             type = logType,
             message = message
         ))
+        // Keep only the 50 most recent log entries - cleanup only when count exceeds 50
+        val logCount = database.logDao().getLogCount()
+        if (logCount > 50) {
+            database.logDao().deleteOldLogs()
+        }
     }
 
     suspend fun logWarning(message: String) = log(message, LogType.WARNING)
