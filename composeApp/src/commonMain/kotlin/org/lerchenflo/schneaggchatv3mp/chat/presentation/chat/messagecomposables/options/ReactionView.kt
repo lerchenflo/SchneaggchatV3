@@ -38,7 +38,7 @@ fun ReactionView(
             ReactionBadge(
                 reaction = emoji,
                 count = reactionList.size,
-                hasReacted = reactionList.any { it.userId == SessionCache.requireLoggedIn()?.userId } // Assuming current user is user1
+                hasReacted = reactionList.any { it.userId == SessionCache.requireLoggedIn()?.userId }
             )
         }
         .sortedBy { it.reaction }
