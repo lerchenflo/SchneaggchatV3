@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -43,7 +44,12 @@ fun ReactionView(
         .sortedBy { it.reaction }
     
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                start = if (myMessage) 40.dp else 0.dp,
+                end = if (myMessage) 0.dp else 40.dp
+            ),
         horizontalArrangement = if (myMessage) Arrangement.End else Arrangement.Start
     ) {
         FlowRow(
