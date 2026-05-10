@@ -11,22 +11,6 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
-import org.lerchenflo.schneaggchatv3mp.utilities.CryptoUtil
-import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
-import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.audio
-import schneaggchatv3mp.composeapp.generated.resources.image
-import schneaggchatv3mp.composeapp.generated.resources.friend_birthday_noti_body
-import schneaggchatv3mp.composeapp.generated.resources.friend_birthday_noti_title
-import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti
-import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti_body
-import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti
-import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti_body
-import schneaggchatv3mp.composeapp.generated.resources.own_birthday_noti_body
-import schneaggchatv3mp.composeapp.generated.resources.own_birthday_noti_title
-import schneaggchatv3mp.composeapp.generated.resources.poll
-import schneaggchatv3mp.composeapp.generated.resources.you_have_new_messages
-import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 
 class AppFirebaseMessagingService : FirebaseMessagingService() {
 
