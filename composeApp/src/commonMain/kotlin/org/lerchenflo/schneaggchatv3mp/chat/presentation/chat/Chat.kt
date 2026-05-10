@@ -343,6 +343,10 @@ fun ChatScreen(
                                         showDetailsDialog = true
                                         showMessageOptionPopup = false
                                     },
+                                    onReact = { reaction ->
+                                        viewModel.onAction(MessageAction.ToggleReaction(message.id ?: "", reaction))
+                                        showMessageOptionPopup = false
+                                    },
                                     modifier = Modifier.align(
                                         if (message.myMessage) Alignment.TopEnd else Alignment.TopStart
                                     )

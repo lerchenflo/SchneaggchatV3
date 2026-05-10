@@ -52,8 +52,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel.SendMessageContent.*
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.*
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioPlayer
@@ -329,7 +331,7 @@ class ChatViewModel(
             is MessageAction.VotePoll -> {
                 viewModelScope.launch {
                     appRepository.votePoll(
-                        pollVoteRequest = NetworkUtils.PollVoteRequest(
+                        pollVoteRequest = PollVoteRequest(
                             messageId = action.messageId,
                             id = action.optionId,
                             text = null,
@@ -344,7 +346,7 @@ class ChatViewModel(
                 viewModelScope.launch {
                     appRepository.votePoll(
                         ownId = ownId,
-                        pollVoteRequest = NetworkUtils.PollVoteRequest(
+                        pollVoteRequest = PollVoteRequest(
                             messageId = action.messageId,
                             id = null,
                             text = action.text,
@@ -382,16 +384,23 @@ class ChatViewModel(
             is MessageAction.DeleteMessage -> deleteMessage(action.message)
             is MessageAction.StartEditMessage -> {
                 editMessage = action.message
-                updateSendContent(SendMessageContent.TextContent(TextFieldValue(action.message.content)))
+                updateSendContent(TextContent(TextFieldValue(action.message.content)))
             }
             MessageAction.CancelEditMessage -> {
                 editMessage = null
-                updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
+                updateSendContent(TextContent(TextFieldValue("")))
                 //println("Update message sendtext to empty")
             }
 
             is MessageAction.ReplyToMessage -> updateReplyMessage(action.message)
-
+            is MessageAction.ToggleReaction -> {
+                viewModelScope.launch {
+                    appRepository.reactToMessage(
+                        action.messageId,
+                        action.reaction
+                    )
+                }
+            }
         }
     }
 
