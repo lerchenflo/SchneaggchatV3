@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 
 @Serializable
 @Entity(
@@ -46,6 +47,8 @@ data class MessageDto(
     var answerId: String? = null,
 
     var sent: Boolean = false,
+
+    var reactions: List<Reaction> = emptyList(),
 
     ) {
     @Ignore

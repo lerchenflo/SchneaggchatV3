@@ -936,13 +936,20 @@ class NetworkUtils(
         val sendDate: Long,
         val lastChanged: Long,
         val deleted: Boolean,
-        val readers: List<ReaderResponse>
+        val readers: List<ReaderResponse>,
+        val reactions: List<ReactionResponse> = emptyList()
     )
 
     @Serializable
     data class ReaderResponse(
         val userId: String,
         val readAt: Long
+    )
+
+    @Serializable
+    data class ReactionResponse(
+        val userId: String,
+        val content: String
     )
 
     suspend fun sendTextMessageToServer(messageId: String?, empfaenger: String, gruppe: Boolean, content: String, answerid: String?) : NetworkResult<MessageResponse, NetworkError> {
@@ -1102,6 +1109,19 @@ class NetworkUtils(
     suspend fun deleteMessage(messageId: String): NetworkResult<Any, RequestError> {
         return safeDelete(
             endpoint = "/messages/delete?messageid=$messageId"
+        )
+    }
+
+    @Serializable
+    data class ReactionRequest(
+        val messageId: String,
+        val content: String
+    )
+
+    suspend fun reactToMessage(messageId: String, content: String): NetworkResult<MessageResponse, NetworkError> {
+        return safePost(
+            endpoint = "/messages/react",
+            body = ReactionRequest(messageId = messageId, content = content)
         )
     }
 

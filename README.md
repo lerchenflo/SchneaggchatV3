@@ -11,17 +11,11 @@ Schneaggchat is an innovative chatting platform.
 
 ### 3.0.10
 #### Features
-- Android push notifications now use Firebase Cloud Messaging (FCM) with native service integration
-- iOS push notifications now use native APNs with UNUserNotificationCenter
-- Shared Kotlin `Notifier` expect/actual for platform-specific token management and local notifications
-- Added `Message.toNotificationContent()` for localized notification text generation
-- Added `PayloadDecoder` for FCM data payload parsing
-- Desktop (JVM) includes no-op Notifier implementation
-- Android POST_NOTIFICATIONS permission now requested via ActivityResultContracts
-- Server APNs payloads now include sender name and `interruption-level: time-sensitive` for iOS 15+
+- Native Benachrichtigungen (iOS Priorität wie bei WhatsApp, Snapchat, etc)
+- Nachrichten Reaktionen
+- Geburtstags Benachrichtigung
 
 #### Bugfixes
-- Removed kmpnotifier library entirely, replacing with platform-native implementations
 - Entwicklerstatus direkt übernehmen
 
 
