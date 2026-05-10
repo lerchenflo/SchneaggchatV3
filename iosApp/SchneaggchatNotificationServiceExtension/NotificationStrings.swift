@@ -4,9 +4,11 @@ enum NotificationStringKey: String {
     case image
     case audio
     case poll
+    case message
     case youHaveNewMessages
     case newMessageSingleTitle
     case newMessageGroupTitle
+    case newMessageReaction
     case newFriendRequestTitle
     case newFriendRequestBody
     case newFriendAcceptedTitle
@@ -39,9 +41,11 @@ enum NotificationStrings {
         .image: "image",
         .audio: "audio",
         .poll: "poll",
+        .message: "message",
         .youHaveNewMessages: "You have new messages",
         .newMessageSingleTitle: "New chat from %1$@",
         .newMessageGroupTitle: "New chat from %1$@ in %2$@",
+        .newMessageReaction: "%1$@ reacted to your %2$@",
         .newFriendRequestTitle: "Friend request from %1$@",
         .newFriendRequestBody: "%1$@ wants to be your friend",
         .newFriendAcceptedTitle: "Friend request accepted",
@@ -56,9 +60,11 @@ enum NotificationStrings {
         .image: "Bild",
         .audio: "Audio",
         .poll: "Umfrage",
+        .message: "Nachricht",
         .youHaveNewMessages: "Du hast neue Nachrichten",
         .newMessageSingleTitle: "Neuer Chat von %1$@",
         .newMessageGroupTitle: "Neuer Chat von %1$@ in %2$@",
+        .newMessageReaction: "%1$@ hat auf deine %2$@ geantwortet",
         .newFriendRequestTitle: "Freundschaftsanfrage von %1$@",
         .newFriendRequestBody: "%1$@ will dein Freund sein",
         .newFriendAcceptedTitle: "Freundschaftsanfrage akzeptiert",
@@ -73,9 +79,11 @@ enum NotificationStrings {
         .image: "Bild",
         .audio: "Audio",
         .poll: "Umfrog",
+        .message: "Nochricht",
         .youHaveNewMessages: "Du hosch neue Nachrichta",
         .newMessageSingleTitle: "Neuer Chat vo %1$@",
         .newMessageGroupTitle: "Neuer Chat vo %1$@ in %2$@",
+        .newMessageReaction: "%1$@ hot uf dine %2$@ gantwortet",
         .newFriendRequestTitle: "Freundschaftsanfrog von %1$@",
         .newFriendRequestBody: "%1$@ will din Freund sei",
         .newFriendAcceptedTitle: "Freundschaftafrog agno",

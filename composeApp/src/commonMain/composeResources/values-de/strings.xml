@@ -235,16 +235,20 @@
     <string name="new_message_noti_single_title">Neuer Chat von %1$s</string>
     <string name="new_message_noti_group_title">Neuer Chat von %1$s in %2$s</string>
 
+    <string name="new_message_reaction">%1$s hat auf deine %2$s geantwortet</string>
+
+
     <string name="new_friend_request_noti">Freundschaftsanfrage von %1$s</string>
     <string name="new_friend_request_noti_body">%1$s will dein Freund sein</string>
 
     <string name="new_friend_accepted_noti">Freundschaftsanfrage akzeptiert</string>
     <string name="new_friend_accepted_noti_body">%1$s ist jetzt dein Freund</string>
 
-    <string name="own_birthday_noti_title">Alles Gute zum Geburtstag! 🎂</string>
+    <string name="own_birthday_noti_title">Alles Gute zum Geburtstag! &#127874;</string>
     <string name="own_birthday_noti_body">Alles Liebe und einen schönen Tag!</string>
-    <string name="friend_birthday_noti_title">%1$s hat heute Geburtstag! 🎂</string>
+    <string name="friend_birthday_noti_title">%1$s hat heute Geburtstag! &#127874;</string>
     <string name="friend_birthday_noti_body">Vergiss nicht zu gratulieren!</string>
+
 
     <string name="tooltip_username">Wähle einen Benutzernamen den andere Benutzer sehen</string>
     <string name="tooltip_email">Wird zum Wiederherstellen der Zugangsdaten und zur Löschung des Accounts verwendet</string>
@@ -580,5 +584,9 @@
     <string name="changelog_bug_fixes">Fehlerbehebungen</string>
     <string name="changelog_no_details">Keine Details verfügbar für diese Version.</string>
     <string name="changelog_got_it">Gelesen</string>
+
+
+    <string name="custom_reaction">Eigene Reaktion</string>
+    <string name="enter_reaction">Reaktion eingeben</string>
 
 </resources>
