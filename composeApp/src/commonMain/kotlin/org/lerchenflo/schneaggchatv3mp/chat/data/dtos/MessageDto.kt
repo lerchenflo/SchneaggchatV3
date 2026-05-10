@@ -12,7 +12,12 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 @Serializable
 @Entity(
     tableName = "messages",
-    indices = [Index(value = ["id"], unique = true), Index(value = ["myMessage", "groupMessage", "sent", "readByMe"])]
+    indices = [
+        Index(value = ["id"], unique = true),
+        Index(value = ["groupMessage", "sent", "readByMe"]),
+        Index(value = ["senderId"]),
+        Index(value = ["receiverId"]),
+    ]
 )
 data class MessageDto(
 
