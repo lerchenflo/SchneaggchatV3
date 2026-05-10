@@ -32,7 +32,8 @@ fun ReactionView(
     reactions: List<Reaction>,
     myMessage: Boolean,
     messageId: String,
-    onAction: (MessageAction) -> Unit
+    onAction: (MessageAction) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     if (reactions.isEmpty()) return
     
@@ -57,7 +58,7 @@ fun ReactionView(
     }
     
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(
                 start = if (myMessage) 40.dp else 0.dp,

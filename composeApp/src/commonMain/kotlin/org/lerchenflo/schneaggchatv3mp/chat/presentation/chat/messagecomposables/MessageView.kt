@@ -37,6 +37,9 @@ fun MessageView(
 )
 {
 
+    val spaceAfterMessage = 6.dp
+
+
     val mymessage = message.myMessage
 
     Column {
@@ -59,18 +62,20 @@ fun MessageView(
         //Ganze breite
         Row(
             modifier = modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(
+                    start = if (mymessage) 40.dp else 0.dp,
+                    end = if (mymessage) 0.dp else 40.dp,
+                    top = 0.dp,
+                    bottom = if (message.reactions.isEmpty()) spaceAfterMessage else 1.dp //Small space for reactions
+                )
+                ,
             horizontalArrangement = if (mymessage) Arrangement.End else Arrangement.Start
         ) {
 
             MessageContent(
                 modifier = Modifier
-                    .padding(
-                        start = if (mymessage) 40.dp else 0.dp,
-                        end = if (mymessage) 0.dp else 40.dp,
-                        top = 0.dp,
-                        bottom = 5.dp
-                    )
+
                     //.wrapContentSize()
                     .background(
                         color = if (mymessage) {
@@ -98,7 +103,8 @@ fun MessageView(
             reactions = message.reactions,
             myMessage = mymessage,
             messageId = message.id ?: "",
-            onAction = onAction
+            onAction = onAction,
+            modifier = Modifier.padding(bottom = spaceAfterMessage)
         )
 
     }
