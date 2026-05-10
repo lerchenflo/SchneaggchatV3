@@ -235,7 +235,7 @@
     <string name="new_message_noti_single_title">Neuer Chat von %1$s</string>
     <string name="new_message_noti_group_title">Neuer Chat von %1$s in %2$s</string>
 
-    <string name="new_message_reaction">%1$s hat auf deine %2$s geantwortet</string>
+    <string name="new_message_reaction">%1$s hat auf deine %2$s reagiert</string>
 
 
     <string name="new_friend_request_noti">Freundschaftsanfrage von %1$s</string>
