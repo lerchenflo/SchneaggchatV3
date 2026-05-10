@@ -36,8 +36,6 @@ private suspend fun resolveMessage(
     decoded: DecodedNotification.Message,
     encryptionKey: String?,
 ): NotificationContent {
-    if (decoded.reaction) return resolveReaction(decoded, encryptionKey)
-
     val body = if (!encryptionKey.isNullOrEmpty()) {
         runCatching {
             when (decoded.messageType) {
