@@ -134,7 +134,7 @@ fun MessageViewWithActions(
                         if (secondDown != null) {
                             secondDown.consume()
                             waitForUpOrCancellation()
-                            onAction(MessageAction.ToggleReaction(message.id ?: "", "♥"))
+                            onAction(MessageAction.ToggleReaction(message.id ?: "", "❤\uFE0F"))
                         } else {
                             // single tap — handle if needed
                         }
