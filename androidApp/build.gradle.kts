@@ -26,7 +26,7 @@ android {
         applicationId = "org.lerchenflo.schneaggchatv3mp"
         minSdk = 28
         targetSdk = 37
-        versionCode = 19
+        versionCode = 20
         versionName = "3.0.10"
     }
     packaging {
@@ -35,8 +35,10 @@ android {
         }
     }
     buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
+
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
         }
 
 
