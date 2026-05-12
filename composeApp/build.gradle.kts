@@ -67,8 +67,8 @@ kotlin {
 
 
     android {
-        compileSdk = 36
-        minSdk = 26
+        compileSdk = 37
+        minSdk = 28
         namespace = "org.lerchenflo.schneaggchatv3mp.androidApp"
         androidResources { enable = true }
 
@@ -265,7 +265,7 @@ kotlin {
 
 
 //Add version info to desktop builds
-val desktopVersion = "3.0.10"
+val desktopVersion = "3.0.11"
 
 compose.desktop {
     application {

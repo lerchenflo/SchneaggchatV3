@@ -19,15 +19,15 @@ java {
 android {
     namespace = "org.lerchenflo.androidApp"
     compileSdk {
-        version = release(36)
+        version = release(37)
     }
 
     defaultConfig {
         applicationId = "org.lerchenflo.schneaggchatv3mp"
         minSdk = 28
         targetSdk = 37
-        versionCode = 19
-        versionName = "3.0.10"
+        versionCode = 21
+        versionName = "3.0.11"
     }
     packaging {
         resources {
