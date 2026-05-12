@@ -2,12 +2,26 @@
 https://schneaggchatv3.lerchenflo.eu/
 
 # Schneaggchat V3
-Neue Version in CMP mit Multiplatform für Android, iOS und Desktop
+CMP Multiplatform Chat - App für Android, iOS und Desktop
 
-## What is Schneaggchat?
-Schneaggchat is an innovative chatting platform. 
+## Was macht Schneaggchat besonders
+- Vorarlbergerisch als Sprachoption
+- Umfragen mit custom Antworten
+- Userbeschreibungen (Freunde können gemeinsam einen Text über dich verfassen)
+- Nachrichten - Reaktionen (Auch mit Text)
+- Geburtstagsanzeige + Benachrichtigungen
+- App kaputt Button
+
 
 # Changelog
+
+### 3.0.11
+#### Features
+- 
+
+#### Bugfixes
+- 
+
 
 ### 3.0.10
 #### Features
