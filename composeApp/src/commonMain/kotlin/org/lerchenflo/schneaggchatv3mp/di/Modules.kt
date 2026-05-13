@@ -48,7 +48,8 @@ import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 
 enum class HTTPCLIENTTYPE {
     AUTHENTICATED,
-    NOT_AUTHENTICATED
+    NOT_AUTHENTICATED,
+    SOCKET
 }
 
 
@@ -88,7 +89,10 @@ val sharedmodule = module{
 
     // Socket Connection Manager
     single<SocketConnectionManager> {
-        SocketConnectionManager(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(), get(), get(), get(), get())
+        SocketConnectionManager(
+            httpClient = get(named(HTTPCLIENTTYPE.SOCKET)),
+            tokenManager = get()
+        )
     }
 
 

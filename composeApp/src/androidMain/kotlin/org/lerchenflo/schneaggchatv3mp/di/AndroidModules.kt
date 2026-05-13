@@ -13,6 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.database.androidAppDatabaseBuilder
 import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
+import org.lerchenflo.schneaggchatv3mp.datasource.network.createSocketHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
@@ -39,6 +40,10 @@ val androidHttpAuthModule = module {
         tokenManager = get(),
         useAuth = false
     ) }
+}
+
+val androidSocketHttpModule = module {
+    single<HttpClient>(named(HTTPCLIENTTYPE.SOCKET)) { createSocketHttpClient(OkHttp.create()) }
 }
 
 

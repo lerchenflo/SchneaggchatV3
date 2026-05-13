@@ -23,6 +23,7 @@ fun startKoinAndroid(androidContext: Context) {
             modules(
                 androidHttpModule,
                 androidHttpAuthModule,
+                androidSocketHttpModule,
 
                 androidDataStoreModule,
                 androidKsafeModule,
