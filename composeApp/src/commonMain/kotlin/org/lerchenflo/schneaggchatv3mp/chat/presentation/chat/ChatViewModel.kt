@@ -701,6 +701,11 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                 reader.readerId to (reader.readerName ?: "Unknown")
             }
 
+            val resolvedReactions = message.reactions.associate { reaction ->
+                val reactUser = userMap[reaction.userId]
+                reaction.userId to (reactUser?.nickName ?: reactUser?.name ?: groupMap[reaction.userId]?.memberName ?: "Unknown")
+            }
+
             // Use the message's unique ID to look up the grouped readers
             val readersAtThisMessage = readersToDisplayPerMessage[message.id]
             if (!readersAtThisMessage.isNullOrEmpty()) {
@@ -718,7 +723,8 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                     message = message,
                     senderName = senderName,
                     senderColor = resolvedColor,
-                    resolvedReaders = resolvedReaders
+                    resolvedReaders = resolvedReaders,
+                    resolvedReactions = resolvedReactions
                 )
             )
 

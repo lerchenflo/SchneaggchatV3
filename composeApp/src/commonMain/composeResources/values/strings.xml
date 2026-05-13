@@ -281,6 +281,9 @@
     <string name="readers">Readers</string>
     <string name="read_at_time">read %1$s</string>
     <string name="no_readers">No one has read this yet</string>
+    <string name="reactions">Reactions</string>
+    <string name="no_reactions">No reactions yet</string>
+    <string name="sent_at">Sent %1$s</string>
 
     <string name="pin_chat">Pin Chat</string>
     <string name="unpin_chat">unpin Chat</string>
