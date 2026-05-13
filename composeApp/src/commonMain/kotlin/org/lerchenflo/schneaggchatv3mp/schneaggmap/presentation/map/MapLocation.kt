@@ -2,8 +2,8 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.map
 
 data class Coordinate(val lat: Double, val lon: Double)
 
-sealed class MapLocation {
-    abstract val coordinate: Coordinate //Koordinaten (Override in allen klassen)
+sealed interface MapLocation {
+    val coordinate: Coordinate //Koordinaten (Override in allen klassen)
 
     //Location für eassa (Döner, Pizza, Mci, Restaurant etc)
     data class FoodPlaceLocation(
@@ -15,7 +15,7 @@ sealed class MapLocation {
 
         //MEHR???
 
-    ) : MapLocation()
+    ) : MapLocation
 
     //Location für Radar (Subtypen Speed, Ampelblitzer, Mobiler Radar, Großkontrolle spot
     data class RadarPlaceLocation(
@@ -23,10 +23,11 @@ sealed class MapLocation {
 
         //Vorhanden nur für Radarplätze
         val lastSeen: Long, //Zuletzt gesehen zeit
+        val speedLimit: Int?
 
         //MEHR???
 
-    ) : MapLocation()
+    ) : MapLocation
 
     //Location für Auto/Moped (Motorradstrecke, Wheeliespot, etc)
     data class DrivePlaceLocation(
@@ -34,10 +35,16 @@ sealed class MapLocation {
 
         val maut: Boolean, //Gits do maut
 
-    ) : MapLocation()
+    ) : MapLocation
 
-    //Machand custom andre sacha
 
+    //Sehenswürdigkeit, Badespot, Partylocation
+    data class SpareTimeLocation(
+        override val coordinate: Coordinate,
+
+        val entryFee: Float
+
+    ) : MapLocation
 
 
 }
