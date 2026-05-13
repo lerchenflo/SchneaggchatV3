@@ -86,7 +86,7 @@ fun ReactionView(
 }
 
 @Composable
-private fun ReactionBadgeItem(
+internal fun ReactionBadgeItem(
     reactionBadge: ReactionBadge,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
@@ -130,7 +130,7 @@ private fun ReactionBadgeItem(
     }
 }
 
-private data class ReactionBadge(
+internal data class ReactionBadge(
     val reaction: String,
     val count: Int,
     val hasReacted: Boolean

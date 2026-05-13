@@ -370,7 +370,8 @@ fun ChatScreen(
                                         onDismiss = { showDetailsDialog = false },
                                         message = message,
                                         selectedChatId = globalViewModel.selectedChat.value.id,
-                                        ownId = ownId
+                                        ownId = ownId,
+                                        resolvedReactions = item.resolvedReactions
                                     )
                                 }
                             }
