@@ -9,7 +9,13 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
@@ -34,6 +40,9 @@ class TokenManager(
         private val refreshMutex = Mutex()
     }
 
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var inFlight: Deferred<RequestError?>? = null
+
     suspend fun loadBearerTokens(): BearerTokens? {
         val tokens = preferenceManager.getTokens()
         return if (tokens.refreshToken.isBlank()) {
@@ -44,13 +53,11 @@ class TokenManager(
     }
 
     suspend fun refreshTokens(oldRefreshToken: String? = null): RequestError? {
-
-        return refreshMutex.withLock {
-
+        val deferred = refreshMutex.withLock {
             val currentTokens = preferenceManager.getTokens()
-            
-            // If the token that caused the 401 is different from the token we currently have 
-            // in preferences, it means another thread ALREADY refreshed the token while we 
+
+            // If the token that caused the 401 is different from the token we currently have
+            // in preferences, it means another thread ALREADY refreshed the token while we
             // were waiting for the Mutex lock!
             if (oldRefreshToken != null && currentTokens.refreshToken != oldRefreshToken) {
                 loggingRepository.logInfo("TokenManager: Token refresh skipped - already refreshed by another thread")
@@ -67,62 +74,61 @@ class TokenManager(
                 return@withLock null
             }
 
-            loggingRepository.logDebug("TokenManager: Sending refresh request to server")
+            val active = inFlight
+            if (active != null && active.isActive) {
+                active
+            } else {
+                scope.async { doRefresh(currentTokens.refreshToken) }.also { inFlight = it }
+            }
+        }
 
-            try {
-                // Use the existing "auth" HttpClient to avoid circular dependency
-                val authClient = KoinPlatform.getKoin().get<HttpClient>(qualifier = named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))
-                val serverUrl = preferenceManager.buildServerUrl("/auth/refresh")
+        return if (deferred == null) null
+        else withContext(NonCancellable) { deferred.await() }
+    }
 
-                val response = authClient.post(serverUrl) {
-                    contentType(ContentType.Application.Json)
-                    setBody(NetworkUtils.RefreshRequest(currentTokens.refreshToken))
-                }
-                
+    private suspend fun doRefresh(refreshToken: String): RequestError? {
+        loggingRepository.logDebug("TokenManager: Sending refresh request to server")
+        return try {
+            val authClient = KoinPlatform.getKoin().get<HttpClient>(qualifier = named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))
+            val serverUrl = preferenceManager.buildServerUrl("/auth/refresh")
 
-                if (response.status.value == 401) {
-                    loggingRepository.logError("TokenManager: Authentication invalidated (401) - refresh token likely expired")
-                    AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
-                    return@withLock null
-                }
+            val response = authClient.post(serverUrl) {
+                contentType(ContentType.Application.Json)
+                setBody(NetworkUtils.RefreshRequest(refreshToken))
+            }
 
-                if (response.status.value == 409) {
-                    loggingRepository.logInfo("TokenManager: Concurrent refresh detected - reloading tokens from storage")
-                    return@withLock null  // skip saving, just fall through to loadBearerTokens()
-                }
-
-                if (!response.status.isSuccess()) {
-                    val errorBody = response.body<String>()
-                    loggingRepository.logError("TokenManager: HTTP error ${response.status.value}: ${errorBody.take(200)}")
-                    return@withLock null
-                }
-
+            if (response.status.value == 401) {
+                loggingRepository.logError("TokenManager: Authentication invalidated (401) - refresh token likely expired")
+                AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
+                null
+            } else if (response.status.value == 409) {
+                loggingRepository.logInfo("TokenManager: Concurrent refresh detected - reloading tokens from storage")
+                null
+            } else if (!response.status.isSuccess()) {
+                val errorBody = response.body<String>()
+                loggingRepository.logError("TokenManager: HTTP error ${response.status.value}: ${errorBody.take(200)}")
+                null
+            } else {
                 val rawBody = response.body<String>()
 
                 val responseTokens = runCatching {
                     Json.decodeFromString<NetworkUtils.TokenPair>(rawBody)
                 }.getOrNull() ?: run {
                     loggingRepository.logError("TokenManager: Invalid response format - JSON parsing failed")
-                    return@withLock null
+                    return null
                 }
 
-                // Save new tokens via AppRepository to ensure single source of truth
                 loggingRepository.logDebug("TokenManager: Saving new tokens to storage")
-
                 withContext(NonCancellable) {
                     KoinPlatform.getKoin().get<AppRepository>().onNewTokenPair(responseTokens)
                 }
-
                 loggingRepository.logInfo("TokenManager: Tokens saved successfully")
-
-                //Clear tokens to force reload
                 KoinPlatform.getKoin().get<HttpClient>(named(HTTPCLIENTTYPE.AUTHENTICATED)).clearAuthTokens()
-
-                null
-            } catch (e: Exception) {
-                loggingRepository.logError("TokenManager: Exception stack trace: ${e.stackTraceToString()}")
                 null
             }
+        } catch (e: Exception) {
+            loggingRepository.logError("TokenManager: Exception stack trace: ${e.stackTraceToString()}")
+            null
         }
     }
 }

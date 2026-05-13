@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network.socket
 
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.webSocket
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.url
 import io.ktor.websocket.Frame
 import io.ktor.websocket.WebSocketSession
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import kotlin.math.min
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
@@ -31,6 +33,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 
 /**
  * Socket connection manager for real-time communication
@@ -38,11 +41,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
  */
 class SocketConnectionManager(
     private val httpClient: HttpClient,
-    private val loggingRepository: LoggingRepository,
-    private val appRepository: AppRepository,
-    private val messageRepository: MessageRepository,
-    private val userRepository: UserRepository,
-    private val groupRepository: GroupRepository
+    private val tokenManager: TokenManager
 ) {
 
     enum class ConnectionState {
@@ -130,6 +129,7 @@ class SocketConnectionManager(
                 val connection = SocketConnection(
                     httpClient = httpClient,
                     serverUrl = serverUrl,
+                    tokenManager = tokenManager,
                     onMessage = {
                         scope.launch {
                             handleSocketConnectionMessage(
@@ -209,6 +209,7 @@ class SocketConnectionManager(
         val onClose = lastOnClose ?: return
 
         if (reconnectJob?.isActive == true) return
+        if (!AppLifecycleManager.isAppInForeground) return
 
         reconnectJob = scope.launch {
             var attempt = 0
@@ -216,6 +217,7 @@ class SocketConnectionManager(
                 val delayMs = min(30_000L, 1_000L * (1L shl min(attempt, 5)))
                 attempt++
                 delay(delayMs)
+                if (!AppLifecycleManager.isAppInForeground) break
                 connect(url, onError, onClose)
             }
         }
@@ -228,6 +230,7 @@ class SocketConnectionManager(
 private class SocketConnection(
     private val httpClient: HttpClient,
     val serverUrl: String,
+    private val tokenManager: TokenManager,
     private val onMessage: (String) -> Unit,
     private val onError: (Throwable) -> Unit,
     private val onClose: () -> Unit,
@@ -237,38 +240,56 @@ private class SocketConnection(
     private val _isActive = MutableStateFlow(false)
 
     suspend fun connect() {
+        val tokens = tokenManager.loadBearerTokens()
         try {
-            httpClient.webSocket(
-                request = {
-                    url(serverUrl)
-                }
-            ) {
-                session = this
-                _isActive.value = true
-                onConnectionStateChanged(true)
-
+            connectWithToken(tokens?.accessToken)
+        } catch (e: Exception) {
+            val refreshError = tokenManager.refreshTokens(tokens?.refreshToken)
+            if (refreshError == null) {
+                val freshTokens = tokenManager.loadBearerTokens()
                 try {
-                    incoming.receiveAsFlow()
-                        .filterIsInstance<Frame.Text>()
-                        .map { it.readText() }
-                        .collect { message ->
-                            onMessage(message)
-                        }
-                } catch (e: Exception) {
-                    //e.printStackTrace()
-                    onError(e)
-                } finally {
+                    connectWithToken(freshTokens?.accessToken)
+                } catch (retryEx: Exception) {
                     _isActive.value = false
                     onConnectionStateChanged(false)
-                    session = null
-                    onClose()
+                    onError(retryEx)
                 }
+            } else {
+                _isActive.value = false
+                onConnectionStateChanged(false)
+                onError(e)
             }
-        } catch (e: Exception) {
-            //e.printStackTrace()
-            _isActive.value = false
-            onConnectionStateChanged(false)
-            onError(e)
+        }
+    }
+
+    private suspend fun connectWithToken(accessToken: String?) {
+        httpClient.webSocket(
+            request = {
+                url(serverUrl)
+                accessToken?.let { bearerAuth(it) }
+            }
+        ) {
+            session = this
+            _isActive.value = true
+            onConnectionStateChanged(true)
+            println("SocketConnection: connected to $serverUrl")
+
+            try {
+                incoming.receiveAsFlow()
+                    .filterIsInstance<Frame.Text>()
+                    .map { it.readText() }
+                    .collect { message ->
+                        onMessage(message)
+                    }
+            } catch (e: Exception) {
+                onError(e)
+            } finally {
+                _isActive.value = false
+                onConnectionStateChanged(false)
+                session = null
+                println("SocketConnection: disconnected from $serverUrl")
+                onClose()
+            }
         }
     }
 

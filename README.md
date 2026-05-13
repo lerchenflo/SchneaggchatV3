@@ -20,7 +20,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - 
 
 #### Bugfixes
-- 
+- Zufällige Logouts beim WebSocket Reconnect während Token Refresh behoben
 
 
 ### 3.0.10
