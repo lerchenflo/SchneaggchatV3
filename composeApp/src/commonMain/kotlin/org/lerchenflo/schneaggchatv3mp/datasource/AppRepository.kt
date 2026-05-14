@@ -15,6 +15,9 @@ import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -235,6 +238,9 @@ class AppRepository(
 
     val dataSyncLock = Mutex()
 
+    private val _isSyncing = MutableStateFlow(false)
+    val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
+
     suspend fun dataSync() {
 
         if (dataSyncLock.isLocked) {
@@ -243,8 +249,10 @@ class AppRepository(
         }
 
         dataSyncLock.withLock {
+            _isSyncing.value = true
             println("Starting datasync")
-            
+
+            try {
             coroutineScope {
                 // Launch all sync operations concurrently
                 val userJob = async {
@@ -286,6 +294,9 @@ class AppRepository(
             }
 
             println("Data sync completed")
+            } finally {
+                _isSyncing.value = false
+            }
         }
     }
 

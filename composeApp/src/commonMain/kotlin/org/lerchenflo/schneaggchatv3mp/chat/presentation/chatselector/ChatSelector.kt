@@ -140,6 +140,7 @@ fun Chatauswahlscreen(
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
     val connectionToServer = SessionCache.onlineFlow.collectAsStateWithLifecycle()
+    val isSyncing by appRepository.isSyncing.collectAsStateWithLifecycle()
 
     /*
     //Clear chat when this screen comes to the foreground (Navigation breaks and with the preview the chat can be not selected
@@ -224,9 +225,9 @@ fun Chatauswahlscreen(
                 val distance = 10.dp //Abstand zwüschat da buttons oba rechts
 
                 RoundLoadingIndicator(
-                    visible = viewModel.isLoadingMessages || !connectionToServer.value,
+                    visible = isSyncing || !connectionToServer.value,
                     onClick = {
-                        if (viewModel.isLoadingMessages) {
+                        if (isSyncing) {
                             CoroutineScope(Dispatchers.IO).launch {
                                 SnackbarManager.showMessage(getString(Res.string.loadinginfo_messages))
                             }
@@ -524,8 +525,8 @@ fun Chatauswahlscreen(
                     var showProgress by remember { mutableStateOf(false) }
                     var progress by remember { mutableFloatStateOf(0f) }
                     var animationTrigger by remember { mutableIntStateOf(0) }
-                    LaunchedEffect(viewModel.isLoadingMessages) {
-                        if (viewModel.isLoadingMessages && !showProgress) {
+                    LaunchedEffect(isSyncing) {
+                        if (isSyncing && !showProgress) {
                             animationTrigger++
                         }
                     }

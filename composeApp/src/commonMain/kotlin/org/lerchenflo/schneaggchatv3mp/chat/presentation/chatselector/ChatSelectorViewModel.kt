@@ -7,9 +7,6 @@ import androidx.compose.material.icons.filled.FilterNone
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.MarkChatUnread
 import androidx.compose.material.icons.filled.Person3
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,7 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -97,43 +93,19 @@ class ChatSelectorViewModel(
     private var refreshJob: Job? = null
 
     fun refresh() {
+        if (refreshJob?.isActive == true) return
 
-        //println("Chatselector: Pull to refresh")
-        // if a refresh is already running, do nothing
-        if (refreshJob?.isActive == true) {
-            println("Refreshjob already running, abort")
-            return
-        }
-
-        val ownId = SessionCache.requireLoggedIn()?.userId ?: run {
-            println("Refresh: userid not set, aborting")
-            return
-        }
-
-        updateIsLoadingMessages(true)
+        val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
         refreshJob = viewModelScope.launch {
-
             try {
-                // send queued messages
                 appRepository.sendOfflineMessages(ownId)
-
                 appRepository.dataSync()
             } catch (e: Exception) {
                 ensureActive()
                 loggingRepository.logWarning("ChatSelector refresh failed: ${e.message}")
             }
-
-            delay(200) //Debounce
-
-            updateIsLoadingMessages(false)
         }
-    }
-
-    var isLoadingMessages by mutableStateOf(false)
-        private set
-    fun updateIsLoadingMessages(newValue: Boolean) {
-        isLoadingMessages = newValue
     }
 
 
