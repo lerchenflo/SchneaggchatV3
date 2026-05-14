@@ -48,6 +48,13 @@ object AppLifecycleManager {
     internal fun notifyAppBackgrounded() {
         _appBackgroundedEvent.tryEmit(Unit)
     }
+
+    private val _notificationOpenedEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val notificationOpenedEvent: SharedFlow<Unit> = _notificationOpenedEvent.asSharedFlow()
+
+    fun notifyNotificationOpened() {
+        _notificationOpenedEvent.tryEmit(Unit)
+    }
     
     /**
      * Check if app is open (in foreground) when receiving notifications

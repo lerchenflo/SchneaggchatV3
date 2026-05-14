@@ -18,6 +18,7 @@ import kotlin.coroutines.resume
 
 private const val CHANNEL_ID = "schneaggchat_messages"
 private const val CHANNEL_NAME = "Messages"
+const val EXTRA_FROM_NOTIFICATION = "from_notification"
 
 actual class Notifier(private val context: Context) {
 
@@ -46,6 +47,7 @@ actual class Notifier(private val context: Context) {
         
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra(EXTRA_FROM_NOTIFICATION, true)
         } ?: Intent()
         
         val pendingIntent = PendingIntent.getActivity(
