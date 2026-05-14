@@ -18,6 +18,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ### 3.0.11
 #### Features
 - Reaktionenanzeige in Nachrichtendetails
+- Datensync beim Öffnen der App über Push-Benachrichtigungen
 
 #### Bugfixes
 - Zufällige Logouts beim WebSocket Reconnect während Token Refresh behoben

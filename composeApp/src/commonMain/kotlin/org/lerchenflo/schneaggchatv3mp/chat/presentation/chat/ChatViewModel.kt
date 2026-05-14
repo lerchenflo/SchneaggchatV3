@@ -115,7 +115,7 @@ class ChatViewModel(
 
     sealed class SendMessageContent {
         data class TextContent(val textMessage: TextFieldValue) : SendMessageContent()
-        data class ImageContent(val images: List<ByteArray>, val text: TextFieldValue) : SendMessageContent()
+        data class ImageContent(val images: List<ByteArray>, var text: TextFieldValue) : SendMessageContent()
         data class AudioContent(
             val audioPath: String,
             val duration: Long,
@@ -195,7 +195,8 @@ class ChatViewModel(
         //Validation of message
         when (message) {
             is SendMessageContent.TextContent -> {
-                require(message.textMessage.text.isNotEmpty()) { return }
+                if (message.textMessage.text.isBlank()) return
+
                 require(message.textMessage.text.length < 10000) {
                     runBlocking {
                         SnackbarManager.showMessage(getString(Res.string.message_too_long))
@@ -204,13 +205,17 @@ class ChatViewModel(
                 }
             }
             is SendMessageContent.ImageContent -> {
-                require(message.images.isNotEmpty()) { return }
+                if (message.images.isEmpty()) return
 
                 require(message.text.text.length < 10000) {
                     runBlocking {
                         SnackbarManager.showMessage(getString(Res.string.message_too_long))
                     }
                     return
+                }
+
+                if (message.text.text.isBlank()) {
+                    message.text = message.text.copy(text = "") //Clear string content if only linebreak / tab
                 }
             }
             is SendMessageContent.AudioContent -> {

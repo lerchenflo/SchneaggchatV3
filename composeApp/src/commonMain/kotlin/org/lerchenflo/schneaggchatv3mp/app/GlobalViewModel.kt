@@ -99,6 +99,16 @@ class GlobalViewModel(
             }
         }
 
+        viewModelScope.launch {
+            AppLifecycleManager.notificationOpenedEvent.collectLatest {
+                val ownId = SessionCache.requireLoggedIn()?.userId ?: return@collectLatest
+                if (SessionCache.isLoggedIn()) {
+                    appRepository.sendOfflineMessages(ownId)
+                    appRepository.dataSync()
+                }
+            }
+        }
+
     }
 
 

@@ -15,8 +15,10 @@ import com.google.android.play.core.appupdate.AppUpdateOptions
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.UpdateAvailability
 import org.lerchenflo.schneaggchatv3mp.app.App
+import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ActivityHolder
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_FROM_NOTIFICATION
 
 class MainActivity : ComponentActivity() {
 
@@ -73,6 +75,9 @@ class MainActivity : ComponentActivity() {
         if (intent?.action == Intent.ACTION_SEND && intent.type == "text/plain") {
             val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
             IncomingDataManager.updateText(sharedText)
+        }
+        if (intent?.getBooleanExtra(EXTRA_FROM_NOTIFICATION, false) == true) {
+            AppLifecycleManager.notifyNotificationOpened()
         }
     }
 }
