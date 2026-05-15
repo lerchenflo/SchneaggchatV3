@@ -32,6 +32,7 @@ fun NormalButton(
     nextFocusRequester: FocusRequester? = null,
     primary: Boolean = true,
     showOutline: Boolean = false,
+    leadingIcon: @Composable () -> Unit = {},
     modifier: Modifier = Modifier
 ){
     var newModifier = modifier
@@ -82,6 +83,7 @@ fun NormalButton(
                 modifier = Modifier.size(24.dp)
             )
         } else {
+            leadingIcon()
             Text(text)
         }
     }

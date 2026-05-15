@@ -32,6 +32,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerstackViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.UndercoverViewModel
+import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
@@ -124,6 +125,9 @@ val sharedmodule = module{
 
     viewModelOf(::GroupCreatorViewModel)
     factory { GroupCreatorViewModel(get(), get(), get()) }
+
+    viewModelOf(::EmailVerifiedCheckViewModel)
+    factory { EmailVerifiedCheckViewModel(get(), get(), get()) }
 
     viewModelOf(::LoginViewModel)
     factory { LoginViewModel(get(), get(), get()) }
