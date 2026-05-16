@@ -59,6 +59,7 @@ class EmailVerifiedCheckViewModel(
             viewModelScope.launch {
                 appRepository.changeUserDetails(newEmail = newEmail, userId = user.id)
                 showEmailDialog(false)
+                resendEmail()
             }
         }
     }
@@ -101,7 +102,7 @@ class EmailVerifiedCheckViewModel(
     init {
         viewModelScope.launch {
             appRepository.getUserByIdFlow(
-                userId =SessionCache.requireLoggedIn()?.userId ?: ""
+                userId = SessionCache.requireLoggedIn()?.userId ?: ""
             )
                 .collectLatest { user ->
 
@@ -114,7 +115,6 @@ class EmailVerifiedCheckViewModel(
                             )
                         )
                     }
-
 
                     _state.update { cstate ->
                         cstate.copy(
