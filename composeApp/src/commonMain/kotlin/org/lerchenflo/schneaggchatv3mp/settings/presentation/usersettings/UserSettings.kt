@@ -198,7 +198,7 @@ fun UserSettings(
                 HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
-                if (ownuser != null && ownuser.description != null && ownuser.description.isNotEmpty()) {
+                if (ownuser != null && !ownuser.description.isNullOrEmpty()) {
                     //Userdescription
                     QuotedText(
                         text = ownuser.description,

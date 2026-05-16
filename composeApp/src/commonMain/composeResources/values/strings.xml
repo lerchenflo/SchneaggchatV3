@@ -11,7 +11,7 @@
     <string name="no_status">no status</string>
     <string name="unknown_user">unknown user</string>
 
-    <string name="status_infotext">This status is available to all your friends. Currently it is not set.</string>
+    <string name="status_infotext">This status is available to all your friends. Currently, it is not set.</string>
     <string name="currentstatus">Your current status: %1$s</string>
 
 
@@ -19,6 +19,15 @@
     <string name="add">add</string>
     <string name="message">message</string>
     <string name="login">login</string>
+
+
+    <string name="email_not_verified_screen_title">You need to verify your email to start using Schneaggchat</string>
+    <string name="email_not_verified_email_has_been_sent1">If you created your account just now, a confirmation link has been sent to </string>
+    <string name="email_not_verified_email_has_been_sent2">. If you created your account some time ago, you may have to request the link again.</string>
+    <string name="email_check_verified">Check verification</string>
+    <string name="email_check_problem">Having trouble? Get help</string>
+
+
 
     <string name="just_now">just now</string>
     <string name="yesterday">yesterday</string>

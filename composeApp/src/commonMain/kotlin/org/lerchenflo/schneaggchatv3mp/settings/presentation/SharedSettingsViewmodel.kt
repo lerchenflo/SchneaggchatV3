@@ -55,7 +55,7 @@ class SharedSettingsViewmodel(
         viewModelScope.launch { // Own user
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
 
-            appRepository.getUserFlow(ownId).collect { value ->
+            appRepository.getUserByIdFlow(ownId).collect { value ->
                 ownUser = value
             }
         }

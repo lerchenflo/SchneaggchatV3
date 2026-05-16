@@ -68,6 +68,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackS
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziGameScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziSetupScreen
+import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
@@ -136,6 +137,7 @@ fun App() {
                         subclass(Route.MessageChatSelector::class, Route.MessageChatSelector.serializer())
                         subclass(Route.GroupCreator::class, Route.GroupCreator.serializer())
                         subclass(Route.SignUp::class, Route.SignUp.serializer())
+                        subclass(Route.EmailVerifiedCheck::class, Route.EmailVerifiedCheck.serializer())
                         subclass(Route.ChatDetails::class, Route.ChatDetails.serializer())
                         subclass(Route.Todolist::class, Route.Todolist.serializer())
                         subclass(Route.Schneaggmap::class, Route.Schneaggmap.serializer())
@@ -382,52 +384,50 @@ fun App() {
                              */
 
                             LaunchedEffect(Unit) {
-                                if (SessionCache.isLoggedIn()) { //If already logged in reroute to chatselector
-                                    println("LOGGED IN; rerouting to chatselector")
 
-                                    if(IncomingDataManager.isNewDataAvailable()){
-                                        scope.launch {
-                                            // manually navigate to messageChatselecotor to add Chatselector to backstack
-                                            rootBackStack.clear()
-                                            rootBackStack.add(Route.ChatSelector)
-                                            rootBackStack.add(Route.MessageChatSelector)
+                                val savedCreds = appRepository.loadSavedLoginConfig()
+
+                                if (SessionCache.isLoggedIn()) {
+                                    //User got logged in when loading the saved config
+
+                                    if (savedCreds.emailVerified) {
+                                        //Email is verified, rerouting
+
+                                        println("AUTOLOGINCHECKER: Logged in and Email verified, routing to chatselector")
+
+                                        if(IncomingDataManager.isNewDataAvailable()){
+
+                                            scope.launch {
+                                                // manually navigate to messageChatselecotor to add Chatselector to backstack
+                                                rootBackStack.clear()
+                                                rootBackStack.add(Route.ChatSelector)
+                                                rootBackStack.add(Route.MessageChatSelector)
+                                            }
+                                        }else{
+
+                                            scope.launch {
+                                                navigator.navigate(
+                                                    Route.ChatSelector,
+                                                    navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
+                                                )
+                                            }
                                         }
-                                    }else{
-                                        scope.launch {
-                                            navigator.navigate(
-                                                Route.ChatSelector,
-                                                navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
-                                            )
-                                        }
-                                    }
-
-
-                                } else {
-                                    val savedCreds = appRepository.loadSavedLoginConfig()
-                                    if (!savedCreds) {
+                                    } else {
+                                        //Email not verified, navigate to email verify checker
                                         navigator.navigate(
-                                            Route.Login,
+                                            Route.EmailVerifiedCheck,
                                             navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
                                         )
-                                    } else {
-                                        println("IncomingDataManager text : ${IncomingDataManager.sharedText.value}")
-                                        if(IncomingDataManager.isNewDataAvailable()){
-                                            // manually navigate to messageChatselecotor to add Chatselector to backstack
-                                            rootBackStack.clear()
-                                            rootBackStack.add(Route.ChatSelector)
-                                            rootBackStack.add(Route.MessageChatSelector)
-                                        }else{
-                                            navigator.navigate(
-                                                Route.ChatSelector,
-                                                navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
-                                            )
-                                        }
-
-                                        globalViewModel.viewModelScope.launch {
-                                            try { appRepository.dataSync() }
-                                            catch (e: Exception) { println("Data sync error: ${e.message}") }
-                                        }
                                     }
+
+                                } else {
+
+                                    //User not logged in, reroute to login
+
+                                    navigator.navigate(
+                                        Route.Login,
+                                        navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
+                                    )
                                 }
                             }
                         }
@@ -438,6 +438,10 @@ fun App() {
 
                         entry<Route.SignUp> {
                             SignUpScreenRoot()
+                        }
+
+                        entry<Route.EmailVerifiedCheck> {
+                            EmailVerifiedCheckScreenRoot()
                         }
 
 
