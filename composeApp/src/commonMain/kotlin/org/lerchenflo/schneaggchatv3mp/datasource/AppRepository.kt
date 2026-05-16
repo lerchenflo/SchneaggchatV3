@@ -197,6 +197,7 @@ class AppRepository(
     suspend fun sendEmailVerify() : Boolean{
         return when (val result = networkUtils.sendEmailVerify()) {
             is NetworkResult.Error<RequestError> -> {
+                println("Send email verify: Error occured: ${result.error}")
                 sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
                 false
             }
@@ -971,7 +972,7 @@ class AppRepository(
         newBirthDate: String? = null,
         newNickName: String? = null,
         ) : Boolean {
-        when (val success = networkUtils.changeProfile(
+        return when (val success = networkUtils.changeProfile(
             userId = userId,
             newStatus = newStatus,
             newDescription = newDescription,
@@ -979,10 +980,10 @@ class AppRepository(
             newBirthDate = newBirthDate,
             newNickName = newNickName,
         )){
-            is NetworkResult.Error<*> -> return false
+            is NetworkResult.Error<*> -> false
             is NetworkResult.Success<*> -> {
-                dataSync()
-                return true
+                //dataSync()
+                true
             }
         }
     }

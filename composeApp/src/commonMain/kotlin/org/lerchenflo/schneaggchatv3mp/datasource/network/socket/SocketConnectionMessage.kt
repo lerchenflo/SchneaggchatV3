@@ -116,6 +116,8 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
             //A user got updated
             is SocketConnectionMessage.UserChange -> {
+                println("Recieved socket connection update: Userchange")
+
                 if (socketMessage.deleted) {
                     userRepository.deleteUser(socketMessage.user.id)
                 } else {

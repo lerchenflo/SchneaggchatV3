@@ -59,6 +59,7 @@ class EmailVerifiedCheckViewModel(
             viewModelScope.launch {
                 appRepository.changeUserDetails(newEmail = newEmail, userId = user.id)
                 showEmailDialog(false)
+                resendEmail()
             }
         }
     }
