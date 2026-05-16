@@ -329,8 +329,8 @@ class NetworkUtils(
         }
     }
 
-    suspend fun sendEmailVerify(){
-        safePost<Any, Any>(
+    suspend fun sendEmailVerify() : NetworkResult<Any, NetworkError>{
+        return safePost<Any, NetworkError>(
             endpoint = "/users/verificationemail",
             body = ""
         )

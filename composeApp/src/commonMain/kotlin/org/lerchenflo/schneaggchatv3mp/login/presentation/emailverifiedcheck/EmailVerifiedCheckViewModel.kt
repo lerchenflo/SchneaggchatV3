@@ -65,7 +65,13 @@ class EmailVerifiedCheckViewModel(
 
     private fun resendEmail() {
         viewModelScope.launch {
-            appRepository.sendEmailVerify()
+            if (!appRepository.sendEmailVerify()) {
+                _state.update {
+                    it.copy(
+                        resendEmailButtonDisabled = true
+                    )
+                }
+            }
         }
     }
 

@@ -158,6 +158,7 @@ fun EmailNotVerifiedScreen(
                 },
                 primary = false,
                 showOutline = true,
+                disabled =  state.resendEmailButtonDisabled,
                 text = stringResource(Res.string.resend_verification),
                 leadingIcon = {
                     Icon(
@@ -199,7 +200,7 @@ fun EmailNotVerifiedScreen(
             val invalidEmailString = stringResource(Res.string.invalid_email)
             ChangeDialog(
                 title = stringResource(Res.string.change_email),
-                initialValue = state.currentEmail,
+                initialValue = state.userData?.email ?: state.currentEmail,
                 onDismiss = { onAction(EmailVerifiedCheckAction.OnChangeEmailDismiss) },
                 onConfirm = {
                     onAction(EmailVerifiedCheckAction.OnChangeEmailText(it))

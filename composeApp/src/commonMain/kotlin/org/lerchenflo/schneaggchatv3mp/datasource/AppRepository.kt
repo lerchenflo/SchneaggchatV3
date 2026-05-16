@@ -194,8 +194,16 @@ class AppRepository(
         networkUtils.setNotificationToken(token, android)
     }
 
-    suspend fun sendEmailVerify(){
-        networkUtils.sendEmailVerify()
+    suspend fun sendEmailVerify() : Boolean{
+        return when (val result = networkUtils.sendEmailVerify()) {
+            is NetworkResult.Error<RequestError> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                false
+            }
+            is NetworkResult.Success<*> -> {
+                true
+            }
+        }
     }
 
 

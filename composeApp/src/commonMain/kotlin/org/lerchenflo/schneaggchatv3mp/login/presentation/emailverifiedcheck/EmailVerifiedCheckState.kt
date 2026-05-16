@@ -6,6 +6,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 data class EmailVerifiedCheckState(
     val userData: User? = null,
     val isLoading: Boolean = false,
+    val resendEmailButtonDisabled: Boolean = false,
 
     val currentEmail: String = "",
     val showChangeEmailPopup: Boolean = false
