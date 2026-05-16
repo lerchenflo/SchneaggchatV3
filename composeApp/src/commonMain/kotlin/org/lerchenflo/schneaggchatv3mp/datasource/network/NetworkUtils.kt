@@ -136,6 +136,8 @@ class NetworkUtils(
     private fun isNetworkException(e: Exception): Boolean {
         val name = e::class.simpleName ?: ""
         val message = e.message ?: ""
+        // Ktor body-deserialization errors mention class paths containing "network" — exclude them
+        if (message.startsWith("Expected response body")) return false
         return name.contains("NSURLError", ignoreCase = true)
                 || name.contains("Network", ignoreCase = true)
                 || name.contains("Socket", ignoreCase = true)
@@ -329,8 +331,8 @@ class NetworkUtils(
         }
     }
 
-    suspend fun sendEmailVerify() : NetworkResult<Any, NetworkError>{
-        return safePost<Any, NetworkError>(
+    suspend fun sendEmailVerify(): NetworkResult<Unit, NetworkError> {
+        return safePost<String, Unit>(
             endpoint = "/users/verificationemail",
             body = ""
         )
