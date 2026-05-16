@@ -20,6 +20,15 @@
     <string name="message">Nachricht</string>
     <string name="login">Einloggen</string>
 
+
+    <string name="email_not_verified_screen_title">Du musst deine Email verifizieren, bevor du Schneaggchat verwenden kannst.</string>
+    <string name="email_not_verified_email_has_been_sent1">Wenn du deinen Account gerade erstellt hast, ist ein Bestätigungslink zu </string>
+    <string name="email_not_verified_email_has_been_sent2">unterwegs. Wenn du schon länger dabei bist, musst du einen neuen Link anfordern.</string>
+    <string name="email_check_verified">Email - Verifizierung überprüfen</string>
+    <string name="email_check_problem">Es funktioniert nicht</string>
+
+
+
     <string name="just_now">gerade jetzt</string>
     <string name="yesterday">gestern</string>
     <string name="today">Heute</string>
@@ -281,6 +290,9 @@
     <string name="readers">Leser</string>
     <string name="read_at_time">gelesen %1$s</string>
     <string name="no_readers">Noch niemand hat das gelesen</string>
+    <string name="reactions">Reaktionen</string>
+    <string name="no_reactions">Keine Reaktionen bis jetzt</string>
+    <string name="sent_at">Gesendet %1$s</string>
 
     <string name="pin_chat">Chat anpinnen</string>
     <string name="unpin_chat">Pin entfernen</string>
