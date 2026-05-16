@@ -373,10 +373,14 @@ class AppRepository(
     /**
      * Get the currently logged in user as flow
      */
-    fun getUserFlow(userId: String): Flow<User?> {
+    fun getUserByIdFlow(userId: String): Flow<User?> {
         return database.userDao().getUserbyIdFlow(userId).map { user ->
             user?.toUser()
         }
+    }
+
+    suspend fun getUserById(userId: String): User? {
+        return database.userDao().getUserbyId(userId)?.toUser()
     }
 
     fun getPendingFriends(searchTerm: String): Flow<List<SelectedChat>> {
@@ -589,10 +593,15 @@ class AppRepository(
 
 
 
+    data class SavedCredsResult(
+        val credsSaved: Boolean,
+        val emailVerified: Boolean
+    )
+
     /**
      * Function to load all initial data on app start
      */
-    suspend fun loadSavedLoginConfig(): Boolean{
+    suspend fun loadSavedLoginConfig(): SavedCredsResult {
         val tokens = preferencemanager.getTokens()
 
         val tokensNotEmpty = tokens.accessToken.isNotEmpty() && tokens.refreshToken.isNotEmpty()
@@ -621,7 +630,16 @@ class AppRepository(
             )
         }
 
-        return credsSaved
+        var emailVerified = false
+        if (credsSaved) {
+            val userId = JwtUtils.getUserIdFromToken(tokens.refreshToken)
+            emailVerified = getUserById(userId)?.emailVerifiedAt != null
+        }
+
+        return SavedCredsResult(
+            credsSaved = credsSaved,
+            emailVerified = emailVerified
+        )
     }
 
 

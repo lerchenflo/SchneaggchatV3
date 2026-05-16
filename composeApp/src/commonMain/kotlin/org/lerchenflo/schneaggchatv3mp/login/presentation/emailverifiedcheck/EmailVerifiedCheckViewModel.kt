@@ -94,7 +94,7 @@ class EmailVerifiedCheckViewModel(
 
     init {
         viewModelScope.launch {
-            appRepository.getUserFlow(
+            appRepository.getUserByIdFlow(
                 userId =SessionCache.requireLoggedIn()?.userId ?: ""
             )
                 .collectLatest { user ->

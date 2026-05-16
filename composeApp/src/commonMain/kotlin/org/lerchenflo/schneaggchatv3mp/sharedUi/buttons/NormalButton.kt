@@ -28,6 +28,7 @@ fun NormalButton(
     onClick: () -> Unit,
     disabled: Boolean = false,
     isLoading: Boolean = false,
+    destructive: Boolean = false,
     focusRequester: FocusRequester? = null,
     nextFocusRequester: FocusRequester? = null,
     primary: Boolean = true,
@@ -55,12 +56,17 @@ fun NormalButton(
         modifier = newModifier,
         shape = RoundedCornerShape(10.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (disabled){
-                MaterialTheme.colorScheme.onBackground
-            }else {
-                if (!primary) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primary
+            containerColor = when {
+                disabled -> MaterialTheme.colorScheme.onBackground
+                destructive -> MaterialTheme.colorScheme.error
+                !primary -> MaterialTheme.colorScheme.surfaceVariant
+                else -> MaterialTheme.colorScheme.primary
             },
-            contentColor = if (primary) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+            contentColor = when {
+                destructive -> MaterialTheme.colorScheme.onError
+                primary -> MaterialTheme.colorScheme.onPrimary
+                else -> MaterialTheme.colorScheme.onSurfaceVariant
+            }
         ),
         contentPadding = PaddingValues(12.dp),
         border = if (showOutline) {

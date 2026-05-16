@@ -107,7 +107,7 @@ class LoginViewModel(
                                 appRepository.dataSync()
                             }
                             viewModelScope.launch {
-                                navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
+                                navigator.navigate(Route.EmailVerifiedCheck, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                             }
                         }
                     }
