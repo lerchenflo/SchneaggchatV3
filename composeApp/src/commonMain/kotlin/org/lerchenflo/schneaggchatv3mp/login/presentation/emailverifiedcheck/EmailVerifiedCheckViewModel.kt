@@ -102,11 +102,9 @@ class EmailVerifiedCheckViewModel(
     init {
         viewModelScope.launch {
             appRepository.getUserByIdFlow(
-                userId = SessionCache.requireLoggedIn()?.userId ?: ""
+                userId =SessionCache.requireLoggedIn()?.userId ?: ""
             )
                 .collectLatest { user ->
-
-                    println("New user recieved: $user")
 
                     if (user != null && user.emailVerifiedAt != null) {
                         println("Email verified in verify screen, rerouting to chatselector")
@@ -117,6 +115,7 @@ class EmailVerifiedCheckViewModel(
                             )
                         )
                     }
+
 
                     _state.update { cstate ->
                         cstate.copy(

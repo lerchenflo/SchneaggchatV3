@@ -196,7 +196,7 @@ class AppRepository(
 
     suspend fun sendEmailVerify() : Boolean{
         return when (val result = networkUtils.sendEmailVerify()) {
-            is NetworkResult.Error<*> -> {
+            is NetworkResult.Error<RequestError> -> {
                 println("Send email verify: Error occured: ${result.error}")
                 sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
                 false
