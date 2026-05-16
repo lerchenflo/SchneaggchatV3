@@ -1,10 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,11 +9,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material3.Button
@@ -149,7 +144,6 @@ fun EmailNotVerifiedScreen(
                 },
             )
 
-            Spacer(modifier = Modifier.height(smallSpacer))
 
             //Resend email
             NormalButton(
@@ -157,8 +151,6 @@ fun EmailNotVerifiedScreen(
                     onAction(EmailVerifiedCheckAction.OnResendEmailClick)
                 },
                 primary = false,
-                showOutline = true,
-                disabled =  state.resendEmailButtonDisabled,
                 text = stringResource(Res.string.resend_verification),
                 leadingIcon = {
                     Icon(
