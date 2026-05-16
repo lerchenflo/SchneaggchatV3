@@ -106,6 +106,8 @@ class EmailVerifiedCheckViewModel(
             )
                 .collectLatest { user ->
 
+                    println("New user recieved: $user")
+
                     if (user != null && user.emailVerifiedAt != null) {
                         println("Email verified in verify screen, rerouting to chatselector")
                         navigator.navigate(
