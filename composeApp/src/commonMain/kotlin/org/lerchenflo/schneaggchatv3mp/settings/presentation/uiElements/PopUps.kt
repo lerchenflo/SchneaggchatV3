@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
@@ -204,7 +205,8 @@ fun ChangeDialog(
     confirmButtonText: String = "Change",
     keyboardType: KeyboardType = KeyboardType.Text,
     singleLine: Boolean = true,
-    validator: ((String) -> String?)? = null
+    validator: ((String) -> String?)? = null,
+    warningValidator: ((String) -> String?)? = null
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -259,6 +261,14 @@ fun ChangeDialog(
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
+                warningValidator?.invoke(newValue)?.let { warning ->
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = warning,
+                        color = Color(0xFFF57C00),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
             }
         },
         confirmButton = {
@@ -271,7 +281,8 @@ fun ChangeDialog(
                     } else {
                         errorMessage = validationError
                     }
-                }
+                },
+                enabled = validator?.invoke(newValue) == null
             ) {
                 Text(confirmButtonText)
             }

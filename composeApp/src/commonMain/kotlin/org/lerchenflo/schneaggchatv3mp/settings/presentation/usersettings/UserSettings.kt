@@ -62,6 +62,7 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.BirthdatePicker
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.emailProviderWarning
 import org.lerchenflo.schneaggchatv3mp.utilities.isEmailValid
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.are_you_sure_you_want_to_logout
@@ -79,6 +80,7 @@ import schneaggchatv3mp.composeapp.generated.resources.email
 import schneaggchatv3mp.composeapp.generated.resources.emailinfo
 import schneaggchatv3mp.composeapp.generated.resources.emailinfo_unverified
 import schneaggchatv3mp.composeapp.generated.resources.error_cannot_be_the_same_username
+import schneaggchatv3mp.composeapp.generated.resources.email_provider_warning
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
 import schneaggchatv3mp.composeapp.generated.resources.logout
 import schneaggchatv3mp.composeapp.generated.resources.select_gebi_date
@@ -399,6 +401,7 @@ fun UserSettings(
 
     if (showChangeEmailPopup) {
         val invalidEmailString = stringResource(Res.string.invalid_email)
+        val providerWarningString = stringResource(Res.string.email_provider_warning)
         ChangeDialog(
             title = stringResource(Res.string.change_email),
             initialValue = ownuser?.email ?: "",
@@ -409,9 +412,10 @@ fun UserSettings(
             keyboardType = KeyboardType.Email,
             confirmButtonText = stringResource(Res.string.change),
             validator = { newValue ->
-                if (!isEmailValid(newValue)) {
-                    invalidEmailString
-                } else null
+                if (!isEmailValid(newValue)) invalidEmailString else null
+            },
+            warningValidator = { newValue ->
+                emailProviderWarning(newValue, providerWarningString)
             }
         )
     }
