@@ -1,7 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
-import androidx.collection.emptyObjectList
-import io.ktor.util.reflect.instanceOf
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.GroupMemberWithUser
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
@@ -51,6 +49,7 @@ data class UserChat(
     override val requesterId: String?,
     override val pinned: Long = 0L,
     val nickName: String? = null,
+    val birthDate: String? = null,
 
     val commonGroups : List<Group> = emptyList()
 ) : SelectedChat {
@@ -98,7 +97,8 @@ fun User.toSelectedChat(
     friendshipStatus = this.friendshipStatus,
     requesterId = this.requesterId,
     pinned = pinned,
-    nickName = this.nickName
+    nickName = this.nickName,
+    birthDate = this.birthDate
 
 )
 

@@ -15,14 +15,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -52,9 +50,6 @@ import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
 import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
 import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
 import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -70,10 +65,10 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangeStringDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
-import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.change_group_name
 import schneaggchatv3mp.composeapp.generated.resources.change_nickname
 import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
@@ -90,7 +85,6 @@ import schneaggchatv3mp.composeapp.generated.resources.remove
 import schneaggchatv3mp.composeapp.generated.resources.remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.status_info
 import schneaggchatv3mp.composeapp.generated.resources.today
-import kotlin.time.Clock
 
 
 @Composable
@@ -319,13 +313,7 @@ fun ChatDetails(
                 // Birthdate
                 chatdetailsViewmodel.selectedUser?.birthDate?.let { birthDate ->
 
-                    val birthdateParsed = remember { LocalDate.parse(birthDate) }
-                    val today = remember {
-                        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-                    }
-
-                    val isToday =
-                        birthdateParsed.month == today.month && birthdateParsed.day == today.day
+                    val isToday = remember { isBirthdayToday(birthDate) }
 
                     val infiniteTransition = rememberInfiniteTransition(label = "birthday")
                     val animatedAlpha by infiniteTransition.animateFloat(

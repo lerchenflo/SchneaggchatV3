@@ -53,8 +53,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
+import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.sendErrorSuspend
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.trySendError
@@ -538,17 +540,26 @@ class AppRepository(
 
             //filtered.sortedByDescending { it.lastmessage?.getSendDateAsLong() ?: 0L }
             filtered.sortedWith { a, b ->
+                val aPinned = a.pinned > 0L
+                val bPinned = b.pinned > 0L
+                val aBirthday = (a as? UserChat)?.let { isBirthdayToday(it.birthDate) } == true
+                val bBirthday = (b as? UserChat)?.let { isBirthdayToday(it.birthDate) } == true
                 when {
-                    // Case 1: Both are pinned -> Sort by pin timestamp (newest first)
-                    a.pinned > 0L && b.pinned > 0L -> b.pinned.compareTo(a.pinned)
+                    // Tier 1: Both pinned -> newest pin first
+                    aPinned && bPinned -> b.pinned.compareTo(a.pinned)
+                    aPinned -> -1
+                    bPinned -> 1
 
-                    // Case 2: Only A is pinned -> A comes first
-                    a.pinned > 0L -> -1
+                    // Tier 2: Birthday today (users only) -> under pinned
+                    aBirthday && bBirthday -> {
+                        val timeA = a.lastmessage?.getSendDateAsLong() ?: 0L
+                        val timeB = b.lastmessage?.getSendDateAsLong() ?: 0L
+                        timeB.compareTo(timeA)
+                    }
+                    aBirthday -> -1
+                    bBirthday -> 1
 
-                    // Case 3: Only B is pinned -> B comes first
-                    b.pinned > 0L -> 1
-
-                    // Case 4: Neither is pinned -> Sort by last message date
+                    // Tier 3: Sort by last message date
                     else -> {
                         val timeA = a.lastmessage?.getSendDateAsLong() ?: 0L
                         val timeB = b.lastmessage?.getSendDateAsLong() ?: 0L
