@@ -60,6 +60,7 @@ import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.EmailInputField
 import org.lerchenflo.schneaggchatv3mp.sharedUi.SwipeableCardView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
@@ -173,7 +174,7 @@ fun SignUpScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        InputTextField(
+                        EmailInputField(
                             text = state.emailState.text,
                             onValueChange = { onAction(SignupAction.OnEmailTextChange(it)) },
                             label = stringResource(Res.string.email),
@@ -181,7 +182,6 @@ fun SignUpScreen(
                             errortext = state.emailState.errorMessage,
                             tooltip = stringResource(Res.string.tooltip_email),
                             imeAction = ImeAction.Next,
-                            keyboardType = KeyboardType.Email,
                             modifier = Modifier.fillMaxWidth()
                         )
 

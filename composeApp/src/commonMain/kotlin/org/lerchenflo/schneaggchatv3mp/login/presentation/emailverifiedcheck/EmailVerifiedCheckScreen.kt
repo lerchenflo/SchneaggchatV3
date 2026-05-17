@@ -40,6 +40,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ChangeDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.emailProviderWarning
 import org.lerchenflo.schneaggchatv3mp.utilities.isEmailValid
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.change
@@ -49,6 +50,7 @@ import schneaggchatv3mp.composeapp.generated.resources.email_check_verified
 import schneaggchatv3mp.composeapp.generated.resources.email_not_verified_email_has_been_sent1
 import schneaggchatv3mp.composeapp.generated.resources.email_not_verified_email_has_been_sent2
 import schneaggchatv3mp.composeapp.generated.resources.email_not_verified_screen_title
+import schneaggchatv3mp.composeapp.generated.resources.email_provider_warning
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
 import schneaggchatv3mp.composeapp.generated.resources.logout
 import schneaggchatv3mp.composeapp.generated.resources.resend_verification
@@ -195,6 +197,7 @@ fun EmailNotVerifiedScreen(
 
         if (state.showChangeEmailPopup) {
             val invalidEmailString = stringResource(Res.string.invalid_email)
+            val providerWarningString = stringResource(Res.string.email_provider_warning)
             ChangeDialog(
                 title = stringResource(Res.string.change_email),
                 initialValue = state.userData?.email ?: state.currentEmail,
@@ -205,9 +208,10 @@ fun EmailNotVerifiedScreen(
                 keyboardType = KeyboardType.Email,
                 confirmButtonText = stringResource(Res.string.change),
                 validator = { newValue ->
-                    if (!isEmailValid(newValue)) {
-                        invalidEmailString
-                    } else null
+                    if (!isEmailValid(newValue)) invalidEmailString else null
+                },
+                warningValidator = { newValue ->
+                    emailProviderWarning(newValue, providerWarningString)
                 }
             )
         }
