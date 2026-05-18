@@ -42,7 +42,7 @@
     <string name="email">Email</string>
     <string name="invalid_email">Enter a correct email address</string>
     <string name="email_provider_warning">Please use a trusted email provider (Gmail, Yahoo, Outlook, iCloud, GMX). Temporary or disposable email services are discouraged for security reasons (e.g. account hijacking and recovery issues).</string>    <string name="sign_up">I don't have an account</string>
-    <string name="loginsubtitle">THE best chatting app ever - now in V3 with Crossplatform for Android, IOS and Desktop!</string>
+    <string name="loginsubtitle">THE best chatting app ever - now in V3 with Multiplatform for Android, IOS and Desktop!</string>
     <string name="create_account">Create account</string>
     <string name="create_account_subtitle">Join now</string>
     <string name="acc_not_exist">Account does not exist</string>

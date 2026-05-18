@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.format
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
@@ -15,7 +16,9 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.yesterday
+import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 @OptIn(FormatStringsInDatetimeFormats::class)
 fun getCurrentTimeMillisString(): String {
@@ -23,7 +26,7 @@ fun getCurrentTimeMillisString(): String {
 }
 
 fun getCurrentTimeMillisLong(): Long {
-    return kotlin.time.Clock.System.now().toEpochMilliseconds()
+    return Clock.System.now().toEpochMilliseconds()
 }
 
 @OptIn(FormatStringsInDatetimeFormats::class)
@@ -111,8 +114,8 @@ fun millisToTimeDateOrYesterday(
     dateFormatWithYear: String = "dd.MM.yyyy"
 ): String {
     val tz = TimeZone.currentSystemDefault()
-    val instant = kotlin.time.Instant.fromEpochMilliseconds(millis)
-    val now = kotlin.time.Clock.System.now()
+    val instant = Instant.fromEpochMilliseconds(millis)
+    val now = Clock.System.now()
 
     val targetLdt = instant.toLocalDateTime(tz)
     val nowLdt = now.toLocalDateTime(tz)
@@ -153,4 +156,13 @@ fun formatMillis(millis: Long): String {
 
     // padStart ensures the seconds always have two digits (e.g., 0:05 instead of 0:5)
     return "$minutes:${seconds.toString().padStart(2, '0')}"
+}
+
+fun isBirthdayToday(birthDate: String?): Boolean {
+    if (birthDate.isNullOrBlank()) return false
+    val parsed = runCatching { LocalDate.parse(birthDate) }.getOrNull() ?: return false
+    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+    return (parsed.month == today.month && parsed.day == today.day) ||  //Birthdate is really today
+            (parsed.month == Month(2) && parsed.day == 29 &&            //29. Feb is shown on 28th
+                    today.month == Month(2) && today.day ==28)
 }
