@@ -7,16 +7,16 @@ import kotlinx.cinterop.allocArrayOf
 import kotlinx.cinterop.memScoped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import platform.AVFoundation.AVURLAsset
+import platform.CoreMedia.CMTimeGetSeconds
 import platform.Foundation.NSData
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSSearchPathForDirectoriesInDomains
+import platform.Foundation.NSURL
 import platform.Foundation.NSUserDomainMask
 import platform.Foundation.create
 import platform.Foundation.writeToFile
-import platform.AVFoundation.AVURLAsset
-import platform.Foundation.NSURL
-import platform.CoreMedia.CMTimeGetSeconds
 
 @OptIn(BetaInteropApi::class)
 actual class AudioManager {

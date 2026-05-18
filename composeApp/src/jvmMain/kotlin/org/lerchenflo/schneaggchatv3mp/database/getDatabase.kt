@@ -4,7 +4,6 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import java.io.File
-import java.lang.System
 
 
 fun desktopAppDatabaseBuilder(): RoomDatabase.Builder<AppDatabase> {

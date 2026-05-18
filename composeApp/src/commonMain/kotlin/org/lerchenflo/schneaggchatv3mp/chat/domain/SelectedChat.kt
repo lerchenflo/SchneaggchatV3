@@ -1,7 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
-import androidx.collection.emptyObjectList
-import io.ktor.util.reflect.instanceOf
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.GroupMemberWithUser
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 

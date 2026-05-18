@@ -14,7 +14,6 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.just_now
 import schneaggchatv3mp.composeapp.generated.resources.yesterday
 import kotlin.time.ExperimentalTime
 

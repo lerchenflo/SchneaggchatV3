@@ -1,9 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.app.navigation
 
-import androidx.navigation.NavOptionsBuilder
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 
 class Navigator {

@@ -133,6 +133,9 @@
     <string name="theme">Theme</string>
     <string name="theme_sel_desc">Change the look of your app</string>
 
+    <string name="camera">Camera</string>
+    <string name="gallery">Gallery</string>
+    <string name="choose_image_source">Choose image source</string>
 
     <!-- Todoliste -->
     <string name="todolist">Todos</string>

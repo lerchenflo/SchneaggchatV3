@@ -3,8 +3,8 @@ package org.lerchenflo.schneaggchatv3mp.utilities
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationCredentialsMirror
-import platform.Foundation.NSUserDefaults
 import platform.Foundation.NSLocale
+import platform.Foundation.NSUserDefaults
 import platform.Foundation.preferredLanguages
 
 actual class LanguageManager(

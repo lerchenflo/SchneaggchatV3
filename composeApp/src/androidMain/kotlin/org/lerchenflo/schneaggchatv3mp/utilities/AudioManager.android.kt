@@ -1,11 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
 import android.content.Context
+import android.media.MediaMetadataRetriever
 import io.github.hyochan.audio.initializeAudioRecorderPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import android.media.MediaMetadataRetriever
 
 actual class AudioManager(private val context: Context){
     actual fun initializeAudio() {
