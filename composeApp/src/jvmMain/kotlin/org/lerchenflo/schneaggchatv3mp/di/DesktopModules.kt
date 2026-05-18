@@ -9,7 +9,6 @@ import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.database.desktopAppDatabaseBuilder
-import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createSocketHttpClient

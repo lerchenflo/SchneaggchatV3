@@ -17,14 +17,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.LanguageSelector
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ThemeSelector
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.LanguageSelector
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.appearance_settings
 import schneaggchatv3mp.composeapp.generated.resources.language

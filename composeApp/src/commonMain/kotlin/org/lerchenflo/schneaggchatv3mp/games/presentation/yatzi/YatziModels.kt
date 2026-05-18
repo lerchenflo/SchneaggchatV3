@@ -1,7 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi
 
-import kotlinx.serialization.Serializable
-
 enum class YatziCategory(val displayName: String, val isUpper: Boolean) {
     ONES("Ones", true),
     TWOS("Twos", true),

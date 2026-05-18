@@ -1,5 +1,3 @@
-import org.jetbrains.compose.ComposeBuildConfig.composeVersion
-
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)

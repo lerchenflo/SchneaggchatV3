@@ -52,10 +52,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel.SendMessageContent.*
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel.SendMessageContent.TextContent
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.*
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioPlayer
@@ -278,7 +278,7 @@ class ChatViewModel(
         updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
     }
 
-    fun onImageSelected(results: List<GalleryPhotoResult>) {
+    fun onImagesSelected(results: List<GalleryPhotoResult>) {
 
         CoroutineScope(Dispatchers.Default).launch {
             val byteArrays = results.map { it.loadBytes() }

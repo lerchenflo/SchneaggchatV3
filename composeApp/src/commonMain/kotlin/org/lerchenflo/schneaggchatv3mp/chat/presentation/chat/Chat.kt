@@ -9,6 +9,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,13 +37,18 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Poll
 import androidx.compose.material.icons.filled.StopCircle
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -75,10 +81,12 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
-import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
-import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
-import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
+import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
+import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
+import io.github.ismoy.imagepickerkmp.domain.models.MimeType
+import io.github.ismoy.imagepickerkmp.features.imagepicker.config.ImagePickerKMPConfig
+import io.github.ismoy.imagepickerkmp.features.imagepicker.model.ImagePickerResult
+import io.github.ismoy.imagepickerkmp.features.imagepicker.ui.rememberImagePickerKMP
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -113,9 +121,12 @@ import org.lerchenflo.schneaggchatv3mp.utilities.formatMillis
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
+import schneaggchatv3mp.composeapp.generated.resources.camera
 import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
 import schneaggchatv3mp.composeapp.generated.resources.copied_to_clipboard
 import schneaggchatv3mp.composeapp.generated.resources.edit
+import schneaggchatv3mp.composeapp.generated.resources.gallery
 import schneaggchatv3mp.composeapp.generated.resources.go_back
 import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.message
@@ -124,6 +135,7 @@ import schneaggchatv3mp.composeapp.generated.resources.read_at_time
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
     modifier: Modifier = Modifier
@@ -153,44 +165,111 @@ fun ChatScreen(
     var showImagePickerDialog by remember { mutableStateOf(false) }
 
 
+    val picker = rememberImagePickerKMP(
+        config = ImagePickerKMPConfig(
+            cropConfig = CropConfig(enabled = false),
+            galleryConfig = GalleryConfig(
+                allowMultiple = true,
+                mimeTypes = listOf(MimeType.IMAGE_ALL),
+                includeExif = true
+            )
+        )
+    )
+    val result = picker.result
+
+
     if (showImagePickerDialog) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            if (showImagePickerDialog ) {
 
-                GalleryPickerLauncher(
-                    onPhotosSelected = {
-                        viewModel.onImageSelected(it)
-                        showImagePickerDialog = false
-                    },
-                    onError = {
-                        showImagePickerDialog = false
-                    },
-                    onDismiss = {
-                        showImagePickerDialog = false
-                    },
-                    enableCrop = false,
-                    allowMultiple = true,
-                    cameraCaptureConfig = CameraCaptureConfig(
-                        compressionLevel = CompressionLevel.HIGH,
-                        preference = CapturePhotoPreference.FAST, //No flash
-                        /*
-                        cropConfig = CropConfig(
-                            enabled = true,
-                            aspectRatioLocked = false,
-                            circularCrop = true,
-                            squareCrop = true,
-                            freeformCrop = true
-                        ),
+        // Handle side effects safely
+        LaunchedEffect(result) {
+            when (result) {
+                is ImagePickerResult.Success -> {
+                    viewModel.onImagesSelected(result.photos)
+                    picker.reset()
+                    showImagePickerDialog = false
+                }
 
-                         */
+                is ImagePickerResult.Dismissed -> {
+                    picker.reset()
+                    showImagePickerDialog = false
+                }
 
-                    )
-                )
+                else -> Unit
+            }
+        }
+
+        BasicAlertDialog(
+            onDismissRequest = {
+                showImagePickerDialog = false
+            }
+        ) {
+
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.padding(16.dp)
+            ) {
+
+                Column(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .width(IntrinsicSize.Min),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+
+                    when (result) {
+
+                        is ImagePickerResult.Loading -> {
+                            CircularProgressIndicator()
+                        }
+
+                        is ImagePickerResult.Error -> {
+                            Text(
+                                text = "Error: ${result.exception.message}",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+
+                        is ImagePickerResult.Idle -> {
+
+                            Text(
+                                stringResource(Res.string.choose_image_source)
+                            )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+
+                                Button(
+                                    onClick = {
+                                        picker.launchCamera()
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(stringResource(Res.string.camera))
+                                }
+
+                                Button(
+                                    onClick = {
+                                        picker.launchGallery()
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(stringResource(Res.string.gallery))
+                                }
+                            }
+                        }
+
+                        is ImagePickerResult.Success,
+                        is ImagePickerResult.Dismissed -> {
+                            // handled in LaunchedEffect
+                        }
+                    }
+                }
             }
         }
     }
 
-    if (!showImagePickerDialog) {
     Scaffold(
         modifier = modifier
             .pointerInput(Unit) {
@@ -495,7 +574,7 @@ fun ChatScreen(
                                             val newCursorPos = cursorPos + 1
 
                                             viewModel.updateSendContent(
-                                                ChatViewModel.SendMessageContent.TextContent(
+                                                SendMessageContent.TextContent(
                                                     textMessage = TextFieldValue(
                                                         text = newText,
                                                         selection = TextRange(newCursorPos)
@@ -600,7 +679,7 @@ fun ChatScreen(
                                                 val newCursorPos = cursorPos + 1
 
                                                 viewModel.updateSendContent(
-                                                    ChatViewModel.SendMessageContent.TextContent(
+                                                    SendMessageContent.TextContent(
                                                         textMessage = TextFieldValue(
                                                             text = newText,
                                                             selection = TextRange(newCursorPos)
@@ -827,7 +906,7 @@ fun ChatScreen(
 
         }
     }
-    } // end if (!showImagePickerDialog)
+
 }
 
 

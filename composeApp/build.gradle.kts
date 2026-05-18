@@ -1,7 +1,6 @@
 
 import io.github.frankois944.spmForKmp.swiftPackageConfig
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.commonizer.OptimisticNumberCommonizationEnabledKey.alias
 import java.net.URI
 
 plugins {
