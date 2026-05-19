@@ -55,3 +55,27 @@ data class SubtypeSyncResponse(
     val deletedSubtypeIds: List<String>,
     val moreSubtypes: Boolean,
 )
+
+@Serializable
+data class MapEntryCreateRequest(
+    val mainTypeKey: String,
+    val subtypeIds: List<String>,
+    val coordinates: LatLongResponse,
+    val description: String,
+    val attributes: Map<String, AttributeValue>,
+)
+
+@Serializable
+data class MapEntryEditRequest(
+    val entryId: String,
+    val subtypeIds: List<String>,
+    val coordinates: LatLongResponse,
+    val description: String,
+    val attributes: Map<String, AttributeValue>,
+)
+
+@Serializable
+data class SubtypeCreateNetworkRequest(
+    val mainTypeKey: String,
+    val name: String,
+)

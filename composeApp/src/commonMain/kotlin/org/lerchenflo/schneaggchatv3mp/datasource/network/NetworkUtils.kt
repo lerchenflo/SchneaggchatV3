@@ -30,7 +30,15 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MainTypeResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryCreateRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryEditRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubtypeCreateNetworkRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubtypeResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubtypeSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
@@ -1122,7 +1130,7 @@ class NetworkUtils(
     suspend fun mapSync(
         entries: List<IdTimeStamp>,
         page: Int,
-    ): NetworkResult<org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapSyncResponse, NetworkError> {
+    ): NetworkResult<MapSyncResponse, NetworkError> {
         return safePost(
             endpoint = "/map/sync?page=$page&page_size=400",
             body = entries,
@@ -1132,15 +1140,37 @@ class NetworkUtils(
     suspend fun subtypeSync(
         entries: List<IdTimeStamp>,
         page: Int,
-    ): NetworkResult<org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubtypeSyncResponse, NetworkError> {
+    ): NetworkResult<SubtypeSyncResponse, NetworkError> {
         return safePost(
             endpoint = "/map/subtypes/sync?page=$page&page_size=400",
             body = entries,
         )
     }
 
-    suspend fun getMainTypes(): NetworkResult<List<org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MainTypeResponse>, NetworkError> {
+    suspend fun getMainTypes(): NetworkResult<List<MainTypeResponse>, NetworkError> {
         return safeGet(endpoint = "/map/maintypes")
+    }
+
+    suspend fun createMapEntry(
+        request: MapEntryCreateRequest,
+    ): NetworkResult<MapEntryResponse, NetworkError> {
+        return safePost(endpoint = "/map/create", body = request)
+    }
+
+    suspend fun editMapEntry(
+        request: MapEntryEditRequest,
+    ): NetworkResult<MapEntryResponse, NetworkError> {
+        return safePost(endpoint = "/map/edit", body = request)
+    }
+
+    suspend fun deleteMapEntry(entryId: String): NetworkResult<Unit, NetworkError> {
+        return safeDelete(endpoint = "/map/delete?entryid=$entryId")
+    }
+
+    suspend fun createSubtype(
+        request: SubtypeCreateNetworkRequest,
+    ): NetworkResult<SubtypeResponse, NetworkError> {
+        return safePost(endpoint = "/map/subtypes/create", body = request)
     }
 
 }

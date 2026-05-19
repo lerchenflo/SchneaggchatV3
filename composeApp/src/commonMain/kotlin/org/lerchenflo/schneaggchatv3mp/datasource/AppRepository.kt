@@ -66,8 +66,16 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toSubtype
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMainType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.LatLongResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryCreateRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryEditRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubtypeCreateNetworkRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubtypeResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
@@ -357,6 +365,58 @@ class AppRepository(
             is NetworkResult.Error<*> -> println("Main type fetch error")
             is NetworkResult.Success -> mapRepository.replaceAllMainTypes(response.data.map { it.toMainType() })
         }
+    }
+
+    // ─── Map CRUD ─────────────────────────────────────────────────────────────
+    // WS broadcast handles local DB upsert/delete automatically after server write.
+
+    suspend fun createMapEntry(
+        mainTypeKey: String,
+        subtypeIds: List<String>,
+        lat: Double,
+        lon: Double,
+        description: String,
+        attributes: Map<String, AttributeValue>,
+    ): NetworkResult<MapEntryResponse, NetworkError> {
+        return networkUtils.createMapEntry(
+            MapEntryCreateRequest(
+                mainTypeKey = mainTypeKey,
+                subtypeIds = subtypeIds,
+                coordinates = LatLongResponse(lat = lat, long = lon),
+                description = description,
+                attributes = attributes,
+            )
+        )
+    }
+
+    suspend fun editMapEntry(
+        entryId: String,
+        subtypeIds: List<String>,
+        lat: Double,
+        lon: Double,
+        description: String,
+        attributes: Map<String, AttributeValue>,
+    ): NetworkResult<MapEntryResponse, NetworkError> {
+        return networkUtils.editMapEntry(
+            MapEntryEditRequest(
+                entryId = entryId,
+                subtypeIds = subtypeIds,
+                coordinates = LatLongResponse(lat = lat, long = lon),
+                description = description,
+                attributes = attributes,
+            )
+        )
+    }
+
+    suspend fun deleteMapEntry(entryId: String): NetworkResult<Unit, NetworkError> {
+        return networkUtils.deleteMapEntry(entryId)
+    }
+
+    suspend fun createSubtype(
+        mainTypeKey: String,
+        name: String,
+    ): NetworkResult<SubtypeResponse, NetworkError> {
+        return networkUtils.createSubtype(SubtypeCreateNetworkRequest(mainTypeKey = mainTypeKey, name = name))
     }
 
     /**
