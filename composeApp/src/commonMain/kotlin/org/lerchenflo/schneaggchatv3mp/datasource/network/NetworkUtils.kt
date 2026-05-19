@@ -1117,4 +1117,30 @@ class NetworkUtils(
         )
     }
 
+    // ─── Map ──────────────────────────────────────────────────────────────────
+
+    suspend fun mapSync(
+        entries: List<IdTimeStamp>,
+        page: Int,
+    ): NetworkResult<org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapSyncResponse, NetworkError> {
+        return safePost(
+            endpoint = "/map/sync?page=$page&page_size=400",
+            body = entries,
+        )
+    }
+
+    suspend fun subtypeSync(
+        entries: List<IdTimeStamp>,
+        page: Int,
+    ): NetworkResult<org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubtypeSyncResponse, NetworkError> {
+        return safePost(
+            endpoint = "/map/subtypes/sync?page=$page&page_size=400",
+            body = entries,
+        )
+    }
+
+    suspend fun getMainTypes(): NetworkResult<List<org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MainTypeResponse>, NetworkError> {
+        return safeGet(endpoint = "/map/maintypes")
+    }
+
 }

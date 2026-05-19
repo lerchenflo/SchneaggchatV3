@@ -13,12 +13,15 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MainTypeDto
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MapEntryDto
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.SubtypeDto
 
 
 @Database(
-    entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, TodoEntityDto::class, LogEntry::class, PlayerEntity::class],
+    entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, TodoEntityDto::class, LogEntry::class, PlayerEntity::class, MapEntryDto::class, SubtypeDto::class, MainTypeDto::class],
     exportSchema = true,
-    version = 56
+    version = 57
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -37,6 +40,10 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun logDao(): LogDao
 
     abstract fun playerDao(): PlayerDao
+
+    abstract fun mapEntryDao(): MapEntryDao
+    abstract fun subtypeDao(): SubtypeDao
+    abstract fun mainTypeDao(): MainTypeDao
 
     abstract fun allDatabaseDao(): AllDatabaseDao
 

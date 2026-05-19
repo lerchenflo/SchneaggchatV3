@@ -5,9 +5,9 @@ type: reference
 ---
 
 ## Version Location
-- **gradle/libs.versions.toml** contains `firebase-messaging-version = "24.1.1"`
+- **gradle/libs.versions.toml** does NOT contain app version (version tracked only in README)
 - **README.md** contains the changelog section starting at line 10
-- Current version: **3.0.10**
+- Current version: **3.0.11** (added 2026-05-19)
 
 ## Changelog Format
 - Section: `# Changelog`

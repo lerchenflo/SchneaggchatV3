@@ -9,6 +9,18 @@ Schneaggchat is an innovative chatting platform.
 
 # Changelog
 
+### 3.0.11
+#### Features
+- Schneaggmap live sync: Room database for map entries, subtypes, and main types (DB version 57)
+- MapRepository mit Delta-Sync für Kartendaten und Subtypen
+- AppRepository.mapSync() für parallele Synchronisation von Einträgen, Subtypen und Haupttypen
+- WebSocket live updates für mapchange und subtypechange Events (direkte Datenbank-Updates)
+- Server: POST /map/subtypes/sync Delta-Sync Endpoint mit lastChangedAt Timestamp
+
+#### Bugfixes
+- Removed hardcoded sample data from map presentation layer
+- Removed stale UserLocation overlay
+
 ### 3.0.10
 #### Features
 - Android push notifications now use Firebase Cloud Messaging (FCM) with native service integration

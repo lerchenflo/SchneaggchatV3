@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -21,11 +22,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -51,22 +54,34 @@ import org.maplibre.spatialk.geojson.Feature
 import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.map.Coordinate
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.map.LocationType
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.map.MapLocation
+import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_filter_location_types
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_title
 
-private val USER_MARKER_COLOR = Color(0xFF607D8B)
 private val CLUSTER_COLOR = Color(0xFF424242)
+
+private val MAIN_TYPE_COLORS = mapOf(
+    "street" to Color(0xFFE53935),
+    "sightseeingplace" to Color(0xFF1E88E5),
+    "foodplace" to Color(0xFF43A047),
+)
+
+private fun colorForMainType(key: String): Color =
+    MAIN_TYPE_COLORS[key] ?: Color(0xFF9E9E9E)
 
 @Composable
 fun SchneaggmapScreenRoot(
     modifier: Modifier = Modifier
 ) {
     val viewModel = koinViewModel<SchneaggmapViewModel>()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     SchneaggmapScreen(
         modifier = modifier,
-        state = viewModel.state,
+        state = state,
         onAction = viewModel::onAction,
     )
 }
@@ -87,7 +102,7 @@ fun SchneaggmapScreen(
 
     Column(modifier = modifier.fillMaxSize()) {
         ActivityTitle(
-            title = "Schneaggmap",
+            title = stringResource(Res.string.schneaggmap_title),
             onBackClick = { onAction(SchneaggmapAction.OnBackClicked) },
         )
         Box(modifier = Modifier.fillMaxSize()) {
@@ -97,11 +112,12 @@ fun SchneaggmapScreen(
                 styleState = styleState,
                 onAction = onAction,
             )
-            state.selectedLocation?.let { location ->
-                MapMarkerOverlay(coordinate = location.coordinate, cameraState = cameraState) {
-                    LocationInfoCard(
-                        location = location,
-                        onDismiss = { onAction(SchneaggmapAction.SelectLocation(null)) },
+            state.selectedEntry?.let { entry ->
+                MapMarkerOverlay(lat = entry.lat, lon = entry.lon, cameraState = cameraState) {
+                    EntryInfoCard(
+                        entry = entry,
+                        mainTypeDisplayName = state.mainTypes.find { it.key == entry.mainTypeKey }?.displayName ?: entry.mainTypeKey,
+                        onDismiss = { onAction(SchneaggmapAction.SelectEntry(null)) },
                         modifier = Modifier.offset(y = (-80).dp),
                     )
                 }
@@ -125,6 +141,9 @@ fun SchneaggmapScreen(
                 onAction = onAction,
                 modifier = Modifier.align(Alignment.TopEnd).padding(16.dp),
             )
+            if (state.isLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
         }
     }
 }
@@ -136,20 +155,13 @@ private fun SchneaggmapMapContent(
     styleState: StyleState,
     onAction: (SchneaggmapAction) -> Unit,
 ) {
-    val placeFeatures = state.placeLocations.mapIndexed { index, loc ->
+    val placeFeatures = state.entries.mapIndexed { index, entry ->
         Feature(
-            geometry = Point(Position(loc.coordinate.lon, loc.coordinate.lat)),
+            geometry = Point(Position(entry.lon, entry.lat)),
             properties = buildJsonObject {
-                put("locationType", loc.type.name)
+                put("mainTypeKey", entry.mainTypeKey)
             },
             id = JsonPrimitive(index),
-        )
-    }
-    val userFeatures = state.userLocations.mapIndexed { index, loc ->
-        Feature(
-            geometry = Point(Position(loc.coordinate.lon, loc.coordinate.lat)),
-            properties = buildJsonObject { put("username", loc.username) },
-            id = JsonPrimitive("user_$index"),
         )
     }
 
@@ -163,32 +175,27 @@ private fun SchneaggmapMapContent(
             data = GeoJsonData.Features(FeatureCollection(placeFeatures)),
             options = GeoJsonOptions(cluster = true, clusterRadius = 50, clusterMaxZoom = 14),
         )
-        val userSource = rememberGeoJsonSource(
-            data = GeoJsonData.Features(FeatureCollection(userFeatures)),
-        )
 
-        // Individual place markers — one layer per type for independent toggle visibility
-        LocationType.entries.forEach { type ->
+        state.mainTypes.forEach { mainType ->
             CircleLayer(
-                id = "place_${type.name}",
+                id = "place_${mainType.key}",
                 source = placeSource,
-                visible = type in state.enabledTypes,
+                visible = mainType.key in state.enabledMainTypes,
                 filter = !feature.has("cluster") and
-                    (feature["locationType"].asString() eq const(type.name)),
-                color = const(type.markerColor),
+                    (feature["mainTypeKey"].asString() eq const(mainType.key)),
+                color = const(colorForMainType(mainType.key)),
                 radius = const(10.dp),
                 strokeColor = const(Color.White),
                 strokeWidth = const(2.dp),
                 onClick = { features ->
                     val index = features.firstOrNull()?.id?.content?.toIntOrNull()
-                    val location = index?.let { state.placeLocations.getOrNull(it) }
-                    if (location != null) onAction(SchneaggmapAction.SelectLocation(location))
+                    val entry = index?.let { state.entries.getOrNull(it) }
+                    if (entry != null) onAction(SchneaggmapAction.SelectEntry(entry))
                     ClickResult.Consume
                 },
             )
         }
 
-        // Cluster bubble
         CircleLayer(
             id = "place_clusters",
             source = placeSource,
@@ -200,7 +207,6 @@ private fun SchneaggmapMapContent(
             onClick = { ClickResult.Consume },
         )
 
-        // Cluster count label
         SymbolLayer(
             id = "place_cluster_count",
             source = placeSource,
@@ -209,49 +215,29 @@ private fun SchneaggmapMapContent(
             textColor = const(Color.White),
             textSize = const(12.sp),
         )
-
-        // User location markers
-        CircleLayer(
-            id = "layer_users",
-            source = userSource,
-            color = const(USER_MARKER_COLOR),
-            radius = const(12.dp),
-            strokeColor = const(Color.White),
-            strokeWidth = const(3.dp),
-            onClick = { features ->
-                val index = features.firstOrNull()?.id?.content?.removePrefix("user_")?.toIntOrNull()
-                val location = index?.let { state.userLocations.getOrNull(it) }
-                if (location != null) onAction(SchneaggmapAction.SelectLocation(location))
-                ClickResult.Consume
-            },
-        )
     }
 }
 
-/**
- * Overlays [content] at the given map [coordinate], tracking the camera.
- * Remove from composition to hide.
- */
 @Composable
 fun BoxScope.MapMarkerOverlay(
-    coordinate: Coordinate,
+    lat: Double,
+    lon: Double,
     cameraState: CameraState,
     content: @Composable () -> Unit,
 ) {
     @Suppress("UNUSED_VARIABLE")
     val cameraPosition = cameraState.position
     val projection = cameraState.projection ?: return
-    val screenOffset = projection.screenLocationFromPosition(
-        Position(coordinate.lon, coordinate.lat)
-    )
+    val screenOffset = projection.screenLocationFromPosition(Position(lon, lat))
     Box(Modifier.offset(x = screenOffset.x, y = screenOffset.y)) {
         content()
     }
 }
 
 @Composable
-private fun LocationInfoCard(
-    location: MapLocation,
+private fun EntryInfoCard(
+    entry: MapEntry,
+    mainTypeDisplayName: String,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -259,37 +245,32 @@ private fun LocationInfoCard(
         Column(modifier = Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = when (location) {
-                        is MapLocation.SimplePlaceLocation -> location.title
-                        is MapLocation.UserLocation -> location.username
-                    },
+                    text = mainTypeDisplayName,
                     style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.weight(1f),
                 )
                 IconButton(onClick = onDismiss) {
-                    Icon(Icons.Default.Close, contentDescription = "Close")
+                    Icon(Icons.Default.Close, contentDescription = null)
                 }
             }
-            when (location) {
-                is MapLocation.SimplePlaceLocation -> {
-                    Text(
-                        text = location.type.displayName,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = location.type.markerColor,
-                    )
-                    Text(
-                        text = location.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 4.dp),
-                    )
+            if (entry.description.isNotBlank()) {
+                Text(
+                    text = entry.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+            }
+            entry.attributes.entries.take(3).forEach { (key, value) ->
+                val displayValue = when (value) {
+                    is AttributeValue.StringVal -> value.value
+                    is AttributeValue.IntVal -> value.value.toString()
+                    is AttributeValue.DoubleVal -> value.value.toString()
+                    is AttributeValue.BoolVal -> value.value.toString()
                 }
-                is MapLocation.UserLocation -> {
-                    Text(
-                        text = "User location",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = USER_MARKER_COLOR,
-                    )
-                }
+                Text(
+                    text = "$key: $displayValue",
+                    style = MaterialTheme.typography.labelSmall,
+                )
             }
         }
     }
@@ -305,24 +286,24 @@ private fun FilterPanel(
         FloatingActionButton(
             onClick = { onAction(SchneaggmapAction.ToggleFilterDropdown) },
         ) {
-            Icon(Icons.Default.FilterList, contentDescription = "Filter locations")
+            Icon(Icons.Default.FilterList, contentDescription = null)
         }
         AnimatedVisibility(visible = state.isFilterDropdownVisible) {
             Card(modifier = Modifier.padding(top = 8.dp).width(200.dp)) {
                 Column(modifier = Modifier.padding(8.dp)) {
                     Text(
-                        text = "Location types",
+                        text = stringResource(Res.string.schneaggmap_filter_location_types),
                         style = MaterialTheme.typography.labelLarge,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     )
                     HorizontalDivider()
-                    LocationType.entries.forEach { type ->
+                    state.mainTypes.forEach { mainType ->
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(
-                                checked = type in state.enabledTypes,
-                                onCheckedChange = { onAction(SchneaggmapAction.ToggleLocationType(type)) },
+                                checked = mainType.key in state.enabledMainTypes,
+                                onCheckedChange = { onAction(SchneaggmapAction.ToggleMainType(mainType.key)) },
                             )
-                            Text(text = type.displayName)
+                            Text(text = mainType.displayName)
                         }
                     }
                 }

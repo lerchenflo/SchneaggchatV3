@@ -19,6 +19,9 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembers
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MainTypeDto
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MapEntryDto
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.SubtypeDto
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
 
 @Dao
@@ -263,6 +266,15 @@ interface AllDatabaseDao {
 
 
 
+    @Query("DELETE FROM map_entries")
+    suspend fun clearMapEntries()
+
+    @Query("DELETE FROM map_subtypes")
+    suspend fun clearMapSubtypes()
+
+    @Query("DELETE FROM map_main_types")
+    suspend fun clearMapMainTypes()
+
     @Transaction
     suspend fun clearAll() {
         // Clear tables in proper order to respect foreign key constraints
@@ -272,8 +284,61 @@ interface AllDatabaseDao {
         clearGroupMembers()
         clearGroups()
         clearTodos()
-
+        clearMapEntries()
+        clearMapSubtypes()
+        clearMapMainTypes()
     }
+}
+
+@Dao
+interface MapEntryDao {
+
+    @Upsert
+    suspend fun upsert(dto: MapEntryDto)
+
+    @Query("DELETE FROM map_entries WHERE id = :id")
+    suspend fun delete(id: String)
+
+    @Query("SELECT id, updatedAt FROM map_entries")
+    suspend fun getMapEntryIdsWithChangeDates(): List<IdChangeDate>
+
+    @Query("SELECT * FROM map_entries WHERE deleted = 0")
+    fun getAllFlow(): Flow<List<MapEntryDto>>
+
+    @Query("DELETE FROM map_entries")
+    suspend fun deleteAll()
+}
+
+@Dao
+interface SubtypeDao {
+
+    @Upsert
+    suspend fun upsert(dto: SubtypeDto)
+
+    @Query("DELETE FROM map_subtypes WHERE id = :id")
+    suspend fun delete(id: String)
+
+    @Query("SELECT id, updatedAt FROM map_subtypes")
+    suspend fun getSubtypeIdsWithChangeDates(): List<IdChangeDate>
+
+    @Query("SELECT * FROM map_subtypes WHERE deleted = 0")
+    fun getAllFlow(): Flow<List<SubtypeDto>>
+
+    @Query("DELETE FROM map_subtypes")
+    suspend fun deleteAll()
+}
+
+@Dao
+interface MainTypeDao {
+
+    @Upsert
+    suspend fun upsert(dto: MainTypeDto)
+
+    @Query("SELECT * FROM map_main_types")
+    fun getAllFlow(): Flow<List<MainTypeDto>>
+
+    @Query("DELETE FROM map_main_types")
+    suspend fun deleteAll()
 }
 
 @Dao

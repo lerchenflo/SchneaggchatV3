@@ -1,12 +1,16 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.map.LocationType
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.map.MapLocation
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MainType
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.Subtype
 
 data class SchneaggmapState(
-    val placeLocations: List<MapLocation> = emptyList(),
-    //val userLocations: List<MapLocation.UserLocation> = emptyList(),
-    val enabledTypes: Set<LocationType> = LocationType.entries.toSet(),
+    val entries: List<MapEntry> = emptyList(),
+    val subtypesByMainType: Map<String, List<Subtype>> = emptyMap(),
+    val mainTypes: List<MainType> = emptyList(),
+    val enabledMainTypes: Set<String> = emptySet(),
     val isFilterDropdownVisible: Boolean = false,
-    val selectedLocation: MapLocation? = null,
+    val selectedEntry: MapEntry? = null,
+    val isLoading: Boolean = false,
+    val error: String? = null,
 )

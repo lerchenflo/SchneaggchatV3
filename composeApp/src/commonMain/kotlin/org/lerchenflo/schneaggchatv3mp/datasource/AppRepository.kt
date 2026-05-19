@@ -62,6 +62,10 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupMemb
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toSubtype
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMainType
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
@@ -96,6 +100,7 @@ class AppRepository(
 
     val appVersion: AppVersion,
     private val loggingRepository: LoggingRepository,
+    private val mapRepository: MapRepository,
 ) {
     //Errorchannel for global error events (Show in every screen)
     object ErrorChannel {
@@ -285,6 +290,72 @@ class AppRepository(
             }
 
             println("Data sync completed")
+        }
+    }
+
+    // ─── Map sync (triggered only from map screen, not part of global dataSync) ─
+
+    suspend fun mapSync() {
+        coroutineScope {
+            val entryJob = async {
+                try { mapEntryIdSync() } catch (e: Exception) { loggingRepository.logWarning("Map entry sync failed: ${e.message}") }
+            }
+            val subtypeJob = async {
+                try { subtypeIdSync() } catch (e: Exception) { loggingRepository.logWarning("Subtype sync failed: ${e.message}") }
+            }
+            val mainTypeJob = async {
+                try { mainTypeFetch() } catch (e: Exception) { loggingRepository.logWarning("Main type fetch failed: ${e.message}") }
+            }
+            awaitAll(entryJob, subtypeJob, mainTypeJob)
+        }
+    }
+
+    private suspend fun mapEntryIdSync() {
+        val localEntries = mapRepository.getMapEntryChangeIds()
+        var currentPage = 0
+        var moreEntries = true
+        while (moreEntries) {
+            val response = networkUtils.mapSync(
+                entries = localEntries.map { NetworkUtils.IdTimeStamp(it.id, it.updatedAt) },
+                page = currentPage,
+            )
+            when (response) {
+                is NetworkResult.Error<*> -> { println("Map entry sync error"); break }
+                is NetworkResult.Success -> {
+                    response.data.updatedEntries.forEach { mapRepository.upsertMapEntry(it.toMapEntry()) }
+                    response.data.deletedEntries.forEach { mapRepository.deleteMapEntry(it) }
+                    moreEntries = response.data.moreEntries
+                }
+            }
+            currentPage++
+        }
+    }
+
+    private suspend fun subtypeIdSync() {
+        val localEntries = mapRepository.getSubtypeChangeIds()
+        var currentPage = 0
+        var moreSubtypes = true
+        while (moreSubtypes) {
+            val response = networkUtils.subtypeSync(
+                entries = localEntries.map { NetworkUtils.IdTimeStamp(it.id, it.updatedAt) },
+                page = currentPage,
+            )
+            when (response) {
+                is NetworkResult.Error<*> -> { println("Subtype sync error"); break }
+                is NetworkResult.Success -> {
+                    response.data.updatedSubtypes.forEach { mapRepository.upsertSubtype(it.toSubtype()) }
+                    response.data.deletedSubtypeIds.forEach { mapRepository.deleteSubtype(it) }
+                    moreSubtypes = response.data.moreSubtypes
+                }
+            }
+            currentPage++
+        }
+    }
+
+    private suspend fun mainTypeFetch() {
+        when (val response = networkUtils.getMainTypes()) {
+            is NetworkResult.Error<*> -> println("Main type fetch error")
+            is NetworkResult.Success -> mapRepository.replaceAllMainTypes(response.data.map { it.toMainType() })
         }
     }
 

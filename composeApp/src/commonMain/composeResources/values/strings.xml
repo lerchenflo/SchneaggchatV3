@@ -574,4 +574,8 @@
     <string name="changelog_no_details">No details available for this version.</string>
     <string name="changelog_got_it">Got it</string>
 
+    <!-- Schneaggmap -->
+    <string name="schneaggmap_title">Schneaggmap</string>
+    <string name="schneaggmap_filter_location_types">Location types</string>
+
 </resources>
