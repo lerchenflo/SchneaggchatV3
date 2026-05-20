@@ -9,4 +9,6 @@ actual class Notifier {
     }
     actual fun cancelNotification(id: Int) = Unit
     actual fun cancelNotifications(ids: List<Int>) = Unit
+    actual fun cancelAllNotifications() = Unit
+    actual fun cancelMessageNotifications(ids: List<Int>) = Unit
 }

@@ -148,21 +148,13 @@ class ChatViewModel(
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
         CoroutineScope(Dispatchers.IO).launch {
-            // Get message IDs from current chat that need notification removal
-            val messageIdsString = messageDisplayState.value
+            val messageIds = messageDisplayState.value
                 .filterIsInstance<MessageDisplayItem.MessageItem>()
                 .filter { item -> !item.message.readByMe }
-                .mapNotNull {
-                    it.message.id
-                }
+                .mapNotNull { it.message.id }
+                .map { NotificationManager.NotiId.HexString(it).asInt }
 
-            val messageIds = messageIdsString.map {
-                NotificationManager.NotiId.HexString(it).asInt
-            }
-
-            if (messageIds.isNotEmpty()) {
-                NotificationManager.removeNotifications(messageIds)
-            }
+            NotificationManager.removeMessageNotifications(messageIds)
         }
 
         CoroutineScope(Dispatchers.IO).launch {

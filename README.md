@@ -25,6 +25,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 #### Bugfixes
 - Zufällige Logouts beim WebSocket Reconnect während Token Refresh behoben
 - Image Picker verbessert
+- Push-Benachrichtigungen werden beim Öffnen eines Chats automatisch entfernt (per-Nachrichtes-ID auf Android, alle Benachrichtigungen auf iOS)
 
 
 ### 3.0.10
