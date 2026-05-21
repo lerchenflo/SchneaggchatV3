@@ -8,6 +8,7 @@ import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
 class IosPushDelegateBridge {
 
