@@ -46,7 +46,7 @@
     <string name="create_account">Account erstellen</string>
     <string name="create_account_subtitle">jetzt beitreten</string>
     <string name="acc_not_exist">Account existiert nicht</string>
-    <string name="offline">Du bist offline</string>
+    <string name="offline">Verbindung zum Server verloren</string>
     <string name="unknown_error">Ein unbekannter Fehler ist aufgetreten</string>
     <string name="birthdateerror">Fehler mit dem Geburtsdatum</string>
     <string name="acc_locked">Dein Account ist derzeit gesperrt</string>
