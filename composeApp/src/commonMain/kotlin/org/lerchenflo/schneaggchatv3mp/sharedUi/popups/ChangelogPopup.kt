@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.NewReleases
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.DividerDefaults
@@ -46,6 +47,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.changelog_announcements
 import schneaggchatv3mp.composeapp.generated.resources.changelog_bug_fixes
 import schneaggchatv3mp.composeapp.generated.resources.changelog_features
 import schneaggchatv3mp.composeapp.generated.resources.changelog_got_it
@@ -143,6 +145,24 @@ fun ChangelogPopup(
                             .padding(20.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
+
+                        if (content.announcements.isNotEmpty()) {
+                            ChangelogSection(
+                                title = stringResource(Res.string.changelog_announcements),
+                                icon = Icons.Default.Info,
+                                iconTint = MaterialTheme.colorScheme.primary,
+                                items = content.announcements
+                            )
+                        }
+
+                        if (content.announcements.isNotEmpty() && content.features.isNotEmpty()) {
+                            HorizontalDivider(
+                                Modifier,
+                                DividerDefaults.Thickness,
+                                color = MaterialTheme.colorScheme.outlineVariant
+                            )
+                        }
+
                         if (content.features.isNotEmpty()) {
                             ChangelogSection(
                                 title = stringResource(Res.string.changelog_features),
@@ -245,7 +265,11 @@ private fun ChangelogSection(
 
 
 
-@Preview
+@Preview(
+    showBackground = true,
+    showSystemUi = true,
+    apiLevel = 36
+)
 @Composable
 private fun ChangelogPopupPreview() {
     SchneaggchatTheme {
@@ -264,6 +288,9 @@ private fun ChangelogPopupPreview() {
                     "Fix for navigating out of chat (unselected chat)",
                     "iOS notification badge fix",
                     "iOS update checker fix"
+                ),
+                announcements = listOf(
+                    "Bitte Bugreports / Featurerequests einreichen, falls etwas nicht passt / nicht funktioniert. Es wird nicht alles von alleine besser!",
                 )
             )
         )

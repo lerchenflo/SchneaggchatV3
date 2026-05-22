@@ -593,6 +593,7 @@
 
     <!-- Changelog Popup -->
     <string name="changelog_whats_new">What's New</string>
+    <string name="changelog_announcements">Announcements</string>
     <string name="changelog_version">Version %1$s</string>
     <string name="changelog_features">Features</string>
     <string name="changelog_bug_fixes">Bug Fixes</string>
