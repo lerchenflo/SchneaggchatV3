@@ -7,4 +7,6 @@ expect class Notifier {
     fun showLocalNotification(content: NotificationContent)
     fun cancelNotification(id: Int)
     fun cancelNotifications(ids: List<Int>)
+    fun cancelAllNotifications()
+    fun cancelMessageNotifications(ids: List<Int>)
 }

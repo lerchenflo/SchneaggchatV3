@@ -79,6 +79,14 @@ actual class Notifier(private val context: Context) {
         ids.forEach { NotificationManagerCompat.from(context).cancel(it) }
     }
 
+    actual fun cancelAllNotifications() {
+        NotificationManagerCompat.from(context).cancelAll()
+    }
+
+    actual fun cancelMessageNotifications(ids: List<Int>) {
+        ids.forEach { NotificationManagerCompat.from(context).cancel(it) }
+    }
+
     private fun createChannelIfNeeded() {
         val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH)
         val manager = context.getSystemService(NotificationManager::class.java)

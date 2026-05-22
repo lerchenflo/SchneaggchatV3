@@ -105,6 +105,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel.SendMessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.DayDivider
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.NewMessagesDivider
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReaderBar
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.audio.AudioPlayerView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll.PollDialog
@@ -462,6 +463,9 @@ fun ChatScreen(
                         is MessageDisplayItem.ReaderBar -> {
                             // show readers as small Profile pictures
                             ReaderBar(item.readerList)
+                        }
+                        is MessageDisplayItem.NewMessagesDivider -> {
+                            NewMessagesDivider()
                         }
 
                     }

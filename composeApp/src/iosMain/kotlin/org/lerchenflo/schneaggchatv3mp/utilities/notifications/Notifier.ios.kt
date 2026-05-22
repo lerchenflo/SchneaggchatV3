@@ -58,4 +58,16 @@ actual class Notifier {
         UNUserNotificationCenter.currentNotificationCenter()
             .removePendingNotificationRequestsWithIdentifiers(strIds)
     }
+
+    actual fun cancelAllNotifications() {
+        UNUserNotificationCenter.currentNotificationCenter().removeAllDeliveredNotifications()
+        UNUserNotificationCenter.currentNotificationCenter().removeAllPendingNotificationRequests()
+    }
+
+    actual fun cancelMessageNotifications(ids: List<Int>) {
+        // APNs delivers notifications with server-assigned identifiers unknown to the client.
+        // Per-id cancellation cannot match them, so wipe all delivered notifications.
+        UNUserNotificationCenter.currentNotificationCenter().removeAllDeliveredNotifications()
+        UNUserNotificationCenter.currentNotificationCenter().removeAllPendingNotificationRequests()
+    }
 }

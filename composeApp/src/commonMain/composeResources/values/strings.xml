@@ -46,7 +46,7 @@
     <string name="create_account">Create account</string>
     <string name="create_account_subtitle">Join now</string>
     <string name="acc_not_exist">Account does not exist</string>
-    <string name="offline">You are offline</string>
+    <string name="offline">Lost connection to the server</string>
     <string name="unknown_error">An unknown error occurred</string>
     <string name="birthdateerror">Error with birthdate</string>
     <string name="acc_locked">Your account is currently locked</string>
@@ -244,6 +244,7 @@
     <string name="use_default_server">Use default server</string>
 
     <string name="you_have_new_messages">You have new messages</string>
+    <string name="new_messages">New messages</string>
     <string name="new_message_noti_single_title">New chat from %1$s</string>
     <string name="new_message_noti_group_title">New chat from %1$s in %2$s</string>
 
@@ -592,6 +593,7 @@
 
     <!-- Changelog Popup -->
     <string name="changelog_whats_new">What's New</string>
+    <string name="changelog_announcements">Announcements</string>
     <string name="changelog_version">Version %1$s</string>
     <string name="changelog_features">Features</string>
     <string name="changelog_bug_fixes">Bug Fixes</string>

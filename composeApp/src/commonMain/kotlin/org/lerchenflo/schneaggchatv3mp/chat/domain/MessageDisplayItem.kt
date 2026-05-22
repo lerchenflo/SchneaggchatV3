@@ -35,4 +35,8 @@ sealed class MessageDisplayItem {
         override val id: String,
         val readerList: List<MessageReader>
     ): MessageDisplayItem()
+
+    data object NewMessagesDivider : MessageDisplayItem() {
+        override val id: String = "new_messages_divider"
+    }
 }

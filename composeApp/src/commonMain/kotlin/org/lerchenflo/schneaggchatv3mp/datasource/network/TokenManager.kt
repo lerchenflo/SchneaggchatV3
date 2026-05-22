@@ -61,7 +61,7 @@ class TokenManager(
             }
 
             if (oldRefreshToken == null && currentTokens.refreshToken.isNotBlank()) {
-                // Another thread likely already refreshed — bail out
+                loggingRepository.logInfo("TokenManager: Token appeared - skipping refresh")
                 return@withLock null
             }
 
@@ -74,7 +74,10 @@ class TokenManager(
             if (active != null && active.isActive) {
                 active
             } else {
-                scope.async { doRefresh(currentTokens.refreshToken) }.also { inFlight = it }
+                scope.async { doRefresh(currentTokens.refreshToken) }.also {
+                    inFlight = it
+                    it.invokeOnCompletion { inFlight = null }
+                }
             }
         }
 

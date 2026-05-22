@@ -59,6 +59,14 @@ object NotificationManager {
         notifier().cancelNotifications(ids)
     }
 
+    fun removeAllNotifications() {
+        notifier().cancelAllNotifications()
+    }
+
+    fun removeMessageNotifications(ids: List<Int>) {
+        notifier().cancelMessageNotifications(ids)
+    }
+
     suspend fun getToken(): String = notifier().getToken() ?: ""
 
     suspend fun removeToken() {

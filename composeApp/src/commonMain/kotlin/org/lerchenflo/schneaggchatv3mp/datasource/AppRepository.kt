@@ -374,8 +374,7 @@ class AppRepository(
 
 
     suspend fun getChangeLog(version: String) : ChangelogEntry? {
-        val networkResult = networkUtils.getChangeLog("$GITHUB_URL/main/README.md")
-        return when (networkResult) {
+        return when (val networkResult = networkUtils.getChangeLog("$GITHUB_URL/main/README.md")) {
             is NetworkResult.Error<*> -> {
                 println("get changelog network error: ${networkResult.error.message}")
                 null
