@@ -143,6 +143,9 @@ class ChatViewModel(
 
     private val _shouldLoadAllMessages = MutableStateFlow(false)
 
+    private var newMessagesBoundaryComputed = false
+    private val newMessagesBoundaryId = MutableStateFlow<String?>(null)
+
     fun setAllMessagesRead() {
 
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
@@ -645,16 +648,28 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                             _isLoadingOlderMessages.value = false
                         }
 
+                        captureNewMessagesBoundary(messages)
                         Triple(messages, userList, groupList)
                     }
                 }.flowOn(Dispatchers.Default)
                     .flatMapLatest { (messages, users, groupMembers) ->
-                        flowOf(processMessages(messages, users, groupMembers))
+                        flowOf(processMessages(messages, users, groupMembers, newMessagesBoundaryId.value))
                     }
             }
             .flowOn(Dispatchers.Default)
 
-    private fun processMessages(messages: List<Message>, users: List<User>, groupMembers: List<GroupMember>
+    private fun captureNewMessagesBoundary(messages: List<Message>) {
+        if (newMessagesBoundaryComputed || messages.isEmpty()) return
+        newMessagesBoundaryComputed = true
+        val idx = messages.indexOfLast { !it.myMessage && !it.readByMe }
+        newMessagesBoundaryId.value = if (idx >= 0) messages[idx].id else null
+    }
+
+    private fun processMessages(
+        messages: List<Message>,
+        users: List<User>,
+        groupMembers: List<GroupMember>,
+        newMessagesBoundaryId: String?,
     ): List<MessageDisplayItem> {
         val userMap = users.associateBy { it.id }
         val groupMap = groupMembers.associateBy { it.userId }
@@ -724,6 +739,10 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                     resolvedReactions = resolvedReactions
                 )
             )
+
+            if (newMessagesBoundaryId != null && message.id == newMessagesBoundaryId) {
+                displayItems.add(MessageDisplayItem.NewMessagesDivider)
+            }
 
             if (currentDate != nextDate && currentDate != null) {
                 displayItems.add(

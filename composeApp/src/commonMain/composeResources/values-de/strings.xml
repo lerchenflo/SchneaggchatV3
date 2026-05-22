@@ -241,6 +241,7 @@
     <string name="use_default_server">Standardserver verwenden</string>
 
     <string name="you_have_new_messages">Du hast neue Nachrichten</string>
+    <string name="new_messages">Neue Nachrichten</string>
     <string name="new_message_noti_single_title">Neuer Chat von %1$s</string>
     <string name="new_message_noti_group_title">Neuer Chat von %1$s in %2$s</string>
 
