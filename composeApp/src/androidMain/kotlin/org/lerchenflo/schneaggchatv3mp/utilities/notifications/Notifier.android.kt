@@ -48,7 +48,11 @@ actual class Notifier(private val context: Context) {
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra(EXTRA_FROM_NOTIFICATION, true)
-        } ?: Intent()
+        } ?: Intent().apply {
+            setClassName(context, "org.lerchenflo.androidApp.MainActivity")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra(EXTRA_FROM_NOTIFICATION, true)
+        }
         
         val pendingIntent = PendingIntent.getActivity(
             context,
