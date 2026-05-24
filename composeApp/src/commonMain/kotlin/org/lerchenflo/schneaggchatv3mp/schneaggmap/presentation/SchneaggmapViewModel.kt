@@ -25,21 +25,15 @@ class SchneaggmapViewModel(
         mapRepository.getAllMapEntriesFlow(),
         mapRepository.getAllSubtypesFlow(),
         mapRepository.getAllMainTypesFlow(),
-    ) { s, entries, subtypes, mainTypes ->
-
-        println("MAP: Loaded ${entries.size} map entrys")
+    ) { state, entries, subtypes, mainTypes ->
 
         val subtypesByMainType = subtypes.groupBy { it.mainTypeKey }
-        val enabledMainTypes = if (s.enabledMainTypes.isEmpty() && mainTypes.isNotEmpty()) {
-            mainTypes.map { it.key }.toSet()
-        } else {
-            s.enabledMainTypes
-        }
-        s.copy(
+
+        state.copy(
             entries = entries,
             subtypesByMainType = subtypesByMainType,
             mainTypes = mainTypes,
-            enabledMainTypes = enabledMainTypes,
+            enabledMainTypes = state.enabledMainTypes,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -59,8 +53,9 @@ class SchneaggmapViewModel(
             }
             SchneaggmapAction.Refresh -> refresh()
             is SchneaggmapAction.ToggleMainType -> {
-                val enabled = _state.value.enabledMainTypes
+                val enabled = state.value.enabledMainTypes
                 val updated = if (action.key in enabled) enabled - action.key else enabled + action.key
+
                 _state.update { it.copy(enabledMainTypes = updated) }
             }
             is SchneaggmapAction.SelectEntry -> _state.update {
