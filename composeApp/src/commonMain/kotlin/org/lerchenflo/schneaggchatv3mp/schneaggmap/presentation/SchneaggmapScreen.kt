@@ -8,21 +8,34 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.CameraState
 import org.maplibre.compose.camera.rememberCameraState
+import org.maplibre.compose.expressions.dsl.const
+import org.maplibre.compose.expressions.dsl.contains
+import org.maplibre.compose.expressions.dsl.feature
+import org.maplibre.compose.layers.CircleLayer
 import org.maplibre.compose.map.MapOptions
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.OrnamentOptions
 import org.maplibre.compose.material3.DisappearingCompassButton
 import org.maplibre.compose.material3.DisappearingScaleBar
+import org.maplibre.compose.sources.GeoJsonData
+import org.maplibre.compose.sources.GeoJsonOptions
+import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.style.BaseStyle
 import org.maplibre.compose.style.StyleState
 import org.maplibre.compose.style.rememberStyleState
+import org.maplibre.spatialk.geojson.Feature
+import org.maplibre.spatialk.geojson.FeatureCollection
+import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
 
 @Composable
@@ -99,6 +112,49 @@ private fun SchneaggmapMapContent(
         )
     ) {
 
+        //println("MapLocations: ${state.entries}")
+
+
+        if (state.entries.isNotEmpty()) {
+            val mapLocationSource = rememberGeoJsonSource(
+                data = GeoJsonData.Features(
+                    FeatureCollection(
+                        features = state.entries.map { entry ->
+                            Feature(
+                                geometry = Point(
+                                    coordinates = Position(
+                                        longitude = entry.lon,
+                                        latitude = entry.lat,
+                                    )
+                                ),
+                                properties = buildJsonObject {
+                                    put("type", JsonPrimitive(entry.mainTypeKey))
+                                }
+                            )
+                        }
+                    )
+                ),
+                options = GeoJsonOptions(
+                    cluster = true,
+                    clusterRadius = 16,
+                    clusterMinPoints = 3
+                )
+            )
+
+            val filter = const(state.enabledMainTypes.toList()).contains(feature["type"])
+
+            // 3. Apply Filter to Layer
+            CircleLayer(
+                id = "mapicons",
+                source = mapLocationSource,
+                color = const(Color.Gray),
+                radius = const(10.dp),
+
+                // The layer automatically updates when 'filter' changes
+                filter = filter
+            )
+        }
     }
+
 }
 
