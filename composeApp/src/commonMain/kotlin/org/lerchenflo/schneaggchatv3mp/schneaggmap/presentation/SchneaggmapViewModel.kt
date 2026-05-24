@@ -26,6 +26,9 @@ class SchneaggmapViewModel(
         mapRepository.getAllSubtypesFlow(),
         mapRepository.getAllMainTypesFlow(),
     ) { s, entries, subtypes, mainTypes ->
+
+        println("MAP: Loaded ${entries.size} map entrys")
+
         val subtypesByMainType = subtypes.groupBy { it.mainTypeKey }
         val enabledMainTypes = if (s.enabledMainTypes.isEmpty() && mainTypes.isNotEmpty()) {
             mainTypes.map { it.key }.toSet()

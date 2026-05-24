@@ -2,12 +2,11 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -27,51 +26,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.CameraState
 import org.maplibre.compose.camera.rememberCameraState
-import org.maplibre.compose.expressions.dsl.*
-import org.maplibre.compose.layers.CircleLayer
-import org.maplibre.compose.layers.SymbolLayer
+import org.maplibre.compose.map.MapOptions
 import org.maplibre.compose.map.MaplibreMap
-import org.maplibre.compose.sources.GeoJsonData
-import org.maplibre.compose.sources.GeoJsonOptions
-import org.maplibre.compose.sources.rememberGeoJsonSource
+import org.maplibre.compose.map.OrnamentOptions
 import org.maplibre.compose.material3.DisappearingCompassButton
 import org.maplibre.compose.material3.DisappearingScaleBar
 import org.maplibre.compose.material3.ExpandingAttributionButton
 import org.maplibre.compose.style.BaseStyle
 import org.maplibre.compose.style.StyleState
 import org.maplibre.compose.style.rememberStyleState
-import org.maplibre.compose.util.ClickResult
-import org.maplibre.spatialk.geojson.Feature
-import org.maplibre.spatialk.geojson.FeatureCollection
-import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
-import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
-import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_filter_location_types
-import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_title
-
-private val CLUSTER_COLOR = Color(0xFF424242)
-
-private val MAIN_TYPE_COLORS = mapOf(
-    "street" to Color(0xFFE53935),
-    "sightseeingplace" to Color(0xFF1E88E5),
-    "foodplace" to Color(0xFF43A047),
-)
-
-private fun colorForMainType(key: String): Color =
-    MAIN_TYPE_COLORS[key] ?: Color(0xFF9E9E9E)
 
 @Composable
 fun SchneaggmapScreenRoot(
@@ -94,17 +68,15 @@ fun SchneaggmapScreen(
 ) {
     val cameraState = rememberCameraState(
         firstPosition = CameraPosition(
-            target = Position(16.3738, 48.2082),
+            target = Position(9.3738, 48.2082),
             zoom = 12.0,
         )
     )
     val styleState = rememberStyleState()
 
-    Column(modifier = modifier.fillMaxSize()) {
-        ActivityTitle(
-            title = stringResource(Res.string.schneaggmap_title),
-            onBackClick = { onAction(SchneaggmapAction.OnBackClicked) },
-        )
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
         Box(modifier = Modifier.fillMaxSize()) {
             SchneaggmapMapContent(
                 state = state,
@@ -112,16 +84,23 @@ fun SchneaggmapScreen(
                 styleState = styleState,
                 onAction = onAction,
             )
-            state.selectedEntry?.let { entry ->
-                MapMarkerOverlay(lat = entry.lat, lon = entry.lon, cameraState = cameraState) {
-                    EntryInfoCard(
-                        entry = entry,
-                        mainTypeDisplayName = state.mainTypes.find { it.key == entry.mainTypeKey }?.displayName ?: entry.mainTypeKey,
-                        onDismiss = { onAction(SchneaggmapAction.SelectEntry(null)) },
-                        modifier = Modifier.offset(y = (-80).dp),
+
+            MapIcon(
+                cameraState = cameraState,
+                targetPosition = Position(9.7333905, 47.4275590),
+            ) {
+                IconButton(
+                    onClick = {}
+                ) {
+                    Icon(
+                        Icons.Filled.FilterList,
+                        contentDescription = null,
+                        modifier = Modifier.size(120.dp),
+                        tint = Color.Red
                     )
                 }
             }
+
             DisappearingCompassButton(
                 cameraState = cameraState,
                 modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
@@ -144,6 +123,7 @@ fun SchneaggmapScreen(
             if (state.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
+
         }
     }
 }
@@ -155,82 +135,17 @@ private fun SchneaggmapMapContent(
     styleState: StyleState,
     onAction: (SchneaggmapAction) -> Unit,
 ) {
-    val placeFeatures = state.entries.mapIndexed { index, entry ->
-        Feature(
-            geometry = Point(Position(entry.lon, entry.lat)),
-            properties = buildJsonObject {
-                put("mainTypeKey", entry.mainTypeKey)
-            },
-            id = JsonPrimitive(index),
-        )
-    }
 
     MaplibreMap(
         modifier = Modifier.fillMaxSize(),
         baseStyle = BaseStyle.Uri("https://tiles.openfreemap.org/styles/liberty"),
         cameraState = cameraState,
         styleState = styleState,
+        options = MapOptions(
+            ornamentOptions = OrnamentOptions.AllDisabled
+        )
     ) {
-        val placeSource = rememberGeoJsonSource(
-            data = GeoJsonData.Features(FeatureCollection(placeFeatures)),
-            options = GeoJsonOptions(cluster = true, clusterRadius = 50, clusterMaxZoom = 14),
-        )
 
-        state.mainTypes.forEach { mainType ->
-            CircleLayer(
-                id = "place_${mainType.key}",
-                source = placeSource,
-                visible = mainType.key in state.enabledMainTypes,
-                filter = !feature.has("cluster") and
-                    (feature["mainTypeKey"].asString() eq const(mainType.key)),
-                color = const(colorForMainType(mainType.key)),
-                radius = const(10.dp),
-                strokeColor = const(Color.White),
-                strokeWidth = const(2.dp),
-                onClick = { features ->
-                    val index = features.firstOrNull()?.id?.content?.toIntOrNull()
-                    val entry = index?.let { state.entries.getOrNull(it) }
-                    if (entry != null) onAction(SchneaggmapAction.SelectEntry(entry))
-                    ClickResult.Consume
-                },
-            )
-        }
-
-        CircleLayer(
-            id = "place_clusters",
-            source = placeSource,
-            filter = feature.has("cluster"),
-            color = const(CLUSTER_COLOR),
-            radius = const(18.dp),
-            strokeColor = const(Color.White),
-            strokeWidth = const(2.dp),
-            onClick = { ClickResult.Consume },
-        )
-
-        SymbolLayer(
-            id = "place_cluster_count",
-            source = placeSource,
-            filter = feature.has("cluster"),
-            textField = format(span(feature["point_count_abbreviated"].asString())),
-            textColor = const(Color.White),
-            textSize = const(12.sp),
-        )
-    }
-}
-
-@Composable
-fun BoxScope.MapMarkerOverlay(
-    lat: Double,
-    lon: Double,
-    cameraState: CameraState,
-    content: @Composable () -> Unit,
-) {
-    @Suppress("UNUSED_VARIABLE")
-    val cameraPosition = cameraState.position
-    val projection = cameraState.projection ?: return
-    val screenOffset = projection.screenLocationFromPosition(Position(lon, lat))
-    Box(Modifier.offset(x = screenOffset.x, y = screenOffset.y)) {
-        content()
     }
 }
 
