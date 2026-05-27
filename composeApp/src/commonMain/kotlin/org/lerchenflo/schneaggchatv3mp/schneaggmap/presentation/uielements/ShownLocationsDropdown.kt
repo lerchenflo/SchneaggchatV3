@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -37,7 +38,11 @@ fun ShownLocationsDropdown(
         FloatingActionButton(
             onClick = { onAction(SchneaggmapAction.ToggleFilterDropdown) },
         ) {
-            Icon(Icons.Default.FilterList, contentDescription = null)
+            if (state.isLoading) {
+                CircularProgressIndicator()
+            } else {
+                Icon(Icons.Default.FilterList, contentDescription = null)
+            }
         }
         AnimatedVisibility(visible = state.isFilterDropdownVisible) {
             Card(modifier = Modifier.padding(top = 8.dp).width(200.dp)) {

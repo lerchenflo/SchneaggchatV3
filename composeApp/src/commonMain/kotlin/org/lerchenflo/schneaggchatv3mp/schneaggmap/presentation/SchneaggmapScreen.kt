@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -39,13 +40,10 @@ import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
 
 @Composable
-fun SchneaggmapScreenRoot(
-    modifier: Modifier = Modifier
-) {
+fun SchneaggmapScreenRoot() {
     val viewModel = koinViewModel<SchneaggmapViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
     SchneaggmapScreen(
-        modifier = modifier,
         state = state,
         onAction = viewModel::onAction,
     )
@@ -53,7 +51,6 @@ fun SchneaggmapScreenRoot(
 
 @Composable
 fun SchneaggmapScreen(
-    modifier: Modifier = Modifier,
     state: SchneaggmapState = SchneaggmapState(),
     onAction: (SchneaggmapAction) -> Unit = {},
 ) {
@@ -75,11 +72,12 @@ fun SchneaggmapScreen(
 
         DisappearingCompassButton(
             cameraState = cameraState,
-            modifier = Modifier.align(Alignment.TopStart).padding(16.dp),
+            modifier = Modifier.align(Alignment.TopStart).padding(8.dp),
         )
         DisappearingScaleBar(
             metersPerDp = cameraState.metersPerDpAtTarget,
             zoom = cameraState.position.zoom,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.align(Alignment.BottomStart).padding(start = 16.dp, bottom = 16.dp),
         )
         ShownLocationsDropdown(
@@ -87,9 +85,6 @@ fun SchneaggmapScreen(
             onAction = onAction,
             modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
         )
-        if (state.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        }
 
     }
 }
