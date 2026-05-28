@@ -37,7 +37,6 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
-import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
@@ -54,30 +53,41 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.sendErrorSuspend
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.trySendError
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.*
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.AudioContent
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.ImageContent
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.PollContent
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.TextContent
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.*
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.FriendshipStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupMemberAction
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.GroupSyncResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.IdTimeStamp
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toSubtype
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMainType
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.LatLongResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageSyncResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.NewFriendsUserResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollCreateRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteOptionCreateRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryEditRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubtypeCreateNetworkRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubtypeResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
@@ -286,8 +296,17 @@ class AppRepository(
                     }
                 }
 
+                val mapJob = async {
+                    try {
+                        mapEntryIdSync()
+                        println("Map sync completed successfully")
+                    } catch (e: Exception) {
+                        loggingRepository.logWarning("Map sync failed: ${e.message}")
+                    }
+                }
+
                 // Wait for all to complete (errors are already handled)
-                awaitAll(userJob, messageJob, groupJob)
+                awaitAll(userJob, messageJob, groupJob, mapJob)
 
                 val errorProfilePicJob = async {
                     getMissingPics()
@@ -303,33 +322,19 @@ class AppRepository(
 
     // ─── Map sync (triggered only from map screen, not part of global dataSync) ─
 
-    suspend fun mapSync() {
-        coroutineScope {
-            val entryJob = async {
-                try { mapEntryIdSync() } catch (e: Exception) { loggingRepository.logWarning("Map entry sync failed: ${e.message}") }
-            }
-            val subtypeJob = async {
-                try { subtypeIdSync() } catch (e: Exception) { loggingRepository.logWarning("Subtype sync failed: ${e.message}") }
-            }
-            val mainTypeJob = async {
-                try { mainTypeFetch() } catch (e: Exception) { loggingRepository.logWarning("Main type fetch failed: ${e.message}") }
-            }
-            awaitAll(entryJob, subtypeJob, mainTypeJob)
-        }
-    }
-
     private suspend fun mapEntryIdSync() {
         val localEntries = mapRepository.getMapEntryChangeIds()
         var currentPage = 0
         var moreEntries = true
         while (moreEntries) {
             val response = networkUtils.mapSync(
-                entries = localEntries.map { NetworkUtils.IdTimeStamp(it.id, it.updatedAt) },
+                entries = localEntries.map { IdTimeStamp(it.id, it.updatedAt) },
                 page = currentPage,
             )
             when (response) {
-                is NetworkResult.Error<*> -> { println("Map entry sync error"); break }
+                is NetworkResult.Error<*> -> { println("Map entry sync error: ${response.error}"); break }
                 is NetworkResult.Success -> {
+                    println("Map sync success, upserting ${response.data.updatedEntries} entrys")
                     response.data.updatedEntries.forEach { mapRepository.upsertMapEntry(it.toMapEntry()) }
                     response.data.deletedEntries.forEach { mapRepository.deleteMapEntry(it) }
                     moreEntries = response.data.moreEntries
@@ -339,71 +344,43 @@ class AppRepository(
         }
     }
 
-    private suspend fun subtypeIdSync() {
-        val localEntries = mapRepository.getSubtypeChangeIds()
-        var currentPage = 0
-        var moreSubtypes = true
-        while (moreSubtypes) {
-            val response = networkUtils.subtypeSync(
-                entries = localEntries.map { NetworkUtils.IdTimeStamp(it.id, it.updatedAt) },
-                page = currentPage,
-            )
-            when (response) {
-                is NetworkResult.Error<*> -> { println("Subtype sync error"); break }
-                is NetworkResult.Success -> {
-                    response.data.updatedSubtypes.forEach { mapRepository.upsertSubtype(it.toSubtype()) }
-                    response.data.deletedSubtypeIds.forEach { mapRepository.deleteSubtype(it) }
-                    moreSubtypes = response.data.moreSubtypes
-                }
-            }
-            currentPage++
-        }
-    }
 
-    private suspend fun mainTypeFetch() {
-        when (val response = networkUtils.getMainTypes()) {
-            is NetworkResult.Error<*> -> println("Main type fetch error")
-            is NetworkResult.Success -> mapRepository.replaceAllMainTypes(response.data.map { it.toMainType() })
-        }
-    }
 
     // ─── Map CRUD ─────────────────────────────────────────────────────────────
     // WS broadcast handles local DB upsert/delete automatically after server write.
 
     suspend fun createMapEntry(
-        mainTypeKey: String,
-        subtypeIds: List<String>,
+        name: String,
+        description: String,
         lat: Double,
         lon: Double,
-        description: String,
-        attributes: Map<String, AttributeValue>,
+        locationData: LocationData,
     ): NetworkResult<MapEntryResponse, NetworkError> {
         return networkUtils.createMapEntry(
             MapEntryCreateRequest(
-                mainTypeKey = mainTypeKey,
-                subtypeIds = subtypeIds,
-                coordinates = LatLongResponse(lat = lat, long = lon),
+                name = name,
                 description = description,
-                attributes = attributes,
+                coordinates = LatLong(lat = lat, long = lon),
+                locationData = locationData,
             )
         )
     }
 
     suspend fun editMapEntry(
         entryId: String,
-        subtypeIds: List<String>,
+        name: String,
+        description: String,
         lat: Double,
         lon: Double,
-        description: String,
-        attributes: Map<String, AttributeValue>,
+        locationData: LocationData,
     ): NetworkResult<MapEntryResponse, NetworkError> {
         return networkUtils.editMapEntry(
             MapEntryEditRequest(
                 entryId = entryId,
-                subtypeIds = subtypeIds,
-                coordinates = LatLongResponse(lat = lat, long = lon),
+                name = name,
                 description = description,
-                attributes = attributes,
+                coordinates = LatLong(lat = lat, long = lon),
+                locationData = locationData,
             )
         )
     }
@@ -412,12 +389,6 @@ class AppRepository(
         return networkUtils.deleteMapEntry(entryId)
     }
 
-    suspend fun createSubtype(
-        mainTypeKey: String,
-        name: String,
-    ): NetworkResult<SubtypeResponse, NetworkError> {
-        return networkUtils.createSubtype(SubtypeCreateNetworkRequest(mainTypeKey = mainTypeKey, name = name))
-    }
 
     /**
      * Get missing profile pics (On ios after update installation, there are no more pictures)

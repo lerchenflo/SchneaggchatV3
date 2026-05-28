@@ -30,15 +30,11 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MainTypeResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryEditRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubtypeCreateNetworkRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubtypeResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubtypeSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
@@ -128,6 +124,7 @@ class NetworkUtils(
             // ✅ Detect platform-specific network errors by message/type name
             // on iOS, NSURLErrorDomain errors land here as they don't extend IOException
             val isNetworkError = isNetworkException(e)
+            println("Is network connection error: $isNetworkError: ${e.message}")
             if (isNetworkError) {
                 println("Going offline: Platform network exception - ${e.message}")
                 setOffline()
@@ -1137,19 +1134,9 @@ class NetworkUtils(
         )
     }
 
-    suspend fun subtypeSync(
-        entries: List<IdTimeStamp>,
-        page: Int,
-    ): NetworkResult<SubtypeSyncResponse, NetworkError> {
-        return safePost(
-            endpoint = "/map/subtypes/sync?page=$page&page_size=400",
-            body = entries,
-        )
-    }
 
-    suspend fun getMainTypes(): NetworkResult<List<MainTypeResponse>, NetworkError> {
-        return safeGet(endpoint = "/map/maintypes")
-    }
+
+
 
     suspend fun createMapEntry(
         request: MapEntryCreateRequest,
@@ -1167,10 +1154,5 @@ class NetworkUtils(
         return safeDelete(endpoint = "/map/delete?entryid=$entryId")
     }
 
-    suspend fun createSubtype(
-        request: SubtypeCreateNetworkRequest,
-    ): NetworkResult<SubtypeResponse, NetworkError> {
-        return safePost(endpoint = "/map/subtypes/create", body = request)
-    }
 
 }

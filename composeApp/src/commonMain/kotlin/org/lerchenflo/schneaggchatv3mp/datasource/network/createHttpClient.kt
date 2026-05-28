@@ -129,7 +129,6 @@ object AppJson {
                 subclass(SocketConnectionMessage.UserChange::class)
                 subclass(SocketConnectionMessage.FriendRequest::class)
                 subclass(SocketConnectionMessage.MapChange::class)
-                subclass(SocketConnectionMessage.SubtypeChange::class)
             }
 
             polymorphic(PollResponse::class) {
@@ -138,10 +137,10 @@ object AppJson {
             }
 
             polymorphic(AttributeValue::class) {
-                subclass(AttributeValue.StringVal::class)
-                subclass(AttributeValue.IntVal::class)
-                subclass(AttributeValue.DoubleVal::class)
-                subclass(AttributeValue.BoolVal::class)
+                subclass(AttributeValue.StringValue::class)
+                subclass(AttributeValue.IntValue::class)
+                subclass(AttributeValue.DoubleValue::class)
+                subclass(AttributeValue.BoolValue::class)
             }
 
             polymorphic(AttributeDefinition::class) {

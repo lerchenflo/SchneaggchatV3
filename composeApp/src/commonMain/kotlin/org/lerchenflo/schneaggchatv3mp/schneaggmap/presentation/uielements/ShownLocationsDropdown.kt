@@ -57,21 +57,21 @@ fun ShownLocationsDropdown(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     )
                     HorizontalDivider()
-                    state.mainTypes.forEach { mainType ->
+                    allLocationTypes.forEach { typeInfo ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .fillMaxWidth() //Max intrinsic size (for onclick listener)
                                 .clickable{
-                                    onAction(SchneaggmapAction.ToggleMainType(mainType.key))
+                                    onAction(SchneaggmapAction.ToggleMainType(typeInfo.key))
                                 }
                         ) {
                             Checkbox(
-                                checked = mainType.key in state.enabledMainTypes,
+                                checked = typeInfo.key in state.enabledTypes,
                                 onCheckedChange = null,
                                 modifier = Modifier.padding(8.dp)
                             )
-                            Text(text = mainType.displayName)
+                            Text(text = typeInfo.displayName)
                         }
                     }
                 }
@@ -79,3 +79,15 @@ fun ShownLocationsDropdown(
         }
     }
 }
+
+private data class LocationTypeInfo(val key: String, val displayName: String)
+
+private val allLocationTypes = listOf(
+    LocationTypeInfo("radar", "Radar"),
+    LocationTypeInfo("street", "Street"),
+    LocationTypeInfo("camping", "Camping"),
+    LocationTypeInfo("sightseeing", "Sightseeing"),
+    LocationTypeInfo("swimming", "Swimming Location"),
+    LocationTypeInfo("party", "Party Location"),
+    LocationTypeInfo("food", "Food")
+)

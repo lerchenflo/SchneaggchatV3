@@ -3,7 +3,6 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -15,6 +14,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.typeKey
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.CameraState
@@ -56,7 +56,7 @@ fun SchneaggmapScreen(
 ) {
     val cameraState = rememberCameraState(
         firstPosition = CameraPosition(
-            target = Position(9.3738, 48.2082),
+            target = Position(9.3738, 47.2082),
             zoom = 7.0,
         )
     )
@@ -118,12 +118,12 @@ private fun SchneaggmapMapContent(
                             Feature(
                                 geometry = Point(
                                     coordinates = Position(
-                                        longitude = entry.lon,
-                                        latitude = entry.lat,
+                                        longitude = entry.coordinates.long,
+                                        latitude = entry.coordinates.lat,
                                     )
                                 ),
                                 properties = buildJsonObject {
-                                    put("type", JsonPrimitive(entry.mainTypeKey))
+                                    put("type", JsonPrimitive(entry.locationData.typeKey))
                                 }
                             )
                         }
@@ -131,12 +131,12 @@ private fun SchneaggmapMapContent(
                 ),
                 options = GeoJsonOptions(
                     cluster = true,
-                    clusterRadius = 16,
-                    clusterMinPoints = 3
+                    clusterRadius = 13,
+                    clusterMinPoints = 6
                 )
             )
 
-            val filter = const(state.enabledMainTypes.toList()).contains(feature["type"])
+            val filter = const(state.enabledTypes.toList()).contains(feature["type"])
 
             // 3. Apply Filter to Layer
             CircleLayer(

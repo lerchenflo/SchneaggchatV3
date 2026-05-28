@@ -2,19 +2,22 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 
 @Entity(tableName = "map_entries")
 data class MapEntryDto(
     @PrimaryKey val id: String,
-    val mainTypeKey: String,
-    val subtypeIds: String,   // JSON: List<String>
-    val lat: Double,
-    val lon: Double,
+
+    val coordinates: LatLong,
+    val name: String,
     val description: String,
-    val attributes: String,   // JSON: Map<String, AttributeValue>
+
+    val locationData: LocationData,
+
     val createdBy: String,
     val createdAt: Long,
-    val lastChangedBy: String,
-    val updatedAt: String,    // lastChangedAt epoch ms as String
-    val deleted: Boolean,
+
+    val updatedBy: String,
+    val updatedAt: Long
 )

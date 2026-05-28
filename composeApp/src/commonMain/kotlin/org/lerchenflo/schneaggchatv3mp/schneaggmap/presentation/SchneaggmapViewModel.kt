@@ -23,17 +23,10 @@ class SchneaggmapViewModel(
     val state = combine(
         _state,
         mapRepository.getAllMapEntriesFlow(),
-        mapRepository.getAllSubtypesFlow(),
-        mapRepository.getAllMainTypesFlow(),
-    ) { state, entries, subtypes, mainTypes ->
-
-        val subtypesByMainType = subtypes.groupBy { it.mainTypeKey }
+    ) { state, entries ->
 
         state.copy(
             entries = entries,
-            subtypesByMainType = subtypesByMainType,
-            mainTypes = mainTypes,
-            enabledMainTypes = state.enabledMainTypes,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -41,9 +34,6 @@ class SchneaggmapViewModel(
         initialValue = SchneaggmapState(),
     )
 
-    init {
-        refresh()
-    }
 
     fun onAction(action: SchneaggmapAction) {
         when (action) {
@@ -51,12 +41,11 @@ class SchneaggmapViewModel(
             SchneaggmapAction.ToggleFilterDropdown -> _state.update {
                 it.copy(isFilterDropdownVisible = !it.isFilterDropdownVisible, selectedEntry = null)
             }
-            SchneaggmapAction.Refresh -> refresh()
             is SchneaggmapAction.ToggleMainType -> {
-                val enabled = state.value.enabledMainTypes
+                val enabled = state.value.enabledTypes
                 val updated = if (action.key in enabled) enabled - action.key else enabled + action.key
 
-                _state.update { it.copy(enabledMainTypes = updated) }
+                _state.update { it.copy(enabledTypes = updated) }
             }
             is SchneaggmapAction.SelectEntry -> _state.update {
                 it.copy(selectedEntry = action.entry, isFilterDropdownVisible = false)
@@ -64,16 +53,5 @@ class SchneaggmapViewModel(
         }
     }
 
-    private fun refresh() {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
-            try {
-                appRepository.mapSync()
-            } catch (e: Exception) {
-                _state.update { it.copy(error = e.message) }
-            } finally {
-                _state.update { it.copy(isLoading = false) }
-            }
-        }
-    }
+
 }

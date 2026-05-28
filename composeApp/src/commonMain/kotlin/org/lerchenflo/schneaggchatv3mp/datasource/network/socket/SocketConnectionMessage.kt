@@ -17,10 +17,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubtypeResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toSubtype
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiId
@@ -65,12 +63,7 @@ sealed interface SocketConnectionMessage {
         val deleted: Boolean,
     ) : SocketConnectionMessage
 
-    @Serializable
-    @SerialName("subtypechange")
-    data class SubtypeChange(
-        val subtype: SubtypeResponse,
-        val newSubtype: Boolean,
-    ) : SocketConnectionMessage
+
 }
 
 
@@ -309,10 +302,6 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                 } else {
                     mapRepository.upsertMapEntry(socketMessage.mapEntry.toMapEntry())
                 }
-            }
-
-            is SocketConnectionMessage.SubtypeChange -> {
-                mapRepository.upsertSubtype(socketMessage.subtype.toSubtype())
             }
 
         }

@@ -60,8 +60,6 @@ val sharedmodule = module{
 
     single <PlayerDao> { get<AppDatabase>().playerDao() } //TODO: Manu warum musch du inegrätscha und alles andersch macha
     single { get<AppDatabase>().mapEntryDao() }
-    single { get<AppDatabase>().subtypeDao() }
-    single { get<AppDatabase>().mainTypeDao() }
 
     singleOf(::TokenManager)
 
