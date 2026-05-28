@@ -50,6 +50,23 @@ class SchneaggmapViewModel(
             is SchneaggmapAction.SelectEntry -> _state.update {
                 it.copy(selectedEntry = action.entry, isFilterDropdownVisible = false)
             }
+
+            is SchneaggmapAction.OnMapClick -> {
+
+                //Dismiss filter dropdown on map click
+                if (_state.value.isFilterDropdownVisible) {
+                    _state.update {
+                        it.copy(isFilterDropdownVisible = false)
+                    }
+                }
+
+                //Dismiss
+                if (_state.value.selectedEntry != null) {
+                    _state.update {
+                        it.copy(selectedEntry = null)
+                    }
+                }
+            }
         }
     }
 
