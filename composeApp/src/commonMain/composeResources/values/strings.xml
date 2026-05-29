@@ -575,7 +575,7 @@
     <string name="changelog_got_it">Got it</string>
 
     <!-- Schneaggmap -->
-    <string name="schneaggmap_title">Schneaggmap</string>
     <string name="schneaggmap_filter_location_types">Location types</string>
+    <string name="description">Description</string>
 
 </resources>

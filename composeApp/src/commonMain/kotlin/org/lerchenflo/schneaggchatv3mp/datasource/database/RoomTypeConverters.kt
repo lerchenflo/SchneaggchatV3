@@ -33,6 +33,14 @@ class RoomTypeConverters {
         json.decodeFromString(LocationData.serializer(), value)
 
     @TypeConverter
+    fun locationDataListToString(data: List<LocationData>): String =
+        json.encodeToString(data)
+
+    @TypeConverter
+    fun stringToLocationDataList(value: String): List<LocationData> =
+        json.decodeFromString(value)
+
+    @TypeConverter
     fun latLongToString(latLong: LatLong): String =
         json.encodeToString(LatLong.serializer(), latLong)
 

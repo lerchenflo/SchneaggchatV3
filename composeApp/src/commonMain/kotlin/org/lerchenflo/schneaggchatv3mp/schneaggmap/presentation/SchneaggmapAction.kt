@@ -10,4 +10,9 @@ sealed interface SchneaggmapAction {
     data class SelectEntry(val entry: MapEntry?) : SchneaggmapAction
 
     data class OnMapClick(val coordinates: LatLong, val longClick: Boolean) : SchneaggmapAction
+    data class OnEntryClick(val entryId: String) : SchneaggmapAction
+
+    data object OnEntryPopupDismiss: SchneaggmapAction
+    data class OnEntryPopupSave(val newEntry: MapEntry): SchneaggmapAction
+
 }

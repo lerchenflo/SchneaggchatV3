@@ -3,6 +3,25 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.domain
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+
+
+enum class LocationType {
+    RADAR, STREET, CAMPING, SIGHTSEEING, SWIMMING, PARTY, FOOD;
+
+    val typeKey: String get() = when (this) {
+        RADAR       -> "radar"
+        STREET      -> "street"
+        CAMPING     -> "camping"
+        SIGHTSEEING -> "sightseeing"
+        SWIMMING    -> "swimming"
+        PARTY       -> "party"
+        FOOD        -> "food"
+    }
+}
+
+val allLocationTypeKeys: List<String> = LocationType.entries.map { it.typeKey }
+
+
 @Serializable
 sealed interface LocationData {
 

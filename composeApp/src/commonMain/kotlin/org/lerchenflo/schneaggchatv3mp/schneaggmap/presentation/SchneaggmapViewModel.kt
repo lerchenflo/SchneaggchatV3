@@ -12,6 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 
+
 class SchneaggmapViewModel(
     private val navigator: Navigator,
     private val mapRepository: MapRepository,
@@ -52,6 +53,7 @@ class SchneaggmapViewModel(
             }
 
             is SchneaggmapAction.OnMapClick -> {
+                println("Onclick. Longclick: ${action.longClick}")
 
                 //Dismiss filter dropdown on map click
                 if (_state.value.isFilterDropdownVisible) {
@@ -65,6 +67,38 @@ class SchneaggmapViewModel(
                     _state.update {
                         it.copy(selectedEntry = null)
                     }
+                }
+            }
+
+            is SchneaggmapAction.OnEntryClick -> {
+                println("On entry clicked: ${action.entryId}")
+
+                val selectedEntry = state.value.entries.firstOrNull { it.id == action.entryId}
+
+                if (selectedEntry == null) {
+                    println("selected entry is null")
+
+                }
+
+                _state.update { currentState ->
+                    currentState.copy(
+                        selectedEntry = selectedEntry,
+                        isFilterDropdownVisible = false
+                    )
+                }
+            }
+
+            SchneaggmapAction.OnEntryPopupDismiss -> {
+                _state.update {
+                    it.copy(
+                        selectedEntry = null
+                    )
+                }
+            }
+
+            is SchneaggmapAction.OnEntryPopupSave -> {
+                viewModelScope.launch {
+                    //appRepository.ed TODO Update/upsert on server
                 }
             }
         }

@@ -13,7 +13,7 @@ data class MapEntryDto(
     val name: String,
     val description: String,
 
-    val locationData: LocationData,
+    val locationData: List<LocationData>,
 
     val createdBy: String,
     val createdAt: Long,

@@ -12,7 +12,7 @@ data class MapEntryResponse(
     val name: String,
     val description: String,
 
-    val locationData: LocationData,
+    val locationData: List<LocationData>,
 
     val createdBy: String,
     val createdAt: Long,
@@ -37,7 +37,7 @@ data class MapEntryCreateRequest(
     val name: String,
     val description: String,
     val coordinates: LatLong,
-    val locationData: LocationData,
+    val locationData: List<LocationData>,
 )
 
 @Serializable
@@ -46,5 +46,5 @@ data class MapEntryEditRequest(
     val name: String,
     val description: String,
     val coordinates: LatLong,
-    val locationData: LocationData,
+    val locationData: List<LocationData>,
 )

@@ -354,7 +354,7 @@ class AppRepository(
         description: String,
         lat: Double,
         lon: Double,
-        locationData: LocationData,
+        locationData: List<LocationData>,
     ): NetworkResult<MapEntryResponse, NetworkError> {
         return networkUtils.createMapEntry(
             MapEntryCreateRequest(
@@ -372,7 +372,7 @@ class AppRepository(
         description: String,
         lat: Double,
         lon: Double,
-        locationData: LocationData,
+        locationData: List<LocationData>,
     ): NetworkResult<MapEntryResponse, NetworkError> {
         return networkUtils.editMapEntry(
             MapEntryEditRequest(
