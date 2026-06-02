@@ -64,7 +64,7 @@ fun SchneaggmapScreen(
 ) {
     val cameraState = rememberCameraState(
         firstPosition = CameraPosition(
-            target = Position(9.3738, 47.2082),
+            target = Position(9.92, 47.32),
             zoom = 7.0,
         )
     )
@@ -93,9 +93,10 @@ fun SchneaggmapScreen(
             onAction = onAction,
             modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
         )
-        state.selectedEntry?.let {
+        state.selectedEntry?.let { entry ->
+            println("Showing card: $entry")
             MapEntryInfoCard(
-                entry = it,
+                entry = entry,
                 onDismiss = {
                     onAction(SchneaggmapAction.OnEntryPopupDismiss)
                 },

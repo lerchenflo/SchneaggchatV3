@@ -17,4 +17,7 @@ sealed class AttributeValue {
     @Serializable
     @SerialName("bool") data class BoolValue(val value: Boolean) : AttributeValue()
 
+    @Serializable
+    @SerialName("enum")
+    data class EnumValue(val value: String) : AttributeValue()
 }

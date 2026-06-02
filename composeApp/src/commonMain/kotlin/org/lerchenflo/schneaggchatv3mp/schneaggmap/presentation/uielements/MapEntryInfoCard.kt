@@ -4,11 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,16 +25,19 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
-import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.asString
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
-import schneaggchatv3mp.composeapp.generated.resources.description
+import schneaggchatv3mp.composeapp.generated.resources.latitude
+import schneaggchatv3mp.composeapp.generated.resources.longitude
 import schneaggchatv3mp.composeapp.generated.resources.save
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_description
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_title
 
 @Composable
 fun MapEntryInfoCard(
@@ -68,32 +74,57 @@ fun MapEntryInfoCard(
                             name = it
                         )
                     },
-                    modifier = Modifier.padding(top = 16.dp),
+                    label = {
+                        Text(
+                            text = stringResource(Res.string.schneaggmap_entry_title)
+                        )
+                    },
+                    shape = RoundedCornerShape(16.dp)
                 )
 
+                Spacer(modifier = Modifier.height(12.dp))
 
-                InputTextField(
-                    text = currentEntry.description,
+                OutlinedTextField(
+                    value = currentEntry.description,
                     onValueChange = {
                         currentEntry = currentEntry.copy(
                             description = it
                         )
                     },
-                    label = stringResource(Res.string.description),
-                    modifier = Modifier.padding(top = 16.dp),
-                    hint = "",
+                    label = {
+                        Text(
+                            text = stringResource(Res.string.schneaggmap_entry_description)
+                        )
+                    },
+                    shape = RoundedCornerShape(16.dp)
                 )
 
+                Spacer(modifier = Modifier.height(12.dp))
 
+                CoordinateView(currentEntry.coordinates)
 
+                Spacer(modifier = Modifier.height(12.dp))
+
+                LocationAttributeView(
+                    entry = currentEntry,
+                    onChange = {
+                        currentEntry = it
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
 
                 //Close / cancel row
                 Row(
-                    modifier = Modifier.weight(1f),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val changed = entry != currentEntry
 
+                    //Move cancel button to the right, if something changed to the left (primary action always on the right)
+                    if (!changed) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
 
                     NormalButton(
                         text = stringResource(Res.string.cancel),
@@ -126,16 +157,80 @@ fun MapEntryInfoCard(
 
 
 
+@Composable
+fun LocationAttributeView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
+    entry.locationData.forEach { locationData ->
+        Text(locationData.asString())
+
+        locationData.schema().forEach { definition ->
+            val value = locationData.getValueByKey(definition.key)
+
+            KeyValueView(
+                value = value,
+                definition = definition,
+                onValueChange = { newValue ->
+                    onChange(entry.copy(
+                        locationData = entry.locationData.map {
+                            if (it === locationData) locationData.withValueForKey(definition.key, newValue)
+                            else it
+                        }
+                    ))
+                },
+            )
+        }
+    }
+}
 
 
+@Composable
+fun CoordinateView(coordinates: LatLong) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(horizontal = 12.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(Res.string.latitude),
+                modifier = Modifier.weight(1f)
+            )
 
+            Spacer(modifier = Modifier.width(8.dp))
 
+            OutlinedTextField(
+                value = coordinates.lat.toString().take(8),
+                onValueChange = {},
+                enabled = false,
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.weight(2f)
+            )
+        }
 
+        Spacer(modifier = Modifier.height(4.dp))
 
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(Res.string.longitude),
+                modifier = Modifier.weight(1f)
+            )
 
+            Spacer(modifier = Modifier.width(8.dp))
 
-
-
+            OutlinedTextField(
+                value = coordinates.long.toString().take(8),
+                onValueChange = {},
+                enabled = false,
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.weight(2f)
+            )
+        }
+    }
+}
 
 
 @Preview(
@@ -147,13 +242,12 @@ fun MapEntryInfoCard(
 private fun MapEntryInfoCardPreview() {
     SchneaggchatTheme {
         Box(
-            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             MapEntryInfoCard(
                 entry = MapEntry(
                     id = "test",
-                    coordinates = LatLong(2.22,2.22),
+                    coordinates = LatLong(2.222342342342,2.223433322222332),
                     name = "Test title entry",
                     description = "This is a default test entry for debugging how to show a popup. there is no use in this much text other than showing if the line breaks and the padding works correctly.",
                     locationData = listOf(
@@ -163,6 +257,11 @@ private fun MapEntryInfoCardPreview() {
                             closedInWinter = AttributeValue.BoolValue(false),
                             wheeliesAllowed = AttributeValue.BoolValue(true)
                         ),
+
+                        LocationData.Radar(
+                            speedLimit = AttributeValue.IntValue(25),
+                            radarType = LocationData.RadarType.REDLIGHT
+                        )
                     ),
                     createdBy = "awd",
                     createdAt = 23232L,

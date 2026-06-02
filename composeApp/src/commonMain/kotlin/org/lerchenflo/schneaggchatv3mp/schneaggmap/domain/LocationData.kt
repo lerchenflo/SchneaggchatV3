@@ -1,8 +1,30 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.domain
 
+import androidx.compose.runtime.Composable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-
+import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.location_food_type_asian
+import schneaggchatv3mp.composeapp.generated.resources.location_food_type_austrian
+import schneaggchatv3mp.composeapp.generated.resources.location_food_type_burger
+import schneaggchatv3mp.composeapp.generated.resources.location_food_type_chinese
+import schneaggchatv3mp.composeapp.generated.resources.location_food_type_greek
+import schneaggchatv3mp.composeapp.generated.resources.location_food_type_kebab
+import schneaggchatv3mp.composeapp.generated.resources.location_food_type_other
+import schneaggchatv3mp.composeapp.generated.resources.location_food_type_pizza
+import schneaggchatv3mp.composeapp.generated.resources.location_radar_type_mobile
+import schneaggchatv3mp.composeapp.generated.resources.location_radar_type_police
+import schneaggchatv3mp.composeapp.generated.resources.location_radar_type_redlight
+import schneaggchatv3mp.composeapp.generated.resources.location_radar_type_speed
+import schneaggchatv3mp.composeapp.generated.resources.location_type_camping
+import schneaggchatv3mp.composeapp.generated.resources.location_type_food
+import schneaggchatv3mp.composeapp.generated.resources.location_type_party
+import schneaggchatv3mp.composeapp.generated.resources.location_type_radar
+import schneaggchatv3mp.composeapp.generated.resources.location_type_sightseeing
+import schneaggchatv3mp.composeapp.generated.resources.location_type_street
+import schneaggchatv3mp.composeapp.generated.resources.location_type_swimming
 
 
 enum class LocationType {
@@ -29,7 +51,23 @@ sealed interface LocationData {
 
 
     //STREET LOCATION TYPES
-    enum class RadarType { REDLIGHT, SPEED, MOBILE, POLICE }
+    enum class RadarType {
+        REDLIGHT,
+        SPEED,
+        MOBILE,
+        POLICE;
+
+        fun toUiText() : UiText {
+            return when (this) {
+                REDLIGHT -> UiText.StringResourceText(Res.string.location_radar_type_redlight)
+                SPEED -> UiText.StringResourceText(Res.string.location_radar_type_speed)
+                MOBILE -> UiText.StringResourceText(Res.string.location_radar_type_mobile)
+                POLICE -> UiText.StringResourceText(Res.string.location_radar_type_police)
+            }
+        }
+    }
+
+
 
     @Serializable
     @SerialName("radar")
@@ -41,7 +79,12 @@ sealed interface LocationData {
 
         ): LocationData {
             override fun schema() = listOf(
-                AttributeDefinition.IntDef(key = "speedLimit", required = true, min = 0, max = 300)
+                AttributeDefinition.EnumDef(
+                    key = "radarType",
+                    required = true,
+                    options = RadarType.entries.map { it.name }
+                ),
+                AttributeDefinition.IntDef(key = "speedLimit", required = true, min = 0, max = 300),
             )
     }
 
@@ -115,7 +158,28 @@ sealed interface LocationData {
 
 
     //Food
-    enum class FoodType { KEBAB, PIZZA, GREEK, CHINESE, ASIAN, AUSTRIAN, BURGER, OTHER}
+    enum class FoodType { KEBAB,
+        PIZZA,
+        GREEK,
+        CHINESE,
+        ASIAN,
+        AUSTRIAN,
+        BURGER,
+        OTHER;
+
+        fun toUiText() : UiText {
+            return when (this) {
+                KEBAB -> UiText.StringResourceText(Res.string.location_food_type_kebab)
+                PIZZA -> UiText.StringResourceText(Res.string.location_food_type_pizza)
+                GREEK -> UiText.StringResourceText(Res.string.location_food_type_greek)
+                CHINESE -> UiText.StringResourceText(Res.string.location_food_type_chinese)
+                ASIAN -> UiText.StringResourceText(Res.string.location_food_type_asian)
+                AUSTRIAN -> UiText.StringResourceText(Res.string.location_food_type_austrian)
+                BURGER -> UiText.StringResourceText(Res.string.location_food_type_burger)
+                OTHER -> UiText.StringResourceText(Res.string.location_food_type_other)
+            }
+        }
+    }
 
     @Serializable
     @SerialName("food")
@@ -126,6 +190,11 @@ sealed interface LocationData {
 
     ): LocationData {
         override fun schema() = listOf(
+            AttributeDefinition.EnumDef(
+                key = "foodType",
+                required = true,
+                options = FoodType.entries.map { it.name }
+            ),
             AttributeDefinition.BoolDef(key = "allYouCanEat", required = false),
         )
     }
@@ -144,5 +213,42 @@ val LocationData.typeKey: String
         is LocationData.Food -> "food"
     }
 
+@Composable
+fun LocationData.asString(): String {
+    return when (this) {
+        is LocationData.Camping ->
+            stringResource(Res.string.location_type_camping)
 
+        is LocationData.Food ->
+            stringResource(Res.string.location_type_food)
+
+        is LocationData.PartyLocation ->
+            stringResource(Res.string.location_type_party)
+
+        is LocationData.Radar ->
+            stringResource(Res.string.location_type_radar)
+
+        is LocationData.SightSeeing ->
+            stringResource(Res.string.location_type_sightseeing)
+
+        is LocationData.Street ->
+            stringResource(Res.string.location_type_street)
+
+        is LocationData.SwimmingLocation ->
+            stringResource(Res.string.location_type_swimming)
+    }
+}
+
+//Horror aber was sunsch
+@Composable
+fun uiTextFromEnumValue(value: String): UiText{
+    if (LocationData.RadarType.entries.map { it.toString() }.contains(value)){
+        return LocationData.RadarType.valueOf(value).toUiText()
+    }
+    if (LocationData.FoodType.entries.map { it.toString() }.contains(value)){
+        return LocationData.FoodType.valueOf(value).toUiText()
+    }
+    return UiText.DynamicString("Unresolved")
+
+}
 
