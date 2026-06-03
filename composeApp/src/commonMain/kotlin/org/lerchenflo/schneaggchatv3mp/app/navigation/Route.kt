@@ -23,6 +23,8 @@ sealed interface Route : NavKey {
     data object Login: Route, NavKey
     @Serializable
     data object SignUp: Route, NavKey
+    @Serializable
+    data object EmailVerifiedCheck: Route, NavKey
 
 
     @Serializable

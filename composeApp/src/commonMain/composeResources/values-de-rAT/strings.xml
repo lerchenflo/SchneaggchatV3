@@ -20,6 +20,15 @@
     <string name="message">Nochricht</string>
     <string name="login">Ilogga</string>
 
+
+    <string name="email_not_verified_screen_title">Du musch dine Email verifiziera vor du Schneaggchat verwenda kannsch.</string>
+    <string name="email_not_verified_email_has_been_sent1">Wenn du din Account grad erstellt hosch, isch a Bestätigungslink zu </string>
+    <string name="email_not_verified_email_has_been_sent2">unterwegs. Wenn du scho länger dabei bisch, musch an neua Link afordra.</string>
+    <string name="email_check_verified">Email - Verifizierung überprüfa</string>
+    <string name="email_check_problem">Es tuat ned</string>
+
+
+
     <string name="just_now">aktuell</string>
     <string name="yesterday">gest</string>
     <string name="today">Heute</string>
@@ -235,11 +244,20 @@
     <string name="new_message_noti_single_title">Neuer Chat vo %1$s</string>
     <string name="new_message_noti_group_title">Neuer Chat vo %1$s in %2$s</string>
 
+    <string name="new_message_reaction">%1$s hot uf dine %2$s reagiert</string>
+
+
     <string name="new_friend_request_noti">Freundschaftsanfrog von %1$s</string>
     <string name="new_friend_request_noti_body">%1$s will din Freund sei</string>
 
     <string name="new_friend_accepted_noti">Freundschaftafrog agno</string>
     <string name="new_friend_accepted_noti_body">%1$s isch jetzt din Freund</string>
+
+    <string name="own_birthday_noti_title">Alles Gute zum Geburtstag! &#127874;</string>
+    <string name="own_birthday_noti_body">Viel Spaß und an schöna Tag!</string>
+    <string name="friend_birthday_noti_title">%1$s hot hüt Geburtstag! &#127874;</string>
+    <string name="friend_birthday_noti_body">Vergiss ned zum gratuliera!</string>
+
 
     <string name="tooltip_username">Wähl an Benutzernama dean andere Benutzer seahand</string>
     <string name="tooltip_email">Wird zum Wiederherstella vo da Zugangsdaten und zur Löschung vom Account verwendet</string>
@@ -272,6 +290,9 @@
     <string name="readers">Leser</string>
     <string name="read_at_time">gleasa %1$s</string>
     <string name="no_readers">No niemand hot des gleasa</string>
+    <string name="reactions">Reaktiona</string>
+    <string name="no_reactions">Bis jetzt no kua Reaktiona</string>
+    <string name="sent_at">Gschickt %1$s</string>
 
     <string name="pin_chat">Chat apinna</string>
     <string name="unpin_chat">Pin entferna</string>
@@ -573,5 +594,9 @@
     <string name="changelog_bug_fixes">Fehlerbehebunga</string>
     <string name="changelog_no_details">Kua Details verfügbar für dia Version.</string>
     <string name="changelog_got_it">Gleasa</string>
+
+
+    <string name="custom_reaction">Eigne Reaktion</string>
+    <string name="enter_reaction">Reaktion igia</string>
 
 </resources>

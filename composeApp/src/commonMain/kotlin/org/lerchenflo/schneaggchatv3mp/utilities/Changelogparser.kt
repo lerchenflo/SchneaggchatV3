@@ -48,18 +48,20 @@ object ChangelogParser {
 
         val features = mutableListOf<String>()
         val bugfixes = mutableListOf<String>()
+        val announcements = mutableListOf<String>()
         var currentSection: MutableList<String>? = null
 
         for (line in lines) {
             val trimmed = line.trim()
             when {
+                trimmed.startsWith("#### Announcements") -> currentSection = announcements
                 trimmed.startsWith("#### Features") -> currentSection = features
                 trimmed.startsWith("#### Bugfixes") -> currentSection = bugfixes
                 trimmed.startsWith("- ") -> currentSection?.add(trimmed.removePrefix("- ").trim())
             }
         }
 
-        return ChangelogEntry(version = version, features = features, bugfixes = bugfixes)
+        return ChangelogEntry(version = version, features = features, bugfixes = bugfixes, announcements = announcements)
     }
 }
 
@@ -67,4 +69,5 @@ data class ChangelogEntry(
     val version: String,
     val features: List<String>,
     val bugfixes: List<String>,
+    val announcements: List<String>
 )

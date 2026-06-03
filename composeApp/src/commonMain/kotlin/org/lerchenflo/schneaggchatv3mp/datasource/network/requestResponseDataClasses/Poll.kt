@@ -2,12 +2,10 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCl
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoter
-import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 
 
 fun PollResponse.toPollMessage(ownId: String): PollMessage {

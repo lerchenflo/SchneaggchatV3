@@ -2,7 +2,10 @@ package org.lerchenflo.schneaggchatv3mp
 
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import org.jetbrains.compose.resources.painterResource
 import org.lerchenflo.schneaggchatv3mp.app.App
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.schneaggchat_logo_v3
 import java.awt.Dimension
 
 fun main() = application {
@@ -13,6 +16,7 @@ fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
         title = "SchneaggchatV3 Desktop",
+        icon = painterResource(Res.drawable.schneaggchat_logo_v3) // taskbar / window icon (tested on linux)
 
     ) {
         window.setSize(1600, 1000)

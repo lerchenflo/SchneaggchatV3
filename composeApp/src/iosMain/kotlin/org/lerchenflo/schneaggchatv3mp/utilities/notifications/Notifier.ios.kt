@@ -3,16 +3,12 @@ package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.UIKit.UIApplication
 import platform.UIKit.unregisterForRemoteNotifications
-import platform.UserNotifications.UNAuthorizationOptionAlert
-import platform.UserNotifications.UNAuthorizationOptionBadge
-import platform.UserNotifications.UNAuthorizationOptionSound
 import platform.UserNotifications.UNAuthorizationStatusAuthorized
 import platform.UserNotifications.UNMutableNotificationContent
 import platform.UserNotifications.UNNotificationRequest
 import platform.UserNotifications.UNNotificationSound
 import platform.UserNotifications.UNUserNotificationCenter
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 actual class Notifier {
 
@@ -61,5 +57,17 @@ actual class Notifier {
             .removeDeliveredNotificationsWithIdentifiers(strIds)
         UNUserNotificationCenter.currentNotificationCenter()
             .removePendingNotificationRequestsWithIdentifiers(strIds)
+    }
+
+    actual fun cancelAllNotifications() {
+        UNUserNotificationCenter.currentNotificationCenter().removeAllDeliveredNotifications()
+        UNUserNotificationCenter.currentNotificationCenter().removeAllPendingNotificationRequests()
+    }
+
+    actual fun cancelMessageNotifications(ids: List<Int>) {
+        // APNs delivers notifications with server-assigned identifiers unknown to the client.
+        // Per-id cancellation cannot match them, so wipe all delivered notifications.
+        UNUserNotificationCenter.currentNotificationCenter().removeAllDeliveredNotifications()
+        UNUserNotificationCenter.currentNotificationCenter().removeAllPendingNotificationRequests()
     }
 }

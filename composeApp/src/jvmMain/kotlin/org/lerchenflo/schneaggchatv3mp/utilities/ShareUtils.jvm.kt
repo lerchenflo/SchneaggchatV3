@@ -1,9 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
-import java.awt.Toolkit
-import java.awt.datatransfer.StringSelection
-import java.awt.datatransfer.Clipboard
 import java.awt.Desktop
+import java.awt.Toolkit
+import java.awt.datatransfer.Clipboard
+import java.awt.datatransfer.StringSelection
 import java.net.URI
 import java.net.URLEncoder
 

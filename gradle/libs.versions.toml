@@ -1,19 +1,26 @@
 [versions]
-agp = "9.2.0"
+agp = "9.2.1"
+
+
+# ATTENTION WHEN UPDATING
+kmp-audio-recorder-player = "1.0.0-alpha05" #update with datetime, test for voice message crashes
+kotlinx-datetime = "0.7.1-0.6.x-compat" #Check for voice message crash when updating
+material3 = "1.11.0-alpha05" #Test for ios input crashes when updating (IRLinkage error crash when clicking on any textfield)
+cryptographyProviderOptimal = "0.5.0" #update same as material3
+
+
+
 
 androidx-activity = "1.13.0"
-
 androidx-lifecycle = "2.10.0"
 coilComposeVersion = "3.4.0"
 componentsResources = "1.10.3"
-composeHotReload = "1.1.0"
+composeHotReload = "1.1.1"
 composeMultiplatform = "1.10.3"
 coreSplashscreen = "1.2.0"
-cryptographyProviderOptimal = "0.5.0" #update same as material3
 encoding = "2.6.0"
 foundation = "1.10.3"
-githubImagepickerkmp = "1.0.40"
-kmp-audio-recorder-player = "1.0.0-alpha05"
+githubImagepickerkmp = "1.0.41"
 
 moko = "0.20.1"
 
@@ -21,14 +28,12 @@ jwtKt = "1.2.1"
 kotlin = "2.3.21"
 ksp = "2.3.5"
 
-kotlinx-coroutines = "1.10.2"
-material3 = "1.11.0-alpha05" #Test for ios input crashes when updating (IRLinkage error crash when clicking on any textfield)
+kotlinx-coroutines = "1.11.0"
 materialIconsExtended = "1.7.3"
 room = "2.8.4"
 
 runtime = "1.10.3"
 sqlite = "2.6.2"
-kotlinx-datetime = "0.7.1-0.6.x-compat"
 datetime-wheel-picker = "1.3.0"
 
 koin-core = "4.2.1"
@@ -43,15 +48,15 @@ firebase-messaging-version = "24.1.2"
 google-services = "4.4.4"
 uiToolingPreview = "1.10.3"
 
-cmpNavigation3 = "1.1.0"
+cmpNavigation3 = "1.1.1"
 appUpdateKtx = "2.1.0"
 coreKtx = "1.18.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 appcompat = "1.7.1"
-material = "1.13.0"
-composeBom = "2026.04.01"
+material = "1.14.0"
+composeBom = "2026.05.00"
 
 ksafe = "1.8.1"
 

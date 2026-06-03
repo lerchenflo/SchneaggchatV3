@@ -11,7 +11,7 @@
     <string name="no_status">no status</string>
     <string name="unknown_user">unknown user</string>
 
-    <string name="status_infotext">This status is available to all your friends. Currently it is not set.</string>
+    <string name="status_infotext">This status is available to all your friends. Currently, it is not set.</string>
     <string name="currentstatus">Your current status: %1$s</string>
 
 
@@ -19,6 +19,15 @@
     <string name="add">add</string>
     <string name="message">message</string>
     <string name="login">login</string>
+
+
+    <string name="email_not_verified_screen_title">You need to verify your email to start using Schneaggchat</string>
+    <string name="email_not_verified_email_has_been_sent1">If you created your account just now, a confirmation link has been sent to </string>
+    <string name="email_not_verified_email_has_been_sent2">. If you created your account some time ago, you may have to request the link again.</string>
+    <string name="email_check_verified">Check email verification</string>
+    <string name="email_check_problem">Having trouble? Get help</string>
+
+
 
     <string name="just_now">just now</string>
     <string name="yesterday">yesterday</string>
@@ -32,12 +41,12 @@
 
     <string name="email">Email</string>
     <string name="invalid_email">Enter a correct email address</string>
-    <string name="sign_up">I don't have an account</string>
-    <string name="loginsubtitle">THE best chatting app ever - now in V3 with Crossplatform for Android, IOS and Desktop!</string>
+    <string name="email_provider_warning">Please use a trusted email provider (Gmail, Yahoo, Outlook, iCloud, GMX). Temporary or disposable email services are discouraged for security reasons (e.g. account hijacking and recovery issues).</string>    <string name="sign_up">I don't have an account</string>
+    <string name="loginsubtitle">THE best chatting app ever - now in V3 with Multiplatform for Android, IOS and Desktop!</string>
     <string name="create_account">Create account</string>
     <string name="create_account_subtitle">Join now</string>
     <string name="acc_not_exist">Account does not exist</string>
-    <string name="offline">You are offline</string>
+    <string name="offline">Lost connection to the server</string>
     <string name="unknown_error">An unknown error occurred</string>
     <string name="birthdateerror">Error with birthdate</string>
     <string name="acc_locked">Your account is currently locked</string>
@@ -124,6 +133,9 @@
     <string name="theme">Theme</string>
     <string name="theme_sel_desc">Change the look of your app</string>
 
+    <string name="camera">Camera</string>
+    <string name="gallery">Gallery</string>
+    <string name="choose_image_source">Choose image source</string>
 
     <!-- Todoliste -->
     <string name="todolist">Todos</string>
@@ -232,14 +244,24 @@
     <string name="use_default_server">Use default server</string>
 
     <string name="you_have_new_messages">You have new messages</string>
+    <string name="new_messages">New messages</string>
     <string name="new_message_noti_single_title">New chat from %1$s</string>
     <string name="new_message_noti_group_title">New chat from %1$s in %2$s</string>
+
+    <string name="new_message_reaction">%1$s reacted to your %2$s</string>
+
 
     <string name="new_friend_request_noti">Friend request from %1$s</string>
     <string name="new_friend_request_noti_body">%1$s wants to be your friend</string>
 
     <string name="new_friend_accepted_noti">Friend request accepted</string>
     <string name="new_friend_accepted_noti_body">%1$s is now your friend</string>
+
+    <string name="own_birthday_noti_title">Happy Birthday! &#127874;</string>
+    <string name="own_birthday_noti_body">Wishing you a wonderful day!</string>
+    <string name="friend_birthday_noti_title">%1$s has birthday today! &#127874;</string>
+    <string name="friend_birthday_noti_body">Don\'t forget to congratulate them!</string>
+
 
     <string name="tooltip_username">Choose a unique username others will see</string>
     <string name="tooltip_email">Used for account recovery and deletion</string>
@@ -272,6 +294,9 @@
     <string name="readers">Readers</string>
     <string name="read_at_time">read %1$s</string>
     <string name="no_readers">No one has read this yet</string>
+    <string name="reactions">Reactions</string>
+    <string name="no_reactions">No reactions yet</string>
+    <string name="sent_at">Sent %1$s</string>
 
     <string name="pin_chat">Pin Chat</string>
     <string name="unpin_chat">unpin Chat</string>
@@ -568,11 +593,16 @@
 
     <!-- Changelog Popup -->
     <string name="changelog_whats_new">What's New</string>
+    <string name="changelog_announcements">Announcements</string>
     <string name="changelog_version">Version %1$s</string>
     <string name="changelog_features">Features</string>
     <string name="changelog_bug_fixes">Bug Fixes</string>
     <string name="changelog_no_details">No details available for this version.</string>
     <string name="changelog_got_it">Got it</string>
+
+
+    <string name="custom_reaction">Custom reaction</string>
+    <string name="enter_reaction">Enter reaction</string>
 
     <!-- Schneaggmap -->
     <string name="schneaggmap_filter_location_types">Location types</string>

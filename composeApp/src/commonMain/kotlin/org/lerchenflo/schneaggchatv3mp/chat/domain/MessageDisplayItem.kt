@@ -17,7 +17,8 @@ sealed class MessageDisplayItem {
         val message: Message,
         val senderName: String?,  // Pre-resolved from User
         val senderColor: Int,      // Pre-calculated for group messages
-        val resolvedReaders: Map<String, String> = emptyMap() // readerId -> readerName, pre-resolved
+        val resolvedReaders: Map<String, String> = emptyMap(), // readerId -> readerName, pre-resolved
+        val resolvedReactions: Map<String, String> = emptyMap() // userId -> userName, pre-resolved
     ) : MessageDisplayItem()
     
     /**
@@ -34,4 +35,8 @@ sealed class MessageDisplayItem {
         override val id: String,
         val readerList: List<MessageReader>
     ): MessageDisplayItem()
+
+    data object NewMessagesDivider : MessageDisplayItem() {
+        override val id: String = "new_messages_divider"
+    }
 }

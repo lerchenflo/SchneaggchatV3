@@ -11,8 +11,8 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 
@@ -55,7 +55,7 @@ class SharedSettingsViewmodel(
         viewModelScope.launch { // Own user
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
 
-            appRepository.getUserFlow(ownId).collect { value ->
+            appRepository.getUserByIdFlow(ownId).collect { value ->
                 ownUser = value
             }
         }

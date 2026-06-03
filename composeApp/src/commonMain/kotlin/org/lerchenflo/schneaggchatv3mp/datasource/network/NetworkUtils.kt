@@ -141,6 +141,8 @@ class NetworkUtils(
     private fun isNetworkException(e: Exception): Boolean {
         val name = e::class.simpleName ?: ""
         val message = e.message ?: ""
+        // Ktor body-deserialization errors mention class paths containing "network" — exclude them
+        if (message.startsWith("Expected response body")) return false
         return name.contains("NSURLError", ignoreCase = true)
                 || name.contains("Network", ignoreCase = true)
                 || name.contains("Socket", ignoreCase = true)
@@ -334,8 +336,8 @@ class NetworkUtils(
         }
     }
 
-    suspend fun sendEmailVerify(){
-        safePost<Any, Any>(
+    suspend fun sendEmailVerify(): NetworkResult<Unit, NetworkError> {
+        return safePost<String, Unit>(
             endpoint = "/users/verificationemail",
             body = ""
         )
@@ -941,13 +943,20 @@ class NetworkUtils(
         val sendDate: Long,
         val lastChanged: Long,
         val deleted: Boolean,
-        val readers: List<ReaderResponse>
+        val readers: List<ReaderResponse>,
+        val reactions: List<ReactionResponse> = emptyList()
     )
 
     @Serializable
     data class ReaderResponse(
         val userId: String,
         val readAt: Long
+    )
+
+    @Serializable
+    data class ReactionResponse(
+        val userId: String,
+        val content: String
     )
 
     suspend fun sendTextMessageToServer(messageId: String?, empfaenger: String, gruppe: Boolean, content: String, answerid: String?) : NetworkResult<MessageResponse, NetworkError> {
@@ -1107,6 +1116,19 @@ class NetworkUtils(
     suspend fun deleteMessage(messageId: String): NetworkResult<Any, RequestError> {
         return safeDelete(
             endpoint = "/messages/delete?messageid=$messageId"
+        )
+    }
+
+    @Serializable
+    data class ReactionRequest(
+        val messageId: String,
+        val content: String
+    )
+
+    suspend fun reactToMessage(messageId: String, content: String): NetworkResult<MessageResponse, NetworkError> {
+        return safePost(
+            endpoint = "/messages/react",
+            body = ReactionRequest(messageId = messageId, content = content)
         )
     }
 

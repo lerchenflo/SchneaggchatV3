@@ -1,5 +1,3 @@
-import org.jetbrains.compose.ComposeBuildConfig.composeVersion
-
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
@@ -19,15 +17,15 @@ java {
 android {
     namespace = "org.lerchenflo.androidApp"
     compileSdk {
-        version = release(36)
+        version = release(37)
     }
 
     defaultConfig {
         applicationId = "org.lerchenflo.schneaggchatv3mp"
         minSdk = 28
         targetSdk = 37
-        versionCode = 18
-        versionName = "3.0.9"
+        versionCode = 21
+        versionName = "3.0.11"
     }
     packaging {
         resources {
@@ -35,8 +33,10 @@ android {
         }
     }
     buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
+
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
         }
 
 

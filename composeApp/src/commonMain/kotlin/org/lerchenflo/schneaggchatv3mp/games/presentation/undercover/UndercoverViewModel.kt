@@ -9,13 +9,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlin.random.Random
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
+import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.undercover_winner_civilians
 import schneaggchatv3mp.composeapp.generated.resources.undercover_winner_mr_white
 import schneaggchatv3mp.composeapp.generated.resources.undercover_winner_undercover
+import kotlin.random.Random
 
 class UndercoverViewModel(
     private val languageService: LanguageService

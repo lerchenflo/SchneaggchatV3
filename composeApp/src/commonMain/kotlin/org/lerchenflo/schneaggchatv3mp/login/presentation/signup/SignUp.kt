@@ -6,25 +6,30 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Cake
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,10 +37,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -45,30 +48,35 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.runBlocking
-import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
 import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
-import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
-import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
-import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
+import io.github.ismoy.imagepickerkmp.domain.models.MimeType
+import io.github.ismoy.imagepickerkmp.features.imagepicker.config.ImagePickerKMPConfig
+import io.github.ismoy.imagepickerkmp.features.imagepicker.model.ImagePickerResult
+import io.github.ismoy.imagepickerkmp.features.imagepicker.ui.rememberImagePickerKMP
+import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.number
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.getPrivacyPolicyUrl
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.EmailInputField
 import org.lerchenflo.schneaggchatv3mp.sharedUi.SwipeableCardView
-import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.getPrivacyPolicyUrl
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt1
 import schneaggchatv3mp.composeapp.generated.resources.accept_agb_pt2
+import schneaggchatv3mp.composeapp.generated.resources.camera
+import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
 import schneaggchatv3mp.composeapp.generated.resources.create_account
 import schneaggchatv3mp.composeapp.generated.resources.email
+import schneaggchatv3mp.composeapp.generated.resources.gallery
+import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 import schneaggchatv3mp.composeapp.generated.resources.password
 import schneaggchatv3mp.composeapp.generated.resources.password_again
 import schneaggchatv3mp.composeapp.generated.resources.profile_picture
@@ -78,19 +86,9 @@ import schneaggchatv3mp.composeapp.generated.resources.tooltip_birthdate
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_email
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_password
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_password_repeat
-import schneaggchatv3mp.composeapp.generated.resources.tooltip_profile_picture
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_terms
-import schneaggchatv3mp.composeapp.generated.resources.username
-import dev.darkokoa.datetimewheelpicker.WheelDatePicker
-import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.number
-import kotlinx.datetime.toLocalDateTime
-import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_username
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
+import schneaggchatv3mp.composeapp.generated.resources.username
 
 
 @Composable
@@ -103,6 +101,7 @@ fun SignUpScreenRoot(){
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(
     modifier: Modifier = Modifier.fillMaxSize(),
@@ -173,7 +172,7 @@ fun SignUpScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        InputTextField(
+                        EmailInputField(
                             text = state.emailState.text,
                             onValueChange = { onAction(SignupAction.OnEmailTextChange(it)) },
                             label = stringResource(Res.string.email),
@@ -181,7 +180,6 @@ fun SignUpScreen(
                             errortext = state.emailState.errorMessage,
                             tooltip = stringResource(Res.string.tooltip_email),
                             imeAction = ImeAction.Next,
-                            keyboardType = KeyboardType.Email,
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -386,33 +384,117 @@ fun SignUpScreen(
             }
         }
 
-        // Image picker dialog
-        if (showImagePickerDialog) {
-            GalleryPickerLauncher(
-                onPhotosSelected = {
-                    onAction(SignupAction.OnProfilepicSelected(it.first()))
-                    showImagePickerDialog = false
-                },
-                onError = {
-                    showImagePickerDialog = false
-                },
-                onDismiss = {
-                    showImagePickerDialog = false
-                },
-                allowMultiple = false,
-                enableCrop = true,
-                cameraCaptureConfig = CameraCaptureConfig(
-                    compressionLevel = CompressionLevel.HIGH,
-                    preference = CapturePhotoPreference.FAST,
-                    cropConfig = CropConfig(
-                        enabled = true,
-                        aspectRatioLocked = true,
-                        circularCrop = true,
-                        squareCrop = false,
-                        freeformCrop = false
-                    ),
+
+        val picker = rememberImagePickerKMP(
+            config = ImagePickerKMPConfig(
+                cropConfig = CropConfig(
+                    enabled = true,
+                    aspectRatioLocked = true,
+                    circularCrop = true,
+                    squareCrop = false,
+                    freeformCrop = false
+                ),
+                galleryConfig = GalleryConfig(
+                    allowMultiple = false,
+                    mimeTypes = listOf(MimeType.IMAGE_ALL),
+                    includeExif = false
                 )
             )
+        )
+        val result = picker.result
+
+
+        if (showImagePickerDialog) {
+
+            // Handle side effects safely
+            LaunchedEffect(result) {
+                when (result) {
+                    is ImagePickerResult.Success -> {
+                        onAction(SignupAction.OnProfilepicSelected(result.photos.first()))
+
+                        picker.reset()
+                        showImagePickerDialog = false
+                    }
+
+                    is ImagePickerResult.Dismissed -> {
+                        picker.reset()
+                        showImagePickerDialog = false
+                    }
+
+                    else -> Unit
+                }
+            }
+
+            BasicAlertDialog(
+                onDismissRequest = {
+                    showImagePickerDialog = false
+                }
+            ) {
+
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.padding(16.dp)
+                ) {
+
+                    Column(
+                        modifier = Modifier
+                            .padding(24.dp)
+                            .width(IntrinsicSize.Min),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+
+                        when (result) {
+
+                            is ImagePickerResult.Loading -> {
+                                CircularProgressIndicator()
+                            }
+
+                            is ImagePickerResult.Error -> {
+                                Text(
+                                    text = "Error: ${result.exception.message}",
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+
+                            is ImagePickerResult.Idle -> {
+
+                                Text(
+                                    stringResource(Res.string.choose_image_source)
+                                )
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+
+                                    Button(
+                                        onClick = {
+                                            picker.launchCamera()
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text(stringResource(Res.string.camera))
+                                    }
+
+                                    Button(
+                                        onClick = {
+                                            picker.launchGallery()
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text(stringResource(Res.string.gallery))
+                                    }
+                                }
+                            }
+
+                            is ImagePickerResult.Success,
+                            is ImagePickerResult.Dismissed -> {
+                                // handled in LaunchedEffect
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

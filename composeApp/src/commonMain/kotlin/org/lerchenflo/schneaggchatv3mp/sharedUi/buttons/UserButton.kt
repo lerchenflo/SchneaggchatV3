@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.filled.CallReceived
 import androidx.compose.material.icons.automirrored.outlined.CallMade
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
+import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
@@ -39,6 +40,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.audio
@@ -138,6 +140,15 @@ fun UserButton(
                             modifier = Modifier
                                 .size(18.dp)
                                 .rotate(45f) // Rotates the pin to look like it's sticking in
+                        )
+                    }
+
+                    if ((selectedChat as? UserChat)?.let { isBirthdayToday(it.birthDate) } == true) {
+                        Icon(
+                            imageVector = Icons.Default.Cake,
+                            contentDescription = "birthdate today",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
                         )
                     }
 

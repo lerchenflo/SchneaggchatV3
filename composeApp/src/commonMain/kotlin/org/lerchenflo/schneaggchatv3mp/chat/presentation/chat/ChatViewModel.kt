@@ -52,8 +52,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel.SendMessageContent.TextContent
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioPlayer
@@ -113,7 +115,7 @@ class ChatViewModel(
 
     sealed class SendMessageContent {
         data class TextContent(val textMessage: TextFieldValue) : SendMessageContent()
-        data class ImageContent(val images: List<ByteArray>, val text: TextFieldValue) : SendMessageContent()
+        data class ImageContent(val images: List<ByteArray>, var text: TextFieldValue) : SendMessageContent()
         data class AudioContent(
             val audioPath: String,
             val duration: Long,
@@ -141,26 +143,21 @@ class ChatViewModel(
 
     private val _shouldLoadAllMessages = MutableStateFlow(false)
 
+    private var newMessagesBoundaryComputed = false
+    private val newMessagesBoundaryId = MutableStateFlow<String?>(null)
+
     fun setAllMessagesRead() {
 
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
         CoroutineScope(Dispatchers.IO).launch {
-            // Get message IDs from current chat that need notification removal
-            val messageIdsString = messageDisplayState.value
+            val messageIds = messageDisplayState.value
                 .filterIsInstance<MessageDisplayItem.MessageItem>()
                 .filter { item -> !item.message.readByMe }
-                .mapNotNull {
-                    it.message.id
-                }
+                .mapNotNull { it.message.id }
+                .map { NotificationManager.NotiId.HexString(it).asInt }
 
-            val messageIds = messageIdsString.map {
-                NotificationManager.NotiId.HexString(it).asInt
-            }
-
-            if (messageIds.isNotEmpty()) {
-                NotificationManager.removeNotifications(messageIds)
-            }
+            NotificationManager.removeMessageNotifications(messageIds)
         }
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -193,7 +190,8 @@ class ChatViewModel(
         //Validation of message
         when (message) {
             is SendMessageContent.TextContent -> {
-                require(message.textMessage.text.isNotEmpty()) { return }
+                if (message.textMessage.text.isBlank()) return
+
                 require(message.textMessage.text.length < 10000) {
                     runBlocking {
                         SnackbarManager.showMessage(getString(Res.string.message_too_long))
@@ -202,13 +200,17 @@ class ChatViewModel(
                 }
             }
             is SendMessageContent.ImageContent -> {
-                require(message.images.isNotEmpty()) { return }
+                if (message.images.isEmpty()) return
 
                 require(message.text.text.length < 10000) {
                     runBlocking {
                         SnackbarManager.showMessage(getString(Res.string.message_too_long))
                     }
                     return
+                }
+
+                if (message.text.text.isBlank()) {
+                    message.text = message.text.copy(text = "") //Clear string content if only linebreak / tab
                 }
             }
             is SendMessageContent.AudioContent -> {
@@ -271,7 +273,7 @@ class ChatViewModel(
         updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
     }
 
-    fun onImageSelected(results: List<GalleryPhotoResult>) {
+    fun onImagesSelected(results: List<GalleryPhotoResult>) {
 
         CoroutineScope(Dispatchers.Default).launch {
             val byteArrays = results.map { it.loadBytes() }
@@ -329,7 +331,7 @@ class ChatViewModel(
             is MessageAction.VotePoll -> {
                 viewModelScope.launch {
                     appRepository.votePoll(
-                        pollVoteRequest = NetworkUtils.PollVoteRequest(
+                        pollVoteRequest = PollVoteRequest(
                             messageId = action.messageId,
                             id = action.optionId,
                             text = null,
@@ -344,7 +346,7 @@ class ChatViewModel(
                 viewModelScope.launch {
                     appRepository.votePoll(
                         ownId = ownId,
-                        pollVoteRequest = NetworkUtils.PollVoteRequest(
+                        pollVoteRequest = PollVoteRequest(
                             messageId = action.messageId,
                             id = null,
                             text = action.text,
@@ -382,16 +384,23 @@ class ChatViewModel(
             is MessageAction.DeleteMessage -> deleteMessage(action.message)
             is MessageAction.StartEditMessage -> {
                 editMessage = action.message
-                updateSendContent(SendMessageContent.TextContent(TextFieldValue(action.message.content)))
+                updateSendContent(TextContent(TextFieldValue(action.message.content)))
             }
             MessageAction.CancelEditMessage -> {
                 editMessage = null
-                updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
+                updateSendContent(TextContent(TextFieldValue("")))
                 //println("Update message sendtext to empty")
             }
 
             is MessageAction.ReplyToMessage -> updateReplyMessage(action.message)
-
+            is MessageAction.ToggleReaction -> {
+                viewModelScope.launch {
+                    appRepository.reactToMessage(
+                        action.messageId,
+                        action.reaction
+                    )
+                }
+            }
         }
     }
 
@@ -639,16 +648,28 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                             _isLoadingOlderMessages.value = false
                         }
 
+                        captureNewMessagesBoundary(messages)
                         Triple(messages, userList, groupList)
                     }
                 }.flowOn(Dispatchers.Default)
                     .flatMapLatest { (messages, users, groupMembers) ->
-                        flowOf(processMessages(messages, users, groupMembers))
+                        flowOf(processMessages(messages, users, groupMembers, newMessagesBoundaryId.value))
                     }
             }
             .flowOn(Dispatchers.Default)
 
-    private fun processMessages(messages: List<Message>, users: List<User>, groupMembers: List<GroupMember>
+    private fun captureNewMessagesBoundary(messages: List<Message>) {
+        if (newMessagesBoundaryComputed || messages.isEmpty()) return
+        newMessagesBoundaryComputed = true
+        val idx = messages.indexOfLast { !it.myMessage && !it.readByMe }
+        newMessagesBoundaryId.value = if (idx >= 0) messages[idx].id else null
+    }
+
+    private fun processMessages(
+        messages: List<Message>,
+        users: List<User>,
+        groupMembers: List<GroupMember>,
+        newMessagesBoundaryId: String?,
     ): List<MessageDisplayItem> {
         val userMap = users.associateBy { it.id }
         val groupMap = groupMembers.associateBy { it.userId }
@@ -692,6 +713,11 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                 reader.readerId to (reader.readerName ?: "Unknown")
             }
 
+            val resolvedReactions = message.reactions.associate { reaction ->
+                val reactUser = userMap[reaction.userId]
+                reaction.userId to (reactUser?.nickName ?: reactUser?.name ?: groupMap[reaction.userId]?.memberName ?: "Unknown")
+            }
+
             // Use the message's unique ID to look up the grouped readers
             val readersAtThisMessage = readersToDisplayPerMessage[message.id]
             if (!readersAtThisMessage.isNullOrEmpty()) {
@@ -709,9 +735,14 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                     message = message,
                     senderName = senderName,
                     senderColor = resolvedColor,
-                    resolvedReaders = resolvedReaders
+                    resolvedReaders = resolvedReaders,
+                    resolvedReactions = resolvedReactions
                 )
             )
+
+            if (newMessagesBoundaryId != null && message.id == newMessagesBoundaryId) {
+                displayItems.add(MessageDisplayItem.NewMessagesDivider)
+            }
 
             if (currentDate != nextDate && currentDate != null) {
                 displayItems.add(

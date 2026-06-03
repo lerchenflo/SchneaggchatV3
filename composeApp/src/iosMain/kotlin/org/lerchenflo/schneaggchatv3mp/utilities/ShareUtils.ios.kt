@@ -4,8 +4,8 @@ import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGRectMake
-import platform.Foundation.NSURL
 import platform.Foundation.NSString
+import platform.Foundation.NSURL
 import platform.Foundation.create
 import platform.UIKit.UIActivityViewController
 import platform.UIKit.UIAlertAction

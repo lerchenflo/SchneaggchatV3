@@ -28,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -59,17 +58,23 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameScreenElement
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
+import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
+import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziGameScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziSetupScreen
+import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
+import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
@@ -79,15 +84,10 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSe
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
-import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
-import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
-import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
@@ -136,6 +136,7 @@ fun App() {
                         subclass(Route.MessageChatSelector::class, Route.MessageChatSelector.serializer())
                         subclass(Route.GroupCreator::class, Route.GroupCreator.serializer())
                         subclass(Route.SignUp::class, Route.SignUp.serializer())
+                        subclass(Route.EmailVerifiedCheck::class, Route.EmailVerifiedCheck.serializer())
                         subclass(Route.ChatDetails::class, Route.ChatDetails.serializer())
                         subclass(Route.Todolist::class, Route.Todolist.serializer())
                         subclass(Route.Schneaggmap::class, Route.Schneaggmap.serializer())
@@ -382,52 +383,50 @@ fun App() {
                              */
 
                             LaunchedEffect(Unit) {
-                                if (SessionCache.isLoggedIn()) { //If already logged in reroute to chatselector
-                                    println("LOGGED IN; rerouting to chatselector")
 
-                                    if(IncomingDataManager.isNewDataAvailable()){
-                                        scope.launch {
-                                            // manually navigate to messageChatselecotor to add Chatselector to backstack
-                                            rootBackStack.clear()
-                                            rootBackStack.add(Route.ChatSelector)
-                                            rootBackStack.add(Route.MessageChatSelector)
+                                val savedCreds = appRepository.loadSavedLoginConfig()
+
+                                if (SessionCache.isLoggedIn()) {
+                                    //User got logged in when loading the saved config
+
+                                    if (savedCreds.emailVerified) {
+                                        //Email is verified, rerouting
+
+                                        println("AUTOLOGINCHECKER: Logged in and Email verified, routing to chatselector")
+
+                                        if(IncomingDataManager.isNewDataAvailable()){
+
+                                            scope.launch {
+                                                // manually navigate to messageChatselecotor to add Chatselector to backstack
+                                                rootBackStack.clear()
+                                                rootBackStack.add(Route.ChatSelector)
+                                                rootBackStack.add(Route.MessageChatSelector)
+                                            }
+                                        }else{
+
+                                            scope.launch {
+                                                navigator.navigate(
+                                                    Route.ChatSelector,
+                                                    navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
+                                                )
+                                            }
                                         }
-                                    }else{
-                                        scope.launch {
-                                            navigator.navigate(
-                                                Route.ChatSelector,
-                                                navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
-                                            )
-                                        }
-                                    }
-
-
-                                } else {
-                                    val savedCreds = appRepository.loadSavedLoginConfig()
-                                    if (!savedCreds) {
+                                    } else {
+                                        //Email not verified, navigate to email verify checker
                                         navigator.navigate(
-                                            Route.Login,
+                                            Route.EmailVerifiedCheck,
                                             navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
                                         )
-                                    } else {
-                                        println("IncomingDataManager text : ${IncomingDataManager.sharedText.value}")
-                                        if(IncomingDataManager.isNewDataAvailable()){
-                                            // manually navigate to messageChatselecotor to add Chatselector to backstack
-                                            rootBackStack.clear()
-                                            rootBackStack.add(Route.ChatSelector)
-                                            rootBackStack.add(Route.MessageChatSelector)
-                                        }else{
-                                            navigator.navigate(
-                                                Route.ChatSelector,
-                                                navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
-                                            )
-                                        }
-
-                                        globalViewModel.viewModelScope.launch {
-                                            try { appRepository.dataSync() }
-                                            catch (e: Exception) { println("Data sync error: ${e.message}") }
-                                        }
                                     }
+
+                                } else {
+
+                                    //User not logged in, reroute to login
+
+                                    navigator.navigate(
+                                        Route.Login,
+                                        navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
+                                    )
                                 }
                             }
                         }
@@ -438,6 +437,10 @@ fun App() {
 
                         entry<Route.SignUp> {
                             SignUpScreenRoot()
+                        }
+
+                        entry<Route.EmailVerifiedCheck> {
+                            EmailVerifiedCheckScreenRoot()
                         }
 
 

@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
@@ -36,7 +35,6 @@ import schneaggchatv3mp.composeapp.generated.resources.bug_sort_important
 import schneaggchatv3mp.composeapp.generated.resources.bug_sort_mine
 import schneaggchatv3mp.composeapp.generated.resources.bug_sort_todo
 import schneaggchatv3mp.composeapp.generated.resources.bug_sort_unfinished
-import kotlin.time.Clock
 
 class TodolistViewModel(
     private val todoRepository: TodoRepository,

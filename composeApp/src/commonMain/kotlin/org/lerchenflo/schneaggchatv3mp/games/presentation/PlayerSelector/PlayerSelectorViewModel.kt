@@ -4,12 +4,11 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.database.PlayerDao
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 
 class PlayerSelectorViewModel(
     private val playerDao: PlayerDao,

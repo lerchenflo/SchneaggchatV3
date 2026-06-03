@@ -2,38 +2,45 @@
 https://schneaggchatv3.lerchenflo.eu/
 
 # Schneaggchat V3
-Neue Version in CMP mit Multiplatform für Android, iOS und Desktop
+CMP Multiplatform Chat - App für Android, iOS und Desktop
 
-## What is Schneaggchat?
-Schneaggchat is an innovative chatting platform. 
+## Was macht Schneaggchat besonders
+- Vorarlbergerisch als Sprachoption
+- Umfragen mit custom Antworten
+- Userbeschreibungen (Freunde können gemeinsam einen Text über dich verfassen)
+- Nachrichten - Reaktionen (Auch mit Text)
+- Geburtstagsanzeige + Benachrichtigungen
+- App kaputt Button
+
 
 # Changelog
 
 ### 3.0.11
+
+#### Announcements
+- Bitte Bugreports / Featurerequests einreichen, falls etwas nicht passt / nicht funktioniert. Es wird nicht alles von alleine besser!
+
 #### Features
-- Schneaggmap live sync: Room database for map entries, subtypes, and main types (DB version 57)
-- MapRepository mit Delta-Sync für Kartendaten und Subtypen
-- AppRepository.mapSync() für parallele Synchronisation von Einträgen, Subtypen und Haupttypen
-- WebSocket live updates für mapchange und subtypechange Events (direkte Datenbank-Updates)
-- Server: POST /map/subtypes/sync Delta-Sync Endpoint mit lastChangedAt Timestamp
+- Reaktionenanzeige in Nachrichtendetails
+- Datensync beim Öffnen der App über Benachrichtigungen
+- Email Provider Warnung bei Registrierung und Einstellungen
+- Geburtstags - Anzeige in Chatauswahl
+- Neue-Nachrichten-Trennlinie im Chat
+- Schneaggmap mit Orten (Noch ohne Benutzerstandorte)
 
 #### Bugfixes
-- Removed hardcoded sample data from map presentation layer
-- Removed stale UserLocation overlay
+- Zufällige Logouts beim WebSocket Reconnect während Token Refresh behoben
+- Image Picker verbessert
+- Push-Benachrichtigungen werden beim Öffnen eines Chats wieder automatisch entfernt
+
 
 ### 3.0.10
 #### Features
-- Android push notifications now use Firebase Cloud Messaging (FCM) with native service integration
-- iOS push notifications now use native APNs with UNUserNotificationCenter
-- Shared Kotlin `Notifier` expect/actual for platform-specific token management and local notifications
-- Added `Message.toNotificationContent()` for localized notification text generation
-- Added `PayloadDecoder` for FCM data payload parsing
-- Desktop (JVM) includes no-op Notifier implementation
-- Android POST_NOTIFICATIONS permission now requested via ActivityResultContracts
-- Server APNs payloads now include sender name and `interruption-level: time-sensitive` for iOS 15+
+- Native Benachrichtigungen (iOS Priorität wie bei WhatsApp, Snapchat, etc)
+- Nachrichten Reaktionen
+- Geburtstags Benachrichtigung
 
 #### Bugfixes
-- Removed kmpnotifier library entirely, replacing with platform-native implementations
 - Entwicklerstatus direkt übernehmen
 
 

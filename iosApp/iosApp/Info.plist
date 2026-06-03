@@ -26,5 +26,9 @@
     <string>We need access to your microphone to record Voice Messages</string>
     <key>NSPhotoLibraryAddUsageDescription</key>
     <string>We need permission to save downloaded images to your photo library.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>We need your location to show it on the map</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>We need your location to provide location-based features even when the app is in the background.</string>
 </dict>
 </plist>

@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.ReactionView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.RepliedMessagePreview
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 
@@ -35,6 +36,9 @@ fun MessageView(
     playbackProgress: StateFlow<PlaybackProgress>? = null,
 )
 {
+
+    val spaceAfterMessage = 6.dp
+
 
     val mymessage = message.myMessage
 
@@ -58,18 +62,20 @@ fun MessageView(
         //Ganze breite
         Row(
             modifier = modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(
+                    start = if (mymessage) 40.dp else 0.dp,
+                    end = if (mymessage) 0.dp else 40.dp,
+                    top = 0.dp,
+                    bottom = if (message.reactions.isEmpty()) spaceAfterMessage else 1.dp //Small space for reactions
+                )
+                ,
             horizontalArrangement = if (mymessage) Arrangement.End else Arrangement.Start
         ) {
 
             MessageContent(
                 modifier = Modifier
-                    .padding(
-                        start = if (mymessage) 40.dp else 0.dp,
-                        end = if (mymessage) 0.dp else 40.dp,
-                        top = 0.dp,
-                        bottom = 5.dp
-                    )
+
                     //.wrapContentSize()
                     .background(
                         color = if (mymessage) {
@@ -79,7 +85,6 @@ fun MessageView(
                         },
                         shape = RoundedCornerShape(15.dp)
                     )
-                    //.clickable {println(message)}
                     .padding(6.dp),
                 message = message,
                 useMD = useMD,
@@ -92,8 +97,16 @@ fun MessageView(
                 playbackProgress = playbackProgress,
                 ownId = ownId
             )
-
         }
+
+        ReactionView(
+            reactions = message.reactions,
+            myMessage = mymessage,
+            messageId = message.id ?: "",
+            onAction = onAction,
+            modifier = Modifier.padding(bottom = spaceAfterMessage)
+        )
+
     }
 }
 

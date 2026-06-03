@@ -46,10 +46,13 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
+import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.sendErrorSuspend
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.trySendError
@@ -76,6 +79,14 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncR
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryEditRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageSyncResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.NewFriendsUserResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollCreateRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteOptionCreateRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
@@ -88,6 +99,7 @@ import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
+import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
@@ -213,8 +225,17 @@ class AppRepository(
         networkUtils.setNotificationToken(token, android)
     }
 
-    suspend fun sendEmailVerify(){
-        networkUtils.sendEmailVerify()
+    suspend fun sendEmailVerify() : Boolean{
+        return when (val result = networkUtils.sendEmailVerify()) {
+            is NetworkResult.Error<RequestError> -> {
+                println("Send email verify: Error occured: ${result.error}")
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                false
+            }
+            is NetworkResult.Success<*> -> {
+                true
+            }
+        }
     }
 
 
@@ -257,6 +278,9 @@ class AppRepository(
 
     val dataSyncLock = Mutex()
 
+    private val _isSyncing = MutableStateFlow(false)
+    val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
+
     suspend fun dataSync() {
 
         if (dataSyncLock.isLocked) {
@@ -265,8 +289,10 @@ class AppRepository(
         }
 
         dataSyncLock.withLock {
+            _isSyncing.value = true
             println("Starting datasync")
-            
+
+            try {
             coroutineScope {
                 // Launch all sync operations concurrently
                 val userJob = async {
@@ -317,6 +343,9 @@ class AppRepository(
             }
 
             println("Data sync completed")
+            } finally {
+                _isSyncing.value = false
+            }
         }
     }
 
@@ -439,8 +468,7 @@ class AppRepository(
 
 
     suspend fun getChangeLog(version: String) : ChangelogEntry? {
-        val networkResult = networkUtils.getChangeLog("$GITHUB_URL/main/README.md")
-        return when (networkResult) {
+        return when (val networkResult = networkUtils.getChangeLog("$GITHUB_URL/main/README.md")) {
             is NetworkResult.Error<*> -> {
                 println("get changelog network error: ${networkResult.error.message}")
                 null
@@ -463,10 +491,14 @@ class AppRepository(
     /**
      * Get the currently logged in user as flow
      */
-    fun getUserFlow(userId: String): Flow<User?> {
+    fun getUserByIdFlow(userId: String): Flow<User?> {
         return database.userDao().getUserbyIdFlow(userId).map { user ->
             user?.toUser()
         }
+    }
+
+    suspend fun getUserById(userId: String): User? {
+        return database.userDao().getUserbyId(userId)?.toUser()
     }
 
     fun getPendingFriends(searchTerm: String): Flow<List<SelectedChat>> {
@@ -615,17 +647,26 @@ class AppRepository(
 
             //filtered.sortedByDescending { it.lastmessage?.getSendDateAsLong() ?: 0L }
             filtered.sortedWith { a, b ->
+                val aPinned = a.pinned > 0L
+                val bPinned = b.pinned > 0L
+                val aBirthday = (a as? UserChat)?.let { isBirthdayToday(it.birthDate) } == true
+                val bBirthday = (b as? UserChat)?.let { isBirthdayToday(it.birthDate) } == true
                 when {
-                    // Case 1: Both are pinned -> Sort by pin timestamp (newest first)
-                    a.pinned > 0L && b.pinned > 0L -> b.pinned.compareTo(a.pinned)
+                    // Tier 1: Both pinned -> newest pin first
+                    aPinned && bPinned -> b.pinned.compareTo(a.pinned)
+                    aPinned -> -1
+                    bPinned -> 1
 
-                    // Case 2: Only A is pinned -> A comes first
-                    a.pinned > 0L -> -1
+                    // Tier 2: Birthday today (users only) -> under pinned
+                    aBirthday && bBirthday -> {
+                        val timeA = a.lastmessage?.getSendDateAsLong() ?: 0L
+                        val timeB = b.lastmessage?.getSendDateAsLong() ?: 0L
+                        timeB.compareTo(timeA)
+                    }
+                    aBirthday -> -1
+                    bBirthday -> 1
 
-                    // Case 3: Only B is pinned -> B comes first
-                    b.pinned > 0L -> 1
-
-                    // Case 4: Neither is pinned -> Sort by last message date
+                    // Tier 3: Sort by last message date
                     else -> {
                         val timeA = a.lastmessage?.getSendDateAsLong() ?: 0L
                         val timeB = b.lastmessage?.getSendDateAsLong() ?: 0L
@@ -679,10 +720,15 @@ class AppRepository(
 
 
 
+    data class SavedCredsResult(
+        val credsSaved: Boolean,
+        val emailVerified: Boolean
+    )
+
     /**
      * Function to load all initial data on app start
      */
-    suspend fun loadSavedLoginConfig(): Boolean{
+    suspend fun loadSavedLoginConfig(): SavedCredsResult {
         val tokens = preferencemanager.getTokens()
 
         val tokensNotEmpty = tokens.accessToken.isNotEmpty() && tokens.refreshToken.isNotEmpty()
@@ -711,7 +757,16 @@ class AppRepository(
             )
         }
 
-        return credsSaved
+        var emailVerified = false
+        if (credsSaved) {
+            val userId = JwtUtils.getUserIdFromToken(tokens.refreshToken)
+            emailVerified = getUserById(userId)?.emailVerifiedAt != null
+        }
+
+        return SavedCredsResult(
+            credsSaved = credsSaved,
+            emailVerified = emailVerified
+        )
     }
 
 
@@ -1035,7 +1090,7 @@ class AppRepository(
         newBirthDate: String? = null,
         newNickName: String? = null,
         ) : Boolean {
-        when (val success = networkUtils.changeProfile(
+        return when (val success = networkUtils.changeProfile(
             userId = userId,
             newStatus = newStatus,
             newDescription = newDescription,
@@ -1043,10 +1098,10 @@ class AppRepository(
             newBirthDate = newBirthDate,
             newNickName = newNickName,
         )){
-            is NetworkResult.Error<*> -> return false
+            is NetworkResult.Error<*> -> false
             is NetworkResult.Success<*> -> {
-                dataSync()
-                return true
+                //dataSync()
+                true
             }
         }
     }
@@ -1588,6 +1643,26 @@ class AppRepository(
                 messageRepository.deleteMessage(messageId)
             }
 
+        }
+    }
+
+    suspend fun reactToMessage(messageId: String, content: String) {
+        val  request = networkUtils.reactToMessage(messageId = messageId, content = content)
+        when (request) {
+            is NetworkResult.Error -> sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
+            is NetworkResult.Success -> {
+                val existing = messageRepository.getMessageById(request.data.messageId)
+                if (existing != null) {
+                    messageRepository.upsertMessage(
+                        existing.copy(
+                            reactions = request.data.reactions.map {
+                                Reaction(userId = it.userId, content = it.content)
+                            },
+                            changeDate = request.data.lastChanged.toString()
+                        )
+                    )
+                }
+            }
         }
     }
 

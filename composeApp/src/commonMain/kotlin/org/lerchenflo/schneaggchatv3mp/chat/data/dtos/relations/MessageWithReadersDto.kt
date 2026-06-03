@@ -3,7 +3,6 @@ package org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations
 import androidx.room.Embedded
 import androidx.room.Relation
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType

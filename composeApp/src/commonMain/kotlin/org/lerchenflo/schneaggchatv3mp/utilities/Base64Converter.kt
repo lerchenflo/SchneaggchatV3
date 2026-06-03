@@ -1,8 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
-import org.lerchenflo.schneaggchatv3mp.utilities.Base64.decoder
 import io.ktor.utils.io.charsets.Charsets
 import io.ktor.utils.io.core.toByteArray
+import org.lerchenflo.schneaggchatv3mp.utilities.Base64.decoder
 import kotlin.math.min
 
 object Base64Util {

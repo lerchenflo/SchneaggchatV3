@@ -6,10 +6,13 @@ sealed interface DecodedNotification {
     data class Message(
         val msgId: String,
         val senderName: String,
-        val groupName: String,
-        val messageType: MessageType,
         val groupMessage: Boolean,
+        val messageType: MessageType,
+        val groupName: String,
         val encodedContent: String,
+        val senderId: String,
+        val receiverId: String,
+        val reaction: Boolean = false
     ) : DecodedNotification
 
     data class FriendRequest(
@@ -21,6 +24,12 @@ sealed interface DecodedNotification {
     data class System(
         val title: String,
         val message: String,
+    ) : DecodedNotification
+
+    data class Birthday(
+        val birthdayUserId: String,
+        val birthdayUserName: String,
+        val ownBirthday: Boolean,
     ) : DecodedNotification
 }
 
@@ -35,6 +44,9 @@ object PayloadDecoder {
                     .getOrDefault(MessageType.TEXT),
                 groupMessage = data["groupMessage"]?.toBoolean() ?: false,
                 encodedContent = data["encodedContent"] ?: "",
+                senderId = data["senderId"] ?: "",
+                receiverId = data["receiverId"] ?: "",
+                reaction = data["reaction"]?.toBoolean() ?: false,
             )
             "friend_request" -> DecodedNotification.FriendRequest(
                 requesterId = data["requesterId"] ?: "",
@@ -44,6 +56,11 @@ object PayloadDecoder {
             "system" -> DecodedNotification.System(
                 title = data["title"] ?: "Schneaggchat",
                 message = data["message"] ?: "",
+            )
+            "birthday" -> DecodedNotification.Birthday(
+                birthdayUserId = data["birthdayUserId"] ?: "",
+                birthdayUserName = data["birthdayUserName"] ?: "",
+                ownBirthday = data["ownBirthday"]?.toBoolean() ?: false,
             )
             else -> null
         }

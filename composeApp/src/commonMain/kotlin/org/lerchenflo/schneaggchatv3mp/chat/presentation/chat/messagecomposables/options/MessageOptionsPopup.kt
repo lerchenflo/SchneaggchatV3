@@ -1,13 +1,18 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Reply
@@ -21,11 +26,18 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import org.jetbrains.compose.resources.stringResource
@@ -34,16 +46,24 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ReaderRow
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
+import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.copy
+import schneaggchatv3mp.composeapp.generated.resources.custom_reaction
 import schneaggchatv3mp.composeapp.generated.resources.delete
 import schneaggchatv3mp.composeapp.generated.resources.edit
+import schneaggchatv3mp.composeapp.generated.resources.enter_reaction
 import schneaggchatv3mp.composeapp.generated.resources.message_delete_info
 import schneaggchatv3mp.composeapp.generated.resources.message_details
+import schneaggchatv3mp.composeapp.generated.resources.no_reactions
 import schneaggchatv3mp.composeapp.generated.resources.no_readers
+import schneaggchatv3mp.composeapp.generated.resources.reactions
 import schneaggchatv3mp.composeapp.generated.resources.readers
 import schneaggchatv3mp.composeapp.generated.resources.reply
+import schneaggchatv3mp.composeapp.generated.resources.sent_at
 import schneaggchatv3mp.composeapp.generated.resources.yes
 
 @Composable
@@ -56,6 +76,7 @@ fun MessageOptionPopup(
     onDelete: () -> Unit,
     onEdit: () -> Unit,
     onDetails: () -> Unit,
+    onReact: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -67,6 +88,8 @@ fun MessageOptionPopup(
             onDismissRequest = onDismissRequest,
             modifier = modifier
         ) {
+
+            //reply
             DropdownMenuItem(
                 text = { Text(stringResource(Res.string.reply)) },
                 onClick = {
@@ -80,6 +103,112 @@ fun MessageOptionPopup(
                     )
                 }
             )
+
+            //Add reaction
+            DropdownMenuItem(
+                text = {
+
+                    //Quick reactions
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                    ) {
+
+                        NormalButton(
+                            text = "❤\uFE0F",
+                            onClick = { onReact("❤\uFE0F"); onDismissRequest() },
+                            primary = false
+                        )
+
+                        NormalButton(
+                            text = "👍",
+                            onClick = { onReact("👍"); onDismissRequest() },
+                            primary = false
+                        )
+
+                        NormalButton(
+                            text = "👎",
+                            onClick = { onReact("👎"); onDismissRequest() },
+                            primary = false
+                        )
+
+                        NormalButton(
+                            text = "🍻",
+                            onClick = { onReact("🍻"); onDismissRequest() },
+                            primary = false
+                        )
+
+                        var showCustomReactionDialog by remember { mutableStateOf(false) }
+                        var customReactionInput by remember { mutableStateOf("") }
+                        val maxChars = 10
+
+                        // Show custom input dialog with max 10 chars
+                        NormalButton(
+                            text = "✏️",
+                            onClick = { showCustomReactionDialog = true },
+                            primary = false
+                        )
+
+                        if (showCustomReactionDialog) {
+                            AlertDialog(
+                                onDismissRequest = {
+                                    showCustomReactionDialog = false
+                                    customReactionInput = ""
+                                },
+                                title = { Text(stringResource(Res.string.custom_reaction)) },
+                                text = {
+                                    Column {
+                                        OutlinedTextField(
+                                            value = customReactionInput,
+                                            onValueChange = { if (it.length <= maxChars) customReactionInput = it },
+                                            label = { Text(stringResource(Res.string.enter_reaction)) },
+                                            singleLine = true,
+                                            supportingText = {
+                                                Text(
+                                                    text = "${customReactionInput.length} / $maxChars",
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    textAlign = TextAlign.End
+                                                )
+                                            },
+                                            isError = customReactionInput.length == maxChars
+                                        )
+                                    }
+                                },
+                                confirmButton = {
+                                    NormalButton(
+                                        text = stringResource(Res.string.add),
+                                        onClick = {
+                                            if (customReactionInput.isNotBlank()) {
+                                                onReact(customReactionInput)
+                                                onDismissRequest()
+                                                showCustomReactionDialog = false
+                                                customReactionInput = ""
+                                            }
+                                        },
+                                        primary = true
+                                    )
+                                },
+                                dismissButton = {
+                                    NormalButton(
+                                        text = stringResource(Res.string.cancel),
+                                        onClick = {
+                                            showCustomReactionDialog = false
+                                            customReactionInput = ""
+                                        },
+                                        primary = false
+                                    )
+                                }
+                            )
+                        }
+
+                    }
+                },
+                onClick = {
+                    onDismissRequest()
+                }
+            )
+
+
 
             if (message.msgType == MessageType.TEXT || message.msgType == MessageType.IMAGE) {
                 DropdownMenuItem(
@@ -204,9 +333,9 @@ fun MessageDetailsDialog(
     onDismiss: () -> Unit,
     message: Message,
     selectedChatId: String,
+    resolvedReactions: Map<String, String> = emptyMap(),
 ) {
     Dialog(onDismissRequest = onDismiss) {
-        // Use a Surface to provide background and elevation to the Dialog content
         Surface(
             shape = RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.surface,
@@ -216,61 +345,144 @@ fun MessageDetailsDialog(
                 .padding(vertical = 24.dp)
         ) {
             Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier.fillMaxWidth()
             ) {
-                // 1. Header
-                Text(
-                    text = stringResource(Res.string.message_details),
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-
-                // 2. Message Preview
-                val alphaValue = 0.9f
-                MessageContent(
+                // Header
+                Row(
                     modifier = Modifier
-                        .background(
-                            color = if (message.myMessage) {
-                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = alphaValue)
-                            } else {
-                                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = alphaValue)
-                            },
-                            shape = RoundedCornerShape(15.dp)
-                        )
-                        .padding(12.dp),
-                    message = message,
-                    useMD = false,
-                    selectedChatId = selectedChatId,
-                    ownId = ownId,
-                )
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                // 3. Readers Section
-                Text(
-                    text = stringResource(Res.string.readers),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                if (message.readers.isEmpty()) {
+                        .fillMaxWidth()
+                        .padding(start = 20.dp, end = 12.dp, top = 20.dp, bottom = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = stringResource(Res.string.no_readers),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.outline
+                        text = stringResource(Res.string.message_details),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f)
                     )
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.weight(1f, fill = false), // Grow up to a point, then scroll
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
+                    TextButton(onClick = onDismiss) {
+                        Text(stringResource(Res.string.cancel))
+                    }
+                }
+
+                LazyColumn(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Message preview
+                    item {
+                        val alphaValue = 0.9f
+                        MessageContent(
+                            modifier = Modifier
+                                .background(
+                                    color = if (message.myMessage) {
+                                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = alphaValue)
+                                    } else {
+                                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = alphaValue)
+                                    },
+                                    shape = RoundedCornerShape(15.dp)
+                                )
+                                .padding(12.dp),
+                            message = message,
+                            useMD = false,
+                            selectedChatId = selectedChatId,
+                            ownId = ownId,
+                        )
+                    }
+
+                    // Send time
+                    item {
+                        val sendMillis = message.getSendDateAsLong()
+                        if (sendMillis > 0L) {
+                            Text(
+                                text = stringResource(Res.string.sent_at, millisToTimeDateOrYesterday(sendMillis)),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    // Reactions section
+                    item {
+                        HorizontalDivider()
+                        Spacer(Modifier.size(8.dp))
+                        Text(
+                            text = stringResource(Res.string.reactions),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    if (message.reactions.isEmpty()) {
+                        item {
+                            Text(
+                                text = stringResource(Res.string.no_reactions),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.outline,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
+                    } else {
+                        val ownUserId = SessionCache.requireLoggedIn()?.userId
+                        val grouped = message.reactions
+                            .groupBy { it.content }
+                            .entries.sortedBy { it.key }
+
+                        items(grouped) { (emoji, reactors) ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 2.dp)
+                            ) {
+                                ReactionBadgeItem(
+                                    reactionBadge = ReactionBadge(
+                                        reaction = emoji,
+                                        count = reactors.size,
+                                        hasReacted = reactors.any { it.userId == ownUserId }
+                                    )
+                                )
+                                Spacer(Modifier.size(10.dp))
+                                Column {
+                                    reactors.forEach { reaction ->
+                                        Text(
+                                            text = resolvedReactions[reaction.userId] ?: reaction.userId,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Readers section
+                    item {
+                        HorizontalDivider()
+                        Spacer(Modifier.size(8.dp))
+                        Text(
+                            text = stringResource(Res.string.readers),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    if (message.readers.isEmpty()) {
+                        item {
+                            Text(
+                                text = stringResource(Res.string.no_readers),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.outline,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
+                    } else {
                         items(message.readers) { reader ->
                             ReaderRow(reader)
                         }
                     }
+
+                    item { Spacer(Modifier.size(8.dp)) }
                 }
             }
         }

@@ -15,6 +15,7 @@ import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationCredentialsMirror
 
 class Preferencemanager(
     private val prefs: DataStore<Preferences>,
@@ -54,10 +55,11 @@ class Preferencemanager(
             tokenPair.encryptionKey?.let { encryptionKey ->
                 loggingRepository.logDebug("Secure storage: Saving encryption key")
                 securePrefs.put(SecureKey.ENCRYPTION_KEY.key, encryptionKey)
+                NotificationCredentialsMirror.setEncryptionKey(encryptionKey)
             } ?: run {
                 loggingRepository.logDebug("Secure storage: No encryption key to save")
             }
-            
+
             loggingRepository.logInfo("Secure storage: All tokens saved successfully")
         } catch (e: Exception) {
             loggingRepository.logError("Secure storage: Failed to save tokens - ${e.message}")
@@ -91,6 +93,7 @@ class Preferencemanager(
         SecureKey.entries.forEach { secureKey ->
             securePrefs.delete(secureKey.key)
         }
+        NotificationCredentialsMirror.setEncryptionKey(null)
 
         // Clear all DataStore preferences
         val serverUrl = getServerUrl() // save before clearing

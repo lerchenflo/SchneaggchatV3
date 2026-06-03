@@ -9,9 +9,9 @@ import io.ktor.client.engine.darwin.Darwin
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.database.iosAppDatabaseBuilder
-import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
+import org.lerchenflo.schneaggchatv3mp.datasource.network.createSocketHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
@@ -30,6 +30,10 @@ val IosHttpModule = module {
 
 val IosHttpAuthModule = module {
     single<HttpClient>(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)) {createHttpClient(Darwin.create(), get(), false)}
+}
+
+val IosSocketHttpModule = module {
+    single<HttpClient>(named(HTTPCLIENTTYPE.SOCKET)) { createSocketHttpClient(Darwin.create()) }
 }
 
 val IosDatastoreModule = module {

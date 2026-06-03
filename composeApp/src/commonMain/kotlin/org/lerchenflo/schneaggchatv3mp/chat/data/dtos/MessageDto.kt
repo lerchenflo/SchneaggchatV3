@@ -7,11 +7,17 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 
 @Serializable
 @Entity(
     tableName = "messages",
-    indices = [Index(value = ["id"], unique = true), Index(value = ["myMessage", "groupMessage", "sent", "readByMe"])]
+    indices = [
+        Index(value = ["id"], unique = true),
+        Index(value = ["groupMessage", "sent", "readByMe"]),
+        Index(value = ["senderId"]),
+        Index(value = ["receiverId"]),
+    ]
 )
 data class MessageDto(
 
@@ -46,6 +52,8 @@ data class MessageDto(
     var answerId: String? = null,
 
     var sent: Boolean = false,
+
+    var reactions: List<Reaction> = emptyList(),
 
     ) {
     @Ignore

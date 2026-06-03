@@ -12,6 +12,7 @@ import kotlinx.datetime.format
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlinx.datetime.format.byUnicodePattern
 import kotlinx.datetime.toLocalDateTime
+import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -56,7 +57,7 @@ class MiscSettingsViewModel(
 
     fun onSendBugReportEmail(emailContent: String) {
         shareUtils.openMailClient(
-            recipient = "schneaggchat@gmail.com",
+            recipient = SUPPORT_EMAIL,
             subject = "Bug Report / Feature Request",
             body = emailContent
         )

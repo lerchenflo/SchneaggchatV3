@@ -9,7 +9,6 @@ import schneaggchatv3mp.composeapp.generated.resources.bugpriority_normal
 import schneaggchatv3mp.composeapp.generated.resources.bugstatus_finished
 import schneaggchatv3mp.composeapp.generated.resources.bugstatus_in_progress
 import schneaggchatv3mp.composeapp.generated.resources.bugstatus_unfinished
-import schneaggchatv3mp.composeapp.generated.resources.bugtype
 
 data class TodoEntry(
     var id: String,

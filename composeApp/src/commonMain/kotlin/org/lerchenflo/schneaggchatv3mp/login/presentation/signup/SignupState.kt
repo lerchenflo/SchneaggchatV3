@@ -1,7 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.login.presentation.signup
 
 import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
-import io.github.ismoy.imagepickerkmp.domain.models.PhotoResult
 import kotlinx.datetime.LocalDate
 
 data class SignupState(

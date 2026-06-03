@@ -20,7 +20,7 @@ data class User(
     override val friendshipStatus: NetworkUtils.FriendshipStatus?,
     override val requesterId: String? = null,
     val notisMuted: Boolean = false,
-    val birthDate: String? = null,
+    val birthDate: String? = null, //YYYY-MM-dd
 
     val email: String? = null,
     val emailVerifiedAt: Long?,

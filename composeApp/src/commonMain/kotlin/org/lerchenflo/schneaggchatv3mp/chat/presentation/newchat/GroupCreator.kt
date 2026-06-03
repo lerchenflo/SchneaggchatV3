@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat
 
 import androidx.compose.foundation.Image
@@ -6,6 +8,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,13 +17,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,11 +43,12 @@ import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import io.github.ismoy.imagepickerkmp.domain.config.CameraCaptureConfig
 import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
-import io.github.ismoy.imagepickerkmp.domain.models.CapturePhotoPreference
-import io.github.ismoy.imagepickerkmp.domain.models.CompressionLevel
-import io.github.ismoy.imagepickerkmp.presentation.ui.components.GalleryPickerLauncher
+import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
+import io.github.ismoy.imagepickerkmp.domain.models.MimeType
+import io.github.ismoy.imagepickerkmp.features.imagepicker.config.ImagePickerKMPConfig
+import io.github.ismoy.imagepickerkmp.features.imagepicker.model.ImagePickerResult
+import io.github.ismoy.imagepickerkmp.features.imagepicker.ui.rememberImagePickerKMP
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -46,6 +59,9 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.SwipeableCardView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.camera
+import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
+import schneaggchatv3mp.composeapp.generated.resources.gallery
 import schneaggchatv3mp.composeapp.generated.resources.group_description
 import schneaggchatv3mp.composeapp.generated.resources.group_name
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
@@ -205,33 +221,115 @@ private fun GroupCreatorScreen(
     }
 
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (showImagePickerDialog) {
-            GalleryPickerLauncher(
-                onPhotosSelected = {
-                    onAction(GroupCreatorAction.updateProfilePic(it.first()))
-                    showImagePickerDialog = false
-                },
-                onError = {
-                    showImagePickerDialog = false
-                },
-                onDismiss = {
-                    showImagePickerDialog = false
-                },
+    val picker = rememberImagePickerKMP(
+        config = ImagePickerKMPConfig(
+            cropConfig = CropConfig(
+                enabled = true,
+                aspectRatioLocked = true,
+                circularCrop = true,
+                squareCrop = false,
+                freeformCrop = false
+            ),
+            galleryConfig = GalleryConfig(
                 allowMultiple = false,
-                enableCrop = true,
-                cameraCaptureConfig = CameraCaptureConfig(
-                    compressionLevel = CompressionLevel.HIGH,
-                    preference = CapturePhotoPreference.FAST, //No flash
-                    cropConfig = CropConfig(
-                        enabled = true,
-                        aspectRatioLocked = true,
-                        circularCrop = true,
-                        squareCrop = false,
-                        freeformCrop = false
-                    ),
-                )
+                mimeTypes = listOf(MimeType.IMAGE_ALL),
+                includeExif = false
             )
+        )
+    )
+    val result = picker.result
+
+
+    if (showImagePickerDialog) {
+
+        // Handle side effects safely
+        LaunchedEffect(result) {
+            when (result) {
+                is ImagePickerResult.Success -> {
+                    onAction(GroupCreatorAction.updateProfilePic(result.photos.first()))
+
+                    picker.reset()
+                    showImagePickerDialog = false
+                }
+
+                is ImagePickerResult.Dismissed -> {
+                    picker.reset()
+                    showImagePickerDialog = false
+                }
+
+                else -> Unit
+            }
+        }
+
+        BasicAlertDialog(
+            onDismissRequest = {
+                showImagePickerDialog = false
+            }
+        ) {
+
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.padding(16.dp)
+            ) {
+
+                Column(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .width(IntrinsicSize.Min),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+
+                    when (result) {
+
+                        is ImagePickerResult.Loading -> {
+                            CircularProgressIndicator()
+                        }
+
+                        is ImagePickerResult.Error -> {
+                            Text(
+                                text = "Error: ${result.exception.message}",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+
+                        is ImagePickerResult.Idle -> {
+
+                            Text(
+                                stringResource(Res.string.choose_image_source)
+                            )
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+
+                                Button(
+                                    onClick = {
+                                        picker.launchCamera()
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(stringResource(Res.string.camera))
+                                }
+
+                                Button(
+                                    onClick = {
+                                        picker.launchGallery()
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(stringResource(Res.string.gallery))
+                                }
+                            }
+                        }
+
+                        is ImagePickerResult.Success,
+                        is ImagePickerResult.Dismissed -> {
+                            // handled in LaunchedEffect
+                        }
+                    }
+                }
+            }
         }
     }
 }

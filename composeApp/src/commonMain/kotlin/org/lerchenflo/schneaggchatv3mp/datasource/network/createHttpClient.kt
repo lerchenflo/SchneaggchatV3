@@ -103,8 +103,32 @@ fun createHttpClient(
 }
 
 
+fun createSocketHttpClient(engine: HttpClientEngine): HttpClient {
+    return HttpClient(engine) {
+        install(Logging) {
+            logger = object : Logger {
+                override fun log(message: String) {}
+            }
+            level = LogLevel.NONE
+        }
+        install(ContentNegotiation) {
+            json(json = AppJson.instance)
+        }
+        install(WebSockets) {
+            pingIntervalMillis = 3_000
+        }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 30000
+            connectTimeoutMillis = 10000
+            socketTimeoutMillis = 60000
+        }
+    }
+}
+
+
+
 /**
- * Deserializer for all polymorphic json objects
+ * Deserializer for all polymorphic JSON objects
  */
 object AppJson {
     val instance = Json {

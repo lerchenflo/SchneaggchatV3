@@ -238,6 +238,12 @@ interface LogDao {
 
     @Query("DELETE FROM logentry")
     suspend fun clearLogs()
+
+    @Query("SELECT COUNT(*) FROM logentry")
+    suspend fun getLogCount(): Int
+
+    @Query("DELETE FROM logentry WHERE id NOT IN (SELECT id FROM logentry ORDER BY id DESC LIMIT 50)")
+    suspend fun deleteOldLogs()
 }
 
 

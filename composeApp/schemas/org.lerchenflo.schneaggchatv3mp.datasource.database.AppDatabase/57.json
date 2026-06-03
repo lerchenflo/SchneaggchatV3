@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 57,
-    "identityHash": "1bea088ea0eed5cee32fbbe60caa29a1",
+    "identityHash": "52fa8a96db86b5f4a25f9c833fc1aac9",
     "entities": [
       {
         "tableName": "users",
@@ -131,7 +131,7 @@
       },
       {
         "tableName": "messages",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localPK` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT, `msgType` TEXT NOT NULL, `content` TEXT NOT NULL, `poll` TEXT, `pictureUrl` TEXT, `audioPath` TEXT, `senderId` TEXT NOT NULL, `receiverId` TEXT NOT NULL, `sendDate` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, `deleted` INTEGER NOT NULL, `myMessage` INTEGER NOT NULL, `readByMe` INTEGER NOT NULL, `groupMessage` INTEGER NOT NULL, `answerId` TEXT, `sent` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`localPK` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `id` TEXT, `msgType` TEXT NOT NULL, `content` TEXT NOT NULL, `poll` TEXT, `pictureUrl` TEXT, `audioPath` TEXT, `senderId` TEXT NOT NULL, `receiverId` TEXT NOT NULL, `sendDate` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, `deleted` INTEGER NOT NULL, `myMessage` INTEGER NOT NULL, `readByMe` INTEGER NOT NULL, `groupMessage` INTEGER NOT NULL, `answerId` TEXT, `sent` INTEGER NOT NULL, `reactions` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "localPK",
@@ -229,6 +229,12 @@
             "columnName": "sent",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "reactions",
+            "columnName": "reactions",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -248,16 +254,33 @@
             "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_messages_id` ON `${TABLE_NAME}` (`id`)"
           },
           {
-            "name": "index_messages_myMessage_groupMessage_sent_readByMe",
+            "name": "index_messages_groupMessage_sent_readByMe",
             "unique": false,
             "columnNames": [
-              "myMessage",
               "groupMessage",
               "sent",
               "readByMe"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_myMessage_groupMessage_sent_readByMe` ON `${TABLE_NAME}` (`myMessage`, `groupMessage`, `sent`, `readByMe`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_groupMessage_sent_readByMe` ON `${TABLE_NAME}` (`groupMessage`, `sent`, `readByMe`)"
+          },
+          {
+            "name": "index_messages_senderId",
+            "unique": false,
+            "columnNames": [
+              "senderId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_senderId` ON `${TABLE_NAME}` (`senderId`)"
+          },
+          {
+            "name": "index_messages_receiverId",
+            "unique": false,
+            "columnNames": [
+              "receiverId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_receiverId` ON `${TABLE_NAME}` (`receiverId`)"
           }
         ]
       },
@@ -295,7 +318,18 @@
           "columnNames": [
             "readerEntryId"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_message_readers_messageId",
+            "unique": false,
+            "columnNames": [
+              "messageId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_message_readers_messageId` ON `${TABLE_NAME}` (`messageId`)"
+          }
+        ]
       },
       {
         "tableName": "groups",
@@ -409,7 +443,27 @@
           "columnNames": [
             "localPk"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_group_members_groupId",
+            "unique": false,
+            "columnNames": [
+              "groupId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_group_members_groupId` ON `${TABLE_NAME}` (`groupId`)"
+          },
+          {
+            "name": "index_group_members_userId",
+            "unique": false,
+            "columnNames": [
+              "userId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_group_members_userId` ON `${TABLE_NAME}` (`userId`)"
+          }
+        ]
       },
       {
         "tableName": "TodoEntityDto",
@@ -554,185 +608,11 @@
             "id"
           ]
         }
-      },
-      {
-        "tableName": "map_entries",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `mainTypeKey` TEXT NOT NULL, `subtypeIds` TEXT NOT NULL, `lat` REAL NOT NULL, `lon` REAL NOT NULL, `description` TEXT NOT NULL, `attributes` TEXT NOT NULL, `createdBy` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `lastChangedBy` TEXT NOT NULL, `updatedAt` TEXT NOT NULL, `deleted` INTEGER NOT NULL, PRIMARY KEY(`id`))",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "mainTypeKey",
-            "columnName": "mainTypeKey",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "subtypeIds",
-            "columnName": "subtypeIds",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "lat",
-            "columnName": "lat",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "lon",
-            "columnName": "lon",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "description",
-            "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "attributes",
-            "columnName": "attributes",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "createdBy",
-            "columnName": "createdBy",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "createdAt",
-            "columnName": "createdAt",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "lastChangedBy",
-            "columnName": "lastChangedBy",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "updatedAt",
-            "columnName": "updatedAt",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "deleted",
-            "columnName": "deleted",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "id"
-          ]
-        }
-      },
-      {
-        "tableName": "map_subtypes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `mainTypeKey` TEXT NOT NULL, `name` TEXT NOT NULL, `createdBy` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` TEXT NOT NULL, `deleted` INTEGER NOT NULL, PRIMARY KEY(`id`))",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "mainTypeKey",
-            "columnName": "mainTypeKey",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "name",
-            "columnName": "name",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "createdBy",
-            "columnName": "createdBy",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "createdAt",
-            "columnName": "createdAt",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "updatedAt",
-            "columnName": "updatedAt",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "deleted",
-            "columnName": "deleted",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "id"
-          ]
-        }
-      },
-      {
-        "tableName": "map_main_types",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `displayName` TEXT NOT NULL, `attributeDefinitions` TEXT NOT NULL, `conditionalRules` TEXT NOT NULL, PRIMARY KEY(`key`))",
-        "fields": [
-          {
-            "fieldPath": "key",
-            "columnName": "key",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "displayName",
-            "columnName": "displayName",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "attributeDefinitions",
-            "columnName": "attributeDefinitions",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "conditionalRules",
-            "columnName": "conditionalRules",
-            "affinity": "TEXT",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "key"
-          ]
-        }
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1bea088ea0eed5cee32fbbe60caa29a1')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '52fa8a96db86b5f4a25f9c833fc1aac9')"
     ]
   }
 }

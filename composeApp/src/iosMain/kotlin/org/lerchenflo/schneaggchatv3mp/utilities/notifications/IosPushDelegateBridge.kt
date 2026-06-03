@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
@@ -15,9 +16,9 @@ class IosPushDelegateBridge {
         IosPushTokenStore.saveToken(hexToken)
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
-                val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
-                SessionCache.login(tokens = prefs.getTokens(), developer = false)
-                KoinPlatform.getKoin().get<AppRepository>().setNotificationToken(hexToken)
+                if (SessionCache.authState.value is SessionCache.AuthState.LoggedIn) {
+                    KoinPlatform.getKoin().get<AppRepository>().setNotificationToken(hexToken)
+                }
             }
         }
     }
@@ -33,12 +34,12 @@ class IosPushDelegateBridge {
     }
 
     fun onNotificationTap(data: Map<String, String>) {
-        // Navigation on tap handled by the app after it becomes active via normal sync
+        AppLifecycleManager.notifyNotificationOpened()
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
                 SessionCache.login(tokens = prefs.getTokens(), developer = false)
-                KoinPlatform.getKoin().get<AppRepository>().messageIdSync()
+                KoinPlatform.getKoin().get<AppRepository>().dataSync()
             }
         }
     }
