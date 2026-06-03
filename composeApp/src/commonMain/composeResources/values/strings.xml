@@ -576,8 +576,12 @@
 
     <!-- Schneaggmap -->
     <string name="schneaggmap_filter_location_types">Location types</string>
+    <string name="location_belongs_to_type">Belongs to: %1$s</string>
+
     <string name="schneaggmap_entry_title">Name</string>
     <string name="schneaggmap_entry_description">Description</string>
+
+    <string name="latlong">Lat %1$s, Long %2$s</string>
     <string name="latitude">Latitude</string>
     <string name="longitude">Longitude</string>
 

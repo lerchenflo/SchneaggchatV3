@@ -3,7 +3,6 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.domain
 import androidx.compose.runtime.Composable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.location_food_type_asian
@@ -214,29 +213,27 @@ val LocationData.typeKey: String
     }
 
 @Composable
-fun LocationData.asString(): String {
-    return when (this) {
-        is LocationData.Camping ->
-            stringResource(Res.string.location_type_camping)
+fun LocationData.stringRes() = when (this) {
+    is LocationData.Camping ->
+        Res.string.location_type_camping
 
-        is LocationData.Food ->
-            stringResource(Res.string.location_type_food)
+    is LocationData.Food ->
+        Res.string.location_type_food
 
-        is LocationData.PartyLocation ->
-            stringResource(Res.string.location_type_party)
+    is LocationData.PartyLocation ->
+        Res.string.location_type_party
 
-        is LocationData.Radar ->
-            stringResource(Res.string.location_type_radar)
+    is LocationData.Radar ->
+        Res.string.location_type_radar
 
-        is LocationData.SightSeeing ->
-            stringResource(Res.string.location_type_sightseeing)
+    is LocationData.SightSeeing ->
+        Res.string.location_type_sightseeing
 
-        is LocationData.Street ->
-            stringResource(Res.string.location_type_street)
+    is LocationData.Street ->
+        Res.string.location_type_street
 
-        is LocationData.SwimmingLocation ->
-            stringResource(Res.string.location_type_swimming)
-    }
+    is LocationData.SwimmingLocation ->
+        Res.string.location_type_swimming
 }
 
 //Horror aber was sunsch

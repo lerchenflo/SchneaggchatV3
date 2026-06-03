@@ -44,8 +44,13 @@ import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
-import schneaggchatv3mp.composeapp.generated.resources.schneaggmap
+import schneaggchatv3mp.composeapp.generated.resources.icon_badespot
+import schneaggchatv3mp.composeapp.generated.resources.icon_camping
+import schneaggchatv3mp.composeapp.generated.resources.icon_food
+import schneaggchatv3mp.composeapp.generated.resources.icon_partylocation
+import schneaggchatv3mp.composeapp.generated.resources.icon_radar
+import schneaggchatv3mp.composeapp.generated.resources.icon_sightseeing
+import schneaggchatv3mp.composeapp.generated.resources.icon_street
 
 @Composable
 fun SchneaggmapScreenRoot() {
@@ -102,7 +107,8 @@ fun SchneaggmapScreen(
                 },
                 onSave = {
                     onAction(SchneaggmapAction.OnEntryPopupSave(it))
-                }
+                },
+                modifier = Modifier.align(Alignment.BottomCenter)
             )
         }
 
@@ -121,13 +127,13 @@ private fun SchneaggmapMapContent(
     val typeIcons: Map<LocationType, DrawableResource> = remember {
         LocationType.entries.associateWith { type ->
             when (type) {
-                LocationType.RADAR       -> Res.drawable.icon_nutzer
-                LocationType.STREET      -> Res.drawable.schneaggmap
-                LocationType.CAMPING     -> Res.drawable.icon_nutzer
-                LocationType.SIGHTSEEING -> Res.drawable.icon_nutzer
-                LocationType.SWIMMING    -> Res.drawable.icon_nutzer
-                LocationType.PARTY       -> Res.drawable.icon_nutzer
-                LocationType.FOOD        -> Res.drawable.icon_nutzer
+                LocationType.RADAR       -> Res.drawable.icon_radar
+                LocationType.STREET      -> Res.drawable.icon_street
+                LocationType.CAMPING     -> Res.drawable.icon_camping
+                LocationType.SIGHTSEEING -> Res.drawable.icon_sightseeing
+                LocationType.SWIMMING    -> Res.drawable.icon_badespot
+                LocationType.PARTY       -> Res.drawable.icon_partylocation
+                LocationType.FOOD        -> Res.drawable.icon_food
             }
         }
     }
@@ -224,7 +230,7 @@ private fun SchneaggmapMapContent(
                             ClickResult.Consume
                         } else ClickResult.Pass
                     },
-                    iconImage = image(painterResource(iconRes), size = DpSize(20.dp, 20.dp))
+                    iconImage = image(painterResource(iconRes), size = DpSize(30.dp, 30.dp))
                 )
             }
 
