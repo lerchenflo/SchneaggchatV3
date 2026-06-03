@@ -3,9 +3,9 @@ package org.lerchenflo.schneaggchatv3mp.datasource.database
 import androidx.room.TypeConverter
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 
 class RoomTypeConverters {
 

@@ -15,6 +15,9 @@ import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -52,7 +55,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
-import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.sendErrorSuspend
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.trySendError
@@ -79,14 +81,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncR
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryEditRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.NewFriendsUserResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollCreateRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteOptionCreateRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
@@ -99,7 +93,6 @@ import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
-import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
@@ -110,6 +103,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
+import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
