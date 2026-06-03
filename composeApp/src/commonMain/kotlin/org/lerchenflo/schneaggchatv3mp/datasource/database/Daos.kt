@@ -19,6 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembers
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MapEntryDto
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
 
 @Dao
@@ -269,6 +270,10 @@ interface AllDatabaseDao {
 
 
 
+    @Query("DELETE FROM map_entries")
+    suspend fun clearMapEntries()
+
+
     @Transaction
     suspend fun clearAll() {
         // Clear tables in proper order to respect foreign key constraints
@@ -278,8 +283,24 @@ interface AllDatabaseDao {
         clearGroupMembers()
         clearGroups()
         clearTodos()
-
+        clearMapEntries()
     }
+}
+
+@Dao
+interface MapEntryDao {
+
+    @Upsert
+    suspend fun upsert(dto: MapEntryDto)
+
+    @Query("SELECT id, updatedAt FROM map_entries")
+    suspend fun getMapEntryIdsWithChangeDates(): List<IdChangeDate>
+
+    @Query("SELECT * FROM map_entries")
+    fun getAllFlow(): Flow<List<MapEntryDto>>
+
+    @Query("DELETE FROM map_entries WHERE id = :id")
+    suspend fun delete(id: String)
 }
 
 @Dao

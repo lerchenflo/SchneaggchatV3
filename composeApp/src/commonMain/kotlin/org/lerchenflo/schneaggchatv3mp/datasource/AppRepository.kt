@@ -55,7 +55,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
-import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.sendErrorSuspend
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.trySendError
@@ -79,13 +78,21 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteR
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryCreateRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryEditRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
@@ -96,6 +103,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
+import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
@@ -116,6 +124,7 @@ class AppRepository(
 
     val appVersion: AppVersion,
     private val loggingRepository: LoggingRepository,
+    private val mapRepository: MapRepository,
 ) {
     //Errorchannel for global error events (Show in every screen)
     object ErrorChannel {
@@ -307,8 +316,17 @@ class AppRepository(
                     }
                 }
 
+                val mapJob = async {
+                    try {
+                        mapEntryIdSync()
+                        println("Map sync completed successfully")
+                    } catch (e: Exception) {
+                        loggingRepository.logWarning("Map sync failed: ${e.message}")
+                    }
+                }
+
                 // Wait for all to complete (errors are already handled)
-                awaitAll(userJob, messageJob, groupJob)
+                awaitAll(userJob, messageJob, groupJob, mapJob)
 
                 val errorProfilePicJob = async {
                     getMissingPics()
@@ -324,6 +342,76 @@ class AppRepository(
             }
         }
     }
+
+    // ─── Map sync (triggered only from map screen, not part of global dataSync) ─
+
+    private suspend fun mapEntryIdSync() {
+        val localEntries = mapRepository.getMapEntryChangeIds()
+        var currentPage = 0
+        var moreEntries = true
+        while (moreEntries) {
+            val response = networkUtils.mapSync(
+                entries = localEntries.map { IdTimeStamp(it.id, it.updatedAt) },
+                page = currentPage,
+            )
+            when (response) {
+                is NetworkResult.Error<*> -> { println("Map entry sync error: ${response.error}"); break }
+                is NetworkResult.Success -> {
+                    println("Map sync success, upserting ${response.data.updatedEntries} entrys")
+                    response.data.updatedEntries.forEach { mapRepository.upsertMapEntry(it.toMapEntry()) }
+                    response.data.deletedEntries.forEach { mapRepository.deleteMapEntry(it) }
+                    moreEntries = response.data.moreEntries
+                }
+            }
+            currentPage++
+        }
+    }
+
+
+
+    // ─── Map CRUD ─────────────────────────────────────────────────────────────
+    // WS broadcast handles local DB upsert/delete automatically after server write.
+
+    suspend fun createMapEntry(
+        name: String,
+        description: String,
+        lat: Double,
+        lon: Double,
+        locationData: List<LocationData>,
+    ): NetworkResult<MapEntryResponse, NetworkError> {
+        return networkUtils.createMapEntry(
+            MapEntryCreateRequest(
+                name = name,
+                description = description,
+                coordinates = LatLong(lat = lat, long = lon),
+                locationData = locationData,
+            )
+        )
+    }
+
+    suspend fun editMapEntry(
+        entryId: String,
+        name: String,
+        description: String,
+        lat: Double,
+        lon: Double,
+        locationData: List<LocationData>,
+    ): NetworkResult<MapEntryResponse, NetworkError> {
+        return networkUtils.editMapEntry(
+            MapEntryEditRequest(
+                entryId = entryId,
+                name = name,
+                description = description,
+                coordinates = LatLong(lat = lat, long = lon),
+                locationData = locationData,
+            )
+        )
+    }
+
+    suspend fun deleteMapEntry(entryId: String): NetworkResult<Unit, NetworkError> {
+        return networkUtils.deleteMapEntry(entryId)
+    }
+
 
     /**
      * Get missing profile pics (On ios after update installation, there are no more pictures)

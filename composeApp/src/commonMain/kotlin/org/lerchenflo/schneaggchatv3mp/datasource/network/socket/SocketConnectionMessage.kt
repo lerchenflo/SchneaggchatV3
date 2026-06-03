@@ -16,7 +16,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiId
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiIdType
@@ -51,6 +54,16 @@ sealed interface SocketConnectionMessage {
         val requestingUserName: String,
         val accepted: Boolean
     ) : SocketConnectionMessage
+
+    @Serializable
+    @SerialName("mapchange")
+    data class MapChange(
+        val mapEntry: MapEntryResponse,
+        val newEntry: Boolean,
+        val deleted: Boolean,
+    ) : SocketConnectionMessage
+
+
 }
 
 
@@ -61,6 +74,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
     val messageRepository = KoinPlatform.getKoin().get<MessageRepository>()
     val groupRepository = KoinPlatform.getKoin().get<GroupRepository>()
     val globalViewModel = KoinPlatform.getKoin().get<GlobalViewModel>()
+    val mapRepository = KoinPlatform.getKoin().get<MapRepository>()
 
     try {
         val socketMessage = AppJson.instance.decodeFromString<SocketConnectionMessage>(message)
@@ -284,6 +298,13 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
             }
 
+            is SocketConnectionMessage.MapChange -> {
+                if (socketMessage.deleted) {
+                    mapRepository.deleteMapEntry(socketMessage.mapEntry.id)
+                } else {
+                    mapRepository.upsertMapEntry(socketMessage.mapEntry.toMapEntry())
+                }
+            }
 
         }
     } catch (e: Exception) {

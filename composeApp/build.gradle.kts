@@ -221,6 +221,7 @@ kotlin {
 
             //map
             implementation(libs.maplibre.compose)
+            implementation(libs.maplibre.compose.material3)
 
         }
         commonTest.dependencies {

@@ -88,6 +88,8 @@ import io.github.ismoy.imagepickerkmp.features.imagepicker.config.ImagePickerKMP
 import io.github.ismoy.imagepickerkmp.features.imagepicker.model.ImagePickerResult
 import io.github.ismoy.imagepickerkmp.features.imagepicker.ui.rememberImagePickerKMP
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -408,7 +410,6 @@ fun ChatScreen(
                                     onCopy = {
 
                                         copyToClipboard(message.content, clipboard)
-                                        SnackbarManager.showMessage(copiedToClipboardString)
                                         showMessageOptionPopup = false
                                     },
                                     onDelete = {
@@ -952,6 +953,12 @@ fun ReaderRow(reader: MessageReader) {
 fun copyToClipboard(text: String, clipboard: NativeClipboard) {
     val shareUtils = KoinPlatform.getKoin().get<ShareUtils>()
     shareUtils.copyToClipboard(text, clipboard)
+
+    runBlocking {
+        val copied = getString(Res.string.copied_to_clipboard) + ": "
+        SnackbarManager.showMessage(copied + text)
+    }
+
 }
 
 enum class AddMediaOptions{

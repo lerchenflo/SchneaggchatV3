@@ -35,6 +35,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsViewModel
@@ -60,6 +61,7 @@ val sharedmodule = module{
     single <AppDatabase> { CreateAppDatabase(get()).getDatabase() }
 
     single <PlayerDao> { get<AppDatabase>().playerDao() } //TODO: Manu warum musch du inegrätscha und alles andersch macha
+    single { get<AppDatabase>().mapEntryDao() }
 
     singleOf(::TokenManager)
 
@@ -78,7 +80,7 @@ val sharedmodule = module{
 
     //Repository
     single {
-        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
+        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     singleOf(::SettingsRepository)
     singleOf(::GroupRepository)
@@ -86,6 +88,7 @@ val sharedmodule = module{
     singleOf(::MessageRepository)
     singleOf(::TodoRepository)
     singleOf(::LoggingRepository)
+    singleOf(::MapRepository)
 
 
     // Socket Connection Manager
@@ -139,7 +142,7 @@ val sharedmodule = module{
     factory { TodolistViewModel(get(), get(), get()) }
 
     viewModelOf(::SchneaggmapViewModel)
-    factory { SchneaggmapViewModel(get()) }
+    factory { SchneaggmapViewModel(get(), get(), get()) }
 
 
 

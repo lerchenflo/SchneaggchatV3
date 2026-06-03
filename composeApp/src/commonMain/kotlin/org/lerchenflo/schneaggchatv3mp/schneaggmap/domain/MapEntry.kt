@@ -1,0 +1,17 @@
+package org.lerchenflo.schneaggchatv3mp.schneaggmap.domain
+
+data class MapEntry(
+    val id: String,
+
+    val coordinates: LatLong,
+    val name: String,
+    val description: String,
+
+    val locationData: List<LocationData>,
+
+    val createdBy: String,
+    val createdAt: Long,
+
+    val updatedBy: String,
+    val updatedAt: Long
+)

@@ -67,6 +67,7 @@ map = "0.12.1"
 [libraries]
 #Schneaggmap
 maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "map" }
+maplibre-compose-material3 = { module = "org.maplibre.compose:maplibre-compose-material3", version.ref = "map" }
 
 
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }

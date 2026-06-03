@@ -59,9 +59,6 @@ import io.github.ismoy.imagepickerkmp.domain.models.MimeType
 import io.github.ismoy.imagepickerkmp.features.imagepicker.config.ImagePickerKMPConfig
 import io.github.ismoy.imagepickerkmp.features.imagepicker.model.ImagePickerResult
 import io.github.ismoy.imagepickerkmp.features.imagepicker.ui.rememberImagePickerKMP
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache

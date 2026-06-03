@@ -30,6 +30,10 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryCreateRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryEditRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
@@ -120,6 +124,7 @@ class NetworkUtils(
             // ✅ Detect platform-specific network errors by message/type name
             // on iOS, NSURLErrorDomain errors land here as they don't extend IOException
             val isNetworkError = isNetworkException(e)
+            println("Is network connection error: $isNetworkError: ${e.message}")
             if (isNetworkError) {
                 println("Going offline: Platform network exception - ${e.message}")
                 setOffline()
@@ -1138,5 +1143,38 @@ class NetworkUtils(
             endpoint = "/messages/audios/$messageId"
         )
     }
+
+    // ─── Map ──────────────────────────────────────────────────────────────────
+
+    suspend fun mapSync(
+        entries: List<IdTimeStamp>,
+        page: Int,
+    ): NetworkResult<MapSyncResponse, NetworkError> {
+        return safePost(
+            endpoint = "/map/sync?page=$page&page_size=400",
+            body = entries,
+        )
+    }
+
+
+
+
+
+    suspend fun createMapEntry(
+        request: MapEntryCreateRequest,
+    ): NetworkResult<MapEntryResponse, NetworkError> {
+        return safePost(endpoint = "/map/create", body = request)
+    }
+
+    suspend fun editMapEntry(
+        request: MapEntryEditRequest,
+    ): NetworkResult<MapEntryResponse, NetworkError> {
+        return safePost(endpoint = "/map/edit", body = request)
+    }
+
+    suspend fun deleteMapEntry(entryId: String): NetworkResult<Unit, NetworkError> {
+        return safeDelete(endpoint = "/map/delete?entryid=$entryId")
+    }
+
 
 }
