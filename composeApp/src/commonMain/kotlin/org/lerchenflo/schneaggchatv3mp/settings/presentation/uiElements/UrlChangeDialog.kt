@@ -35,12 +35,14 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL_TEST
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.change_server_url
 import schneaggchatv3mp.composeapp.generated.resources.save
 import schneaggchatv3mp.composeapp.generated.resources.use_default_server
+import schneaggchatv3mp.composeapp.generated.resources.use_test_server
 
 
 private sealed class CheckStatus {
@@ -150,6 +152,18 @@ fun UrlChangeDialog (
                     modifier = Modifier
                         .clickable{
                             internalServerUrl = BASE_SERVER_URL
+                            onConfirm(internalServerUrl)
+                        }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = stringResource(Res.string.use_test_server),
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .clickable{
+                            internalServerUrl = BASE_SERVER_URL_TEST
                             onConfirm(internalServerUrl)
                         }
                 )

@@ -1,6 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp
 
 val BASE_SERVER_URL = "https://schneaggchatv3.lerchenflo.eu"
+
+val BASE_SERVER_URL_TEST = "https://schneaggchatv3test.lerchenflo.eu"
+
 val SUPPORT_EMAIL = "schneaggchat@gmail.com"
 
 fun getPrivacyPolicyUrl(baseUrl: String) = "$baseUrl/privacypolicy.html"

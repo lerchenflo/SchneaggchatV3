@@ -29,9 +29,9 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Schneaggmap mit Orten (Noch ohne Benutzerstandorte)
 
 #### Bugfixes
-- Zufällige Logouts beim WebSocket Reconnect während Token Refresh behoben
+- Zufällige Logouts behoben (hoffentlich endgültig)
 - Image Picker verbessert
-- Push-Benachrichtigungen werden beim Öffnen eines Chats wieder automatisch entfernt
+- Benachrichtigungen werden beim Öffnen eines Chats wieder automatisch entfernt
 
 
 ### 3.0.10

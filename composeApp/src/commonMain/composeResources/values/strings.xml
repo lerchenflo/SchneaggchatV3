@@ -242,6 +242,8 @@
     <string name="appearance_settings_info">Change the appearance of your app</string>
 
     <string name="use_default_server">Use default server</string>
+    <string name="use_test_server">Use test server</string>
+
 
     <string name="you_have_new_messages">You have new messages</string>
     <string name="new_messages">New messages</string>

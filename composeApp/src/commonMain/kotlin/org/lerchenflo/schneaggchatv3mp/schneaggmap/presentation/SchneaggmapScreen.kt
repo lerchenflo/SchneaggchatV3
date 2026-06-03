@@ -203,7 +203,8 @@ private fun SchneaggmapMapContent(
                     options = GeoJsonOptions(
                         cluster = true,
                         clusterRadius = 13,
-                        clusterMinPoints = 6
+                        clusterMinPoints = 6,
+                        //synchronousUpdate = true
                     )
 
                 )
@@ -230,7 +231,7 @@ private fun SchneaggmapMapContent(
                             ClickResult.Consume
                         } else ClickResult.Pass
                     },
-                    iconImage = image(painterResource(iconRes), size = DpSize(30.dp, 30.dp))
+                    iconImage = image(painterResource(iconRes), size = DpSize(33.dp, 33.dp))
                 )
             }
 
