@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.domain
 import androidx.compose.runtime.Composable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.jetbrains.compose.resources.StringResource
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.location_food_type_asian
@@ -28,19 +29,8 @@ import schneaggchatv3mp.composeapp.generated.resources.location_type_swimming
 
 enum class LocationType {
     RADAR, STREET, CAMPING, SIGHTSEEING, SWIMMING, PARTY, FOOD;
-
-    val typeKey: String get() = when (this) {
-        RADAR       -> "radar"
-        STREET      -> "street"
-        CAMPING     -> "camping"
-        SIGHTSEEING -> "sightseeing"
-        SWIMMING    -> "swimming"
-        PARTY       -> "party"
-        FOOD        -> "food"
-    }
 }
 
-val allLocationTypeKeys: List<String> = LocationType.entries.map { it.typeKey }
 
 
 @Serializable
@@ -73,7 +63,7 @@ sealed interface LocationData {
     data class Radar(
 
         val speedLimit: AttributeValue.IntValue,
-        val radarType: RadarType,
+        val radarType: AttributeValue.EnumValue,
 
 
         ): LocationData {
@@ -184,7 +174,7 @@ sealed interface LocationData {
     @SerialName("food")
     data class Food(
 
-        val foodType: FoodType,
+        val foodType: AttributeValue.EnumValue,
         val allYouCanEat: AttributeValue.BoolValue?,
 
     ): LocationData {
@@ -201,16 +191,44 @@ sealed interface LocationData {
 }
 
 
-val LocationData.typeKey: String
+val LocationData.toEnum: LocationType
     get() = when (this) {
-        is LocationData.Radar -> "radar"
-        is LocationData.Street -> "street"
-        is LocationData.Camping -> "camping"
-        is LocationData.SightSeeing -> "sightseeing"
-        is LocationData.SwimmingLocation -> "swimming"
-        is LocationData.PartyLocation -> "party"
-        is LocationData.Food -> "food"
+        is LocationData.Radar -> LocationType.RADAR
+        is LocationData.Street -> LocationType.STREET
+        is LocationData.Camping -> LocationType.CAMPING
+        is LocationData.SightSeeing -> LocationType.SIGHTSEEING
+        is LocationData.SwimmingLocation -> LocationType.SWIMMING
+        is LocationData.PartyLocation -> LocationType.PARTY
+        is LocationData.Food -> LocationType.FOOD
     }
+
+fun LocationType.toSimpleLocationData(): LocationData {
+    return when(this) {
+        LocationType.RADAR -> LocationData.Radar(speedLimit = AttributeValue.IntValue(0), radarType = AttributeValue.EnumValue(LocationData.RadarType.SPEED.name))
+        LocationType.STREET -> LocationData.Street(mautFee = null, heightLimit = null, closedInWinter = null, wheeliesAllowed = null)
+        LocationType.CAMPING -> LocationData.Camping(official = AttributeValue.BoolValue(true))
+        LocationType.SIGHTSEEING -> LocationData.SightSeeing(entryFee = null)
+        LocationType.SWIMMING -> LocationData.SwimmingLocation(indoor = null)
+        LocationType.PARTY -> LocationData.PartyLocation(entryFee = null)
+        LocationType.FOOD -> LocationData.Food(foodType = AttributeValue.EnumValue(LocationData.FoodType.OTHER.name), allYouCanEat = null)
+    }
+}
+
+
+@Composable
+fun locationDataStringResFromKey(type: LocationType): StringResource {
+    return when (type) {
+        LocationType.RADAR -> Res.string.location_type_radar
+        LocationType.STREET -> Res.string.location_type_street
+        LocationType.CAMPING -> Res.string.location_type_camping
+        LocationType.SIGHTSEEING -> Res.string.location_type_sightseeing
+        LocationType.SWIMMING -> Res.string.location_type_swimming
+        LocationType.PARTY -> Res.string.location_type_party
+        LocationType.FOOD -> Res.string.location_type_food
+    }
+
+}
+
 
 @Composable
 fun LocationData.stringRes() = when (this) {

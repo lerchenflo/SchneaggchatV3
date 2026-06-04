@@ -23,7 +23,7 @@
 
     <string name="email_not_verified_screen_title">Du musch dine Email verifiziera vor du Schneaggchat verwenda kannsch.</string>
     <string name="email_not_verified_email_has_been_sent1">Wenn du din Account grad erstellt hosch, isch an Bestätigungslink zu </string>
-    <string name="email_not_verified_email_has_been_sent2">unterwegs. Wenn du scho länger dabei bisch, musch an neua Link afordra.</string>
+    <string name="email_not_verified_email_has_been_sent2"> unterwegs. Wenn du scho länger dabei bisch, musch an neua Link afordra.</string>
     <string name="email_check_verified">Email - Verifizierung überprüfa</string>
     <string name="email_check_problem">Es tuat ned</string>
 

@@ -19,7 +19,8 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.typeKey
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.toEnum
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
 import org.maplibre.compose.camera.CameraPosition
@@ -105,8 +106,10 @@ fun SchneaggmapScreen(
                 onDismiss = {
                     onAction(SchneaggmapAction.OnEntryPopupDismiss)
                 },
-                onSave = {
-                    onAction(SchneaggmapAction.OnEntryPopupSave(it))
+                onSave = { changedEntry ->
+                    onAction(SchneaggmapAction.OnEntryPopupSave(
+                        entry = changedEntry,
+                    ))
                 },
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
@@ -165,16 +168,16 @@ private fun SchneaggmapMapContent(
         //If no entry is loaded, dont render anything (Crash)
         if (state.entries.isNotEmpty()) {
 
-            val enabledTypeKeysMap = state.enabledTypes.toSet()
+            val enabledTypeKeysMap = state.enabledTypes
 
             LocationType.entries.forEach { type ->
 
                 //Skip if not enabled on map
-                if (!enabledTypeKeysMap.contains(type.typeKey)) return@forEach
+                if (!enabledTypeKeysMap.contains(type)) return@forEach
 
                 val entriesForType = state.entries.filter { entry ->
                     entry.locationData.any { locationData ->
-                        locationData.typeKey == type.typeKey
+                        locationData.toEnum == type
                     }
                 }
                 if (entriesForType.isEmpty()) return@forEach
@@ -193,7 +196,7 @@ private fun SchneaggmapMapContent(
                                         )
                                     ),
                                     properties = buildJsonObject {
-                                        put("type", JsonPrimitive(type.typeKey))
+                                        put("type", JsonPrimitive(type.name))
                                     },
                                     id = JsonPrimitive(entry.id)
                                 )

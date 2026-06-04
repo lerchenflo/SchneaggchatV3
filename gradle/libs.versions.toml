@@ -63,12 +63,16 @@ ksafe = "1.8.1"
 #Schneaggmap
 map = "0.12.1"
 
+swipeableKmp = "1.0.6"
+
+
 
 [libraries]
 #Schneaggmap
 maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "map" }
 maplibre-compose-material3 = { module = "org.maplibre.compose:maplibre-compose-material3", version.ref = "map" }
 
+swipeable-kmp = { module = "com.stevdza-san:swipeable-kmp", version.ref = "swipeableKmp" }
 
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 

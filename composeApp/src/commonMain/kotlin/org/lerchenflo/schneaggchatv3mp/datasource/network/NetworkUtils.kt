@@ -30,8 +30,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryCreateRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryEditRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
@@ -1156,20 +1155,12 @@ class NetworkUtils(
         )
     }
 
-
-
-
-
-    suspend fun createMapEntry(
-        request: MapEntryCreateRequest,
+    suspend fun upsertMapEntry(
+        request: MapEntryRequest,
     ): NetworkResult<MapEntryResponse, NetworkError> {
-        return safePost(endpoint = "/map/create", body = request)
-    }
-
-    suspend fun editMapEntry(
-        request: MapEntryEditRequest,
-    ): NetworkResult<MapEntryResponse, NetworkError> {
-        return safePost(endpoint = "/map/edit", body = request)
+        return safePost(
+            endpoint = "/map/upsert",
+            body = request)
     }
 
     suspend fun deleteMapEntry(entryId: String): NetworkResult<Unit, NetworkError> {

@@ -9,13 +9,13 @@ fun LocationData.getValueByKey(key: String): AttributeValue? = when (this) {
         else              -> null
     }
     is LocationData.Radar -> when (key) {
-        "radarType"  -> AttributeValue.EnumValue(radarType.name)
+        "radarType"  -> AttributeValue.EnumValue(radarType.value)
         "speedLimit" -> speedLimit
         else         -> null
     }
 
     is LocationData.Food -> when (key) {
-        "foodType"    -> AttributeValue.EnumValue(foodType.name)
+        "foodType"    -> AttributeValue.EnumValue(foodType.value)
         "allYouCanEat" -> allYouCanEat
         else          -> null
     }
@@ -46,13 +46,13 @@ fun LocationData.withValueForKey(key: String, value: AttributeValue): LocationDa
         else              -> this
     }
     is LocationData.Radar -> when (key) {
-        "radarType"  -> copy(radarType = LocationData.RadarType.valueOf((value as AttributeValue.EnumValue).value))
+        "radarType"  -> copy(radarType = (value as AttributeValue.EnumValue))
         "speedLimit" -> copy(speedLimit = value as AttributeValue.IntValue)
         else         -> this
     }
 
     is LocationData.Food -> when (key) {
-        "foodType"    -> copy(foodType = LocationData.FoodType.valueOf((value as AttributeValue.EnumValue).value))
+        "foodType"    -> copy(foodType = (value as AttributeValue.EnumValue))
         "allYouCanEat" -> copy(allYouCanEat = value as? AttributeValue.BoolValue)
         else          -> this
     }

@@ -4,6 +4,7 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,8 +14,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -26,22 +33,32 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.BlendMode.Companion.Color
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.stevdza_san.swipeable.Swipeable
+import com.stevdza_san.swipeable.domain.ActionCustomization
+import com.stevdza_san.swipeable.domain.SwipeAction
+import com.stevdza_san.swipeable.domain.SwipeBehavior
+import com.stevdza_san.swipeable.domain.SwipeDirection
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.copyToClipboard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.locationDataStringResFromKey
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.toSimpleLocationData
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.latlong
+import schneaggchatv3mp.composeapp.generated.resources.location_add_type
 import schneaggchatv3mp.composeapp.generated.resources.location_belongs_to_type
 import schneaggchatv3mp.composeapp.generated.resources.save
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_description
@@ -142,7 +159,7 @@ fun EntryTitleView(entry: MapEntry, onChange: (MapEntry) -> Unit, onDismiss: () 
             stringResource(it.stringRes())
         }
         Text(
-            text = stringResource(Res.string.location_belongs_to_type, combinedEntries.joinToString(", ")),
+            text = stringResource(Res.string.location_belongs_to_type, combinedEntries.joinToString(", ").orEmpty()),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
@@ -243,44 +260,113 @@ fun CoordinateView(coordinates: LatLong) {
 
 @Composable
 fun LocationAttributeView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
-    entry.locationData.forEach { locationData ->
-        Box(
-            modifier = Modifier
-                .padding(8.dp)
-                .border(width = 2.dp, color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(8.dp))
-                .padding(8.dp)
-        ) {
-            Column {
-                Text(
-                    text = stringResource(locationData.stringRes()),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
 
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+    Swipeable(
+        behavior = SwipeBehavior.REVEAL,
+        direction = SwipeDirection.LEFT,
+        rightRevealActions = listOf(
+            /*
+            SwipeAction(
+                customization = ActionCustomization(
+                    icon = Icons.Default.Delete,
+                    iconColor = Color.White,
+                    containerColor = Color.Red
+                ),
+                onAction = { /* Delete item */ }
+            )
+
+             */
+            //TODO: Delete entry (Update library first to accept drawablevectors)
+        )
+    ) {
+        Column {
+            entry.locationData.forEach { locationData ->
+                Box(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .border(width = 2.dp, color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(8.dp))
+                        .padding(8.dp)
                 ) {
-                    locationData.schema().forEach { definition ->
-                        val value = locationData.getValueByKey(definition.key)
-
-                        KeyValueView(
-                            value = value,
-                            definition = definition,
-                            onValueChange = { newValue ->
-                                onChange(entry.copy(
-                                    locationData = entry.locationData.map {
-                                        if (it === locationData) locationData.withValueForKey(definition.key, newValue)
-                                        else it
-                                    }
-                                ))
-                            },
+                    Column {
+                        Text(
+                            text = stringResource(locationData.stringRes()),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
                         )
+
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            locationData.schema().forEach { definition ->
+                                val value = locationData.getValueByKey(definition.key)
+
+                                KeyValueView(
+                                    value = value,
+                                    definition = definition,
+                                    onValueChange = { newValue ->
+                                        onChange(entry.copy(
+                                            locationData = entry.locationData.map {
+                                                if (it === locationData) locationData.withValueForKey(definition.key, newValue)
+                                                else it
+                                            }
+                                        ))
+                                    },
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
     }
+
+
+
+
+    var showLocationAddDropdown by remember { mutableStateOf(false) }
+
+    //Box for alignment of popup
+    Box(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        NormalButton(
+            text = "+",
+            primary = false,
+            onClick = {
+                showLocationAddDropdown = true
+            },
+            modifier = Modifier.fillMaxWidth()
+                .padding(8.dp)
+        )
+
+        DropdownMenu(
+            expanded = showLocationAddDropdown,
+            onDismissRequest = {
+                showLocationAddDropdown = false
+            },
+            modifier = Modifier.align(Alignment.Center)
+        ) {
+            LocationType.entries.forEach { type ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(locationDataStringResFromKey(type))
+                        )
+                    },
+                    onClick = {
+                        onChange(entry.copy(
+                            locationData = entry.locationData + type.toSimpleLocationData()
+                        ))
+                        showLocationAddDropdown = false
+                    },
+                )
+            }
+        }
+    }
+
 }
+
+
 
 
 
@@ -312,7 +398,7 @@ private fun MapEntryInfoCardPreview() {
 
                         LocationData.Radar(
                             speedLimit = AttributeValue.IntValue(25),
-                            radarType = LocationData.RadarType.REDLIGHT
+                            radarType = AttributeValue.EnumValue(LocationData.RadarType.REDLIGHT.name)
                         )
                     ),
                     createdBy = "awd",

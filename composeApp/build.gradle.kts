@@ -201,6 +201,10 @@ kotlin {
             //Resizeable screens
             implementation(libs.material3.adaptive)
 
+            //Swipeable
+            implementation(libs.swipeable.kmp)
+
+
             //Sharedprefs
             api(libs.datastore.preferences)
             api(libs.datastore)

@@ -609,6 +609,7 @@
     <!-- Schneaggmap -->
     <string name="schneaggmap_filter_location_types">Location types</string>
     <string name="location_belongs_to_type">Belongs to: %1$s</string>
+    <string name="location_add_type">Add a new type</string>
 
     <string name="schneaggmap_entry_title">Name</string>
     <string name="schneaggmap_entry_description">Description</string>
