@@ -13,6 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
  */
 object AppJson {
     val instance = Json {
+        classDiscriminator = "_class"
         ignoreUnknownKeys = true
         //https://kotlinlang.org/api/kotlinx.serialization/kotlinx-serialization-core/kotlinx.serialization/-polymorphic-serializer/
 

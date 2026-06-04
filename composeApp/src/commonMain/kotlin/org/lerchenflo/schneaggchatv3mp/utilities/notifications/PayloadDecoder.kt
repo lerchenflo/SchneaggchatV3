@@ -35,7 +35,7 @@ sealed interface DecodedNotification {
 
 object PayloadDecoder {
     fun decode(data: Map<String, String>): DecodedNotification? {
-        return when (data["type"]) {
+        return when (data["_class"]) {
             "message" -> DecodedNotification.Message(
                 msgId = data["msgId"] ?: return null,
                 senderName = data["senderName"] ?: "",
