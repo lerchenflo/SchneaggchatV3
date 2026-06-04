@@ -81,6 +81,9 @@ sealed interface Route : NavKey {
 
         @Serializable
         data object Morse: Route, NavKey
+
+        @Serializable
+        data object SchneaggaHus: Route, NavKey
     }
 }
 
