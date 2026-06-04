@@ -19,4 +19,14 @@ class DevSettingsViewModel(
         }
     }
 
+    fun navigateRecap() {
+        viewModelScope.launch {
+            navigator.navigateToSubRoute(
+                rootRoute = Route.Games,
+                destination = Route.Games.Recap,
+                //navigationOptions =
+            )
+        }
+    }
+
 }

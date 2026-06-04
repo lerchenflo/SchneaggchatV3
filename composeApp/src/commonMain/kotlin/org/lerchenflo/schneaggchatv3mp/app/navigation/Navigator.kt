@@ -18,6 +18,18 @@ class Navigator {
         _navigationActions.send(NavigationAction.NavigateBack(navigationOptions))
     }
 
+    suspend fun navigateToSubRoute(
+        rootRoute: Route,
+        destination: Route,
+        navigationOptions: NavigationOptions = NavigationOptions()
+    ){
+        _navigationActions.send(NavigationAction.NavigateSubRoute(
+            rootRoute = rootRoute,
+            destination = destination,
+            navigationOptions = navigationOptions
+        ))
+    }
+
 
     data class NavigationOptions(
         val exitPreviousScreen: Boolean = false,
