@@ -591,6 +591,17 @@
     <string name="yatzi_roll_dice">Roll Dice, %1$d left</string>
     <string name="yatzi_roll_again">Roll Again, %1$d left</string>
 
+    <!-- Recap -->
+    <string name="recap_your_year">Your year</string>
+    <string name="recap_using_schneaggchat_in_numbers">using Schneaggchat in numbers</string>
+    <string name="recap_in_year_you_had_a_lot_to_say">In %1$d, you had a LOT to say.</string>
+    <string name="recap_you_sent">You sent</string>
+    <string name="recap_messages_to_favorite_humans">messages to your favorite humans. (And maybe a few group chats you muted).</string>
+    <string name="recap_new_friends_found">New friends found</string>
+    <string name="recap_you_have">You have</string>
+    <string name="recap_are_now_your_friends">new Friends acquired.</string>
+    <string name="recap_texts_number">%1$d texts</string>
+
     <!-- Changelog Popup -->
     <string name="changelog_whats_new">What's New</string>
     <string name="changelog_announcements">Announcements</string>

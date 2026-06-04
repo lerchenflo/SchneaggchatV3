@@ -8,6 +8,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.format
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlinx.datetime.format.byUnicodePattern
@@ -27,6 +28,23 @@ fun getCurrentTimeMillisString(): String {
 
 fun getCurrentTimeMillisLong(): Long {
     return Clock.System.now().toEpochMilliseconds()
+}
+
+fun getStartOfYearMillis(timeZone: TimeZone = TimeZone.currentSystemDefault()): Long {
+    // 1. Get the current instant in time
+    val now = Clock.System.now()
+
+    // 2. Convert to local date-time to extract the current year number
+    val currentYear = now.toLocalDateTime(timeZone).year
+
+    // 3. Create a LocalDate representing January 1st of this year
+    val startOfYearDate = LocalDate(currentYear, 1, 1)
+
+    // 4. Get the Instant when that day started in the specified timezone
+    val startOfYearInstant = startOfYearDate.atStartOfDayIn(timeZone)
+
+    // 5. Convert that instant to epoch milliseconds
+    return startOfYearInstant.toEpochMilliseconds()
 }
 
 @OptIn(FormatStringsInDatetimeFormats::class)

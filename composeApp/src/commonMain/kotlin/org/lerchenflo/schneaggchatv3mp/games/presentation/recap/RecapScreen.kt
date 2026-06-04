@@ -1,51 +1,35 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.recap
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import org.lerchenflo.schneaggchatv3mp.games.domain.ChatWrappedData
-import org.lerchenflo.schneaggchatv3mp.games.domain.TopContact
+import org.lerchenflo.schneaggchatv3mp.games.domain.RecapData
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.EmojiPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.IntroPage
-import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.NightOwlPage
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.MessagesSentPage
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.NewFriendsPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.TopContactsPage
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RecapScreen(
     onBackClick: () -> Unit,
+    recapViewModel: RecapViewModel
 ) {
-    val mockWrappedData = ChatWrappedData(
-        totalMessages = 48291,
-        totalHoursVoice = 142,
-        lateNightPercentage = 64,
-        topEmojis = listOf("😭", "💀", "🫠", "✨", "🍿"),
-        topContacts = listOf(
-            TopContact("Sarah", 18432, Color(0xFFFF477E)),
-            TopContact("The Group Chat 💬", 12104, Color(0xFF3F37C9)),
-            TopContact("Mom", 9432, Color(0xFF4CC9F0)),
-            TopContact("Alex", 5231, Color(0xFF7209B7)),
-            TopContact("Food Delivery Guy", 3092, Color(0xFFF72585))
-        )
-    )
+
 
 // Call this in your setContent {} block!
 // ChatWrappedScreen(stats = mockWrappedData)
-    val stats = mockWrappedData
+    val stats = recapViewModel.getstats()
 
     val pageCount = 4
     val pagerState = rememberPagerState(pageCount = { pageCount })
@@ -63,9 +47,10 @@ fun RecapScreen(
             ) { page ->
                 when (page) {
                     0 -> IntroPage(stats)
-                    1 -> TopContactsPage(stats.topContacts)
-                    2 -> NightOwlPage(stats.lateNightPercentage)
-                    3 -> EmojiPage(stats.topEmojis)
+                    1 -> MessagesSentPage(stats)
+                    2 -> TopContactsPage(stats)
+                    //2 -> NewFriendsPage(stats.lateNightPercentage)
+                    //3 -> EmojiPage(stats.topEmojis)
                 }
             }
 

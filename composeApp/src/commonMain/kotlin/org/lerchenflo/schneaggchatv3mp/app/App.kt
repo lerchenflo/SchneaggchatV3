@@ -68,6 +68,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounte
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapScreen
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
@@ -732,14 +733,14 @@ fun App() {
                                     }
 
                                     entry <Route.Games.Recap> {
-                                        //val morseViewModel: MorseViewModel = koinViewModel()
+                                        val recapViewModel: RecapViewModel = koinViewModel()
                                         RecapScreen(
                                             onBackClick = {
                                                 if (gamesBackStack.size > 1){
                                                     gamesBackStack.removeAt(gamesBackStack.size - 1)
                                                 }
                                             },
-                                            //viewModel = morseViewModel
+                                            recapViewModel = recapViewModel
                                         )
                                     }
                                 }
