@@ -47,7 +47,6 @@ object AppJson {
                 subclass(AttributeValue.IntValue::class)
                 subclass(AttributeValue.DoubleValue::class)
                 subclass(AttributeValue.BoolValue::class)
-                subclass(AttributeValue.EnumValue::class)
             }
 
             /*

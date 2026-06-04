@@ -37,13 +37,6 @@ sealed interface AttributeDefinition {
         val max: Int? = null,
     ) : AttributeDefinition
 
-    @Serializable @SerialName("enum")
-    data class EnumDef(
-        override val key: String,
-        override val required: Boolean,
-        val options: List<String>, // the enum names
-    ) : AttributeDefinition
-
     @Serializable @SerialName("double")
     data class DoubleDef(
         override val key: String,

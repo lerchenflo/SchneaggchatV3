@@ -4,22 +4,21 @@ import androidx.compose.runtime.Composable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.ASIANFOOD
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.CAMPING
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FASTFOOD
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.GENERICFOOD
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.PARTY
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.RADAR
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.SIGHTSEEING
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.STREET
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.SWIMMING
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.location_food_type_asian
-import schneaggchatv3mp.composeapp.generated.resources.location_food_type_austrian
-import schneaggchatv3mp.composeapp.generated.resources.location_food_type_burger
-import schneaggchatv3mp.composeapp.generated.resources.location_food_type_chinese
-import schneaggchatv3mp.composeapp.generated.resources.location_food_type_greek
-import schneaggchatv3mp.composeapp.generated.resources.location_food_type_kebab
-import schneaggchatv3mp.composeapp.generated.resources.location_food_type_other
-import schneaggchatv3mp.composeapp.generated.resources.location_food_type_pizza
-import schneaggchatv3mp.composeapp.generated.resources.location_radar_type_mobile
-import schneaggchatv3mp.composeapp.generated.resources.location_radar_type_police
-import schneaggchatv3mp.composeapp.generated.resources.location_radar_type_redlight
-import schneaggchatv3mp.composeapp.generated.resources.location_radar_type_speed
+import schneaggchatv3mp.composeapp.generated.resources.location_type_asian_food
 import schneaggchatv3mp.composeapp.generated.resources.location_type_camping
-import schneaggchatv3mp.composeapp.generated.resources.location_type_food
+import schneaggchatv3mp.composeapp.generated.resources.location_type_fast_food
+import schneaggchatv3mp.composeapp.generated.resources.location_type_generic_food
 import schneaggchatv3mp.composeapp.generated.resources.location_type_party
 import schneaggchatv3mp.composeapp.generated.resources.location_type_radar
 import schneaggchatv3mp.composeapp.generated.resources.location_type_sightseeing
@@ -28,7 +27,21 @@ import schneaggchatv3mp.composeapp.generated.resources.location_type_swimming
 
 
 enum class LocationType {
-    RADAR, STREET, CAMPING, SIGHTSEEING, SWIMMING, PARTY, FOOD;
+
+    //Street
+    RADAR,
+    STREET,
+    CAMPING,
+
+    //Activity
+    SIGHTSEEING,
+    SWIMMING,
+    PARTY,
+
+    //Food
+    FASTFOOD,
+    ASIANFOOD,
+    GENERICFOOD;
 }
 
 
@@ -39,42 +52,18 @@ sealed interface LocationData {
     fun schema(): List<AttributeDefinition>
 
 
-    //STREET LOCATION TYPES
-    enum class RadarType {
-        REDLIGHT,
-        SPEED,
-        MOBILE,
-        POLICE;
-
-        fun toUiText() : UiText {
-            return when (this) {
-                REDLIGHT -> UiText.StringResourceText(Res.string.location_radar_type_redlight)
-                SPEED -> UiText.StringResourceText(Res.string.location_radar_type_speed)
-                MOBILE -> UiText.StringResourceText(Res.string.location_radar_type_mobile)
-                POLICE -> UiText.StringResourceText(Res.string.location_radar_type_police)
-            }
-        }
-    }
-
-
-
     @Serializable
     @SerialName("radar")
     data class Radar(
-
         val speedLimit: AttributeValue.IntValue,
-        val radarType: AttributeValue.EnumValue,
-
-
-        ): LocationData {
-            override fun schema() = listOf(
-                AttributeDefinition.EnumDef(
-                    key = "radarType",
-                    required = true,
-                    options = RadarType.entries.map { it.name }
-                ),
-                AttributeDefinition.IntDef(key = "speedLimit", required = true, min = 0, max = 300),
-            )
+        val mobile: AttributeValue.BoolValue?,
+        val redLight: AttributeValue.BoolValue
+    ) : LocationData {
+        override fun schema() = listOf(
+            AttributeDefinition.IntDef(key = "speedLimit", required = true, min = 0),
+            AttributeDefinition.BoolDef(key = "mobile", required = false),
+            AttributeDefinition.BoolDef(key = "redLight", required = true)
+        )
     }
 
     @Serializable
@@ -146,71 +135,80 @@ sealed interface LocationData {
     }
 
 
-    //Food
-    enum class FoodType { KEBAB,
-        PIZZA,
-        GREEK,
-        CHINESE,
-        ASIAN,
-        AUSTRIAN,
-        BURGER,
-        OTHER;
-
-        fun toUiText() : UiText {
-            return when (this) {
-                KEBAB -> UiText.StringResourceText(Res.string.location_food_type_kebab)
-                PIZZA -> UiText.StringResourceText(Res.string.location_food_type_pizza)
-                GREEK -> UiText.StringResourceText(Res.string.location_food_type_greek)
-                CHINESE -> UiText.StringResourceText(Res.string.location_food_type_chinese)
-                ASIAN -> UiText.StringResourceText(Res.string.location_food_type_asian)
-                AUSTRIAN -> UiText.StringResourceText(Res.string.location_food_type_austrian)
-                BURGER -> UiText.StringResourceText(Res.string.location_food_type_burger)
-                OTHER -> UiText.StringResourceText(Res.string.location_food_type_other)
-            }
-        }
-    }
-
     @Serializable
-    @SerialName("food")
-    data class Food(
-
-        val foodType: AttributeValue.EnumValue,
+    @SerialName("fast_food")
+    data class FastFood(
+        val burger: AttributeValue.BoolValue?,
+        val kebab: AttributeValue.BoolValue?,
+        val pizza: AttributeValue.BoolValue?,
         val allYouCanEat: AttributeValue.BoolValue?,
-
-    ): LocationData {
+    ) : LocationData {
         override fun schema() = listOf(
-            AttributeDefinition.EnumDef(
-                key = "foodType",
-                required = true,
-                options = FoodType.entries.map { it.name }
-            ),
+            AttributeDefinition.BoolDef(key = "burger", required = false),
+            AttributeDefinition.BoolDef(key = "kebab", required = false),
+            AttributeDefinition.BoolDef(key = "pizza", required = false),
             AttributeDefinition.BoolDef(key = "allYouCanEat", required = false),
         )
     }
 
+    @Serializable
+    @SerialName("asian_food")
+    data class AsianFood(
+        val chinese: AttributeValue.BoolValue?,
+        val japanese: AttributeValue.BoolValue?,
+        val thai: AttributeValue.BoolValue?,
+        val allYouCanEat: AttributeValue.BoolValue?,
+    ) : LocationData {
+        override fun schema() = listOf(
+            AttributeDefinition.BoolDef(key = "chinese", required = false),
+            AttributeDefinition.BoolDef(key = "japanese", required = false),
+            AttributeDefinition.BoolDef(key = "thai", required = false),
+            AttributeDefinition.BoolDef(key = "allYouCanEat", required = false),
+        )
+    }
+
+    @Serializable
+    @SerialName("generic_food")
+    data class GenericFood(
+        val cuisine: AttributeValue.StringValue,  // Free text field for any cuisine
+        val allYouCanEat: AttributeValue.BoolValue?,
+    ) : LocationData {
+        override fun schema() = listOf(
+            AttributeDefinition.StringDef(key = "cuisine", required = true),
+            AttributeDefinition.BoolDef(key = "allYouCanEat", required = false),
+        )
+    }
 }
 
 
 val LocationData.toEnum: LocationType
     get() = when (this) {
-        is LocationData.Radar -> LocationType.RADAR
-        is LocationData.Street -> LocationType.STREET
-        is LocationData.Camping -> LocationType.CAMPING
-        is LocationData.SightSeeing -> LocationType.SIGHTSEEING
-        is LocationData.SwimmingLocation -> LocationType.SWIMMING
-        is LocationData.PartyLocation -> LocationType.PARTY
-        is LocationData.Food -> LocationType.FOOD
+        is LocationData.Radar -> RADAR
+        is LocationData.Street -> STREET
+        is LocationData.Camping -> CAMPING
+        is LocationData.SightSeeing -> SIGHTSEEING
+        is LocationData.SwimmingLocation -> SWIMMING
+        is LocationData.PartyLocation -> PARTY
+        is LocationData.AsianFood -> ASIANFOOD
+        is LocationData.FastFood -> FASTFOOD
+        is LocationData.GenericFood -> GENERICFOOD
     }
 
 fun LocationType.toSimpleLocationData(): LocationData {
     return when(this) {
-        LocationType.RADAR -> LocationData.Radar(speedLimit = AttributeValue.IntValue(0), radarType = AttributeValue.EnumValue(LocationData.RadarType.SPEED.name))
-        LocationType.STREET -> LocationData.Street(mautFee = null, heightLimit = null, closedInWinter = null, wheeliesAllowed = null)
-        LocationType.CAMPING -> LocationData.Camping(official = AttributeValue.BoolValue(true))
-        LocationType.SIGHTSEEING -> LocationData.SightSeeing(entryFee = null)
-        LocationType.SWIMMING -> LocationData.SwimmingLocation(indoor = null)
-        LocationType.PARTY -> LocationData.PartyLocation(entryFee = null)
-        LocationType.FOOD -> LocationData.Food(foodType = AttributeValue.EnumValue(LocationData.FoodType.OTHER.name), allYouCanEat = null)
+        RADAR -> LocationData.Radar(
+            speedLimit = AttributeValue.IntValue(0),
+            mobile = AttributeValue.BoolValue(false),
+            redLight = AttributeValue.BoolValue(false)
+        )
+        STREET -> LocationData.Street(mautFee = null, heightLimit = null, closedInWinter = null, wheeliesAllowed = null)
+        CAMPING -> LocationData.Camping(official = AttributeValue.BoolValue(true))
+        SIGHTSEEING -> LocationData.SightSeeing(entryFee = null)
+        SWIMMING -> LocationData.SwimmingLocation(indoor = null)
+        PARTY -> LocationData.PartyLocation(entryFee = null)
+        FASTFOOD -> LocationData.FastFood(burger = AttributeValue.BoolValue(false), kebab = AttributeValue.BoolValue(false), pizza = AttributeValue.BoolValue(false), allYouCanEat = AttributeValue.BoolValue(false))
+        ASIANFOOD -> LocationData.AsianFood(chinese = AttributeValue.BoolValue(false), japanese = AttributeValue.BoolValue(false), thai = AttributeValue.BoolValue(false), allYouCanEat = AttributeValue.BoolValue(false))
+        GENERICFOOD -> LocationData.GenericFood(cuisine = AttributeValue.StringValue(""), allYouCanEat = AttributeValue.BoolValue(false))
     }
 }
 
@@ -218,13 +216,15 @@ fun LocationType.toSimpleLocationData(): LocationData {
 @Composable
 fun locationDataStringResFromKey(type: LocationType): StringResource {
     return when (type) {
-        LocationType.RADAR -> Res.string.location_type_radar
-        LocationType.STREET -> Res.string.location_type_street
-        LocationType.CAMPING -> Res.string.location_type_camping
-        LocationType.SIGHTSEEING -> Res.string.location_type_sightseeing
-        LocationType.SWIMMING -> Res.string.location_type_swimming
-        LocationType.PARTY -> Res.string.location_type_party
-        LocationType.FOOD -> Res.string.location_type_food
+        RADAR -> Res.string.location_type_radar
+        STREET -> Res.string.location_type_street
+        CAMPING -> Res.string.location_type_camping
+        SIGHTSEEING -> Res.string.location_type_sightseeing
+        SWIMMING -> Res.string.location_type_swimming
+        PARTY -> Res.string.location_type_party
+        FASTFOOD -> Res.string.location_type_fast_food
+        ASIANFOOD -> Res.string.location_food_type_asian
+        GENERICFOOD -> Res.string.location_type_generic_food
     }
 
 }
@@ -234,9 +234,6 @@ fun locationDataStringResFromKey(type: LocationType): StringResource {
 fun LocationData.stringRes() = when (this) {
     is LocationData.Camping ->
         Res.string.location_type_camping
-
-    is LocationData.Food ->
-        Res.string.location_type_food
 
     is LocationData.PartyLocation ->
         Res.string.location_type_party
@@ -252,18 +249,15 @@ fun LocationData.stringRes() = when (this) {
 
     is LocationData.SwimmingLocation ->
         Res.string.location_type_swimming
-}
 
-//Horror aber was sunsch
-@Composable
-fun uiTextFromEnumValue(value: String): UiText{
-    if (LocationData.RadarType.entries.map { it.toString() }.contains(value)){
-        return LocationData.RadarType.valueOf(value).toUiText()
-    }
-    if (LocationData.FoodType.entries.map { it.toString() }.contains(value)){
-        return LocationData.FoodType.valueOf(value).toUiText()
-    }
-    return UiText.DynamicString("Unresolved")
+    is LocationData.AsianFood ->
+        Res.string.location_type_asian_food
+
+
+    is LocationData.FastFood ->
+        Res.string.location_type_fast_food
+
+    is LocationData.GenericFood ->
+        Res.string.location_type_generic_food
 
 }
-

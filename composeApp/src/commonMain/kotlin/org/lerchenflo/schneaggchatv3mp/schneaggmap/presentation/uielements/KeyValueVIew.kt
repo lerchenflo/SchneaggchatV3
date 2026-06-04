@@ -1,16 +1,12 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -32,8 +28,6 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.DoubleV
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.IntValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.StringValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.label
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.uiTextFromEnumValue
-import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 
 @Composable
 fun KeyValueView(
@@ -162,42 +156,7 @@ fun KeyValueView(
                 )
             }
 
-            is AttributeDefinition.EnumDef -> {
-                var expanded by remember { mutableStateOf(false) }
 
-                Box{
-                    NormalButton(
-                        text = uiTextFromEnumValue((value as? AttributeValue.EnumValue)?.value ?: "").asString(),
-                        onClick = {expanded = true},
-                        primary = false,
-                        modifier = Modifier.width(120.dp)
-
-                    )
-
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        scrollState = rememberScrollState(),
-                        modifier = Modifier.align(Alignment.TopEnd)
-                    ){
-                        definition.options.forEach {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = uiTextFromEnumValue(it).asString()
-                                    )
-                                },
-                                onClick = {
-                                    onValueChange(AttributeValue.EnumValue(it))
-                                    expanded = false
-                                }
-
-                            )
-
-                        }
-                    }
-                }
-            }
         }
     }
 }
@@ -247,20 +206,6 @@ private fun AllKeyValueTypesPreview() {
                     key = "foodType",
                     required = true,
                     maxLength = 30
-                ),
-                onValueChange = {}
-            )
-
-            KeyValueView(
-                value = AttributeValue.EnumValue("FIXED"),
-                definition = AttributeDefinition.EnumDef(
-                    key = "radarType",
-                    required = true,
-                    options = listOf(
-                        "FIXED",
-                        "MOBILE",
-                        "SECTION_CONTROL"
-                    )
                 ),
                 onValueChange = {}
             )

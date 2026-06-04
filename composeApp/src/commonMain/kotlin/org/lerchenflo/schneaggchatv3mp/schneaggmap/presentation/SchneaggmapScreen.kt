@@ -19,7 +19,6 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.toEnum
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
@@ -136,7 +135,11 @@ private fun SchneaggmapMapContent(
                 LocationType.SIGHTSEEING -> Res.drawable.icon_sightseeing
                 LocationType.SWIMMING    -> Res.drawable.icon_badespot
                 LocationType.PARTY       -> Res.drawable.icon_partylocation
-                LocationType.FOOD        -> Res.drawable.icon_food
+                LocationType.FASTFOOD -> Res.drawable.icon_food
+
+                //TODO: Mehr icons bitte
+                LocationType.ASIANFOOD -> Res.drawable.icon_partylocation
+                LocationType.GENERICFOOD -> Res.drawable.icon_partylocation
             }
         }
     }

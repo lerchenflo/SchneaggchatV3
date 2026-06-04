@@ -8,17 +8,6 @@ fun LocationData.getValueByKey(key: String): AttributeValue? = when (this) {
         "official"        -> official
         else              -> null
     }
-    is LocationData.Radar -> when (key) {
-        "radarType"  -> AttributeValue.EnumValue(radarType.value)
-        "speedLimit" -> speedLimit
-        else         -> null
-    }
-
-    is LocationData.Food -> when (key) {
-        "foodType"    -> AttributeValue.EnumValue(foodType.value)
-        "allYouCanEat" -> allYouCanEat
-        else          -> null
-    }
     is LocationData.PartyLocation   -> when (key) {
         "entryFee"        -> entryFee
         else              -> null
@@ -38,6 +27,31 @@ fun LocationData.getValueByKey(key: String): AttributeValue? = when (this) {
         "indoor"          -> indoor
         else              -> null
     }
+    is LocationData.Radar           -> when (key) {
+        "speedLimit"      -> speedLimit
+        "mobile"          -> mobile
+        "redLight"        -> redLight
+        else              -> null
+    }
+    is LocationData.FastFood        -> when (key) {
+        "burger"          -> burger
+        "kebab"           -> kebab
+        "pizza"           -> pizza
+        "allYouCanEat"    -> allYouCanEat
+        else              -> null
+    }
+    is LocationData.AsianFood       -> when (key) {
+        "chinese"         -> chinese
+        "japanese"        -> japanese
+        "thai"            -> thai
+        "allYouCanEat"    -> allYouCanEat
+        else              -> null
+    }
+    is LocationData.GenericFood     -> when (key) {
+        "cuisine"         -> cuisine
+        "allYouCanEat"    -> allYouCanEat
+        else              -> null
+    }
 }
 
 fun LocationData.withValueForKey(key: String, value: AttributeValue): LocationData = when (this) {
@@ -45,22 +59,16 @@ fun LocationData.withValueForKey(key: String, value: AttributeValue): LocationDa
         "official"        -> copy(official = value as AttributeValue.BoolValue)
         else              -> this
     }
-    is LocationData.Radar -> when (key) {
-        "radarType"  -> copy(radarType = (value as AttributeValue.EnumValue))
-        "speedLimit" -> copy(speedLimit = value as AttributeValue.IntValue)
-        else         -> this
-    }
-
-    is LocationData.Food -> when (key) {
-        "foodType"    -> copy(foodType = (value as AttributeValue.EnumValue))
-        "allYouCanEat" -> copy(allYouCanEat = value as? AttributeValue.BoolValue)
-        else          -> this
+    is LocationData.Radar           -> when (key) {
+        "speedLimit"      -> copy(speedLimit = value as AttributeValue.IntValue)
+        "mobile"          -> copy(mobile = value as? AttributeValue.BoolValue)
+        "redLight"        -> copy(redLight = value as AttributeValue.BoolValue)
+        else              -> this
     }
     is LocationData.PartyLocation   -> when (key) {
         "entryFee"        -> copy(entryFee = value as? AttributeValue.DoubleValue)
         else              -> this
     }
-
     is LocationData.SightSeeing     -> when (key) {
         "entryFee"        -> copy(entryFee = value as? AttributeValue.DoubleValue)
         else              -> this
@@ -74,6 +82,25 @@ fun LocationData.withValueForKey(key: String, value: AttributeValue): LocationDa
     }
     is LocationData.SwimmingLocation -> when (key) {
         "indoor"          -> copy(indoor = value as? AttributeValue.BoolValue)
+        else              -> this
+    }
+    is LocationData.FastFood        -> when (key) {
+        "burger"          -> copy(burger = value as? AttributeValue.BoolValue)
+        "kebab"           -> copy(kebab = value as? AttributeValue.BoolValue)
+        "pizza"           -> copy(pizza = value as? AttributeValue.BoolValue)
+        "allYouCanEat"    -> copy(allYouCanEat = value as? AttributeValue.BoolValue)
+        else              -> this
+    }
+    is LocationData.AsianFood       -> when (key) {
+        "chinese"         -> copy(chinese = value as? AttributeValue.BoolValue)
+        "japanese"        -> copy(japanese = value as? AttributeValue.BoolValue)
+        "thai"            -> copy(thai = value as? AttributeValue.BoolValue)
+        "allYouCanEat"    -> copy(allYouCanEat = value as? AttributeValue.BoolValue)
+        else              -> this
+    }
+    is LocationData.GenericFood     -> when (key) {
+        "cuisine"         -> copy(cuisine = value as AttributeValue.StringValue)
+        "allYouCanEat"    -> copy(allYouCanEat = value as? AttributeValue.BoolValue)
         else              -> this
     }
 }

@@ -4,7 +4,6 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,14 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -33,22 +28,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.BlendMode.Companion.Color
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.stevdza_san.swipeable.Swipeable
-import com.stevdza_san.swipeable.domain.ActionCustomization
-import com.stevdza_san.swipeable.domain.SwipeAction
 import com.stevdza_san.swipeable.domain.SwipeBehavior
 import com.stevdza_san.swipeable.domain.SwipeDirection
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.copyToClipboard
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.locationDataStringResFromKey
@@ -58,7 +46,6 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.latlong
-import schneaggchatv3mp.composeapp.generated.resources.location_add_type
 import schneaggchatv3mp.composeapp.generated.resources.location_belongs_to_type
 import schneaggchatv3mp.composeapp.generated.resources.save
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_description
@@ -364,51 +351,4 @@ fun LocationAttributeView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
         }
     }
 
-}
-
-
-
-
-
-
-@Preview(
-    apiLevel = 36,
-    showSystemUi = true,
-    showBackground = true
-)
-@Composable
-private fun MapEntryInfoCardPreview() {
-    SchneaggchatTheme {
-        Box(
-            contentAlignment = Alignment.Center
-        ) {
-            MapEntryInfoCard(
-                entry = MapEntry(
-                    id = "test",
-                    coordinates = LatLong(2.222342342342,2.223433322222332),
-                    name = "Test title entry",
-                    description = "This is a default test entry for debugging how to show a popup. there is no use in this much text other than showing if the line breaks and the padding works correctly.",
-                    locationData = listOf(
-                        LocationData.Street(
-                            mautFee = null,
-                            heightLimit = AttributeValue.DoubleValue(22.222),
-                            closedInWinter = AttributeValue.BoolValue(false),
-                            wheeliesAllowed = AttributeValue.BoolValue(true)
-                        ),
-
-                        LocationData.Radar(
-                            speedLimit = AttributeValue.IntValue(25),
-                            radarType = AttributeValue.EnumValue(LocationData.RadarType.REDLIGHT.name)
-                        )
-                    ),
-                    createdBy = "awd",
-                    createdAt = 23232L,
-                    updatedBy = "awwad",
-                    updatedAt = 223234223L
-                ),
-                onDismiss = {},
-                onSave = {}
-            )
-        }
-    }
 }

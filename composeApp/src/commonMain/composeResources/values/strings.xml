@@ -624,7 +624,9 @@
     <string name="location_type_sightseeing">Sightseeing</string>
     <string name="location_type_swimming">Swimming</string>
     <string name="location_type_party">Party</string>
-    <string name="location_type_food">Food</string>
+    <string name="location_type_asian_food">Asian food</string>
+    <string name="location_type_fast_food">Fastfood</string>
+    <string name="location_type_generic_food">Other Food</string>
 
 
     <!-- Camping -->
