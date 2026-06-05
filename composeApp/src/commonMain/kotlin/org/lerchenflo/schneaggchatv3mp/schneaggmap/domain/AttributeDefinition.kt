@@ -51,29 +51,3 @@ sealed interface AttributeDefinition {
         override val required: Boolean,
     ) : AttributeDefinition
 }
-
-
-@Composable
-fun AttributeDefinition.label(): String {
-    return when (this.key) {
-        "mautFee"         -> stringResource(Res.string.location_street_maut_fee)
-        "heightLimit"     -> stringResource(Res.string.location_street_height_limit)
-        "closedInWinter"  -> stringResource(Res.string.location_street_closed_in_winter)
-        "wheeliesAllowed" -> stringResource(Res.string.location_street_wheelies_allowed)
-        "official"        -> stringResource(Res.string.location_camping_official)
-
-        "speedLimit"      -> stringResource(Res.string.location_radar_speed_limit)
-        "radarType"       -> stringResource(Res.string.location_radar_type)
-
-        "entryFee"        -> stringResource(Res.string.location_sightseeing_entry_fee)
-
-        "allYouCanEat"    -> stringResource(Res.string.location_food_all_you_can_eat)
-        "foodType"        -> stringResource(Res.string.location_food_type)
-
-        "indoor"          -> stringResource(Res.string.location_swimming_indoor)
-        else              -> {
-            println("ERROR: SCHNEAGGMAP: KEY NOT RESOLVED: $key")
-            this.key
-        }
-    }
-}

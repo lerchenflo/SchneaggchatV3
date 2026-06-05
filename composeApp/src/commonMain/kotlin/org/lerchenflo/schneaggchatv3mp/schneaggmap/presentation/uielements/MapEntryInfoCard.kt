@@ -248,26 +248,26 @@ fun CoordinateView(coordinates: LatLong) {
 @Composable
 fun LocationAttributeView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
 
-    Swipeable(
-        behavior = SwipeBehavior.REVEAL,
-        direction = SwipeDirection.LEFT,
-        rightRevealActions = listOf(
-            /*
-            SwipeAction(
-                customization = ActionCustomization(
-                    icon = Icons.Default.Delete,
-                    iconColor = Color.White,
-                    containerColor = Color.Red
-                ),
-                onAction = { /* Delete item */ }
-            )
+    Column {
+        entry.locationData.forEach { locationData ->
+            Swipeable(
+                behavior = SwipeBehavior.REVEAL,
+                direction = SwipeDirection.LEFT,
+                rightRevealActions = listOf(
+                    /*
+                    SwipeAction(
+                        customization = ActionCustomization(
+                            icon = Icons.Default.Delete,
+                            iconColor = Color.White,
+                            containerColor = Color.Red
+                        ),
+                        onAction = { /* Delete item */ }
+                    )
 
-             */
-            //TODO: Delete entry (Update library first to accept drawablevectors)
-        )
-    ) {
-        Column {
-            entry.locationData.forEach { locationData ->
+                     */
+                    //TODO: Delete entry (Update library first to accept drawablevectors)
+                )
+            ) {
                 Box(
                     modifier = Modifier
                         .padding(8.dp)
