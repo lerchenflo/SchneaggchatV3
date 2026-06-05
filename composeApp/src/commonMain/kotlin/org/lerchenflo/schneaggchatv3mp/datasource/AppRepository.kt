@@ -378,8 +378,11 @@ class AppRepository(
         lat: Double,
         lon: Double,
         locationData: List<LocationData>,
-    ): NetworkResult<MapEntryResponse, NetworkError> {
-        return networkUtils.upsertMapEntry(
+    ) {
+
+
+
+        val result = networkUtils.upsertMapEntry(
             MapEntryRequest(
                 entryId = entryId,
                 name = name,
@@ -388,6 +391,16 @@ class AppRepository(
                 locationData = locationData,
             )
         )
+
+
+        when (result) {
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+            }
+            is NetworkResult.Success<MapEntryResponse> -> {
+                mapRepository.upsertMapEntry(result.data.toMapEntry())
+            }
+        }
     }
 
     suspend fun deleteMapEntry(entryId: String): NetworkResult<Unit, NetworkError> {
