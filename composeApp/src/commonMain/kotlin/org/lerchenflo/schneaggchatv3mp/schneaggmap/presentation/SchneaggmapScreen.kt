@@ -59,14 +59,21 @@ import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.icon_Pizza
 import schneaggchatv3mp.composeapp.generated.resources.icon_badespot
+import schneaggchatv3mp.composeapp.generated.resources.icon_beer
+import schneaggchatv3mp.composeapp.generated.resources.icon_burger
 import schneaggchatv3mp.composeapp.generated.resources.icon_camping
+import schneaggchatv3mp.composeapp.generated.resources.icon_chinese_food
 import schneaggchatv3mp.composeapp.generated.resources.icon_doener
+import schneaggchatv3mp.composeapp.generated.resources.icon_food
 import schneaggchatv3mp.composeapp.generated.resources.icon_partylocation
+import schneaggchatv3mp.composeapp.generated.resources.icon_pizza
+import schneaggchatv3mp.composeapp.generated.resources.icon_police
 import schneaggchatv3mp.composeapp.generated.resources.icon_radar
+import schneaggchatv3mp.composeapp.generated.resources.icon_radar_variant
 import schneaggchatv3mp.composeapp.generated.resources.icon_sightseeing
 import schneaggchatv3mp.composeapp.generated.resources.icon_street
+import schneaggchatv3mp.composeapp.generated.resources.icon_viewpoint
 import schneaggchatv3mp.composeapp.generated.resources.icon_wheeliespot
 
 @Composable
@@ -146,23 +153,23 @@ private fun SchneaggmapMapContent(
     val typeIcons: Map<LocationType, DrawableResource> = remember {
         LocationType.entries.associateWith { type ->
             when (type) {
-                RADAR -> Res.drawable.icon_radar
+                RADAR -> Res.drawable.icon_radar_variant
                 CAMPING -> Res.drawable.icon_camping
                 SIGHTSEEING -> Res.drawable.icon_sightseeing
                 SWIMMING -> Res.drawable.icon_badespot
                 PARTY -> Res.drawable.icon_partylocation
 
-                POLICE -> TODO()
+                POLICE -> Res.drawable.icon_police
                 MOUNTAIN_STREET -> Res.drawable.icon_street
                 WHEELIESPOT -> Res.drawable.icon_wheeliespot
-                VIEWPOINT -> TODO()
+                VIEWPOINT -> Res.drawable.icon_viewpoint
                 FOOD_KEBAB -> Res.drawable.icon_doener
-                FOOD_PIZZA -> Res.drawable.icon_Pizza
-                FOOD_BURGER -> TODO()
-                FOOD_BEER -> TODO()
-                FOOD_ASIAN -> TODO()
-                FOOD_GREEK -> TODO()
-                FOOD_OTHER -> TODO()
+                FOOD_PIZZA -> Res.drawable.icon_pizza
+                FOOD_BURGER -> Res.drawable.icon_burger
+                FOOD_BEER -> Res.drawable.icon_beer
+                FOOD_ASIAN -> Res.drawable.icon_chinese_food
+                FOOD_GREEK -> Res.drawable.icon_food //TODO: CHANGE ICON
+                FOOD_OTHER -> Res.drawable.icon_food
             }
         }
     }
