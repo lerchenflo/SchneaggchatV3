@@ -19,6 +19,10 @@ sealed class AttributeValue {
     data class DoubleValue(val value: Double) : AttributeValue()
 
     @Serializable
+    @SerialName("long")
+    data class LongValue(val value: Long) : AttributeValue()
+
+    @Serializable
     @SerialName("bool")
     data class BoolValue(val value: Boolean) : AttributeValue()
 }
@@ -35,6 +39,10 @@ val AttributeValue.asInt: Int
 val AttributeValue.asDouble: Double
     get() = (this as? AttributeValue.DoubleValue)?.value
         ?: error("Expected DoubleValue but was ${this::class.simpleName}")
+
+val AttributeValue.asLong: Long
+    get() = (this as? AttributeValue.LongValue)?.value
+        ?: error("Expected LongValue but was ${this::class.simpleName}")
 
 val AttributeValue.asBool: Boolean
     get() = (this as? AttributeValue.BoolValue)?.value

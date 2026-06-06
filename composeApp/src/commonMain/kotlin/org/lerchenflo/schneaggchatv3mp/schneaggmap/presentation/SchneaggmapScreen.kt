@@ -19,7 +19,22 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.toEnum
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.CAMPING
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_ASIAN
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_BEER
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_BURGER
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_GREEK
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_KEBAB
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_OTHER
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_PIZZA
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.MOUNTAIN_STREET
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.PARTY
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.POLICE
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.RADAR
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.SIGHTSEEING
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.SWIMMING
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.VIEWPOINT
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.WHEELIESPOT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
 import org.maplibre.compose.camera.CameraPosition
@@ -44,13 +59,15 @@ import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.icon_Pizza
 import schneaggchatv3mp.composeapp.generated.resources.icon_badespot
 import schneaggchatv3mp.composeapp.generated.resources.icon_camping
-import schneaggchatv3mp.composeapp.generated.resources.icon_food
+import schneaggchatv3mp.composeapp.generated.resources.icon_doener
 import schneaggchatv3mp.composeapp.generated.resources.icon_partylocation
 import schneaggchatv3mp.composeapp.generated.resources.icon_radar
 import schneaggchatv3mp.composeapp.generated.resources.icon_sightseeing
 import schneaggchatv3mp.composeapp.generated.resources.icon_street
+import schneaggchatv3mp.composeapp.generated.resources.icon_wheeliespot
 
 @Composable
 fun SchneaggmapScreenRoot() {
@@ -129,17 +146,23 @@ private fun SchneaggmapMapContent(
     val typeIcons: Map<LocationType, DrawableResource> = remember {
         LocationType.entries.associateWith { type ->
             when (type) {
-                LocationType.RADAR       -> Res.drawable.icon_radar
-                LocationType.STREET      -> Res.drawable.icon_street
-                LocationType.CAMPING     -> Res.drawable.icon_camping
-                LocationType.SIGHTSEEING -> Res.drawable.icon_sightseeing
-                LocationType.SWIMMING    -> Res.drawable.icon_badespot
-                LocationType.PARTY       -> Res.drawable.icon_partylocation
-                LocationType.FASTFOOD -> Res.drawable.icon_food
+                RADAR -> Res.drawable.icon_radar
+                CAMPING -> Res.drawable.icon_camping
+                SIGHTSEEING -> Res.drawable.icon_sightseeing
+                SWIMMING -> Res.drawable.icon_badespot
+                PARTY -> Res.drawable.icon_partylocation
 
-                //TODO: Mehr icons bitte
-                LocationType.ASIANFOOD -> Res.drawable.icon_partylocation
-                LocationType.GENERICFOOD -> Res.drawable.icon_partylocation
+                POLICE -> TODO()
+                MOUNTAIN_STREET -> Res.drawable.icon_street
+                WHEELIESPOT -> Res.drawable.icon_wheeliespot
+                VIEWPOINT -> TODO()
+                FOOD_KEBAB -> Res.drawable.icon_doener
+                FOOD_PIZZA -> Res.drawable.icon_Pizza
+                FOOD_BURGER -> TODO()
+                FOOD_BEER -> TODO()
+                FOOD_ASIAN -> TODO()
+                FOOD_GREEK -> TODO()
+                FOOD_OTHER -> TODO()
             }
         }
     }
@@ -180,7 +203,7 @@ private fun SchneaggmapMapContent(
 
                 val entriesForType = state.entries.filter { entry ->
                     entry.locationData.any { locationData ->
-                        locationData.toEnum == type
+                        locationData.locationtype == type
                     }
                 }
                 if (entriesForType.isEmpty()) return@forEach

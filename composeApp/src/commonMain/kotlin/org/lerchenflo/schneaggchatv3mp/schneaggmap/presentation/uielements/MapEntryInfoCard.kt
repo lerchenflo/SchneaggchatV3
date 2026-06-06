@@ -39,7 +39,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.copyToClipboard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.locationDataStringResFromKey
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.toSimpleLocationData
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
@@ -75,7 +74,6 @@ fun MapEntryInfoCard(
                 onChange = {
                     currentEntry = it
                 },
-                onDismiss = onDismiss
             )
 
 
@@ -138,12 +136,12 @@ fun MapEntryInfoCard(
 
 
 @Composable
-fun EntryTitleView(entry: MapEntry, onChange: (MapEntry) -> Unit, onDismiss: () -> Unit) {
+fun EntryTitleView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
 
     Column {
 
         val combinedEntries = entry.locationData.map {
-            stringResource(it.stringRes())
+            stringResource(it.locationtype.stringRes())
         }
         Text(
             text = stringResource(Res.string.location_belongs_to_type, combinedEntries.joinToString(", ").orEmpty()),
@@ -276,7 +274,7 @@ fun LocationAttributeView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
                 ) {
                     Column {
                         Text(
-                            text = stringResource(locationData.stringRes()),
+                            text = stringResource(locationData.locationtype.stringRes()),
                             textAlign = TextAlign.Center,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -337,7 +335,7 @@ fun LocationAttributeView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
                 DropdownMenuItem(
                     text = {
                         Text(
-                            text = stringResource(locationDataStringResFromKey(type))
+                            text = stringResource(type.stringRes())
                         )
                     },
                     onClick = {

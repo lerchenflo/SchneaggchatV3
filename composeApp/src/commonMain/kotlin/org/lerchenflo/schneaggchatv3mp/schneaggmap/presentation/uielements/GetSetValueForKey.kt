@@ -4,103 +4,151 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 
 fun LocationData.getValueByKey(key: String): AttributeValue? = when (this) {
-    is LocationData.Camping         -> when (key) {
-        "official"        -> official
-        else              -> null
+
+    // Traffic & Hazards
+    is LocationData.Radar            -> when (key) {
+        "speedLimit"       -> speedLimit
+        else               -> null
     }
-    is LocationData.PartyLocation   -> when (key) {
-        "entryFee"        -> entryFee
-        else              -> null
+    is LocationData.Police           -> when (key) {
+        "lastSeen"         -> lastSeen
+        else               -> null
     }
-    is LocationData.SightSeeing     -> when (key) {
-        "entryFee"        -> entryFee
-        else              -> null
+
+    // Rider Spots
+    is LocationData.MountainStreet   -> when (key) {
+        "mautFee"          -> mautFee
+        "heightLimit"      -> heightLimit
+        "closedInWinter"   -> closedInWinter
+        else               -> null
     }
-    is LocationData.Street          -> when (key) {
-        "mautFee"         -> mautFee
-        "heightLimit"     -> heightLimit
-        "closedInWinter"  -> closedInWinter
-        "wheeliesAllowed" -> wheeliesAllowed
-        else              -> null
+    is LocationData.Wheeliespot      -> when (key) {
+        "onlyOnWeekends"   -> onlyOnWeekends
+        else               -> null
+    }
+    is LocationData.Viewpoint        -> null
+
+    // Nature & Activities
+    is LocationData.Camping          -> when (key) {
+        "official"         -> official
+        else               -> null
     }
     is LocationData.SwimmingLocation -> when (key) {
-        "indoor"          -> indoor
-        else              -> null
+        "indoor"           -> indoor
+        else               -> null
     }
-    is LocationData.Radar           -> when (key) {
-        "speedLimit"      -> speedLimit
-        "mobile"          -> mobile
-        "redLight"        -> redLight
-        else              -> null
+
+    // Social & Entertainment
+    is LocationData.SightSeeing      -> when (key) {
+        "entryFee"         -> entryFee
+        else               -> null
     }
-    is LocationData.FastFood        -> when (key) {
-        "burger"          -> burger
-        "kebab"           -> kebab
-        "pizza"           -> pizza
-        "allYouCanEat"    -> allYouCanEat
-        else              -> null
+    is LocationData.PartyLocation    -> when (key) {
+        "entryFee"         -> entryFee
+        else               -> null
     }
-    is LocationData.AsianFood       -> when (key) {
-        "chinese"         -> chinese
-        "japanese"        -> japanese
-        "thai"            -> thai
-        "allYouCanEat"    -> allYouCanEat
-        else              -> null
+
+    // Fast Food & Snacks
+    is LocationData.FoodKebab        -> when (key) {
+        "kebabPrice"       -> kebabPrice
+        else               -> null
     }
-    is LocationData.GenericFood     -> when (key) {
-        "cuisine"         -> cuisine
-        "allYouCanEat"    -> allYouCanEat
-        else              -> null
+    is LocationData.FoodPizza        -> when (key) {
+        "margaritaPrice"   -> margaritaPrice
+        else               -> null
+    }
+    is LocationData.FoodBurger       -> when (key) {
+        "cheeseburgerPrice" -> cheeseburgerPrice
+        else               -> null
+    }
+    is LocationData.FoodBeer         -> when (key) {
+        "beerPrice"        -> beerPrice
+        else               -> null
+    }
+
+    // Restaurant
+    is LocationData.FoodAsian        -> when (key) {
+        "allYouCanEat"     -> allYouCanEat
+        else               -> null
+    }
+    is LocationData.FoodGreek        -> null
+    is LocationData.FoodOther        -> when (key) {
+        "cuisine"          -> cuisine
+        else               -> null
     }
 }
 
 fun LocationData.withValueForKey(key: String, value: AttributeValue): LocationData = when (this) {
-    is LocationData.Camping         -> when (key) {
-        "official"        -> copy(official = value as AttributeValue.BoolValue)
-        else              -> this
+
+    // Traffic & Hazards
+    is LocationData.Radar            -> when (key) {
+        "speedLimit"        -> copy(speedLimit = value)
+        else                -> this
     }
-    is LocationData.Radar           -> when (key) {
-        "speedLimit"      -> copy(speedLimit = value as AttributeValue.IntValue)
-        "mobile"          -> copy(mobile = value as? AttributeValue.BoolValue)
-        "redLight"        -> copy(redLight = value as AttributeValue.BoolValue)
-        else              -> this
+    is LocationData.Police           -> when (key) {
+        "lastSeen"          -> copy(lastSeen = value)
+        else                -> this
     }
-    is LocationData.PartyLocation   -> when (key) {
-        "entryFee"        -> copy(entryFee = value as? AttributeValue.DoubleValue)
-        else              -> this
+
+    // Rider Spots
+    is LocationData.MountainStreet   -> when (key) {
+        "mautFee"           -> copy(mautFee = value)
+        "heightLimit"       -> copy(heightLimit = value)
+        "closedInWinter"    -> copy(closedInWinter = value)
+        else                -> this
     }
-    is LocationData.SightSeeing     -> when (key) {
-        "entryFee"        -> copy(entryFee = value as? AttributeValue.DoubleValue)
-        else              -> this
+    is LocationData.Wheeliespot      -> when (key) {
+        "onlyOnWeekends"    -> copy(onlyOnWeekends = value)
+        else                -> this
     }
-    is LocationData.Street          -> when (key) {
-        "mautFee"         -> copy(mautFee = value as? AttributeValue.DoubleValue)
-        "heightLimit"     -> copy(heightLimit = value as? AttributeValue.DoubleValue)
-        "closedInWinter"  -> copy(closedInWinter = value as? AttributeValue.BoolValue)
-        "wheeliesAllowed" -> copy(wheeliesAllowed = value as? AttributeValue.BoolValue)
-        else              -> this
+    is LocationData.Viewpoint        -> this
+
+    // Nature & Activities
+    is LocationData.Camping          -> when (key) {
+        "official"          -> copy(official = value)
+        else                -> this
     }
     is LocationData.SwimmingLocation -> when (key) {
-        "indoor"          -> copy(indoor = value as? AttributeValue.BoolValue)
-        else              -> this
+        "indoor"            -> copy(indoor = value)
+        else                -> this
     }
-    is LocationData.FastFood        -> when (key) {
-        "burger"          -> copy(burger = value as? AttributeValue.BoolValue)
-        "kebab"           -> copy(kebab = value as? AttributeValue.BoolValue)
-        "pizza"           -> copy(pizza = value as? AttributeValue.BoolValue)
-        "allYouCanEat"    -> copy(allYouCanEat = value as? AttributeValue.BoolValue)
-        else              -> this
+
+    // Social & Entertainment
+    is LocationData.SightSeeing      -> when (key) {
+        "entryFee"          -> copy(entryFee = value)
+        else                -> this
     }
-    is LocationData.AsianFood       -> when (key) {
-        "chinese"         -> copy(chinese = value as? AttributeValue.BoolValue)
-        "japanese"        -> copy(japanese = value as? AttributeValue.BoolValue)
-        "thai"            -> copy(thai = value as? AttributeValue.BoolValue)
-        "allYouCanEat"    -> copy(allYouCanEat = value as? AttributeValue.BoolValue)
-        else              -> this
+    is LocationData.PartyLocation    -> when (key) {
+        "entryFee"          -> copy(entryFee = value)
+        else                -> this
     }
-    is LocationData.GenericFood     -> when (key) {
-        "cuisine"         -> copy(cuisine = value as AttributeValue.StringValue)
-        "allYouCanEat"    -> copy(allYouCanEat = value as? AttributeValue.BoolValue)
-        else              -> this
+
+    // Fast Food & Snacks
+    is LocationData.FoodKebab        -> when (key) {
+        "kebabPrice"        -> copy(kebabPrice = value)
+        else                -> this
+    }
+    is LocationData.FoodPizza        -> when (key) {
+        "margaritaPrice"    -> copy(margaritaPrice = value)
+        else                -> this
+    }
+    is LocationData.FoodBurger       -> when (key) {
+        "cheeseburgerPrice" -> copy(cheeseburgerPrice = value)
+        else                -> this
+    }
+    is LocationData.FoodBeer         -> when (key) {
+        "beerPrice"         -> copy(beerPrice = value)
+        else                -> this
+    }
+
+    // Restaurant
+    is LocationData.FoodAsian        -> when (key) {
+        "allYouCanEat"      -> copy(allYouCanEat = value)
+        else                -> this
+    }
+    is LocationData.FoodGreek        -> this
+    is LocationData.FoodOther        -> when (key) {
+        "cuisine"           -> copy(cuisine = value)
+        else                -> this
     }
 }

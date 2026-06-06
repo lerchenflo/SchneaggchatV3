@@ -1,17 +1,25 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,6 +29,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dev.darkokoa.datetimewheelpicker.WheelDatePicker
+import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeDefinition
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.BoolValue
@@ -28,6 +44,8 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.DoubleV
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.IntValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.StringValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.label
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @Composable
 fun KeyValueView(
@@ -156,7 +174,64 @@ fun KeyValueView(
                 )
             }
 
+            //THis is a timestamp not a long
+            is AttributeDefinition.LongDef -> {
+                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                val endOfCurrentYear = LocalDate(now.year, 12, 31)
 
+                val currentMillis = (value as? AttributeValue.LongValue)?.value
+                val initialDateTime = currentMillis
+                    ?.let { Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()) }
+                    ?: now
+
+                var selectedDate by remember { mutableStateOf(initialDateTime.date) }
+                var selectedTime by remember { mutableStateOf(initialDateTime.time) }
+
+                // Keep onValueChange in sync whenever date or time changes
+                LaunchedEffect(selectedDate, selectedTime) {
+                    val millis = LocalDateTime(date = selectedDate, time = selectedTime)
+                        .toInstant(TimeZone.currentSystemDefault())
+                        .toEpochMilliseconds()
+                    onValueChange(AttributeValue.LongValue(millis))
+                }
+
+                val timePickerState = rememberTimePickerState(
+                    initialHour   = initialDateTime.hour,
+                    initialMinute = initialDateTime.minute,
+                    is24Hour      = true,
+                )
+
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    WheelDatePicker(
+                        modifier = Modifier.fillMaxWidth(),
+                        startDate = selectedDate,
+                        minDate = LocalDate(1900, 1, 1),
+                        maxDate = endOfCurrentYear,
+                        rowCount = 5,
+                        textColor = MaterialTheme.colorScheme.onSurface,
+                        selectorProperties = WheelPickerDefaults.selectorProperties(
+                            enabled = true,
+                            color  = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                        ),
+                        onSnappedDate = { snappedDate ->
+                            if (snappedDate >= LocalDate(1900, 1, 1) && snappedDate <= endOfCurrentYear) {
+                                selectedDate = snappedDate
+                            }
+                        }
+                    )
+
+                    TimePicker(
+                        state = timePickerState,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+
+                    // Sync time picker state back into selectedTime
+                    LaunchedEffect(timePickerState.hour, timePickerState.minute) {
+                        selectedTime = LocalTime(timePickerState.hour, timePickerState.minute)
+                    }
+                }
+            }
         }
     }
 }
