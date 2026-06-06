@@ -35,6 +35,9 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.modules.SerializersModule
@@ -64,6 +67,8 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapScreen
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
@@ -184,6 +189,8 @@ fun App() {
                         subclass(Route.Games.Tetris::class, Route.Games.Tetris.serializer())
                         subclass(Route.Games.Morse::class, Route.Games.Morse.serializer())
 
+                        subclass(Route.Games.Recap::class, Route.Games.Recap.serializer())
+
 
                     }
                 }
@@ -208,7 +215,7 @@ fun App() {
         //Observe what the navigator sends to change screens etc
         ObserveAsEvents(
             flow = navigator.navigationActions
-        ){  action ->
+        ) { action ->
 
             /*
             println("NAVIGATION: Navigating ${when (action) {
@@ -257,11 +264,34 @@ fun App() {
 
                     rootBackStack.add(action.destination)
                 }
+
+                is NavigationAction.NavigateSubRoute -> {
+                    if (navigationOptions.exitAllPreviousScreens) {
+                        rootBackStack.clear()
+                    }
+
+                    // add root route if not already in backstack
+                    if(!rootBackStack.contains(action.rootRoute)){
+                        rootBackStack.add(action.rootRoute)
+                    }
+                    when(action.rootRoute)
+                    {
+                        Route.Games -> {
+                            gamesBackStack.add(action.destination)
+                        }
+                        Route.Settings -> {
+                            settingsBackStack.add(action.destination)
+                        }
+                        else -> {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                loggingRepository.logWarning("rootRoute has no configured backstack")
+                            }
+                        }
+                    }
+                }
+
                 is NavigationAction.NavigateBack -> {
-
-                    //Ignore exitallpreviousscreens because the app would close
-
-                    if (rootBackStack.size > 1){
+                    if (rootBackStack.size > 1) {
                         rootBackStack.removeAt(rootBackStack.size - 1)
                     }
                 }
@@ -699,6 +729,18 @@ fun App() {
                                                 }
                                             },
                                             viewModel = morseViewModel
+                                        )
+                                    }
+
+                                    entry <Route.Games.Recap> {
+                                        val recapViewModel: RecapViewModel = koinViewModel()
+                                        RecapScreen(
+                                            onBackClick = {
+                                                if (gamesBackStack.size > 1){
+                                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                                }
+                                            },
+                                            recapViewModel = recapViewModel
                                         )
                                     }
                                 }

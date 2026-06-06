@@ -12,4 +12,10 @@ sealed interface NavigationAction{
         val destination: Route,
         override val navigationOptions: Navigator.NavigationOptions = Navigator.NavigationOptions()
     ) : NavigationAction
+
+    data class NavigateSubRoute(
+        val rootRoute: Route,
+        val destination: Route,
+        override val navigationOptions: Navigator.NavigationOptions = Navigator.NavigationOptions()
+    ) : NavigationAction
 }

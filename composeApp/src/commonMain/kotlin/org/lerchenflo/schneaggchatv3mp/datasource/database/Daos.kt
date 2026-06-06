@@ -135,6 +135,12 @@ interface MessageDao {
 
     @Query("INSERT OR REPLACE INTO message_readers (messageId, readerID, readDate) SELECT m.id, :ownId, :timestamp FROM messages m WHERE (m.senderId = :userId OR m.receiverId = :userId) AND m.groupMessage = :gruppe AND m.readByMe = 0 AND m.id != ''")
     suspend fun addMessageReadersForChat(userId: String, gruppe: Boolean, ownId: String, timestamp: String)
+/* Will not work since sendDate is a string
+    @Transaction
+    @Query("SELECT * FROM messages WHERE (sendDate > :time)")
+    suspend fun getMessagesSinceTimeStamp(time: Long): List<MessageWithReadersDto>
+
+ */
 
 }
 
