@@ -85,6 +85,7 @@ fun MessageViewWithActions(
             ReplyArrow()
         }
 
+        //TODO: Replace with swipable library: https://github.com/stevdza-san/Swipeable-KMP (Ibout im locationattributeview)
         Surface(
             color = MaterialTheme.colorScheme.background,
             tonalElevation = 0.dp,

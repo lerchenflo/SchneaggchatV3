@@ -3,249 +3,375 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.domain
 import androidx.compose.runtime.Composable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.*
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.location_food_type_asian
-import schneaggchatv3mp.composeapp.generated.resources.location_food_type_austrian
-import schneaggchatv3mp.composeapp.generated.resources.location_food_type_burger
-import schneaggchatv3mp.composeapp.generated.resources.location_food_type_chinese
-import schneaggchatv3mp.composeapp.generated.resources.location_food_type_greek
-import schneaggchatv3mp.composeapp.generated.resources.location_food_type_kebab
-import schneaggchatv3mp.composeapp.generated.resources.location_food_type_other
-import schneaggchatv3mp.composeapp.generated.resources.location_food_type_pizza
-import schneaggchatv3mp.composeapp.generated.resources.location_radar_type_mobile
-import schneaggchatv3mp.composeapp.generated.resources.location_radar_type_police
-import schneaggchatv3mp.composeapp.generated.resources.location_radar_type_redlight
-import schneaggchatv3mp.composeapp.generated.resources.location_radar_type_speed
-import schneaggchatv3mp.composeapp.generated.resources.location_type_camping
-import schneaggchatv3mp.composeapp.generated.resources.location_type_food
-import schneaggchatv3mp.composeapp.generated.resources.location_type_party
-import schneaggchatv3mp.composeapp.generated.resources.location_type_radar
-import schneaggchatv3mp.composeapp.generated.resources.location_type_sightseeing
-import schneaggchatv3mp.composeapp.generated.resources.location_type_street
-import schneaggchatv3mp.composeapp.generated.resources.location_type_swimming
+import schneaggchatv3mp.composeapp.generated.resources.*
 
 
 enum class LocationType {
-    RADAR, STREET, CAMPING, SIGHTSEEING, SWIMMING, PARTY, FOOD;
 
-    val typeKey: String get() = when (this) {
-        RADAR       -> "radar"
-        STREET      -> "street"
-        CAMPING     -> "camping"
-        SIGHTSEEING -> "sightseeing"
-        SWIMMING    -> "swimming"
-        PARTY       -> "party"
-        FOOD        -> "food"
-    }
+    // Traffic & Hazards
+    RADAR,
+    POLICE,
+
+    // Rider Spots
+    MOUNTAIN_STREET,
+    WHEELIESPOT,
+    VIEWPOINT,
+
+    // Nature & Activities
+    CAMPING,
+    SWIMMING,
+
+    // Social & Entertainment
+    SIGHTSEEING,
+    PARTY,
+
+    // Fast Food & Snacks
+    FOOD_KEBAB,
+    FOOD_PIZZA,
+    FOOD_BURGER,
+    FOOD_BEER,
+
+    // Restaurant
+    FOOD_ASIAN,
+    FOOD_GREEK,
+    FOOD_OTHER,
 }
-
-val allLocationTypeKeys: List<String> = LocationType.entries.map { it.typeKey }
 
 
 @Serializable
-sealed interface LocationData {
+sealed class LocationData {
 
-    fun schema(): List<AttributeDefinition>
+    abstract fun schema(): List<AttributeDefinition>
+    abstract val locationtype: LocationType
 
-
-    //STREET LOCATION TYPES
-    enum class RadarType {
-        REDLIGHT,
-        SPEED,
-        MOBILE,
-        POLICE;
-
-        fun toUiText() : UiText {
-            return when (this) {
-                REDLIGHT -> UiText.StringResourceText(Res.string.location_radar_type_redlight)
-                SPEED -> UiText.StringResourceText(Res.string.location_radar_type_speed)
-                MOBILE -> UiText.StringResourceText(Res.string.location_radar_type_mobile)
-                POLICE -> UiText.StringResourceText(Res.string.location_radar_type_police)
-            }
-        }
-    }
-
-
+    // Traffic & Hazards
 
     @Serializable
     @SerialName("radar")
     data class Radar(
+        val speedLimit: AttributeValue,
+        val mobile: AttributeValue?,
+        val redLight: AttributeValue,
+    ) : LocationData() {
+        override val locationtype = RADAR
 
-        val speedLimit: AttributeValue.IntValue,
-        val radarType: RadarType,
+        val speedLimitValue get() = speedLimit.asInt
+        val mobileValue     get() = mobile?.asBool
+        val redLightValue   get() = redLight.asBool
 
-
-        ): LocationData {
-            override fun schema() = listOf(
-                AttributeDefinition.EnumDef(
-                    key = "radarType",
-                    required = true,
-                    options = RadarType.entries.map { it.name }
-                ),
-                AttributeDefinition.IntDef(key = "speedLimit", required = true, min = 0, max = 300),
-            )
+        override fun schema() = listOf(
+            AttributeDefinition.IntDef(key = "speedLimit", required = true, min = 0),
+            AttributeDefinition.BoolDef(key = "mobile",    required = false),
+            AttributeDefinition.BoolDef(key = "redLight",  required = true),
+        )
     }
 
     @Serializable
-    @SerialName("street")
-    data class Street(
+    @SerialName("police")
+    data class Police(
+        val lastSeen: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = POLICE
 
-        val mautFee: AttributeValue.DoubleValue?,
-        val heightLimit: AttributeValue.DoubleValue?,
-        val closedInWinter: AttributeValue.BoolValue?,
+        val lastSeenValue get() = lastSeen?.asLong
 
-        val wheeliesAllowed: AttributeValue.BoolValue?,
+        override fun schema() = listOf(
+            AttributeDefinition.LongDef(key = "lastSeen", required = false),
+        )
+    }
 
-    ): LocationData {
+
+    // Rider Spots
+
+    @Serializable
+    @SerialName("mountain_street")
+    data class MountainStreet(
+        val mautFee: AttributeValue?,
+        val heightLimit: AttributeValue?,
+        val closedInWinter: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = MOUNTAIN_STREET
+
+        val mautFeeValue        get() = mautFee?.asDouble
+        val heightLimitValue    get() = heightLimit?.asDouble
+        val closedInWinterValue get() = closedInWinter?.asBool
+
         override fun schema() = listOf(
             AttributeDefinition.DoubleDef(key = "mautFee",        required = false, min = 0.0),
             AttributeDefinition.DoubleDef(key = "heightLimit",    required = false, min = 0.0),
             AttributeDefinition.BoolDef  (key = "closedInWinter", required = false),
-            AttributeDefinition.BoolDef  (key = "wheeliesAllowed",required = false),
         )
     }
+
+    @Serializable
+    @SerialName("wheeliespot")
+    data class Wheeliespot(
+        val onlyOnWeekends: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = WHEELIESPOT
+
+        val onlyOnWeekendsValue get() = onlyOnWeekends?.asBool
+
+        override fun schema() = listOf(
+            AttributeDefinition.BoolDef(key = "onlyOnWeekends", required = false),
+        )
+    }
+
+    @Serializable
+    @SerialName("viewpoint")
+    class Viewpoint : LocationData() {
+        override val locationtype = VIEWPOINT
+
+        override fun schema() = emptyList<AttributeDefinition>()
+    }
+
+
+    // Nature & Activities
 
     @Serializable
     @SerialName("camping")
     data class Camping(
+        val official: AttributeValue,
+    ) : LocationData() {
+        override val locationtype = CAMPING
 
-        val official: AttributeValue.BoolValue
+        val officialValue get() = official.asBool
 
-    ): LocationData {
         override fun schema() = listOf(
             AttributeDefinition.BoolDef(key = "official", required = true),
-        )
-    }
-
-
-    //ACtivities
-
-    @Serializable
-    @SerialName("sightseeing")
-    data class SightSeeing(
-
-        val entryFee: AttributeValue.DoubleValue?,
-
-    ): LocationData {
-        override fun schema() = listOf(
-            AttributeDefinition.DoubleDef(key = "entryFee", required = false, min = 0.0),
         )
     }
 
     @Serializable
     @SerialName("swimming")
     data class SwimmingLocation(
-        val indoor: AttributeValue.BoolValue?
-    ): LocationData {
+        val indoor: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = SWIMMING
+
+        val indoorValue get() = indoor?.asBool
+
         override fun schema() = listOf(
             AttributeDefinition.BoolDef(key = "indoor", required = false),
+        )
+    }
+
+
+    // Social & Entertainment
+
+    @Serializable
+    @SerialName("sightseeing")
+    data class SightSeeing(
+        val entryFee: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = SIGHTSEEING
+
+        val entryFeeValue get() = entryFee?.asDouble
+
+        override fun schema() = listOf(
+            AttributeDefinition.DoubleDef(key = "entryFee", required = false, min = 0.0),
         )
     }
 
     @Serializable
     @SerialName("party")
     data class PartyLocation(
+        val entryFee: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = PARTY
 
-        val entryFee: AttributeValue.DoubleValue?,
+        val entryFeeValue get() = entryFee?.asDouble
 
-    ): LocationData {
         override fun schema() = listOf(
             AttributeDefinition.DoubleDef(key = "entryFee", required = false, min = 0.0),
         )
     }
 
 
-    //Food
-    enum class FoodType { KEBAB,
-        PIZZA,
-        GREEK,
-        CHINESE,
-        ASIAN,
-        AUSTRIAN,
-        BURGER,
-        OTHER;
+    // Fast Food & Snacks
 
-        fun toUiText() : UiText {
-            return when (this) {
-                KEBAB -> UiText.StringResourceText(Res.string.location_food_type_kebab)
-                PIZZA -> UiText.StringResourceText(Res.string.location_food_type_pizza)
-                GREEK -> UiText.StringResourceText(Res.string.location_food_type_greek)
-                CHINESE -> UiText.StringResourceText(Res.string.location_food_type_chinese)
-                ASIAN -> UiText.StringResourceText(Res.string.location_food_type_asian)
-                AUSTRIAN -> UiText.StringResourceText(Res.string.location_food_type_austrian)
-                BURGER -> UiText.StringResourceText(Res.string.location_food_type_burger)
-                OTHER -> UiText.StringResourceText(Res.string.location_food_type_other)
-            }
-        }
+    @Serializable
+    @SerialName("food_kebab")
+    data class FoodKebab(
+        val kebabPrice: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = FOOD_KEBAB
+
+        val kebabPriceValue get() = kebabPrice?.asDouble
+
+        override fun schema() = listOf(
+            AttributeDefinition.DoubleDef(key = "kebabPrice", required = false, min = 0.0),
+        )
     }
 
     @Serializable
-    @SerialName("food")
-    data class Food(
+    @SerialName("food_pizza")
+    data class FoodPizza(
+        val margaritaPrice: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = FOOD_PIZZA
 
-        val foodType: FoodType,
-        val allYouCanEat: AttributeValue.BoolValue?,
+        val margaritaPriceValue get() = margaritaPrice?.asDouble
 
-    ): LocationData {
         override fun schema() = listOf(
-            AttributeDefinition.EnumDef(
-                key = "foodType",
-                required = true,
-                options = FoodType.entries.map { it.name }
-            ),
+            AttributeDefinition.DoubleDef(key = "margaritaPrice", required = false, min = 0.0),
+        )
+    }
+
+    @Serializable
+    @SerialName("food_burger")
+    data class FoodBurger(
+        val cheeseburgerPrice: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = FOOD_BURGER
+
+        val cheeseburgerPriceValue get() = cheeseburgerPrice?.asDouble
+
+        override fun schema() = listOf(
+            AttributeDefinition.DoubleDef(key = "cheeseburgerPrice", required = false, min = 0.0),
+        )
+    }
+
+    @Serializable
+    @SerialName("food_beer")
+    data class FoodBeer(
+        val beerPrice: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = FOOD_BEER
+
+        val beerPriceValue get() = beerPrice?.asDouble
+
+        override fun schema() = listOf(
+            AttributeDefinition.DoubleDef(key = "beerPrice", required = false, min = 0.0),
+        )
+    }
+
+
+    // Restaurant
+
+    @Serializable
+    @SerialName("food_asian")
+    data class FoodAsian(
+        val allYouCanEat: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = FOOD_ASIAN
+
+        val allYouCanEatValue get() = allYouCanEat?.asBool
+
+        override fun schema() = listOf(
             AttributeDefinition.BoolDef(key = "allYouCanEat", required = false),
         )
     }
 
+    @Serializable
+    @SerialName("food_greek")
+    class FoodGreek : LocationData() {
+        override val locationtype = FOOD_GREEK
+
+        override fun schema() = emptyList<AttributeDefinition>()
+    }
+
+    @Serializable
+    @SerialName("food_other")
+    data class FoodOther(
+        val cuisine: AttributeValue,
+    ) : LocationData() {
+        override val locationtype = FOOD_OTHER
+
+        val cuisineValue get() = cuisine.asString
+
+        override fun schema() = listOf(
+            AttributeDefinition.StringDef(key = "cuisine", required = true),
+        )
+    }
 }
 
 
-val LocationData.typeKey: String
-    get() = when (this) {
-        is LocationData.Radar -> "radar"
-        is LocationData.Street -> "street"
-        is LocationData.Camping -> "camping"
-        is LocationData.SightSeeing -> "sightseeing"
-        is LocationData.SwimmingLocation -> "swimming"
-        is LocationData.PartyLocation -> "party"
-        is LocationData.Food -> "food"
-    }
+fun LocationType.toSimpleLocationData(): LocationData = when (this) {
+    RADAR           -> LocationData.Radar(speedLimit = AttributeValue.IntValue(0), mobile = AttributeValue.BoolValue(false), redLight = AttributeValue.BoolValue(false)
+    )
+    POLICE          -> LocationData.Police(lastSeen = null)
+    MOUNTAIN_STREET -> LocationData.MountainStreet(null, null, null)
+    WHEELIESPOT     -> LocationData.Wheeliespot(onlyOnWeekends = null)
+    VIEWPOINT       -> LocationData.Viewpoint()
+    CAMPING         -> LocationData.Camping(official = AttributeValue.BoolValue(true))
+    SWIMMING        -> LocationData.SwimmingLocation(indoor = null)
+    SIGHTSEEING     -> LocationData.SightSeeing(entryFee = null)
+    PARTY           -> LocationData.PartyLocation(entryFee = null)
+    FOOD_KEBAB      -> LocationData.FoodKebab(kebabPrice = null)
+    FOOD_PIZZA      -> LocationData.FoodPizza(margaritaPrice = null)
+    FOOD_BURGER     -> LocationData.FoodBurger(cheeseburgerPrice = null)
+    FOOD_BEER       -> LocationData.FoodBeer(beerPrice = null)
+    FOOD_ASIAN      -> LocationData.FoodAsian(allYouCanEat = null)
+    FOOD_GREEK      -> LocationData.FoodGreek()
+    FOOD_OTHER      -> LocationData.FoodOther(cuisine = AttributeValue.StringValue(""))
+}
+
 
 @Composable
-fun LocationData.stringRes() = when (this) {
-    is LocationData.Camping ->
-        Res.string.location_type_camping
+fun AttributeDefinition.label(): String {
+    return when (this.key) {
+        // Radar
+        "speedLimit"        -> stringResource(Res.string.location_radar_speed_limit)
+        "mobile"            -> stringResource(Res.string.location_radar_mobile)
+        "redLight"          -> stringResource(Res.string.location_radar_red_light)
 
-    is LocationData.Food ->
-        Res.string.location_type_food
+        // Police
+        "lastSeen"          -> stringResource(Res.string.location_police_last_seen)
 
-    is LocationData.PartyLocation ->
-        Res.string.location_type_party
+        // Mountain Street
+        "mautFee"           -> stringResource(Res.string.location_street_maut_fee)
+        "heightLimit"       -> stringResource(Res.string.location_street_height_limit)
+        "closedInWinter"    -> stringResource(Res.string.location_street_closed_in_winter)
 
-    is LocationData.Radar ->
-        Res.string.location_type_radar
+        // Wheelie Spot
+        "onlyOnWeekends"    -> stringResource(Res.string.location_wheeliespot_only_on_weekends)
 
-    is LocationData.SightSeeing ->
-        Res.string.location_type_sightseeing
+        // Camping
+        "official"          -> stringResource(Res.string.location_camping_official)
 
-    is LocationData.Street ->
-        Res.string.location_type_street
+        // Swimming
+        "indoor"            -> stringResource(Res.string.location_swimming_indoor)
 
-    is LocationData.SwimmingLocation ->
-        Res.string.location_type_swimming
+        // Sightseeing & Party
+        "entryFee"          -> stringResource(Res.string.location_sightseeing_entry_fee)
+
+        // Food
+        "allYouCanEat"      -> stringResource(Res.string.location_food_all_you_can_eat)
+        "kebabPrice"        -> stringResource(Res.string.location_food_kebab_price)
+        "margaritaPrice"    -> stringResource(Res.string.location_food_margarita_price)
+        "cheeseburgerPrice" -> stringResource(Res.string.location_food_cheeseburger_price)
+        "beerPrice"         -> stringResource(Res.string.location_food_beer_price)
+        "cuisine"           -> stringResource(Res.string.location_food_cuisine)
+
+        else -> {
+            println("ERROR: SCHNEAGGMAP: KEY NOT RESOLVED: $key")
+            this.key
+        }
+    }
 }
 
-//Horror aber was sunsch
+
 @Composable
-fun uiTextFromEnumValue(value: String): UiText{
-    if (LocationData.RadarType.entries.map { it.toString() }.contains(value)){
-        return LocationData.RadarType.valueOf(value).toUiText()
-    }
-    if (LocationData.FoodType.entries.map { it.toString() }.contains(value)){
-        return LocationData.FoodType.valueOf(value).toUiText()
-    }
-    return UiText.DynamicString("Unresolved")
-
+fun LocationType.stringRes(): StringResource = when (this) {
+    RADAR           -> Res.string.location_type_radar
+    POLICE          -> Res.string.location_type_police
+    MOUNTAIN_STREET -> Res.string.location_type_mountain_street
+    WHEELIESPOT     -> Res.string.location_type_wheeliespot
+    VIEWPOINT       -> Res.string.location_type_viewpoint
+    CAMPING         -> Res.string.location_type_camping
+    SWIMMING        -> Res.string.location_type_swimming
+    SIGHTSEEING     -> Res.string.location_type_sightseeing
+    PARTY           -> Res.string.location_type_party
+    FOOD_KEBAB      -> Res.string.location_type_food_kebab
+    FOOD_PIZZA      -> Res.string.location_type_food_pizza
+    FOOD_BURGER     -> Res.string.location_type_food_burger
+    FOOD_BEER       -> Res.string.location_type_food_beer
+    FOOD_ASIAN      -> Res.string.location_type_food_asian
+    FOOD_GREEK      -> Res.string.location_type_food_greek
+    FOOD_OTHER      -> Res.string.location_type_food_other
 }
-

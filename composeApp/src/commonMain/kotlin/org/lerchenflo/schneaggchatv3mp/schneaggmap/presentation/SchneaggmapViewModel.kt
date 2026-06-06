@@ -11,6 +11,9 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
+import kotlin.time.Clock
 
 
 class SchneaggmapViewModel(
@@ -62,10 +65,28 @@ class SchneaggmapViewModel(
                     }
                 }
 
-                //Dismiss
-                if (_state.value.selectedEntry != null) {
+                //On longclick show add location dialog
+                if (action.longClick) {
                     _state.update {
-                        it.copy(selectedEntry = null)
+                        it.copy(selectedEntry = MapEntry(
+                            id = "",
+                            coordinates = action.coordinates,
+                            name = "",
+                            description = "",
+                            locationData = emptyList(),
+                            createdBy = "",
+                            createdAt = Clock.System.now().toEpochMilliseconds(),
+                            updatedBy = "",
+                            updatedAt = Clock.System.now().toEpochMilliseconds()
+                        ))
+                    }
+                } else {
+
+                    //Dismiss popup
+                    if (_state.value.selectedEntry != null) {
+                        _state.update {
+                            it.copy(selectedEntry = null)
+                        }
                     }
                 }
             }
@@ -97,8 +118,30 @@ class SchneaggmapViewModel(
             }
 
             is SchneaggmapAction.OnEntryPopupSave -> {
+                val entry = action.entry
+
+
+                require(entry.name.isNotEmpty()) {return}
+                require(entry.locationData.isNotEmpty()) {return}
+
+                _state.update {
+                    it.copy(
+                        selectedEntry = null
+                    )
+                }
+
                 viewModelScope.launch {
-                    //appRepository.ed TODO Update/upsert on server
+
+                    println("Map upsert: $entry")
+
+                    appRepository.upsertMapEntry(
+                        entryId = entry.id.ifEmpty { null },
+                        name = entry.name,
+                        description = entry.description,
+                        lat = entry.coordinates.lat,
+                        lon = entry.coordinates.long,
+                        locationData = entry.locationData
+                    )
                 }
             }
         }

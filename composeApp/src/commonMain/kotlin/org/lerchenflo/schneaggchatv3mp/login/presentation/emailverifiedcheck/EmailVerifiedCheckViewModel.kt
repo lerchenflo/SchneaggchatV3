@@ -1,10 +1,15 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
@@ -101,11 +106,15 @@ class EmailVerifiedCheckViewModel(
 
     init {
         viewModelScope.launch {
-            appRepository.getUserByIdFlow(
-                userId =SessionCache.requireLoggedIn()?.userId ?: ""
-            )
+            SessionCache.authState
+                .flatMapLatest { authState ->
+                    if (authState is SessionCache.AuthState.LoggedIn) {
+                        appRepository.getUserByIdFlow(userId = authState.userId)
+                    } else {
+                        flowOf(null) // emit null and stop when logged out
+                    }
+                }
                 .collectLatest { user ->
-
                     if (user != null && user.emailVerifiedAt != null) {
                         println("Email verified in verify screen, rerouting to chatselector")
                         navigator.navigate(
@@ -116,14 +125,13 @@ class EmailVerifiedCheckViewModel(
                         )
                     }
 
-
                     _state.update { cstate ->
                         cstate.copy(
                             userData = user,
                             currentEmail = user?.email ?: cstate.currentEmail
                         )
                     }
-            }
+                }
         }
     }
 

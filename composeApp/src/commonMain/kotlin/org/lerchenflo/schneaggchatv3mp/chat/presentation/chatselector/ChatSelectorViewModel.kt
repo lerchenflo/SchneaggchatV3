@@ -84,6 +84,7 @@ class ChatSelectorViewModel(
         }
 
         viewModelScope.launch {
+            appRepository.dataSync()
             getChangelog()
         }
 

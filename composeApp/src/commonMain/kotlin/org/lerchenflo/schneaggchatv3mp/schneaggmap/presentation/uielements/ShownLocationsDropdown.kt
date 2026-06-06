@@ -23,6 +23,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapAction
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -45,49 +47,51 @@ fun ShownLocationsDropdown(
             }
         }
         AnimatedVisibility(visible = state.isFilterDropdownVisible) {
-            Card(modifier = Modifier.padding(top = 8.dp).width(200.dp)) {
-                Column(
+            LocationDropdownContent(
+                onClick = {
+                    onAction(SchneaggmapAction.ToggleMainType(it))
+                },
+                enabledTypes = state.enabledTypes
+            )
+        }
+    }
+}
+
+@Composable
+fun LocationDropdownContent(
+    onClick: (LocationType) -> Unit,
+    enabledTypes: Set<LocationType>
+) {
+    Card(modifier = Modifier.padding(top = 8.dp).width(200.dp)) {
+        Column(
+            modifier = Modifier
+                .width(IntrinsicSize.Max)
+                .padding(8.dp)
+        ) {
+            Text(
+                text = stringResource(Res.string.schneaggmap_filter_location_types),
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            )
+            HorizontalDivider()
+
+            LocationType.entries.forEach { type ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .width(IntrinsicSize.Max)
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        text = stringResource(Res.string.schneaggmap_filter_location_types),
-                        style = MaterialTheme.typography.labelLarge,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    )
-                    HorizontalDivider()
-                    allLocationTypes.forEach { typeInfo ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth() //Max intrinsic size (for onclick listener)
-                                .clickable{
-                                    onAction(SchneaggmapAction.ToggleMainType(typeInfo.key))
-                                }
-                        ) {
-                            Checkbox(
-                                checked = typeInfo.key in state.enabledTypes,
-                                onCheckedChange = null,
-                                modifier = Modifier.padding(8.dp)
-                            )
-                            Text(text = typeInfo.displayName)
+                        .fillMaxWidth() //Max intrinsic size (for onclick listener)
+                        .clickable{
+                            onClick(type)
                         }
-                    }
+                ) {
+                    Checkbox(
+                        checked = type in enabledTypes,
+                        onCheckedChange = null,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                    Text(text = stringResource(type.stringRes()))
                 }
             }
         }
     }
 }
-
-private data class LocationTypeInfo(val key: String, val displayName: String)
-
-private val allLocationTypes = listOf(
-    LocationTypeInfo("radar", "Radar"),
-    LocationTypeInfo("street", "Street"),
-    LocationTypeInfo("camping", "Camping"),
-    LocationTypeInfo("sightseeing", "Sightseeing"),
-    LocationTypeInfo("swimming", "Swimming Location"),
-    LocationTypeInfo("party", "Party Location"),
-    LocationTypeInfo("food", "Food")
-)

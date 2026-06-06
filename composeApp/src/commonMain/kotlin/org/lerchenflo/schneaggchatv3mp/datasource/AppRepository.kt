@@ -78,8 +78,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteR
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryCreateRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryEditRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
@@ -372,33 +371,19 @@ class AppRepository(
     // ─── Map CRUD ─────────────────────────────────────────────────────────────
     // WS broadcast handles local DB upsert/delete automatically after server write.
 
-    suspend fun createMapEntry(
+    suspend fun upsertMapEntry(
+        entryId: String?,
         name: String,
         description: String,
         lat: Double,
         lon: Double,
         locationData: List<LocationData>,
-    ): NetworkResult<MapEntryResponse, NetworkError> {
-        return networkUtils.createMapEntry(
-            MapEntryCreateRequest(
-                name = name,
-                description = description,
-                coordinates = LatLong(lat = lat, long = lon),
-                locationData = locationData,
-            )
-        )
-    }
+    ) {
 
-    suspend fun editMapEntry(
-        entryId: String,
-        name: String,
-        description: String,
-        lat: Double,
-        lon: Double,
-        locationData: List<LocationData>,
-    ): NetworkResult<MapEntryResponse, NetworkError> {
-        return networkUtils.editMapEntry(
-            MapEntryEditRequest(
+
+
+        val result = networkUtils.upsertMapEntry(
+            MapEntryRequest(
                 entryId = entryId,
                 name = name,
                 description = description,
@@ -406,6 +391,16 @@ class AppRepository(
                 locationData = locationData,
             )
         )
+
+
+        when (result) {
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+            }
+            is NetworkResult.Success<MapEntryResponse> -> {
+                mapRepository.upsertMapEntry(result.data.toMapEntry())
+            }
+        }
     }
 
     suspend fun deleteMapEntry(entryId: String): NetworkResult<Unit, NetworkError> {

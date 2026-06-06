@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -9,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -19,9 +21,25 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.typeKey
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.CAMPING
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_ASIAN
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_BEER
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_BURGER
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_GREEK
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_KEBAB
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_OTHER
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_PIZZA
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.MOUNTAIN_STREET
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.PARTY
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.POLICE
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.RADAR
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.SIGHTSEEING
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.SWIMMING
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.VIEWPOINT
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.WHEELIESPOT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
+import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.AutoScrollText
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.CameraState
 import org.maplibre.compose.camera.rememberCameraState
@@ -45,21 +63,41 @@ import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.icon_badespot
+import schneaggchatv3mp.composeapp.generated.resources.icon_beer
+import schneaggchatv3mp.composeapp.generated.resources.icon_burger
 import schneaggchatv3mp.composeapp.generated.resources.icon_camping
+import schneaggchatv3mp.composeapp.generated.resources.icon_chinese_food
+import schneaggchatv3mp.composeapp.generated.resources.icon_doener
 import schneaggchatv3mp.composeapp.generated.resources.icon_food
 import schneaggchatv3mp.composeapp.generated.resources.icon_partylocation
-import schneaggchatv3mp.composeapp.generated.resources.icon_radar
+import schneaggchatv3mp.composeapp.generated.resources.icon_pizza
+import schneaggchatv3mp.composeapp.generated.resources.icon_police
+import schneaggchatv3mp.composeapp.generated.resources.icon_radar_variant
 import schneaggchatv3mp.composeapp.generated.resources.icon_sightseeing
 import schneaggchatv3mp.composeapp.generated.resources.icon_street
+import schneaggchatv3mp.composeapp.generated.resources.icon_viewpoint
+import schneaggchatv3mp.composeapp.generated.resources.icon_wheeliespot
 
 @Composable
 fun SchneaggmapScreenRoot() {
     val viewModel = koinViewModel<SchneaggmapViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
-    SchneaggmapScreen(
-        state = state,
-        onAction = viewModel::onAction,
-    )
+
+    Column {
+
+        AutoScrollText(
+            text = "BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA",
+            backgroundColor = Color.Red,
+            height = 60.dp
+        )
+
+        SchneaggmapScreen(
+            state = state,
+            onAction = viewModel::onAction,
+        )
+    }
+
+
 }
 
 @Composable
@@ -105,8 +143,10 @@ fun SchneaggmapScreen(
                 onDismiss = {
                     onAction(SchneaggmapAction.OnEntryPopupDismiss)
                 },
-                onSave = {
-                    onAction(SchneaggmapAction.OnEntryPopupSave(it))
+                onSave = { changedEntry ->
+                    onAction(SchneaggmapAction.OnEntryPopupSave(
+                        entry = changedEntry,
+                    ))
                 },
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
@@ -127,13 +167,23 @@ private fun SchneaggmapMapContent(
     val typeIcons: Map<LocationType, DrawableResource> = remember {
         LocationType.entries.associateWith { type ->
             when (type) {
-                LocationType.RADAR       -> Res.drawable.icon_radar
-                LocationType.STREET      -> Res.drawable.icon_street
-                LocationType.CAMPING     -> Res.drawable.icon_camping
-                LocationType.SIGHTSEEING -> Res.drawable.icon_sightseeing
-                LocationType.SWIMMING    -> Res.drawable.icon_badespot
-                LocationType.PARTY       -> Res.drawable.icon_partylocation
-                LocationType.FOOD        -> Res.drawable.icon_food
+                RADAR -> Res.drawable.icon_radar_variant
+                CAMPING -> Res.drawable.icon_camping
+                SIGHTSEEING -> Res.drawable.icon_sightseeing
+                SWIMMING -> Res.drawable.icon_badespot
+                PARTY -> Res.drawable.icon_partylocation
+
+                POLICE -> Res.drawable.icon_police
+                MOUNTAIN_STREET -> Res.drawable.icon_street
+                WHEELIESPOT -> Res.drawable.icon_wheeliespot
+                VIEWPOINT -> Res.drawable.icon_viewpoint
+                FOOD_KEBAB -> Res.drawable.icon_doener
+                FOOD_PIZZA -> Res.drawable.icon_pizza
+                FOOD_BURGER -> Res.drawable.icon_burger
+                FOOD_BEER -> Res.drawable.icon_beer
+                FOOD_ASIAN -> Res.drawable.icon_chinese_food
+                FOOD_GREEK -> Res.drawable.icon_food //TODO: CHANGE ICON
+                FOOD_OTHER -> Res.drawable.icon_food
             }
         }
     }
@@ -165,16 +215,16 @@ private fun SchneaggmapMapContent(
         //If no entry is loaded, dont render anything (Crash)
         if (state.entries.isNotEmpty()) {
 
-            val enabledTypeKeysMap = state.enabledTypes.toSet()
+            val enabledTypeKeysMap = state.enabledTypes
 
             LocationType.entries.forEach { type ->
 
                 //Skip if not enabled on map
-                if (!enabledTypeKeysMap.contains(type.typeKey)) return@forEach
+                if (!enabledTypeKeysMap.contains(type)) return@forEach
 
                 val entriesForType = state.entries.filter { entry ->
                     entry.locationData.any { locationData ->
-                        locationData.typeKey == type.typeKey
+                        locationData.locationtype == type
                     }
                 }
                 if (entriesForType.isEmpty()) return@forEach
@@ -193,7 +243,7 @@ private fun SchneaggmapMapContent(
                                         )
                                     ),
                                     properties = buildJsonObject {
-                                        put("type", JsonPrimitive(type.typeKey))
+                                        put("type", JsonPrimitive(type.name))
                                     },
                                     id = JsonPrimitive(entry.id)
                                 )
