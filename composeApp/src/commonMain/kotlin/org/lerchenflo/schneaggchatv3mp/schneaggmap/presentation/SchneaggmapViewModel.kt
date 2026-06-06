@@ -104,5 +104,12 @@ class SchneaggmapViewModel(
         }
     }
 
+    init {
+        viewModelScope.launch {
+            appRepository.dataSync()
+
+        }
+    }
+
 
 }
