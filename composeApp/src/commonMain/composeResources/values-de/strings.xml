@@ -41,7 +41,7 @@
 
     <string name="email">E-mail</string>
     <string name="invalid_email">Gib eine korrekte E-mail-Adresse ein</string>
-    <string name="sign_up">Ich habe noch keinen Account</string>
+    <string name="email_provider_warning">Bitte verwende einen seriösen Email - Anbieter (Gmail, Yahoo, Outlook, iCloud, GMX). 10min Mail oder andere Kurzzeitemails sind aus Sicherheitsgründen nicht empfohlen (z.b. Account - Diebstahl und wiederherstellungsprobleme).</string>    <string name="sign_up">Ich habe noch keinen Account</string>
     <string name="loginsubtitle">Die beste Chattingplattform jemals - Jetzt in der V3 mit Multiplattform für Android, iOS und Desktop!</string>
     <string name="create_account">Account erstellen</string>
     <string name="create_account_subtitle">jetzt beitreten</string>
@@ -133,6 +133,9 @@
     <string name="theme">Theme</string>
     <string name="theme_sel_desc">Ändere das Aussehen deiner App</string>
 
+    <string name="camera">Kamera</string>
+    <string name="gallery">Gallerie</string>
+    <string name="choose_image_source">Bildquelle auswählen</string>
 
     <!-- Todoliste -->
     <string name="todolist">Todos</string>
@@ -239,6 +242,8 @@
     <string name="appearance_settings_info">Ändere die Darstellung deiner App</string>
 
     <string name="use_default_server">Standardserver verwenden</string>
+    <string name="use_test_server">Testserver verwenden</string>
+
 
     <string name="you_have_new_messages">Du hast neue Nachrichten</string>
     <string name="new_messages">Neue Nachrichten</string>
@@ -592,6 +597,7 @@
 
     <!-- Changelog Popup -->
     <string name="changelog_whats_new">Neuigkeiten</string>
+    <string name="changelog_announcements">Neuigkeiten</string>
     <string name="changelog_version">Version %1$s</string>
     <string name="changelog_features">Features</string>
     <string name="changelog_bug_fixes">Fehlerbehebungen</string>
@@ -601,5 +607,73 @@
 
     <string name="custom_reaction">Eigene Reaktion</string>
     <string name="enter_reaction">Reaktion eingeben</string>
+
+    <!-- Schneaggmap -->
+    <string name="schneaggmap_filter_location_types">Standorttypen</string>
+    <string name="location_belongs_to_type">Gehört zu: %1$s</string>
+    <string name="location_add_type">Neuen Typ hinzufügen</string>
+
+    <string name="schneaggmap_entry_title">Name</string>
+    <string name="schneaggmap_entry_description">Beschreibung</string>
+
+    <string name="latlong">Lat %1$s, Long %2$s</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
+
+    <!-- Location Types -->
+    <string name="location_type_radar">Radar</string>
+    <string name="location_type_police">Polizei</string>
+    <string name="location_type_mountain_street">Bergstraße</string>
+    <string name="location_type_wheeliespot">Wheeliespot</string>
+    <string name="location_type_viewpoint">Aussichtspunkt</string>
+    <string name="location_type_camping">Camping</string>
+    <string name="location_type_swimming">Baden</string>
+    <string name="location_type_sightseeing">Sightseeing</string>
+    <string name="location_type_party">Party</string>
+    <string name="location_type_food_kebab">Döner</string>
+    <string name="location_type_food_pizza">Pizza</string>
+    <string name="location_type_food_burger">Burger</string>
+    <string name="location_type_food_beer">Bier</string>
+    <string name="location_type_food_asian">Asiatisch</string>
+    <string name="location_type_food_thai"/>
+    <string name="location_type_food_japanese"/>
+    <string name="location_type_food_greek">Griechisch</string>
+    <string name="location_type_food_other">Anderes Essen</string>
+
+    <!-- Radar -->
+    <string name="location_radar_speed_limit">Geschwindigkeitsbegrenzung</string>
+    <string name="location_radar_mobile">Mobil</string>
+    <string name="location_radar_red_light">Rotlicht</string>
+
+    <!-- Police -->
+    <string name="location_police_last_seen">Zuletzt gesehen</string>
+
+    <!-- Mountain Street -->
+    <string name="location_street_maut_fee">Maut</string>
+    <string name="location_street_height_limit">Höhenlimit</string>
+    <string name="location_street_closed_in_winter">Geschlossen im Winter</string>
+
+    <!-- Wheelie Spot -->
+    <string name="location_wheeliespot_only_on_weekends">Nur am Wochenende</string>
+
+    <!-- Camping -->
+    <string name="location_camping_official">Offiziell</string>
+
+    <!-- Swimming -->
+    <string name="location_swimming_indoor">Indoor</string>
+
+    <!-- Sightseeing & Party -->
+    <string name="location_sightseeing_entry_fee">Eintrittspreis</string>
+
+    <!-- Food -->
+    <string name="location_food_all_you_can_eat">All you can eat</string>
+    <string name="location_food_kebab_price">Dönerpreis</string>
+    <string name="location_food_margarita_price">Margheritapreis</string>
+    <string name="location_food_cheeseburger_price">Cheeseburgerpreis</string>
+    <string name="location_food_beer_price">Bierpreis</string>
+    <string name="location_food_cuisine">Essenstyp</string>
+
+
+
 
 </resources>

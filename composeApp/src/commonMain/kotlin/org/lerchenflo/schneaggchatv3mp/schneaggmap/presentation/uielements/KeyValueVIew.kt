@@ -9,12 +9,20 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
@@ -35,6 +43,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeDefinition
@@ -174,7 +183,6 @@ fun KeyValueView(
                 )
             }
 
-            //THis is a timestamp not a long
             is AttributeDefinition.LongDef -> {
                 val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                 val endOfCurrentYear = LocalDate(now.year, 12, 31)
@@ -186,6 +194,7 @@ fun KeyValueView(
 
                 var selectedDate by remember { mutableStateOf(initialDateTime.date) }
                 var selectedTime by remember { mutableStateOf(initialDateTime.time) }
+                var showDialog by remember { mutableStateOf(false) }
 
                 // Keep onValueChange in sync whenever date or time changes
                 LaunchedEffect(selectedDate, selectedTime) {
@@ -195,41 +204,86 @@ fun KeyValueView(
                     onValueChange(AttributeValue.LongValue(millis))
                 }
 
-                val timePickerState = rememberTimePickerState(
-                    initialHour   = initialDateTime.hour,
-                    initialMinute = initialDateTime.minute,
-                    is24Hour      = true,
-                )
+                // Trigger button — shows the current value, opens dialog on click
+                OutlinedButton(
+                    onClick = { showDialog = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarMonth,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "${selectedDate.year.toString().padStart(4, '0')}-" +
+                                "${selectedDate.month.number.toString().padStart(2, '0')}-" +
+                                "${selectedDate.day.toString().padStart(2, '0')}  " +
+                                "${selectedTime.hour.toString().padStart(2, '0')}:" +
+                                selectedTime.minute.toString().padStart(2, '0')
+                    )
+                }
 
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    WheelDatePicker(
-                        modifier = Modifier.fillMaxWidth(),
-                        startDate = selectedDate,
-                        minDate = LocalDate(1900, 1, 1),
-                        maxDate = endOfCurrentYear,
-                        rowCount = 5,
-                        textColor = MaterialTheme.colorScheme.onSurface,
-                        selectorProperties = WheelPickerDefaults.selectorProperties(
-                            enabled = true,
-                            color  = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                        ),
-                        onSnappedDate = { snappedDate ->
-                            if (snappedDate >= LocalDate(1900, 1, 1) && snappedDate <= endOfCurrentYear) {
-                                selectedDate = snappedDate
+                if (showDialog) {
+                    // Dialog-local state — only committed on OK
+                    var dialogDate by remember { mutableStateOf(selectedDate) }
+
+                    val timePickerState = rememberTimePickerState(
+                        initialHour   = initialDateTime.hour,
+                        initialMinute = initialDateTime.minute,
+                        is24Hour      = true,
+                    )
+
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                selectedDate = dialogDate
+                                selectedTime = LocalTime(timePickerState.hour, timePickerState.minute)
+                                showDialog = false
+                            }) {
+                                Text("OK")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDialog = false }) {
+                                Text("Cancel")
+                            }
+                        },
+                        title = { Text("Select Date & Time") },
+                        text = {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                WheelDatePicker(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    startDate = dialogDate,
+                                    minDate = LocalDate(1900, 1, 1),
+                                    maxDate = endOfCurrentYear,
+                                    rowCount = 5,
+                                    textColor = MaterialTheme.colorScheme.onSurface,
+                                    selectorProperties = WheelPickerDefaults.selectorProperties(
+                                        enabled = true,
+                                        color  = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                                    ),
+                                    onSnappedDate = { snappedDate ->
+                                        if (snappedDate >= LocalDate(1900, 1, 1) && snappedDate <= endOfCurrentYear) {
+                                            dialogDate = snappedDate
+                                        }
+                                    }
+                                )
+
+                                HorizontalDivider()
+
+                                TimePicker(
+                                    state = timePickerState,
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                )
                             }
                         }
                     )
-
-                    TimePicker(
-                        state = timePickerState,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
-
-                    // Sync time picker state back into selectedTime
-                    LaunchedEffect(timePickerState.hour, timePickerState.minute) {
-                        selectedTime = LocalTime(timePickerState.hour, timePickerState.minute)
-                    }
                 }
             }
         }

@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -9,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,6 +39,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.VIEWPOINT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.WHEELIESPOT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
+import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.AutoScrollText
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.CameraState
 import org.maplibre.compose.camera.rememberCameraState
@@ -69,7 +72,6 @@ import schneaggchatv3mp.composeapp.generated.resources.icon_food
 import schneaggchatv3mp.composeapp.generated.resources.icon_partylocation
 import schneaggchatv3mp.composeapp.generated.resources.icon_pizza
 import schneaggchatv3mp.composeapp.generated.resources.icon_police
-import schneaggchatv3mp.composeapp.generated.resources.icon_radar
 import schneaggchatv3mp.composeapp.generated.resources.icon_radar_variant
 import schneaggchatv3mp.composeapp.generated.resources.icon_sightseeing
 import schneaggchatv3mp.composeapp.generated.resources.icon_street
@@ -80,10 +82,22 @@ import schneaggchatv3mp.composeapp.generated.resources.icon_wheeliespot
 fun SchneaggmapScreenRoot() {
     val viewModel = koinViewModel<SchneaggmapViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
-    SchneaggmapScreen(
-        state = state,
-        onAction = viewModel::onAction,
-    )
+
+    Column {
+
+        AutoScrollText(
+            text = "BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA",
+            backgroundColor = Color.Red,
+            height = 60.dp
+        )
+
+        SchneaggmapScreen(
+            state = state,
+            onAction = viewModel::onAction,
+        )
+    }
+
+
 }
 
 @Composable

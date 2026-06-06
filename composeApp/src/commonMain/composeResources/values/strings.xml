@@ -633,8 +633,6 @@
     <string name="location_type_food_burger">Burger</string>
     <string name="location_type_food_beer">Beer</string>
     <string name="location_type_food_asian">Asian Food</string>
-    <string name="location_type_food_thai">Thai Food</string>
-    <string name="location_type_food_japanese">Japanese Food</string>
     <string name="location_type_food_greek">Greek Food</string>
     <string name="location_type_food_other">Other Food</string>
 
@@ -664,7 +662,7 @@
     <string name="location_sightseeing_entry_fee">Entry Fee</string>
 
     <!-- Food -->
-    <string name="location_food_all_you_can_eat">All You Can Eat</string>
+    <string name="location_food_all_you_can_eat">All you can eat</string>
     <string name="location_food_kebab_price">Kebab Price</string>
     <string name="location_food_margarita_price">Margherita Price</string>
     <string name="location_food_cheeseburger_price">Cheeseburger Price</string>
