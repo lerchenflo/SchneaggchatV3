@@ -12,7 +12,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
+import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -95,7 +97,9 @@ class EmailVerifiedCheckViewModel(
                     isLoading = true
                 )
             }
-            appRepository.dataSync()
+            KoinPlatform.getKoin().get<GlobalViewModel>().viewModelScope.launch {
+                appRepository.dataSync() //Launch in global viewmodel scope to not cancel when logging in suddenly
+            }
             _state.update {
                 it.copy(
                     isLoading = false
