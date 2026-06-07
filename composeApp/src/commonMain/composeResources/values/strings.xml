@@ -595,6 +595,8 @@
     <string name="recap_your_year">Your year</string>
     <string name="recap_using_schneaggchat_in_numbers">using Schneaggchat in numbers</string>
     <string name="recap_in_year_you_had_a_lot_to_say">In %1$d, you had a LOT to say.</string>
+    <string name="recap_others_sent_you">This year other People sent you</string>
+    <string name="recap_messages">messages</string>
     <string name="recap_you_sent">You sent</string>
     <string name="recap_messages_to_favorite_humans">messages to your favorite humans. (And maybe a few group chats you muted).</string>
     <string name="recap_new_friends_found">New friends found</string>
