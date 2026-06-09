@@ -7,12 +7,15 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.cache
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
@@ -114,13 +117,9 @@ class EmailVerifiedCheckViewModel(
 
     init {
 
-
-        viewModelScope.launch {
-            val globalViewModel = KoinPlatform.getKoin().get<GlobalViewModel>()
-
-            globalViewModel.viewModelScope.launch {
-                appRepository.dataSync()
-            }
+        val globalViewModel = KoinPlatform.getKoin().get<GlobalViewModel>()
+        globalViewModel.viewModelScope.launch {
+            appRepository.dataSync()
         }
 
 
@@ -134,15 +133,17 @@ class EmailVerifiedCheckViewModel(
                         flowOf(null) // emit null and stop when logged out
                     }
                 }
-                .collectLatest { user ->
+                .collect { user ->
                     if (user != null && user.emailVerifiedAt != null) {
                         println("Email verified in verify screen, rerouting to chatselector")
-                        navigator.navigate(
-                            destination = Route.ChatSelector,
-                            navigationOptions = Navigator.NavigationOptions(
-                                exitAllPreviousScreens = true
+                        runBlocking {
+                            navigator.navigate(
+                                destination = Route.ChatSelector,
+                                navigationOptions = Navigator.NavigationOptions(
+                                    exitAllPreviousScreens = true
+                                )
                             )
-                        )
+                        }
                     }
 
                     _state.update { cstate ->

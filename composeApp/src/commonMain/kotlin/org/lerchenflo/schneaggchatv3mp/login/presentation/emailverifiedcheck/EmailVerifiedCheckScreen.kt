@@ -71,18 +71,7 @@ fun EmailVerifiedCheckScreenRoot() {
     val viewModel: EmailVerifiedCheckViewModel = koinViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    if (state.userData == null) {
-
-        /*
-        LaunchedEffect(Unit) {
-            delay(4000)
-            val appRepository = KoinPlatform.getKoin().get<AppRepository>()
-            KoinPlatform.getKoin().get<GlobalViewModel>().viewModelScope.launch {
-                appRepository.dataSync()
-            }
-        }
-
-         */
+    if (state.userData == null || (state.userData != null && state.userData!!.emailVerifiedAt != null)) {
 
         Box(
             modifier = Modifier.fillMaxSize(),
