@@ -22,6 +22,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,6 +47,7 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
@@ -171,18 +173,12 @@ fun PollDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 //Title text input
-                Text(stringResource(Res.string.poll_create_title))
-
-                OutlinedTextField(
+                TextField(
                     value = title,
-                    maxLines = 1,
                     onValueChange = { title = it },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text(stringResource(Res.string.poll_create_title_placeholder)) },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                    ),
+                    placeholder = {Text(stringResource(Res.string.poll_create_title_placeholder))},
+                    label = {Text(stringResource(Res.string.poll_create_title))},
                     isError = titleError
                 )
 
@@ -192,16 +188,13 @@ fun PollDialog(
                 //Description text input
                 Text(stringResource(Res.string.poll_create_description))
 
-                OutlinedTextField(
+                TextField(
                     value = description,
-                    maxLines = 1,
                     onValueChange = { description = it },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text(stringResource(Res.string.poll_create_description_placeholder)) },
                     shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                    )
+
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -219,7 +212,7 @@ fun PollDialog(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    OutlinedTextField(
+                    TextField(
                         value = value,
                         onValueChange = { options[index] = it },
                         placeholder = { Text(stringResource(Res.string.poll_options_placeholder)) },

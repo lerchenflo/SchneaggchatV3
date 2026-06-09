@@ -144,7 +144,7 @@ private fun GroupCreatorScreen(
 
                     //Login inputtextfields
                     InputTextField(
-                        text = state.groupname.text,
+                        value = state.groupname.text,
                         onValueChange = {onAction(GroupCreatorAction.updateGroupname(it))},
                         label = stringResource(Res.string.group_name),
                         hint = stringResource(Res.string.group_name),
@@ -155,7 +155,7 @@ private fun GroupCreatorScreen(
                     )
 
                     InputTextField(
-                        text = state.groupdescription.text,
+                        value = state.groupdescription.text,
                         onValueChange = { onAction(GroupCreatorAction.updateGroupdescription(it)) },
                         label = stringResource(Res.string.group_description),
                         hint = stringResource(Res.string.group_description),

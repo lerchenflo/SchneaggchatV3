@@ -22,7 +22,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Datensync Detail Popup für mehr Transparenz
 
 #### Bugfixes
-- 
+- Umfragen Textinput
 
 
 ### 3.0.11

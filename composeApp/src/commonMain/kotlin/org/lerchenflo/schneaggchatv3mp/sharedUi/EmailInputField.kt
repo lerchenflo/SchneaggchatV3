@@ -49,7 +49,7 @@ fun EmailInputField(
 
     Column(modifier = modifier) {
         InputTextField(
-            text = text,
+            value = text,
             onValueChange = onValueChange,
             label = label,
             hint = hint,
