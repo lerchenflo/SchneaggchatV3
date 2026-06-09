@@ -31,6 +31,7 @@
     <string name="email_not_verified_email_has_been_sent2">. If you created your account some time ago, you may have to request the link again.</string>
     <string name="email_check_verified">Check email verification</string>
     <string name="email_check_problem">Having trouble? Get help</string>
+    <string name="email_check_loading_data">Loading your account data ...</string>
 
 
 
