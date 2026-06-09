@@ -1,30 +1,45 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHostState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.onFailure
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 object SnackbarManager {
-    private var hostState: SnackbarHostState? = null
     private var scope: CoroutineScope? = null
-    private var currentSnackbarJob: Job? = null
 
-    fun init(hostState: SnackbarHostState, scope: CoroutineScope) {
-        this.hostState = hostState
+    fun init(scope: CoroutineScope) {
         this.scope = scope
     }
 
-    fun showMessage(message: String) {
-        // Cancel the previous snackbar if it's still showing
-        currentSnackbarJob?.cancel()
 
-        // Dismiss current snackbar immediately
-        hostState?.currentSnackbarData?.dismiss()
+    data class SnackbarEvent(
+        val showTime: Long = 3000,
 
-        // Show the new snackbar
-        currentSnackbarJob = scope?.launch {
-            hostState?.showSnackbar(message)
+        val message: String,
+    )
+
+    private val _channel = Channel<SnackbarEvent>(capacity = Channel.BUFFERED)
+    val snackbars = _channel.receiveAsFlow()
+
+
+
+    fun showMessage(message: String, showTime: Long = 3000) {
+        scope?.launch {
+            scope?.launch {
+                _channel.send(SnackbarEvent(
+                    showTime = showTime,
+                    message = message
+                ))
+            }
         }
     }
+
+
+
+
 }
