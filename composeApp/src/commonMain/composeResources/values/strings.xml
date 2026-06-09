@@ -15,6 +15,7 @@
     <string name="groupsync">groupdata</string>
     <string name="messagesync">messages</string>
     <string name="mapsync">map entrys</string>
+    <string name="imagesync">images</string>
 
     <string name="status_infotext">This status is available to all your friends. Currently, it is not set.</string>
     <string name="currentstatus">Your current status: %1$s</string>

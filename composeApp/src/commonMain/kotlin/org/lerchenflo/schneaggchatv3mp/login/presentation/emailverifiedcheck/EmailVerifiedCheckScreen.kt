@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,9 +37,16 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ChangeDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.emailProviderWarning
@@ -63,19 +72,45 @@ fun EmailVerifiedCheckScreenRoot() {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     if (state.userData == null) {
+
+        /*
+        LaunchedEffect(Unit) {
+            delay(4000)
+            val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+            KoinPlatform.getKoin().get<GlobalViewModel>().viewModelScope.launch {
+                appRepository.dataSync()
+            }
+        }
+
+         */
+
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             Column {
-                RoundLoadingIndicator(
-                visible = true,
-                onClick = {},
-                size = 50.dp,
-                strokeWidth = 3.dp
-            )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
 
-                Text(text = stringResource(Res.string.email_check_loading_data))
+                    RoundLoadingIndicator(
+                        visible = true,
+                        onClick = {},
+                        size = 50.dp,
+                        strokeWidth = 3.dp
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(4.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(text = stringResource(Res.string.email_check_loading_data))
+
+                }
             }
         }
     } else{

@@ -46,21 +46,21 @@ class Preferencemanager(
 
     suspend fun saveTokens(tokenPair: NetworkUtils.TokenPair) {
         try {
-            loggingRepository.logDebug("Secure storage: Saving access token")
+            //loggingRepository.logDebug("Secure storage: Saving access token")
             securePrefs.put(SecureKey.ACCESS_TOKEN.key, tokenPair.accessToken)
             
-            loggingRepository.logDebug("Secure storage: Saving refresh token")
+            //loggingRepository.logDebug("Secure storage: Saving refresh token")
             securePrefs.put(SecureKey.REFRESH_TOKEN.key, tokenPair.refreshToken)
             
             tokenPair.encryptionKey?.let { encryptionKey ->
-                loggingRepository.logDebug("Secure storage: Saving encryption key")
+                //loggingRepository.logDebug("Secure storage: Saving encryption key")
                 securePrefs.put(SecureKey.ENCRYPTION_KEY.key, encryptionKey)
                 NotificationCredentialsMirror.setEncryptionKey(encryptionKey)
             } ?: run {
-                loggingRepository.logDebug("Secure storage: No encryption key to save")
+                //loggingRepository.logDebug("Secure storage: No encryption key to save")
             }
 
-            loggingRepository.logInfo("Secure storage: All tokens saved successfully")
+            //loggingRepository.logInfo("Secure storage: All tokens saved successfully")
         } catch (e: Exception) {
             loggingRepository.logError("Secure storage: Failed to save tokens - ${e.message}")
             throw e // Re-throw to maintain existing error handling behavior

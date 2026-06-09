@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
@@ -91,15 +92,18 @@ class EmailVerifiedCheckViewModel(
     }
 
     private fun checkVerification() {
+        println("authstate : ${SessionCache.authState.value}")
         viewModelScope.launch {
             _state.update {
                 it.copy(
                     isLoading = true
                 )
             }
-            KoinPlatform.getKoin().get<GlobalViewModel>().viewModelScope.launch {
+            val syncJob = KoinPlatform.getKoin().get<GlobalViewModel>().viewModelScope.launch {
                 appRepository.dataSync() //Launch in global viewmodel scope to not cancel when logging in suddenly
             }
+            syncJob.join() //await data sync finish
+
             _state.update {
                 it.copy(
                     isLoading = false
@@ -109,9 +113,21 @@ class EmailVerifiedCheckViewModel(
     }
 
     init {
+
+
+        viewModelScope.launch {
+            val globalViewModel = KoinPlatform.getKoin().get<GlobalViewModel>()
+
+            globalViewModel.viewModelScope.launch {
+                appRepository.dataSync()
+            }
+        }
+
+
         viewModelScope.launch {
             SessionCache.authState
                 .flatMapLatest { authState ->
+                    println("AUTHSTATE CHANGED: $authState")
                     if (authState is SessionCache.AuthState.LoggedIn) {
                         appRepository.getUserByIdFlow(userId = authState.userId)
                     } else {

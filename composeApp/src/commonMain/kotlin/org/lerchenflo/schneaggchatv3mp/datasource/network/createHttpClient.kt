@@ -49,20 +49,20 @@ fun createHttpClient(
                 bearer {
 
                     loadTokens {
-                        println("HTTPCLIENT: Loading Tokens...")
+                        //println("HTTPCLIENT: Loading Tokens...")
                         val tokens = tokenManager.loadBearerTokens()
                         tokens
                     }
 
                     refreshTokens {
-                        println("HTTPCLIENT: Automatic token refresh triggered")
+                        //println("HTTPCLIENT: Automatic token refresh triggered")
                         
                         // Pass the failing refresh token downstream
                         val oldRefreshToken = this.oldTokens?.refreshToken
                         tokenManager.refreshTokens(oldRefreshToken)
                         
                         // Load fresh tokens after refresh
-                        println("HTTPCLIENT: Refresh finished, loading")
+                        //println("HTTPCLIENT: Refresh finished, loading")
                         tokenManager.loadBearerTokens()
                     }
 

@@ -267,7 +267,7 @@ private class SocketConnection(
             session = this
             _isActive.value = true
             onConnectionStateChanged(true)
-            println("SocketConnection: connected to $serverUrl")
+            //println("SocketConnection: connected to $serverUrl")
 
             try {
                 incoming.receiveAsFlow()
@@ -282,7 +282,7 @@ private class SocketConnection(
                 _isActive.value = false
                 onConnectionStateChanged(false)
                 session = null
-                println("SocketConnection: disconnected from $serverUrl")
+                //println("SocketConnection: disconnected from $serverUrl")
                 onClose()
             }
         }

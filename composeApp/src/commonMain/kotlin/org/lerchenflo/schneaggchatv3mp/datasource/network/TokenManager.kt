@@ -56,17 +56,17 @@ class TokenManager(
             // in preferences, it means another thread ALREADY refreshed the token while we
             // were waiting for the Mutex lock!
             if (oldRefreshToken != null && currentTokens.refreshToken != oldRefreshToken) {
-                loggingRepository.logInfo("TokenManager: Token refresh skipped - already refreshed by another thread")
+                //loggingRepository.logInfo("TokenManager: Token refresh skipped - already refreshed by another thread")
                 return@withLock null
             }
 
             if (oldRefreshToken == null && currentTokens.refreshToken.isNotBlank()) {
-                loggingRepository.logInfo("TokenManager: Token appeared - skipping refresh")
+                //loggingRepository.logInfo("TokenManager: Token appeared - skipping refresh")
                 return@withLock null
             }
 
             if (currentTokens.refreshToken.isBlank()) {
-                loggingRepository.logError("TokenManager: Token refresh aborted - no refresh token available")
+                //loggingRepository.logError("TokenManager: Token refresh aborted - no refresh token available")
                 return@withLock null
             }
 
@@ -86,7 +86,7 @@ class TokenManager(
     }
 
     private suspend fun doRefresh(refreshToken: String): RequestError? {
-        loggingRepository.logDebug("TokenManager: Sending refresh request to server")
+        //loggingRepository.logDebug("TokenManager: Sending refresh request to server")
         return try {
             val authClient = KoinPlatform.getKoin().get<HttpClient>(qualifier = named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))
             val serverUrl = preferenceManager.buildServerUrl("/auth/refresh")
@@ -97,15 +97,15 @@ class TokenManager(
             }
 
             if (response.status.value == 401) {
-                loggingRepository.logError("TokenManager: Authentication invalidated (401) - refresh token likely expired")
+                //loggingRepository.logError("TokenManager: Authentication invalidated (401) - refresh token likely expired")
                 AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
                 null
             } else if (response.status.value == 409) {
-                loggingRepository.logInfo("TokenManager: Concurrent refresh detected - reloading tokens from storage")
+                //loggingRepository.logInfo("TokenManager: Concurrent refresh detected - reloading tokens from storage")
                 null
             } else if (!response.status.isSuccess()) {
                 val errorBody = response.body<String>()
-                loggingRepository.logError("TokenManager: HTTP error ${response.status.value}: ${errorBody.take(200)}")
+                //loggingRepository.logError("TokenManager: HTTP error ${response.status.value}: ${errorBody.take(200)}")
                 null
             } else {
                 val rawBody = response.body<String>()
@@ -113,15 +113,15 @@ class TokenManager(
                 val responseTokens = runCatching {
                     Json.decodeFromString<NetworkUtils.TokenPair>(rawBody)
                 }.getOrNull() ?: run {
-                    loggingRepository.logError("TokenManager: Invalid response format - JSON parsing failed")
+                    //loggingRepository.logError("TokenManager: Invalid response format - JSON parsing failed")
                     return null
                 }
 
-                loggingRepository.logDebug("TokenManager: Saving new tokens to storage")
+                //loggingRepository.logDebug("TokenManager: Saving new tokens to storage")
                 withContext(NonCancellable) {
                     KoinPlatform.getKoin().get<AppRepository>().onNewTokenPair(responseTokens)
                 }
-                loggingRepository.logInfo("TokenManager: Tokens saved successfully")
+                //loggingRepository.logInfo("TokenManager: Tokens saved successfully")
                 KoinPlatform.getKoin().get<HttpClient>(named(HTTPCLIENTTYPE.AUTHENTICATED)).clearAuthTokens()
                 null
             }
