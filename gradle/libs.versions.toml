@@ -34,16 +34,16 @@ room = "2.8.4"
 
 runtime = "1.10.3"
 sqlite = "2.6.2"
-datetime-wheel-picker = "1.3.0"
+datetime-wheel-picker = "1.3.1"
 
 koin-core = "4.2.1"
 koin-plugin = "0.6.2"
 koin-annotations = "4.2.1"
-ktor = "3.4.3"
+ktor = "3.5.0"
 adaptive = "1.2.0"
 datastore = "1.2.1"
 
-mikepenz-markdown = "0.40.2"
+mikepenz-markdown = "0.41.0"
 firebase-messaging-version = "24.1.2"
 google-services = "4.4.4"
 uiToolingPreview = "1.10.3"
@@ -56,12 +56,12 @@ junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 appcompat = "1.7.1"
 material = "1.14.0"
-composeBom = "2026.05.00"
+composeBom = "2026.05.01"
 
 ksafe = "1.8.1"
 
 #Schneaggmap
-map = "0.12.1"
+map = "0.13.0"
 
 swipeableKmp = "1.0.6"
 
