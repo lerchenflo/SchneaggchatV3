@@ -269,7 +269,7 @@ kotlin {
 
 
 //Add version info to desktop builds
-val desktopVersion = "3.0.11"
+val desktopVersion = "3.0.12"
 
 compose.desktop {
     application {
