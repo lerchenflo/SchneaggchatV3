@@ -56,13 +56,15 @@ enum class HTTPCLIENTTYPE {
 }
 
 
+
+
 val sharedmodule = module{
 
     //Database
     single <AppDatabase> { CreateAppDatabase(get()).getDatabase() }
 
     single <PlayerDao> { get<AppDatabase>().playerDao() } //TODO: Manu warum musch du inegrätscha und alles andersch macha
-    single { get<AppDatabase>().mapEntryDao() }
+
 
     singleOf(::TokenManager)
 

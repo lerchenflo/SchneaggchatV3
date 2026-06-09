@@ -41,10 +41,12 @@ import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ChangeDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.emailProviderWarning
+import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.utilities.isEmailValid
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.change
 import schneaggchatv3mp.composeapp.generated.resources.change_email
+import schneaggchatv3mp.composeapp.generated.resources.email_check_loading_data
 import schneaggchatv3mp.composeapp.generated.resources.email_check_problem
 import schneaggchatv3mp.composeapp.generated.resources.email_check_verified
 import schneaggchatv3mp.composeapp.generated.resources.email_not_verified_email_has_been_sent1
@@ -60,10 +62,28 @@ fun EmailVerifiedCheckScreenRoot() {
     val viewModel: EmailVerifiedCheckViewModel = koinViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    EmailNotVerifiedScreen(
-        state = state,
-        onAction = viewModel::onAction
-    )
+    if (state.userData == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column {
+                RoundLoadingIndicator(
+                visible = true,
+                onClick = {},
+                size = 50.dp,
+                strokeWidth = 3.dp
+            )
+
+                Text(text = stringResource(Res.string.email_check_loading_data))
+            }
+        }
+    } else{
+        EmailNotVerifiedScreen(
+            state = state,
+            onAction = viewModel::onAction
+        )
+    }
 }
 
 

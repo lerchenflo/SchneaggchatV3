@@ -11,6 +11,11 @@
     <string name="no_status">no status</string>
     <string name="unknown_user">unknown user</string>
 
+    <string name="usersync">userdata</string>
+    <string name="groupsync">groupdata</string>
+    <string name="messagesync">messages</string>
+    <string name="mapsync">map entrys</string>
+
     <string name="status_infotext">This status is available to all your friends. Currently, it is not set.</string>
     <string name="currentstatus">Your current status: %1$s</string>
 
@@ -26,6 +31,7 @@
     <string name="email_not_verified_email_has_been_sent2">. If you created your account some time ago, you may have to request the link again.</string>
     <string name="email_check_verified">Check email verification</string>
     <string name="email_check_problem">Having trouble? Get help</string>
+    <string name="email_check_loading_data">Loading your account data ...</string>
 
 
 

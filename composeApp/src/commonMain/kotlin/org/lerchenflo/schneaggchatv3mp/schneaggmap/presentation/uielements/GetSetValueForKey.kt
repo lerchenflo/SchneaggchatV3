@@ -6,10 +6,13 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 fun LocationData.getValueByKey(key: String): AttributeValue? = when (this) {
 
     // Traffic & Hazards
-    is LocationData.Radar            -> when (key) {
-        "speedLimit"       -> speedLimit
-        else               -> null
+    is LocationData.Radar -> when (key) {
+        "speedLimit" -> speedLimit
+        "mobile"     -> mobile
+        "redLight"   -> redLight
+        else         -> null
     }
+
     is LocationData.Police           -> when (key) {
         "lastSeen"         -> lastSeen
         else               -> null
@@ -81,10 +84,13 @@ fun LocationData.getValueByKey(key: String): AttributeValue? = when (this) {
 fun LocationData.withValueForKey(key: String, value: AttributeValue): LocationData = when (this) {
 
     // Traffic & Hazards
-    is LocationData.Radar            -> when (key) {
-        "speedLimit"        -> copy(speedLimit = value)
-        else                -> this
+    is LocationData.Radar -> when (key) {
+        "speedLimit" -> copy(speedLimit = value)
+        "mobile"     -> copy(mobile = value)
+        "redLight"   -> copy(redLight = value)
+        else         -> this
     }
+
     is LocationData.Police           -> when (key) {
         "lastSeen"          -> copy(lastSeen = value)
         else                -> this

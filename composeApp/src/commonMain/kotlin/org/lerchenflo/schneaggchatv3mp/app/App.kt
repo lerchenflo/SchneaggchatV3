@@ -14,8 +14,6 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -89,6 +87,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSe
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.SnackbarPopup
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
@@ -207,9 +206,9 @@ fun App() {
         val appRepository = koinInject<AppRepository>()
 
 
-        val snackbarHostState = remember { SnackbarHostState() } // for snackbar
+        //Init snackbarmanager
         LaunchedEffect(Unit) {
-            SnackbarManager.init(snackbarHostState, scope)
+            SnackbarManager.init(scope)
         }
 
         //Observe what the navigator sends to change screens etc
@@ -354,9 +353,25 @@ fun App() {
         }
 
 
+        //Snackbar popup handling
+        var currentSnackbarEvent by remember { mutableStateOf<SnackbarManager.SnackbarEvent?>(null) }
+        LaunchedEffect(Unit) {
+
+            SnackbarManager.snackbars.collect {
+                currentSnackbarEvent = it
+            }
+
+        }
+        currentSnackbarEvent?.let { snackbar ->
+            SnackbarPopup(
+                snackbarEvent = snackbar,
+                onDismiss = { currentSnackbarEvent = null }
+            )
+        }
+
+
 
         Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) },
             modifier = Modifier
                 .clearFocusOnTap()
                 .imePadding(),
@@ -750,6 +765,9 @@ fun App() {
                     }
 
                 )
+
+
+
 
             }
 
