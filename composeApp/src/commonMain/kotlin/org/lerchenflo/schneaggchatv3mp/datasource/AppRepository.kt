@@ -338,6 +338,8 @@ class AppRepository(
 
     suspend fun dataSync() {
 
+        val userId = SessionCache.requireLoggedIn() ?: return
+
         if (dataSyncLock.isLocked) {
             println("Datasync started but already running")
             dataSyncLock.withLock {  } //Awaiting finish and return to apply normal data sync await logic
@@ -486,6 +488,10 @@ class AppRepository(
     // ─── Map sync (triggered only from map screen, not part of global dataSync) ─
 
     private suspend fun mapEntryIdSync() {
+
+        val userId = SessionCache.requireLoggedIn() ?: return
+
+
         val localEntries = mapRepository.getMapEntryChangeIds()
         var currentPage = 0
         var moreEntries = true
@@ -974,6 +980,8 @@ class AppRepository(
      * Execute a useridsync
      */
     suspend fun userIdSync() {
+
+        val userId = SessionCache.requireLoggedIn() ?: return
 
         val localusers = userRepository.getuserchangeid()
 
@@ -1862,6 +1870,9 @@ class AppRepository(
 
 
     suspend fun groupIdSync() {
+
+        val userId = SessionCache.requireLoggedIn() ?: return
+
 
         val localgroups = groupRepository.getgroupchangeid()
         val profilepicsToGet = mutableListOf<String>()
