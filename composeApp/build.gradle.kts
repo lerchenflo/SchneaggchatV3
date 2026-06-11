@@ -136,6 +136,9 @@ kotlin {
             //Firebase Cloud Messaging
             implementation(libs.firebase.messaging)
 
+            // Location (FusedLocationProviderClient)
+            implementation(libs.play.services.location)
+
         }
 
 

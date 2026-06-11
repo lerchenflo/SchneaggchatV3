@@ -40,6 +40,24 @@ actual class PermissionManager(private val context: Context) {
         return deferred.await()
     }
 
+    actual suspend fun checkLocationPermission(): PermissionState {
+        val fine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+        val coarse = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+        return if (fine == PackageManager.PERMISSION_GRANTED || coarse == PackageManager.PERMISSION_GRANTED) {
+            PermissionState.GRANTED
+        } else {
+            PermissionState.NOT_DETERMINED
+        }
+    }
+
+    actual suspend fun requestLocationPermission(): PermissionState {
+        if (checkLocationPermission() == PermissionState.GRANTED)
+            return PermissionState.GRANTED
+
+        val deferred = ActivityHolder.requestLocationPermission()
+        return deferred.await()
+    }
+
     private fun Context.findActivity(): android.app.Activity? {
         var ctx: Context = this
         while (ctx is android.content.ContextWrapper) {

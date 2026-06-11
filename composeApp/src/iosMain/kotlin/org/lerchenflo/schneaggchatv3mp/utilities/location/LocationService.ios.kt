@@ -1,10 +1,13 @@
-package org.lerchenflo.schneaggchatv3mp.utilities
+package org.lerchenflo.schneaggchatv3mp.utilities.location
 
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
-import platform.AVFAudio.AVAudioSession
-import platform.AVFAudio.AVAudioSessionRecordPermissionDenied
-import platform.AVFAudio.AVAudioSessionRecordPermissionGranted
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import platform.CoreLocation.CLAuthorizationStatus
+import platform.CoreLocation.CLLocation
 import platform.CoreLocation.CLLocationManager
 import platform.CoreLocation.CLLocationManagerDelegateProtocol
 import platform.CoreLocation.kCLAuthorizationStatusAuthorizedAlways
@@ -12,31 +15,46 @@ import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
 import platform.CoreLocation.kCLAuthorizationStatusDenied
 import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
 import platform.CoreLocation.kCLAuthorizationStatusRestricted
+import platform.CoreLocation.kCLDistanceFilterNone
+import platform.Foundation.NSError
 import platform.darwin.NSObject
 import kotlin.coroutines.resume
 
-// todo flo bitte testa
-actual class PermissionManager {
+actual class LocationService {
 
-    actual suspend fun checkMicrophonePermission(): PermissionState {
-        val status = AVAudioSession.sharedInstance().recordPermission()
-        return when (status) {
-            AVAudioSessionRecordPermissionGranted -> PermissionState.GRANTED
-            AVAudioSessionRecordPermissionDenied -> PermissionState.DENIED
-            else -> PermissionState.NOT_DETERMINED
-        }
-    }
+    actual fun getLocationFlow(): Flow<LatLong?> = callbackFlow {
+        val manager = CLLocationManager()
 
-    actual suspend fun requestMicrophonePermission(): PermissionState =
-        suspendCancellableCoroutine { continuation ->
-            AVAudioSession.sharedInstance().requestRecordPermission { granted ->
-                if (granted) {
-                    continuation.resume(PermissionState.GRANTED)
-                } else {
-                    continuation.resume(PermissionState.DENIED)
-                }
+        val delegate = object : NSObject(), CLLocationManagerDelegateProtocol {
+            override fun locationManager(
+                manager: CLLocationManager,
+                didUpdateLocations: List<*>
+            ) {
+                val loc = didUpdateLocations.lastOrNull() as? CLLocation ?: return
+                trySend(
+                    LatLong(
+                        lat = loc.coordinate.useContents { latitude },
+                        long = loc.coordinate.useContents { longitude }
+                    )
+                )
+            }
+
+            override fun locationManager(manager: CLLocationManager, didFailWithError: NSError) {
+                // Non-fatal – keep the flow alive, just skip this update
+                println("LocationService iOS: ${didFailWithError.localizedDescription}")
             }
         }
+
+        manager.delegate = delegate
+        manager.desiredAccuracy = 100.0         // ~balanced accuracy (kCLLocationAccuracyHundredMeters)
+        manager.distanceFilter = 20.0           // only emit when moved > 20 m
+        manager.startUpdatingLocation()
+
+        awaitClose {
+            manager.stopUpdatingLocation()
+            manager.delegate = null
+        }
+    }
 
     actual suspend fun checkLocationPermission(): PermissionState =
         clStatusToState(CLLocationManager.authorizationStatus())

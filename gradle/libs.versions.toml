@@ -46,6 +46,7 @@ datastore = "1.2.1"
 mikepenz-markdown = "0.41.0"
 firebase-messaging-version = "24.1.2"
 google-services = "4.4.4"
+play-services-location = "21.3.0"
 uiToolingPreview = "1.10.3"
 
 cmpNavigation3 = "1.1.1"
@@ -84,6 +85,7 @@ foundation = { module = "org.jetbrains.compose.foundation:foundation", version.r
 github-imagepickerkmp = { module = "io.github.ismoy:imagepickerkmp", version.ref = "githubImagepickerkmp" }
 jwt-kt = { module = "com.appstractive:jwt-kt", version.ref = "jwtKt" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging-ktx", version.ref = "firebase-messaging-version" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
 base64 = { module = "io.matthewnelson.encoding:base64", version.ref = "encoding" }
 coil3-coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilComposeVersion" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }

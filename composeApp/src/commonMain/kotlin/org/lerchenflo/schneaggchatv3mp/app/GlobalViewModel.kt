@@ -28,6 +28,10 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
+import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
+
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class GlobalViewModel(
     private val appRepository: AppRepository,
@@ -36,7 +40,8 @@ class GlobalViewModel(
     private val navigator: Navigator,
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
-    private val messageRepository: MessageRepository
+    private val messageRepository: MessageRepository,
+    private val locationService: LocationService
 ): ViewModel() {
 
     init {
@@ -63,6 +68,7 @@ class GlobalViewModel(
                     }
 
                     startSocketConnection()
+                    startLocationTracking()
                 }
             }
         }
@@ -96,6 +102,7 @@ class GlobalViewModel(
         viewModelScope.launch {
             AppLifecycleManager.appBackgroundedEvent.collectLatest {
                 socketConnectionManager.close()
+                stopLocationTracking()
             }
         }
 
@@ -110,6 +117,15 @@ class GlobalViewModel(
             }
         }
 
+        viewModelScope.launch {
+            SessionCache.authState.collectLatest { authState ->
+                if (authState is SessionCache.AuthState.LoggedIn && AppLifecycleManager.isAppInForeground) {
+                    startLocationTracking()
+                } else {
+                    stopLocationTracking()
+                }
+            }
+        }
     }
 
 
@@ -214,5 +230,31 @@ class GlobalViewModel(
 
     fun onLeaveChat(){
         _selectedChatTarget.value = ChatTarget(null, false)
+    }
+
+    private var locationTrackingJob: kotlinx.coroutines.Job? = null
+
+    private fun startLocationTracking() {
+        if (locationTrackingJob != null) return // Already tracking
+        
+        locationTrackingJob = viewModelScope.launch {
+            val permission = locationService.requestLocationPermission()
+            if (permission != PermissionState.GRANTED) {
+                println("Location tracking: Permission not granted")
+                return@launch
+            }
+            
+            locationService.getLocationFlow().collect { latLong ->
+                if (latLong != null) {
+                    println("GlobalViewModel: Sending location update: ${latLong.lat}, ${latLong.long}")
+                    appRepository.sendUserLocation(latLong.lat, latLong.long)
+                }
+            }
+        }
+    }
+    
+    private fun stopLocationTracking() {
+        locationTrackingJob?.cancel()
+        locationTrackingJob = null
     }
 }

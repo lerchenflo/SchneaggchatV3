@@ -1167,5 +1167,13 @@ class NetworkUtils(
         return safeDelete(endpoint = "/map/delete?entryid=$entryId")
     }
 
+    @Serializable
+    data class UserLocationRequest(val lat: Double, val lon: Double)
 
+    suspend fun sendUserLocation(lat: Double, lon: Double): NetworkResult<Unit, NetworkError> {
+        return safePost(
+            endpoint = "/users/location",
+            body = UserLocationRequest(lat, lon)
+        )
+    }
 }

@@ -1966,8 +1966,12 @@ class AppRepository(
         }
     }
 
+    suspend fun sendUserLocation(lat: Double, lon: Double) {
+        networkUtils.sendUserLocation(lat, lon)
+    }
 
     /*
+
 
 
 
