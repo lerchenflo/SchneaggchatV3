@@ -23,6 +23,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Bugfixes
 - Umfragen Textinput
+- Snackbar custom UI
+- Email verification bugfixes
 
 
 ### 3.0.11
