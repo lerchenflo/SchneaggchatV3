@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +34,8 @@ import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.stevdza_san.swipeable.Swipeable
+import com.stevdza_san.swipeable.domain.ActionCustomization
+import com.stevdza_san.swipeable.domain.SwipeAction
 import com.stevdza_san.swipeable.domain.SwipeBehavior
 import com.stevdza_san.swipeable.domain.SwipeDirection
 import org.jetbrains.compose.resources.stringResource
@@ -251,20 +255,28 @@ fun LocationAttributeView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
             Swipeable(
                 behavior = SwipeBehavior.REVEAL,
                 direction = SwipeDirection.LEFT,
-                rightRevealActions = listOf(
-                    /*
-                    SwipeAction(
-                        customization = ActionCustomization(
-                            icon = Icons.Default.Delete,
-                            iconColor = Color.White,
-                            containerColor = Color.Red
-                        ),
-                        onAction = { /* Delete item */ }
-                    )
+                leftRevealActions = if (entry.locationData.size > 1) { //Only allow deletion if the entry has more than one locationdata
+                    listOf(
 
-                     */
-                    //TODO: Delete entry (Update library first to accept drawablevectors)
-                )
+                        SwipeAction(
+                            customization = ActionCustomization(
+                                icon = Icons.Default.Delete,
+                                iconColor = MaterialTheme.colorScheme.onError,
+                                containerColor = MaterialTheme.colorScheme.error
+                            ),
+                            onAction = {
+                                onChange(entry.copy(
+                                    locationData = entry.locationData.mapNotNull {
+                                        if (it.locationtype == locationData.locationtype) {
+                                            null //Return null for this entry (gets deleted)
+                                        } else it
+                                    }
+                                ))
+                            }
+                        )
+
+                    )
+                } else emptyList()
             ) {
                 Box(
                     modifier = Modifier
