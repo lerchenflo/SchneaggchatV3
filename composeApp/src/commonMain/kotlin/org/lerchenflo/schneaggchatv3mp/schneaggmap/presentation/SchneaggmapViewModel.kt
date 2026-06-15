@@ -11,7 +11,6 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import kotlin.time.Clock
 
@@ -141,6 +140,18 @@ class SchneaggmapViewModel(
                         lat = entry.coordinates.lat,
                         lon = entry.coordinates.long,
                         locationData = entry.locationData
+                    )
+                }
+            }
+
+            is SchneaggmapAction.OnEntryPopupDelete -> {
+                viewModelScope.launch {
+                    appRepository.deleteMapEntry(action.entryId)
+                }
+
+                _state.update {
+                    it.copy(
+                        selectedEntry = null
                     )
                 }
             }

@@ -148,6 +148,9 @@ fun SchneaggmapScreen(
                         entry = changedEntry,
                     ))
                 },
+                onDelete = {
+                    onAction(SchneaggmapAction.OnEntryPopupDelete(it))
+                },
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
         }

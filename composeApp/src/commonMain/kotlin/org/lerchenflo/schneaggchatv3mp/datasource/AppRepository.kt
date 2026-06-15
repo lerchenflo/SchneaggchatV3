@@ -88,7 +88,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
@@ -529,8 +528,14 @@ class AppRepository(
         }
     }
 
-    suspend fun deleteMapEntry(entryId: String): NetworkResult<Unit, NetworkError> {
-        return networkUtils.deleteMapEntry(entryId)
+    suspend fun deleteMapEntry(entryId: String) : Boolean {
+        return when (networkUtils.deleteMapEntry(entryId)) {
+            is NetworkResult.Error<*> -> false
+            is NetworkResult.Success<*> -> {
+                mapRepository.deleteMapEntry(entryId)
+                true
+            }
+        }
     }
 
 

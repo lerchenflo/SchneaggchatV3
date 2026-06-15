@@ -15,13 +15,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,9 +52,11 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.toSimpleLocationData
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.delete
 import schneaggchatv3mp.composeapp.generated.resources.latlong
 import schneaggchatv3mp.composeapp.generated.resources.location_belongs_to_type
 import schneaggchatv3mp.composeapp.generated.resources.save
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_delete
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_description
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_title
 
@@ -59,6 +65,7 @@ fun MapEntryInfoCard(
     entry: MapEntry,
     onDismiss: () -> Unit,
     onSave: (MapEntry) -> Unit,
+    onDelete: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
@@ -105,10 +112,53 @@ fun MapEntryInfoCard(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
+
                 val changed = entry != currentEntry
 
                 //Move cancel button to the right, if something changed to the left (primary action always on the right)
                 if (!changed) {
+
+                    var showDeleteConfirmationPopup by remember { mutableStateOf(false) }
+                    IconButton(
+                        onClick = {showDeleteConfirmationPopup = true}
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+
+                    if (showDeleteConfirmationPopup) {
+                        AlertDialog(
+                            onDismissRequest = { showDeleteConfirmationPopup = false },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    onDelete(entry.id)
+                                    showDeleteConfirmationPopup = false
+
+                                }) {
+                                    Text(stringResource(Res.string.delete))
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = {
+                                    // Handle confirm action
+                                    showDeleteConfirmationPopup = false
+                                }) {
+                                    Text(stringResource(Res.string.cancel))
+                                }
+                            },
+                            text = {
+                                Text(
+                                    text = stringResource(Res.string.schneaggmap_entry_delete)
+                                )
+                            }
+                        )
+                    }
+
+
                     Spacer(modifier = Modifier.weight(1f))
                 }
 
@@ -118,8 +168,12 @@ fun MapEntryInfoCard(
                     primary = false
                 )
 
+                if (changed) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+
                 //Save button on the right side, but only if something changed
-                if (entry != currentEntry) {
+                if (changed) {
                     NormalButton(
                         text = stringResource(Res.string.save),
                         onClick = {
