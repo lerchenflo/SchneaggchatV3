@@ -35,3 +35,4 @@ plugins {
 
 include(":composeApp")
 include(":androidApp")
+include(":kmp-voice-message-library")
