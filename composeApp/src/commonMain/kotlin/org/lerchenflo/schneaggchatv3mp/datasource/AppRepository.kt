@@ -54,6 +54,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
@@ -1984,7 +1985,28 @@ class AppRepository(
     suspend fun setLocationSharing(friendId: String, share: Boolean): Boolean {
         return when (networkUtils.shareLocation(friendId, share)) {
             is NetworkResult.Error<*> -> false
-            is NetworkResult.Success<*> -> true
+            is NetworkResult.Success<*> -> {
+                // Optimistically reflect the new value locally so UI updates immediately;
+                // the next /users/sync or UserChange socket push reconciles the authoritative value.
+                userRepository.getUserById(friendId)?.let { friend ->
+                    userRepository.upsertUser(friend.copy(locationShared = share).toDto())
+                }
+                true
+            }
+        }
+    }
+
+    /** Global "share my location at all" master switch, for the logged-in user themselves. */
+    suspend fun setOwnLocationShared(share: Boolean): Boolean {
+        val ownId = SessionCache.requireLoggedIn()?.userId ?: return false
+        return when (changeUserDetails(userId = ownId, newLocationShared = share)) {
+            false -> false
+            true -> {
+                userRepository.getUserById(ownId)?.let { self ->
+                    userRepository.upsertUser(self.copy(locationShared = share).toDto())
+                }
+                true
+            }
         }
     }
 

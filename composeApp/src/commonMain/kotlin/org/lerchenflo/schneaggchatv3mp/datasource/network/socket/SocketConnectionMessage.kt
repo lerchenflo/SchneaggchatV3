@@ -184,9 +184,9 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt,
 
                                 // Preserve existing values:
-                                locationLat = existing?.locationLat,
-                                locationLong = existing?.locationLong,
-                                locationDate = existing?.locationDate,
+                                locationLat = existing?.location?.lat,
+                                locationLong = existing?.location?.long,
+                                locationDate = existing?.location?.date,
                                 locationShared = newUser.shareLocation,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
                                 lastOnline = existing?.lastOnline,
@@ -213,9 +213,9 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt,
 
                                 // Preserve existing values:
-                                locationLat = existing?.locationLat,
-                                locationLong = existing?.locationLong,
-                                locationDate = existing?.locationDate,
+                                locationLat = existing?.location?.lat,
+                                locationLong = existing?.location?.long,
+                                locationDate = existing?.location?.date,
                                 locationShared = newUser.locationShared,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
                                 lastOnline = existing?.lastOnline,

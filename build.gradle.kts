@@ -12,7 +12,7 @@ plugins {
     alias(libs.plugins.google.services) apply false
     alias(libs.plugins.kotlin.android) apply false
 
-    id("io.github.frankois944.spmForKmp") version "1.9.1" apply false //Swift package manager for map
+    id("io.github.frankois944.spmForKmp") version "1.9.4" apply false //Swift package manager for map
 
 
 }
