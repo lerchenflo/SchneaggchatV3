@@ -38,6 +38,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText.StringResourceText
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -456,7 +457,10 @@ class NetworkUtils(
             val userDescription: String,
             val userStatus: String,
 
-            val nickName: String?
+            val nickName: String?,
+
+            //Do i share the location with this friend
+            val shareLocation: Boolean = false,
 
 
         ) : UserResponse
@@ -481,6 +485,9 @@ class NetworkUtils(
             val email: String,
             val emailVerifiedAt: Long?,
             val createdAt: Long,
+
+            //Do i have location sharing enabled
+            val locationShared: Boolean = false,
 
 
         ) : UserResponse
@@ -594,10 +601,11 @@ class NetworkUtils(
         val newStatus: String?,
         val newEmail: String?,
         val newBirthDate: String?,
-        val newNickName: String?
+        val newNickName: String?,
+        val newLocationShared: Boolean? = null, // global "share my location at all" switch, only effective when userId == caller's own id
     )
-    
-    suspend fun changeProfile(userId: String, newStatus: String?, newDescription: String?, newEmail: String?, newBirthDate: String?, newNickName: String?): NetworkResult<Any, NetworkError> {
+
+    suspend fun changeProfile(userId: String, newStatus: String?, newDescription: String?, newEmail: String?, newBirthDate: String?, newNickName: String?, newLocationShared: Boolean? = null): NetworkResult<Any, NetworkError> {
         return safePost(
             endpoint = "/users/changeprofile",
             body = UserRequest(
@@ -606,7 +614,8 @@ class NetworkUtils(
                 newStatus = newStatus,
                 newEmail = newEmail,
                 newBirthDate = newBirthDate,
-                newNickName = newNickName
+                newNickName = newNickName,
+                newLocationShared = newLocationShared
             )
         )
     }
@@ -1174,6 +1183,39 @@ class NetworkUtils(
         return safePost(
             endpoint = "/users/location",
             body = UserLocationRequest(lat, lon)
+        )
+    }
+
+    @Serializable
+    data class UserLocationsRequest(val lat: Double, val long: Double)
+
+    @Serializable
+    data class UserLocationResponse(
+        val userId: String,
+        val coordinates: LatLong,
+        val locationTime: Long, // epoch millis
+    )
+
+    /**
+     * Combined push+pull: stores the caller's current location and returns every friend's
+     * location currently visible to the caller (global switch on + shared with caller).
+     * An empty list is normal (no visible friends / none posted recently, 24h TTL).
+     */
+    suspend fun userLocations(lat: Double, long: Double): NetworkResult<List<UserLocationResponse>, NetworkError> {
+        return safePost(
+            endpoint = "/users/userlocations",
+            body = UserLocationsRequest(lat, long)
+        )
+    }
+
+    @Serializable
+    data class LocationShareRequest(val friendId: String, val share: Boolean)
+
+    /** Per-friend toggle: "do I share my location with this specific friend". */
+    suspend fun shareLocation(friendId: String, share: Boolean): NetworkResult<Unit, NetworkError> {
+        return safePost(
+            endpoint = "/users/sharelocation",
+            body = LocationShareRequest(friendId, share)
         )
     }
 }

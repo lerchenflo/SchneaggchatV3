@@ -68,7 +68,7 @@ class GlobalViewModel(
                     }
 
                     startSocketConnection()
-                    startLocationTracking()
+                    //startLocationTracking()
                 }
             }
         }
@@ -120,7 +120,7 @@ class GlobalViewModel(
         viewModelScope.launch {
             SessionCache.authState.collectLatest { authState ->
                 if (authState is SessionCache.AuthState.LoggedIn && AppLifecycleManager.isAppInForeground) {
-                    startLocationTracking()
+                    //startLocationTracking()
                 } else {
                     stopLocationTracking()
                 }

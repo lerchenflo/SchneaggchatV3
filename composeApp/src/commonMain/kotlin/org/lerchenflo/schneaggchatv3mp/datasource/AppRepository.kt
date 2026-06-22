@@ -995,7 +995,7 @@ class AppRepository(
                                 locationLat = existing?.locationLat,
                                 locationLong = existing?.locationLong,
                                 locationDate = existing?.locationDate,
-                                locationShared = existing?.locationShared ?: false,
+                                locationShared = newUser.shareLocation,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
                                 lastOnline = existing?.lastOnline,
                                 notisMuted = existing?.notisMuted ?: false,
@@ -1023,7 +1023,7 @@ class AppRepository(
                                 locationLat = existing?.locationLat,
                                 locationLong = existing?.locationLong,
                                 locationDate = existing?.locationDate,
-                                locationShared = existing?.locationShared ?: false,
+                                locationShared = newUser.locationShared,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
                                 lastOnline = existing?.lastOnline,
                                 frienshipStatus = null,
@@ -1205,6 +1205,7 @@ class AppRepository(
         newEmail: String? = null,
         newBirthDate: String? = null,
         newNickName: String? = null,
+        newLocationShared: Boolean? = null,
         ) : Boolean {
         return when (val success = networkUtils.changeProfile(
             userId = userId,
@@ -1213,6 +1214,7 @@ class AppRepository(
             newEmail = newEmail,
             newBirthDate = newBirthDate,
             newNickName = newNickName,
+            newLocationShared = newLocationShared,
         )){
             is NetworkResult.Error<*> -> false
             is NetworkResult.Success<*> -> {
@@ -1968,6 +1970,22 @@ class AppRepository(
 
     suspend fun sendUserLocation(lat: Double, lon: Double) {
         networkUtils.sendUserLocation(lat, lon)
+    }
+
+    /**
+     * Combined push+pull: pushes the caller's current location and returns every friend's
+     * location currently visible to the caller. An empty list is normal/expected.
+     */
+    suspend fun getUserLocations(lat: Double, long: Double): NetworkResult<List<NetworkUtils.UserLocationResponse>, NetworkError> {
+        return networkUtils.userLocations(lat, long)
+    }
+
+    /** Per-friend toggle: "do I share my location with this specific friend". */
+    suspend fun setLocationSharing(friendId: String, share: Boolean): Boolean {
+        return when (networkUtils.shareLocation(friendId, share)) {
+            is NetworkResult.Error<*> -> false
+            is NetworkResult.Success<*> -> true
+        }
     }
 
     /*
