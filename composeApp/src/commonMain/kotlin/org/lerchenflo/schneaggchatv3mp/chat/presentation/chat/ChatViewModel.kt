@@ -6,18 +6,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.hyochan.audio.AudioEncoderAndroidType
-import io.github.hyochan.audio.AudioRecorderPlayer
-import io.github.hyochan.audio.AudioSourceAndroidType
-import io.github.hyochan.audio.OutputFormatAndroidType
-import io.github.hyochan.audio.RecorderAudioSet
-import io.github.hyochan.audio.createAudioRecorderPlayer
 import io.github.ismoy.imagepickerkmp.domain.extensions.loadBytes
 import io.github.ismoy.imagepickerkmp.domain.models.GalleryPhotoResult
+import io.github.lerchenflo.voicemessages.VoiceRecorder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +27,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
@@ -72,6 +69,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.message_too_long
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import kotlin.time.TimeSource
 
 class ChatViewModel(
     private val appRepository: AppRepository,
@@ -92,7 +90,8 @@ class ChatViewModel(
         private const val MAX_VOICE_MSG_TIME = 2*60*1000L
     }
 
-    private var audioRecorderPlayer: AudioRecorderPlayer? = null // Object for Audio Recording / Playback
+    private var voiceRecorder: VoiceRecorder? = null // Object for Audio Recording
+    private var recordingTickerJob: Job? = null // live elapsed-time updates + auto-stop while recording
     private var audioPlayer: AudioPlayer = AudioPlayer(isDesktop = isDesktop())
 
     // chat id und group bool wörrend im init oamol glada
@@ -453,43 +452,6 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
     }
 
     // Audio Recording / Playback
-    fun initAudioRecorderPlayer() {
-        // Try to create the recorder only when permission is already granted.
-        viewModelScope.launch {
-            audioRecorderPlayer = createAudioRecorderPlayer()
-
-            // Audio quality settings recommended by gemini
-            val recorderSettings = RecorderAudioSet(
-                audioSourceAndroid = AudioSourceAndroidType.VOICE_COMMUNICATION,
-                outputFormatAndroid = OutputFormatAndroidType.MPEG_4, // Opus is often wrapped in MP4/OGG
-                audioEncoderAndroid = AudioEncoderAndroidType.OPUS,
-                audioEncodingBitRateAndroid = 64000,   // 64kbps is the "sweet spot" for mono voice
-                audioSamplingRateAndroid = 16000,      // 16kHz is "HD Voice" standard
-                audioChannelsAndroid = 1               // Always use Mono for voice
-            )
-            audioRecorderPlayer?.setRecorderProperties(recorderSettings)
-
-            //set not null audioRecoderPlayer for the audioPlayer
-            audioPlayer.audioRecorderPlayer = audioRecorderPlayer
-
-
-            /* only request microphone permission when actually starting a recording
-            val permission = permissionsManager.checkMicrophonePermission()
-            println("initAudioRecorderPlayer - Permission: $permission")
-            if (permission == PermissionState.GRANTED) {
-                if (audioRecorderPlayer == null) {
-                    println("AudioRecorderPlayer created")
-                }
-            } else {
-                println("Requesting microphone permission (init)")
-                permissionsManager.requestMicrophonePermission()
-                // don't block here waiting for UI; we'll re-check permission in startRecording()
-            }
-
-             */
-        }
-    }
-
     fun startRecording() {
         viewModelScope.launch {
             try {
@@ -503,33 +465,31 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                     }
                 }
 
-                // lazy-init the recorder if not present
-                if (audioRecorderPlayer == null) {
-                    audioRecorderPlayer = createAudioRecorderPlayer()
-                    println("AudioRecorderPlayer lazy-created in startRecording()")
-                }
-
                 val filename = getCurrentTimeMillisString() + VOICEMSG_FILE_NAME
                 val path = audioManager.getRecordingPath(filename)
-                
+
                 println("Starting recording at path: $path")
-                val result = audioRecorderPlayer!!.startRecording(path)
-                println("Recording start result: $result")
-                //updateSendContent(SendMessageContent.AudioContent(path, 0L))
+                val recorder = VoiceRecorder()
+                voiceRecorder = recorder
+                recorder.start(path)
                 updateSendContent(SendMessageContent.AudioContent(
                     audioPath = path,
                     duration =  0L,
                     isRecording = true
                 ))
-                audioRecorderPlayer!!.addRecordingListener { recordBack ->
-                    //println("Current record time: ${recordBack.currentPosition}")
-                    (currentSendContent.value as? SendMessageContent.AudioContent)?.let { audio ->
-                        updateSendContent(audio.copy(duration = recordBack.currentPosition))
-                    }
-                    audioRecorderPlayer
 
-                    if(recordBack.currentPosition > MAX_VOICE_MSG_TIME){ // maximum of [2 min] for audio recordings
-                        stopRecording()
+                // Live elapsed-time updates + auto-stop, replacing the old push-based recording listener
+                val startMark = TimeSource.Monotonic.markNow()
+                recordingTickerJob = viewModelScope.launch {
+                    while (isActive) {
+                        delay(200)
+                        val elapsedMs = startMark.elapsedNow().inWholeMilliseconds
+                        (currentSendContent.value as? SendMessageContent.AudioContent)?.let { audio ->
+                            updateSendContent(audio.copy(duration = elapsedMs))
+                        }
+                        if (elapsedMs > MAX_VOICE_MSG_TIME) { // maximum of [2 min] for audio recordings
+                            stopRecording()
+                        }
                     }
                 }
             } catch (e: Exception) {
@@ -543,12 +503,14 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
     fun stopRecording() {
         viewModelScope.launch {
             try {
-                val result = audioRecorderPlayer?.stopRecording()
-                audioRecorderPlayer?.removeListeners()
+                recordingTickerJob?.cancel()
+                recordingTickerJob = null
+                voiceRecorder?.stop()
+                voiceRecorder = null
                 (currentSendContent.value as? SendMessageContent.AudioContent)?.let { audio ->
                     updateSendContent(audio.copy(isRecording = false))
                 }
-                println("Recording stopped: $result")
+                println("Recording stopped")
             } catch (e: Exception) {
                 loggingRepository.logWarning("Failed to stop recording: ${e.message}")
                 e.printStackTrace()
@@ -830,10 +792,9 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                 }
             }
         }
-        // Initialize audio recorder player
+        // Initialize audio
         viewModelScope.launch {
             audioManager.initializeAudio()
-            initAudioRecorderPlayer()
         }
 
         println("ChatViewModel Incoming Data: ${IncomingDataManager.sharedText.value}")

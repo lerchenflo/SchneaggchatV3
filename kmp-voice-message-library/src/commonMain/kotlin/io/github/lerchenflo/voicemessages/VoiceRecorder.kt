@@ -9,7 +9,7 @@ package io.github.lerchenflo.voicemessages
  * On Android, the caller is responsible for requesting the `RECORD_AUDIO` permission before
  * calling [start]. On iOS, `NSMicrophoneUsageDescription` must be set in `Info.plist`.
  */
-internal expect class VoiceRecorder() {
+expect class VoiceRecorder() {
 
     /** Whether a recording is currently in progress. */
     val isRecording: Boolean

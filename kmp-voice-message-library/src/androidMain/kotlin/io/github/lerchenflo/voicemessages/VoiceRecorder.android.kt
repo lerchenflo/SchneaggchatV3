@@ -2,7 +2,7 @@ package io.github.lerchenflo.voicemessages
 
 import android.media.MediaRecorder
 
-internal actual class VoiceRecorder actual constructor() {
+actual class VoiceRecorder actual constructor() {
 
     private var mediaRecorder: MediaRecorder? = null
     private var recording: Boolean = false

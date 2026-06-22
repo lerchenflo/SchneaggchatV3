@@ -65,6 +65,10 @@ fun LocationSharingDialog(
                             icon = null
                         )
                     }
+                } else {
+                    Text(
+                        text = "no friends"
+                    )
                 }
             }
         },

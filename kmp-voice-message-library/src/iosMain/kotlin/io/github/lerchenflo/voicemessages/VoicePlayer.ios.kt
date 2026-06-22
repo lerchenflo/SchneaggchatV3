@@ -5,7 +5,7 @@ import platform.AVFAudio.AVAudioPlayer
 import platform.Foundation.NSURL
 
 @OptIn(ExperimentalForeignApi::class)
-internal actual class VoicePlayer actual constructor() {
+actual class VoicePlayer actual constructor() {
 
     private var player: AVAudioPlayer? = null
 
@@ -29,6 +29,14 @@ internal actual class VoicePlayer actual constructor() {
 
     actual fun pause() {
         player?.takeIf { it.isPlaying() }?.pause()
+    }
+
+    actual fun resume() {
+        player?.takeIf { !it.isPlaying() }?.play()
+    }
+
+    actual fun seekTo(positionMs: Long) {
+        player?.currentTime = positionMs / 1_000.0
     }
 
     actual fun stop() {

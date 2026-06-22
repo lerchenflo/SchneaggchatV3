@@ -8,7 +8,7 @@ import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.TargetDataLine
 import kotlin.concurrent.thread
 
-internal actual class VoiceRecorder actual constructor() {
+actual class VoiceRecorder actual constructor() {
 
     private var line: TargetDataLine? = null
     private var recordingThread: Thread? = null

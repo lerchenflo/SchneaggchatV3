@@ -3,7 +3,6 @@ agp = "9.2.1"
 
 
 # ATTENTION WHEN UPDATING
-kmp-audio-recorder-player = "1.0.0-alpha05" #update with datetime, test for voice message crashes
 kotlinx-datetime = "0.7.1-0.6.x-compat" #Check for voice message crash when updating
 material3 = "1.11.0-alpha05" #Test for ios input crashes when updating (IRLinkage error crash when clicking on any textfield)
 cryptographyProviderOptimal = "0.5.0" #update same as material3
@@ -105,7 +104,6 @@ sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sql
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 datetime-wheel-picker = { module = "io.github.darkokoa:datetime-wheel-picker", version.ref = "datetime-wheel-picker" }
 material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
-kmp-audio-recorder-player = { module = "io.github.hyochan:kmp-audio-recorder-player", version.ref = "kmp-audio-recorder-player" }
 moko-permissions = { module = "dev.icerock.moko:permissions", version.ref = "moko" }
 moko-permissions-compose = { module = "dev.icerock.moko:permissions-compose", version.ref = "moko" }
 #moko-permissions-microphone = { module = "dev.icerock.moko:permissions-microphone", version.ref = "moko"}

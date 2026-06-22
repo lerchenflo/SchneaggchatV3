@@ -16,7 +16,7 @@ import platform.Foundation.NSError
 import platform.Foundation.NSURL
 
 @OptIn(ExperimentalForeignApi::class)
-internal actual class VoiceRecorder actual constructor() {
+actual class VoiceRecorder actual constructor() {
 
     private var recorder: AVAudioRecorder? = null
     private var recording: Boolean = false

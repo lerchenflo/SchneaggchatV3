@@ -2,7 +2,7 @@ package io.github.lerchenflo.voicemessages
 
 import android.media.MediaPlayer
 
-internal actual class VoicePlayer actual constructor() {
+actual class VoicePlayer actual constructor() {
 
     private var mediaPlayer: MediaPlayer? = null
 
@@ -26,6 +26,14 @@ internal actual class VoicePlayer actual constructor() {
 
     actual fun pause() {
         mediaPlayer?.takeIf { it.isPlaying }?.pause()
+    }
+
+    actual fun resume() {
+        mediaPlayer?.takeIf { !it.isPlaying }?.start()
+    }
+
+    actual fun seekTo(positionMs: Long) {
+        mediaPlayer?.seekTo(positionMs.toInt())
     }
 
     actual fun stop() {

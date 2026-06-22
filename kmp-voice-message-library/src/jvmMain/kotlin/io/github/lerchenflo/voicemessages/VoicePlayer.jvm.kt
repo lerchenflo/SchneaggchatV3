@@ -4,7 +4,7 @@ import java.io.File
 import javax.sound.sampled.AudioSystem
 import javax.sound.sampled.Clip
 
-internal actual class VoicePlayer actual constructor() {
+actual class VoicePlayer actual constructor() {
 
     private var clip: Clip? = null
 
@@ -28,6 +28,14 @@ internal actual class VoicePlayer actual constructor() {
 
     actual fun pause() {
         clip?.takeIf { it.isRunning }?.stop()
+    }
+
+    actual fun resume() {
+        clip?.takeIf { !it.isRunning }?.start()
+    }
+
+    actual fun seekTo(positionMs: Long) {
+        clip?.microsecondPosition = positionMs * 1_000
     }
 
     actual fun stop() {

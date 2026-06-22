@@ -187,9 +187,6 @@ kotlin {
             //Image picker
             implementation(libs.github.imagepickerkmp)
 
-            // Audio Recorder / Player
-            implementation(libs.kmp.audio.recorder.player)
-
             // Voice messages (local module, not published)
             implementation(projects.kmpVoiceMessageLibrary)
 
