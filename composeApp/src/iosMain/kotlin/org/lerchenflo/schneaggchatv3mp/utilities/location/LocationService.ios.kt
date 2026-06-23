@@ -49,8 +49,8 @@ actual class LocationService {
         }
 
         manager.delegate = delegate
-        manager.desiredAccuracy = 100.0         // ~balanced accuracy (kCLLocationAccuracyHundredMeters)
-        manager.distanceFilter = 20.0           // only emit when moved > 20 m
+        manager.desiredAccuracy = 50.0         // ~balanced accuracy (kCLLocationAccuracyHundredMeters)
+        manager.distanceFilter = 5.0
         manager.startUpdatingLocation()
 
         awaitClose {

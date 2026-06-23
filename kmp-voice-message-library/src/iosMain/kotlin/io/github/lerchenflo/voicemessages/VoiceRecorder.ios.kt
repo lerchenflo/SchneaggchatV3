@@ -1,19 +1,24 @@
+@file:OptIn(BetaInteropApi::class)
+
 package io.github.lerchenflo.voicemessages
 
+import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCObjectVar
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
+import kotlinx.cinterop.value
 import platform.AVFAudio.AVAudioQualityHigh
 import platform.AVFAudio.AVAudioRecorder
 import platform.AVFAudio.AVAudioSession
-import platform.AVFAudio.AVAudioSessionCategoryPlayAndRecord
+import platform.AVFAudio.AVAudioSessionCategoryRecord
 import platform.AVFAudio.AVEncoderAudioQualityKey
 import platform.AVFAudio.AVEncoderBitRateKey
 import platform.AVFAudio.AVFormatIDKey
 import platform.AVFAudio.AVNumberOfChannelsKey
 import platform.AVFAudio.AVSampleRateKey
+import platform.AVFAudio.setActive
 import platform.CoreAudioTypes.kAudioFormatMPEG4AAC
 import platform.Foundation.NSError
 import platform.Foundation.NSURL
@@ -40,26 +45,24 @@ actual class VoiceRecorder actual constructor() {
         )
 
         memScoped {
-            // The audio session must be configured and activated *before* recording,
-            // otherwise AVAudioRecorder.record() silently no-ops and produces an
-            // empty/invalid file (which then fails to open during playback with
-            // "AudioFileObject.cpp:105 OpenFromDataSource failed").
+            // Pure Record category (matching kmp-audio-recorder-player). Under
+            // PlayAndRecord, AVAudioRecorder.prepareToRecord() returns false here.
             val session = AVAudioSession.sharedInstance()
-            val sessionErrorVar = alloc<ObjCObjectVar<NSError?>>()
-            session.setCategory(AVAudioSessionCategoryPlayAndRecord, error = sessionErrorVar.ptr)
-            val sessionCategoryError = sessionErrorVar.value
-            if (sessionCategoryError != null) {
+            val categoryErrorVar = alloc<ObjCObjectVar<NSError?>>()
+            session.setCategory(AVAudioSessionCategoryRecord, error = categoryErrorVar.ptr)
+            val categoryError = categoryErrorVar.value
+            if (categoryError != null) {
                 throw IllegalStateException(
-                    "Failed to set AVAudioSession category: ${sessionCategoryError.localizedDescription}"
+                    "Failed to set AVAudioSession category: ${categoryError.localizedDescription}"
                 )
             }
 
-            val sessionActiveErrorVar = alloc<ObjCObjectVar<NSError?>>()
-            session.setActive(true, error = sessionActiveErrorVar.ptr)
-            val sessionActiveError = sessionActiveErrorVar.value
-            if (sessionActiveError != null) {
+            val activeErrorVar = alloc<ObjCObjectVar<NSError?>>()
+            session.setActive(true, error = activeErrorVar.ptr)
+            val activeError = activeErrorVar.value
+            if (activeError != null) {
                 throw IllegalStateException(
-                    "Failed to activate AVAudioSession: ${sessionActiveError.localizedDescription}"
+                    "Failed to activate AVAudioSession: ${activeError.localizedDescription}"
                 )
             }
 
@@ -72,11 +75,11 @@ actual class VoiceRecorder actual constructor() {
                 )
             }
 
-            val started = avRecorder.record()
-            if (!started) {
-                throw IllegalStateException("AVAudioRecorder.record() failed to start recording")
+            if (!avRecorder.prepareToRecord()) {
+                throw IllegalStateException("AVAudioRecorder.prepareToRecord() failed")
             }
 
+            avRecorder.record()
             recorder = avRecorder
             recording = true
         }
