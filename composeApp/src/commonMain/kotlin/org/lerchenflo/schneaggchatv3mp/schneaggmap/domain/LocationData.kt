@@ -136,13 +136,22 @@ sealed class LocationData {
     @SerialName("camping")
     data class Camping(
         val official: AttributeValue,
+        val waterDistance: AttributeValue?,
+        val sittingPossibility: AttributeValue?,
+        val grillPossibility: AttributeValue?,
     ) : LocationData() {
         override val locationtype = CAMPING
 
-        val officialValue get() = official.asBool
+        val officialValue           get() = official.asBool
+        val waterDistanceValue       get() = waterDistance?.asInt
+        val sittingPossibilityValue get() = sittingPossibility?.asBool
+        val grillPossibilityValue   get() = grillPossibility?.asBool
 
         override fun schema() = listOf(
-            AttributeDefinition.BoolDef(key = "official", required = true),
+            AttributeDefinition.BoolDef(key = "official",           required = true),
+            AttributeDefinition.IntDef (key = "waterDistance",      required = false, min = 0),
+            AttributeDefinition.BoolDef(key = "sittingPossibility", required = false),
+            AttributeDefinition.BoolDef(key = "grillPossibility",   required = false),
         )
     }
 
@@ -150,13 +159,16 @@ sealed class LocationData {
     @SerialName("swimming")
     data class SwimmingLocation(
         val indoor: AttributeValue?,
+        val jumpSpot: AttributeValue?,
     ) : LocationData() {
         override val locationtype = SWIMMING
 
-        val indoorValue get() = indoor?.asBool
+        val indoorValue   get() = indoor?.asBool
+        val jumpSpotValue get() = jumpSpot?.asBool
 
         override fun schema() = listOf(
-            AttributeDefinition.BoolDef(key = "indoor", required = false),
+            AttributeDefinition.BoolDef(key = "indoor",   required = false),
+            AttributeDefinition.BoolDef(key = "jumpSpot", required = false),
         )
     }
 
@@ -298,8 +310,8 @@ fun LocationType.toSimpleLocationData(): LocationData = when (this) {
     MOUNTAIN_STREET -> LocationData.MountainStreet(null, null, null)
     WHEELIESPOT     -> LocationData.Wheeliespot(onlyOnWeekends = null)
     VIEWPOINT       -> LocationData.Viewpoint()
-    CAMPING         -> LocationData.Camping(official = AttributeValue.BoolValue(true))
-    SWIMMING        -> LocationData.SwimmingLocation(indoor = null)
+    CAMPING         -> LocationData.Camping(official = AttributeValue.BoolValue(true), waterDistance = null, sittingPossibility = null, grillPossibility = null)
+    SWIMMING        -> LocationData.SwimmingLocation(indoor = null, jumpSpot = null)
     SIGHTSEEING     -> LocationData.SightSeeing(entryFee = null)
     PARTY           -> LocationData.PartyLocation(entryFee = null)
     FOOD_KEBAB      -> LocationData.FoodKebab(kebabPrice = null)
@@ -332,10 +344,14 @@ fun AttributeDefinition.label(): String {
         "onlyOnWeekends"    -> stringResource(Res.string.location_wheeliespot_only_on_weekends)
 
         // Camping
-        "official"          -> stringResource(Res.string.location_camping_official)
+        "official"           -> stringResource(Res.string.location_camping_official)
+        "waterDistance"       -> stringResource(Res.string.location_camping_water_distance)
+        "sittingPossibility"  -> stringResource(Res.string.location_camping_sitting_possibility)
+        "grillPossibility"    -> stringResource(Res.string.location_camping_grill_possibility)
 
         // Swimming
-        "indoor"            -> stringResource(Res.string.location_swimming_indoor)
+        "indoor"             -> stringResource(Res.string.location_swimming_indoor)
+        "jumpSpot"            -> stringResource(Res.string.location_swimming_jump_spot)
 
         // Sightseeing & Party
         "entryFee"          -> stringResource(Res.string.location_sightseeing_entry_fee)

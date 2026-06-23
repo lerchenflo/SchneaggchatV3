@@ -656,9 +656,13 @@
 
     <!-- Camping -->
     <string name="location_camping_official">Ned Illegal</string>
+    <string name="location_camping_water_distance">Entfernung zum Wasser (m)</string>
+    <string name="location_camping_sitting_possibility">Sitzmöglichkeit</string>
+    <string name="location_camping_grill_possibility">Grillmöglichkeit</string>
 
     <!-- Swimming -->
-    <string name="location_swimming_indoor">Indoor</string>
+    <string name="location_swimming_indoor">Dinna</string>
+    <string name="location_swimming_jump_spot">Kama Springa</string>
 
     <!-- Sightseeing & Party -->
     <string name="location_sightseeing_entry_fee">Eintrittspreis</string>

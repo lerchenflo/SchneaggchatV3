@@ -16,6 +16,14 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 # Changelog
 
 
+### 3.0.13
+
+#### Features
+- Schneaggmap mit erweiterten Ortsattributen (Camping: Wasserdistanz, Sitz- und Grillmöglichkeiten; Schwimmen: Sprungstelle)
+
+#### Bugfixes
+
+
 ### 3.0.12
 
 #### Features
