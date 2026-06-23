@@ -69,9 +69,9 @@ actual class VoiceRecorder actual constructor() {
             val recorderErrorVar = alloc<ObjCObjectVar<NSError?>>()
             val avRecorder = AVAudioRecorder(uRL = url, settings = settings, error = recorderErrorVar.ptr)
             val recorderError = recorderErrorVar.value
-            if (recorderError != null) {
+            if (recorderError != null || avRecorder == null) {
                 throw IllegalStateException(
-                    "Failed to create AVAudioRecorder: ${recorderError.localizedDescription}"
+                    "Failed to create AVAudioRecorder: ${recorderError?.localizedDescription}"
                 )
             }
 
@@ -86,7 +86,7 @@ actual class VoiceRecorder actual constructor() {
     }
 
     actual fun stop() {
-        recorder?.stop()
+        runCatching { recorder?.stop() }
         recorder = null
         recording = false
     }
