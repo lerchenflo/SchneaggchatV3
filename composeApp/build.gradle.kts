@@ -207,6 +207,8 @@ kotlin {
             //Swipeable
             implementation(libs.swipeable.kmp)
 
+            //Reordable Column
+            implementation(libs.reorderable)
 
             //Sharedprefs
             api(libs.datastore.preferences)

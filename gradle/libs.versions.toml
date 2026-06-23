@@ -65,7 +65,7 @@ ksafe = "1.8.1"
 map = "0.13.0"
 
 swipeableKmp = "1.0.7"
-
+reorderable = "3.1.0"
 
 
 [libraries]
@@ -74,8 +74,10 @@ maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.r
 maplibre-compose-material3 = { module = "org.maplibre.compose:maplibre-compose-material3", version.ref = "map" }
 
 swipeable-kmp = { module = "com.stevdza-san:swipeable-kmp", version.ref = "swipeableKmp" }
+reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
+
 
 
 components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "componentsResources" }
