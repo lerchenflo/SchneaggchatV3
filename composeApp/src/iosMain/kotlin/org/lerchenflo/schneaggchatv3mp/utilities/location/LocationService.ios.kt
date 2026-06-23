@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.location
 
+import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.useContents
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -20,6 +22,7 @@ import platform.Foundation.NSError
 import platform.darwin.NSObject
 import kotlin.coroutines.resume
 
+@OptIn(ExperimentalForeignApi::class)
 actual class LocationService {
 
     actual fun getLocationFlow(): Flow<LatLong?> = callbackFlow {
