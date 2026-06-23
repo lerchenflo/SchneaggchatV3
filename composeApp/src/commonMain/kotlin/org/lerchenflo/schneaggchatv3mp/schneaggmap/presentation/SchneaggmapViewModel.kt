@@ -9,7 +9,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
@@ -155,6 +157,15 @@ class SchneaggmapViewModel(
                 _state.update {
                     it.copy(
                         selectedEntry = null
+                    )
+                }
+            }
+
+            SchneaggmapAction.OnSettingsClick -> {
+                viewModelScope.launch {
+                    navigator.navigateToSubRoute(
+                        rootRoute = Route.Settings,
+                        destination = Route.Settings.SchneaggmapSettings
                     )
                 }
             }

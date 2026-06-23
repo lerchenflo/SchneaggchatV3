@@ -1,8 +1,15 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -111,21 +118,35 @@ fun SchneaggmapScreen(
             onAction = onAction
         )
 
-        DisappearingCompassButton(
-            cameraState = cameraState,
-            modifier = Modifier.align(Alignment.TopStart).padding(8.dp),
-        )
+        Row(
+            Modifier.align(Alignment.TopStart).padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            FloatingActionButton(
+                onClick = { onAction(SchneaggmapAction.OnSettingsClick) },
+            ) {
+                Icon(Icons.Default.Settings, contentDescription = null)
+            }
+
+            DisappearingCompassButton(
+                cameraState = cameraState,
+                modifier = Modifier.padding(start = 8.dp),
+            )
+        }
+
         DisappearingScaleBar(
             metersPerDp = cameraState.metersPerDpAtTarget,
             zoom = cameraState.position.zoom,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = MaterialTheme.colorScheme.surfaceContainer,
             modifier = Modifier.align(Alignment.BottomStart).padding(start = 16.dp, bottom = 16.dp),
         )
+
         ShownLocationsDropdown(
             state = state,
             onAction = onAction,
             modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
         )
+
         state.selectedEntry?.let { entry ->
             MapEntryInfoCard(
                 entry = entry,
@@ -277,7 +298,7 @@ private fun SchneaggmapMapContent(
                         } else ClickResult.Pass
                     },
                     iconImage = image(painterResource(iconRes), size = DpSize(33.dp, 33.dp)),
-                    iconAllowOverlap = const(true)
+                    iconAllowOverlap = const(!state.useClustering)
                 )
             }
 

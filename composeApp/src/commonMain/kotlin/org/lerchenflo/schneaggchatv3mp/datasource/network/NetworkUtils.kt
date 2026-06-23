@@ -1035,7 +1035,7 @@ class NetworkUtils(
             messageId = null,
             receiverId = empfaenger,
             groupMessage = gruppe,
-            msgType = MessageType.IMAGE,
+            msgType = MessageType.AUDIO,
             answerId = answerid,
         )
 

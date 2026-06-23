@@ -7,6 +7,8 @@ import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import platform.AVFAudio.AVAudioQualityHigh
 import platform.AVFAudio.AVAudioRecorder
+import platform.AVFAudio.AVAudioSession
+import platform.AVFAudio.AVAudioSessionCategoryPlayAndRecord
 import platform.AVFAudio.AVEncoderAudioQualityKey
 import platform.AVFAudio.AVEncoderBitRateKey
 import platform.AVFAudio.AVFormatIDKey
@@ -38,9 +40,43 @@ actual class VoiceRecorder actual constructor() {
         )
 
         memScoped {
-            val errorVar = alloc<ObjCObjectVar<NSError?>>()
-            val avRecorder = AVAudioRecorder(uRL = url, settings = settings, error = errorVar.ptr)
-            avRecorder.record()
+            // The audio session must be configured and activated *before* recording,
+            // otherwise AVAudioRecorder.record() silently no-ops and produces an
+            // empty/invalid file (which then fails to open during playback with
+            // "AudioFileObject.cpp:105 OpenFromDataSource failed").
+            val session = AVAudioSession.sharedInstance()
+            val sessionErrorVar = alloc<ObjCObjectVar<NSError?>>()
+            session.setCategory(AVAudioSessionCategoryPlayAndRecord, error = sessionErrorVar.ptr)
+            val sessionCategoryError = sessionErrorVar.value
+            if (sessionCategoryError != null) {
+                throw IllegalStateException(
+                    "Failed to set AVAudioSession category: ${sessionCategoryError.localizedDescription}"
+                )
+            }
+
+            val sessionActiveErrorVar = alloc<ObjCObjectVar<NSError?>>()
+            session.setActive(true, error = sessionActiveErrorVar.ptr)
+            val sessionActiveError = sessionActiveErrorVar.value
+            if (sessionActiveError != null) {
+                throw IllegalStateException(
+                    "Failed to activate AVAudioSession: ${sessionActiveError.localizedDescription}"
+                )
+            }
+
+            val recorderErrorVar = alloc<ObjCObjectVar<NSError?>>()
+            val avRecorder = AVAudioRecorder(uRL = url, settings = settings, error = recorderErrorVar.ptr)
+            val recorderError = recorderErrorVar.value
+            if (recorderError != null) {
+                throw IllegalStateException(
+                    "Failed to create AVAudioRecorder: ${recorderError.localizedDescription}"
+                )
+            }
+
+            val started = avRecorder.record()
+            if (!started) {
+                throw IllegalStateException("AVAudioRecorder.record() failed to start recording")
+            }
+
             recorder = avRecorder
             recording = true
         }

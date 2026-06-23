@@ -684,9 +684,13 @@
 
     <!-- Camping -->
     <string name="location_camping_official">Official</string>
+    <string name="location_camping_water_distance">Distance to Water (m)</string>
+    <string name="location_camping_sitting_possibility">Seating Available</string>
+    <string name="location_camping_grill_possibility">Grilling Allowed</string>
 
     <!-- Swimming -->
     <string name="location_swimming_indoor">Indoor</string>
+    <string name="location_swimming_jump_spot">Jump Spot</string>
 
     <!-- Sightseeing & Party -->
     <string name="location_sightseeing_entry_fee">Entry Fee</string>

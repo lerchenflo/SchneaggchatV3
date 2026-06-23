@@ -19,4 +19,6 @@ sealed interface SchneaggmapAction {
     data class OnEntryPopupDelete(val entryId: String): SchneaggmapAction
 
 
+    data object OnSettingsClick: SchneaggmapAction
+
 }
