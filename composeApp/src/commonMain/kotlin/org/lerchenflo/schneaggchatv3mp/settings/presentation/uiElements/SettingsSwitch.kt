@@ -37,8 +37,11 @@ fun SettingsSwitch(
     infotext: String?,
     switchchecked: Boolean,
     onSwitchChange : (Boolean) -> Unit,
-    icon: ImageVector?
+    icon: ImageVector?,
+    enabled: Boolean = true
     ){
+    val contentAlpha = if (enabled) 1f else 0.38f
+
     //Quer umme a row
     Row(
         modifier = modifier,
@@ -49,7 +52,7 @@ fun SettingsSwitch(
             Icon(
                 contentDescription = titletext,
                 modifier = Modifier.size(35.dp),
-                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f * contentAlpha),
                 imageVector = icon
             )
 
@@ -66,14 +69,15 @@ fun SettingsSwitch(
             Text(
                 text = titletext,
                 maxLines = 1,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                color = LocalContentColor.current.copy(alpha = contentAlpha)
             )
 
             infotext?.let {
                 Text(
                     text = infotext,
                     style = MaterialTheme.typography.bodySmall,
-                    color = LocalContentColor.current.copy(alpha = 0.65f)
+                    color = LocalContentColor.current.copy(alpha = 0.65f * contentAlpha)
                 )
             }
         }
@@ -82,6 +86,7 @@ fun SettingsSwitch(
 
         Switch(
             checked = switchchecked,
+            enabled = enabled,
             onCheckedChange = {
                 onSwitchChange(it)
             }

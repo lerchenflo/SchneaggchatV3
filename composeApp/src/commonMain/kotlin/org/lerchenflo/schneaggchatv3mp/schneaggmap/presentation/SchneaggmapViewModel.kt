@@ -4,14 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import kotlin.time.Clock
 
@@ -20,6 +21,7 @@ class SchneaggmapViewModel(
     private val navigator: Navigator,
     private val mapRepository: MapRepository,
     private val appRepository: AppRepository,
+    private val preferenceManager: Preferencemanager
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SchneaggmapState())
@@ -150,7 +152,17 @@ class SchneaggmapViewModel(
     init {
         viewModelScope.launch {
             appRepository.dataSync()
+        }
 
+        viewModelScope.launch {
+            preferenceManager.getMergeMapLocationsFlow()
+                .collectLatest { clustering ->
+                    _state.update {
+                        it.copy(
+                            useClustering = clustering
+                        )
+                    }
+                }
         }
     }
 

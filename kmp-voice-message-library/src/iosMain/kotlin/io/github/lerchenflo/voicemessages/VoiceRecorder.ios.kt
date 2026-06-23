@@ -8,6 +8,7 @@ import kotlinx.cinterop.ptr
 import platform.AVFAudio.AVAudioQualityHigh
 import platform.AVFAudio.AVAudioRecorder
 import platform.AVFAudio.AVEncoderAudioQualityKey
+import platform.AVFAudio.AVEncoderBitRateKey
 import platform.AVFAudio.AVFormatIDKey
 import platform.AVFAudio.AVNumberOfChannelsKey
 import platform.AVFAudio.AVSampleRateKey
@@ -26,11 +27,14 @@ actual class VoiceRecorder actual constructor() {
 
     actual suspend fun start(filePath: String) {
         val url = NSURL.fileURLWithPath(filePath)
+        // Tuned for voice rather than music: mono, 16kHz (well above speech bandwidth),
+        // 64kbps (the standard "sweet spot" for mono voice at this sample rate).
         val settings: Map<Any?, *> = mapOf(
             AVFormatIDKey to kAudioFormatMPEG4AAC,
-            AVSampleRateKey to 44_100.0,
+            AVSampleRateKey to 16_000.0,
             AVNumberOfChannelsKey to 1,
             AVEncoderAudioQualityKey to AVAudioQualityHigh,
+            AVEncoderBitRateKey to 64_000,
         )
 
         memScoped {

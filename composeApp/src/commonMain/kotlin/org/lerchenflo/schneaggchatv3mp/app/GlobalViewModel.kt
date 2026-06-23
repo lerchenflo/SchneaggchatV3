@@ -68,7 +68,7 @@ class GlobalViewModel(
                     }
 
                     startSocketConnection()
-                    //startLocationTracking()
+                    updateLocationTracking()
                 }
             }
         }
@@ -117,14 +117,30 @@ class GlobalViewModel(
             }
         }
 
+        // Track the own user's "share my location" setting reactively and (re-)evaluate
+        // location tracking whenever the login state or that setting changes.
         viewModelScope.launch {
-            SessionCache.authState.collectLatest { authState ->
-                if (authState is SessionCache.AuthState.LoggedIn && AppLifecycleManager.isAppInForeground) {
-                    //startLocationTracking()
+            SessionCache.authState.flatMapLatest { authState ->
+                if (authState is SessionCache.AuthState.LoggedIn) {
+                    appRepository.getUserByIdFlow(authState.userId)
                 } else {
-                    stopLocationTracking()
+                    flowOf(null)
                 }
+            }.collectLatest { ownUser ->
+                ownLocationShared = ownUser?.locationShared ?: false
+                updateLocationTracking()
             }
+        }
+    }
+
+    private var ownLocationShared = false
+
+    /** Re-evaluates login state, foreground state, and the share setting, then starts/stops tracking. */
+    private fun updateLocationTracking() {
+        if (SessionCache.isLoggedIn() && AppLifecycleManager.isAppInForeground && ownLocationShared) {
+            startLocationTracking()
+        } else {
+            stopLocationTracking()
         }
     }
 
@@ -232,27 +248,45 @@ class GlobalViewModel(
         _selectedChatTarget.value = ChatTarget(null, false)
     }
 
+    private var permissionRequestJob: kotlinx.coroutines.Job? = null
     private var locationTrackingJob: kotlinx.coroutines.Job? = null
 
     private fun startLocationTracking() {
-        if (locationTrackingJob != null) return // Already tracking
-        
-        locationTrackingJob = viewModelScope.launch {
+        if (locationTrackingJob != null || permissionRequestJob != null) return // Already tracking or requesting
+        if (!ownLocationShared) return // Sharing disabled - don't even ask for permission
+
+        // Requesting the permission shows a system dialog, which briefly pauses/backgrounds
+        // our activity. That must NOT cancel this in-flight request (stopLocationTracking()
+        // only cancels locationTrackingJob), otherwise we'd lose the result and re-prompt
+        // again on every resume.
+        permissionRequestJob = viewModelScope.launch {
             val permission = locationService.requestLocationPermission()
+            permissionRequestJob = null
+
+            if (permission == PermissionState.DENIED) {
+                // User explicitly denied the permission - turn sharing back off so we
+                // don't prompt again on every resume/sync; they can re-enable it manually.
+                println("Location tracking: Permission denied, disabling location sharing")
+                ownLocationShared = false
+                appRepository.setOwnLocationShared(false)
+            }
+
             if (permission != PermissionState.GRANTED) {
                 println("Location tracking: Permission not granted")
                 return@launch
             }
-            
-            locationService.getLocationFlow().collect { latLong ->
-                if (latLong != null) {
-                    println("GlobalViewModel: Sending location update: ${latLong.lat}, ${latLong.long}")
-                    appRepository.sendUserLocation(latLong.lat, latLong.long)
+
+            locationTrackingJob = viewModelScope.launch {
+                locationService.getLocationFlow().collect { latLong ->
+                    if (latLong != null) {
+                        println("GlobalViewModel: Sending location update: ${latLong.lat}, ${latLong.long}")
+                        appRepository.getUserLocations(latLong.lat, latLong.long)
+                    }
                 }
             }
         }
     }
-    
+
     private fun stopLocationTracking() {
         locationTrackingJob?.cancel()
         locationTrackingJob = null

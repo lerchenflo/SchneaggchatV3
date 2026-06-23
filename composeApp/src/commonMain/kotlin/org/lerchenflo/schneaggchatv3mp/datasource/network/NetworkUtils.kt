@@ -1201,9 +1201,9 @@ class NetworkUtils(
      * location currently visible to the caller (global switch on + shared with caller).
      * An empty list is normal (no visible friends / none posted recently, 24h TTL).
      */
-    suspend fun userLocations(lat: Double, long: Double): NetworkResult<List<UserLocationResponse>, NetworkError> {
+    suspend fun userLocationsSync(lat: Double, long: Double): NetworkResult<List<UserLocationResponse>, NetworkError> {
         return safePost(
-            endpoint = "/users/userlocations",
+            endpoint = "/users/locations",
             body = UserLocationsRequest(lat, long)
         )
     }

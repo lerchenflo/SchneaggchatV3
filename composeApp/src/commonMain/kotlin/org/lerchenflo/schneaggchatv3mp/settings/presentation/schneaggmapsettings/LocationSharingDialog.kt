@@ -62,7 +62,8 @@ fun LocationSharingDialog(
                             infotext = null,
                             switchchecked = friend.locationShared,
                             onSwitchChange = { onFriendShareChange(friend.id, it) },
-                            icon = null
+                            icon = null,
+                            enabled = shareLocationGlobal
                         )
                     }
                 } else {

@@ -1969,16 +1969,20 @@ class AppRepository(
         }
     }
 
-    suspend fun sendUserLocation(lat: Double, lon: Double) {
-        networkUtils.sendUserLocation(lat, lon)
-    }
 
     /**
      * Combined push+pull: pushes the caller's current location and returns every friend's
      * location currently visible to the caller. An empty list is normal/expected.
      */
-    suspend fun getUserLocations(lat: Double, long: Double): NetworkResult<List<NetworkUtils.UserLocationResponse>, NetworkError> {
-        return networkUtils.userLocations(lat, long)
+    suspend fun getUserLocations(lat: Double, long: Double) {
+        when (val result = networkUtils.userLocationsSync(lat, long)) {
+            is NetworkResult.Error<*> -> {
+                println("Sync user locations failed")
+            }
+            is NetworkResult.Success<List<NetworkUtils.UserLocationResponse>> -> {
+                userRepository.updateUserLocations(result.data)
+            }
+        }
     }
 
     /** Per-friend toggle: "do I share my location with this specific friend". */

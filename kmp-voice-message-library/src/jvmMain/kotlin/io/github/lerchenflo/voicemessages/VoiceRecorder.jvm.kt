@@ -18,7 +18,9 @@ actual class VoiceRecorder actual constructor() {
         get() = recording
 
     actual suspend fun start(filePath: String) {
-        val format = AudioFormat(44_100f, 16, 1, true, false)
+        // Tuned for voice rather than music: mono, 16kHz is well above speech bandwidth
+        // and keeps the uncompressed WAV file small.
+        val format = AudioFormat(16_000f, 16, 1, true, false)
         val targetLine = AudioSystem.getTargetDataLine(format)
         targetLine.open(format)
         targetLine.start()

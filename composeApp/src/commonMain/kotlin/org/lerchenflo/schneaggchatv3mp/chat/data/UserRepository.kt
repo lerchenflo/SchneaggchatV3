@@ -8,6 +8,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 class UserRepository(
@@ -59,6 +60,19 @@ class UserRepository(
             database.userDao().upsert(dbUser.copy(
                 profilePictureUrl = newUrl
             ))
+        }
+    }
+
+    suspend fun updateUserLocations(locations: List<NetworkUtils.UserLocationResponse>) {
+        locations.forEach { location ->
+            val dbUser = database.userDao().getUserbyId(location.userId)
+            if (dbUser != null) {
+                database.userDao().upsert(dbUser.copy(
+                    locationLat = location.coordinates.lat,
+                    locationLong = location.coordinates.long,
+                    locationDate = location.locationTime
+                ))
+            }
         }
     }
 
