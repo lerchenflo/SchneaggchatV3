@@ -16,4 +16,7 @@ sealed interface SchneaggmapAction {
     data object OnEntryPopupDismiss: SchneaggmapAction
     data class OnEntryPopupSave(val entry: MapEntry): SchneaggmapAction
 
+    data class OnEntryPopupDelete(val entryId: String): SchneaggmapAction
+
+
 }
