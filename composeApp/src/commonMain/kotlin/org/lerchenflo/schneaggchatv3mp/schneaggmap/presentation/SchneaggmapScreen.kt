@@ -137,7 +137,6 @@ fun SchneaggmapScreen(
             modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
         )
         state.selectedEntry?.let { entry ->
-            println("Showing card: $entry")
             MapEntryInfoCard(
                 entry = entry,
                 onDismiss = {

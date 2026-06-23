@@ -112,6 +112,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
 import schneaggchatv3mp.composeapp.generated.resources.error_invalid_credentials
 import schneaggchatv3mp.composeapp.generated.resources.groupsync
+import schneaggchatv3mp.composeapp.generated.resources.imagesync
 import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
 import schneaggchatv3mp.composeapp.generated.resources.mapsync
 import schneaggchatv3mp.composeapp.generated.resources.messagesync
@@ -222,7 +223,7 @@ class AppRepository(
         if (token.isEmpty()) return
 
         val android = appVersion.isAndroid()
-        println("Sending notification token to server... Android: $android")
+        //println("Sending notification token to server... Android: $android")
         networkUtils.setNotificationToken(token, android)
     }
 
@@ -285,7 +286,9 @@ class AppRepository(
         USERS,
         GROUPS,
         MESSAGES,
-        MAP;
+        MAP,
+
+        IMAGES;
 
         fun toUiText() : UiText {
             return when (this) {
@@ -293,6 +296,7 @@ class AppRepository(
                 GROUPS -> UiText.StringResourceText(Res.string.groupsync)
                 MESSAGES -> UiText.StringResourceText(Res.string.messagesync)
                 MAP -> UiText.StringResourceText(Res.string.mapsync)
+                IMAGES -> UiText.StringResourceText(Res.string.imagesync)
             }
         }
     }
@@ -308,7 +312,8 @@ class AppRepository(
         val exitedWithErrors: Boolean = false,
         val jobs: List<DataSyncJobState> = listOf(
             DataSyncJobState(type = USERS), DataSyncJobState(type = GROUPS),
-            DataSyncJobState(type = MESSAGES), DataSyncJobState(type = MAP)
+            DataSyncJobState(type = MESSAGES), DataSyncJobState(type = MAP),
+            DataSyncJobState(type = DataSyncJobType.IMAGES)
         )
     )
 
@@ -332,9 +337,11 @@ class AppRepository(
 
     suspend fun dataSync() {
 
+        val userId = SessionCache.requireLoggedIn() ?: return
+
         if (dataSyncLock.isLocked) {
-            println("Datasync running, canceling")
-            return
+            println("Datasync started but already running")
+            dataSyncLock.withLock {  } //Awaiting finish and return to apply normal data sync await logic
         }
 
         dataSyncLock.withLock {
@@ -347,116 +354,126 @@ class AppRepository(
             println("Starting datasync")
 
             try {
-            coroutineScope {
-                // Launch all sync operations concurrently
-                val userJob = async {
-                    try {
-                        updateSyncJob(
-                            type = USERS,
-                            status = DataSyncJobStatus.RUNNING,
-                            error = null
-                        )
-                        userIdSync()
-                        updateSyncJob(
-                            type = USERS,
-                            status = DataSyncJobStatus.SUCCESS,
-                            error = null
-                        )
-                        println("User sync completed successfully")
-                    } catch (e: Exception) {
-                        updateSyncJob(
-                            type = USERS,
-                            status = DataSyncJobStatus.FAILED,
-                            error = e.message
-                        )
-                        loggingRepository.logWarning("User sync failed: ${e.message}")
+                coroutineScope {
+                    // Launch all sync operations concurrently
+                    val userJob = async {
+                        try {
+                            updateSyncJob(
+                                type = USERS,
+                                status = DataSyncJobStatus.RUNNING,
+                                error = null
+                            )
+                            userIdSync()
+                            updateSyncJob(
+                                type = USERS,
+                                status = DataSyncJobStatus.SUCCESS,
+                                error = null
+                            )
+                            //println("User sync completed successfully")
+                        } catch (e: Exception) {
+                            updateSyncJob(
+                                type = USERS,
+                                status = DataSyncJobStatus.FAILED,
+                                error = e.message
+                            )
+                            loggingRepository.logWarning("User sync failed: ${e.message}")
+                        }
                     }
-                }
 
-                val messageJob = async {
-                    try {
-                        updateSyncJob(
-                            type = MESSAGES,
-                            status = DataSyncJobStatus.RUNNING,
-                            error = null
-                        )
-                        messageIdSync()
-                        updateSyncJob(
-                            type = MESSAGES,
-                            status = DataSyncJobStatus.SUCCESS,
-                            error = null
-                        )
-                        println("Message sync completed successfully")
-                    } catch (e: Exception) {
-                        updateSyncJob(
-                            type = MESSAGES,
-                            status = DataSyncJobStatus.FAILED,
-                            error = e.message
-                        )
-                        loggingRepository.logWarning("Message sync failed: ${e.message}")
+                    val messageJob = async {
+                        try {
+                            updateSyncJob(
+                                type = MESSAGES,
+                                status = DataSyncJobStatus.RUNNING,
+                                error = null
+                            )
+                            messageIdSync()
+                            updateSyncJob(
+                                type = MESSAGES,
+                                status = DataSyncJobStatus.SUCCESS,
+                                error = null
+                            )
+                            //println("Message sync completed successfully")
+                        } catch (e: Exception) {
+                            updateSyncJob(
+                                type = MESSAGES,
+                                status = DataSyncJobStatus.FAILED,
+                                error = e.message
+                            )
+                            loggingRepository.logWarning("Message sync failed: ${e.message}")
+                        }
                     }
-                }
 
-                val groupJob = async {
-                    try {
-                        updateSyncJob(
-                            type = GROUPS,
-                            status = DataSyncJobStatus.RUNNING,
-                            error = null
-                        )
-                        groupIdSync()
-                        updateSyncJob(
-                            type = GROUPS,
-                            status = DataSyncJobStatus.SUCCESS,
-                            error = null
-                        )
-                        println("Group sync completed successfully")
-                    } catch (e: Exception) {
-                        updateSyncJob(
-                            type = GROUPS,
-                            status = DataSyncJobStatus.FAILED,
-                            error = e.message
-                        )
-                        loggingRepository.logWarning("Group sync failed: ${e.message}")
+                    val groupJob = async {
+                        try {
+                            updateSyncJob(
+                                type = GROUPS,
+                                status = DataSyncJobStatus.RUNNING,
+                                error = null
+                            )
+                            groupIdSync()
+                            updateSyncJob(
+                                type = GROUPS,
+                                status = DataSyncJobStatus.SUCCESS,
+                                error = null
+                            )
+                            //println("Group sync completed successfully")
+                        } catch (e: Exception) {
+                            updateSyncJob(
+                                type = GROUPS,
+                                status = DataSyncJobStatus.FAILED,
+                                error = e.message
+                            )
+                            loggingRepository.logWarning("Group sync failed: ${e.message}")
+                        }
                     }
-                }
 
-                val mapJob = async {
-                    try {
-                        updateSyncJob(
-                            type = MAP,
-                            status = DataSyncJobStatus.RUNNING,
-                            error = null
-                        )
-                        mapEntryIdSync()
-                        updateSyncJob(
-                            type = MAP,
-                            status = DataSyncJobStatus.SUCCESS,
-                            error = null
-                        )
-                        println("Map sync completed successfully")
-                    } catch (e: Exception) {
-                        updateSyncJob(
-                            type = MAP,
-                            status = DataSyncJobStatus.FAILED,
-                            error = e.message
-                        )
-                        loggingRepository.logWarning("Map sync failed: ${e.message}")
+                    val mapJob = async {
+                        try {
+                            updateSyncJob(
+                                type = MAP,
+                                status = DataSyncJobStatus.RUNNING,
+                                error = null
+                            )
+                            mapEntryIdSync()
+                            updateSyncJob(
+                                type = MAP,
+                                status = DataSyncJobStatus.SUCCESS,
+                                error = null
+                            )
+                            //println("Map sync completed successfully")
+                        } catch (e: Exception) {
+                            updateSyncJob(
+                                type = MAP,
+                                status = DataSyncJobStatus.FAILED,
+                                error = e.message
+                            )
+                            loggingRepository.logWarning("Map sync failed: ${e.message}")
+                        }
                     }
+
+                    // Wait for all to complete (errors are already handled)
+                    awaitAll(userJob, messageJob, groupJob, mapJob)
+
+                    updateSyncJob(
+                        type = DataSyncJobType.IMAGES,
+                        status = DataSyncJobStatus.RUNNING,
+                        error = null
+                    )
+                    val errorProfilePicJob = async {
+                        getMissingPics()
+                        getMissingAudios()
+                    }
+
+                    awaitAll(errorProfilePicJob)
+                    updateSyncJob(
+                        type = DataSyncJobType.IMAGES,
+                        status = DataSyncJobStatus.SUCCESS,
+                        error = null
+                    )
                 }
 
-                // Wait for all to complete (errors are already handled)
-                awaitAll(userJob, messageJob, groupJob, mapJob)
-
-                val errorProfilePicJob = async {
-                    getMissingPics()
-                    getMissingAudios()
-                }
-                awaitAll(errorProfilePicJob)
-
-            }
-
-            println("Data sync completed")
+                println("Data sync finished")
             } finally {
                 _dataSyncState.update {
                     it.copy(
@@ -470,6 +487,10 @@ class AppRepository(
     // ─── Map sync (triggered only from map screen, not part of global dataSync) ─
 
     private suspend fun mapEntryIdSync() {
+
+        val userId = SessionCache.requireLoggedIn() ?: return
+
+
         val localEntries = mapRepository.getMapEntryChangeIds()
         var currentPage = 0
         var moreEntries = true
@@ -481,7 +502,7 @@ class AppRepository(
             when (response) {
                 is NetworkResult.Error<*> -> { println("Map entry sync error: ${response.error}"); break }
                 is NetworkResult.Success -> {
-                    println("Map sync success, upserting ${response.data.updatedEntries} entrys")
+                    //println("Map sync success, upserting ${response.data.updatedEntries} entrys")
                     response.data.updatedEntries.forEach { mapRepository.upsertMapEntry(it.toMapEntry()) }
                     response.data.deletedEntries.forEach { mapRepository.deleteMapEntry(it) }
                     moreEntries = response.data.moreEntries
@@ -813,25 +834,25 @@ class AppRepository(
      * Use this from refresh flows where we must ensure tokens are written before returning.
      */
     suspend fun onNewTokenPair(tokenPair: TokenPair){
-        loggingRepository.logDebug("Token save started: Processing new token pair")
+        //loggingRepository.logDebug("Token save started: Processing new token pair")
         
         try {
             //Parse the token to get the user id
-            loggingRepository.logDebug("Token save: Extracting user ID from refresh token")
+            //loggingRepository.logDebug("Token save: Extracting user ID from refresh token")
             val userid = JwtUtils.getUserIdFromToken(tokenPair.refreshToken)
-            loggingRepository.logInfo("Token save: User ID extracted: $userid")
+            //loggingRepository.logInfo("Token save: User ID extracted: $userid")
 
-            loggingRepository.logDebug("Token save: Saving tokens to secure storage")
+            //loggingRepository.logDebug("Token save: Saving tokens to secure storage")
             preferencemanager.saveTokens(tokenPair)
             
-            loggingRepository.logDebug("Token save: Saving user ID to preferences")
+            //loggingRepository.logDebug("Token save: Saving user ID to preferences")
             preferencemanager.saveOWNID(userid)
 
-            loggingRepository.logDebug("Token save: Updating session cache")
+            //loggingRepository.logDebug("Token save: Updating session cache")
             SessionCache.updateTokens(tokenPair)
             SessionCache.updateOnline(true)
             
-            loggingRepository.logInfo("Token save completed successfully: Session cache updated")
+            //loggingRepository.logInfo("Token save completed successfully: Session cache updated")
         } catch (e: Exception) {
             loggingRepository.logError("Token save failed: ${e.message}")
             throw e // Re-throw to maintain existing error handling behavior
@@ -964,6 +985,8 @@ class AppRepository(
      * Execute a useridsync
      */
     suspend fun userIdSync() {
+
+        val userId = SessionCache.requireLoggedIn() ?: return
 
         val localusers = userRepository.getuserchangeid()
 
@@ -1638,7 +1661,7 @@ class AppRepository(
                         messageRepository.deleteMessage(id)
                     }
 
-                    println("MessageIdSync finished, new messages: ${updatedMessages.size}")
+                    //println("MessageIdSync finished, new messages: ${updatedMessages.size}")
                 }
             }
 
@@ -1852,6 +1875,9 @@ class AppRepository(
 
 
     suspend fun groupIdSync() {
+
+        val userId = SessionCache.requireLoggedIn() ?: return
+
 
         val localgroups = groupRepository.getgroupchangeid()
         val profilepicsToGet = mutableListOf<String>()

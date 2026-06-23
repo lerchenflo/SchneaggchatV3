@@ -15,7 +15,7 @@ object NotificationManager {
     fun initialize() {
         if (initialized) return
         initialized = true
-        println("NotificationManager initialized")
+        //println("NotificationManager initialized")
     }
 
     sealed interface NotiId {
