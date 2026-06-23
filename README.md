@@ -16,20 +16,15 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 # Changelog
 
 
-### 3.0.13
-
-#### Features
-
-#### Bugfixes
-
-
 ### 3.0.12
 
 #### Features
+- Standort teilen auf der Schneaggmap
 - Datensync Detail Popup für mehr Transparenz
+- Message highlight bei beantworteten Nachrichten
 
 #### Bugfixes
-- Umfragen Textinput
+- Umfragen Textinput verbessert + Reorderable
 - Snackbar custom UI
 - Email verification bugfixes
 

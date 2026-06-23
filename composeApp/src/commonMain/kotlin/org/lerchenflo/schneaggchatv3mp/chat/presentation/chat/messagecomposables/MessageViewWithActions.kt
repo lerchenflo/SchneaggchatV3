@@ -52,6 +52,7 @@ fun MessageViewWithActions(
     readerMap: Map<String, String> = emptyMap(),
     replyMessage: Message? = null,
     replyMessageOnClick: () -> Unit = {},
+    isHighlighted: Boolean = false,
     onReplyCall: () -> Unit = {},
     onLongPress: () -> Unit = {},
     onAction: (MessageAction) -> Unit = {},
@@ -170,6 +171,7 @@ fun MessageViewWithActions(
                 readerMap = readerMap,
                 replyMessage = replyMessage,
                 replyMessageOnClick = replyMessageOnClick,
+                isHighlighted = isHighlighted,
                 onAction = onAction,
                 playbackProgress = playbackProgress,
                 ownId = ownId
