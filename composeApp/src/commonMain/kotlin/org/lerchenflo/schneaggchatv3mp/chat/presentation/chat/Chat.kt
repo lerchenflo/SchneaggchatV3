@@ -87,6 +87,7 @@ import io.github.ismoy.imagepickerkmp.domain.models.MimeType
 import io.github.ismoy.imagepickerkmp.features.imagepicker.config.ImagePickerKMPConfig
 import io.github.ismoy.imagepickerkmp.features.imagepicker.model.ImagePickerResult
 import io.github.ismoy.imagepickerkmp.features.imagepicker.ui.rememberImagePickerKMP
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
@@ -340,6 +341,10 @@ fun ChatScreen(
             }
 
             val scope = rememberCoroutineScope()
+
+            // Id of the message that should briefly glow after jumping to it via a reply preview
+            var highlightedMessageId by remember { mutableStateOf<String?>(null) }
+
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
                 modifier = Modifier
@@ -382,9 +387,13 @@ fun ChatScreen(
                                         if (targetIndex != -1) {
                                             scope.launch {
                                                 listState.animateScrollToItem(targetIndex)
+                                                highlightedMessageId = message.answerId
+                                                delay(1500)
+                                                highlightedMessageId = null
                                             }
                                         }
                                     },
+                                    isHighlighted = message.id != null && message.id == highlightedMessageId,
                                     onReplyCall = {
                                         viewModel.onAction(MessageAction.ReplyToMessage(message))
                                     },

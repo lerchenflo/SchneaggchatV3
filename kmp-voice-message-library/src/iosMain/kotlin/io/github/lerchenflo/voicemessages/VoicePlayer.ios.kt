@@ -7,7 +7,7 @@ import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import platform.AVFAudio.AVAudioPlayer
 import platform.AVFAudio.AVAudioSession
-import platform.AVFAudio.AVAudioSessionCategoryPlayAndRecord
+import platform.AVFAudio.AVAudioSessionCategoryPlayback
 import platform.AVFAudio.setActive
 import platform.Foundation.NSError
 import platform.Foundation.NSURL
@@ -31,12 +31,19 @@ actual class VoicePlayer actual constructor() {
         val url = NSURL.fileURLWithPath(filePath)
 
         memScoped {
-            // Activate the audio session before playback too — without it, playback
-            // can fail or stay silent even for a valid file. Re-using PlayAndRecord
-            // keeps this compatible with a recorder that's already configured it.
+            // Use the plain Playback category — PlayAndRecord routes output to the
+            // earpiece/receiver at low volume by default, which makes played-back voice
+            // messages effectively silent unless held to the ear. Playback routes to the
+            // speaker, matching kmp-audio-recorder-player.
             val session = AVAudioSession.sharedInstance()
             val sessionErrorVar = alloc<ObjCObjectVar<NSError?>>()
-            session.setCategory(AVAudioSessionCategoryPlayAndRecord, error = sessionErrorVar.ptr)
+            session.setCategory(AVAudioSessionCategoryPlayback, error = sessionErrorVar.ptr)
+            val sessionError = sessionErrorVar.value
+            if (sessionError != null) {
+                throw IllegalStateException(
+                    "Failed to set AVAudioSession category for playback: ${sessionError.localizedDescription}"
+                )
+            }
 
             val sessionActiveErrorVar = alloc<ObjCObjectVar<NSError?>>()
             session.setActive(true, error = sessionActiveErrorVar.ptr)
@@ -56,7 +63,10 @@ actual class VoicePlayer actual constructor() {
                 )
             }
 
-            avPlayer.prepareToPlay()
+            if (!avPlayer.prepareToPlay()) {
+                throw IllegalStateException("AVAudioPlayer.prepareToPlay() failed")
+            }
+
             avPlayer.play()
             player = avPlayer
         }

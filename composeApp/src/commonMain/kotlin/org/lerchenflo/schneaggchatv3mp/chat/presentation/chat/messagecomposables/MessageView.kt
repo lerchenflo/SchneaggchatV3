@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,7 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.StateFlow
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
@@ -32,6 +36,7 @@ fun MessageView(
     readerMap: Map<String,String> = emptyMap(),
     replyMessage: Message? = null,
     replyMessageOnClick: () -> Unit = {},
+    isHighlighted: Boolean = false,
     onAction: (MessageAction) -> Unit = {},
     playbackProgress: StateFlow<PlaybackProgress>? = null,
 )
@@ -41,6 +46,18 @@ fun MessageView(
 
 
     val mymessage = message.myMessage
+
+    // Briefly tints the message when the user jumps here from a reply preview.
+    // Fade-in is quick so the highlight is noticeable right away; fade-out is slower
+    // so it eases away instead of disappearing abruptly.
+    val highlightColor by animateColorAsState(
+        targetValue = if (isHighlighted) {
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+        } else {
+            Color.Transparent
+        },
+        animationSpec = tween(durationMillis = if (isHighlighted) 200 else 900)
+    )
 
     Column {
         if (replyMessage != null) {
@@ -63,6 +80,10 @@ fun MessageView(
         Row(
             modifier = modifier
                 .fillMaxWidth()
+                .background(
+                    color = highlightColor,
+                    shape = RoundedCornerShape(15.dp)
+                )
                 .padding(
                     start = if (mymessage) 40.dp else 0.dp,
                     end = if (mymessage) 0.dp else 40.dp,
