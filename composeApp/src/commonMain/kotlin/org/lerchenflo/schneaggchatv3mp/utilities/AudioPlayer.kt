@@ -3,13 +3,15 @@ package org.lerchenflo.schneaggchatv3mp.utilities
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import io.github.hyochan.audio.AudioRecorderPlayer
+import io.github.lerchenflo.voicemessages.VoicePlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
@@ -22,7 +24,9 @@ import schneaggchatv3mp.composeapp.generated.resources.audio_playback_on_desktop
 class AudioPlayer(
     val isDesktop: Boolean = false
 ) {
-    var audioRecorderPlayer: AudioRecorderPlayer? = null
+    private val voicePlayer = VoicePlayer()
+    private var pollingJob: Job? = null
+
     // Track which message is currently being played
     var currentlyPlayingId by mutableStateOf<String?>(null)
         private set
@@ -45,16 +49,12 @@ class AudioPlayer(
             SnackbarManager.showMessage(getString(Res.string.audio_playback_on_desktop_not_supported_yet))
         }else {
             try {
-                if (audioRecorderPlayer == null) {
-                    println("audioRecorderPlayer is not initialized")
-                    return
-                }
-
                 // 1. If we are already playing this specific audio, just resume it
                 if (currentlyPlayingId == messageId && !isPlaying) {
-                    audioRecorderPlayer?.resumePlaying()
+                    voicePlayer.resume()
                     isPlaying = true
                     _playbackProgress.value = _playbackProgress.value.copy(isPlaying = true)
+                    startPolling(messageId)
                     println("this audio is already playing")
                     return
                 }
@@ -70,31 +70,11 @@ class AudioPlayer(
                 isPlaying = true
 
                 // 4. Start playback
-                audioRecorderPlayer?.startPlaying(path)
+                voicePlayer.play(path)
                 println("started playing ...")
 
-                // 5. Listen for progress updates
-                // Update Flow inside the listener
-                audioRecorderPlayer?.addPlaybackListener { progress ->
-
-
-                    // Reset state when finished
-                    if (progress.currentPosition >= progress.duration && progress.duration > 0) {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            //stopAudio()
-                            resetPlaybackState()
-                            // Reset flow state
-                            _playbackProgress.value = PlaybackProgress()
-                        }
-                    } else {
-                        _playbackProgress.value = PlaybackProgress(
-                            currentPosition = progress.currentPosition,
-                            duration = progress.duration,
-                            isPlaying = true,
-                            messageId = messageId
-                        )
-                    }
-                }
+                // 5. Poll for progress updates (replaces the old push-based listener)
+                startPolling(messageId)
             } catch (e: Exception) {
                 //loggingRepository.logWarning("Failed to play audio: ${e.message}")
                 println("Failed to play audio: ${e.message}")
@@ -103,9 +83,31 @@ class AudioPlayer(
         }
     }
 
+    private fun startPolling(messageId: String) {
+        pollingJob?.cancel()
+        pollingJob = CoroutineScope(Dispatchers.Default).launch {
+            while (isActive) {
+                if (!voicePlayer.isPlaying) {
+                    // Finished or stopped externally
+                    resetPlaybackState()
+                    _playbackProgress.value = PlaybackProgress()
+                    break
+                }
+                _playbackProgress.value = PlaybackProgress(
+                    currentPosition = voicePlayer.positionMs,
+                    duration = voicePlayer.durationMs,
+                    isPlaying = true,
+                    messageId = messageId
+                )
+                delay(200)
+            }
+        }
+    }
+
     suspend fun pauseAudio() {
         try {
-            audioRecorderPlayer?.pausePlaying()
+            pollingJob?.cancel()
+            voicePlayer.pause()
             isPlaying = false
             _playbackProgress.value = _playbackProgress.value.copy(isPlaying = false)
         } catch (e: Exception) {
@@ -116,7 +118,7 @@ class AudioPlayer(
 
     suspend fun seekTo(position: Long) {
         try {
-            audioRecorderPlayer?.seekTo(position)
+            voicePlayer.seekTo(position)
         }catch (e: Exception) {
             println("Failed to seeking audio: ${e.message}")
         }
@@ -124,8 +126,8 @@ class AudioPlayer(
 
     suspend fun stopAudio() {
         try {
-            audioRecorderPlayer?.stopPlaying()
-            audioRecorderPlayer?.removeListeners() // Clean up listeners
+            pollingJob?.cancel()
+            voicePlayer.stop()
             resetPlaybackState()
         } catch (e: Exception) {
             //loggingRepository.logWarning("Failed to stop audio: ${e.message}")

@@ -1,7 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -10,7 +9,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -39,10 +37,10 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.VIEWPOINT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.WHEELIESPOT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
-import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.AutoScrollText
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.CameraState
 import org.maplibre.compose.camera.rememberCameraState
+import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.image
 import org.maplibre.compose.layers.SymbolLayer
 import org.maplibre.compose.map.MapOptions
@@ -83,19 +81,10 @@ fun SchneaggmapScreenRoot() {
     val viewModel = koinViewModel<SchneaggmapViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    Column {
-
-        AutoScrollText(
-            text = "BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA",
-            backgroundColor = Color.Red,
-            height = 60.dp
-        )
-
-        SchneaggmapScreen(
-            state = state,
-            onAction = viewModel::onAction,
-        )
-    }
+    SchneaggmapScreen(
+        state = state,
+        onAction = viewModel::onAction,
+    )
 
 
 }
@@ -105,6 +94,7 @@ fun SchneaggmapScreen(
     state: SchneaggmapState = SchneaggmapState(),
     onAction: (SchneaggmapAction) -> Unit = {},
 ) {
+
     val cameraState = rememberCameraState(
         firstPosition = CameraPosition(
             target = Position(9.92, 47.32),
@@ -118,7 +108,7 @@ fun SchneaggmapScreen(
             state = state,
             cameraState = cameraState,
             styleState = styleState,
-            onAction = onAction,
+            onAction = onAction
         )
 
         DisappearingCompassButton(
@@ -162,8 +152,9 @@ private fun SchneaggmapMapContent(
     state: SchneaggmapState,
     cameraState: CameraState,
     styleState: StyleState,
-    onAction: (SchneaggmapAction) -> Unit,
+    onAction: (SchneaggmapAction) -> Unit
 ) {
+
 
     //Resolve all icons (Cycle trough the entrys, code is more garbage otherwise (Auto resolves new types)
     val typeIcons: Map<LocationType, DrawableResource> = remember {
@@ -252,12 +243,14 @@ private fun SchneaggmapMapContent(
                             }
                         )
                     ),
+
                     options = GeoJsonOptions(
-                        cluster = true,
-                        clusterRadius = 13,
+                        cluster = state.useClustering,
+                        clusterRadius = 12,
                         clusterMinPoints = 6,
                         //synchronousUpdate = true
                     )
+
 
                 )
 
@@ -283,7 +276,8 @@ private fun SchneaggmapMapContent(
                             ClickResult.Consume
                         } else ClickResult.Pass
                     },
-                    iconImage = image(painterResource(iconRes), size = DpSize(33.dp, 33.dp))
+                    iconImage = image(painterResource(iconRes), size = DpSize(33.dp, 33.dp)),
+                    iconAllowOverlap = const(true)
                 )
             }
 

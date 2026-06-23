@@ -2,14 +2,13 @@ package org.lerchenflo.schneaggchatv3mp.utilities
 
 import android.content.Context
 import android.media.MediaMetadataRetriever
-import io.github.hyochan.audio.initializeAudioRecorderPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
 actual class AudioManager(private val context: Context){
     actual fun initializeAudio() {
-        initializeAudioRecorderPlayer(context)
+        // No global init needed for MediaRecorder/MediaPlayer (matches iOS/JVM no-op actuals).
     }
 
     actual fun getRecordingPath(filename: String): String {

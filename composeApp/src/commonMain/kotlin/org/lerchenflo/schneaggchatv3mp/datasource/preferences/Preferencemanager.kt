@@ -113,6 +113,7 @@ class Preferencemanager(
         val LANGUAGE = intPreferencesKey("language")
         val SERVER_URL = stringPreferencesKey("server_url")
         val DEVELOPER_SETTINGS = booleanPreferencesKey("developer_settings")
+        val MERGE_MAP_LOCATIONS = booleanPreferencesKey("merge_map_locations")
         val PINNED_CHATS = stringPreferencesKey("pinned_chats")
         val DRAFTS = stringPreferencesKey("drafts")
         val LAST_STARTED_VERSION = stringPreferencesKey("last_started_version")
@@ -188,6 +189,15 @@ class Preferencemanager(
 
     fun getDevSettingsFlow(): Flow<Boolean> = prefs.data.map { prefs ->
         prefs[PrefsKeys.DEVELOPER_SETTINGS] ?: false
+    }
+
+    // Merge map locations when zooming
+    suspend fun saveMergeMapLocations(value: Boolean) {
+        prefs.edit { it[PrefsKeys.MERGE_MAP_LOCATIONS] = value }
+    }
+
+    fun getMergeMapLocationsFlow(): Flow<Boolean> = prefs.data.map { prefs ->
+        prefs[PrefsKeys.MERGE_MAP_LOCATIONS] ?: true //Default to true
     }
 
 

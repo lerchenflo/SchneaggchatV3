@@ -54,6 +54,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
@@ -1023,7 +1024,7 @@ class AppRepository(
                                 locationLat = existing?.locationLat,
                                 locationLong = existing?.locationLong,
                                 locationDate = existing?.locationDate,
-                                locationShared = existing?.locationShared ?: false,
+                                locationShared = newUser.shareLocation,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
                                 lastOnline = existing?.lastOnline,
                                 notisMuted = existing?.notisMuted ?: false,
@@ -1051,7 +1052,7 @@ class AppRepository(
                                 locationLat = existing?.locationLat,
                                 locationLong = existing?.locationLong,
                                 locationDate = existing?.locationDate,
-                                locationShared = existing?.locationShared ?: false,
+                                locationShared = newUser.locationShared,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
                                 lastOnline = existing?.lastOnline,
                                 frienshipStatus = null,
@@ -1233,6 +1234,7 @@ class AppRepository(
         newEmail: String? = null,
         newBirthDate: String? = null,
         newNickName: String? = null,
+        newLocationShared: Boolean? = null,
         ) : Boolean {
         return when (val success = networkUtils.changeProfile(
             userId = userId,
@@ -1241,6 +1243,7 @@ class AppRepository(
             newEmail = newEmail,
             newBirthDate = newBirthDate,
             newNickName = newNickName,
+            newLocationShared = newLocationShared,
         )){
             is NetworkResult.Error<*> -> false
             is NetworkResult.Success<*> -> {
@@ -1998,7 +2001,52 @@ class AppRepository(
     }
 
 
+    /**
+     * Combined push+pull: pushes the caller's current location and returns every friend's
+     * location currently visible to the caller. An empty list is normal/expected.
+     */
+    suspend fun getUserLocations(lat: Double, long: Double) {
+        when (val result = networkUtils.userLocationsSync(lat, long)) {
+            is NetworkResult.Error<*> -> {
+                println("Sync user locations failed")
+            }
+            is NetworkResult.Success<List<NetworkUtils.UserLocationResponse>> -> {
+                userRepository.updateUserLocations(result.data)
+            }
+        }
+    }
+
+    /** Per-friend toggle: "do I share my location with this specific friend". */
+    suspend fun setLocationSharing(friendId: String, share: Boolean): Boolean {
+        return when (networkUtils.shareLocation(friendId, share)) {
+            is NetworkResult.Error<*> -> false
+            is NetworkResult.Success<*> -> {
+                // Optimistically reflect the new value locally so UI updates immediately;
+                // the next /users/sync or UserChange socket push reconciles the authoritative value.
+                userRepository.getUserById(friendId)?.let { friend ->
+                    userRepository.upsertUser(friend.copy(locationShared = share).toDto())
+                }
+                true
+            }
+        }
+    }
+
+    /** Global "share my location at all" master switch, for the logged-in user themselves. */
+    suspend fun setOwnLocationShared(share: Boolean): Boolean {
+        val ownId = SessionCache.requireLoggedIn()?.userId ?: return false
+        return when (changeUserDetails(userId = ownId, newLocationShared = share)) {
+            false -> false
+            true -> {
+                userRepository.getUserById(ownId)?.let { self ->
+                    userRepository.upsertUser(self.copy(locationShared = share).toDto())
+                }
+                true
+            }
+        }
+    }
+
     /*
+
 
 
 

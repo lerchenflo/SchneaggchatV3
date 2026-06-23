@@ -248,6 +248,14 @@
     <string name="appearance_settings">Appearance</string>
     <string name="appearance_settings_info">Change the appearance of your app</string>
 
+    <string name="schneaggmap_settings">Schneaggmap</string>
+    <string name="schneaggmap_settings_info">Change your map settings</string>
+    <string name="merge_map_locations">Merge locations when zooming</string>
+    <string name="merge_map_locations_info">Group nearby locations into one marker when zoomed out</string>
+    <string name="share_location_global">Share my location</string>
+    <string name="share_location_global_info">Allow friends you share with to see your location</string>
+    <string name="share_location_friends_title">Share with</string>
+
     <string name="use_default_server">Use default server</string>
     <string name="use_test_server">Use test server</string>
 

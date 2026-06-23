@@ -13,6 +13,17 @@ expect class PermissionManager {
      * requests the microphone permission
      */
     suspend fun requestMicrophonePermission(): PermissionState
+
+    /**
+     * Returns the current location permission state.
+     */
+    suspend fun checkLocationPermission(): PermissionState
+
+    /**
+     * Requests location permission if not yet granted.
+     * Returns the resulting [PermissionState].
+     */
+    suspend fun requestLocationPermission(): PermissionState
 }
 
 // commonMain

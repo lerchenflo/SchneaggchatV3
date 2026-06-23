@@ -54,7 +54,9 @@ val IosPictureManagerModule = module {
 
 val IosPermissionManagerModule = module {
     single { PermissionManager() }
+    single { org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService() }
 }
+
 
 val IosAudioManagerModule = module {
     single { AudioManager() }

@@ -13,4 +13,6 @@ data class SchneaggmapState(
     val selectedEntry: MapEntry? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
+
+    val useClustering: Boolean = false
 )

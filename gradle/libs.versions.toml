@@ -3,7 +3,6 @@ agp = "9.2.1"
 
 
 # ATTENTION WHEN UPDATING
-kmp-audio-recorder-player = "1.0.0-alpha05" #update with datetime, test for voice message crashes
 kotlinx-datetime = "0.7.1-0.6.x-compat" #Check for voice message crash when updating
 material3 = "1.11.0-alpha05" #Test for ios input crashes when updating (IRLinkage error crash when clicking on any textfield)
 cryptographyProviderOptimal = "0.5.0" #update same as material3
@@ -29,6 +28,7 @@ kotlin = "2.3.21"
 ksp = "2.3.5"
 
 kotlinx-coroutines = "1.11.0"
+kotlinxIo = "0.9.0"
 materialIconsExtended = "1.7.3"
 room = "2.8.4"
 
@@ -46,6 +46,7 @@ datastore = "1.2.1"
 mikepenz-markdown = "0.41.0"
 firebase-messaging-version = "24.1.2"
 google-services = "4.4.4"
+play-services-location = "21.3.0"
 uiToolingPreview = "1.10.3"
 
 cmpNavigation3 = "1.1.1"
@@ -84,6 +85,7 @@ foundation = { module = "org.jetbrains.compose.foundation:foundation", version.r
 github-imagepickerkmp = { module = "io.github.ismoy:imagepickerkmp", version.ref = "githubImagepickerkmp" }
 jwt-kt = { module = "com.appstractive:jwt-kt", version.ref = "jwtKt" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging-ktx", version.ref = "firebase-messaging-version" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "play-services-location" }
 base64 = { module = "io.matthewnelson.encoding:base64", version.ref = "encoding" }
 coil3-coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilComposeVersion" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -91,6 +93,7 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 #androidx-lifecycle-viewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinxIo" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
@@ -101,7 +104,6 @@ sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sql
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 datetime-wheel-picker = { module = "io.github.darkokoa:datetime-wheel-picker", version.ref = "datetime-wheel-picker" }
 material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
-kmp-audio-recorder-player = { module = "io.github.hyochan:kmp-audio-recorder-player", version.ref = "kmp-audio-recorder-player" }
 moko-permissions = { module = "dev.icerock.moko:permissions", version.ref = "moko" }
 moko-permissions-compose = { module = "dev.icerock.moko:permissions-compose", version.ref = "moko" }
 #moko-permissions-microphone = { module = "dev.icerock.moko:permissions-microphone", version.ref = "moko"}
