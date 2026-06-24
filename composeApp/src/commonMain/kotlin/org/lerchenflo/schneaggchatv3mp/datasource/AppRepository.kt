@@ -600,7 +600,11 @@ class AppRepository(
         // Check audio messages
         val messages = messageRepository.getAudioMessages()
         val missingImageMessageIds = messages.filter { audio ->
-            audio.id != null && !audioManager.checkAudioExists(audio.audioPath ?: "")
+            // audioPath is stored as a bare filename; resolve it to the current absolute path
+            // before checking existence (tolerant of legacy absolute paths via substringAfterLast).
+            audio.id != null && !audioManager.checkAudioExists(
+                audioManager.getRecordingPath((audio.audioPath ?: "").substringAfterLast('/'))
+            )
         }.map { it.id!! }
 
         if (missingImageMessageIds.isNotEmpty()) {
@@ -1585,7 +1589,9 @@ class AppRepository(
                             if(m.audioPath == null){
                                 TextContent("Offline audio sending failed")
                             }
-                            val audio = getAudioBytes("unsent_" + m.localPK + VOICEMSG_FILE_NAME)
+                            val audio = getAudioBytes(
+                                audioManager.getRecordingPath("unsent_" + m.localPK + VOICEMSG_FILE_NAME)
+                            )
 
                             AudioContent(
                                 audio = audio
@@ -1710,7 +1716,10 @@ class AppRepository(
                 is NetworkResult.Success<ByteArray> -> {
                     val filepath = audioManager.saveAudioToStorage(audio.data, savefilename)
                     println("Audio saved to $filepath")
-                    messageRepository.updateAudioPath(messageId, filepath)
+                    // Persist the bare filename, not the absolute container path: on iOS the
+                    // container UUID in an absolute path changes across reinstalls/updates and
+                    // would go stale. The absolute path is re-derived at use-time.
+                    messageRepository.updateAudioPath(messageId, savefilename)
                 }
             }
         }

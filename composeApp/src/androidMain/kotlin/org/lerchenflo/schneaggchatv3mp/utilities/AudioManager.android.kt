@@ -12,7 +12,10 @@ actual class AudioManager(private val context: Context){
     }
 
     actual fun getRecordingPath(filename: String): String {
-        return File(context.cacheDir, filename).absolutePath
+        // Use filesDir (the same persistent directory as saveAudioToStorage/deleteAudio) so that
+        // recording, saving, existence checks and playback all resolve to the same location.
+        // cacheDir can be evicted by the OS and diverged from where downloaded audio is stored.
+        return File(context.filesDir, filename).absolutePath
     }
 
     private fun saveAudioBytes(data: ByteArray, filename: String): String {
