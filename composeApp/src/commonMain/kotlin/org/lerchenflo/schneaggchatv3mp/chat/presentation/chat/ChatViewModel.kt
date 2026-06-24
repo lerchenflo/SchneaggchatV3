@@ -457,6 +457,11 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
     fun startRecording() {
         viewModelScope.launch {
             try {
+                // Stop any playing audio before starting recording to avoid audio session conflicts
+                audioPlayer.stopAudio()
+                // Give the audio session a moment to fully release
+                delay(100)
+
                 val permission = permissionsManager.checkMicrophonePermission()
                 println("startRecording - Permission: $permission")
                 if (permission != PermissionState.GRANTED) {
