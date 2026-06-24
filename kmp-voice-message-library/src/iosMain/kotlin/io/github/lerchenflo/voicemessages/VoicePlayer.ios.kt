@@ -1,18 +1,22 @@
 package io.github.lerchenflo.voicemessages
 
+import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCObjectVar
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
+import kotlinx.cinterop.value
 import platform.AVFAudio.AVAudioPlayer
 import platform.AVFAudio.AVAudioSession
-import platform.AVFAudio.AVAudioSessionCategoryPlayback
+import platform.AVFAudio.AVAudioSessionCategoryPlayAndRecord
+import platform.AVFAudio.AVAudioSessionCategoryOptionDefaultToSpeaker
+import platform.AVFAudio.AVAudioSessionModeDefault
 import platform.AVFAudio.setActive
 import platform.Foundation.NSError
 import platform.Foundation.NSURL
 
-@OptIn(ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
 actual class VoicePlayer actual constructor() {
 
     private var player: AVAudioPlayer? = null
@@ -31,13 +35,18 @@ actual class VoicePlayer actual constructor() {
         val url = NSURL.fileURLWithPath(filePath)
 
         memScoped {
-            // Use the plain Playback category — PlayAndRecord routes output to the
-            // earpiece/receiver at low volume by default, which makes played-back voice
-            // messages effectively silent unless held to the ear. Playback routes to the
-            // speaker, matching kmp-audio-recorder-player.
+            // Use PlayAndRecord category to allow seamless transitions between
+            // recording and playback without audio session conflicts.
             val session = AVAudioSession.sharedInstance()
+
             val sessionErrorVar = alloc<ObjCObjectVar<NSError?>>()
-            session.setCategory(AVAudioSessionCategoryPlayback, error = sessionErrorVar.ptr)
+            // Use DefaultToSpeaker option to route playback to speaker instead of earpiece
+            session.setCategory(
+                AVAudioSessionCategoryPlayAndRecord,
+                AVAudioSessionModeDefault,
+                AVAudioSessionCategoryOptionDefaultToSpeaker,
+                sessionErrorVar.ptr
+            )
             val sessionError = sessionErrorVar.value
             if (sessionError != null) {
                 throw IllegalStateException(
@@ -87,5 +96,13 @@ actual class VoicePlayer actual constructor() {
     actual fun stop() {
         player?.stop()
         player = null
+
+        // Deactivate the audio session to allow recording to take over
+        memScoped {
+            val session = AVAudioSession.sharedInstance()
+            val errorVar = alloc<ObjCObjectVar<NSError?>>()
+            session.setActive(false, error = errorVar.ptr)
+            // Ignore errors - session might not be active
+        }
     }
 }

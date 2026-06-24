@@ -14,7 +14,6 @@ import platform.AVFAudio.AVAudioRecorder
 import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionCategoryRecord
 import platform.AVFAudio.AVEncoderAudioQualityKey
-import platform.AVFAudio.AVEncoderBitRateKey
 import platform.AVFAudio.AVFormatIDKey
 import platform.AVFAudio.AVNumberOfChannelsKey
 import platform.AVFAudio.AVSampleRateKey
@@ -34,20 +33,11 @@ actual class VoiceRecorder actual constructor() {
 
     actual suspend fun start(filePath: String) {
         val url = NSURL.fileURLWithPath(filePath)
-        // Tuned for voice rather than music: mono, 16kHz (well above speech bandwidth),
-        // 64kbps (the standard "sweet spot" for mono voice at this sample rate).
-        val settings: Map<Any?, *> = mapOf(
-            AVFormatIDKey to kAudioFormatMPEG4AAC,
-            AVSampleRateKey to 16_000.0,
-            AVNumberOfChannelsKey to 1,
-            AVEncoderAudioQualityKey to AVAudioQualityHigh,
-            AVEncoderBitRateKey to 64_000,
-        )
 
         memScoped {
-            // Pure Record category (matching kmp-audio-recorder-player). Under
-            // PlayAndRecord, AVAudioRecorder.prepareToRecord() returns false here.
+            // Configure audio session for recording
             val session = AVAudioSession.sharedInstance()
+
             val categoryErrorVar = alloc<ObjCObjectVar<NSError?>>()
             session.setCategory(AVAudioSessionCategoryRecord, error = categoryErrorVar.ptr)
             val categoryError = categoryErrorVar.value
@@ -66,17 +56,30 @@ actual class VoiceRecorder actual constructor() {
                 )
             }
 
+            // Standard AAC settings
+            val settings = mapOf<Any?, Any?>(
+                AVFormatIDKey to kAudioFormatMPEG4AAC,
+                AVSampleRateKey to 44100.0,
+                AVNumberOfChannelsKey to 2,
+                AVEncoderAudioQualityKey to AVAudioQualityHigh
+            )
+
             val recorderErrorVar = alloc<ObjCObjectVar<NSError?>>()
             val avRecorder = AVAudioRecorder(uRL = url, settings = settings, error = recorderErrorVar.ptr)
             val recorderError = recorderErrorVar.value
-            if (recorderError != null || avRecorder == null) {
+            if (recorderError != null) {
                 throw IllegalStateException(
-                    "Failed to create AVAudioRecorder: ${recorderError?.localizedDescription}"
+                    "Failed to create AVAudioRecorder: ${recorderError.localizedDescription}"
                 )
             }
 
+            // Set delegate to null and try to prepare
+            avRecorder.setDelegate(null)
+
             if (!avRecorder.prepareToRecord()) {
-                throw IllegalStateException("AVAudioRecorder.prepareToRecord() failed")
+                throw IllegalStateException(
+                    "AVAudioRecorder.prepareToRecord() failed for path: ${url.path}"
+                )
             }
 
             avRecorder.record()
@@ -89,5 +92,13 @@ actual class VoiceRecorder actual constructor() {
         runCatching { recorder?.stop() }
         recorder = null
         recording = false
+
+        // Deactivate audio session to allow playback to take over
+        memScoped {
+            val session = AVAudioSession.sharedInstance()
+            val errorVar = alloc<ObjCObjectVar<NSError?>>()
+            session.setActive(false, error = errorVar.ptr)
+            // Ignore errors - session might not be active
+        }
     }
 }

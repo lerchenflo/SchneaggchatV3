@@ -55,6 +55,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -782,7 +783,22 @@ fun ChatScreen(
                                 val progress by viewModel.getPlaybackProgress().collectAsState()
                                 val isThisMessagePlaying = progress.messageId == tmpMsgId
                                 val currentPosition = if (isThisMessagePlaying) progress.currentPosition else 0L
-                                val duration = if (isThisMessagePlaying) progress.duration else 0L
+
+                                // Pre-fetch the audio duration for the recorded file
+                                var prefetchedDuration by remember { mutableLongStateOf(0L) }
+                                val audioPath = content.audioPath
+
+                                LaunchedEffect(audioPath) {
+                                    if (audioPath.isNotEmpty()) {
+                                        try {
+                                            prefetchedDuration = viewModel.getAudioDuration(audioPath)
+                                        } catch (e: Exception) {
+                                            // Silently fail - duration will remain 0
+                                        }
+                                    }
+                                }
+
+                                val duration = if (isThisMessagePlaying) progress.duration else prefetchedDuration
                                 val isPlaying = isThisMessagePlaying && progress.isPlaying
                                 AudioPlayerView(
                                     isPlaying = isPlaying,
