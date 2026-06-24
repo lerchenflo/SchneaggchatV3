@@ -41,8 +41,6 @@ data class UserDto(
 
     var wakeupEnabled: Boolean = false,
 
-    var lastOnline: Long? = null,
-
     var notisMuted: Boolean = false,
 
     var birthDate: String? = null,

@@ -648,6 +648,9 @@
     <string name="latitude">Latitude</string>
     <string name="longitude">Longitude</string>
 
+    <string name="schneaggmap_user_last_online">Last online: %1$s</string>
+    <string name="schneaggmap_user_distance">Distance: %1$s</string>
+
     <!-- Location Types -->
     <string name="location_type_radar">Radar</string>
     <string name="location_type_police">Police</string>

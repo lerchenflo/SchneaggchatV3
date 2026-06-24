@@ -1030,7 +1030,6 @@ class AppRepository(
                                 locationDate = existing?.locationDate,
                                 locationShared = newUser.shareLocation,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
-                                lastOnline = existing?.lastOnline,
                                 notisMuted = existing?.notisMuted ?: false,
                                 email = null,
                                 emailVerifiedAt = null,
@@ -1058,7 +1057,6 @@ class AppRepository(
                                 locationDate = existing?.locationDate,
                                 locationShared = newUser.locationShared,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
-                                lastOnline = existing?.lastOnline,
                                 frienshipStatus = null,
                                 requesterId = null,
                                 notisMuted = false,
@@ -1085,7 +1083,6 @@ class AppRepository(
                                 locationDate = null,
                                 locationShared = false,
                                 wakeupEnabled = false,
-                                lastOnline = null,
                                 frienshipStatus = newUser.friendShipStatus,
                                 requesterId = newUser.requesterId,
                                 notisMuted = false,
@@ -2015,12 +2012,13 @@ class AppRepository(
      * location currently visible to the caller. An empty list is normal/expected.
      */
     suspend fun syncUserLocations(lat: Double, long: Double) {
+
         when (val result = networkUtils.userLocationsSync(lat, long)) {
             is NetworkResult.Error<*> -> {
                 println("Sync user locations failed")
             }
             is NetworkResult.Success<List<NetworkUtils.UserLocationResponse>> -> {
-                userRepository.updateUserLocations(result.data)
+                userRepository.updateUserLocations(result.data, ownLocation = LatLong(lat = lat, long = long))
             }
         }
     }

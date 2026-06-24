@@ -52,6 +52,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.VIEWPOINT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.WHEELIESPOT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.CameraState
 import org.maplibre.compose.camera.rememberCameraState
@@ -169,6 +170,19 @@ fun SchneaggmapScreen(
                 },
                 onDelete = {
                     onAction(SchneaggmapAction.OnEntryPopupDelete(it))
+                },
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
+        }
+
+        state.selectedUser?.let { user ->
+            UserInfoCard(
+                user = user,
+                onDismiss = {
+                    onAction(SchneaggmapAction.OnPopupDismiss)
+                },
+                onOpenChat = { clickedUser ->
+                    onAction(SchneaggmapAction.OnOpenChatClick(clickedUser))
                 },
                 modifier = Modifier.align(Alignment.BottomCenter)
             )

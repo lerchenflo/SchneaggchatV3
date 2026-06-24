@@ -9,8 +9,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
@@ -22,7 +24,8 @@ class SchneaggmapViewModel(
     private val navigator: Navigator,
     private val mapRepository: MapRepository,
     private val appRepository: AppRepository,
-    private val preferenceManager: Preferencemanager
+    private val preferenceManager: Preferencemanager,
+    private val globalViewModel: GlobalViewModel,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SchneaggmapState())
@@ -115,7 +118,8 @@ class SchneaggmapViewModel(
             SchneaggmapAction.OnPopupDismiss -> {
                 _state.update {
                     it.copy(
-                        selectedEntry = null
+                        selectedEntry = null,
+                        selectedUser = null
                     )
                 }
             }
@@ -170,7 +174,29 @@ class SchneaggmapViewModel(
             }
 
             is SchneaggmapAction.OnUserClick -> {
-                //TODO
+                val selectedUser = state.value.usersWithLocation.firstOrNull { it.id == action.userId }
+
+                _state.update { currentState ->
+                    currentState.copy(
+                        selectedUser = selectedUser,
+                        isFilterDropdownVisible = false
+                    )
+                }
+            }
+
+            is SchneaggmapAction.OnOpenChatClick -> {
+                viewModelScope.launch {
+                    globalViewModel.onSelectChat(
+                        action.user.toSelectedChat(
+                            unreadCount = 0,
+                            unsentCount = 0,
+                            lastMessage = null
+                        )
+                    )
+                    navigator.navigate(Route.Chat)
+                }
+
+                _state.update { it.copy(selectedUser = null) }
             }
         }
     }
