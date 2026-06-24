@@ -258,7 +258,9 @@ class ChatViewModel(
                         empfaenger = globalViewModel.selectedChat.value.id,
                         gruppe = globalViewModel.selectedChat.value.isGroup,
                         content = AppRepository.MessageContent.AudioContent(
-                            audio = getAudioBytes(message.audioPath)
+                            audio = getAudioBytes(
+                                audioManager.getRecordingPath(message.audioPath.substringAfterLast('/'))
+                            )
                         ),
                         answerid = replyTo?.id,
                         messageId = null,
@@ -472,8 +474,10 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                 val recorder = VoiceRecorder()
                 voiceRecorder = recorder
                 recorder.start(path)
+                // Store the bare filename (not the absolute path) so it stays valid across app
+                // launches; it is resolved back to an absolute path at play/read time.
                 updateSendContent(SendMessageContent.AudioContent(
-                    audioPath = path,
+                    audioPath = filename,
                     duration =  0L,
                     isRecording = true
                 ))
@@ -520,9 +524,12 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
 
     fun playAudio(messageId: String, path: String) {
         viewModelScope.launch {
+            // Callers pass a bare filename; resolve it to the current absolute path here so
+            // playback is immune to iOS container-UUID changes (tolerant of legacy absolute
+            // paths via substringAfterLast).
             audioPlayer.playAudio(
                 messageId = messageId,
-                path = path
+                path = audioManager.getRecordingPath(path.substringAfterLast('/'))
             )
         }
     }
