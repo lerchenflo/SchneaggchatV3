@@ -113,7 +113,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
 import schneaggchatv3mp.composeapp.generated.resources.error_invalid_credentials
 import schneaggchatv3mp.composeapp.generated.resources.groupsync
-import schneaggchatv3mp.composeapp.generated.resources.imagesync
+import schneaggchatv3mp.composeapp.generated.resources.mediasync
 import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
 import schneaggchatv3mp.composeapp.generated.resources.mapsync
 import schneaggchatv3mp.composeapp.generated.resources.messagesync
@@ -289,7 +289,7 @@ class AppRepository(
         MESSAGES,
         MAP,
 
-        IMAGES;
+        MEDIA;
 
         fun toUiText() : UiText {
             return when (this) {
@@ -297,7 +297,7 @@ class AppRepository(
                 GROUPS -> UiText.StringResourceText(Res.string.groupsync)
                 MESSAGES -> UiText.StringResourceText(Res.string.messagesync)
                 MAP -> UiText.StringResourceText(Res.string.mapsync)
-                IMAGES -> UiText.StringResourceText(Res.string.imagesync)
+                MEDIA -> UiText.StringResourceText(Res.string.mediasync)
             }
         }
     }
@@ -314,12 +314,13 @@ class AppRepository(
         val jobs: List<DataSyncJobState> = listOf(
             DataSyncJobState(type = USERS), DataSyncJobState(type = GROUPS),
             DataSyncJobState(type = MESSAGES), DataSyncJobState(type = MAP),
-            DataSyncJobState(type = DataSyncJobType.IMAGES)
+            DataSyncJobState(type = DataSyncJobType.MEDIA)
         )
     )
 
     private fun updateSyncJob(type: DataSyncJobType, status: DataSyncJobStatus, error: String? = null) {
         _dataSyncState.update { current ->
+            println("Updating sync job")
             current.copy(
                 jobs = current.jobs.map {
                     if (it.type == type) {
@@ -349,7 +350,11 @@ class AppRepository(
             _dataSyncState.update {
                 it.copy(
                     isSyncing = true,
-                    exitedWithErrors = false //Reset error when synching again
+                    exitedWithErrors = false, //Reset error when synching again
+                    // Reset stale statuses from the previous run, otherwise a job that hasn't
+                    // started yet (e.g. MEDIA, which runs last) would still show its old
+                    // SUCCESS/FAILED status while other jobs are already RUNNING.
+                    jobs = it.jobs.map { job -> job.copy(status = DataSyncJobStatus.IDLE, error = null) }
                 )
             }
             println("Starting datasync")
@@ -388,7 +393,9 @@ class AppRepository(
                                 status = DataSyncJobStatus.RUNNING,
                                 error = null
                             )
-                            messageIdSync()
+                            // Media is fetched afterwards as part of the MEDIA job so its
+                            // progress indicator covers the actual download work.
+                            messageIdSync(fetchMedia = false)
                             updateSyncJob(
                                 type = MESSAGES,
                                 status = DataSyncJobStatus.SUCCESS,
@@ -456,22 +463,27 @@ class AppRepository(
                     // Wait for all to complete (errors are already handled)
                     awaitAll(userJob, messageJob, groupJob, mapJob)
 
-                    updateSyncJob(
-                        type = DataSyncJobType.IMAGES,
-                        status = DataSyncJobStatus.RUNNING,
-                        error = null
-                    )
-                    val errorProfilePicJob = async {
+                    try {
+                        updateSyncJob(
+                            type = DataSyncJobType.MEDIA,
+                            status = DataSyncJobStatus.RUNNING,
+                            error = null
+                        )
                         getMissingPics()
                         getMissingAudios()
+                        updateSyncJob(
+                            type = DataSyncJobType.MEDIA,
+                            status = DataSyncJobStatus.SUCCESS,
+                            error = null
+                        )
+                    } catch (e: Exception) {
+                        updateSyncJob(
+                            type = DataSyncJobType.MEDIA,
+                            status = DataSyncJobStatus.FAILED,
+                            error = e.message
+                        )
+                        loggingRepository.logWarning("Media sync failed: ${e.message}")
                     }
-
-                    awaitAll(errorProfilePicJob)
-                    updateSyncJob(
-                        type = DataSyncJobType.IMAGES,
-                        status = DataSyncJobStatus.SUCCESS,
-                        error = null
-                    )
                 }
 
                 println("Data sync finished")
@@ -1614,8 +1626,12 @@ class AppRepository(
 
     /**
      * Execute a message sync
+     *
+     * @param fetchMedia whether to immediately download images/audios for newly-synced
+     * messages. Disabled during the full [dataSync] so that media downloads happen as part
+     * of the MEDIA job (and its progress indicator) instead of inside the MESSAGES job.
      */
-    suspend fun messageIdSync() {
+    suspend fun messageIdSync(fetchMedia: Boolean = true) {
 
         val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
@@ -1677,14 +1693,16 @@ class AppRepository(
         //println("Messagesync completed. Total pages: $currentPage")
 
 
-        if (imagesToGet.isNotEmpty()) {
-            println("Images to fetch: ${imagesToGet.size}")
-            getPicturesForMessageIds(imagesToGet)
-        }
+        if (fetchMedia) {
+            if (imagesToGet.isNotEmpty()) {
+                println("Images to fetch: ${imagesToGet.size}")
+                getPicturesForMessageIds(imagesToGet)
+            }
 
-        if (audiosToGet.isNotEmpty()) {
-            println("Audios to fetch: ${audiosToGet.size}")
-            getAudiosForMessageIds(audiosToGet)
+            if (audiosToGet.isNotEmpty()) {
+                println("Audios to fetch: ${audiosToGet.size}")
+                getAudiosForMessageIds(audiosToGet)
+            }
         }
     }
 
