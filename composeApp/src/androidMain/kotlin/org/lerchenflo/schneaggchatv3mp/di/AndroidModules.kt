@@ -66,6 +66,7 @@ val androidPictureManagerModule = module {
 val androidPermissionManagerModule = module {
     single { PermissionManager(androidContext()) }
     single { org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService(androidContext()) }
+    single { org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService(androidContext()) }
 }
 
 

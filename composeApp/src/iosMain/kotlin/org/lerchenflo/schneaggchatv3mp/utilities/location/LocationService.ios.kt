@@ -21,11 +21,12 @@ import platform.CoreLocation.kCLDistanceFilterNone
 import platform.Foundation.NSError
 import platform.darwin.NSObject
 import kotlin.coroutines.resume
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalForeignApi::class)
 actual class LocationService {
 
-    actual fun getLocationFlow(): Flow<LatLong?> = callbackFlow {
+    actual fun getLocationFlow(): Flow<DeviceLocation?> = callbackFlow {
         val manager = CLLocationManager()
 
         val delegate = object : NSObject(), CLLocationManagerDelegateProtocol {
@@ -35,9 +36,16 @@ actual class LocationService {
             ) {
                 val loc = didUpdateLocations.lastOrNull() as? CLLocation ?: return
                 trySend(
-                    LatLong(
-                        lat = loc.coordinate.useContents { latitude },
-                        long = loc.coordinate.useContents { longitude }
+                    DeviceLocation(
+                        coordinates = LatLong(
+                            lat = loc.coordinate.useContents { latitude },
+                            long = loc.coordinate.useContents { longitude }
+                        ),
+                        // verticalAccuracy is negative when altitude couldn't be determined
+                        altitude = loc.altitude.takeIf { loc.verticalAccuracy >= 0.0 }?.roundToInt(),
+                        // course is negative when the heading couldn't be determined
+                        heading = loc.course.takeIf { it >= 0.0 }?.roundToInt(),
+                        timestamp = (loc.timestamp.timeIntervalSince1970 * 1000).toLong(),
                     )
                 )
             }

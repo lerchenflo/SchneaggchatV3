@@ -56,6 +56,7 @@ val desktopPictureManagerModule = module {
 val desktopPermissionManagerModule = module {
     single { PermissionManager() }
     single { org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService() }
+    single { org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService() }
 }
 
 

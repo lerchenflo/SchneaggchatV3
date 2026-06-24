@@ -21,8 +21,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,7 +33,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.launch
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
@@ -64,6 +63,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.WHEELIESP
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
+import org.maplibre.compose.camera.CameraMoveReason
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.CameraState
 import org.maplibre.compose.camera.rememberCameraState
@@ -149,7 +149,6 @@ fun SchneaggmapScreen(
         rememberNullLocationProvider()
     }
     val ownLocation by locationProvider.location.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
 
     //Center on our own location once, on start, but only if we actually share it - otherwise
     //the user has no reason to expect the map to jump there.
@@ -160,6 +159,34 @@ fun SchneaggmapScreen(
             hasAutoCentered = true
             cameraState.animateTo(CameraPosition(target = position, zoom = OWN_LOCATION_START_ZOOM))
         }
+    }
+
+    //"Follow me" mode, toggled on by the locate button. Stops as soon as the user manually
+    //pans/zooms the map - any GESTURE-driven camera move is treated as "I don't want to follow".
+    var isFollowingLocation by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        snapshotFlow { cameraState.moveReason }
+            .collect { reason ->
+                if (reason == CameraMoveReason.GESTURE) {
+                    isFollowingLocation = false
+                }
+            }
+    }
+    LaunchedEffect(isFollowingLocation) {
+        if (!isFollowingLocation) return@LaunchedEffect
+
+        //Zoom in once when following starts, then keep re-centering on the latest location
+        //at whatever zoom the user leaves it at.
+        ownLocation?.position?.value?.let { position ->
+            cameraState.animateTo(CameraPosition(target = position, zoom = OWN_LOCATION_CLICK_ZOOM))
+        }
+
+        snapshotFlow { ownLocation }
+            .collect { location ->
+                location?.position?.value?.let { position ->
+                    cameraState.animateTo(cameraState.position.copy(target = position))
+                }
+            }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -222,15 +249,9 @@ fun SchneaggmapScreen(
             modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
         )
 
-        ownLocation?.let { location ->
+        ownLocation?.let {
             FloatingActionButton(
-                onClick = {
-                    coroutineScope.launch {
-                        cameraState.animateTo(
-                            CameraPosition(target = location.position.value, zoom = OWN_LOCATION_CLICK_ZOOM)
-                        )
-                    }
-                },
+                onClick = { isFollowingLocation = true },
                 modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp)
             ) {
                 Icon(Icons.Default.LocationOn, contentDescription = null)
@@ -258,6 +279,9 @@ fun SchneaggmapScreen(
         state.selectedUser?.let { user ->
             UserInfoCard(
                 user = user,
+                ownLocation = ownLocation?.position?.value?.let { position ->
+                    LatLong(lat = position.latitude, long = position.longitude)
+                },
                 onDismiss = {
                     onAction(SchneaggmapAction.OnPopupDismiss)
                 },

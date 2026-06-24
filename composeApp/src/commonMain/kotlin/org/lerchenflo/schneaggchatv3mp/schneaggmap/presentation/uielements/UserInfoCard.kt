@@ -15,13 +15,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
+import org.lerchenflo.schneaggchatv3mp.utilities.distanceMeters
+import org.lerchenflo.schneaggchatv3mp.utilities.formatDistance
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
@@ -32,6 +36,7 @@ import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_last_onl
 @Composable
 fun UserInfoCard(
     user: User,
+    ownLocation: LatLong?,
     onDismiss: () -> Unit,
     onOpenChat: (User) -> Unit,
     modifier: Modifier = Modifier,
@@ -63,9 +68,17 @@ fun UserInfoCard(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            //Own location isn't tracked yet, so this is just a placeholder until that exists.
+            val userDistanceText = remember(ownLocation, user.location) {
+                val location = user.location
+                if (ownLocation != null && location != null) {
+                    formatDistance(distanceMeters(ownLocation, LatLong(lat = location.lat, long = location.long)))
+                } else {
+                    "--"
+                }
+            }
+
             Text(
-                text = stringResource(Res.string.schneaggmap_user_distance, "-- km"),//TODO: resolve distance with the mapUtils
+                text = stringResource(Res.string.schneaggmap_user_distance, userDistanceText),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
