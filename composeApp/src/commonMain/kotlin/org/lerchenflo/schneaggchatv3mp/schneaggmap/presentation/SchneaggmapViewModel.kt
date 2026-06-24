@@ -15,8 +15,11 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
+import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
 import kotlin.time.Clock
 
 
@@ -26,6 +29,7 @@ class SchneaggmapViewModel(
     private val appRepository: AppRepository,
     private val preferenceManager: Preferencemanager,
     private val globalViewModel: GlobalViewModel,
+    private val locationService: LocationService,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SchneaggmapState())
@@ -215,6 +219,23 @@ class SchneaggmapViewModel(
                         )
                     }
                 }
+        }
+
+        // Permission for showing our own position on the map (separate from the "share my
+        // location with friends" setting, which drives server-side sync via GlobalViewModel).
+        viewModelScope.launch {
+            var permission = locationService.checkLocationPermission()
+            if (permission != PermissionState.GRANTED) {
+                permission = locationService.requestLocationPermission()
+            }
+            _state.update { it.copy(locationPermissionGranted = permission == PermissionState.GRANTED) }
+        }
+
+        viewModelScope.launch {
+            val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
+            appRepository.getUserByIdFlow(ownId).collectLatest { ownUser ->
+                _state.update { it.copy(ownLocationShared = ownUser?.locationShared ?: false) }
+            }
         }
 
         viewModelScope.launch {

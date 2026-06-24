@@ -1,28 +1,39 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
@@ -58,7 +69,11 @@ import org.maplibre.compose.camera.CameraState
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.image
+import org.maplibre.compose.layers.CircleLayer
 import org.maplibre.compose.layers.SymbolLayer
+import org.maplibre.compose.location.Location
+import org.maplibre.compose.location.rememberDefaultLocationProvider
+import org.maplibre.compose.location.rememberNullLocationProvider
 import org.maplibre.compose.map.MapOptions
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.OrnamentOptions
@@ -75,6 +90,8 @@ import org.maplibre.spatialk.geojson.Feature
 import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
+import org.maplibre.spatialk.units.extensions.inMeters
+import kotlin.math.roundToInt
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.icon_badespot
 import schneaggchatv3mp.composeapp.generated.resources.icon_beer
@@ -92,6 +109,10 @@ import schneaggchatv3mp.composeapp.generated.resources.icon_sightseeing
 import schneaggchatv3mp.composeapp.generated.resources.icon_street
 import schneaggchatv3mp.composeapp.generated.resources.icon_viewpoint
 import schneaggchatv3mp.composeapp.generated.resources.icon_wheeliespot
+import kotlin.collections.listOf
+
+private const val OWN_LOCATION_START_ZOOM = 14.0
+private const val OWN_LOCATION_CLICK_ZOOM = 16.0
 
 @Composable
 fun SchneaggmapScreenRoot() {
@@ -120,11 +141,33 @@ fun SchneaggmapScreen(
     )
     val styleState = rememberStyleState()
 
+    //Own position, resolved once here (not in SchneaggmapMapContent) so we don't open a second,
+    //redundant GPS subscription just to also show the speed readout below.
+    val locationProvider = if (state.locationPermissionGranted) {
+        rememberDefaultLocationProvider()
+    } else {
+        rememberNullLocationProvider()
+    }
+    val ownLocation by locationProvider.location.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+
+    //Center on our own location once, on start, but only if we actually share it - otherwise
+    //the user has no reason to expect the map to jump there.
+    var hasAutoCentered by remember { mutableStateOf(false) }
+    LaunchedEffect(ownLocation, state.ownLocationShared) {
+        val position = ownLocation?.position?.value
+        if (!hasAutoCentered && state.ownLocationShared && position != null) {
+            hasAutoCentered = true
+            cameraState.animateTo(CameraPosition(target = position, zoom = OWN_LOCATION_START_ZOOM))
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         SchneaggmapMapContent(
             state = state,
             cameraState = cameraState,
             styleState = styleState,
+            ownLocation = ownLocation,
             onAction = onAction
         )
 
@@ -144,6 +187,28 @@ fun SchneaggmapScreen(
             )
         }
 
+        ownLocation?.speed?.let { speed ->
+            if (!speed.distancePerSecond.isZero) {
+                val speedKmh = (speed.distancePerSecond.inMeters * 3.6).roundToInt()
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 16.dp, bottom = 16.dp)
+                        .size(56.dp)
+                        .background(Color.White, CircleShape)
+                        .border(width = 4.dp, color = Color.Red, shape = CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "$speedKmh",
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+            }
+        }
+
         DisappearingScaleBar(
             metersPerDp = cameraState.metersPerDpAtTarget,
             zoom = cameraState.position.zoom,
@@ -156,6 +221,21 @@ fun SchneaggmapScreen(
             onAction = onAction,
             modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
         )
+
+        ownLocation?.let { location ->
+            FloatingActionButton(
+                onClick = {
+                    coroutineScope.launch {
+                        cameraState.animateTo(
+                            CameraPosition(target = location.position.value, zoom = OWN_LOCATION_CLICK_ZOOM)
+                        )
+                    }
+                },
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp)
+            ) {
+                Icon(Icons.Default.LocationOn, contentDescription = null)
+            }
+        }
 
         state.selectedEntry?.let { entry ->
             MapEntryInfoCard(
@@ -196,6 +276,7 @@ private fun SchneaggmapMapContent(
     state: SchneaggmapState,
     cameraState: CameraState,
     styleState: StyleState,
+    ownLocation: Location?,
     onAction: (SchneaggmapAction) -> Unit
 ) {
 
@@ -395,6 +476,30 @@ private fun SchneaggmapMapContent(
                     iconAllowOverlap = const(true)
                 )
             }
+        }
+
+        //Own position, as a plain dot (no profile picture needed for yourself)
+        ownLocation?.let { location ->
+            val ownLocationSource = rememberGeoJsonSource(
+                data = GeoJsonData.Features(
+                    FeatureCollection(features = listOf(Feature(
+                        geometry = Point(coordinates = location.position.value),
+                        properties = buildJsonObject {
+                            put("type", JsonPrimitive("self"))
+                        },
+                        id = JsonPrimitive("self")
+                    )))
+                )
+            )
+
+            CircleLayer(
+                id = "own-location",
+                source = ownLocationSource,
+                color = const(Color(0xFF4285F4)),
+                radius = const(8.dp),
+                strokeColor = const(Color.White),
+                strokeWidth = const(2.dp)
+            )
         }
     }
 
