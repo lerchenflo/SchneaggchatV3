@@ -2,6 +2,9 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 data class User(
     override val id: String,
@@ -38,6 +41,13 @@ data class User(
 
     fun isEmailVerified() : Boolean {
         return emailVerifiedAt != null
+    }
+
+    fun isLocationValid() : Boolean {
+        if (location == null) return false
+        val dateI = Instant.fromEpochMilliseconds(location.date)
+        return Clock.System.now() < (dateI + 24.hours)
+
     }
 
     override fun toString(): String {

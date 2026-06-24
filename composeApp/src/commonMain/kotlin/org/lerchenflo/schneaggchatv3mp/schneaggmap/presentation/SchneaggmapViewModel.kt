@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -113,7 +112,7 @@ class SchneaggmapViewModel(
                 }
             }
 
-            SchneaggmapAction.OnEntryPopupDismiss -> {
+            SchneaggmapAction.OnPopupDismiss -> {
                 _state.update {
                     it.copy(
                         selectedEntry = null
@@ -169,6 +168,10 @@ class SchneaggmapViewModel(
                     )
                 }
             }
+
+            is SchneaggmapAction.OnUserClick -> {
+                //TODO
+            }
         }
     }
 
@@ -185,6 +188,22 @@ class SchneaggmapViewModel(
                             useClustering = clustering
                         )
                     }
+                }
+        }
+
+        viewModelScope.launch {
+            appRepository.getFriendsFlow("")
+                .collectLatest { userList ->
+                    userList.mapNotNull {
+                        if (it.isLocationValid()) {
+                            it
+                        } else null
+                    }.also {
+                        _state.update { state ->
+                            state.copy(
+                                usersWithLocation = it
+                            )
+                    } }
                 }
         }
     }

@@ -67,6 +67,7 @@ class UserRepository(
         locations.forEach { location ->
             val dbUser = database.userDao().getUserbyId(location.userId)
             if (dbUser != null) {
+                println("SCHNEAGGMAP: Updating location for user ${dbUser.name}: $location")
                 database.userDao().upsert(dbUser.copy(
                     locationLat = location.coordinates.lat,
                     locationLong = location.coordinates.long,

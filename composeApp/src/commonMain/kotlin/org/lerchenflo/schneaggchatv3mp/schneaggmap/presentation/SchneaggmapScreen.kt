@@ -5,20 +5,28 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.decodeToImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.io.buffered
+import kotlinx.io.files.Path
+import kotlinx.io.files.SystemFileSystem
+import kotlinx.io.readByteArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import org.jetbrains.compose.resources.DrawableResource
@@ -74,6 +82,7 @@ import schneaggchatv3mp.composeapp.generated.resources.icon_camping
 import schneaggchatv3mp.composeapp.generated.resources.icon_chinese_food
 import schneaggchatv3mp.composeapp.generated.resources.icon_doener
 import schneaggchatv3mp.composeapp.generated.resources.icon_food
+import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 import schneaggchatv3mp.composeapp.generated.resources.icon_partylocation
 import schneaggchatv3mp.composeapp.generated.resources.icon_pizza
 import schneaggchatv3mp.composeapp.generated.resources.icon_police
@@ -151,7 +160,7 @@ fun SchneaggmapScreen(
             MapEntryInfoCard(
                 entry = entry,
                 onDismiss = {
-                    onAction(SchneaggmapAction.OnEntryPopupDismiss)
+                    onAction(SchneaggmapAction.OnPopupDismiss)
                 },
                 onSave = { changedEntry ->
                     onAction(SchneaggmapAction.OnEntryPopupSave(
@@ -200,6 +209,20 @@ private fun SchneaggmapMapContent(
                 FOOD_OTHER -> Res.drawable.icon_food
             }
         }
+    }
+
+    //Resolve user profile pictures off the composition (file read + bitmap decode), keyed by
+    //path so a changed profile picture re-resolves but unrelated state changes don't.
+    var userIcons by remember { mutableStateOf<Map<String, ImageBitmap>>(emptyMap()) }
+    val userPicturePaths = state.usersWithLocation.map { it.profilePictureUrl }
+    LaunchedEffect(userPicturePaths) {
+        userIcons = state.usersWithLocation.mapNotNull { user ->
+            if (user.profilePictureUrl.isBlank()) return@mapNotNull null
+            runCatching {
+                val bytes = SystemFileSystem.source(Path(user.profilePictureUrl)).buffered().readByteArray()
+                user.id to bytes.decodeToImageBitmap()
+            }.getOrNull()
+        }.toMap()
     }
 
 
@@ -302,9 +325,6 @@ private fun SchneaggmapMapContent(
                 )
             }
 
-
-
-
             //val filter = const(state.enabledTypes.toList()).contains(feature["type"])
 
             // 3. Apply Filter to Layer
@@ -320,9 +340,47 @@ private fun SchneaggmapMapContent(
             )
 
              */
+        }
 
 
+        //Show user locations
+        if (state.usersWithLocation.isNotEmpty()) {
+            state.usersWithLocation.forEach { user ->
+                val mapLocationSource = rememberGeoJsonSource(
+                    data = GeoJsonData.Features(
+                        FeatureCollection(
+                            features = listOf(Feature(
+                                geometry = Point(
+                                    coordinates = Position(
+                                        longitude = user.location!!.long,
+                                        latitude = user.location.lat,
+                                    )
+                                ),
+                                properties = buildJsonObject {
+                                    put("type", JsonPrimitive(user.name))
+                                },
+                                id = JsonPrimitive(user.id)
+                            ))
+                        )
+                    )
+                )
 
+                val profilePicturePainter = userIcons[user.id]?.let { BitmapPainter(it) }
+                    ?: painterResource(Res.drawable.icon_nutzer)
+
+                SymbolLayer(
+                    id = "user-${user.id}",
+                    source = mapLocationSource,
+                    onClick = { clickedItems ->
+                        if (clickedItems.isNotEmpty()) {
+                            onAction(SchneaggmapAction.OnUserClick(clickedItems.first().id!!.content))
+                            ClickResult.Consume
+                        } else ClickResult.Pass
+                    },
+                    iconImage = image(profilePicturePainter, size = DpSize(33.dp, 33.dp)),
+                    iconAllowOverlap = const(true)
+                )
+            }
         }
     }
 

@@ -2014,7 +2014,7 @@ class AppRepository(
      * Combined push+pull: pushes the caller's current location and returns every friend's
      * location currently visible to the caller. An empty list is normal/expected.
      */
-    suspend fun getUserLocations(lat: Double, long: Double) {
+    suspend fun syncUserLocations(lat: Double, long: Double) {
         when (val result = networkUtils.userLocationsSync(lat, long)) {
             is NetworkResult.Error<*> -> {
                 println("Sync user locations failed")

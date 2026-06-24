@@ -279,8 +279,7 @@ class GlobalViewModel(
             locationTrackingJob = viewModelScope.launch {
                 locationService.getLocationFlow().collect { latLong ->
                     if (latLong != null) {
-                        println("GlobalViewModel: Sending location update: ${latLong.lat}, ${latLong.long}")
-                        appRepository.getUserLocations(latLong.lat, latLong.long)
+                        appRepository.syncUserLocations(latLong.lat, latLong.long)
                     }
                 }
             }
