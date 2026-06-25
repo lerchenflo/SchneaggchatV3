@@ -2,6 +2,7 @@ package org.lerchenflo.androidApp
 
 import android.Manifest
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -72,12 +73,40 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleIntent(intent: Intent?) {
-        if (intent?.action == Intent.ACTION_SEND && intent.type == "text/plain") {
-            val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
-            IncomingDataManager.updateText(sharedText)
+        when {
+            intent?.action == Intent.ACTION_SEND && intent.type == "text/plain" -> {
+                val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
+                IncomingDataManager.updateText(sharedText)
+            }
+            intent?.action == Intent.ACTION_SEND && intent.type?.startsWith("image/") == true -> {
+                val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+                imageUri?.let { uri ->
+                    readBytesFromUri(uri)?.let { bytes ->
+                        IncomingDataManager.updateImages(listOf(bytes))
+                    }
+                }
+            }
+            intent?.action == Intent.ACTION_SEND_MULTIPLE && intent.type?.startsWith("image/") == true -> {
+                val imageUris = intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
+                imageUris?.let { uris ->
+                    val bytesList = uris.mapNotNull { readBytesFromUri(it) }
+                    if (bytesList.isNotEmpty()) {
+                        IncomingDataManager.updateImages(bytesList)
+                    }
+                }
+            }
         }
         if (intent?.getBooleanExtra(EXTRA_FROM_NOTIFICATION, false) == true) {
             AppLifecycleManager.notifyNotificationOpened()
+        }
+    }
+
+    private fun readBytesFromUri(uri: Uri): ByteArray? {
+        return try {
+            contentResolver.openInputStream(uri)?.use { it.readBytes() }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 }

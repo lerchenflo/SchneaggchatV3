@@ -817,9 +817,22 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
 
         println("ChatViewModel Incoming Data: ${IncomingDataManager.sharedText.value}")
         if(IncomingDataManager.isNewDataAvailable()){
-            // todo falls es amol sowit kummt dass ma bilder o teilen kann halt je nach dem ändera
-            updateSendContent(SendMessageContent.TextContent(TextFieldValue(IncomingDataManager.sharedText.value ?: "")))
-            IncomingDataManager.updateText(null)
+            if (IncomingDataManager.isNewImageDataAvailable()) {
+                val sharedImages = IncomingDataManager.sharedImages.value ?: emptyList()
+                viewModelScope.launch {
+                    val downscaledImages = sharedImages.map { imageBytes ->
+                        pictureManager.downscaleImage(imageBytes)
+                    }
+                    updateSendContent(SendMessageContent.ImageContent(
+                        images = downscaledImages,
+                        text = TextFieldValue(IncomingDataManager.sharedText.value ?: "")
+                    ))
+                    IncomingDataManager.clearAllData()
+                }
+            } else {
+                updateSendContent(SendMessageContent.TextContent(TextFieldValue(IncomingDataManager.sharedText.value ?: "")))
+                IncomingDataManager.updateText(null)
+            }
         }
 
     }
