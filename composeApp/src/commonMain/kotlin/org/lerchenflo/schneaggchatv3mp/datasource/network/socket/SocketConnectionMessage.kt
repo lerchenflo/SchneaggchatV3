@@ -81,7 +81,8 @@ sealed interface SocketConnectionMessage {
         val batteryLevel: Int? = null,
     ) : SocketConnectionMessage
 
-    /** INBOUND: a single friend's live location, pushed when that friend moves. */
+    /** INBOUND: a single friend's live location, pushed when that friend moves. Position only -
+     * the snail trail no longer rides along here, it grows via [SnailTrailPointAdded]. */
     @Serializable
     @SerialName("friendlocationchange")
     data class FriendLocationChange(val friend: FriendLocationPayload) : SocketConnectionMessage
@@ -89,7 +90,13 @@ sealed interface SocketConnectionMessage {
     /** INBOUND: all friends' current locations, pushed once when we connect (initial load). */
     @Serializable
     @SerialName("friendlocationssnapshot")
-    data class FriendLocationsSnapshot(val friends: List<FriendLocationPayload>) : SocketConnectionMessage
+    data class FriendLocationsSnapshot(val friends: List<FriendLocationSnapshotEntry>) : SocketConnectionMessage
+
+    /** INBOUND: one new snail-trail point for a friend (~once/minute). Append-only - never
+     * replaces the existing trail. */
+    @Serializable
+    @SerialName("snailtrailpointadded")
+    data class SnailTrailPointAdded(val userId: String, val point: SnailTrailPointPayload) : SocketConnectionMessage
 }
 
 /** Wire shape of a friend's live location, pushed over the WebSocket. */
@@ -103,7 +110,6 @@ data class FriendLocationPayload(
     val altitude: Double? = null,
     val batteryLevel: Int? = null,
     val distanceTraveled24h: Double? = null,
-    val snailTrail: List<SnailTrailPointPayload> = emptyList(),
 )
 
 @Serializable
@@ -112,6 +118,14 @@ data class SnailTrailPointPayload(
     val locationTime: Long,
     val speed: Double? = null,
     val heading: Double? = null,
+)
+
+/** One friend's entry in a `FriendLocationsSnapshot` - their position plus the trail the server
+ * currently retains for them (seed data only; further points arrive via [SocketConnectionMessage.SnailTrailPointAdded]). */
+@Serializable
+data class FriendLocationSnapshotEntry(
+    val position: FriendLocationPayload,
+    val snailTrail: List<SnailTrailPointPayload> = emptyList(),
 )
 
 
@@ -363,14 +377,19 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                 }
             }
 
-            //A friend's location changed (live push)
+            //A friend's location changed (live push) - position only, trail is untouched here
             is SocketConnectionMessage.FriendLocationChange -> {
                 userRepository.updateFriendLocation(socketMessage.friend)
             }
 
-            //Initial snapshot of all friends' locations, pushed once on connect
+            //Initial snapshot of all friends' locations + their current trail, pushed once on connect
             is SocketConnectionMessage.FriendLocationsSnapshot -> {
                 userRepository.updateFriendLocations(socketMessage.friends)
+            }
+
+            //One new point appended to a friend's snail trail (~once/minute)
+            is SocketConnectionMessage.SnailTrailPointAdded -> {
+                userRepository.appendSnailTrailPoint(socketMessage.userId, socketMessage.point)
             }
 
             //Outbound-only - we send this ourselves, the server never echoes it back

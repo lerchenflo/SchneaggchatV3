@@ -11,6 +11,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.FriendLocationPayload
+import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.FriendLocationSnapshotEntry
+import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SnailTrailPointPayload
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 class UserRepository(
@@ -66,8 +68,8 @@ class UserRepository(
         }
     }
 
-    /** Applies a single friend's live location push (`FriendLocationChange`) to the local DB. */
-    @Transaction
+    /** Applies a single friend's live location push (`FriendLocationChange`) to the local DB.
+     * Position only - the trail is never touched here, it only grows via [appendSnailTrailPoint]. */
     suspend fun updateFriendLocation(payload: FriendLocationPayload) {
         val dbUser = database.userDao().getUserbyId(payload.userId)
         if (dbUser != null) {
@@ -82,29 +84,51 @@ class UserRepository(
                 locationDistance24h = payload.distanceTraveled24h,
             ))
         }
+    }
 
-        // The server sends its currently-retained trail window every time - so we just replace
-        // ours wholesale rather than trying to merge/dedupe incrementally.
-        database.snailTrailDao().deletePointsForUser(payload.userId)
-        if (payload.snailTrail.isNotEmpty()) {
-            database.snailTrailDao().upsertPoints(
-                payload.snailTrail.map {
-                    SnailTrailPointDto(
-                        userId = payload.userId,
-                        lat = it.coordinates.lat,
-                        long = it.coordinates.long,
-                        locationTime = it.locationTime,
-                        speed = it.speed,
-                        heading = it.heading,
-                    )
-                }
-            )
+    /**
+     * Applies the initial `FriendLocationsSnapshot` (pushed once on socket connect): seeds each
+     * friend's position and replaces their local trail wholesale with the server's
+     * currently-retained window. This is the only place the trail is replaced rather than
+     * appended - further points arrive one at a time via [appendSnailTrailPoint].
+     */
+    @Transaction
+    suspend fun updateFriendLocations(entries: List<FriendLocationSnapshotEntry>) {
+        entries.forEach { entry ->
+            updateFriendLocation(entry.position)
+
+            val userId = entry.position.userId
+            database.snailTrailDao().deletePointsForUser(userId)
+            if (entry.snailTrail.isNotEmpty()) {
+                database.snailTrailDao().upsertPoints(
+                    entry.snailTrail.map {
+                        SnailTrailPointDto(
+                            userId = userId,
+                            lat = it.coordinates.lat,
+                            long = it.coordinates.long,
+                            locationTime = it.locationTime,
+                            speed = it.speed,
+                            heading = it.heading,
+                        )
+                    }
+                )
+            }
         }
     }
 
-    /** Applies the initial `FriendLocationsSnapshot` (pushed once on socket connect). */
-    suspend fun updateFriendLocations(payloads: List<FriendLocationPayload>) {
-        payloads.forEach { updateFriendLocation(it) }
+    /** Appends one new snail-trail point (`SnailTrailPointAdded`, ~once/minute) without touching
+     * any existing points. */
+    suspend fun appendSnailTrailPoint(userId: String, point: SnailTrailPointPayload) {
+        database.snailTrailDao().upsertPoints(listOf(
+            SnailTrailPointDto(
+                userId = userId,
+                lat = point.coordinates.lat,
+                long = point.coordinates.long,
+                locationTime = point.locationTime,
+                speed = point.speed,
+                heading = point.heading,
+            )
+        ))
     }
 
     fun getSnailTrailFlow(userId: String): Flow<List<SnailTrailPoint>> {
