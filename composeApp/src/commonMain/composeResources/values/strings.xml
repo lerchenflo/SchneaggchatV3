@@ -15,7 +15,7 @@
     <string name="groupsync">groupdata</string>
     <string name="messagesync">messages</string>
     <string name="mapsync">map entrys</string>
-    <string name="imagesync">images</string>
+    <string name="mediasync">media</string>
 
     <string name="status_infotext">This status is available to all your friends. Currently, it is not set.</string>
     <string name="currentstatus">Your current status: %1$s</string>
@@ -255,6 +255,15 @@
     <string name="share_location_global">Share my location</string>
     <string name="share_location_global_info">Allow friends you share with to see your location</string>
     <string name="share_location_friends_title">Share with</string>
+    <string name="advanced_location_sharing">Advanced location sharing</string>
+    <string name="advanced_location_sharing_info">Also send your speed and heading, and reveal advanced options per friend</string>
+    <string name="share_speed_heading">Share speed &amp; heading</string>
+    <string name="share_snail_trail">Share snail trail (last 24h)</string>
+    <string name="schneaggmap_user_speed">Speed: %1$s km/h</string>
+    <string name="schneaggmap_user_heading">Heading: %1$s°</string>
+    <string name="schneaggmap_user_altitude">Altitude: %1$s m</string>
+    <string name="schneaggmap_user_battery">Battery: %1$s%%</string>
+    <string name="schneaggmap_user_distance_24h">Distance (24h): %1$s km</string>
 
     <string name="use_default_server">Use default server</string>
     <string name="use_test_server">Use test server</string>
@@ -326,6 +335,7 @@
 
     <string name="pending_friend_requests">%1$s pending friend requests</string>
     <string name="no_friends_found_search">Friend not found?</string>
+    <string name="no_friends">no friends</string>
 
     <string name="message_delete_info">Do you really want to delete this message?</string>
     <string name="open_chat">Open chat</string>
@@ -647,6 +657,11 @@
     <string name="latlong">Lat %1$s, Long %2$s</string>
     <string name="latitude">Latitude</string>
     <string name="longitude">Longitude</string>
+
+    <string name="schneaggmap_user_last_online">Last online: %1$s</string>
+    <string name="schneaggmap_user_distance">Distance: %1$s</string>
+    <string name="schneaggmap_user_online">Online</string>
+    <string name="schneaggmap_show_snail_trails">Show snail trails</string>
 
     <!-- Location Types -->
     <string name="location_type_radar">Radar</string>

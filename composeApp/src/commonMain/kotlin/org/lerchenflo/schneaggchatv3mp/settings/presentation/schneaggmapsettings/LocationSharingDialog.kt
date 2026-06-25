@@ -23,17 +23,25 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.advanced_location_sharing
+import schneaggchatv3mp.composeapp.generated.resources.advanced_location_sharing_info
 import schneaggchatv3mp.composeapp.generated.resources.close
+import schneaggchatv3mp.composeapp.generated.resources.no_friends
 import schneaggchatv3mp.composeapp.generated.resources.share_location_friends_title
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global_info
+import schneaggchatv3mp.composeapp.generated.resources.share_snail_trail
+import schneaggchatv3mp.composeapp.generated.resources.share_speed_heading
 
 @Composable
 fun LocationSharingDialog(
     shareLocationGlobal: Boolean,
     onShareLocationGlobalChange: (Boolean) -> Unit,
+    advancedLocationSharing: Boolean,
+    onAdvancedLocationSharingChange: (Boolean) -> Unit,
     friends: List<User>,
     onFriendShareChange: (friendId: String, share: Boolean) -> Unit,
+    onFriendAdvancedShareChange: (friendId: String, shareSpeedHeading: Boolean, snailTrailHours: Int?) -> Unit,
     onDismiss: () -> Unit,
 ) {
     AlertDialog(
@@ -50,6 +58,17 @@ fun LocationSharingDialog(
                     switchchecked = shareLocationGlobal,
                     onSwitchChange = onShareLocationGlobalChange,
                     icon = null
+                )
+
+                // Sends our own speed/heading, and reveals the per-friend advanced controls
+                // below. Only meaningful once basic sharing is on.
+                SettingsSwitch(
+                    titletext = stringResource(Res.string.advanced_location_sharing),
+                    infotext = stringResource(Res.string.advanced_location_sharing_info),
+                    switchchecked = advancedLocationSharing,
+                    onSwitchChange = onAdvancedLocationSharingChange,
+                    icon = null,
+                    enabled = shareLocationGlobal
                 )
 
                 if (friends.isNotEmpty()) {
@@ -84,10 +103,62 @@ fun LocationSharingDialog(
                                 onCheckedChange = { onFriendShareChange(friend.id, it) }
                             )
                         }
+
+                        // Per-friend advanced controls - only shown once "Advanced location
+                        // sharing" is toggled on and this friend may see our location at all.
+                        if (advancedLocationSharing && friend.locationShared) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 16.dp, top = 2.dp, bottom = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stringResource(Res.string.share_speed_heading),
+                                    maxLines = 1,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.weight(1f)
+                                )
+
+                                Switch(
+                                    checked = friend.shareSpeedHeading,
+                                    enabled = shareLocationGlobal,
+                                    onCheckedChange = { checked ->
+                                        onFriendAdvancedShareChange(friend.id, checked, friend.snailTrailHours)
+                                    }
+                                )
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 16.dp, top = 2.dp, bottom = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stringResource(Res.string.share_snail_trail),
+                                    maxLines = 1,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.weight(1f)
+                                )
+
+                                Switch(
+                                    checked = friend.snailTrailHours != null,
+                                    enabled = shareLocationGlobal,
+                                    onCheckedChange = { checked ->
+                                        onFriendAdvancedShareChange(
+                                            friend.id,
+                                            friend.shareSpeedHeading,
+                                            if (checked) 0 else null // 0 = full 24h retained history
+                                        )
+                                    }
+                                )
+                            }
+                        }
                     }
                 } else {
                     Text(
-                        text = "no friends"
+                        text = stringResource(Res.string.no_friends)
                     )
                 }
             }

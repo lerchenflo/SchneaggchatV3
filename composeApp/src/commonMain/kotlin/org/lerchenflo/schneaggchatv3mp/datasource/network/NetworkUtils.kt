@@ -38,7 +38,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText.StringResourceText
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -461,6 +460,10 @@ class NetworkUtils(
 
             //Do i share the location with this friend
             val shareLocation: Boolean = false,
+            //Do i share speed + heading (live driving telemetry) with this friend
+            val shareSpeedHeading: Boolean = false,
+            //Snail trail shared with this friend: null = off, 0 = full 24h, N = last N hours
+            val snailTrailHours: Int? = null,
 
 
         ) : UserResponse
@@ -1176,46 +1179,28 @@ class NetworkUtils(
         return safeDelete(endpoint = "/map/delete?entryid=$entryId")
     }
 
-    @Serializable
-    data class UserLocationRequest(val lat: Double, val lon: Double)
-
-    suspend fun sendUserLocation(lat: Double, lon: Double): NetworkResult<Unit, NetworkError> {
-        return safePost(
-            endpoint = "/users/location",
-            body = UserLocationRequest(lat, lon)
-        )
-    }
+    // Location data itself is now pushed/pulled over the WebSocket (see SocketConnectionMessage:
+    // LocationUpdate / FriendLocationChange / FriendLocationsSnapshot), not via HTTP.
 
     @Serializable
-    data class UserLocationsRequest(val lat: Double, val long: Double)
-
-    @Serializable
-    data class UserLocationResponse(
-        val userId: String,
-        val coordinates: LatLong,
-        val locationTime: Long, // epoch millis
+    data class LocationShareRequest(
+        val friendId: String,
+        // Full desired per-friend map-sharing state - send all of these every time.
+        val share: Boolean,
+        val shareSpeedHeading: Boolean = false,
+        val snailTrailHours: Int? = null,
     )
 
-    /**
-     * Combined push+pull: stores the caller's current location and returns every friend's
-     * location currently visible to the caller (global switch on + shared with caller).
-     * An empty list is normal (no visible friends / none posted recently, 24h TTL).
-     */
-    suspend fun userLocationsSync(lat: Double, long: Double): NetworkResult<List<UserLocationResponse>, NetworkError> {
-        return safePost(
-            endpoint = "/users/locations",
-            body = UserLocationsRequest(lat, long)
-        )
-    }
-
-    @Serializable
-    data class LocationShareRequest(val friendId: String, val share: Boolean)
-
-    /** Per-friend toggle: "do I share my location with this specific friend". */
-    suspend fun shareLocation(friendId: String, share: Boolean): NetworkResult<Unit, NetworkError> {
+    /** Per-friend toggle: what we share with this specific friend (location, speed/heading, snail trail). */
+    suspend fun shareLocation(
+        friendId: String,
+        share: Boolean,
+        shareSpeedHeading: Boolean = false,
+        snailTrailHours: Int? = null,
+    ): NetworkResult<Unit, NetworkError> {
         return safePost(
             endpoint = "/users/sharelocation",
-            body = LocationShareRequest(friendId, share)
+            body = LocationShareRequest(friendId, share, shareSpeedHeading, snailTrailHours)
         )
     }
 }

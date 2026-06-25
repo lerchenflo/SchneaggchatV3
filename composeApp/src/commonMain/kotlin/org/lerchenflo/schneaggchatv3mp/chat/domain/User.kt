@@ -2,6 +2,9 @@ package org.lerchenflo.schneaggchatv3mp.chat.domain
 
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 data class User(
     override val id: String,
@@ -12,9 +15,11 @@ data class User(
     override val status: String?,
     val location: UserLocation? = null,
     val locationShared: Boolean = false,
+    // Per-friend advanced-location settings (what we share TOWARDS this friend)
+    val shareSpeedHeading: Boolean = false,
+    val snailTrailHours: Int? = null,
     val wakeupEnabled: Boolean = false,
     override val profilePictureUrl: String = "",
-    val lastOnline: Long? = null,
     override val friendshipStatus: NetworkUtils.FriendshipStatus?,
     override val requesterId: String? = null,
     val notisMuted: Boolean = false,
@@ -40,6 +45,13 @@ data class User(
         return emailVerifiedAt != null
     }
 
+    fun isLocationValid() : Boolean {
+        if (location == null) return false
+        val dateI = Instant.fromEpochMilliseconds(location.date)
+        return Clock.System.now() < (dateI + 24.hours)
+
+    }
+
     override fun toString(): String {
         return """
         User(
@@ -51,9 +63,10 @@ data class User(
             status=$status,
             location=$location,
             locationShared=$locationShared,
+            shareSpeedHeading=$shareSpeedHeading,
+            snailTrailHours=$snailTrailHours,
             wakeupEnabled=$wakeupEnabled,
             profilePictureUrl='$profilePictureUrl',
-            lastOnline=$lastOnline,
             friendshipStatus=$friendshipStatus,
             requesterId=$requesterId,
             notisMuted=$notisMuted,
@@ -82,11 +95,21 @@ fun UserDto.toUser(): User = User(
         val lat = this.locationLat
         val long = this.locationLong
         val date = this.locationDate
-        if (lat != null && long != null && date != null) UserLocation(lat = lat, long = long, date = date) else null
+        if (lat != null && long != null && date != null) UserLocation(
+            lat = lat,
+            long = long,
+            date = date,
+            speed = this.locationSpeed,
+            heading = this.locationHeading,
+            altitude = this.locationAltitude,
+            batteryLevel = this.locationBattery,
+            distanceTraveled24h = this.locationDistance24h,
+        ) else null
     },
     locationShared = this.locationShared,
+    shareSpeedHeading = this.shareSpeedHeading,
+    snailTrailHours = this.snailTrailHours,
     wakeupEnabled = this.wakeupEnabled,
-    lastOnline = this.lastOnline,
     requesterId = this.requesterId,
     notisMuted = this.notisMuted,
     birthDate = this.birthDate,
@@ -109,9 +132,15 @@ fun User.toDto(): UserDto = UserDto(
     locationLat = this.location?.lat,
     locationLong = this.location?.long,
     locationDate = this.location?.date,
+    locationSpeed = this.location?.speed,
+    locationHeading = this.location?.heading,
+    locationAltitude = this.location?.altitude,
+    locationBattery = this.location?.batteryLevel,
+    locationDistance24h = this.location?.distanceTraveled24h,
     locationShared = this.locationShared,
+    shareSpeedHeading = this.shareSpeedHeading,
+    snailTrailHours = this.snailTrailHours,
     wakeupEnabled = this.wakeupEnabled,
-    lastOnline = this.lastOnline,
     requesterId = this.requesterId,
     notisMuted = this.notisMuted,
     birthDate = this.birthDate,

@@ -23,13 +23,18 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
+import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
+import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
+import kotlinx.serialization.encodeToString
 
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -41,7 +46,9 @@ class GlobalViewModel(
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
     private val messageRepository: MessageRepository,
-    private val locationService: LocationService
+    private val locationService: LocationService,
+    private val batteryService: BatteryService,
+    private val appVersion: AppVersion
 ): ViewModel() {
 
     init {
@@ -252,6 +259,10 @@ class GlobalViewModel(
     private var locationTrackingJob: kotlinx.coroutines.Job? = null
 
     private fun startLocationTracking() {
+        // Desktop has no GPS and can't request the permission - never touch location tracking
+        // (or the synced "share my location" setting) from here on non-mobile platforms, so a
+        // desktop session never disables location sharing for the user's phone.
+        if (!appVersion.isMobile()) return
         if (locationTrackingJob != null || permissionRequestJob != null) return // Already tracking or requesting
         if (!ownLocationShared) return // Sharing disabled - don't even ask for permission
 
@@ -277,10 +288,22 @@ class GlobalViewModel(
             }
 
             locationTrackingJob = viewModelScope.launch {
-                locationService.getLocationFlow().collect { latLong ->
-                    if (latLong != null) {
-                        println("GlobalViewModel: Sending location update: ${latLong.lat}, ${latLong.long}")
-                        appRepository.getUserLocations(latLong.lat, latLong.long)
+                locationService.getLocationFlow().collect { location ->
+                    if (location != null && socketConnectionManager.isConnectedNow()) {
+                        // Altitude/battery are sent by default whenever location sharing is on at
+                        // all - the server already always shares them once a friend can see your
+                        // location. Speed/heading are more revealing (live driving telemetry), so
+                        // those only go out when "Advanced location sharing" is on.
+                        val advanced = preferenceManager.getAdvancedLocationSharing()
+                        val update = SocketConnectionMessage.LocationUpdate(
+                            lat = location.coordinates.lat,
+                            long = location.coordinates.long,
+                            speed = if (advanced) location.speed else null,
+                            heading = if (advanced) location.heading?.toDouble() else null,
+                            altitude = location.altitude?.toDouble(),
+                            batteryLevel = batteryService.getBatteryLevel(),
+                        )
+                        socketConnectionManager.sendMessage(AppJson.instance.encodeToString(update as SocketConnectionMessage))
                     }
                 }
             }

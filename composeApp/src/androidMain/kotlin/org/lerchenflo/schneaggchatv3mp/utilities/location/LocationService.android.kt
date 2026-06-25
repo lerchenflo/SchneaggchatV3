@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.flowOf
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
+import kotlin.math.roundToInt
 
 actual class LocationService(private val context: Context) {
 
@@ -23,7 +24,7 @@ actual class LocationService(private val context: Context) {
     }
 
     @SuppressLint("MissingPermission")
-    actual fun getLocationFlow(): Flow<LatLong?> {
+    actual fun getLocationFlow(): Flow<DeviceLocation?> {
         val permManager = PermissionManager(context)
 
         // Build a callbackFlow so we can use the FusedLocation callback API
@@ -39,13 +40,21 @@ actual class LocationService(private val context: Context) {
                 Priority.PRIORITY_BALANCED_POWER_ACCURACY,
                 30_000L  // request every 30 s; actual delivery follows system batching
             )
-                .setMinUpdateDistanceMeters(20f)   // only if moved > 20 m
+                .setMinUpdateDistanceMeters(5f)   // only if moved > 5 m
                 .build()
 
             val callback = object : LocationCallback() {
                 override fun onLocationResult(result: LocationResult) {
                     val loc = result.lastLocation ?: return
-                    trySend(LatLong(lat = loc.latitude, long = loc.longitude))
+                    trySend(
+                        DeviceLocation(
+                            coordinates = LatLong(lat = loc.latitude, long = loc.longitude),
+                            altitude = if (loc.hasAltitude()) loc.altitude.roundToInt() else null,
+                            heading = if (loc.hasBearing()) loc.bearing.roundToInt() else null,
+                            speed = if (loc.hasSpeed()) loc.speed.toDouble() else null,
+                            timestamp = loc.time,
+                        )
+                    )
                 }
             }
 
