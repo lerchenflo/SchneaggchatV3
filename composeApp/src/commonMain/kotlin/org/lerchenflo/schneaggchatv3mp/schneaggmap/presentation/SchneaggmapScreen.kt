@@ -3,22 +3,29 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Polyline
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -75,7 +82,10 @@ import org.maplibre.compose.camera.CameraState
 import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.image
+import org.maplibre.compose.expressions.value.LineCap
+import org.maplibre.compose.expressions.value.LineJoin
 import org.maplibre.compose.layers.CircleLayer
+import org.maplibre.compose.layers.LineLayer
 import org.maplibre.compose.layers.SymbolLayer
 import org.maplibre.compose.location.Location
 import org.maplibre.compose.location.rememberDefaultLocationProvider
@@ -94,6 +104,7 @@ import org.maplibre.compose.style.rememberStyleState
 import org.maplibre.compose.util.ClickResult
 import org.maplibre.spatialk.geojson.Feature
 import org.maplibre.spatialk.geojson.FeatureCollection
+import org.maplibre.spatialk.geojson.LineString
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
 import org.maplibre.spatialk.units.extensions.inMeters
@@ -115,6 +126,7 @@ import schneaggchatv3mp.composeapp.generated.resources.icon_sightseeing
 import schneaggchatv3mp.composeapp.generated.resources.icon_street
 import schneaggchatv3mp.composeapp.generated.resources.icon_viewpoint
 import schneaggchatv3mp.composeapp.generated.resources.icon_wheeliespot
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_show_snail_trails
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 import kotlin.collections.listOf
 
@@ -127,6 +139,16 @@ private const val ONLINE_THRESHOLD_MILLIS = 2 * 60 * 1000L
 private data class UserMarkerIcon(val bitmap: ImageBitmap, val size: DpSize)
 
 private data class UserMarkerData(val username: String, val statusText: String, val isOnline: Boolean)
+
+//Distinct, stable color per user for snail trails - picked by hashing the user id into a
+//small curated palette so colors stay visually distinguishable from each other.
+private val SNAIL_TRAIL_COLORS = listOf(
+    Color(0xFFE53935), Color(0xFF1E88E5), Color(0xFF43A047), Color(0xFFFB8C00),
+    Color(0xFF8E24AA), Color(0xFF00ACC1), Color(0xFFD81B60), Color(0xFF6D4C41),
+)
+
+private fun snailTrailColor(userId: String): Color =
+    SNAIL_TRAIL_COLORS[userId.hashCode().mod(SNAIL_TRAIL_COLORS.size)]
 
 @Composable
 fun SchneaggmapScreenRoot() {
@@ -212,24 +234,26 @@ fun SchneaggmapScreen(
             onAction = onAction
         )
 
-        Row(
-            Modifier.align(Alignment.TopStart).padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.align(Alignment.TopStart).padding(8.dp),
         ) {
-            FloatingActionButton(
-                onClick = { onAction(SchneaggmapAction.OnSettingsClick) },
-            ) {
-                Icon(Icons.Default.Settings, contentDescription = null)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                FloatingActionButton(
+                    onClick = { onAction(SchneaggmapAction.OnSettingsClick) },
+                ) {
+                    Icon(Icons.Default.Settings, contentDescription = null)
+                }
+
+                DisappearingCompassButton(
+                    cameraState = cameraState,
+                    modifier = Modifier.padding(start = 8.dp),
+                )
             }
 
-            DisappearingCompassButton(
-                cameraState = cameraState,
-                modifier = Modifier.padding(start = 8.dp),
-            )
         }
 
         ownLocation?.speed?.let { speed ->
-            if (!speed.distancePerSecond.isZero) {
+            if (speed.distancePerSecond.inMeters > 3) {
                 val speedKmh = (speed.distancePerSecond.inMeters * 3.6).roundToInt()
                 Box(
                     modifier = Modifier
@@ -262,6 +286,27 @@ fun SchneaggmapScreen(
             onAction = onAction,
             modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
         )
+
+        Card(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 16.dp, end = 8.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Polyline,
+                    contentDescription = stringResource(Res.string.schneaggmap_show_snail_trails),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(
+                    checked = state.showSnailTrails,
+                    onCheckedChange = { onAction(SchneaggmapAction.ToggleSnailTrails) },
+                )
+            }
+        }
 
         ownLocation?.let {
             FloatingActionButton(
@@ -509,6 +554,40 @@ private fun SchneaggmapMapContent(
              */
         }
 
+
+        //Show snail trails (drawn before the user markers so the avatars sit on top of the lines)
+        if (state.showSnailTrails) {
+            state.usersWithLocation.forEach { user ->
+                key(user.id) {
+                    val trail = state.snailTrails[user.id]
+                    if (trail != null && trail.size >= 2) {
+                        val trailSource = rememberGeoJsonSource(
+                            data = GeoJsonData.Features(
+                                FeatureCollection(
+                                    Feature(
+                                        geometry = LineString(
+                                            trail.map { point ->
+                                                Position(longitude = point.long, latitude = point.lat)
+                                            }
+                                        ),
+                                        properties = buildJsonObject {}
+                                    )
+                                )
+                            )
+                        )
+
+                        LineLayer(
+                            id = "snailtrail-${user.id}",
+                            source = trailSource,
+                            color = const(snailTrailColor(user.id)),
+                            width = const(3.dp),
+                            cap = const(LineCap.Round),
+                            join = const(LineJoin.Round),
+                        )
+                    }
+                }
+            }
+        }
 
         //Show user locations
         if (state.usersWithLocation.isNotEmpty()) {

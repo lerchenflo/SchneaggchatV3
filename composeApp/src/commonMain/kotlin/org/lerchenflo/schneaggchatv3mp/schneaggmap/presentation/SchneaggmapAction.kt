@@ -24,4 +24,6 @@ sealed interface SchneaggmapAction {
 
     data object OnSettingsClick: SchneaggmapAction
 
+    data object ToggleSnailTrails: SchneaggmapAction
+
 }

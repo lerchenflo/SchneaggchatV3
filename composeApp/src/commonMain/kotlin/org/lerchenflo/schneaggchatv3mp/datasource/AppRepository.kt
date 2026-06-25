@@ -52,6 +52,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
@@ -683,6 +684,10 @@ class AppRepository(
                         && !it.isGroup
             }
         }
+    }
+
+    fun getSnailTrailFlow(userId: String): Flow<List<SnailTrailPoint>> {
+        return userRepository.getSnailTrailFlow(userId)
     }
 
 

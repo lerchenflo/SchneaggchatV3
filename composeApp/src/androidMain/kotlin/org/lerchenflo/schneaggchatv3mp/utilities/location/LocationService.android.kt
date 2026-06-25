@@ -40,7 +40,7 @@ actual class LocationService(private val context: Context) {
                 Priority.PRIORITY_BALANCED_POWER_ACCURACY,
                 30_000L  // request every 30 s; actual delivery follows system batching
             )
-                .setMinUpdateDistanceMeters(20f)   // only if moved > 20 m
+                .setMinUpdateDistanceMeters(5f)   // only if moved > 5 m
                 .build()
 
             val callback = object : LocationCallback() {

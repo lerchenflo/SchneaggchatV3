@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import androidx.lifecycle.ViewModel
@@ -6,12 +8,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
@@ -202,6 +209,10 @@ class SchneaggmapViewModel(
 
                 _state.update { it.copy(selectedUser = null) }
             }
+
+            SchneaggmapAction.ToggleSnailTrails -> _state.update {
+                it.copy(showSnailTrails = !it.showSnailTrails)
+            }
         }
     }
 
@@ -251,6 +262,26 @@ class SchneaggmapViewModel(
                                 usersWithLocation = it
                             )
                     } }
+                }
+        }
+
+        // Only fetched while the toggle is on, and only for friends currently shown on the map -
+        // re-subscribes whenever either of those changes.
+        viewModelScope.launch {
+            _state
+                .map { it.showSnailTrails to it.usersWithLocation.map { user -> user.id } }
+                .distinctUntilChanged()
+                .flatMapLatest { (enabled, userIds) ->
+                    if (!enabled || userIds.isEmpty()) {
+                        flowOf(emptyMap<String, List<SnailTrailPoint>>())
+                    } else {
+                        combine(userIds.map { id -> appRepository.getSnailTrailFlow(id).map { id to it } }) { pairs ->
+                            pairs.toMap()
+                        }
+                    }
+                }
+                .collectLatest { trails ->
+                    _state.update { it.copy(snailTrails = trails) }
                 }
         }
     }

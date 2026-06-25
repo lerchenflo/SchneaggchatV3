@@ -14,6 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupMemberDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.SnailTrailPointDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
@@ -46,6 +47,22 @@ interface UserDao {
     @Query("SELECT id, updatedAt FROM users")
     suspend fun getUserIdsWithChangeDates(): List<IdChangeDate>
 
+}
+
+@Dao
+interface SnailTrailDao {
+
+    @Upsert
+    suspend fun upsertPoints(points: List<SnailTrailPointDto>): List<Long>
+
+    @Query("DELETE FROM snail_trail_points WHERE userId = :userId")
+    suspend fun deletePointsForUser(userId: String)
+
+    @Query("SELECT * FROM snail_trail_points WHERE userId = :userId ORDER BY locationTime ASC")
+    fun getPointsForUserFlow(userId: String): Flow<List<SnailTrailPointDto>>
+
+    @Query("SELECT * FROM snail_trail_points WHERE userId = :userId ORDER BY locationTime ASC")
+    suspend fun getPointsForUser(userId: String): List<SnailTrailPointDto>
 }
 
 
@@ -265,6 +282,9 @@ interface AllDatabaseDao {
     @Query("DELETE FROM users")
     suspend fun clearUsers()
 
+    @Query("DELETE FROM snail_trail_points")
+    suspend fun clearSnailTrailPoints()
+
     @Query("DELETE FROM `groups`")
     suspend fun clearGroups()
 
@@ -285,6 +305,7 @@ interface AllDatabaseDao {
         // Clear tables in proper order to respect foreign key constraints
         clearMessageReaders()  // Child table first
         clearMessages()        // Then parent table
+        clearSnailTrailPoints() // Child of users - clear before users
         clearUsers()           // Finally users table
         clearGroupMembers()
         clearGroups()
