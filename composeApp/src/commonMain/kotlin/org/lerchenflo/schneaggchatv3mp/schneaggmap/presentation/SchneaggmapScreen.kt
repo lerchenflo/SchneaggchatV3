@@ -29,7 +29,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -41,6 +43,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
@@ -63,6 +66,9 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.WHEELIESP
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.mergeProfilePictureWithStatusText
+import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import org.maplibre.compose.camera.CameraMoveReason
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.CameraState
@@ -109,10 +115,18 @@ import schneaggchatv3mp.composeapp.generated.resources.icon_sightseeing
 import schneaggchatv3mp.composeapp.generated.resources.icon_street
 import schneaggchatv3mp.composeapp.generated.resources.icon_viewpoint
 import schneaggchatv3mp.composeapp.generated.resources.icon_wheeliespot
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 import kotlin.collections.listOf
 
 private const val OWN_LOCATION_START_ZOOM = 14.0
 private const val OWN_LOCATION_CLICK_ZOOM = 16.0
+
+//How recent a friend's last location ping must be to show "Online" instead of a last-seen time.
+private const val ONLINE_THRESHOLD_MILLIS = 2 * 60 * 1000L
+
+private data class UserMarkerIcon(val bitmap: ImageBitmap, val size: DpSize)
+
+private data class UserMarkerData(val username: String, val statusText: String, val isOnline: Boolean)
 
 @Composable
 fun SchneaggmapScreenRoot() {
@@ -331,15 +345,49 @@ private fun SchneaggmapMapContent(
     }
 
     //Resolve user profile pictures off the composition (file read + bitmap decode), keyed by
-    //path so a changed profile picture re-resolves but unrelated state changes don't.
-    var userIcons by remember { mutableStateOf<Map<String, ImageBitmap>>(emptyMap()) }
+    //path so a changed profile picture re-resolves but unrelated state changes don't. Each
+    //bitmap has the user's last-online status baked in underneath the picture, so the size
+    //varies per user (the status pill width depends on the text) and is tracked alongside it.
+    var userIcons by remember { mutableStateOf<Map<String, UserMarkerIcon>>(emptyMap()) }
+
+    val textMeasurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val pillColor = MaterialTheme.colorScheme.surface
+    val onlineColor = MaterialTheme.colorScheme.primary
+    val offlineColor = MaterialTheme.colorScheme.onSurface
+    val onlineLabel = stringResource(Res.string.schneaggmap_user_online)
+
+    //Recency-based presence: a friend counts as "online" if their last location ping is
+    //recent, otherwise we show the formatted last-seen time instead.
+    val userMarkerData = state.usersWithLocation.associate { user ->
+        val date = user.location?.date
+        val isOnline = date != null && (getCurrentTimeMillisLong() - date) < ONLINE_THRESHOLD_MILLIS
+        val statusText = if (isOnline) onlineLabel else date?.let { millisToTimeDateOrYesterday(it) } ?: "-"
+        val username = user.nickName?.takeIf { it.isNotBlank() } ?: user.name
+        user.id to UserMarkerData(username = username, statusText = statusText, isOnline = isOnline)
+    }
+
     val userPicturePaths = state.usersWithLocation.map { it.profilePictureUrl }
-    LaunchedEffect(userPicturePaths) {
+    LaunchedEffect(userPicturePaths, userMarkerData, pillColor, onlineColor, offlineColor) {
         userIcons = state.usersWithLocation.mapNotNull { user ->
             if (user.profilePictureUrl.isBlank()) return@mapNotNull null
+            val markerData = userMarkerData[user.id] ?: return@mapNotNull null
             runCatching {
                 val bytes = SystemFileSystem.source(Path(user.profilePictureUrl)).buffered().readByteArray()
-                user.id to bytes.decodeToImageBitmap()
+                val mergedBitmap = mergeProfilePictureWithStatusText(
+                    profilePicture = bytes.decodeToImageBitmap(),
+                    username = markerData.username,
+                    statusText = markerData.statusText,
+                    backgroundColor = pillColor,
+                    nameColor = offlineColor,
+                    statusColor = if (markerData.isOnline) onlineColor else offlineColor,
+                    textMeasurer = textMeasurer,
+                    density = density,
+                )
+                val markerSize = with(density) {
+                    DpSize(mergedBitmap.width.toDp(), mergedBitmap.height.toDp())
+                }
+                user.id to UserMarkerIcon(bitmap = mergedBitmap, size = markerSize)
             }.getOrNull()
         }.toMap()
     }
@@ -484,8 +532,10 @@ private fun SchneaggmapMapContent(
                     )
                 )
 
-                val profilePicturePainter = userIcons[user.id]?.let { BitmapPainter(it) }
+                val markerIcon = userIcons[user.id]
+                val profilePicturePainter = markerIcon?.let { BitmapPainter(it.bitmap) }
                     ?: painterResource(Res.drawable.icon_nutzer)
+                val markerSize = markerIcon?.size ?: DpSize(33.dp, 33.dp)
 
                 SymbolLayer(
                     id = "user-${user.id}",
@@ -496,7 +546,7 @@ private fun SchneaggmapMapContent(
                             ClickResult.Consume
                         } else ClickResult.Pass
                     },
-                    iconImage = image(profilePicturePainter, size = DpSize(33.dp, 33.dp)),
+                    iconImage = image(profilePicturePainter, size = markerSize),
                     iconAllowOverlap = const(true)
                 )
             }

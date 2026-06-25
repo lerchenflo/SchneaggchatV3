@@ -35,6 +35,9 @@ object AppJson {
                 subclass(SocketConnectionMessage.UserChange::class)
                 subclass(SocketConnectionMessage.FriendRequest::class)
                 subclass(SocketConnectionMessage.MapChange::class)
+                subclass(SocketConnectionMessage.LocationUpdate::class)
+                subclass(SocketConnectionMessage.FriendLocationChange::class)
+                subclass(SocketConnectionMessage.FriendLocationsSnapshot::class)
             }
 
             polymorphic(PollResponse::class) {

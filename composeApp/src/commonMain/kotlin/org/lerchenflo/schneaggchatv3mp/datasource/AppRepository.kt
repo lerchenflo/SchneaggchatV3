@@ -320,7 +320,6 @@ class AppRepository(
 
     private fun updateSyncJob(type: DataSyncJobType, status: DataSyncJobStatus, error: String? = null) {
         _dataSyncState.update { current ->
-            println("Updating sync job")
             current.copy(
                 jobs = current.jobs.map {
                     if (it.type == type) {
@@ -1040,7 +1039,14 @@ class AppRepository(
                                 locationLat = existing?.locationLat,
                                 locationLong = existing?.locationLong,
                                 locationDate = existing?.locationDate,
+                                locationSpeed = existing?.locationSpeed,
+                                locationHeading = existing?.locationHeading,
+                                locationAltitude = existing?.locationAltitude,
+                                locationBattery = existing?.locationBattery,
+                                locationDistance24h = existing?.locationDistance24h,
                                 locationShared = newUser.shareLocation,
+                                shareSpeedHeading = newUser.shareSpeedHeading,
+                                snailTrailHours = newUser.snailTrailHours,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
                                 notisMuted = existing?.notisMuted ?: false,
                                 email = null,
@@ -1067,6 +1073,11 @@ class AppRepository(
                                 locationLat = existing?.locationLat,
                                 locationLong = existing?.locationLong,
                                 locationDate = existing?.locationDate,
+                                locationSpeed = existing?.locationSpeed,
+                                locationHeading = existing?.locationHeading,
+                                locationAltitude = existing?.locationAltitude,
+                                locationBattery = existing?.locationBattery,
+                                locationDistance24h = existing?.locationDistance24h,
                                 locationShared = newUser.locationShared,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
                                 frienshipStatus = null,
@@ -2025,31 +2036,28 @@ class AppRepository(
     }
 
 
-    /**
-     * Combined push+pull: pushes the caller's current location and returns every friend's
-     * location currently visible to the caller. An empty list is normal/expected.
-     */
-    suspend fun syncUserLocations(lat: Double, long: Double) {
+    // Location data itself is now pushed/pulled over the WebSocket (see GlobalViewModel's
+    // location-tracking job and SocketConnectionMessage's LocationUpdate/FriendLocationChange/
+    // FriendLocationsSnapshot handling), not via HTTP.
 
-        when (val result = networkUtils.userLocationsSync(lat, long)) {
-            is NetworkResult.Error<*> -> {
-                println("Sync user locations failed")
-            }
-            is NetworkResult.Success<List<NetworkUtils.UserLocationResponse>> -> {
-                userRepository.updateUserLocations(result.data, ownLocation = LatLong(lat = lat, long = long))
-            }
-        }
-    }
-
-    /** Per-friend toggle: "do I share my location with this specific friend". */
-    suspend fun setLocationSharing(friendId: String, share: Boolean): Boolean {
-        return when (networkUtils.shareLocation(friendId, share)) {
+    /** Per-friend toggle: what we share with this specific friend (location, speed/heading, snail trail). */
+    suspend fun setLocationSharing(
+        friendId: String,
+        share: Boolean,
+        shareSpeedHeading: Boolean = false,
+        snailTrailHours: Int? = null,
+    ): Boolean {
+        return when (networkUtils.shareLocation(friendId, share, shareSpeedHeading, snailTrailHours)) {
             is NetworkResult.Error<*> -> false
             is NetworkResult.Success<*> -> {
                 // Optimistically reflect the new value locally so UI updates immediately;
                 // the next /users/sync or UserChange socket push reconciles the authoritative value.
                 userRepository.getUserById(friendId)?.let { friend ->
-                    userRepository.upsertUser(friend.copy(locationShared = share).toDto())
+                    userRepository.upsertUser(friend.copy(
+                        locationShared = share,
+                        shareSpeedHeading = shareSpeedHeading,
+                        snailTrailHours = snailTrailHours,
+                    ).toDto())
                 }
                 true
             }

@@ -32,12 +32,25 @@ data class UserDto(
 
     var locationDate: Long? = null,
 
+    // Optional telemetry, all shown when available. Speed/heading are only ever populated when
+    // the location-owner has "Advanced location sharing" enabled; altitude/battery/distance are
+    // sent whenever location sharing is on at all.
+    var locationSpeed: Double? = null, // meters/second
+    var locationHeading: Double? = null, // degrees, 0-360
+    var locationAltitude: Double? = null, // meters above sea level
+    var locationBattery: Int? = null, // percent, 0-100
+    var locationDistance24h: Double? = null, // meters traveled in the last 24h
+
 
     // friend stuff
     var frienshipStatus: NetworkUtils.FriendshipStatus?, //Current status of the friendship
     val requesterId: String?, //Who requested the friendship
 
     var locationShared: Boolean = false,
+
+    // Per-friend advanced-location settings (what we share TOWARDS this friend)
+    var shareSpeedHeading: Boolean = false,
+    var snailTrailHours: Int? = null,
 
     var wakeupEnabled: Boolean = false,
 

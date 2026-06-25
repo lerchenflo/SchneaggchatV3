@@ -51,6 +51,7 @@ actual class LocationService(private val context: Context) {
                             coordinates = LatLong(lat = loc.latitude, long = loc.longitude),
                             altitude = if (loc.hasAltitude()) loc.altitude.roundToInt() else null,
                             heading = if (loc.hasBearing()) loc.bearing.roundToInt() else null,
+                            speed = if (loc.hasSpeed()) loc.speed.toDouble() else null,
                             timestamp = loc.time,
                         )
                     )

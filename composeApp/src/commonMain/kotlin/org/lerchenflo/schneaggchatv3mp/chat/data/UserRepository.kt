@@ -8,8 +8,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
-import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.FriendLocationPayload
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 
 class UserRepository(
@@ -64,18 +63,26 @@ class UserRepository(
         }
     }
 
-    suspend fun updateUserLocations(locations: List<NetworkUtils.UserLocationResponse>, ownLocation: LatLong) {
-        locations.forEach { location ->
-            val dbUser = database.userDao().getUserbyId(location.userId)
-            if (dbUser != null) {
-                println("SCHNEAGGMAP: Updating location for user ${dbUser.name}: $location")
-                database.userDao().upsert(dbUser.copy(
-                    locationLat = location.coordinates.lat,
-                    locationLong = location.coordinates.long,
-                    locationDate = location.locationTime
-                ))
-            }
+    /** Applies a single friend's live location push (`FriendLocationChange`) to the local DB. */
+    suspend fun updateFriendLocation(payload: FriendLocationPayload) {
+        val dbUser = database.userDao().getUserbyId(payload.userId)
+        if (dbUser != null) {
+            database.userDao().upsert(dbUser.copy(
+                locationLat = payload.coordinates.lat,
+                locationLong = payload.coordinates.long,
+                locationDate = payload.locationTime,
+                locationSpeed = payload.speed,
+                locationHeading = payload.heading,
+                locationAltitude = payload.altitude,
+                locationBattery = payload.batteryLevel,
+                locationDistance24h = payload.distanceTraveled24h,
+            ))
         }
+    }
+
+    /** Applies the initial `FriendLocationsSnapshot` (pushed once on socket connect). */
+    suspend fun updateFriendLocations(payloads: List<FriendLocationPayload>) {
+        payloads.forEach { updateFriendLocation(it) }
     }
 
 }

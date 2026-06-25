@@ -30,8 +30,14 @@ import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.open_chat
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_altitude
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_battery
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_distance
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_distance_24h
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_heading
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_last_online
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_speed
+import kotlin.math.roundToInt
 
 @Composable
 fun UserInfoCard(
@@ -82,6 +88,53 @@ fun UserInfoCard(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
+
+            // Advanced telemetry - only present when the user has "Advanced location sharing"
+            // enabled towards us, so these rows simply don't appear otherwise.
+            user.location?.speed?.let { speed ->
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(Res.string.schneaggmap_user_speed, (speed * 3.6).roundToInt().toString()),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            user.location?.heading?.let { heading ->
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(Res.string.schneaggmap_user_heading, heading.roundToInt().toString()),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            user.location?.altitude?.let { altitude ->
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(Res.string.schneaggmap_user_altitude, altitude.roundToInt().toString()),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            user.location?.batteryLevel?.let { battery ->
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(Res.string.schneaggmap_user_battery, battery.toString()),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            user.location?.distanceTraveled24h?.let { distance24h ->
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = stringResource(Res.string.schneaggmap_user_distance_24h, (distance24h / 1000.0).roundToInt().toString()),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 

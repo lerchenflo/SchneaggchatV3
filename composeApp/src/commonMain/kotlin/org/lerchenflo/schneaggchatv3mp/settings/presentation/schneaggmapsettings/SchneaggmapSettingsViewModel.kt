@@ -28,6 +28,9 @@ class SchneaggmapSettingsViewModel(
     var shareLocationGlobal by mutableStateOf(false)
         private set
 
+    var advancedLocationSharing by mutableStateOf(false)
+        private set
+
     var friends by mutableStateOf<List<User>>(emptyList())
         private set
 
@@ -63,6 +66,16 @@ class SchneaggmapSettingsViewModel(
                     friends = value
                 }
         }
+
+        viewModelScope.launch { // "Advanced location sharing" - sends our own telemetry + reveals per-friend advanced controls
+            preferenceManager.getAdvancedLocationSharingFlow()
+                .catch { exception ->
+                    loggingRepository.logWarning("Problem getting advanced location sharing preference: ${exception.message}")
+                }
+                .collect { value ->
+                    advancedLocationSharing = value
+                }
+        }
     }
 
     fun updateMergeMapLocations(newValue: Boolean) {
@@ -79,7 +92,31 @@ class SchneaggmapSettingsViewModel(
 
     fun updateFriendLocationSharing(friendId: String, share: Boolean) {
         viewModelScope.launch {
-            appRepository.setLocationSharing(friendId, share)
+            val friend = friends.find { it.id == friendId }
+            appRepository.setLocationSharing(
+                friendId = friendId,
+                share = share,
+                shareSpeedHeading = friend?.shareSpeedHeading ?: false,
+                snailTrailHours = friend?.snailTrailHours,
+            )
+        }
+    }
+
+    fun updateAdvancedLocationSharing(newValue: Boolean) {
+        viewModelScope.launch {
+            preferenceManager.saveAdvancedLocationSharing(newValue)
+        }
+    }
+
+    fun updateFriendAdvancedSharing(friendId: String, shareSpeedHeading: Boolean, snailTrailHours: Int?) {
+        viewModelScope.launch {
+            val friend = friends.find { it.id == friendId }
+            appRepository.setLocationSharing(
+                friendId = friendId,
+                share = friend?.locationShared ?: true,
+                shareSpeedHeading = shareSpeedHeading,
+                snailTrailHours = snailTrailHours,
+            )
         }
     }
 }
