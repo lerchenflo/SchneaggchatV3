@@ -457,6 +457,11 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
     fun startRecording() {
         viewModelScope.launch {
             try {
+                // Stop any playing audio before starting recording to avoid audio session conflicts
+                audioPlayer.stopAudio()
+                // Give the audio session a moment to fully release
+                delay(100)
+
                 val permission = permissionsManager.checkMicrophonePermission()
                 println("startRecording - Permission: $permission")
                 if (permission != PermissionState.GRANTED) {
@@ -548,6 +553,12 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
 
     fun getPlaybackProgress(): StateFlow<PlaybackProgress>{
         return audioPlayer.playbackProgress
+    }
+
+    suspend fun getAudioDuration(path: String): Long {
+        // Use the same path normalization as playAudio
+        val normalizedPath = audioManager.getRecordingPath(path.substringAfterLast('/'))
+        return audioManager.getMediaDuration(normalizedPath)
     }
 
     fun getMAX_VOICE_MSG_TIME(): Long{
