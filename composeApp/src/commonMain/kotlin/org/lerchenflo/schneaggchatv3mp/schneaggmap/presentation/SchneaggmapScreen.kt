@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Polyline
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
@@ -33,9 +34,11 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -107,6 +110,8 @@ import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.LineString
 import org.maplibre.spatialk.geojson.Point
 import org.maplibre.spatialk.geojson.Position
+import org.maplibre.spatialk.units.Bearing
+import org.maplibre.spatialk.units.extensions.inDegrees
 import org.maplibre.spatialk.units.extensions.inMeters
 import kotlin.math.roundToInt
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -616,6 +621,8 @@ private fun SchneaggmapMapContent(
                     ?: painterResource(Res.drawable.icon_nutzer)
                 val markerSize = markerIcon?.size ?: DpSize(33.dp, 33.dp)
 
+                //TODO: rotate this marker using user.location?.heading once we have a directional
+                // marker design - heading is already stored/synced per friend but unused for rendering.
                 SymbolLayer(
                     id = "user-${user.id}",
                     source = mapLocationSource,
@@ -631,7 +638,7 @@ private fun SchneaggmapMapContent(
             }
         }
 
-        //Own position, as a plain dot (no profile picture needed for yourself)
+        //Own position: a dot, or a heading-rotated arrow while moving (no profile picture needed for yourself)
         ownLocation?.let { location ->
             val ownLocationSource = rememberGeoJsonSource(
                 data = GeoJsonData.Features(
@@ -645,14 +652,35 @@ private fun SchneaggmapMapContent(
                 )
             )
 
-            CircleLayer(
-                id = "own-location",
-                source = ownLocationSource,
-                color = const(Color(0xFF4285F4)),
-                radius = const(8.dp),
-                strokeColor = const(Color.White),
-                strokeWidth = const(2.dp)
-            )
+            // Once we're moving fast enough to have a reliable heading, show a rotated arrow
+            // instead of a plain dot.
+            val heading = location.speed
+                ?.takeIf { it.distancePerSecond.inMeters > 3 }
+                ?.let { location.course?.value }
+
+            if (heading != null) {
+                val arrowPainter = rememberVectorPainter(Icons.Default.Navigation)
+                SymbolLayer(
+                    id = "own-location",
+                    source = ownLocationSource,
+                    iconImage = image(
+                        arrowPainter,
+                        size = DpSize(28.dp, 28.dp),
+                        colorFilter = ColorFilter.tint(Color(0xFF4285F4))
+                    ),
+                    iconRotate = const((heading - Bearing.North).inDegrees.toFloat()),
+                    iconAllowOverlap = const(true)
+                )
+            } else {
+                CircleLayer(
+                    id = "own-location",
+                    source = ownLocationSource,
+                    color = const(Color(0xFF4285F4)),
+                    radius = const(8.dp),
+                    strokeColor = const(Color.White),
+                    strokeWidth = const(2.dp)
+                )
+            }
         }
     }
 

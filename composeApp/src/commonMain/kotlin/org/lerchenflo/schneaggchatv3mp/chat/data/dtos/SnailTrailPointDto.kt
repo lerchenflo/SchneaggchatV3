@@ -5,7 +5,8 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 
-/** One sampled point of a friend's snail trail (see `FriendLocationPayload.snailTrail`). */
+/** One sampled point of a friend's snail trail (see `FriendLocationSnapshotEntry.snailTrail` and
+ * `SocketConnectionMessage.SnailTrailPointAdded`). */
 @Serializable
 @Entity(
     tableName = "snail_trail_points",
