@@ -660,7 +660,6 @@
     <string name="schneaggmap_user_last_online_label">Letztes mol online</string>
     <string name="schneaggmap_user_distance_label">Entfernung</string>
     <string name="schneaggmap_user_online">Online</string>
-    <string name="schneaggmap_show_snail_trails"/>
 
     <!-- Location Types -->
     <string name="location_type_radar">Radar</string>
