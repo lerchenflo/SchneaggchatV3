@@ -611,16 +611,19 @@ class AppRepository(
     suspend fun getMissingAudios() = coroutineScope {
         // Check audio messages
         val messages = messageRepository.getAudioMessages()
-        val missingImageMessageIds = messages.filter { audio ->
-            // audioPath is stored as a bare filename; resolve it to the current absolute path
-            // before checking existence (tolerant of legacy absolute paths via substringAfterLast).
-            audio.id != null && !audioManager.checkAudioExists(
-                audioManager.getRecordingPath((audio.audioPath ?: "").substringAfterLast('/'))
-            )
+        val missingAudioMessageIds = messages.filter { audio ->
+            if (audio.id == null) return@filter false
+            // Null/empty audioPath means the file was never downloaded — always treat as missing.
+            // Without this guard, getRecordingPath("") returns filesDir itself, which exists as a
+            // directory, so checkAudioExists would wrongly return true and skip the download.
+            val filename = audio.audioPath?.substringAfterLast('/')?.takeIf { it.isNotEmpty() }
+                ?: return@filter true
+            !audioManager.checkAudioExists(audioManager.getRecordingPath(filename))
         }.map { it.id!! }
 
-        if (missingImageMessageIds.isNotEmpty()) {
-            launch { getAudiosForMessageIds(missingImageMessageIds) }
+        println("Missing audio ids: $missingAudioMessageIds -------------------------------------")
+        if (missingAudioMessageIds.isNotEmpty()) {
+            launch { getAudiosForMessageIds(missingAudioMessageIds) }
         }
     }
 
