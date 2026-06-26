@@ -75,9 +75,6 @@ actual class AudioManager {
 
                 // Use AVAudioPlayer which loads duration synchronously
                 val audioPlayer = AVAudioPlayer(contentsOfURL = url, error = null)
-                if (audioPlayer == null) {
-                    return@withContext 0L
-                }
 
                 val seconds = audioPlayer.duration
                 val durationMs = (seconds * 1000).toLong()
