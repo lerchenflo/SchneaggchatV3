@@ -462,8 +462,8 @@ class NetworkUtils(
             val shareLocation: Boolean = false,
             //Do i share speed + heading (live driving telemetry) with this friend
             val shareSpeedHeading: Boolean = false,
-            //Snail trail shared with this friend: null = off, 0 = full 24h, N = last N hours
-            val snailTrailHours: Int? = null,
+            //Whether i share my snail trail (full 24h history) with this friend
+            val shareSnailTrail: Boolean = false,
 
 
         ) : UserResponse
@@ -1188,7 +1188,7 @@ class NetworkUtils(
         // Full desired per-friend map-sharing state - send all of these every time.
         val share: Boolean,
         val shareSpeedHeading: Boolean = false,
-        val snailTrailHours: Int? = null,
+        val shareSnailTrail: Boolean = false,
     )
 
     /** Per-friend toggle: what we share with this specific friend (location, speed/heading, snail trail). */
@@ -1196,11 +1196,11 @@ class NetworkUtils(
         friendId: String,
         share: Boolean,
         shareSpeedHeading: Boolean = false,
-        snailTrailHours: Int? = null,
+        shareSnailTrail: Boolean = false,
     ): NetworkResult<Unit, NetworkError> {
         return safePost(
             endpoint = "/users/sharelocation",
-            body = LocationShareRequest(friendId, share, shareSpeedHeading, snailTrailHours)
+            body = LocationShareRequest(friendId, share, shareSpeedHeading, shareSnailTrail)
         )
     }
 }

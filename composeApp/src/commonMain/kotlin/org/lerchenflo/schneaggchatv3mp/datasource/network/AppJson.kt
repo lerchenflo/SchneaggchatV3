@@ -15,6 +15,7 @@ object AppJson {
     val instance = Json {
         classDiscriminator = "_class"
         ignoreUnknownKeys = true
+        encodeDefaults = true //Send values which have defaults explicit
         //https://kotlinlang.org/api/kotlinx.serialization/kotlinx-serialization-core/kotlinx.serialization/-polymorphic-serializer/
 
         serializersModule = SerializersModule {
