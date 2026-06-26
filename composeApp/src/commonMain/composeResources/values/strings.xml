@@ -262,7 +262,7 @@
     <string name="schneaggmap_user_speed_label">Speed</string>
     <string name="schneaggmap_user_altitude_label">Altitude</string>
     <string name="schneaggmap_user_battery_label">Battery</string>
-    <string name="schneaggmap_user_distance_24h_label">Distance (24h)</string>
+    <string name="schneaggmap_user_distance_24h_label">Moved distance (24h)</string>
 
     <string name="use_default_server">Use default server</string>
     <string name="use_test_server">Use test server</string>

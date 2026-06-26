@@ -1051,7 +1051,7 @@ class AppRepository(
                                 locationDistance24h = existing?.locationDistance24h,
                                 locationShared = newUser.shareLocation,
                                 shareSpeedHeading = newUser.shareSpeedHeading,
-                                snailTrailHours = newUser.snailTrailHours,
+                                snailTrail = newUser.snailTrailHours != null,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
                                 notisMuted = existing?.notisMuted ?: false,
                                 email = null,
@@ -2050,9 +2050,9 @@ class AppRepository(
         friendId: String,
         share: Boolean,
         shareSpeedHeading: Boolean = false,
-        snailTrailHours: Int? = null,
+        snailTrail: Boolean = false,
     ): Boolean {
-        return when (networkUtils.shareLocation(friendId, share, shareSpeedHeading, snailTrailHours)) {
+        return when (networkUtils.shareLocation(friendId, share, shareSpeedHeading, if (snailTrail) 0 else null)) {
             is NetworkResult.Error<*> -> false
             is NetworkResult.Success<*> -> {
                 // Optimistically reflect the new value locally so UI updates immediately;
@@ -2061,7 +2061,7 @@ class AppRepository(
                     userRepository.upsertUser(friend.copy(
                         locationShared = share,
                         shareSpeedHeading = shareSpeedHeading,
-                        snailTrailHours = snailTrailHours,
+                        snailTrail = snailTrail,
                     ).toDto())
                 }
                 true

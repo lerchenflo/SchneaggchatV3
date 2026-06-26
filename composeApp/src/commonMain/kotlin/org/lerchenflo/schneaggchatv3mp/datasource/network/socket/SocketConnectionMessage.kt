@@ -255,7 +255,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 locationDistance24h = existing?.location?.distanceTraveled24h,
                                 locationShared = newUser.shareLocation,
                                 shareSpeedHeading = newUser.shareSpeedHeading,
-                                snailTrailHours = newUser.snailTrailHours,
+                                snailTrail = newUser.snailTrailHours != null,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
                                 notisMuted = existing?.notisMuted ?: false,
                                 email = null,

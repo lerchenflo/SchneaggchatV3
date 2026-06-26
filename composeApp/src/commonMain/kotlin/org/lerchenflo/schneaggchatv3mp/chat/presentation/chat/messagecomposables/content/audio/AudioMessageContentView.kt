@@ -48,9 +48,15 @@ fun AudioMessageContentView(
     val isThisMessagePlaying = progress.messageId == message.id
     val currentPosition = if (isThisMessagePlaying) progress.currentPosition else 0L
 
-    // Pre-fetch the audio duration when the composable is first displayed
+    // Pre-fetch the audio duration when the composable is first displayed.
+    // audioPath is stored as a bare filename; resolve to the platform-specific absolute path
+    // so that MediaMetadataRetriever (Android) and AudioSystem (Desktop) can open it.
     var prefetchedDuration by remember { mutableLongStateOf(0L) }
-    val filePath = message.audioPath ?: ""
+    val rawPath = message.audioPath ?: ""
+    val filePath = remember(rawPath) {
+        val filename = rawPath.substringAfterLast('/')
+        if (filename.isNotEmpty()) audioManager.getRecordingPath(filename) else ""
+    }
 
     LaunchedEffect(filePath) {
         if (filePath.isNotEmpty()) {

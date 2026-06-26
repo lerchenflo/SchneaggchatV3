@@ -95,8 +95,8 @@ fun SchneaggmapSettings(
             onAdvancedLocationSharingChange = { schneaggmapSettingsViewModel.updateAdvancedLocationSharing(it) },
             friends = schneaggmapSettingsViewModel.friends,
             onFriendShareChange = { friendId, share -> schneaggmapSettingsViewModel.updateFriendLocationSharing(friendId, share) },
-            onFriendAdvancedShareChange = { friendId, shareSpeedHeading, snailTrailHours ->
-                schneaggmapSettingsViewModel.updateFriendAdvancedSharing(friendId, shareSpeedHeading, snailTrailHours)
+            onFriendAdvancedShareChange = { friendId, shareSpeedHeading, snailTrail ->
+                schneaggmapSettingsViewModel.updateFriendAdvancedSharing(friendId, shareSpeedHeading, snailTrail)
             },
             onDismiss = { locationSharingDialogShown = false }
         )
