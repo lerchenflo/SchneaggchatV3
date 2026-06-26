@@ -1054,7 +1054,7 @@ class AppRepository(
                                 locationDistance24h = existing?.locationDistance24h,
                                 locationShared = newUser.shareLocation,
                                 shareSpeedHeading = newUser.shareSpeedHeading,
-                                snailTrail = newUser.snailTrailHours != null,
+                                snailTrail = newUser.shareSnailTrail,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
                                 notisMuted = existing?.notisMuted ?: false,
                                 email = null,
@@ -2055,7 +2055,7 @@ class AppRepository(
         shareSpeedHeading: Boolean = false,
         snailTrail: Boolean = false,
     ): Boolean {
-        return when (networkUtils.shareLocation(friendId, share, shareSpeedHeading, if (snailTrail) 0 else null)) {
+        return when (networkUtils.shareLocation(friendId, share, shareSpeedHeading, snailTrail)) {
             is NetworkResult.Error<*> -> false
             is NetworkResult.Success<*> -> {
                 // Optimistically reflect the new value locally so UI updates immediately;
