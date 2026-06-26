@@ -131,7 +131,6 @@ import schneaggchatv3mp.composeapp.generated.resources.icon_sightseeing
 import schneaggchatv3mp.composeapp.generated.resources.icon_street
 import schneaggchatv3mp.composeapp.generated.resources.icon_viewpoint
 import schneaggchatv3mp.composeapp.generated.resources.icon_wheeliespot
-import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_show_snail_trails
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 import kotlin.collections.listOf
 
@@ -303,7 +302,7 @@ fun SchneaggmapScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Polyline,
-                    contentDescription = stringResource(Res.string.schneaggmap_show_snail_trails),
+                    contentDescription = null,
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Switch(
