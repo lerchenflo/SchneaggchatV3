@@ -97,7 +97,7 @@ class SchneaggmapSettingsViewModel(
                 friendId = friendId,
                 share = share,
                 shareSpeedHeading = friend?.shareSpeedHeading ?: false,
-                snailTrailHours = friend?.snailTrailHours,
+                snailTrail = friend?.snailTrail ?: false,
             )
         }
     }
@@ -108,14 +108,14 @@ class SchneaggmapSettingsViewModel(
         }
     }
 
-    fun updateFriendAdvancedSharing(friendId: String, shareSpeedHeading: Boolean, snailTrailHours: Int?) {
+    fun updateFriendAdvancedSharing(friendId: String, shareSpeedHeading: Boolean, snailTrail: Boolean) {
         viewModelScope.launch {
             val friend = friends.find { it.id == friendId }
             appRepository.setLocationSharing(
                 friendId = friendId,
                 share = friend?.locationShared ?: true,
                 shareSpeedHeading = shareSpeedHeading,
-                snailTrailHours = snailTrailHours,
+                snailTrail = snailTrail,
             )
         }
     }

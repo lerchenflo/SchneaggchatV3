@@ -262,7 +262,7 @@
     <string name="schneaggmap_user_speed_label">Speed</string>
     <string name="schneaggmap_user_altitude_label">Altitude</string>
     <string name="schneaggmap_user_battery_label">Battery</string>
-    <string name="schneaggmap_user_distance_24h_label">Distance (24h)</string>
+    <string name="schneaggmap_user_distance_24h_label">Moved distance (24h)</string>
 
     <string name="use_default_server">Use default server</string>
     <string name="use_test_server">Use test server</string>
@@ -660,7 +660,6 @@
     <string name="schneaggmap_user_last_online_label">Last online</string>
     <string name="schneaggmap_user_distance_label">Distance</string>
     <string name="schneaggmap_user_online">Online</string>
-    <string name="schneaggmap_show_snail_trails">Show snail trails</string>
 
     <!-- Location Types -->
     <string name="location_type_radar">Radar</string>

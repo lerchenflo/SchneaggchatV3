@@ -1,23 +1,34 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults.textContentColor
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
@@ -41,9 +52,11 @@ fun LocationSharingDialog(
     onAdvancedLocationSharingChange: (Boolean) -> Unit,
     friends: List<User>,
     onFriendShareChange: (friendId: String, share: Boolean) -> Unit,
-    onFriendAdvancedShareChange: (friendId: String, shareSpeedHeading: Boolean, snailTrailHours: Int?) -> Unit,
+    onFriendAdvancedShareChange: (friendId: String, shareSpeedHeading: Boolean, snailTrail: Boolean) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val expandedFriends = remember { mutableStateListOf<String>() }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(text = stringResource(Res.string.share_location_global)) },
@@ -102,57 +115,82 @@ fun LocationSharingDialog(
                                 enabled = shareLocationGlobal,
                                 onCheckedChange = { onFriendShareChange(friend.id, it) }
                             )
+
+                            if (advancedLocationSharing && friend.locationShared) {
+                                val expanded = friend.id in expandedFriends
+                                val rotation by animateFloatAsState(if (expanded) 180f else 0f)
+                                IconButton(onClick = {
+                                    if (expanded) expandedFriends.remove(friend.id) else expandedFriends.add(friend.id)
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = null,
+                                        modifier = Modifier.rotate(rotation)
+                                    )
+                                }
+                            }
                         }
 
-                        // Per-friend advanced controls - only shown once "Advanced location
-                        // sharing" is toggled on and this friend may see our location at all.
-                        if (advancedLocationSharing && friend.locationShared) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 16.dp, top = 2.dp, bottom = 2.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = stringResource(Res.string.share_speed_heading),
-                                    maxLines = 1,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.weight(1f)
-                                )
+                        AnimatedVisibility(visible = advancedLocationSharing && friend.locationShared && friend.id in expandedFriends) {
+                            val subColor = MaterialTheme.colorScheme.secondary
+                            Column {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 16.dp, top = 2.dp, bottom = 2.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.share_speed_heading),
+                                        maxLines = 1,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = subColor,
+                                        modifier = Modifier.weight(1f)
+                                    )
 
-                                Switch(
-                                    checked = friend.shareSpeedHeading,
-                                    enabled = shareLocationGlobal,
-                                    onCheckedChange = { checked ->
-                                        onFriendAdvancedShareChange(friend.id, checked, friend.snailTrailHours)
-                                    }
-                                )
-                            }
-
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 16.dp, top = 2.dp, bottom = 2.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = stringResource(Res.string.share_snail_trail),
-                                    maxLines = 1,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.weight(1f)
-                                )
-
-                                Switch(
-                                    checked = friend.snailTrailHours != null,
-                                    enabled = shareLocationGlobal,
-                                    onCheckedChange = { checked ->
-                                        onFriendAdvancedShareChange(
-                                            friend.id,
-                                            friend.shareSpeedHeading,
-                                            if (checked) 0 else null // 0 = full 24h retained history
+                                    Switch(
+                                        checked = friend.shareSpeedHeading,
+                                        enabled = shareLocationGlobal,
+                                        onCheckedChange = { checked ->
+                                            onFriendAdvancedShareChange(friend.id, checked, friend.snailTrail)
+                                        },
+                                        colors = SwitchDefaults.colors(
+                                            checkedTrackColor = subColor,
+                                            checkedThumbColor = MaterialTheme.colorScheme.onSecondary,
                                         )
-                                    }
-                                )
+                                    )
+                                }
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 16.dp, top = 2.dp, bottom = 2.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.share_snail_trail),
+                                        maxLines = 1,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = subColor,
+                                        modifier = Modifier.weight(1f)
+                                    )
+
+                                    Switch(
+                                        checked = friend.snailTrail,
+                                        enabled = shareLocationGlobal,
+                                        onCheckedChange = { checked ->
+                                            onFriendAdvancedShareChange(
+                                                friend.id,
+                                                friend.shareSpeedHeading,
+                                                checked,
+                                            )
+                                        },
+                                        colors = SwitchDefaults.colors(
+                                            checkedTrackColor = subColor,
+                                            checkedThumbColor = MaterialTheme.colorScheme.onSecondary,
+                                        )
+                                    )
+                                }
                             }
                         }
                     }

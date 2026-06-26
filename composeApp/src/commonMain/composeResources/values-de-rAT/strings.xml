@@ -11,6 +11,12 @@
     <string name="no_status">kuan Status</string>
     <string name="unknown_user">kennsch ned</string>
 
+    <string name="usersync">Benutzerdata</string>
+    <string name="groupsync">Gruppendata</string>
+    <string name="messagesync">Nochrichta</string>
+    <string name="mapsync">Map</string>
+    <string name="mediasync">Media</string>
+
     <string name="status_infotext">Din Status dean alle dine Freunde leasa künnand. Aktuell ischa leer.</string>
     <string name="currentstatus">Din aktuella Status: %1$s</string>
 
@@ -26,6 +32,7 @@
     <string name="email_not_verified_email_has_been_sent2"> unterwegs. Wenn du scho länger dabei bisch, musch an neua Link afordra.</string>
     <string name="email_check_verified">Email - Verifizierung überprüfa</string>
     <string name="email_check_problem">Es tuat ned</string>
+    <string name="email_check_loading_data">Account wird glada ...</string>
 
 
 
@@ -241,6 +248,22 @@
     <string name="appearance_settings">Darstellung</string>
     <string name="appearance_settings_info">Darstellung vo da App ändra</string>
 
+    <string name="schneaggmap_settings">Schneaggmap</string>
+    <string name="schneaggmap_settings_info">Änder dine Mapeinstellunga</string>
+    <string name="merge_map_locations">Orten zemmerga beim zoomen</string>
+    <string name="merge_map_locations_info">Orte beim zoomen zemmerga dassas ned so a Chaos isch</string>
+    <string name="share_location_global">Min Standort teila</string>
+    <string name="share_location_global_info">Usgwählta Freunde din Standort uf da Map zoaga</string>
+    <string name="share_location_friends_title">Teilen mit</string>
+    <string name="advanced_location_sharing">Mehr Daten teila</string>
+    <string name="advanced_location_sharing_info">No mehr Daten mit Freunden teila (Erweiterte Optiona)</string>
+    <string name="share_speed_heading">Geschwindigkeit und Richtung teila</string>
+    <string name="share_snail_trail">Schleimspur teila (letzte 24h)</string>
+    <string name="schneaggmap_user_speed_label">Geschwindigkeit</string>
+    <string name="schneaggmap_user_altitude_label">Höhe</string>
+    <string name="schneaggmap_user_battery_label">Batteriestand</string>
+    <string name="schneaggmap_user_distance_24h_label">Zruckglegter Weag (24h)</string>
+
     <string name="use_default_server">Standardserver verwenda</string>
     <string name="use_test_server">Testserver verwenda</string>
 
@@ -311,6 +334,7 @@
 
     <string name="pending_friend_requests">%1$s usstehende Freundschaftsanfroga</string>
     <string name="no_friends_found_search">Freund ned gefunda?</string>
+    <string name="no_friends">Keine Freunde</string>
 
     <string name="message_delete_info">Willsch du dia Nachricht wirklich löscha?</string>
     <string name="open_chat">Chat öffna</string>
@@ -593,6 +617,19 @@
     <string name="yatzi_roll_dice">Uf was wartesch, %1$d left</string>
     <string name="yatzi_roll_again">Jo nomml, %1$d left</string>
 
+    <!-- Recap -->
+    <string name="recap_your_year"/>
+    <string name="recap_using_schneaggchat_in_numbers"/>
+    <string name="recap_in_year_you_had_a_lot_to_say"/>
+    <string name="recap_others_sent_you"/>
+    <string name="recap_messages"/>
+    <string name="recap_you_sent"/>
+    <string name="recap_messages_to_favorite_humans"/>
+    <string name="recap_new_friends_found"/>
+    <string name="recap_you_have"/>
+    <string name="recap_are_now_your_friends"/>
+    <string name="recap_texts_number"/>
+
     <!-- Changelog Popup -->
     <string name="changelog_whats_new">Was isch neu</string>
     <string name="changelog_announcements">Neuigkeita</string>
@@ -614,9 +651,15 @@
     <string name="schneaggmap_entry_title">Nama</string>
     <string name="schneaggmap_entry_description">Beschreibung</string>
 
+    <string name="schneaggmap_entry_delete">Dean Eintrag löscha. Er wird o für alle andra glöscht. Du kannschan num wiederherstella.</string>
+
     <string name="latlong">Lat %1$s, Long %2$s</string>
     <string name="latitude">Latitude</string>
     <string name="longitude">Longitude</string>
+
+    <string name="schneaggmap_user_last_online_label">Letztes mol online</string>
+    <string name="schneaggmap_user_distance_label">Entfernung</string>
+    <string name="schneaggmap_user_online">Online</string>
 
     <!-- Location Types -->
     <string name="location_type_radar">Radar</string>
@@ -633,8 +676,6 @@
     <string name="location_type_food_burger">Burger</string>
     <string name="location_type_food_beer">Bier</string>
     <string name="location_type_food_asian">Asiatisch</string>
-    <string name="location_type_food_thai"/>
-    <string name="location_type_food_japanese"/>
     <string name="location_type_food_greek">Griechisch</string>
     <string name="location_type_food_other">Andres Eassa</string>
 

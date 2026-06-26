@@ -50,7 +50,7 @@ data class UserDto(
 
     // Per-friend advanced-location settings (what we share TOWARDS this friend)
     var shareSpeedHeading: Boolean = false,
-    var snailTrailHours: Int? = null,
+    var snailTrail: Boolean = false,
 
     var wakeupEnabled: Boolean = false,
 
