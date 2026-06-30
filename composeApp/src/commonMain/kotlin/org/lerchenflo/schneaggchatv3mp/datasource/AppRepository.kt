@@ -621,7 +621,7 @@ class AppRepository(
             !audioManager.checkAudioExists(audioManager.getRecordingPath(filename))
         }.map { it.id!! }
 
-        println("Missing audio ids: $missingAudioMessageIds -------------------------------------")
+        //println("Missing audio ids: $missingAudioMessageIds -------------------------------------")
         if (missingAudioMessageIds.isNotEmpty()) {
             launch { getAudiosForMessageIds(missingAudioMessageIds) }
         }
@@ -1743,13 +1743,13 @@ class AppRepository(
     suspend fun getAudiosForMessageIds(ids: List<String>){
         ids.forEach { messageId ->
             val savefilename = messageId + VOICEMSG_FILE_NAME
-            println("Fetching Audio for messageid $messageId")
+            //println("Fetching Audio for messageid $messageId")
 
             when (val audio = networkUtils.getAudioForAudioMessage(messageId)) {
                 is NetworkResult.Error<*> -> {println("Audio error for messageid $messageId")}
                 is NetworkResult.Success<ByteArray> -> {
                     val filepath = audioManager.saveAudioToStorage(audio.data, savefilename)
-                    println("Audio saved to $filepath")
+                    //println("Audio saved to $filepath")
                     // Persist the bare filename, not the absolute container path: on iOS the
                     // container UUID in an absolute path changes across reinstalls/updates and
                     // would go stale. The absolute path is re-derived at use-time.
