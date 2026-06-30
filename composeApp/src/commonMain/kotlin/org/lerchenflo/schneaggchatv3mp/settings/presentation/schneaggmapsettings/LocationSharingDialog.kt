@@ -103,7 +103,7 @@ fun LocationSharingDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = friend.nickName ?: friend.name,
+                                text = friend.displayName,
                                 maxLines = 1,
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = LocalContentColor.current.copy(alpha = contentAlpha),

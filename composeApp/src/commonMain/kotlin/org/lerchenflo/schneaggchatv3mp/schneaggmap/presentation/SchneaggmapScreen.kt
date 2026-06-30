@@ -454,7 +454,7 @@ private fun SchneaggmapMapContent(
         val date = user.location?.date
         val isOnline = date != null && (getCurrentTimeMillisLong() - date) < ONLINE_THRESHOLD_MILLIS
         val statusText = if (isOnline) onlineLabel else date?.let { millisToTimeDateOrYesterday(it) } ?: "-"
-        val username = user.nickName?.takeIf { it.isNotBlank() } ?: user.name
+        val username = user.displayName
         user.id to UserMarkerData(username = username, statusText = statusText, isOnline = isOnline)
     }
 

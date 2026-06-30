@@ -61,7 +61,7 @@ fun FriendLocationsPreview(friends: List<User>, onUserClick: (User) -> Unit) {
 
 @Composable
 private fun FriendChip(user: User, onUserClick: (User) -> Unit) {
-    val displayName = user.nickName?.takeIf { it.isNotBlank() } ?: user.name
+    val displayName = user.displayName
     val locationDate = user.location?.date
     val isOnline = locationDate != null && (getCurrentTimeMillisLong() - locationDate) < ONLINE_THRESHOLD_MILLIS
     val statusText = when {

@@ -81,7 +81,7 @@ fun UserInfoCard(
         Column(modifier = modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp)) {
 
             Text(
-                text = user.nickName?.takeIf { it.isNotBlank() } ?: user.name,
+                text = user.displayName,
                 style = MaterialTheme.typography.titleLarge,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
