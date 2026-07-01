@@ -35,8 +35,8 @@ android {
     buildTypes {
 
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            //isMinifyEnabled = true //Disabled for debugging output logs to work correctly
+            //isShrinkResources = true
         }
 
 

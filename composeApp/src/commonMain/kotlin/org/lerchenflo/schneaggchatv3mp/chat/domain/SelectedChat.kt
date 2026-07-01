@@ -18,6 +18,8 @@ interface SelectedChat {
     val unsentMessageCount: Int
     val lastmessage: Message?
     val pinned: Long
+
+    val displayName: String get() = name
 }
 
 data class NotSelected(
@@ -54,6 +56,7 @@ data class UserChat(
     val commonGroups : List<Group> = emptyList()
 ) : SelectedChat {
     override val isGroup: Boolean = false
+    override val displayName: String get() = nickName?.takeIf { it.isNotBlank() } ?: name
 }
 
 // Create wrapper for GroupWithMembers that implements SelectedChat

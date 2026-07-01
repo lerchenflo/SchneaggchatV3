@@ -31,6 +31,9 @@ class SharedSettingsViewmodel(
     var ownUser by mutableStateOf<User?>(null)
         private set
 
+    var isAndroid by mutableStateOf(false)
+        private set
+
     init {
         viewModelScope.launch { // Developer Settings
             preferenceManager.getDevSettingsFlow()
@@ -59,6 +62,8 @@ class SharedSettingsViewmodel(
                 ownUser = value
             }
         }
+
+        isAndroid = appRepository.appVersion.isAndroid()
     }
 
     // Developer Settings

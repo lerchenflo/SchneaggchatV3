@@ -681,21 +681,21 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
             } else null
 
             val user = userMap[message.senderId]
-            val senderName = user?.nickName ?: user?.name ?: groupMap[message.senderId]?.memberName ?: "Unresolved Username"
+            val senderName = user?.displayName ?: groupMap[message.senderId]?.memberName ?: "Unresolved Username"
             message.senderAsString = senderName
             val resolvedColor = groupMap[message.senderId]?.color ?: 0
             message.senderColor = resolvedColor
 
             val resolvedReaders = message.readers.associate { reader ->
                 val readerUser = userMap[reader.readerId]
-                reader.readerName = readerUser?.nickName ?: readerUser?.name ?: groupMap[reader.readerId]?.memberName ?: "Unknown"
+                reader.readerName = readerUser?.displayName ?: groupMap[reader.readerId]?.memberName ?: "Unknown"
                 reader.readerPicture = pictureManager.getProfilePicFilePath(reader.readerId, false)
                 reader.readerId to (reader.readerName ?: "Unknown")
             }
 
             val resolvedReactions = message.reactions.associate { reaction ->
                 val reactUser = userMap[reaction.userId]
-                reaction.userId to (reactUser?.nickName ?: reactUser?.name ?: groupMap[reaction.userId]?.memberName ?: "Unknown")
+                reaction.userId to (reactUser?.displayName ?: groupMap[reaction.userId]?.memberName ?: "Unknown")
             }
 
             // Use the message's unique ID to look up the grouped readers

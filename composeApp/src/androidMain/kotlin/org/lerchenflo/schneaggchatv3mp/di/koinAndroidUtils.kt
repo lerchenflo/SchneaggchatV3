@@ -34,7 +34,8 @@ fun startKoinAndroid(androidContext: Context) {
                 androidAudioManagerModule,
                 androidShareUtilsModule,
                 androidLanguageManagerModule,
-                androidNotifierModule
+                androidNotifierModule,
+                androidAppIconManagerModule
             )
         }
     }

@@ -333,11 +333,21 @@ fun ChatScreen(
 
             // Messages
             val listState = rememberLazyListState()
+            var initialScrollDone by remember { mutableStateOf(false) }
 
-            //Wenn sich die letzte nachricht ändert denn abescrollen
             if (displayItems.isNotEmpty()) {
                 LaunchedEffect(displayItems.first()) {
-                    listState.animateScrollToItem(0, scrollOffset = 2)
+                    if (!initialScrollDone) {
+                        val dividerIndex = displayItems.indexOfFirst { it is MessageDisplayItem.NewMessagesDivider }
+                        if (dividerIndex != -1) {
+                            listState.scrollToItem(dividerIndex)
+                        } else {
+                            listState.animateScrollToItem(0, scrollOffset = 2)
+                        }
+                        initialScrollDone = true
+                    } else {
+                        listState.animateScrollToItem(0, scrollOffset = 2)
+                    }
                 }
             }
 

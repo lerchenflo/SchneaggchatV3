@@ -156,12 +156,7 @@ fun UserButton(
 
 
                     Text(
-                        text = if (!selectedChat.isGroup) {
-                            val userChat = selectedChat as? UserChat
-                            userChat?.nickName ?: selectedChat.name
-                        } else {
-                            selectedChat.name
-                        }.takeIf { it.isNotBlank() } ?: stringResource(Res.string.unknown_user),
+                        text = selectedChat.displayName.takeIf { it.isNotBlank() } ?: stringResource(Res.string.unknown_user),
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

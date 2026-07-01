@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.DividerDefaults
@@ -20,6 +21,7 @@ import org.jetbrains.compose.resources.vectorResource
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.AppIconSelector
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.LanguageSelector
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
@@ -27,6 +29,8 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ThemeSel
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.appearance_settings
+import schneaggchatv3mp.composeapp.generated.resources.app_icon
+import schneaggchatv3mp.composeapp.generated.resources.app_icon_desc
 import schneaggchatv3mp.composeapp.generated.resources.language
 import schneaggchatv3mp.composeapp.generated.resources.language_sel_desc
 import schneaggchatv3mp.composeapp.generated.resources.markdownInfo
@@ -122,6 +126,29 @@ fun AppearanceSettings(
                     selectedLanguage = appearanceSettingsViewModel.selectedLanguage,
                     onLanguageSelected = { appearanceSettingsViewModel.saveLanguageSetting(it) }
                 )
+            }
+
+            if (appearanceSettingsViewModel.isIconSwitchingSupported) {
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+                var iconSelDialog by remember { mutableStateOf(false) }
+                SettingsOption(
+                    icon = Icons.Default.Apps,
+                    text = stringResource(Res.string.app_icon),
+                    subtext = stringResource(Res.string.app_icon_desc),
+                    onClick = { iconSelDialog = true }
+                )
+                if (iconSelDialog) {
+                    AppIconSelector(
+                        selected = appearanceSettingsViewModel.currentIcon,
+                        onSelect = { icon ->
+                            appearanceSettingsViewModel.setAppIcon(icon)
+                            iconSelDialog = false
+                        },
+                        onDismiss = { iconSelDialog = false },
+                        isAndroid = sharedSettingsViewmodel.isAndroid
+                    )
+                }
             }
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)

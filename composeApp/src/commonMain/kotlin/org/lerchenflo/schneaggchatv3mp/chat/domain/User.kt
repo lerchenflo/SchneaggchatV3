@@ -52,6 +52,8 @@ data class User(
 
     }
 
+    override val displayName: String get() = nickName?.takeIf { it.isNotBlank() } ?: name
+
     override fun toString(): String {
         return """
         User(

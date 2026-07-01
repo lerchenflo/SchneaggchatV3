@@ -2,11 +2,14 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,8 +32,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -73,6 +78,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.SIGHTSEEI
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.SWIMMING
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.VIEWPOINT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.WHEELIESPOT
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.FriendLocationsPreview
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
@@ -180,6 +186,7 @@ fun SchneaggmapScreen(
         )
     )
     val styleState = rememberStyleState()
+    val scope = rememberCoroutineScope()
 
     //Own position, resolved once here (not in SchneaggmapMapContent) so we don't open a second,
     //redundant GPS subscription just to also show the speed readout below.
@@ -278,48 +285,83 @@ fun SchneaggmapScreen(
             }
         }
 
-        DisappearingScaleBar(
-            metersPerDp = cameraState.metersPerDpAtTarget,
-            zoom = cameraState.position.zoom,
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            modifier = Modifier.align(Alignment.BottomStart).padding(start = 16.dp, bottom = 16.dp),
-        )
-
         ShownLocationsDropdown(
             state = state,
             onAction = onAction,
             modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
         )
 
-        Card(
+
+        Column(
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 16.dp, end = 8.dp)
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(8.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)
+            if (state.usersWithLocation.isNotEmpty()) {
+                FriendLocationsPreview(
+                    friends = state.usersWithLocation,
+                    onUserClick = { user ->
+                        val loc = user.location ?: return@FriendLocationsPreview
+                        scope.launch {
+                            cameraState.animateTo(
+                                CameraPosition(
+                                    target = Position(longitude = loc.long, latitude = loc.lat),
+                                    zoom = OWN_LOCATION_CLICK_ZOOM
+                                )
+                            )
+                        }
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Polyline,
-                    contentDescription = null,
+                // Left: Scale bar
+                DisappearingScaleBar(
+                    metersPerDp = cameraState.metersPerDpAtTarget,
+                    zoom = cameraState.position.zoom,
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    modifier = Modifier.align(Alignment.CenterStart)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Switch(
-                    checked = state.showSnailTrails,
-                    onCheckedChange = { onAction(SchneaggmapAction.ToggleSnailTrails) },
-                )
+
+                // Center: Own location FAB
+                ownLocation?.let {
+                    FloatingActionButton(
+                        onClick = { isFollowingLocation = true },
+                        modifier = Modifier.align(Alignment.Center)
+                    ) {
+                        Icon(Icons.Default.LocationOn, contentDescription = null)
+                    }
+                }
+
+                // Right: Snail trails toggle
+                Card(
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Polyline,
+                            contentDescription = null,
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Switch(
+                            checked = state.showSnailTrails,
+                            onCheckedChange = { onAction(SchneaggmapAction.ToggleSnailTrails) },
+                        )
+                    }
+                }
             }
         }
 
-        ownLocation?.let {
-            FloatingActionButton(
-                onClick = { isFollowingLocation = true },
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp)
-            ) {
-                Icon(Icons.Default.LocationOn, contentDescription = null)
-            }
-        }
+
 
         state.selectedEntry?.let { entry ->
             MapEntryInfoCard(
@@ -412,7 +454,7 @@ private fun SchneaggmapMapContent(
         val date = user.location?.date
         val isOnline = date != null && (getCurrentTimeMillisLong() - date) < ONLINE_THRESHOLD_MILLIS
         val statusText = if (isOnline) onlineLabel else date?.let { millisToTimeDateOrYesterday(it) } ?: "-"
-        val username = user.nickName?.takeIf { it.isNotBlank() } ?: user.name
+        val username = user.displayName
         user.id to UserMarkerData(username = username, statusText = statusText, isOnline = isOnline)
     }
 
@@ -483,62 +525,63 @@ private fun SchneaggmapMapContent(
                 if (entriesForType.isEmpty()) return@forEach
 
 
-                val mapLocationSource = rememberGeoJsonSource(
-                    data = GeoJsonData.Features(
-                        FeatureCollection(
-                            features = entriesForType
-                                .map { entry ->
-                                Feature(
-                                    geometry = Point(
-                                        coordinates = Position(
-                                            longitude = entry.coordinates.long,
-                                            latitude = entry.coordinates.lat,
-                                        )
-                                    ),
-                                    properties = buildJsonObject {
-                                        put("type", JsonPrimitive(type.name))
-                                    },
-                                    id = JsonPrimitive(entry.id)
-                                )
-                            }
-                        )
-                    ),
-
-                    options = GeoJsonOptions(
-                        cluster = state.useClustering,
-                        clusterRadius = 12,
-                        clusterMinPoints = 6,
-                        //synchronousUpdate = true
-                    )
-
-
-                )
-
                 val iconRes = typeIcons[type] ?: return@forEach
 
+                safeAdd(layerId = "type-${type.name}") {
+                    val mapLocationSource = rememberGeoJsonSource(
+                        data = GeoJsonData.Features(
+                            FeatureCollection(
+                                features = entriesForType
+                                    .map { entry ->
+                                    Feature(
+                                        geometry = Point(
+                                            coordinates = Position(
+                                                longitude = entry.coordinates.long,
+                                                latitude = entry.coordinates.lat,
+                                            )
+                                        ),
+                                        properties = buildJsonObject {
+                                            put("type", JsonPrimitive(type.name))
+                                        },
+                                        id = JsonPrimitive(entry.id)
+                                    )
+                                }
+                            )
+                        ),
 
-                /*
-                SymbolLayer(
-                    id = "type-${type.name}",
-                    source = mapLocationSource,
-                    iconImage = image(iconBitmap)
-                )
-
-                 */
+                        options = GeoJsonOptions(
+                            cluster = state.useClustering,
+                            clusterRadius = 12,
+                            clusterMinPoints = 6,
+                            //synchronousUpdate = true
+                        )
 
 
-                SymbolLayer(
-                    id = "type-${type.name}",
-                    source = mapLocationSource,
-                    onClick = { clickedItems ->
-                        if (clickedItems.isNotEmpty()) {
-                            onAction(SchneaggmapAction.OnEntryClick(clickedItems.first().id!!.content))
-                            ClickResult.Consume
-                        } else ClickResult.Pass
-                    },
-                    iconImage = image(painterResource(iconRes), size = DpSize(33.dp, 33.dp)),
-                    iconAllowOverlap = const(!state.useClustering)
-                )
+                    )
+
+                    /*
+                    SymbolLayer(
+                        id = "type-${type.name}",
+                        source = mapLocationSource,
+                        iconImage = image(iconBitmap)
+                    )
+
+                     */
+
+
+                    SymbolLayer(
+                        id = "type-${type.name}",
+                        source = mapLocationSource,
+                        onClick = { clickedItems ->
+                            if (clickedItems.isNotEmpty()) {
+                                onAction(SchneaggmapAction.OnEntryClick(clickedItems.first().id!!.content))
+                                ClickResult.Consume
+                            } else ClickResult.Pass
+                        },
+                        iconImage = image(painterResource(iconRes), size = DpSize(33.dp, 33.dp)),
+                        iconAllowOverlap = const(!state.useClustering)
+                    )
+                }
             }
 
             //val filter = const(state.enabledTypes.toList()).contains(feature["type"])
@@ -565,29 +608,32 @@ private fun SchneaggmapMapContent(
                 key(user.id) {
                     val trail = state.snailTrails[user.id]
                     if (trail != null && trail.size >= 2) {
-                        val trailSource = rememberGeoJsonSource(
-                            data = GeoJsonData.Features(
-                                FeatureCollection(
-                                    Feature(
-                                        geometry = LineString(
-                                            trail.map { point ->
-                                                Position(longitude = point.long, latitude = point.lat)
-                                            }
-                                        ),
-                                        properties = buildJsonObject {}
+                        safeAdd(layerId = "snailtrail-${user.id}") {
+                            val trailSource = rememberGeoJsonSource(
+                                data = GeoJsonData.Features(
+                                    FeatureCollection(
+                                        Feature(
+                                            geometry = LineString(
+                                                trail.map { point ->
+                                                    Position(longitude = point.long, latitude = point.lat)
+                                                }
+                                            ),
+                                            properties = buildJsonObject {},
+
+                                        )
                                     )
                                 )
                             )
-                        )
 
-                        LineLayer(
-                            id = "snailtrail-${user.id}",
-                            source = trailSource,
-                            color = const(snailTrailColor(user.id)),
-                            width = const(3.dp),
-                            cap = const(LineCap.Round),
-                            join = const(LineJoin.Round),
-                        )
+                            LineLayer(
+                                id = "snailtrail-${user.id}",
+                                source = trailSource,
+                                color = const(snailTrailColor(user.id)),
+                                width = const(3.dp),
+                                cap = const(LineCap.Round),
+                                join = const(LineJoin.Round),
+                            )
+                        }
                     }
                 }
             }
@@ -596,44 +642,48 @@ private fun SchneaggmapMapContent(
         //Show user locations
         if (state.usersWithLocation.isNotEmpty()) {
             state.usersWithLocation.forEach { user ->
-                val mapLocationSource = rememberGeoJsonSource(
-                    data = GeoJsonData.Features(
-                        FeatureCollection(
-                            features = listOf(Feature(
-                                geometry = Point(
-                                    coordinates = Position(
-                                        longitude = user.location!!.long,
-                                        latitude = user.location.lat,
-                                    )
-                                ),
-                                properties = buildJsonObject {
-                                    put("type", JsonPrimitive(user.name))
-                                },
-                                id = JsonPrimitive(user.id)
-                            ))
+                key(user.id) {
+                    safeAdd(layerId = "user-${user.id}") {
+                        val mapLocationSource = rememberGeoJsonSource(
+                            data = GeoJsonData.Features(
+                                FeatureCollection(
+                                    features = listOf(Feature(
+                                        geometry = Point(
+                                            coordinates = Position(
+                                                longitude = user.location!!.long,
+                                                latitude = user.location.lat,
+                                            )
+                                        ),
+                                        properties = buildJsonObject {
+                                            put("type", JsonPrimitive(user.name))
+                                        },
+                                        id = JsonPrimitive(user.id)
+                                    ))
+                                )
+                            )
                         )
-                    )
-                )
 
-                val markerIcon = userIcons[user.id]
-                val profilePicturePainter = markerIcon?.let { BitmapPainter(it.bitmap) }
-                    ?: painterResource(Res.drawable.icon_nutzer)
-                val markerSize = markerIcon?.size ?: DpSize(33.dp, 33.dp)
+                        val markerIcon = userIcons[user.id]
+                        val profilePicturePainter = markerIcon?.let { BitmapPainter(it.bitmap) }
+                            ?: painterResource(Res.drawable.icon_nutzer)
+                        val markerSize = markerIcon?.size ?: DpSize(33.dp, 33.dp)
 
-                //TODO: rotate this marker using user.location?.heading once we have a directional
-                // marker design - heading is already stored/synced per friend but unused for rendering.
-                SymbolLayer(
-                    id = "user-${user.id}",
-                    source = mapLocationSource,
-                    onClick = { clickedItems ->
-                        if (clickedItems.isNotEmpty()) {
-                            onAction(SchneaggmapAction.OnUserClick(clickedItems.first().id!!.content))
-                            ClickResult.Consume
-                        } else ClickResult.Pass
-                    },
-                    iconImage = image(profilePicturePainter, size = markerSize),
-                    iconAllowOverlap = const(true)
-                )
+                        //TODO: rotate this marker using user.location?.heading once we have a directional
+                        // marker design - heading is already stored/synced per friend but unused for rendering.
+                        SymbolLayer(
+                            id = "user-${user.id}",
+                            source = mapLocationSource,
+                            onClick = { clickedItems ->
+                                if (clickedItems.isNotEmpty()) {
+                                    onAction(SchneaggmapAction.OnUserClick(clickedItems.first().id!!.content))
+                                    ClickResult.Consume
+                                } else ClickResult.Pass
+                            },
+                            iconImage = image(profilePicturePainter, size = markerSize),
+                            iconAllowOverlap = const(true)
+                        )
+                    }
+                }
             }
         }
 
@@ -652,34 +702,34 @@ private fun SchneaggmapMapContent(
             )
 
             // Once we're moving fast enough to have a reliable heading, show a rotated arrow
-            // instead of a plain dot.
+            // instead of a plain dot. Both layers always exist to avoid source remove+re-add
+            // when heading appears/disappears (CannotAddSourceException).
             val heading = location.speed
                 ?.takeIf { it.distancePerSecond.inMeters > 3 }
                 ?.let { location.course?.value }
 
-            if (heading != null) {
-                val arrowPainter = rememberVectorPainter(Icons.Default.Navigation)
-                SymbolLayer(
-                    id = "own-location",
-                    source = ownLocationSource,
-                    iconImage = image(
-                        arrowPainter,
-                        size = DpSize(28.dp, 28.dp),
-                        colorFilter = ColorFilter.tint(Color(0xFF4285F4))
-                    ),
-                    iconRotate = const((heading - Bearing.North).inDegrees.toFloat()),
-                    iconAllowOverlap = const(true)
-                )
-            } else {
-                CircleLayer(
-                    id = "own-location",
-                    source = ownLocationSource,
-                    color = const(Color(0xFF4285F4)),
-                    radius = const(8.dp),
-                    strokeColor = const(Color.White),
-                    strokeWidth = const(2.dp)
-                )
-            }
+            val arrowPainter = rememberVectorPainter(Icons.Default.Navigation)
+            SymbolLayer(
+                id = "own-location-arrow",
+                source = ownLocationSource,
+                visible = heading != null,
+                iconImage = image(
+                    arrowPainter,
+                    size = DpSize(28.dp, 28.dp),
+                    colorFilter = ColorFilter.tint(Color(0xFF4285F4))
+                ),
+                iconRotate = const(((heading ?: Bearing.North) - Bearing.North).inDegrees.toFloat()),
+                iconAllowOverlap = const(true)
+            )
+            CircleLayer(
+                id = "own-location-dot",
+                source = ownLocationSource,
+                visible = heading == null,
+                color = const(Color(0xFF4285F4)),
+                radius = const(8.dp),
+                strokeColor = const(Color.White),
+                strokeWidth = const(2.dp)
+            )
         }
     }
 

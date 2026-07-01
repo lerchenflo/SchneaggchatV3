@@ -17,6 +17,16 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 # Changelog
 
 
+### 3.0.13
+
+#### Features
+- Freundstandorte-Preview mit Profilbildern auf der Schneaggmap
+- App-Icon-Wechsel Einstellung
+
+#### Bugfixes
+- Nicknames werden jetzt überall verwendet
+
+
 ### 3.0.12
 
 #### Features
