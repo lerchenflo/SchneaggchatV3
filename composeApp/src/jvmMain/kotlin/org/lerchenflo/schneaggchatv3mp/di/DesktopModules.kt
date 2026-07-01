@@ -13,6 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createSocketHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
+import org.lerchenflo.schneaggchatv3mp.utilities.AppIconManager
 import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
@@ -74,4 +75,8 @@ val desktopLanguageManagerModule = module {
 
 val desktopNotifierModule = module {
     single { Notifier() }
+}
+
+val desktopAppIconManagerModule = module {
+    single { AppIconManager() }
 }
