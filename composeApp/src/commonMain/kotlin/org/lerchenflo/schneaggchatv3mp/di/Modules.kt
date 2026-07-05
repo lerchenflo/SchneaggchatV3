@@ -48,7 +48,6 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistViewModel
-import org.lerchenflo.schneaggchatv3mp.utilities.AppIconManager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 
 enum class HTTPCLIENTTYPE {
@@ -185,7 +184,7 @@ val sharedmodule = module{
     factory { UserSettingsViewModel(get(), get(), get(), get()) }
 
     viewModelOf(::AppearanceSettingsViewModel)
-    factory { AppearanceSettingsViewModel(get(), get(), get(), get()) }
+    factory { AppearanceSettingsViewModel(get(), get(), get()) }
 
     viewModelOf(::MiscSettingsViewModel)
     factory { MiscSettingsViewModel(get(), get(), get(), get()) }

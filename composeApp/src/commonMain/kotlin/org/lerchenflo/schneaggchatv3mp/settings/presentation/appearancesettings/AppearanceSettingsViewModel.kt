@@ -15,15 +15,12 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
-import org.lerchenflo.schneaggchatv3mp.utilities.AppIcon
-import org.lerchenflo.schneaggchatv3mp.utilities.AppIconManager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 
 class AppearanceSettingsViewModel(
     private val preferenceManager: Preferencemanager,
     private val loggingRepository: LoggingRepository,
-    private val languageService: LanguageService,
-    private val appIconManager: AppIconManager
+    private val languageService: LanguageService
 ): ViewModel() {
 
     var markdownEnabeled by mutableStateOf(false)
@@ -34,12 +31,6 @@ class AppearanceSettingsViewModel(
 
     var selectedLanguage by mutableStateOf(LanguageSetting.SYSTEM)
         private set
-
-    var currentIcon by mutableStateOf(appIconManager.getCurrentIcon())
-        private set
-
-    val isIconSwitchingSupported: Boolean = appIconManager.isSupported()
-
 
     init {
         viewModelScope.launch { // Markdown
@@ -93,11 +84,6 @@ class AppearanceSettingsViewModel(
             languageService.applyLanguage(language = language)
         }
         println("System language: ${languageService.getSystemLanguage()}")
-    }
-
-    fun setAppIcon(icon: AppIcon) {
-        appIconManager.setIcon(icon)
-        currentIcon = icon
     }
 
 }

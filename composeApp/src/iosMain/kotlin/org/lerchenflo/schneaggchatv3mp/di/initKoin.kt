@@ -30,8 +30,7 @@ fun initKoin(){
                 IosAudioManagerModule,
                 IosShareUtilsModule,
                 IosLanguageManagerModule,
-                IosNotifierModule,
-                IosAppIconManagerModule
+                IosNotifierModule
             )
         }
 

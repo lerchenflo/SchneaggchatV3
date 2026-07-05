@@ -9,7 +9,6 @@ import org.lerchenflo.schneaggchatv3mp.di.desktopHttpAuthModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopHttpModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopKSafeModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopLanguageManagerModule
-import org.lerchenflo.schneaggchatv3mp.di.desktopAppIconManagerModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopNotifierModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopPermissionManagerModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopPictureManagerModule
@@ -37,8 +36,7 @@ fun onAppStart() {
                 desktopAudioManagerModule,
                 desktopShareUtilsModule,
                 desktopLanguageManagerModule,
-                desktopNotifierModule,
-                desktopAppIconManagerModule
+                desktopNotifierModule
             )
         }
     }
