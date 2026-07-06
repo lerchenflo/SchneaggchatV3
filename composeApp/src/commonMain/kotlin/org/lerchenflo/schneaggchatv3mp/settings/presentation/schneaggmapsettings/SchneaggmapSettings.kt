@@ -90,14 +90,10 @@ fun SchneaggmapSettings(
     if (locationSharingDialogShown) {
         LocationSharingDialog(
             shareLocationGlobal = schneaggmapSettingsViewModel.shareLocationGlobal,
-            onShareLocationGlobalChange = { schneaggmapSettingsViewModel.updateShareLocationGlobal(it) },
             advancedLocationSharing = schneaggmapSettingsViewModel.advancedLocationSharing,
             onAdvancedLocationSharingChange = { schneaggmapSettingsViewModel.updateAdvancedLocationSharing(it) },
             friends = schneaggmapSettingsViewModel.friends,
-            onFriendShareChange = { friendId, share -> schneaggmapSettingsViewModel.updateFriendLocationSharing(friendId, share) },
-            onFriendAdvancedShareChange = { friendId, shareSpeedHeading, snailTrail ->
-                schneaggmapSettingsViewModel.updateFriendAdvancedSharing(friendId, shareSpeedHeading, snailTrail)
-            },
+            onSave = { global, friendDrafts -> schneaggmapSettingsViewModel.saveLocationSharing(global, friendDrafts) },
             onDismiss = { locationSharingDialogShown = false }
         )
     }

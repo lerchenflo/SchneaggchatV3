@@ -605,10 +605,9 @@ class NetworkUtils(
         val newEmail: String?,
         val newBirthDate: String?,
         val newNickName: String?,
-        val newLocationShared: Boolean? = null, // global "share my location at all" switch, only effective when userId == caller's own id
     )
 
-    suspend fun changeProfile(userId: String, newStatus: String?, newDescription: String?, newEmail: String?, newBirthDate: String?, newNickName: String?, newLocationShared: Boolean? = null): NetworkResult<Any, NetworkError> {
+    suspend fun changeProfile(userId: String, newStatus: String?, newDescription: String?, newEmail: String?, newBirthDate: String?, newNickName: String?): NetworkResult<Any, NetworkError> {
         return safePost(
             endpoint = "/users/changeprofile",
             body = UserRequest(
@@ -618,7 +617,6 @@ class NetworkUtils(
                 newEmail = newEmail,
                 newBirthDate = newBirthDate,
                 newNickName = newNickName,
-                newLocationShared = newLocationShared
             )
         )
     }

@@ -15,16 +15,28 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
+
+/** Draft per-friend location sharing settings edited in the dialog, only sent to the server on Save. */
+data class FriendShareDraft(
+    val friendId: String,
+    val share: Boolean,
+    val shareSpeedHeading: Boolean,
+    val snailTrail: Boolean,
+)
 
 class SchneaggmapSettingsViewModel(
     private val appRepository: AppRepository,
     private val preferenceManager: Preferencemanager,
-    private val loggingRepository: LoggingRepository
+    private val loggingRepository: LoggingRepository,
+    private val permissionManager: PermissionManager,
 ) : ViewModel() {
 
     var mergeMapLocations by mutableStateOf(true)
         private set
 
+    // Derived server-side from whether any friend has locationShared=true. Only used to seed
+    // the dialog's local draft toggle - there is no standalone switch to write to.
     var shareLocationGlobal by mutableStateOf(false)
         private set
 
@@ -45,7 +57,7 @@ class SchneaggmapSettingsViewModel(
                 }
         }
 
-        viewModelScope.launch { // Global "share my location at all" switch (own user)
+        viewModelScope.launch { // Global "share my location at all" switch (own user) - derived, read-only
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
 
             appRepository.getUserByIdFlow(ownId)
@@ -84,39 +96,48 @@ class SchneaggmapSettingsViewModel(
         }
     }
 
-    fun updateShareLocationGlobal(newValue: Boolean) {
-        viewModelScope.launch {
-            appRepository.setOwnLocationShared(newValue)
-        }
-    }
-
-    fun updateFriendLocationSharing(friendId: String, share: Boolean) {
-        viewModelScope.launch {
-            val friend = friends.find { it.id == friendId }
-            appRepository.setLocationSharing(
-                friendId = friendId,
-                share = share,
-                shareSpeedHeading = friend?.shareSpeedHeading ?: false,
-                snailTrail = friend?.snailTrail ?: false,
-            )
-        }
-    }
-
     fun updateAdvancedLocationSharing(newValue: Boolean) {
         viewModelScope.launch {
             preferenceManager.saveAdvancedLocationSharing(newValue)
         }
     }
 
-    fun updateFriendAdvancedSharing(friendId: String, shareSpeedHeading: Boolean, snailTrail: Boolean) {
+    /**
+     * Commits the location sharing dialog's draft to the server. If the master switch changed
+     * from off to on, sharing is force-enabled for every friend (using each friend's drafted
+     * advanced flags) and location permission is requested; if it changed from on to off,
+     * sharing is force-disabled for every friend. Otherwise only friends whose draft actually
+     * differs from their current state are updated.
+     */
+    fun saveLocationSharing(newGlobalShare: Boolean, friendDrafts: List<FriendShareDraft>) {
+        val wasGlobalShared = shareLocationGlobal
+
         viewModelScope.launch {
-            val friend = friends.find { it.id == friendId }
-            appRepository.setLocationSharing(
-                friendId = friendId,
-                share = friend?.locationShared ?: true,
-                shareSpeedHeading = shareSpeedHeading,
-                snailTrail = snailTrail,
-            )
+            when {
+                newGlobalShare && !wasGlobalShared -> {
+                    friendDrafts.forEach { draft ->
+                        appRepository.setLocationSharing(draft.friendId, share = true, draft.shareSpeedHeading, draft.snailTrail)
+                    }
+                }
+                !newGlobalShare && wasGlobalShared -> {
+                    appRepository.disableLocationSharingForAllFriends()
+                }
+                else -> {
+                    friendDrafts.forEach { draft ->
+                        val friend = friends.find { it.id == draft.friendId } ?: return@forEach
+                        val changed = friend.locationShared != draft.share ||
+                                friend.shareSpeedHeading != draft.shareSpeedHeading ||
+                                friend.snailTrail != draft.snailTrail
+                        if (changed) {
+                            appRepository.setLocationSharing(draft.friendId, draft.share, draft.shareSpeedHeading, draft.snailTrail)
+                        }
+                    }
+                }
+            }
+
+            if (newGlobalShare) {
+                permissionManager.requestLocationPermission()
+            }
         }
     }
 }

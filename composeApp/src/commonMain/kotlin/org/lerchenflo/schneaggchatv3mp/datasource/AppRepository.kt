@@ -1266,7 +1266,6 @@ class AppRepository(
         newEmail: String? = null,
         newBirthDate: String? = null,
         newNickName: String? = null,
-        newLocationShared: Boolean? = null,
         ) : Boolean {
         return when (val success = networkUtils.changeProfile(
             userId = userId,
@@ -1275,7 +1274,6 @@ class AppRepository(
             newEmail = newEmail,
             newBirthDate = newBirthDate,
             newNickName = newNickName,
-            newLocationShared = newLocationShared,
         )){
             is NetworkResult.Error<*> -> false
             is NetworkResult.Success<*> -> {
@@ -2072,17 +2070,14 @@ class AppRepository(
         }
     }
 
-    /** Global "share my location at all" master switch, for the logged-in user themselves. */
-    suspend fun setOwnLocationShared(share: Boolean): Boolean {
-        val ownId = SessionCache.requireLoggedIn()?.userId ?: return false
-        return when (changeUserDetails(userId = ownId, newLocationShared = share)) {
-            false -> false
-            true -> {
-                userRepository.getUserById(ownId)?.let { self ->
-                    userRepository.upsertUser(self.copy(locationShared = share).toDto())
-                }
-                true
-            }
+    /**
+     * Disables location sharing towards every friend. User.locationShared is derived
+     * server-side from whether any friend has share=true, so this is the real way to turn
+     * sharing off entirely (there's no standalone global switch to write to anymore).
+     */
+    suspend fun disableLocationSharingForAllFriends(): Boolean {
+        return getFriends("").all { friend ->
+            setLocationSharing(friend.id, share = false, friend.shareSpeedHeading, friend.snailTrail)
         }
     }
 

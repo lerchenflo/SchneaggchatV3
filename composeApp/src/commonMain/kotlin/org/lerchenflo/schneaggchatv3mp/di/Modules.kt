@@ -191,5 +191,5 @@ val sharedmodule = module{
     factory { MiscSettingsViewModel(get(), get(), get(), get()) }
 
     viewModelOf(::SchneaggmapSettingsViewModel)
-    factory { SchneaggmapSettingsViewModel(get(), get(), get()) }
+    factory { SchneaggmapSettingsViewModel(get(), get(), get(), get()) }
 }

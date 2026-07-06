@@ -17,6 +17,13 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 # Changelog
 
 
+### 3.0.14
+
+#### Bugfixes
+- Standortteilen Dialog mit Speichern-Button vereinfacht
+- Erweiterte Standortteilen Einstellungen jetzt immer sichtbar
+
+
 ### 3.0.13
 
 #### Features

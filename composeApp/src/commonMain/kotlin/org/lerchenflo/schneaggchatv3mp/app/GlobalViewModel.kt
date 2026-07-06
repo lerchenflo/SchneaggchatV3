@@ -58,18 +58,18 @@ class GlobalViewModel(
         // Sync when app is resumed
         viewModelScope.launch {
             AppLifecycleManager.appResumedEvent.collectLatest {
-                println("App resumed, checking loggedin status")
+                //println("App resumed, checking loggedin status")
                 val ownId = SessionCache.requireLoggedIn()?.userId ?: return@collectLatest
 
                 if (SessionCache.isLoggedIn()) {
-                    println("App resumed and logged in, triggering sync...")
+                    //println("App resumed and logged in, triggering sync...")
                     appRepository.sendOfflineMessages(ownId)
                     appRepository.dataSync()
 
                     //On resume clear all error notis
                     NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)
 
-                    println("Incoming Data from app resume: ${IncomingDataManager.sharedText.value}")
+                    //println("Incoming Data from app resume: ${IncomingDataManager.sharedText.value}")
                     if(IncomingDataManager.isNewDataAvailable()){
                         navigator.navigate(Route.MessageChatSelector) // todo build backstack?
                     }
@@ -279,7 +279,7 @@ class GlobalViewModel(
                 // don't prompt again on every resume/sync; they can re-enable it manually.
                 println("Location tracking: Permission denied, disabling location sharing")
                 ownLocationShared = false
-                appRepository.setOwnLocationShared(false)
+                appRepository.disableLocationSharingForAllFriends()
             }
 
             if (permission != PermissionState.GRANTED) {
