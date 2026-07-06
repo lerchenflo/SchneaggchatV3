@@ -30,5 +30,9 @@
     <string>We need your location to show it on the map</string>
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
     <string>We need your location to provide location-based features even when the app is in the background.</string>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>comgooglemaps</string>
+    </array>
 </dict>
 </plist>

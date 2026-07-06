@@ -128,10 +128,21 @@ actual class ShareUtils {
     }
 
     actual fun openLocationInMaps(lat: Double, long: Double, label: String) {
-        val labelParam = if (label.isNotEmpty()) "&q=${percentEncode(label)}" else ""
-        val url = NSURL.URLWithString(URLString = "https://maps.apple.com/?ll=$lat,$long$labelParam")
-        if (url != null) {
-            UIApplication.sharedApplication.openURL(url, options = emptyMap<Any?, Any>(), completionHandler = null)
+        val query = if (label.isNotEmpty()) "$lat,$long(${percentEncode(label)})" else "$lat,$long"
+        val googleMapsUrl = NSURL.URLWithString(
+            URLString = "comgooglemaps://?q=$query&center=$lat,$long"
+        )
+
+        if (googleMapsUrl != null && UIApplication.sharedApplication.canOpenURL(googleMapsUrl)) {
+            UIApplication.sharedApplication.openURL(googleMapsUrl, options = emptyMap<Any?, Any>(), completionHandler = null)
+        } else {
+            // Fallback to Google Maps web URL
+            val webUrl = NSURL.URLWithString(
+                URLString = "https://www.google.com/maps/search/?api=1&query=$query"
+            )
+            if (webUrl != null) {
+                UIApplication.sharedApplication.openURL(webUrl, options = emptyMap<Any?, Any>(), completionHandler = null)
+            }
         }
     }
 }
