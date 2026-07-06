@@ -11,4 +11,7 @@ expect class ShareUtils {
     //Copy text to clipboard
     fun copyToClipboard(text: String, clipboard: Any)
 
+    //Open a lat/long location in the device's maps app
+    fun openLocationInMaps(lat: Double, long: Double, label: String = "")
+
 }

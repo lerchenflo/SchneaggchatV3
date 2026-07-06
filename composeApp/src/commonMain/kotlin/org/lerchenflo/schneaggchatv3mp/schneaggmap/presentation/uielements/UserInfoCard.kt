@@ -40,15 +40,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
+import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.distanceMeters
 import org.lerchenflo.schneaggchatv3mp.utilities.formatDistance
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.open_chat
+import schneaggchatv3mp.composeapp.generated.resources.open_location_in_maps
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_altitude_label
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_battery_label
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_distance_24h_label
@@ -191,6 +194,15 @@ fun UserInfoCard(
                     onClick = onDismiss,
                     primary = false
                 )
+
+                location?.let { userLocation ->
+                    val shareUtils = koinInject<ShareUtils>()
+                    NormalButton(
+                        text = stringResource(Res.string.open_location_in_maps),
+                        onClick = { shareUtils.openLocationInMaps(userLocation.lat, userLocation.long, user.displayName) },
+                        primary = false
+                    )
+                }
 
                 NormalButton(
                     text = stringResource(Res.string.open_chat),

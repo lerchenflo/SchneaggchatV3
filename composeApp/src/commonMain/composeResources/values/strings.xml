@@ -661,6 +661,7 @@
     <string name="schneaggmap_entry_delete">Delete this entry. It will also be deleted for everyone else. You will not be able to restore it.</string>
 
     <string name="latlong">Lat %1$s, Long %2$s</string>
+    <string name="open_location_in_maps">Open in Maps</string>
     <string name="latitude">Latitude</string>
     <string name="longitude">Longitude</string>
 
