@@ -74,7 +74,7 @@ val IosLanguageManagerModule = module {
 }
 
 val IosNotifierModule = module {
-    single { Notifier() }
+    single { Notifier(get()) }
 }
 
 val IosAppIconManagerModule = module {

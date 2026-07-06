@@ -24,6 +24,17 @@ expect class PermissionManager {
      * Returns the resulting [PermissionState].
      */
     suspend fun requestLocationPermission(): PermissionState
+
+    /**
+     * Returns the current notification permission state.
+     */
+    suspend fun checkNotificationPermission(): PermissionState
+
+    /**
+     * Requests notification permission if not yet granted.
+     * Returns the resulting [PermissionState].
+     */
+    suspend fun requestNotificationPermission(): PermissionState
 }
 
 // commonMain
