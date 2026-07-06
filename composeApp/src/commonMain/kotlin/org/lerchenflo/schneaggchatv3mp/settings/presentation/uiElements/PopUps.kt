@@ -47,6 +47,7 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.AppIcon
@@ -58,6 +59,7 @@ import schneaggchatv3mp.composeapp.generated.resources.icon_dark
 import schneaggchatv3mp.composeapp.generated.resources.icon_default
 import schneaggchatv3mp.composeapp.generated.resources.language
 import schneaggchatv3mp.composeapp.generated.resources.ok
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_map_style
 import schneaggchatv3mp.composeapp.generated.resources.theme
 
 @Composable
@@ -194,6 +196,75 @@ fun LanguageSelector(
                         )
                         Text(
                             text = language.toUiText().asString(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                }
+            }
+        }
+        },
+        shape = MaterialTheme.shapes.large,
+    )
+}
+
+@Composable
+fun MapStyleSelector(
+    onConfirm: (MapStyleSetting) -> Unit,
+    onMapStyleSelected: (MapStyleSetting) -> Unit,
+    onDismiss: () -> Unit,
+    selectedMapStyle: MapStyleSetting
+) {
+    var tempSelection by mutableStateOf(selectedMapStyle)
+
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(tempSelection) }
+            ) {
+                Text(stringResource(Res.string.ok), color = textContentColor)
+            }
+        },
+        dismissButton =
+            {
+                TextButton(
+                    onClick = { onDismiss() }
+                ) {
+                    Text(stringResource(Res.string.cancel), color = textContentColor)
+                }
+            },
+        title = { Text(text = stringResource(Res.string.schneaggmap_map_style)) },
+        text = { Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+        ) {
+            // Radio group for map style selection
+            Column(
+                modifier = Modifier.selectableGroup()
+            ) {
+                MapStyleSetting.entries.forEach { style ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .selectable(
+                                selected = (style == tempSelection),
+                                onClick = {
+                                    tempSelection = style
+                                    onMapStyleSelected(style)
+                                          },
+                                role = Role.RadioButton
+                            )
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = style.getIcon(),
+                            contentDescription = null,
+                            tint = if(style == tempSelection) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = style.toUiText().asString(),
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(start = 8.dp)
                         )

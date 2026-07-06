@@ -14,6 +14,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 
@@ -41,6 +42,9 @@ class SchneaggmapSettingsViewModel(
         private set
 
     var advancedLocationSharing by mutableStateOf(false)
+        private set
+
+    var mapStyle by mutableStateOf(MapStyleSetting.LIBERTY)
         private set
 
     var friends by mutableStateOf<List<User>>(emptyList())
@@ -88,6 +92,16 @@ class SchneaggmapSettingsViewModel(
                     advancedLocationSharing = value
                 }
         }
+
+        viewModelScope.launch { // Map style
+            preferenceManager.getMapStyleSettingFlow()
+                .catch { exception ->
+                    loggingRepository.logWarning("Problem getting map style preference: ${exception.message}")
+                }
+                .collect { value ->
+                    mapStyle = value
+                }
+        }
     }
 
     fun updateMergeMapLocations(newValue: Boolean) {
@@ -99,6 +113,12 @@ class SchneaggmapSettingsViewModel(
     fun updateAdvancedLocationSharing(newValue: Boolean) {
         viewModelScope.launch {
             preferenceManager.saveAdvancedLocationSharing(newValue)
+        }
+    }
+
+    fun saveMapStyleSetting(style: MapStyleSetting) {
+        viewModelScope.launch {
+            preferenceManager.saveMapStyleSetting(style)
         }
     }
 

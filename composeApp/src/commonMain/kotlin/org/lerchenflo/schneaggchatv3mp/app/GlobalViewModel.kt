@@ -35,6 +35,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
 import kotlinx.serialization.encodeToString
+import kotlin.time.Duration.Companion.milliseconds
 
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -102,7 +103,7 @@ class GlobalViewModel(
 
                 }
 
-                delay(5000)
+                delay(5000.milliseconds)
             }
         }
 
@@ -289,6 +290,9 @@ class GlobalViewModel(
 
             locationTrackingJob = viewModelScope.launch {
                 locationService.getLocationFlow().collect { location ->
+
+                    println("LOCATIONSERVICE: New location received: $location")
+
                     if (location != null && socketConnectionManager.isConnectedNow()) {
                         // Altitude/battery are sent by default whenever location sharing is on at
                         // all - the server already always shares them once a friend can see your
