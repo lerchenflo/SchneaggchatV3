@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.CallReceived
@@ -100,11 +102,26 @@ fun UserButton(
                 modifierImage = modifierImage.clickable{onClickImage()}
             }
 
+            Box {
+                ProfilePictureView(
+                    filepath = selectedChat.profilePictureUrl,
+                    modifier = modifierImage
+                )
 
-            ProfilePictureView(
-                filepath = selectedChat.profilePictureUrl,
-                modifier = modifierImage
-            )
+                // Live "online right now" presence dot - only shown when the friend is
+                // actually online, never as a false "offline" indicator.
+                if ((selectedChat as? UserChat)?.isOnline == true) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 8.dp)
+                            .size(14.dp)
+                            .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape)
+                            .padding(2.dp)
+                            .background(MaterialTheme.colorScheme.primary, CircleShape)
+                    )
+                }
+            }
 
         }
 

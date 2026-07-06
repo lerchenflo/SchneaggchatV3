@@ -1057,6 +1057,7 @@ class AppRepository(
                                 snailTrail = newUser.shareSnailTrail,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
                                 notisMuted = existing?.notisMuted ?: false,
+                                lastSeen = newUser.lastSeen,
                                 email = null,
                                 emailVerifiedAt = null,
                                 createdAt = null,

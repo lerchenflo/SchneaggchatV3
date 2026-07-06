@@ -465,6 +465,8 @@ class NetworkUtils(
             //Whether i share my snail trail (full 24h history) with this friend
             val shareSnailTrail: Boolean = false,
 
+            //Epoch millis this friend was last seen online, null if unknown/never
+            val lastSeen: Long? = null,
 
         ) : UserResponse
 

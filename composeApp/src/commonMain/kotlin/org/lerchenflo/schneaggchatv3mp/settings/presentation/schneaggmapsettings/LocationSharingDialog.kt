@@ -76,12 +76,25 @@ fun LocationSharingDialog(
                 modifier = Modifier.verticalScroll(rememberScrollState())
             ) {
                 // Big global switch - local-only, just reflects "sharing with anyone at all".
-                // Committing it force-enables/disables sharing for every friend on Save.
+                // Committing it force-enables/disables sharing for every friend on Save. Turning
+                // it on also defaults every friend's share + advanced sub-toggles to on here in
+                // the dialog, so the UI matches what Save is about to persist.
                 SettingsSwitch(
                     titletext = stringResource(Res.string.share_location_global),
                     infotext = stringResource(Res.string.share_location_global_info),
                     switchchecked = draftGlobalShare,
-                    onSwitchChange = { draftGlobalShare = it },
+                    onSwitchChange = { newValue ->
+                        draftGlobalShare = newValue
+                        if (newValue) {
+                            draftFriendShares.values.forEach { state ->
+                                state.value = state.value.copy(
+                                    share = true,
+                                    shareSpeedHeading = true,
+                                    snailTrail = true,
+                                )
+                            }
+                        }
+                    },
                     icon = null
                 )
 

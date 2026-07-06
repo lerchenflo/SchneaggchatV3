@@ -39,34 +39,30 @@ import kotlinx.io.readByteArray
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 
-private const val ONLINE_THRESHOLD_MILLIS = 2 * 60 * 1000L
-
 @Composable
-fun FriendLocationsPreview(friends: List<User>, onUserClick: (User) -> Unit) {
+fun FriendLocationsPreview(friends: List<User>, onlineFriendIds: Set<String>, onUserClick: (User) -> Unit) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.horizontalScroll(rememberScrollState())
     ) {
         friends.forEach { user ->
-            FriendChip(user, onUserClick)
+            FriendChip(user, isOnline = user.id in onlineFriendIds, onUserClick)
         }
     }
 }
 
 @Composable
-private fun FriendChip(user: User, onUserClick: (User) -> Unit) {
+private fun FriendChip(user: User, isOnline: Boolean, onUserClick: (User) -> Unit) {
     val displayName = user.displayName
-    val locationDate = user.location?.date
-    val isOnline = locationDate != null && (getCurrentTimeMillisLong() - locationDate) < ONLINE_THRESHOLD_MILLIS
+    val lastSeen = user.lastSeen
     val statusText = when {
         isOnline -> stringResource(Res.string.schneaggmap_user_online)
-        locationDate != null -> millisToTimeDateOrYesterday(locationDate)
+        lastSeen != null -> millisToTimeDateOrYesterday(lastSeen)
         else -> "-"
     }
 

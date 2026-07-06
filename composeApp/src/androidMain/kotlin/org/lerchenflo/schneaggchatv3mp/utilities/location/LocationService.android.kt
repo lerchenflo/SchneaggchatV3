@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.utilities.location
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.location.Location
 import android.os.Looper
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -11,7 +12,6 @@ import com.google.android.gms.location.Priority
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.flowOf
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -37,24 +37,21 @@ actual class LocationService(private val context: Context) {
             }
 
             val request = LocationRequest.Builder(
-                Priority.PRIORITY_BALANCED_POWER_ACCURACY,
-                30_000L  // request every 30 s; actual delivery follows system batching
+                Priority.PRIORITY_HIGH_ACCURACY,   // or keep BALANCED if battery matters more
+                5_000L
             )
-                .setMinUpdateDistanceMeters(5f)   // only if moved > 5 m
                 .build()
+
+            // emit cached location immediately so the flow isn't empty at start
+            fusedClient.lastLocation.addOnSuccessListener { loc ->
+                loc?.let { trySend(it.toDeviceLocation()) }
+            }
+
 
             val callback = object : LocationCallback() {
                 override fun onLocationResult(result: LocationResult) {
                     val loc = result.lastLocation ?: return
-                    trySend(
-                        DeviceLocation(
-                            coordinates = LatLong(lat = loc.latitude, long = loc.longitude),
-                            altitude = if (loc.hasAltitude()) loc.altitude.roundToInt() else null,
-                            heading = if (loc.hasBearing()) loc.bearing.roundToInt() else null,
-                            speed = if (loc.hasSpeed()) loc.speed.toDouble() else null,
-                            timestamp = loc.time,
-                        )
-                    )
+                    trySend(loc.toDeviceLocation())
                 }
             }
 
@@ -74,3 +71,11 @@ actual class LocationService(private val context: Context) {
         return PermissionManager(context).requestLocationPermission()
     }
 }
+
+private fun Location.toDeviceLocation(): DeviceLocation = DeviceLocation(
+    coordinates = LatLong(lat = latitude, long = longitude),
+    altitude = if (hasAltitude()) altitude.roundToInt() else null,
+    heading = if (hasBearing()) bearing.roundToInt() else null,
+    speed = if (hasSpeed()) speed.toDouble() else null,
+    timestamp = time,
+)

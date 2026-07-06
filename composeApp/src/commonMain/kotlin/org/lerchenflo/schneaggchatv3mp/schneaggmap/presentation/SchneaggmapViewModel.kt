@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -37,6 +38,7 @@ class SchneaggmapViewModel(
     private val preferenceManager: Preferencemanager,
     private val globalViewModel: GlobalViewModel,
     private val locationService: LocationService,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SchneaggmapState())
@@ -44,10 +46,12 @@ class SchneaggmapViewModel(
     val state = combine(
         _state,
         mapRepository.getAllMapEntriesFlow(),
-    ) { state, entries ->
+        userRepository.onlineFriendIdsFlow,
+    ) { state, entries, onlineFriendIds ->
 
         state.copy(
             entries = entries,
+            onlineFriendIds = onlineFriendIds,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -272,11 +276,15 @@ class SchneaggmapViewModel(
                 }
         }
 
-        // Only fetched while the toggle is on, and only for friends currently shown on the map -
-        // re-subscribes whenever either of those changes.
+        // Only fetched while the toggle is on, and only for friends currently shown on the map
+        // plus our own trail - re-subscribes whenever any of those changes.
         viewModelScope.launch {
             _state
-                .map { it.showSnailTrails to it.usersWithLocation.map { user -> user.id } }
+                .map { state ->
+                    val ownId = SessionCache.requireLoggedIn()?.userId
+                    val userIds = (state.usersWithLocation.map { user -> user.id } + listOfNotNull(ownId)).distinct()
+                    state.showSnailTrails to userIds
+                }
                 .distinctUntilChanged()
                 .flatMapLatest { (enabled, userIds) ->
                     if (!enabled || userIds.isEmpty()) {

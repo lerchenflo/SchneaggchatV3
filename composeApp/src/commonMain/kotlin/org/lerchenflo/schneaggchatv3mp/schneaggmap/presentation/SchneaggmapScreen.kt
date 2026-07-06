@@ -2,7 +2,6 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,6 +48,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
@@ -60,6 +59,7 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.CAMPING
@@ -83,7 +83,6 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEn
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.mergeProfilePictureWithStatusText
-import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import org.maplibre.compose.camera.CameraMoveReason
 import org.maplibre.compose.camera.CameraPosition
@@ -119,7 +118,6 @@ import org.maplibre.spatialk.geojson.Position
 import org.maplibre.spatialk.units.Bearing
 import org.maplibre.spatialk.units.extensions.inDegrees
 import org.maplibre.spatialk.units.extensions.inMeters
-import kotlin.math.roundToInt
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.icon_badespot
 import schneaggchatv3mp.composeapp.generated.resources.icon_beer
@@ -138,13 +136,10 @@ import schneaggchatv3mp.composeapp.generated.resources.icon_street
 import schneaggchatv3mp.composeapp.generated.resources.icon_viewpoint
 import schneaggchatv3mp.composeapp.generated.resources.icon_wheeliespot
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
-import kotlin.collections.listOf
+import kotlin.math.roundToInt
 
 private const val OWN_LOCATION_START_ZOOM = 14.0
 private const val OWN_LOCATION_CLICK_ZOOM = 16.0
-
-//How recent a friend's last location ping must be to show "Online" instead of a last-seen time.
-private const val ONLINE_THRESHOLD_MILLIS = 2 * 60 * 1000L
 
 private data class UserMarkerIcon(val bitmap: ImageBitmap, val size: DpSize)
 
@@ -268,8 +263,8 @@ fun SchneaggmapScreen(
                 val speedKmh = (speed.distancePerSecond.inMeters * 3.6).roundToInt()
                 Box(
                     modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(end = 16.dp, bottom = 16.dp)
+                        .align(Alignment.TopCenter)
+                        .padding(16.dp)
                         .size(56.dp)
                         .background(Color.White, CircleShape)
                         .border(width = 4.dp, color = Color.Red, shape = CircleShape),
@@ -301,8 +296,10 @@ fun SchneaggmapScreen(
             if (state.usersWithLocation.isNotEmpty()) {
                 FriendLocationsPreview(
                     friends = state.usersWithLocation,
+                    onlineFriendIds = state.onlineFriendIds,
                     onUserClick = { user ->
                         val loc = user.location ?: return@FriendLocationsPreview
+                        isFollowingLocation = false
                         scope.launch {
                             cameraState.animateTo(
                                 CameraPosition(
@@ -384,6 +381,7 @@ fun SchneaggmapScreen(
         state.selectedUser?.let { user ->
             UserInfoCard(
                 user = user,
+                isOnline = user.id in state.onlineFriendIds,
                 ownLocation = ownLocation?.position?.value?.let { position ->
                     LatLong(lat = position.latitude, long = position.longitude)
                 },
@@ -409,6 +407,7 @@ private fun SchneaggmapMapContent(
     onAction: (SchneaggmapAction) -> Unit
 ) {
 
+    val ownId = SessionCache.requireLoggedIn()?.userId
 
     //Resolve all icons (Cycle trough the entrys, code is more garbage otherwise (Auto resolves new types)
     val typeIcons: Map<LocationType, DrawableResource> = remember {
@@ -448,12 +447,11 @@ private fun SchneaggmapMapContent(
     val offlineColor = MaterialTheme.colorScheme.onSurface
     val onlineLabel = stringResource(Res.string.schneaggmap_user_online)
 
-    //Recency-based presence: a friend counts as "online" if their last location ping is
-    //recent, otherwise we show the formatted last-seen time instead.
+    //Live presence: a friend counts as "online" if the server currently has them connected,
+    //otherwise we show their last-seen time instead.
     val userMarkerData = state.usersWithLocation.associate { user ->
-        val date = user.location?.date
-        val isOnline = date != null && (getCurrentTimeMillisLong() - date) < ONLINE_THRESHOLD_MILLIS
-        val statusText = if (isOnline) onlineLabel else date?.let { millisToTimeDateOrYesterday(it) } ?: "-"
+        val isOnline = user.id in state.onlineFriendIds
+        val statusText = if (isOnline) onlineLabel else user.lastSeen?.let { millisToTimeDateOrYesterday(it) } ?: "-"
         val username = user.displayName
         user.id to UserMarkerData(username = username, statusText = statusText, isOnline = isOnline)
     }
@@ -629,6 +627,43 @@ private fun SchneaggmapMapContent(
                                 id = "snailtrail-${user.id}",
                                 source = trailSource,
                                 color = const(snailTrailColor(user.id)),
+                                width = const(3.dp),
+                                cap = const(LineCap.Round),
+                                join = const(LineJoin.Round),
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Our own snail trail - drawn in the theme's primary color so it stands out from
+            // friends' hashed palette colors.
+            if (ownId != null) {
+                key(ownId) {
+                    val ownTrail = state.snailTrails[ownId]
+                    if (ownTrail != null && ownTrail.size >= 2) {
+                        safeAdd(layerId = "snailtrail-$ownId") {
+                            val ownTrailColor = MaterialTheme.colorScheme.primary
+                            val ownTrailSource = rememberGeoJsonSource(
+                                data = GeoJsonData.Features(
+                                    FeatureCollection(
+                                        Feature(
+                                            geometry = LineString(
+                                                ownTrail.map { point ->
+                                                    Position(longitude = point.long, latitude = point.lat)
+                                                }
+                                            ),
+                                            properties = buildJsonObject {},
+
+                                        )
+                                    )
+                                )
+                            )
+
+                            LineLayer(
+                                id = "snailtrail-$ownId",
+                                source = ownTrailSource,
+                                color = const(ownTrailColor),
                                 width = const(3.dp),
                                 cap = const(LineCap.Round),
                                 join = const(LineJoin.Round),

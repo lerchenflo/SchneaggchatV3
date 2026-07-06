@@ -30,11 +30,9 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
-
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
-import kotlinx.serialization.encodeToString
 import kotlin.time.Duration.Companion.milliseconds
 
 
@@ -217,12 +215,13 @@ class GlobalViewModel(
             } else {
                 combine(
                     userRepository.getUserFlow(target.chatId),
-                    messageRepository.getMessagesByUserIdFlow(target.chatId, false)
-                ) { user, messages ->
+                    messageRepository.getMessagesByUserIdFlow(target.chatId, false),
+                    userRepository.onlineFriendIdsFlow
+                ) { user, messages, onlineFriendIds ->
                     val lastMessage = messages.maxByOrNull { it.sendDate }
                     var unreadCount = 0
                     var unsentCount = 0
-                    
+
                     messages.forEach { message ->
                         // Only count as unread if it's NOT my message and NOT read by me
                         if (!message.myMessage && !message.readByMe) {
@@ -230,11 +229,12 @@ class GlobalViewModel(
                         }
                         if (!message.sent) unsentCount++
                     }
-                    
+
                     user?.toSelectedChat(
                         unreadCount = unreadCount,
                         unsentCount = unsentCount,
-                        lastMessage = lastMessage
+                        lastMessage = lastMessage,
+                        isOnline = target.chatId in onlineFriendIds
                     ) ?: NotSelected()
                 }
             }
@@ -291,7 +291,7 @@ class GlobalViewModel(
             locationTrackingJob = viewModelScope.launch {
                 locationService.getLocationFlow().collect { location ->
 
-                    println("LOCATIONSERVICE: New location received: $location")
+                    //println("LOCATIONSERVICE: New location received: $location")
 
                     if (location != null && socketConnectionManager.isConnectedNow()) {
                         // Altitude/battery are sent by default whenever location sharing is on at
