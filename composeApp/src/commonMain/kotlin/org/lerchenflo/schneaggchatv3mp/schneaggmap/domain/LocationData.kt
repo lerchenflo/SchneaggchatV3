@@ -12,33 +12,39 @@ import schneaggchatv3mp.composeapp.generated.resources.*
 
 enum class LocationType {
 
-    // Traffic & Hazards
+    // Street
     RADAR,
     POLICE,
-
-    // Rider Spots
     MOUNTAIN_STREET,
     WHEELIESPOT,
-    VIEWPOINT,
 
     // Nature & Activities
+
+    SIGHTSEEING,
+
+    VIEWPOINT,
     CAMPING,
     SWIMMING,
 
     // Social & Entertainment
-    SIGHTSEEING,
     PARTY,
 
-    // Fast Food & Snacks
+    // Food
     FOOD_KEBAB,
     FOOD_PIZZA,
     FOOD_BURGER,
     FOOD_BEER,
-
-    // Restaurant
     FOOD_ASIAN,
     FOOD_GREEK,
     FOOD_OTHER,
+}
+
+
+enum class LocationGroup(val types: List<LocationType>) {
+    STREET(listOf(RADAR, POLICE, MOUNTAIN_STREET, WHEELIESPOT)),
+    NATURE_ACTIVITIES(listOf(SIGHTSEEING, VIEWPOINT, CAMPING, SWIMMING)),
+    SOCIAL_ENTERTAINMENT(listOf(PARTY)),
+    FOOD(listOf(FOOD_KEBAB, FOOD_PIZZA, FOOD_BURGER, FOOD_BEER, FOOD_ASIAN, FOOD_GREEK, FOOD_OTHER)),
 }
 
 
@@ -390,4 +396,12 @@ fun LocationType.stringRes(): StringResource = when (this) {
     FOOD_ASIAN      -> Res.string.location_type_food_asian
     FOOD_GREEK      -> Res.string.location_type_food_greek
     FOOD_OTHER      -> Res.string.location_type_food_other
+}
+
+@Composable
+fun LocationGroup.stringRes(): StringResource = when (this) {
+    LocationGroup.STREET               -> Res.string.location_group_street
+    LocationGroup.NATURE_ACTIVITIES    -> Res.string.location_group_nature_activities
+    LocationGroup.SOCIAL_ENTERTAINMENT -> Res.string.location_group_social_entertainment
+    LocationGroup.FOOD                 -> Res.string.location_group_food
 }

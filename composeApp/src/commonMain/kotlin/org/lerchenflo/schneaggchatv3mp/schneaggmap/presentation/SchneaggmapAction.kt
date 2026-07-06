@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 
@@ -9,6 +10,8 @@ sealed interface SchneaggmapAction {
     data object OnBackClicked : SchneaggmapAction
     data object ToggleFilterDropdown : SchneaggmapAction
     data class ToggleMainType(val key: LocationType) : SchneaggmapAction
+    data class ToggleGroup(val group: LocationGroup) : SchneaggmapAction
+    data class ToggleGroupExpanded(val group: LocationGroup) : SchneaggmapAction
     data class SelectEntry(val entry: MapEntry?) : SchneaggmapAction
 
     data class OnMapClick(val coordinates: LatLong, val longClick: Boolean) : SchneaggmapAction

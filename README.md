@@ -34,6 +34,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ### 3.0.12
 
 #### Features
+- Standorttypen-Filter in Gruppen organisiert auf der Schneaggmap
+- Standorttypen beim Hinzufügen gruppiert
 - Standort teilen auf der Schneaggmap
 - Datensync Detail Popup für mehr Transparenz
 - Message highlight bei beantworteten Nachrichten
