@@ -57,6 +57,7 @@ import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_battery_
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_distance_24h_label
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_distance_label
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_last_online_label
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_speed_label
 import kotlin.math.roundToInt
 
@@ -71,6 +72,7 @@ private data class StatTileData(
 @Composable
 fun UserInfoCard(
     user: User,
+    isOnline: Boolean,
     ownLocation: LatLong?,
     onDismiss: () -> Unit,
     onOpenChat: (User) -> Unit,
@@ -106,13 +108,19 @@ fun UserInfoCard(
             //TODO: heading is available on user.location?.heading but intentionally not shown
             // here - there's currently no good way to render it usefully (no compass/rotation
             // display), so it's left out of the popup for now.
+            val onlineColor = MaterialTheme.colorScheme.primary
+
             val tiles = buildList {
                 add(
                     StatTileData(
                         icon = Icons.Default.Schedule,
-                        tint = onSurfaceVariant,
+                        tint = if (isOnline) onlineColor else onSurfaceVariant,
                         caption = stringResource(Res.string.schneaggmap_user_last_online_label),
-                        value = location?.date?.let { millisToTimeDateOrYesterday(it) } ?: "-"
+                        value = if (isOnline) {
+                            stringResource(Res.string.schneaggmap_user_online)
+                        } else {
+                            user.lastSeen?.let { millisToTimeDateOrYesterday(it) } ?: "-"
+                        }
                     )
                 )
                 add(

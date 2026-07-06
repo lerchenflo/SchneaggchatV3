@@ -128,6 +128,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.camera
 import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.chat_last_seen_status
 import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
 import schneaggchatv3mp.composeapp.generated.resources.copied_to_clipboard
 import schneaggchatv3mp.composeapp.generated.resources.edit
@@ -137,6 +138,7 @@ import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.message
 import schneaggchatv3mp.composeapp.generated.resources.poll
 import schneaggchatv3mp.composeapp.generated.resources.read_at_time
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 
 
@@ -148,7 +150,6 @@ fun ChatScreen(
 ){
     val globalViewModel = koinInject<GlobalViewModel>()
     val viewModel = koinViewModel<ChatViewModel>()
-    val loggingRepository = koinInject<LoggingRepository>()
     val displayItems by viewModel.messageDisplayState.collectAsStateWithLifecycle()
     val focusManager = LocalFocusManager.current
     val clipboard = LocalClipboard.current.nativeClipboard
@@ -315,8 +316,20 @@ fun ChatScreen(
 
                 }
 
+                // Presence text for the chat header: "Online" while connected, otherwise the
+                // persisted last-seen time. Empty (not null) for anything else so UserButton's
+                // bottom text stays hidden, matching its existing default.
+                val presenceText = (userButtonselectedChat as? UserChat)?.let { chat ->
+                    when {
+                        chat.isOnline -> stringResource(Res.string.schneaggmap_user_online)
+                        chat.lastSeen != null -> stringResource(Res.string.chat_last_seen_status, millisToTimeDateOrYesterday(chat.lastSeen))
+                        else -> null
+                    }
+                } ?: ""
+
                 UserButton(
                     selectedChat = userButtonselectedChat,
+                    bottomTextOverride = presenceText,
                     onClickGes = {
                         viewModel.onChatDetailsClick()
                     },

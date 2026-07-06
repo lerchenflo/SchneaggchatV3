@@ -53,6 +53,11 @@ data class UserChat(
     val nickName: String? = null,
     val birthDate: String? = null,
 
+    // Live "online right now" (never persisted, see UserRepository.onlineFriendIdsFlow) and the
+    // persisted last-seen timestamp (epoch millis) - both null/false when unknown.
+    val isOnline: Boolean = false,
+    val lastSeen: Long? = null,
+
     val commonGroups : List<Group> = emptyList()
 ) : SelectedChat {
     override val isGroup: Boolean = false
@@ -87,7 +92,8 @@ fun User.toSelectedChat(
     unreadCount: Int,
     unsentCount: Int,
     lastMessage: Message?,
-    pinned: Long = 0L
+    pinned: Long = 0L,
+    isOnline: Boolean = false,
 ): UserChat = UserChat(
     id = this.id,
     name = this.name,
@@ -101,7 +107,9 @@ fun User.toSelectedChat(
     requesterId = this.requesterId,
     pinned = pinned,
     nickName = this.nickName,
-    birthDate = this.birthDate
+    birthDate = this.birthDate,
+    isOnline = isOnline,
+    lastSeen = this.lastSeen,
 
 )
 

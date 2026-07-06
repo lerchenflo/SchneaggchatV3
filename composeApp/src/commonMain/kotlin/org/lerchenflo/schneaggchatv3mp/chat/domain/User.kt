@@ -23,6 +23,10 @@ data class User(
     override val friendshipStatus: NetworkUtils.FriendshipStatus?,
     override val requesterId: String? = null,
     val notisMuted: Boolean = false,
+    // Epoch millis this friend was last seen online, null if unknown/never. Not to be confused
+    // with "online right now", which lives in UserRepository.onlineFriendIdsFlow and is never
+    // persisted.
+    val lastSeen: Long? = null,
     val birthDate: String? = null, //YYYY-MM-dd
 
     val email: String? = null,
@@ -72,6 +76,7 @@ data class User(
             friendshipStatus=$friendshipStatus,
             requesterId=$requesterId,
             notisMuted=$notisMuted,
+            lastSeen=$lastSeen,
             birthDate=$birthDate,
             email=$email,
             emailVerifiedAt=$emailVerifiedAt,
@@ -114,6 +119,7 @@ fun UserDto.toUser(): User = User(
     wakeupEnabled = this.wakeupEnabled,
     requesterId = this.requesterId,
     notisMuted = this.notisMuted,
+    lastSeen = this.lastSeen,
     birthDate = this.birthDate,
     email = this.email,
     emailVerifiedAt = this.emailVerifiedAt,
@@ -145,6 +151,7 @@ fun User.toDto(): UserDto = UserDto(
     wakeupEnabled = this.wakeupEnabled,
     requesterId = this.requesterId,
     notisMuted = this.notisMuted,
+    lastSeen = this.lastSeen,
     birthDate = this.birthDate,
     email = this.email,
     emailVerifiedAt = this.emailVerifiedAt,

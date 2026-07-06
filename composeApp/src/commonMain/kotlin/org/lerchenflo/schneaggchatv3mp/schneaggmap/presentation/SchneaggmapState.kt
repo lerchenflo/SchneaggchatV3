@@ -11,6 +11,7 @@ data class SchneaggmapState(
     val entries: List<MapEntry> = emptyList(),
 
     val usersWithLocation: List<User> = emptyList(),
+    val onlineFriendIds: Set<String> = emptySet(),
     val showSnailTrails: Boolean = false,
     val snailTrails: Map<String, List<SnailTrailPoint>> = emptyMap(),
 

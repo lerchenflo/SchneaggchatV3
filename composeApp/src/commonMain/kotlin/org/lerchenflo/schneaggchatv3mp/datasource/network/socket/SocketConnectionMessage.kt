@@ -97,6 +97,16 @@ sealed interface SocketConnectionMessage {
     @Serializable
     @SerialName("snailtrailpointadded")
     data class SnailTrailPointAdded(val userId: String, val point: SnailTrailPointPayload) : SocketConnectionMessage
+
+    /** INBOUND: a single friend's live online/offline change, pushed on connect/disconnect. */
+    @Serializable
+    @SerialName("friendonlinestatuschange")
+    data class FriendOnlineStatusChange(val userId: String, val online: Boolean) : SocketConnectionMessage
+
+    /** INBOUND: all currently-online friends, pushed once when we connect (initial load). */
+    @Serializable
+    @SerialName("friendonlinestatussnapshot")
+    data class FriendOnlineStatusSnapshot(val onlineUserIds: List<String> = emptyList()) : SocketConnectionMessage
 }
 
 /** Wire shape of a friend's live location, pushed over the WebSocket. */
@@ -258,6 +268,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 snailTrail = newUser.shareSnailTrail,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
                                 notisMuted = existing?.notisMuted ?: false,
+                                lastSeen = newUser.lastSeen,
                                 email = null,
                                 emailVerifiedAt = null,
                                 createdAt = null,
@@ -390,6 +401,16 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
             //One new point appended to a friend's snail trail (~once/minute)
             is SocketConnectionMessage.SnailTrailPointAdded -> {
                 userRepository.appendSnailTrailPoint(socketMessage.userId, socketMessage.point)
+            }
+
+            //A friend connected or disconnected (live push)
+            is SocketConnectionMessage.FriendOnlineStatusChange -> {
+                userRepository.setFriendOnline(socketMessage.userId, socketMessage.online)
+            }
+
+            //Initial snapshot of all currently-online friends, pushed once on connect
+            is SocketConnectionMessage.FriendOnlineStatusSnapshot -> {
+                userRepository.setOnlineFriendIds(socketMessage.onlineUserIds.toSet())
             }
 
             //Outbound-only - we send this ourselves, the server never echoes it back

@@ -56,6 +56,11 @@ data class UserDto(
 
     var notisMuted: Boolean = false,
 
+    // Epoch millis this friend was last seen online, null if unknown/never. Synced like any
+    // other user field (via UserChange) - unrelated to live "online right now" presence, which
+    // is never persisted (see UserRepository.onlineFriendIdsFlow).
+    var lastSeen: Long? = null,
+
     var birthDate: String? = null,
 
     var email: String? = null,

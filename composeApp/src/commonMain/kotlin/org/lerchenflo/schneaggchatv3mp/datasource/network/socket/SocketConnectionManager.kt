@@ -25,10 +25,13 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import kotlin.math.min
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Socket connection manager for real-time communication
@@ -93,6 +96,19 @@ class SocketConnectionManager(
         .stateIn(scope = scope, started = SharingStarted.Eagerly, initialValue = false)
 
     /**
+     * Updates the connection state, and - since friend presence is only ever valid while
+     * connected - clears any known "online" friends whenever we drop to [ConnectionState.Disconnected].
+     * The set gets repopulated by the server's next [SocketConnectionMessage.FriendOnlineStatusSnapshot]
+     * on reconnect.
+     */
+    private fun setConnectionState(newState: ConnectionState) {
+        _connectionState.value = newState
+        if (newState == ConnectionState.Disconnected) {
+            KoinPlatform.getKoin().get<UserRepository>().clearOnlineFriends()
+        }
+    }
+
+    /**
      * Establish WebSocket connection with authentication
      */
     suspend fun connect(
@@ -134,17 +150,17 @@ class SocketConnectionManager(
                         }
                     },
                     onError = { throwable ->
-                        _connectionState.value = ConnectionState.Disconnected
+                        setConnectionState(ConnectionState.Disconnected)
                         onError(throwable)
                         scheduleReconnectIfPossible()
                     },
                     onClose = {
-                        _connectionState.value = ConnectionState.Disconnected
+                        setConnectionState(ConnectionState.Disconnected)
                         onClose()
                         scheduleReconnectIfPossible()
                     },
                     onConnectionStateChanged = { isActive ->
-                        _connectionState.value = if (isActive) ConnectionState.Connected else ConnectionState.Disconnected
+                        setConnectionState(if (isActive) ConnectionState.Connected else ConnectionState.Disconnected)
                     }
                 )
 
@@ -155,7 +171,7 @@ class SocketConnectionManager(
                     try {
                         connection.connect()
                     } catch (t: Throwable) {
-                        _connectionState.value = ConnectionState.Disconnected
+                        setConnectionState(ConnectionState.Disconnected)
                         onError(t)
                         scheduleReconnectIfPossible()
                     }
@@ -164,7 +180,7 @@ class SocketConnectionManager(
                 true
             } catch (e: Exception) {
                 //loggingRepository.logError("Failed to connect WebSocket: ${e.message}")
-                _connectionState.value = ConnectionState.Disconnected
+                setConnectionState(ConnectionState.Disconnected)
                 onError(e)
                 scheduleReconnectIfPossible()
                 false
@@ -190,7 +206,7 @@ class SocketConnectionManager(
 
         currentConnection?.close()
         currentConnection = null
-        _connectionState.value = ConnectionState.Disconnected
+        setConnectionState(ConnectionState.Disconnected)
     }
 
     /**
@@ -211,7 +227,7 @@ class SocketConnectionManager(
             while (_connectionState.value != ConnectionState.Connected) {
                 val delayMs = min(30_000L, 1_000L * (1L shl min(attempt, 5)))
                 attempt++
-                delay(delayMs)
+                delay(delayMs.milliseconds)
                 if (!AppLifecycleManager.isAppInForeground) break
                 connect(url, onError, onClose)
             }

@@ -10,6 +10,7 @@
     <string name="search_friend">search your Friends ...</string>
     <string name="no_status">no status</string>
     <string name="unknown_user">unknown user</string>
+    <string name="chat_last_seen_status">last seen %1$s</string>
 
     <string name="usersync">userdata</string>
     <string name="groupsync">groupdata</string>

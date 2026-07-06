@@ -146,7 +146,7 @@ val sharedmodule = module{
     factory { TodolistViewModel(get(), get(), get()) }
 
     viewModelOf(::SchneaggmapViewModel)
-    factory { SchneaggmapViewModel(get(), get(), get(), get(), get(), get()) }
+    factory { SchneaggmapViewModel(get(), get(), get(), get(), get(), get(), get()) }
 
 
 
