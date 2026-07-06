@@ -1,26 +1,25 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.runBlocking
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import kotlin.coroutines.resume
 
 private const val CHANNEL_ID = "schneaggchat_messages"
 private const val CHANNEL_NAME = "Messages"
 const val EXTRA_FROM_NOTIFICATION = "from_notification"
 
-actual class Notifier(private val context: Context) {
+actual class Notifier(private val context: Context, private val permissionManager: PermissionManager) {
 
     actual suspend fun getToken(): String? = suspendCancellableCoroutine { cont ->
         FirebaseMessaging.getInstance().token
@@ -34,12 +33,7 @@ actual class Notifier(private val context: Context) {
     }
 
     actual suspend fun hasPermission(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
-                PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
+        return permissionManager.checkNotificationPermission() == PermissionState.GRANTED
     }
 
     actual fun showLocalNotification(content: NotificationContent) {
@@ -69,7 +63,7 @@ actual class Notifier(private val context: Context) {
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .build()
-        if (hasNotificationPermission()) {
+        if (runBlocking { hasPermission() }) {
             @SuppressLint("MissingPermission")
             NotificationManagerCompat.from(context).notify(content.id, notification)
         }
@@ -95,14 +89,5 @@ actual class Notifier(private val context: Context) {
         val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH)
         val manager = context.getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(channel)
-    }
-
-    private fun hasNotificationPermission(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
-                PackageManager.PERMISSION_GRANTED
-        } else {
-            true
-        }
     }
 }

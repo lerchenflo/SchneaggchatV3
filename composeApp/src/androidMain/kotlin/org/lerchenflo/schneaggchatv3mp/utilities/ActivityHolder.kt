@@ -18,6 +18,10 @@ object ActivityHolder {
     private var locationPermissionLauncher: ActivityResultLauncher<Array<String>>? = null
     private var locationPermissionDeferred: CompletableDeferred<PermissionState>? = null
 
+    // Notification
+    private var notificationPermissionLauncher: ActivityResultLauncher<String>? = null
+    private var notificationPermissionDeferred: CompletableDeferred<PermissionState>? = null
+
     fun set(activity: ComponentActivity) {
         currentActivity = activity
 
@@ -33,6 +37,13 @@ object ActivityHolder {
                 val granted = results[Manifest.permission.ACCESS_FINE_LOCATION] == true
                         || results[Manifest.permission.ACCESS_COARSE_LOCATION] == true
                 locationPermissionDeferred?.complete(
+                    if (granted) PermissionState.GRANTED else PermissionState.DENIED
+                )
+            }
+
+        notificationPermissionLauncher =
+            activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+                notificationPermissionDeferred?.complete(
                     if (granted) PermissionState.GRANTED else PermissionState.DENIED
                 )
             }
@@ -57,12 +68,20 @@ object ActivityHolder {
         return locationPermissionDeferred!!
     }
 
+    fun requestNotificationPermission(): CompletableDeferred<PermissionState> {
+        notificationPermissionDeferred = CompletableDeferred()
+        notificationPermissionLauncher?.launch(Manifest.permission.POST_NOTIFICATIONS)
+        return notificationPermissionDeferred!!
+    }
+
     fun clear() {
         currentActivity = null
         micPermissionLauncher = null
         micPermissionDeferred = null
         locationPermissionLauncher = null
         locationPermissionDeferred = null
+        notificationPermissionLauncher = null
+        notificationPermissionDeferred = null
     }
 }
 

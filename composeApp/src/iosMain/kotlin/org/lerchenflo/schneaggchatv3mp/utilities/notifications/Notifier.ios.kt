@@ -1,16 +1,15 @@
 package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 
-import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.UIKit.UIApplication
 import platform.UIKit.unregisterForRemoteNotifications
-import platform.UserNotifications.UNAuthorizationStatusAuthorized
 import platform.UserNotifications.UNMutableNotificationContent
 import platform.UserNotifications.UNNotificationRequest
 import platform.UserNotifications.UNNotificationSound
 import platform.UserNotifications.UNUserNotificationCenter
-import kotlin.coroutines.resume
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 
-actual class Notifier {
+actual class Notifier(private val permissionManager: PermissionManager) {
 
     actual suspend fun getToken(): String? = IosPushTokenStore.getToken()
 
@@ -19,12 +18,8 @@ actual class Notifier {
         UIApplication.sharedApplication.unregisterForRemoteNotifications()
     }
 
-    actual suspend fun hasPermission(): Boolean = suspendCancellableCoroutine { cont ->
-        UNUserNotificationCenter.currentNotificationCenter()
-            .getNotificationSettingsWithCompletionHandler { settings ->
-                cont.resume(settings?.authorizationStatus == UNAuthorizationStatusAuthorized)
-            }
-    }
+    actual suspend fun hasPermission(): Boolean =
+        permissionManager.checkNotificationPermission() == PermissionState.GRANTED
 
     actual fun showLocalNotification(content: NotificationContent) {
         val unc = UNUserNotificationCenter.currentNotificationCenter()

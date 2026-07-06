@@ -137,7 +137,7 @@ fun Chatauswahlscreen(
 
         if (lastStartedVersion != currentVersion) {
 
-            println("showing changelog")
+            //println("showing changelog")
 
             val changelogContent = viewModel.getChangelog()
 

@@ -486,7 +486,7 @@ private fun SchneaggmapMapContent(
 
     MaplibreMap(
         modifier = Modifier.fillMaxSize(),
-        baseStyle = BaseStyle.Uri("https://tiles.openfreemap.org/styles/liberty"),
+        baseStyle = BaseStyle.Uri(state.mapStyleUrl),
         cameraState = cameraState,
         styleState = styleState,
         options = MapOptions(

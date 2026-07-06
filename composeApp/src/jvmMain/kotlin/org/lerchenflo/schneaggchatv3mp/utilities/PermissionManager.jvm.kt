@@ -19,4 +19,12 @@ actual class PermissionManager {
     actual suspend fun requestLocationPermission(): PermissionState {
         return PermissionState.NOT_DETERMINED
     }
+
+    actual suspend fun checkNotificationPermission(): PermissionState {
+        return PermissionState.NOT_DETERMINED
+    }
+
+    actual suspend fun requestNotificationPermission(): PermissionState {
+        return PermissionState.NOT_DETERMINED
+    }
 }

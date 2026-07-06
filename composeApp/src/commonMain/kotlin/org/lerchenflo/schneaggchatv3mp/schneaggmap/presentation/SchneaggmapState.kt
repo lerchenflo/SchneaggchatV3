@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 
@@ -25,5 +26,7 @@ data class SchneaggmapState(
     val isLoading: Boolean = false,
     val error: String? = null,
 
-    val useClustering: Boolean = false
+    val useClustering: Boolean = false,
+
+    val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl
 )

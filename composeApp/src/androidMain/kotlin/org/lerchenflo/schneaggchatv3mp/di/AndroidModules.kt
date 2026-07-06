@@ -84,5 +84,5 @@ val androidLanguageManagerModule = module {
 }
 
 val androidNotifierModule = module {
-    single { Notifier(androidContext()) }
+    single { Notifier(androidContext(), get()) }
 }

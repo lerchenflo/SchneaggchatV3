@@ -114,6 +114,7 @@ class Preferencemanager(
         val SERVER_URL = stringPreferencesKey("server_url")
         val DEVELOPER_SETTINGS = booleanPreferencesKey("developer_settings")
         val MERGE_MAP_LOCATIONS = booleanPreferencesKey("merge_map_locations")
+        val MAP_STYLE = intPreferencesKey("map_style")
         val ADVANCED_LOCATION_SHARING = booleanPreferencesKey("advanced_location_sharing")
         val PINNED_CHATS = stringPreferencesKey("pinned_chats")
         val DRAFTS = stringPreferencesKey("drafts")
@@ -199,6 +200,16 @@ class Preferencemanager(
 
     fun getMergeMapLocationsFlow(): Flow<Boolean> = prefs.data.map { prefs ->
         prefs[PrefsKeys.MERGE_MAP_LOCATIONS] ?: true //Default to true
+    }
+
+    // Map style
+    suspend fun saveMapStyleSetting(style: MapStyleSetting) {
+        prefs.edit { it[PrefsKeys.MAP_STYLE] = style.ordinal }
+    }
+
+    fun getMapStyleSettingFlow(): Flow<MapStyleSetting> = prefs.data.map { prefs ->
+        val ordinal = prefs[PrefsKeys.MAP_STYLE] ?: MapStyleSetting.LIBERTY.ordinal
+        MapStyleSetting.entries.getOrNull(ordinal) ?: MapStyleSetting.LIBERTY
     }
 
     // Advanced location sharing: send our own speed/heading/altitude/battery telemetry, and

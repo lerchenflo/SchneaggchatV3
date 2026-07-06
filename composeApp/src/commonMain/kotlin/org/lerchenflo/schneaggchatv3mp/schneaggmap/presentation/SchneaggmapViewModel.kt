@@ -232,6 +232,13 @@ class SchneaggmapViewModel(
                 }
         }
 
+        viewModelScope.launch {
+            preferenceManager.getMapStyleSettingFlow()
+                .collectLatest { style ->
+                    _state.update { it.copy(mapStyleUrl = style.tileUrl) }
+                }
+        }
+
         // Permission for showing our own position on the map (separate from the "share my
         // location with friends" setting, which drives server-side sync via GlobalViewModel).
         viewModelScope.launch {
