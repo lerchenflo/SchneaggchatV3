@@ -9,6 +9,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
 import kotlin.time.Clock
 
 data class TetrisState(
@@ -69,15 +73,18 @@ data class Tetromino(
     }
 }
 
-class TetrisViewModel : ViewModel() {
+class TetrisViewModel(
+    private val gameHighscoreRepository: GameHighscoreRepository,
+) : ViewModel() {
 
     private val _state = MutableStateFlow(TetrisState())
     val state = _state.asStateFlow()
 
     private var gameLoopJob: Job? = null
-    private val baseTickRate = 500L // ms
+    private var baseTickRate = 500L // ms, set from the selected difficulty on game start
     private val softDropMultiplier = 0.1f // 10x faster when soft dropping
     private var gameStartTime = 0L
+    private var currentDifficulty = GameDifficulty.MEDIUM
     
     private fun getCurrentTickRate(): Long {
         val currentState = _state.value
@@ -100,6 +107,12 @@ class TetrisViewModel : ViewModel() {
     }
 
     fun startGame() {
+        currentDifficulty = GameDifficultySelection.get(GameId.TETRIS)
+        baseTickRate = when (currentDifficulty) {
+            GameDifficulty.LOW -> 650L
+            GameDifficulty.MEDIUM -> 500L
+            GameDifficulty.HIGH -> 350L
+        }
         gameStartTime = Clock.System.now().toEpochMilliseconds()
         _state.value = TetrisState(isPlaying = true)
         spawnPiece()
@@ -155,6 +168,7 @@ class TetrisViewModel : ViewModel() {
         if (!isValidMove(piece, startRow, startCol)) {
              _state.update { it.copy(isGameOver = true, isPlaying = false) }
              gameLoopJob?.cancel()
+             submitScore()
         } else {
              _state.update {
                 it.copy(
@@ -291,7 +305,21 @@ class TetrisViewModel : ViewModel() {
                 currentPiece = null
             )
         }
-        
+
         spawnPiece()
+    }
+
+    private fun submitScore() {
+        val finalScore = _state.value.score.toLong()
+        val finalTime = Clock.System.now().toEpochMilliseconds() - gameStartTime
+
+        viewModelScope.launch {
+            gameHighscoreRepository.submitScore(
+                game = GameId.TETRIS,
+                difficulty = currentDifficulty,
+                score = finalScore,
+                timeMillis = finalTime,
+            )
+        }
     }
 }

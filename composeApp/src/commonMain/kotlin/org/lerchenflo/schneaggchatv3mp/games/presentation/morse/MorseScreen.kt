@@ -13,7 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,10 +32,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameOverOverlay
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.games_morse_clear
+import schneaggchatv3mp.composeapp.generated.resources.games_morse_title
+import schneaggchatv3mp.composeapp.generated.resources.go_back
+import schneaggchatv3mp.composeapp.generated.resources.morse_challenge_score
+import schneaggchatv3mp.composeapp.generated.resources.morse_challenge_start
+import schneaggchatv3mp.composeapp.generated.resources.morse_challenge_stop
+import schneaggchatv3mp.composeapp.generated.resources.morse_challenge_type_text
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 
@@ -49,15 +67,15 @@ fun MorseScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Morse") },
+                title = { Text(stringResource(Res.string.games_morse_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.go_back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { viewModel.clear() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Clear")
+                        Icon(Icons.Default.Refresh, contentDescription = stringResource(Res.string.games_morse_clear))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -67,36 +85,139 @@ fun MorseScreen(
             )
         }
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CodeDisplay(state = state)
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            HistoryRow(history = state.history)
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            MorseTreeView(
-                currentCode = state.currentCode,
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                val challenge = state.challenge
+
+                if (challenge == null) {
+                    Button(
+                        onClick = viewModel::startChallenge,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(Res.string.morse_challenge_start))
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                } else {
+                    ChallengeHeader(
+                        challenge = challenge,
+                        onExit = viewModel::exitChallenge
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                CodeDisplay(state = state)
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                if (challenge == null) {
+                    HistoryRow(history = state.history)
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                MorseTreeView(
+                    currentCode = state.currentCode,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                PressButton(
+                    onDot = viewModel::addDot,
+                    onDash = viewModel::addDash
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            if (state.challenge?.isGameOver == true) {
+                GameOverOverlay(
+                    game = GameId.MORSE,
+                    finalScore = state.challenge?.score?.toLong() ?: 0L,
+                    onRestart = viewModel::startChallenge
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChallengeHeader(
+    challenge: MorseChallengeState,
+    onExit: () -> Unit
+) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(Res.string.morse_challenge_score, challenge.score),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f)
+                )
+
+                Text(
+                    text = "♥".repeat((CHALLENGE_MAX_ERRORS - challenge.errors).coerceAtLeast(0)),
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 20.sp
+                )
+
+                IconButton(onClick = onExit) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(Res.string.morse_challenge_stop)
+                    )
+                }
+            }
+
+            Text(
+                text = stringResource(Res.string.morse_challenge_type_text),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
-            PressButton(
-                onDot = viewModel::addDot,
-                onDash = viewModel::addDash
+            Text(
+                text = buildAnnotatedString {
+                    challenge.targetText.forEachIndexed { index, char ->
+                        when {
+                            index < challenge.currentIndex -> withStyle(
+                                SpanStyle(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            ) { append(char) }
+
+                            index == challenge.currentIndex -> withStyle(
+                                SpanStyle(
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontWeight = FontWeight.Bold,
+                                    textDecoration = TextDecoration.Underline
+                                )
+                            ) { append(char) }
+
+                            else -> withStyle(
+                                SpanStyle(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            ) { append(char) }
+                        }
+                    }
+                },
+                fontSize = 20.sp,
+                letterSpacing = 2.sp
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }

@@ -9,12 +9,30 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
+import kotlin.time.Clock
 
 data class MorseState(
     val currentCode: String = "",
     val currentChar: Char? = null,
     val invalid: Boolean = false,
-    val history: List<Char> = emptyList()
+    val history: List<Char> = emptyList(),
+    val challenge: MorseChallengeState? = null
+)
+
+/**
+ * Challenge mode: the target text has to be typed in morse in correct order.
+ * Points are awarded per correct character; after 3 wrong characters the game is over.
+ */
+data class MorseChallengeState(
+    val targetText: String,
+    val currentIndex: Int = 0,
+    val errors: Int = 0,
+    val score: Int = 0,
+    val isGameOver: Boolean = false
 )
 
 private const val HISTORY_LIMIT = 10
@@ -22,12 +40,25 @@ private const val AUTO_COMMIT_DELAY_MS = 1200L
 private const val INVALID_CLEAR_DELAY_MS = 800L
 private const val MAX_CODE_DEPTH = 5
 
-class MorseViewModel : ViewModel() {
+const val CHALLENGE_MAX_ERRORS = 3
+private const val CHALLENGE_POINTS_PER_CHAR = 10
+
+private val CHALLENGE_WORDS = listOf(
+    "HELLO", "WORLD", "RADIO", "SIGNAL", "MORSE", "CODE", "SHIP", "OCEAN", "PILOT", "TOWER",
+    "APPLE", "HOUSE", "LIGHT", "SOUND", "MUSIC", "PIZZA", "TIGER", "EAGLE", "RIVER", "STONE",
+    "CLOUD", "STORM", "BEACH", "TRAIL", "NIGHT",
+)
+
+class MorseViewModel(
+    private val gameHighscoreRepository: GameHighscoreRepository,
+) : ViewModel() {
 
     private val _state = MutableStateFlow(MorseState())
     val state: StateFlow<MorseState> = _state.asStateFlow()
 
     private var autoCommitJob: Job? = null
+    private var challengeStartTime = 0L
+    private var challengeDifficulty = GameDifficulty.MEDIUM
 
     fun addDot() = addSymbol(".")
     fun addDash() = addSymbol("-")
@@ -35,6 +66,7 @@ class MorseViewModel : ViewModel() {
     private fun addSymbol(symbol: String) {
         autoCommitJob?.cancel()
         val current = _state.value
+        if (current.challenge?.isGameOver == true) return
         val newCode = current.currentCode + symbol
 
         if (newCode.length > MAX_CODE_DEPTH) {
@@ -55,15 +87,87 @@ class MorseViewModel : ViewModel() {
 
     fun commit() {
         val char = _state.value.currentChar ?: return
-        _state.update { state ->
-            val newHistory = (state.history + char).takeLast(HISTORY_LIMIT)
-            state.copy(currentCode = "", currentChar = null, history = newHistory, invalid = false)
+        val challenge = _state.value.challenge
+
+        if (challenge != null) {
+            if (!challenge.isGameOver) {
+                evaluateChallengeChar(char, challenge)
+            }
+            _state.update { it.copy(currentCode = "", currentChar = null, invalid = false) }
+        } else {
+            _state.update { state ->
+                val newHistory = (state.history + char).takeLast(HISTORY_LIMIT)
+                state.copy(currentCode = "", currentChar = null, history = newHistory, invalid = false)
+            }
         }
     }
 
     fun clear() {
         autoCommitJob?.cancel()
         _state.update { it.copy(currentCode = "", currentChar = null, invalid = false) }
+    }
+
+    fun startChallenge() {
+        autoCommitJob?.cancel()
+        challengeDifficulty = GameDifficultySelection.get(GameId.MORSE)
+        val wordCount = when (challengeDifficulty) {
+            GameDifficulty.LOW -> 3
+            GameDifficulty.MEDIUM -> 4
+            GameDifficulty.HIGH -> 6
+        }
+        val targetText = CHALLENGE_WORDS.shuffled().take(wordCount).joinToString(" ")
+        challengeStartTime = Clock.System.now().toEpochMilliseconds()
+
+        _state.update {
+            it.copy(
+                currentCode = "",
+                currentChar = null,
+                invalid = false,
+                challenge = MorseChallengeState(targetText = targetText)
+            )
+        }
+    }
+
+    fun exitChallenge() {
+        autoCommitJob?.cancel()
+        _state.update { it.copy(currentCode = "", currentChar = null, invalid = false, challenge = null) }
+    }
+
+    private fun evaluateChallengeChar(char: Char, challenge: MorseChallengeState) {
+        val target = challenge.targetText
+
+        var updated = if (char == target[challenge.currentIndex]) {
+            // Spaces cannot be typed in morse, skip them
+            var nextIndex = challenge.currentIndex + 1
+            while (nextIndex < target.length && target[nextIndex] == ' ') nextIndex++
+            challenge.copy(
+                currentIndex = nextIndex,
+                score = challenge.score + CHALLENGE_POINTS_PER_CHAR
+            )
+        } else {
+            challenge.copy(errors = challenge.errors + 1)
+        }
+
+        val completed = updated.currentIndex >= target.length
+        val failed = updated.errors >= CHALLENGE_MAX_ERRORS
+        if (completed || failed) {
+            updated = updated.copy(isGameOver = true)
+            submitChallengeScore(updated.score)
+        }
+
+        _state.update { it.copy(challenge = updated) }
+    }
+
+    private fun submitChallengeScore(score: Int) {
+        val elapsed = Clock.System.now().toEpochMilliseconds() - challengeStartTime
+        viewModelScope.launch {
+            gameHighscoreRepository.submitScore(
+                game = GameId.MORSE,
+                difficulty = challengeDifficulty,
+                score = score.toLong(),
+                timeMillis = elapsed,
+            )
+        }
     }
 
     private fun triggerInvalid() {

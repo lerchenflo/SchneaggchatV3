@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -35,8 +36,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameOverOverlay
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.games_tower_stack_instructions
+import schneaggchatv3mp.composeapp.generated.resources.games_tower_stack_score
+import schneaggchatv3mp.composeapp.generated.resources.games_tower_stack_speed_up
+import schneaggchatv3mp.composeapp.generated.resources.games_tower_stack_tap_to_place
+import schneaggchatv3mp.composeapp.generated.resources.games_tower_stack_tap_to_start
+import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
 
 @Composable
 fun TowerStackScreen(
@@ -51,7 +62,7 @@ fun TowerStackScreen(
             .fillMaxSize()
     ) {
         ActivityTitle(
-            title = "Tower Stack",
+            title = stringResource(Res.string.games_stack_tower),
             onBackClick = onBackClick
         )
         
@@ -96,7 +107,7 @@ private fun StartScreen() {
         modifier = Modifier.padding(32.dp)
     ) {
         Text(
-            text = "Tower Stack",
+            text = stringResource(Res.string.games_stack_tower),
             fontSize = 42.sp,
             fontWeight = FontWeight.Bold,
             color = colors.onBackground,
@@ -124,18 +135,18 @@ private fun StartScreen() {
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text(
-                    text = "Tap to Start",
+                    text = stringResource(Res.string.games_tower_stack_tap_to_start),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
                     color = colors.onSurfaceVariant
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text(
-                    text = "Stack the platforms as high as you can!\n\nTap to place each platform.\nPerfect alignment increases your score.\nSpeed increases every 5 points!",
+                    text = stringResource(Res.string.games_tower_stack_instructions),
                     fontSize = 14.sp,
                     color = colors.onSurfaceVariant.copy(alpha = 0.8f),
                     textAlign = TextAlign.Center,
@@ -211,7 +222,7 @@ private fun GameContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Score",
+                    text = stringResource(Res.string.games_tower_stack_score),
                     fontSize = 14.sp,
                     color = colors.onSurfaceVariant.copy(alpha = 0.7f),
                     fontWeight = FontWeight.Medium
@@ -238,7 +249,7 @@ private fun GameContent(
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Text(
-                    text = "⚡ Speed Up!",
+                    text = stringResource(Res.string.games_tower_stack_speed_up),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = colors.onTertiary,
@@ -247,73 +258,13 @@ private fun GameContent(
             }
         }
         
-        // Game over overlay with modern design
+        // Unified game over overlay with restart, difficulty selection and highscores
         if (gameState.isGameOver) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(colors.background.copy(alpha = 0.85f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 32.dp)
-                        .clip(RoundedCornerShape(20.dp)),
-                    colors = CardDefaults.cardColors(
-                        containerColor = colors.surfaceVariant
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "💥",
-                            fontSize = 64.sp
-                        )
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        Text(
-                            text = "Game Over!",
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = colors.onSurfaceVariant
-                        )
-                        
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        Text(
-                            text = "Final Score: ${gameState.score}",
-                            fontSize = 18.sp,
-                            color = colors.onSurfaceVariant.copy(alpha = 0.8f)
-                        )
-                        
-                        Spacer(modifier = Modifier.height(24.dp))
-                        
-                        Button(
-                            onClick = onReset,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
-                                //.pointerInput(block = Unit),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colors.primary,
-                                contentColor = colors.onPrimary
-                            ),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text(
-                                text = "Play Again",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                    }
-                }
-            }
+            GameOverOverlay(
+                game = GameId.TOWERSTACK,
+                finalScore = gameState.score.toLong(),
+                onRestart = onReset
+            )
         }
         
         // Instructions for first move
@@ -329,7 +280,7 @@ private fun GameContent(
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 Text(
-                    text = "👆 Tap to place!",
+                    text = stringResource(Res.string.games_tower_stack_tap_to_place),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     color = colors.onSecondaryContainer,

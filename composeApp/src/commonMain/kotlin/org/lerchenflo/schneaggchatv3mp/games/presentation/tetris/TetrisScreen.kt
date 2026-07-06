@@ -38,6 +38,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameOverOverlay
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.games_tetris_pause_resume
+import schneaggchatv3mp.composeapp.generated.resources.games_tetris_restart
+import schneaggchatv3mp.composeapp.generated.resources.games_tetris_score
+import schneaggchatv3mp.composeapp.generated.resources.games_tetris_title
+import schneaggchatv3mp.composeapp.generated.resources.go_back
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,23 +66,23 @@ fun TetrisScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tetris") },
+                title = { Text(stringResource(Res.string.games_tetris_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.go_back))
                     }
                 },
                 actions = {
-                    IconButton(onClick = { 
-                        if(state.isPlaying) viewModel.pauseGame() else viewModel.resumeGame() 
+                    IconButton(onClick = {
+                        if(state.isPlaying) viewModel.pauseGame() else viewModel.resumeGame()
                     }) {
                         Icon(
                             if(state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                            contentDescription = "Pause/Resume"
+                            contentDescription = stringResource(Res.string.games_tetris_pause_resume)
                         )
                     }
                      IconButton(onClick = { viewModel.restartGame() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Restart")
+                        Icon(Icons.Default.Refresh, contentDescription = stringResource(Res.string.games_tetris_restart))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -92,7 +101,7 @@ fun TetrisScreen(
             
             // Score Board
             Text(
-                text = "Score: ${state.score}",
+                text = stringResource(Res.string.games_tetris_score, state.score),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(16.dp)
@@ -117,25 +126,11 @@ fun TetrisScreen(
                )
                
                if (state.isGameOver) {
-                   Box(
-                       modifier = Modifier
-                           .fillMaxSize()
-                           .background(Color.Black.copy(alpha = 0.7f)),
-                       contentAlignment = Alignment.Center
-                   ) {
-                       Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                           Text(
-                               text = "GAME OVER",
-                               style = MaterialTheme.typography.displayMedium,
-                               color = Color.Red
-                           )
-                           Text(
-                               text = "Final Score: ${state.score}",
-                               style = MaterialTheme.typography.titleLarge,
-                               color = Color.White
-                           )
-                       }
-                   }
+                   GameOverOverlay(
+                       game = GameId.TETRIS,
+                       finalScore = state.score.toLong(),
+                       onRestart = { viewModel.restartGame() }
+                   )
                }
             }
         }

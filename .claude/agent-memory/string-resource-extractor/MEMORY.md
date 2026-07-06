@@ -1,1 +1,1 @@
-- [SchneaggchatV3 String Resources](project_overview.md) — English strings.xml location, key naming, and Compose Resources workflow
+- [SchneaggchatV3 String Resources](project_overview.md) — English strings.xml location, key naming patterns, game screen files, and Compose Resources workflow

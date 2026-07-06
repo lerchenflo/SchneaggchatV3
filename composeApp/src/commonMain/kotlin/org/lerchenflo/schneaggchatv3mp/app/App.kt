@@ -60,6 +60,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameScreenElement
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
@@ -641,7 +642,8 @@ fun App() {
                                     title = stringResource(Res.string.games_stack_tower),
                                     icon = Icons.Default.Menu, //
                                     route = Route.Games.TowerStack,
-                                    inDev = true
+                                    inDev = true,
+                                    gameId = GameId.TOWERSTACK
                                 ),
                                 GameScreenElement(
                                     title = "Yahtzee",
@@ -653,13 +655,15 @@ fun App() {
                                     title = "Tetris",
                                     icon = Icons.Default.Menu, // Placeholder
                                     route = Route.Games.Tetris,
-                                    inDev = false
+                                    inDev = false,
+                                    gameId = GameId.TETRIS
                                 ),
                                 GameScreenElement(
                                     title = stringResource(Res.string.games_morse_title),
                                     icon = Icons.Default.GraphicEq,
                                     route = Route.Games.Morse,
-                                    inDev = true
+                                    inDev = true,
+                                    gameId = GameId.MORSE
                                 ),
 
                             )

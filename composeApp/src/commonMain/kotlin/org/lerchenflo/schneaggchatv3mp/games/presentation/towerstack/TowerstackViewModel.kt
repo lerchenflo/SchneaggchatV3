@@ -8,6 +8,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
+import kotlin.time.Clock
 
 data class Platform(
     val x: Float,
@@ -33,12 +38,16 @@ sealed class GameAction {
     object ResetGame : GameAction()
 }
 
-class TowerstackViewModel : ViewModel() {
-    
+class TowerstackViewModel(
+    private val gameHighscoreRepository: GameHighscoreRepository,
+) : ViewModel() {
+
     private val _gameState = MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
-    
+
     private var gameLoopJob: kotlinx.coroutines.Job? = null
+    private var gameStartTime = 0L
+    private var currentDifficulty = GameDifficulty.MEDIUM
     
     companion object {
         private const val SCREEN_WIDTH = 300f
@@ -82,13 +91,20 @@ class TowerstackViewModel : ViewModel() {
             direction = 1f
         )
         
+        currentDifficulty = GameDifficultySelection.get(GameId.TOWERSTACK)
+        gameStartTime = Clock.System.now().toEpochMilliseconds()
         _gameState.value = currentState.copy(
             platforms = listOf(basePlatform),
             currentPlatform = firstMovingPlatform,
             isGameStarted = true,
-            isGameOver = false
+            isGameOver = false,
+            gameSpeed = when (currentDifficulty) {
+                GameDifficulty.LOW -> 1.5f
+                GameDifficulty.MEDIUM -> 2f
+                GameDifficulty.HIGH -> 3f
+            }
         )
-        
+
         startGameLoop()
     }
     
@@ -185,6 +201,21 @@ class TowerstackViewModel : ViewModel() {
     private fun gameOver() {
         gameLoopJob?.cancel()
         _gameState.value = _gameState.value.copy(isGameOver = true)
+        submitScore()
+    }
+
+    private fun submitScore() {
+        val finalScore = _gameState.value.score.toLong()
+        val finalTime = Clock.System.now().toEpochMilliseconds() - gameStartTime
+
+        viewModelScope.launch {
+            gameHighscoreRepository.submitScore(
+                game = GameId.TOWERSTACK,
+                difficulty = currentDifficulty,
+                score = finalScore,
+                timeMillis = finalTime,
+            )
+        }
     }
     
     private fun resetGame() {

@@ -30,6 +30,9 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GameScoreResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.HighscoresResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoreRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapSyncResponse
@@ -1202,5 +1205,19 @@ class NetworkUtils(
             endpoint = "/users/sharelocation",
             body = LocationShareRequest(friendId, share, shareSpeedHeading, shareSnailTrail)
         )
+    }
+
+    // ─── Games ────────────────────────────────────────────────────────────────
+
+    suspend fun getGameHighscores(gameId: String, difficulty: String): NetworkResult<HighscoresResponse, NetworkError> {
+        return safeGet(endpoint = "/games/highscores?gameid=$gameId&difficulty=$difficulty")
+    }
+
+    suspend fun submitGameScore(
+        request: SubmitGameScoreRequest,
+    ): NetworkResult<GameScoreResponse, NetworkError> {
+        return safePost(
+            endpoint = "/games/upsert",
+            body = request)
     }
 }

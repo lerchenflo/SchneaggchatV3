@@ -25,6 +25,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
@@ -93,6 +94,7 @@ val sharedmodule = module{
     singleOf(::TodoRepository)
     singleOf(::LoggingRepository)
     singleOf(::MapRepository)
+    singleOf(::GameHighscoreRepository)
 
 
     // Socket Connection Manager
@@ -164,15 +166,15 @@ val sharedmodule = module{
     viewModelOf(::DartCounterViewModel)
     factory { DartCounterViewModel() }
     viewModelOf(::TowerstackViewModel)
-    factory { TowerstackViewModel() }
+    factory { TowerstackViewModel(get()) }
     viewModelOf(::UndercoverViewModel)
     factory { UndercoverViewModel(get()) }
     viewModelOf(::YatziViewModel)
     factory { YatziViewModel() }
     viewModelOf(::TetrisViewModel)
-    factory { TetrisViewModel() }
+    factory { TetrisViewModel(get()) }
     viewModelOf(::MorseViewModel)
-    factory { MorseViewModel() }
+    factory { MorseViewModel(get()) }
     
     viewModelOf(::PlayerSelectorViewModel)
     factory { PlayerSelectorViewModel(get(), get()) }
