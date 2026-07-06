@@ -56,4 +56,17 @@ actual class ShareUtils {
         val selection = java.awt.Toolkit.getDefaultToolkit().systemClipboard
         selection.setContents(java.awt.datatransfer.StringSelection(text), null)
     }
+
+    actual fun openLocationInMaps(lat: Double, long: Double, label: String) {
+        try {
+            val url = "https://www.google.com/maps/search/?api=1&query=$lat,$long"
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(URI(url))
+            } else {
+                println("No browser available to open location: $url")
+            }
+        } catch (e: Exception) {
+            println("Failed to open location in maps: ${e.message}")
+        }
+    }
 }

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -43,6 +44,7 @@ import com.stevdza_san.swipeable.domain.SwipeAction
 import com.stevdza_san.swipeable.domain.SwipeBehavior
 import com.stevdza_san.swipeable.domain.SwipeDirection
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.copyToClipboard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
@@ -50,11 +52,13 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.toSimpleLocationData
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
+import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.delete
 import schneaggchatv3mp.composeapp.generated.resources.latlong
 import schneaggchatv3mp.composeapp.generated.resources.location_belongs_to_type
+import schneaggchatv3mp.composeapp.generated.resources.open_location_in_maps
 import schneaggchatv3mp.composeapp.generated.resources.save
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_delete
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_description
@@ -113,6 +117,21 @@ fun MapEntryInfoCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
+                val shareUtils = koinInject<ShareUtils>()
+                IconButton(
+                    onClick = {
+                        shareUtils.openLocationInMaps(
+                            currentEntry.coordinates.lat,
+                            currentEntry.coordinates.long,
+                            currentEntry.name
+                        )
+                    }
+                ) {
+                    Icon(
+                        Icons.Default.Map,
+                        contentDescription = stringResource(Res.string.open_location_in_maps)
+                    )
+                }
 
                 val changed = entry != currentEntry
 

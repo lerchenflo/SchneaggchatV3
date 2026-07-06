@@ -59,4 +59,24 @@ actual class ShareUtils(private val context: Context) {
         val clip = ClipData.newPlainText("text", text)
         manager.setPrimaryClip(clip)
     }
+
+    actual fun openLocationInMaps(lat: Double, long: Double, label: String) {
+        val query = if (label.isNotEmpty()) "$lat,$long(${Uri.encode(label)})" else "$lat,$long"
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("geo:$lat,$long?q=$query")).apply {
+            addFlags(FLAG_ACTIVITY_NEW_TASK)
+        }
+        try {
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            try {
+                val webIntent = Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("https://www.google.com/maps/search/?api=1&query=$lat,$long")
+                ).apply { addFlags(FLAG_ACTIVITY_NEW_TASK) }
+                context.startActivity(webIntent)
+            } catch (e2: Exception) {
+                println("No app available to open location: ${e2.message}")
+            }
+        }
+    }
 }

@@ -126,4 +126,12 @@ actual class ShareUtils {
         val pasteboard = UIPasteboard.generalPasteboard
         pasteboard.string = text
     }
+
+    actual fun openLocationInMaps(lat: Double, long: Double, label: String) {
+        val labelParam = if (label.isNotEmpty()) "&q=${percentEncode(label)}" else ""
+        val url = NSURL.URLWithString(URLString = "https://maps.apple.com/?ll=$lat,$long$labelParam")
+        if (url != null) {
+            UIApplication.sharedApplication.openURL(url, options = emptyMap<Any?, Any>(), completionHandler = null)
+        }
+    }
 }
