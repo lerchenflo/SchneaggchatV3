@@ -23,6 +23,11 @@
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden">
 
             <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
@@ -41,54 +46,6 @@
             </intent-filter>
 
         </activity>
-
-        <!--
-            The launcher entry lives on activity-aliases (not on MainActivity itself) so the
-            active app icon can be swapped at runtime. Disabling the currently-enabled alias
-            always restarts the app, but resetting it to COMPONENT_ENABLED_STATE_DEFAULT does not
-            when its manifest-declared default is already disabled. DefaultIcon is the only alias
-            whose declared default is enabled, so DefaultIconClone (declared disabled) is used as
-            the runtime stand-in for the default icon after the first switch, avoiding further
-            restarts on every subsequent icon change. See AppIconManager.android.kt.
-        -->
-        <activity-alias
-            android:name=".DefaultIcon"
-            android:targetActivity="org.lerchenflo.androidApp.MainActivity"
-            android:enabled="true"
-            android:exported="true"
-            android:icon="@mipmap/schneaggchatv3_icon_foreground_light"
-            android:roundIcon="@mipmap/schneaggchatv3_icon_foreground_light_round">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".DefaultIconClone"
-            android:targetActivity="org.lerchenflo.androidApp.MainActivity"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@mipmap/schneaggchatv3_icon_foreground_light"
-            android:roundIcon="@mipmap/schneaggchatv3_icon_foreground_light_round">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name=".DarkIcon"
-            android:targetActivity="org.lerchenflo.androidApp.MainActivity"
-            android:enabled="false"
-            android:exported="true"
-            android:icon="@mipmap/schneaggchatv3_icon_foreground_dark"
-            android:roundIcon="@mipmap/schneaggchatv3_icon_foreground_dark_round">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
 
         <service
             android:name="org.lerchenflo.schneaggchatv3mp.utilities.notifications.AppFirebaseMessagingService"

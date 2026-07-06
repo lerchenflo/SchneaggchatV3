@@ -21,7 +21,6 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Features
 - Freundstandorte-Preview mit Profilbildern auf der Schneaggmap
-- App-Icon-Wechsel Einstellung
 
 #### Bugfixes
 - Nicknames werden jetzt überall verwendet

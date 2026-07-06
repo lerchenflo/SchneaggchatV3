@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,7 +12,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults.textContentColor
 import androidx.compose.material3.Icon
@@ -43,19 +41,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.LightMode
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
-import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
-import org.lerchenflo.schneaggchatv3mp.utilities.AppIcon
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.app_icon
-import schneaggchatv3mp.composeapp.generated.resources.app_icon_restart_info
 import schneaggchatv3mp.composeapp.generated.resources.cancel
-import schneaggchatv3mp.composeapp.generated.resources.icon_dark
-import schneaggchatv3mp.composeapp.generated.resources.icon_default
 import schneaggchatv3mp.composeapp.generated.resources.language
 import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.theme
@@ -201,92 +190,6 @@ fun LanguageSelector(
                 }
             }
         }
-        },
-        shape = MaterialTheme.shapes.large,
-    )
-}
-
-@Composable
-fun AppIconSelector(
-    selected: AppIcon,
-    onSelect: (AppIcon) -> Unit,
-    onDismiss: () -> Unit,
-    isAndroid: Boolean
-) {
-    var tempSelection by mutableStateOf(selected)
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = { onSelect(tempSelection) }) {
-                Text(stringResource(Res.string.ok), color = textContentColor)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(Res.string.cancel), color = textContentColor)
-            }
-        },
-        title = { Text(text = stringResource(Res.string.app_icon)) },
-        text = {
-            Column(modifier = Modifier.selectableGroup()) {
-                if (isAndroid) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                                shape = MaterialTheme.shapes.medium
-                            )
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Text(
-                            text = stringResource(Res.string.app_icon_restart_info),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                val options = listOf(
-                    AppIcon.DEFAULT to (stringResource(Res.string.icon_default) to Icons.Default.LightMode),
-                    AppIcon.DARK to (stringResource(Res.string.icon_dark) to Icons.Default.DarkMode),
-                )
-                options.forEach { (icon, labelAndImage) ->
-                    val (label, imageVector) = labelAndImage
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .selectable(
-                                selected = (icon == tempSelection),
-                                onClick = { tempSelection = icon },
-                                role = Role.RadioButton
-                            )
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = imageVector,
-                            contentDescription = null,
-                            tint = if (icon == tempSelection) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
-                    }
-                }
-            }
         },
         shape = MaterialTheme.shapes.large,
     )
