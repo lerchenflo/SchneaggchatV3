@@ -46,21 +46,21 @@ class Preferencemanager(
 
     suspend fun saveTokens(tokenPair: NetworkUtils.TokenPair) {
         try {
-            loggingRepository.logDebug("Secure storage: Saving access token")
+            //loggingRepository.logDebug("Secure storage: Saving access token")
             securePrefs.put(SecureKey.ACCESS_TOKEN.key, tokenPair.accessToken)
             
-            loggingRepository.logDebug("Secure storage: Saving refresh token")
+            //loggingRepository.logDebug("Secure storage: Saving refresh token")
             securePrefs.put(SecureKey.REFRESH_TOKEN.key, tokenPair.refreshToken)
             
             tokenPair.encryptionKey?.let { encryptionKey ->
-                loggingRepository.logDebug("Secure storage: Saving encryption key")
+                //loggingRepository.logDebug("Secure storage: Saving encryption key")
                 securePrefs.put(SecureKey.ENCRYPTION_KEY.key, encryptionKey)
                 NotificationCredentialsMirror.setEncryptionKey(encryptionKey)
             } ?: run {
-                loggingRepository.logDebug("Secure storage: No encryption key to save")
+                //loggingRepository.logDebug("Secure storage: No encryption key to save")
             }
 
-            loggingRepository.logInfo("Secure storage: All tokens saved successfully")
+            //loggingRepository.logInfo("Secure storage: All tokens saved successfully")
         } catch (e: Exception) {
             loggingRepository.logError("Secure storage: Failed to save tokens - ${e.message}")
             throw e // Re-throw to maintain existing error handling behavior
@@ -113,6 +113,9 @@ class Preferencemanager(
         val LANGUAGE = intPreferencesKey("language")
         val SERVER_URL = stringPreferencesKey("server_url")
         val DEVELOPER_SETTINGS = booleanPreferencesKey("developer_settings")
+        val MERGE_MAP_LOCATIONS = booleanPreferencesKey("merge_map_locations")
+        val MAP_STYLE = intPreferencesKey("map_style")
+        val ADVANCED_LOCATION_SHARING = booleanPreferencesKey("advanced_location_sharing")
         val PINNED_CHATS = stringPreferencesKey("pinned_chats")
         val DRAFTS = stringPreferencesKey("drafts")
         val LAST_STARTED_VERSION = stringPreferencesKey("last_started_version")
@@ -188,6 +191,39 @@ class Preferencemanager(
 
     fun getDevSettingsFlow(): Flow<Boolean> = prefs.data.map { prefs ->
         prefs[PrefsKeys.DEVELOPER_SETTINGS] ?: false
+    }
+
+    // Merge map locations when zooming
+    suspend fun saveMergeMapLocations(value: Boolean) {
+        prefs.edit { it[PrefsKeys.MERGE_MAP_LOCATIONS] = value }
+    }
+
+    fun getMergeMapLocationsFlow(): Flow<Boolean> = prefs.data.map { prefs ->
+        prefs[PrefsKeys.MERGE_MAP_LOCATIONS] ?: true //Default to true
+    }
+
+    // Map style
+    suspend fun saveMapStyleSetting(style: MapStyleSetting) {
+        prefs.edit { it[PrefsKeys.MAP_STYLE] = style.ordinal }
+    }
+
+    fun getMapStyleSettingFlow(): Flow<MapStyleSetting> = prefs.data.map { prefs ->
+        val ordinal = prefs[PrefsKeys.MAP_STYLE] ?: MapStyleSetting.LIBERTY.ordinal
+        MapStyleSetting.entries.getOrNull(ordinal) ?: MapStyleSetting.LIBERTY
+    }
+
+    // Advanced location sharing: send our own speed/heading/altitude/battery telemetry, and
+    // reveals the per-friend speed/heading + snail-trail controls in the sharing dialog.
+    suspend fun saveAdvancedLocationSharing(value: Boolean) {
+        prefs.edit { it[PrefsKeys.ADVANCED_LOCATION_SHARING] = value }
+    }
+
+    fun getAdvancedLocationSharingFlow(): Flow<Boolean> = prefs.data.map { prefs ->
+        prefs[PrefsKeys.ADVANCED_LOCATION_SHARING] ?: false //Default to off
+    }
+
+    suspend fun getAdvancedLocationSharing(): Boolean {
+        return prefs.data.first()[PrefsKeys.ADVANCED_LOCATION_SHARING] ?: false
     }
 
 

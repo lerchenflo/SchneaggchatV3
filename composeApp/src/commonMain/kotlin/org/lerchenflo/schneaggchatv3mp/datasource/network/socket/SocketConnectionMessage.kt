@@ -20,6 +20,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiId
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiIdType
@@ -63,8 +64,79 @@ sealed interface SocketConnectionMessage {
         val deleted: Boolean,
     ) : SocketConnectionMessage
 
+    /**
+     * OUTBOUND (client -> server): our own current location. Only lat/long are mandatory.
+     * [altitude]/[batteryLevel] are sent whenever location sharing is on at all; [speed]/
+     * [heading] are more revealing live driving telemetry, only sent when "Advanced location
+     * sharing" is enabled.
+     */
+    @Serializable
+    @SerialName("locationupdate")
+    data class LocationUpdate(
+        val lat: Double,
+        val long: Double,
+        val speed: Double? = null,
+        val heading: Double? = null,
+        val altitude: Double? = null,
+        val batteryLevel: Int? = null,
+    ) : SocketConnectionMessage
 
+    /** INBOUND: a single friend's live location, pushed when that friend moves. Position only -
+     * the snail trail no longer rides along here, it grows via [SnailTrailPointAdded]. */
+    @Serializable
+    @SerialName("friendlocationchange")
+    data class FriendLocationChange(val friend: FriendLocationPayload) : SocketConnectionMessage
+
+    /** INBOUND: all friends' current locations, pushed once when we connect (initial load). */
+    @Serializable
+    @SerialName("friendlocationssnapshot")
+    data class FriendLocationsSnapshot(val friends: List<FriendLocationSnapshotEntry>) : SocketConnectionMessage
+
+    /** INBOUND: one new snail-trail point for a friend (~once/minute). Append-only - never
+     * replaces the existing trail. */
+    @Serializable
+    @SerialName("snailtrailpointadded")
+    data class SnailTrailPointAdded(val userId: String, val point: SnailTrailPointPayload) : SocketConnectionMessage
+
+    /** INBOUND: a single friend's live online/offline change, pushed on connect/disconnect. */
+    @Serializable
+    @SerialName("friendonlinestatuschange")
+    data class FriendOnlineStatusChange(val userId: String, val online: Boolean) : SocketConnectionMessage
+
+    /** INBOUND: all currently-online friends, pushed once when we connect (initial load). */
+    @Serializable
+    @SerialName("friendonlinestatussnapshot")
+    data class FriendOnlineStatusSnapshot(val onlineUserIds: List<String> = emptyList()) : SocketConnectionMessage
 }
+
+/** Wire shape of a friend's live location, pushed over the WebSocket. */
+@Serializable
+data class FriendLocationPayload(
+    val userId: String,
+    val coordinates: LatLong,
+    val locationTime: Long,
+    val speed: Double? = null,
+    val heading: Double? = null,
+    val altitude: Double? = null,
+    val batteryLevel: Int? = null,
+    val distanceTraveled24h: Double? = null,
+)
+
+@Serializable
+data class SnailTrailPointPayload(
+    val coordinates: LatLong,
+    val locationTime: Long,
+    val speed: Double? = null,
+    val heading: Double? = null,
+)
+
+/** One friend's entry in a `FriendLocationsSnapshot` - their position plus the trail the server
+ * currently retains for them (seed data only; further points arrive via [SocketConnectionMessage.SnailTrailPointAdded]). */
+@Serializable
+data class FriendLocationSnapshotEntry(
+    val position: FriendLocationPayload,
+    val snailTrail: List<SnailTrailPointPayload> = emptyList(),
+)
 
 
 suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
@@ -150,7 +222,6 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 locationDate = null,
                                 locationShared = false,
                                 wakeupEnabled = false,
-                                lastOnline = null,
                                 frienshipStatus = newUser.friendShipStatus,
                                 requesterId = newUser.requesterId,
                                 notisMuted = false,
@@ -184,13 +255,20 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt,
 
                                 // Preserve existing values:
-                                locationLat = existing?.locationLat,
-                                locationLong = existing?.locationLong,
-                                locationDate = existing?.locationDate,
-                                locationShared = existing?.locationShared ?: false,
+                                locationLat = existing?.location?.lat,
+                                locationLong = existing?.location?.long,
+                                locationDate = existing?.location?.date,
+                                locationSpeed = existing?.location?.speed,
+                                locationHeading = existing?.location?.heading,
+                                locationAltitude = existing?.location?.altitude,
+                                locationBattery = existing?.location?.batteryLevel,
+                                locationDistance24h = existing?.location?.distanceTraveled24h,
+                                locationShared = newUser.shareLocation,
+                                shareSpeedHeading = newUser.shareSpeedHeading,
+                                snailTrail = newUser.shareSnailTrail,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
-                                lastOnline = existing?.lastOnline,
                                 notisMuted = existing?.notisMuted ?: false,
+                                lastSeen = newUser.lastSeen,
                                 email = null,
                                 emailVerifiedAt = null,
                                 createdAt = null,
@@ -213,12 +291,16 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt,
 
                                 // Preserve existing values:
-                                locationLat = existing?.locationLat,
-                                locationLong = existing?.locationLong,
-                                locationDate = existing?.locationDate,
-                                locationShared = existing?.locationShared ?: false,
+                                locationLat = existing?.location?.lat,
+                                locationLong = existing?.location?.long,
+                                locationDate = existing?.location?.date,
+                                locationSpeed = existing?.location?.speed,
+                                locationHeading = existing?.location?.heading,
+                                locationAltitude = existing?.location?.altitude,
+                                locationBattery = existing?.location?.batteryLevel,
+                                locationDistance24h = existing?.location?.distanceTraveled24h,
+                                locationShared = newUser.locationShared,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
-                                lastOnline = existing?.lastOnline,
                                 frienshipStatus = null,
                                 requesterId = null,
                                 notisMuted = false,
@@ -305,6 +387,34 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     mapRepository.upsertMapEntry(socketMessage.mapEntry.toMapEntry())
                 }
             }
+
+            //A friend's location changed (live push) - position only, trail is untouched here
+            is SocketConnectionMessage.FriendLocationChange -> {
+                userRepository.updateFriendLocation(socketMessage.friend)
+            }
+
+            //Initial snapshot of all friends' locations + their current trail, pushed once on connect
+            is SocketConnectionMessage.FriendLocationsSnapshot -> {
+                userRepository.updateFriendLocations(socketMessage.friends)
+            }
+
+            //One new point appended to a friend's snail trail (~once/minute)
+            is SocketConnectionMessage.SnailTrailPointAdded -> {
+                userRepository.appendSnailTrailPoint(socketMessage.userId, socketMessage.point)
+            }
+
+            //A friend connected or disconnected (live push)
+            is SocketConnectionMessage.FriendOnlineStatusChange -> {
+                userRepository.setFriendOnline(socketMessage.userId, socketMessage.online)
+            }
+
+            //Initial snapshot of all currently-online friends, pushed once on connect
+            is SocketConnectionMessage.FriendOnlineStatusSnapshot -> {
+                userRepository.setOnlineFriendIds(socketMessage.onlineUserIds.toSet())
+            }
+
+            //Outbound-only - we send this ourselves, the server never echoes it back
+            is SocketConnectionMessage.LocationUpdate -> Unit
 
         }
     } catch (e: Exception) {

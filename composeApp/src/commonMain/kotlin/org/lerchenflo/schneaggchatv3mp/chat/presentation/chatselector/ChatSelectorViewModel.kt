@@ -65,7 +65,7 @@ class ChatSelectorViewModel(
         viewModelScope.launch {
             val token = KoinPlatform.getKoin().get<Notifier>().getToken()
 
-            println("Chatselector notificationtoken: $token")
+            //println("Chatselector notificationtoken: $token")
 
             if (!token.isNullOrEmpty()) {
                 appRepository.setNotificationToken(token)
@@ -84,6 +84,7 @@ class ChatSelectorViewModel(
         }
 
         viewModelScope.launch {
+            appRepository.dataSync()
             getChangelog()
         }
 

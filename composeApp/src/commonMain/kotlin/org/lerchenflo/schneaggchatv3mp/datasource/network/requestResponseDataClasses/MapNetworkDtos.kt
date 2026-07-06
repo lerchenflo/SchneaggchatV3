@@ -30,19 +30,9 @@ data class MapSyncResponse(
     val moreEntries: Boolean,
 )
 
-
-
 @Serializable
-data class MapEntryCreateRequest(
-    val name: String,
-    val description: String,
-    val coordinates: LatLong,
-    val locationData: List<LocationData>,
-)
-
-@Serializable
-data class MapEntryEditRequest(
-    val entryId: String,
+data class MapEntryRequest(
+    val entryId: String?,
     val name: String,
     val description: String,
     val coordinates: LatLong,

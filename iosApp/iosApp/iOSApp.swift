@@ -121,12 +121,72 @@ struct iOSApp: App {
             return
         }
 
+        // Check for shared images
+        if let imageKeys = userDefaults.array(forKey: "sharedImageKeys") as? [String], !imageKeys.isEmpty {
+            guard let containerURL = FileManager.default.containerURL(
+                forSecurityApplicationGroupIdentifier: suiteName
+            ) else { return }
+
+            let imagesDir = containerURL.appendingPathComponent("SharedImages")
+            var imageDataList: [KotlinByteArray] = []
+
+            for key in imageKeys {
+                let fileURL = imagesDir.appendingPathComponent(key)
+                if let data = try? Data(contentsOf: fileURL) {
+                    let kotlinArray = KotlinByteArray(size: Int32(data.count))
+                    data.withUnsafeBytes { ptr in
+                        for i in 0..<data.count {
+                            kotlinArray.set(index: Int32(i), value: ptr[i])
+                        }
+                    }
+                    imageDataList.append(kotlinArray)
+                }
+                try? FileManager.default.removeItem(at: fileURL)
+            }
+
+            if !imageDataList.isEmpty {
+                IncomingDataManager.shared.updateImages(images: imageDataList)
+            }
+
+            userDefaults.removeObject(forKey: "sharedImageKeys")
+            userDefaults.synchronize()
+            return
+        }
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [self] in
             userDefaults.synchronize()
             if let sharedText = userDefaults.string(forKey: "sharedTextKey") {
                 logger.info("DEBUG: App side - Found data after delay: \(sharedText, privacy: .public)")
                 IncomingDataManager.shared.updateText(text: sharedText)
                 userDefaults.removeObject(forKey: "sharedTextKey")
+                userDefaults.synchronize()
+            } else if let imageKeys = userDefaults.array(forKey: "sharedImageKeys") as? [String], !imageKeys.isEmpty {
+                guard let containerURL = FileManager.default.containerURL(
+                    forSecurityApplicationGroupIdentifier: suiteName
+                ) else { return }
+
+                let imagesDir = containerURL.appendingPathComponent("SharedImages")
+                var imageDataList: [KotlinByteArray] = []
+
+                for key in imageKeys {
+                    let fileURL = imagesDir.appendingPathComponent(key)
+                    if let data = try? Data(contentsOf: fileURL) {
+                        let kotlinArray = KotlinByteArray(size: Int32(data.count))
+                        data.withUnsafeBytes { ptr in
+                            for i in 0..<data.count {
+                                kotlinArray.set(index: Int32(i), value: ptr[i])
+                            }
+                        }
+                        imageDataList.append(kotlinArray)
+                    }
+                    try? FileManager.default.removeItem(at: fileURL)
+                }
+
+                if !imageDataList.isEmpty {
+                    IncomingDataManager.shared.updateImages(images: imageDataList)
+                }
+
+                userDefaults.removeObject(forKey: "sharedImageKeys")
                 userDefaults.synchronize()
             } else {
                 logger.info("DEBUG: App side - No data found for key 'sharedTextKey'")

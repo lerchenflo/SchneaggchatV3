@@ -37,6 +37,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -65,6 +68,11 @@ import schneaggchatv3mp.composeapp.generated.resources.readers
 import schneaggchatv3mp.composeapp.generated.resources.reply
 import schneaggchatv3mp.composeapp.generated.resources.sent_at
 import schneaggchatv3mp.composeapp.generated.resources.yes
+
+// Desktop mouse wheels only report scroll input on the y axis, but horizontalScroll only
+// reacts to its own (x) axis — so without this, the quick-reactions row can't be scrolled
+// with a mouse wheel on desktop, only by dragging.
+private val MOUSE_WHEEL_SCROLL_STEP = 48.dp
 
 @Composable
 fun MessageOptionPopup(
@@ -109,9 +117,28 @@ fun MessageOptionPopup(
                 text = {
 
                     //Quick reactions
+                    val quickReactionsScrollState = rememberScrollState()
+                    val density = LocalDensity.current
+                    val mouseWheelScrollStepPx = with(density) { MOUSE_WHEEL_SCROLL_STEP.toPx() }
+
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                        modifier = Modifier
+                            .horizontalScroll(quickReactionsScrollState)
+                            .pointerInput(Unit) {
+                                awaitPointerEventScope {
+                                    while (true) {
+                                        val event = awaitPointerEvent()
+                                        if (event.type == PointerEventType.Scroll) {
+                                            val scrollDelta = event.changes.firstOrNull()?.scrollDelta?.y ?: 0f
+                                            if (scrollDelta != 0f) {
+                                                quickReactionsScrollState.dispatchRawDelta(scrollDelta * mouseWheelScrollStepPx)
+                                                event.changes.forEach { it.consume() }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                     ) {
 
                         NormalButton(

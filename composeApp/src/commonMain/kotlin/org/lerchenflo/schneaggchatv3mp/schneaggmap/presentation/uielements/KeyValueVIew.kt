@@ -1,21 +1,33 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,6 +37,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dev.darkokoa.datetimewheelpicker.WheelDatePicker
+import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeDefinition
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.BoolValue
@@ -32,8 +53,8 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.DoubleV
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.IntValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.StringValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.label
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.uiTextFromEnumValue
-import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @Composable
 fun KeyValueView(
@@ -162,40 +183,107 @@ fun KeyValueView(
                 )
             }
 
-            is AttributeDefinition.EnumDef -> {
-                var expanded by remember { mutableStateOf(false) }
+            is AttributeDefinition.LongDef -> {
+                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                val endOfCurrentYear = LocalDate(now.year, 12, 31)
 
-                Box{
-                    NormalButton(
-                        text = uiTextFromEnumValue((value as? AttributeValue.EnumValue)?.value ?: "").asString(),
-                        onClick = {expanded = true},
-                        primary = false,
-                        modifier = Modifier.width(120.dp)
+                val currentMillis = (value as? AttributeValue.LongValue)?.value
+                val initialDateTime = currentMillis
+                    ?.let { Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()) }
+                    ?: now
 
+                var selectedDate by remember { mutableStateOf(initialDateTime.date) }
+                var selectedTime by remember { mutableStateOf(initialDateTime.time) }
+                var showDialog by remember { mutableStateOf(false) }
+
+                // Keep onValueChange in sync whenever date or time changes
+                LaunchedEffect(selectedDate, selectedTime) {
+                    val millis = LocalDateTime(date = selectedDate, time = selectedTime)
+                        .toInstant(TimeZone.currentSystemDefault())
+                        .toEpochMilliseconds()
+                    onValueChange(AttributeValue.LongValue(millis))
+                }
+
+                // Trigger button — shows the current value, opens dialog on click
+                OutlinedButton(
+                    onClick = { showDialog = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarMonth,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "${selectedDate.year.toString().padStart(4, '0')}-" +
+                                "${selectedDate.month.number.toString().padStart(2, '0')}-" +
+                                "${selectedDate.day.toString().padStart(2, '0')}  " +
+                                "${selectedTime.hour.toString().padStart(2, '0')}:" +
+                                selectedTime.minute.toString().padStart(2, '0')
+                    )
+                }
+
+                if (showDialog) {
+                    // Dialog-local state — only committed on OK
+                    var dialogDate by remember { mutableStateOf(selectedDate) }
+
+                    val timePickerState = rememberTimePickerState(
+                        initialHour   = initialDateTime.hour,
+                        initialMinute = initialDateTime.minute,
+                        is24Hour      = true,
                     )
 
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        scrollState = rememberScrollState(),
-                        modifier = Modifier.align(Alignment.TopEnd)
-                    ){
-                        definition.options.forEach {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = uiTextFromEnumValue(it).asString()
-                                    )
-                                },
-                                onClick = {
-                                    onValueChange(AttributeValue.EnumValue(it))
-                                    expanded = false
-                                }
+                    AlertDialog(
+                        onDismissRequest = { showDialog = false },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                selectedDate = dialogDate
+                                selectedTime = LocalTime(timePickerState.hour, timePickerState.minute)
+                                showDialog = false
+                            }) {
+                                Text("OK")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDialog = false }) {
+                                Text("Cancel")
+                            }
+                        },
+                        title = { Text("Select Date & Time") },
+                        text = {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                WheelDatePicker(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    startDate = dialogDate,
+                                    minDate = LocalDate(1900, 1, 1),
+                                    maxDate = endOfCurrentYear,
+                                    rowCount = 5,
+                                    textColor = MaterialTheme.colorScheme.onSurface,
+                                    selectorProperties = WheelPickerDefaults.selectorProperties(
+                                        enabled = true,
+                                        color  = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                                    ),
+                                    onSnappedDate = { snappedDate ->
+                                        if (snappedDate >= LocalDate(1900, 1, 1) && snappedDate <= endOfCurrentYear) {
+                                            dialogDate = snappedDate
+                                        }
+                                    }
+                                )
 
-                            )
+                                HorizontalDivider()
 
+                                TimePicker(
+                                    state = timePickerState,
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                )
+                            }
                         }
-                    }
+                    )
                 }
             }
         }
@@ -247,20 +335,6 @@ private fun AllKeyValueTypesPreview() {
                     key = "foodType",
                     required = true,
                     maxLength = 30
-                ),
-                onValueChange = {}
-            )
-
-            KeyValueView(
-                value = AttributeValue.EnumValue("FIXED"),
-                definition = AttributeDefinition.EnumDef(
-                    key = "radarType",
-                    required = true,
-                    options = listOf(
-                        "FIXED",
-                        "MOBILE",
-                        "SECTION_CONTROL"
-                    )
                 ),
                 onValueChange = {}
             )

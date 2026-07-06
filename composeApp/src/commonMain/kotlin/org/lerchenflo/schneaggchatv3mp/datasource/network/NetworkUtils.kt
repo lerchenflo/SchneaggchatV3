@@ -30,8 +30,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryCreateRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryEditRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
@@ -457,8 +456,17 @@ class NetworkUtils(
             val userDescription: String,
             val userStatus: String,
 
-            val nickName: String?
+            val nickName: String?,
 
+            //Do i share the location with this friend
+            val shareLocation: Boolean = false,
+            //Do i share speed + heading (live driving telemetry) with this friend
+            val shareSpeedHeading: Boolean = false,
+            //Whether i share my snail trail (full 24h history) with this friend
+            val shareSnailTrail: Boolean = false,
+
+            //Epoch millis this friend was last seen online, null if unknown/never
+            val lastSeen: Long? = null,
 
         ) : UserResponse
 
@@ -482,6 +490,9 @@ class NetworkUtils(
             val email: String,
             val emailVerifiedAt: Long?,
             val createdAt: Long,
+
+            //Do i have location sharing enabled
+            val locationShared: Boolean = false,
 
 
         ) : UserResponse
@@ -595,9 +606,9 @@ class NetworkUtils(
         val newStatus: String?,
         val newEmail: String?,
         val newBirthDate: String?,
-        val newNickName: String?
+        val newNickName: String?,
     )
-    
+
     suspend fun changeProfile(userId: String, newStatus: String?, newDescription: String?, newEmail: String?, newBirthDate: String?, newNickName: String?): NetworkResult<Any, NetworkError> {
         return safePost(
             endpoint = "/users/changeprofile",
@@ -607,7 +618,7 @@ class NetworkUtils(
                 newStatus = newStatus,
                 newEmail = newEmail,
                 newBirthDate = newBirthDate,
-                newNickName = newNickName
+                newNickName = newNickName,
             )
         )
     }
@@ -1027,7 +1038,7 @@ class NetworkUtils(
             messageId = null,
             receiverId = empfaenger,
             groupMessage = gruppe,
-            msgType = MessageType.IMAGE,
+            msgType = MessageType.AUDIO,
             answerId = answerid,
         )
 
@@ -1156,25 +1167,40 @@ class NetworkUtils(
         )
     }
 
-
-
-
-
-    suspend fun createMapEntry(
-        request: MapEntryCreateRequest,
+    suspend fun upsertMapEntry(
+        request: MapEntryRequest,
     ): NetworkResult<MapEntryResponse, NetworkError> {
-        return safePost(endpoint = "/map/create", body = request)
-    }
-
-    suspend fun editMapEntry(
-        request: MapEntryEditRequest,
-    ): NetworkResult<MapEntryResponse, NetworkError> {
-        return safePost(endpoint = "/map/edit", body = request)
+        return safePost(
+            endpoint = "/map/upsert",
+            body = request)
     }
 
     suspend fun deleteMapEntry(entryId: String): NetworkResult<Unit, NetworkError> {
         return safeDelete(endpoint = "/map/delete?entryid=$entryId")
     }
 
+    // Location data itself is now pushed/pulled over the WebSocket (see SocketConnectionMessage:
+    // LocationUpdate / FriendLocationChange / FriendLocationsSnapshot), not via HTTP.
 
+    @Serializable
+    data class LocationShareRequest(
+        val friendId: String,
+        // Full desired per-friend map-sharing state - send all of these every time.
+        val share: Boolean,
+        val shareSpeedHeading: Boolean = false,
+        val shareSnailTrail: Boolean = false,
+    )
+
+    /** Per-friend toggle: what we share with this specific friend (location, speed/heading, snail trail). */
+    suspend fun shareLocation(
+        friendId: String,
+        share: Boolean,
+        shareSpeedHeading: Boolean = false,
+        shareSnailTrail: Boolean = false,
+    ): NetworkResult<Unit, NetworkError> {
+        return safePost(
+            endpoint = "/users/sharelocation",
+            body = LocationShareRequest(friendId, share, shareSpeedHeading, shareSnailTrail)
+        )
+    }
 }

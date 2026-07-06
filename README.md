@@ -11,9 +11,39 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Nachrichten - Reaktionen (Auch mit Text)
 - Geburtstagsanzeige + Benachrichtigungen
 - App kaputt Button
+- Standort mit Verlauf teilen
 
 
 # Changelog
+
+
+### 3.0.13
+
+#### Features
+- Freundstandorte-Preview mit Profilbildern auf der Schneaggmap
+- Map Style Einstellungen
+- Open in Maps Button
+- Echtzeit Online-Status von Freunden
+
+#### Bugfixes
+- Nicknames werden jetzt überall verwendet
+- Standortteilen Dialog vereinfacht
+
+
+
+### 3.0.12
+
+#### Features
+- Standort teilen auf der Schneaggmap
+- Datensync Detail Popup für mehr Transparenz
+- Message highlight bei beantworteten Nachrichten
+- Bilder aus externen Apps teilen
+
+#### Bugfixes
+- Umfragen Textinput verbessert + Reorderable
+- Snackbar custom UI
+- Email verification bugfixes
+
 
 ### 3.0.11
 

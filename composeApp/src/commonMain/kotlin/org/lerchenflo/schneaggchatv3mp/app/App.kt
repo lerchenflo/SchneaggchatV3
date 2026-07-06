@@ -15,8 +15,6 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -36,6 +34,9 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.modules.SerializersModule
@@ -66,6 +67,8 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounte
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.SchneaggaHusScreenRoot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapScreen
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
@@ -82,10 +85,12 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewm
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettings
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.SnackbarPopup
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
@@ -165,6 +170,7 @@ fun App() {
                         subclass(Route.Settings.UserSettings::class, Route.Settings.UserSettings.serializer())
                         subclass(Route.Settings.AppearanceSettings::class, Route.Settings.AppearanceSettings.serializer())
                         subclass(Route.Settings.MiscSettings::class, Route.Settings.MiscSettings.serializer())
+                        subclass(Route.Settings.SchneaggmapSettings::class, Route.Settings.SchneaggmapSettings.serializer())
                     }
                 }
             },
@@ -187,6 +193,8 @@ fun App() {
                         subclass(Route.Games.Morse::class, Route.Games.Morse.serializer())
                         subclass(Route.Games.SchneaggaHus::class, Route.Games.SchneaggaHus.serializer())
 
+                        subclass(Route.Games.Recap::class, Route.Games.Recap.serializer())
+
 
                     }
                 }
@@ -203,15 +211,15 @@ fun App() {
         val appRepository = koinInject<AppRepository>()
 
 
-        val snackbarHostState = remember { SnackbarHostState() } // for snackbar
+        //Init snackbarmanager
         LaunchedEffect(Unit) {
-            SnackbarManager.init(snackbarHostState, scope)
+            SnackbarManager.init(scope)
         }
 
         //Observe what the navigator sends to change screens etc
         ObserveAsEvents(
             flow = navigator.navigationActions
-        ){  action ->
+        ) { action ->
 
             /*
             println("NAVIGATION: Navigating ${when (action) {
@@ -260,11 +268,34 @@ fun App() {
 
                     rootBackStack.add(action.destination)
                 }
+
+                is NavigationAction.NavigateSubRoute -> {
+                    if (navigationOptions.exitAllPreviousScreens) {
+                        rootBackStack.clear()
+                    }
+
+                    // add root route if not already in backstack
+                    if(!rootBackStack.contains(action.rootRoute)){
+                        rootBackStack.add(action.rootRoute)
+                    }
+                    when(action.rootRoute)
+                    {
+                        Route.Games -> {
+                            gamesBackStack.add(action.destination)
+                        }
+                        Route.Settings -> {
+                            settingsBackStack.add(action.destination)
+                        }
+                        else -> {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                loggingRepository.logWarning("rootRoute has no configured backstack")
+                            }
+                        }
+                    }
+                }
+
                 is NavigationAction.NavigateBack -> {
-
-                    //Ignore exitallpreviousscreens because the app would close
-
-                    if (rootBackStack.size > 1){
+                    if (rootBackStack.size > 1) {
                         rootBackStack.removeAt(rootBackStack.size - 1)
                     }
                 }
@@ -327,9 +358,25 @@ fun App() {
         }
 
 
+        //Snackbar popup handling
+        var currentSnackbarEvent by remember { mutableStateOf<SnackbarManager.SnackbarEvent?>(null) }
+        LaunchedEffect(Unit) {
+
+            SnackbarManager.snackbars.collect {
+                currentSnackbarEvent = it
+            }
+
+        }
+        currentSnackbarEvent?.let { snackbar ->
+            SnackbarPopup(
+                snackbarEvent = snackbar,
+                onDismiss = { currentSnackbarEvent = null }
+            )
+        }
+
+
 
         Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) },
             modifier = Modifier
                 .clearFocusOnTap()
                 .imePadding(),
@@ -496,7 +543,8 @@ fun App() {
                                             navigateUserSettings = {settingsBackStack.add(Route.Settings.UserSettings)},
                                             navigateDevSettings = {settingsBackStack.add(Route.Settings.DeveloperSettings)},
                                             navigateAppearanceSettings = {settingsBackStack.add(Route.Settings.AppearanceSettings)},
-                                            navigateMiscSettings = {settingsBackStack.add(Route.Settings.MiscSettings)}
+                                            navigateMiscSettings = {settingsBackStack.add(Route.Settings.MiscSettings)},
+                                            navigateSchneaggmapSettings = {settingsBackStack.add(Route.Settings.SchneaggmapSettings)}
                                         )
                                     }
 
@@ -539,6 +587,18 @@ fun App() {
                                     entry<Route.Settings.MiscSettings> {
                                         MiscSettings(
                                             miscSettingsViewModel = koinInject(),
+                                            sharedSettingsViewmodel = sharedSettingsViewmodel,
+                                            onBackClick = {
+                                                if (settingsBackStack.size > 1){
+                                                    settingsBackStack.removeAt(settingsBackStack.size - 1)
+                                                }
+                                            }
+                                        )
+                                    }
+
+                                    entry<Route.Settings.SchneaggmapSettings> {
+                                        SchneaggmapSettings(
+                                            schneaggmapSettingsViewModel = koinInject(),
                                             sharedSettingsViewmodel = sharedSettingsViewmodel,
                                             onBackClick = {
                                                 if (settingsBackStack.size > 1){
@@ -715,6 +775,17 @@ fun App() {
                                     entry <Route.Games.SchneaggaHus> {
                                         SchneaggaHusScreenRoot()
                                     }
+                                    entry <Route.Games.Recap> {
+                                        val recapViewModel: RecapViewModel = koinViewModel()
+                                        RecapScreen(
+                                            onBackClick = {
+                                                if (gamesBackStack.size > 1){
+                                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                                }
+                                            },
+                                            recapViewModel = recapViewModel
+                                        )
+                                    }
                                 }
                             )
 
@@ -722,6 +793,9 @@ fun App() {
                     }
 
                 )
+
+
+
 
             }
 

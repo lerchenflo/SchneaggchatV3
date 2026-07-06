@@ -173,7 +173,7 @@ fun ChatDetails(
 
     if (showNicknameDialog) {
         var errorMessage by remember { mutableStateOf<ErrorMessage?>(null) }
-        val currentNickname = chatdetailsViewmodel.selectedUser?.nickName ?: chatdetailsViewmodel.selectedUser?.name ?: "Unknown"
+        val currentNickname = chatdetailsViewmodel.selectedUser?.displayName ?: "Unknown"
 
         ChangeStringDialog(
             title = stringResource(Res.string.change_nickname),

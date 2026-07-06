@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -69,12 +70,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
@@ -88,14 +84,11 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangelogPopup
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.app_name
 import schneaggchatv3mp.composeapp.generated.resources.chat_add_on_24px
 import schneaggchatv3mp.composeapp.generated.resources.filter
-import schneaggchatv3mp.composeapp.generated.resources.loadinginfo_messages
-import schneaggchatv3mp.composeapp.generated.resources.loadinginfo_offline
 import schneaggchatv3mp.composeapp.generated.resources.no_friends_found_search
 import schneaggchatv3mp.composeapp.generated.resources.pin_chat
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap
@@ -126,7 +119,7 @@ fun Chatauswahlscreen(
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
     val connectionToServer = SessionCache.onlineFlow.collectAsStateWithLifecycle()
-    val isSyncing by appRepository.isSyncing.collectAsStateWithLifecycle()
+    val dataSyncState by appRepository.dataSyncState.collectAsStateWithLifecycle()
 
     /*
     //Clear chat when this screen comes to the foreground (Navigation breaks and with the preview the chat can be not selected
@@ -144,7 +137,7 @@ fun Chatauswahlscreen(
 
         if (lastStartedVersion != currentVersion) {
 
-            println("showing changelog")
+            //println("showing changelog")
 
             val changelogContent = viewModel.getChangelog()
 
@@ -190,12 +183,20 @@ fun Chatauswahlscreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(10.dp),
-                verticalAlignment = Alignment.CenterVertically
-
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp, alignment = Alignment.End)
             ) {
+                val touchSize = 40.dp
+                val iconSize = 28.dp
+
+                val uriHandler = LocalUriHandler.current
                 Text(
                     text = stringResource(Res.string.app_name),
                     modifier = Modifier
+                        .clickable {
+                            val serverUrl = runBlocking { preferencemanager.getServerUrl() }
+                            uriHandler.openUri(serverUrl)
+                        }
                         .weight(1f)
                         .padding(start = 5.dp),
 
@@ -207,33 +208,51 @@ fun Chatauswahlscreen(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                val size = 30.dp //Größe vo a ui elemente oba rechts
-                val distance = 10.dp //Abstand zwüschat da buttons oba rechts
 
-                RoundLoadingIndicator(
-                    visible = isSyncing || !connectionToServer.value,
-                    onClick = {
-                        if (isSyncing) {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                SnackbarManager.showMessage(getString(Res.string.loadinginfo_messages))
-                            }
-                        } else {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                SnackbarManager.showMessage(getString(Res.string.loadinginfo_offline))
-                            }
+                //Data sync icon
+                var showDataSyncDetails by remember { mutableStateOf(false) }
+                if (showDataSyncDetails) {
+                    DataSyncDetailPopup(
+                        syncState = dataSyncState,
+                        onDismiss = {
+                            showDataSyncDetails = false
                         }
+                    )
+                }
 
-                    },
-                    strokeWidth = 2.dp,
-                    size = 18.dp
 
-                )
 
-                Spacer(Modifier.width(distance))
+                if (dataSyncState.isSyncing || dataSyncState.exitedWithErrors) {
+                    Box(
+                        modifier = Modifier
+                            .size(touchSize)
+                            .clip(CircleShape)
+                            .clickable {
+                                showDataSyncDetails = true
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (dataSyncState.exitedWithErrors) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(iconSize)
+                            )
+                        } else {
+                            RoundLoadingIndicator(
+                                visible = dataSyncState.isSyncing,
+                                onClick = {
+                                    showDataSyncDetails = true
+                                },
+                                strokeWidth = 3.dp,
+                                size = iconSize
+                            )
+                        }
+                    }
+                }
 
-                val touchSize = 40.dp
-                val iconSize = 28.dp
-                val gap = 0.dp
+
 
                 /*
 
@@ -253,21 +272,16 @@ fun Chatauswahlscreen(
                     )
                 }
 
-                Spacer(Modifier.width(gap))
 
                  */
 
+                /*
                 //Website link
-                val uriHandler = LocalUriHandler.current
                 Box(
                     modifier = Modifier
-                        .padding(2.dp)
                         .size(touchSize)
                         .clip(CircleShape)
-                        .clickable {
-                            val serverUrl = runBlocking { preferencemanager.getServerUrl() }
-                            uriHandler.openUri(serverUrl)
-                        },
+                        ,
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -278,14 +292,13 @@ fun Chatauswahlscreen(
                     )
                 }
 
+                 */
 
-                Spacer(Modifier.width(gap))
 
 
                 //tools and games
                 Box(
                     modifier = Modifier
-                        .padding(2.dp)
                         .size(touchSize)
                         .clip(CircleShape)
                         .clickable { viewModel.onToolsAndGamesClick() },
@@ -299,13 +312,11 @@ fun Chatauswahlscreen(
                     )
                 }
 
-                Spacer(Modifier.width(gap))
 
                 //Map
                 if (appRepository.appVersion.isMobile()) {
                     Box(
                         modifier = Modifier
-                            .padding(2.dp)
                             .size(touchSize)
                             .clip(CircleShape)
                             .clickable { viewModel.onMapClick() },
@@ -319,7 +330,6 @@ fun Chatauswahlscreen(
                         )
                     }
 
-                    Spacer(Modifier.width(gap))
                 }
 
 
@@ -517,8 +527,8 @@ fun Chatauswahlscreen(
                     var showProgress by remember { mutableStateOf(false) }
                     var progress by remember { mutableFloatStateOf(0f) }
                     var animationTrigger by remember { mutableIntStateOf(0) }
-                    LaunchedEffect(isSyncing) {
-                        if (isSyncing && !showProgress) {
+                    LaunchedEffect(dataSyncState.isSyncing) {
+                        if (dataSyncState.isSyncing && !showProgress) {
                             animationTrigger++
                         }
                     }

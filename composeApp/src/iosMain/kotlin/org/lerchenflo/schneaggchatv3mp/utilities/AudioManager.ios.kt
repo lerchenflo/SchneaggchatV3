@@ -7,8 +7,7 @@ import kotlinx.cinterop.allocArrayOf
 import kotlinx.cinterop.memScoped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import platform.AVFoundation.AVURLAsset
-import platform.CoreMedia.CMTimeGetSeconds
+import platform.AVFAudio.AVAudioPlayer
 import platform.Foundation.NSData
 import platform.Foundation.NSDocumentDirectory
 import platform.Foundation.NSFileManager
@@ -54,11 +53,36 @@ actual class AudioManager {
     }
 
     actual suspend fun getMediaDuration(path: String): Long {
-        val url = NSURL.fileURLWithPath(path)
-        val asset = AVURLAsset.assetWithURL(url)
-        val duration = asset.duration
-        val seconds = CMTimeGetSeconds(duration)
-        return (seconds * 1000).toLong() // Convert to milliseconds
+        return withContext(Dispatchers.Default) {
+            try {
+                // Normalize the path - if it doesn't start with /, prepend the base path
+                val fullPath = if (path.startsWith("/")) {
+                    // For absolute paths, extract filename and resolve to current basePath
+                    // This handles stale container UUIDs from old paths
+                    val filename = path.substringAfterLast('/')
+                    "$basePath/$filename"
+                } else {
+                    "$basePath/$path"
+                }
+
+                // Check if file exists
+                val fileManager = NSFileManager.defaultManager
+                if (!fileManager.fileExistsAtPath(fullPath)) {
+                    return@withContext 0L
+                }
+
+                val url = NSURL.fileURLWithPath(fullPath)
+
+                // Use AVAudioPlayer which loads duration synchronously
+                val audioPlayer = AVAudioPlayer(contentsOfURL = url, error = null)
+
+                val seconds = audioPlayer.duration
+                val durationMs = (seconds * 1000).toLong()
+                return@withContext durationMs
+            } catch (e: Exception) {
+                0L
+            }
+        }
     }
 
     private fun saveData(data: NSData, filename: String): String {

@@ -9,15 +9,41 @@ import kotlinx.coroutines.CompletableDeferred
 object ActivityHolder {
 
     private var currentActivity: ComponentActivity? = null
+
+    // Microphone
     private var micPermissionLauncher: ActivityResultLauncher<String>? = null
-    private var permissionDeferred: CompletableDeferred<PermissionState>? = null
+    private var micPermissionDeferred: CompletableDeferred<PermissionState>? = null
+
+    // Location
+    private var locationPermissionLauncher: ActivityResultLauncher<Array<String>>? = null
+    private var locationPermissionDeferred: CompletableDeferred<PermissionState>? = null
+
+    // Notification
+    private var notificationPermissionLauncher: ActivityResultLauncher<String>? = null
+    private var notificationPermissionDeferred: CompletableDeferred<PermissionState>? = null
 
     fun set(activity: ComponentActivity) {
         currentActivity = activity
 
         micPermissionLauncher =
             activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-                permissionDeferred?.complete(
+                micPermissionDeferred?.complete(
+                    if (granted) PermissionState.GRANTED else PermissionState.DENIED
+                )
+            }
+
+        locationPermissionLauncher =
+            activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
+                val granted = results[Manifest.permission.ACCESS_FINE_LOCATION] == true
+                        || results[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+                locationPermissionDeferred?.complete(
+                    if (granted) PermissionState.GRANTED else PermissionState.DENIED
+                )
+            }
+
+        notificationPermissionLauncher =
+            activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+                notificationPermissionDeferred?.complete(
                     if (granted) PermissionState.GRANTED else PermissionState.DENIED
                 )
             }
@@ -26,14 +52,36 @@ object ActivityHolder {
     fun getActivity(): ComponentActivity? = currentActivity
 
     fun requestMicPermission(): CompletableDeferred<PermissionState> {
-        permissionDeferred = CompletableDeferred()
+        micPermissionDeferred = CompletableDeferred()
         micPermissionLauncher?.launch(Manifest.permission.RECORD_AUDIO)
-        return permissionDeferred!!
+        return micPermissionDeferred!!
+    }
+
+    fun requestLocationPermission(): CompletableDeferred<PermissionState> {
+        locationPermissionDeferred = CompletableDeferred()
+        locationPermissionLauncher?.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+            )
+        )
+        return locationPermissionDeferred!!
+    }
+
+    fun requestNotificationPermission(): CompletableDeferred<PermissionState> {
+        notificationPermissionDeferred = CompletableDeferred()
+        notificationPermissionLauncher?.launch(Manifest.permission.POST_NOTIFICATIONS)
+        return notificationPermissionDeferred!!
     }
 
     fun clear() {
         currentActivity = null
         micPermissionLauncher = null
-        permissionDeferred = null
+        micPermissionDeferred = null
+        locationPermissionLauncher = null
+        locationPermissionDeferred = null
+        notificationPermissionLauncher = null
+        notificationPermissionDeferred = null
     }
 }
+

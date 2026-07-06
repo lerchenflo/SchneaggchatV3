@@ -52,6 +52,7 @@ fun MessageViewWithActions(
     readerMap: Map<String, String> = emptyMap(),
     replyMessage: Message? = null,
     replyMessageOnClick: () -> Unit = {},
+    isHighlighted: Boolean = false,
     onReplyCall: () -> Unit = {},
     onLongPress: () -> Unit = {},
     onAction: (MessageAction) -> Unit = {},
@@ -85,6 +86,7 @@ fun MessageViewWithActions(
             ReplyArrow()
         }
 
+        //TODO: Replace with swipable library: https://github.com/stevdza-san/Swipeable-KMP (Ibout im locationattributeview)
         Surface(
             color = MaterialTheme.colorScheme.background,
             tonalElevation = 0.dp,
@@ -169,6 +171,7 @@ fun MessageViewWithActions(
                 readerMap = readerMap,
                 replyMessage = replyMessage,
                 replyMessageOnClick = replyMessageOnClick,
+                isHighlighted = isHighlighted,
                 onAction = onAction,
                 playbackProgress = playbackProgress,
                 ownId = ownId

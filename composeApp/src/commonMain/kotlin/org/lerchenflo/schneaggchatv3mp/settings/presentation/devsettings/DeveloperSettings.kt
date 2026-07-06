@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Games
 import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
@@ -88,6 +89,17 @@ fun DeveloperSettings(
                 subtext = null,
                 onClick = {
                     devSettingsViewModel.navigateGames()
+                }
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            SettingsOption(
+                icon = Icons.Default.Replay,
+                text = "Recap",
+                subtext = null,
+                onClick = {
+                    devSettingsViewModel.navigateRecap()
                 }
             )
 

@@ -29,6 +29,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerS
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.SchneaggaHusViewmodel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerstackViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.UndercoverViewModel
@@ -44,6 +45,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewm
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DevSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettingsViewModel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
 import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistViewModel
@@ -56,13 +58,15 @@ enum class HTTPCLIENTTYPE {
 }
 
 
+
+
 val sharedmodule = module{
 
     //Database
     single <AppDatabase> { CreateAppDatabase(get()).getDatabase() }
 
     single <PlayerDao> { get<AppDatabase>().playerDao() } //TODO: Manu warum musch du inegrätscha und alles andersch macha
-    single { get<AppDatabase>().mapEntryDao() }
+
 
     singleOf(::TokenManager)
 
@@ -143,7 +147,7 @@ val sharedmodule = module{
     factory { TodolistViewModel(get(), get(), get()) }
 
     viewModelOf(::SchneaggmapViewModel)
-    factory { SchneaggmapViewModel(get(), get(), get()) }
+    factory { SchneaggmapViewModel(get(), get(), get(), get(), get(), get(), get()) }
 
 
 
@@ -176,6 +180,8 @@ val sharedmodule = module{
     
     viewModelOf(::PlayerSelectorViewModel)
     factory { PlayerSelectorViewModel(get(), get()) }
+    viewModelOf(::RecapViewModel)
+    factory { RecapViewModel(get(),get(),get(),get(),) }
 
 
     viewModelOf(::UserSettingsViewModel)
@@ -186,4 +192,7 @@ val sharedmodule = module{
 
     viewModelOf(::MiscSettingsViewModel)
     factory { MiscSettingsViewModel(get(), get(), get(), get()) }
+
+    viewModelOf(::SchneaggmapSettingsViewModel)
+    factory { SchneaggmapSettingsViewModel(get(), get(), get(), get()) }
 }

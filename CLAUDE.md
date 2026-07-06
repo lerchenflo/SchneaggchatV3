@@ -52,9 +52,8 @@ utilities/         — Shared helpers
 
 ## Branch Workflow
 
-- Create a new branch for each feature
+- Claude always works on the current checked-out branch in place — never create or switch to a new branch on your own
 - PRs merge into `main`
-- Multiple contributors work on separate branches
 
 ## Code Conventions
 

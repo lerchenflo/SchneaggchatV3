@@ -55,6 +55,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -87,6 +88,7 @@ import io.github.ismoy.imagepickerkmp.domain.models.MimeType
 import io.github.ismoy.imagepickerkmp.features.imagepicker.config.ImagePickerKMPConfig
 import io.github.ismoy.imagepickerkmp.features.imagepicker.model.ImagePickerResult
 import io.github.ismoy.imagepickerkmp.features.imagepicker.ui.rememberImagePickerKMP
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
@@ -126,6 +128,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.camera
 import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.chat_last_seen_status
 import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
 import schneaggchatv3mp.composeapp.generated.resources.copied_to_clipboard
 import schneaggchatv3mp.composeapp.generated.resources.edit
@@ -135,6 +138,7 @@ import schneaggchatv3mp.composeapp.generated.resources.image
 import schneaggchatv3mp.composeapp.generated.resources.message
 import schneaggchatv3mp.composeapp.generated.resources.poll
 import schneaggchatv3mp.composeapp.generated.resources.read_at_time
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 
 
@@ -146,7 +150,6 @@ fun ChatScreen(
 ){
     val globalViewModel = koinInject<GlobalViewModel>()
     val viewModel = koinViewModel<ChatViewModel>()
-    val loggingRepository = koinInject<LoggingRepository>()
     val displayItems by viewModel.messageDisplayState.collectAsStateWithLifecycle()
     val focusManager = LocalFocusManager.current
     val clipboard = LocalClipboard.current.nativeClipboard
@@ -313,8 +316,20 @@ fun ChatScreen(
 
                 }
 
+                // Presence text for the chat header: "Online" while connected, otherwise the
+                // persisted last-seen time. Empty (not null) for anything else so UserButton's
+                // bottom text stays hidden, matching its existing default.
+                val presenceText = (userButtonselectedChat as? UserChat)?.let { chat ->
+                    when {
+                        chat.isOnline -> stringResource(Res.string.schneaggmap_user_online)
+                        chat.lastSeen != null -> stringResource(Res.string.chat_last_seen_status, millisToTimeDateOrYesterday(chat.lastSeen))
+                        else -> null
+                    }
+                } ?: ""
+
                 UserButton(
                     selectedChat = userButtonselectedChat,
+                    bottomTextOverride = presenceText,
                     onClickGes = {
                         viewModel.onChatDetailsClick()
                     },
@@ -331,15 +346,29 @@ fun ChatScreen(
 
             // Messages
             val listState = rememberLazyListState()
+            var initialScrollDone by remember { mutableStateOf(false) }
 
-            //Wenn sich die letzte nachricht ändert denn abescrollen
             if (displayItems.isNotEmpty()) {
                 LaunchedEffect(displayItems.first()) {
-                    listState.animateScrollToItem(0, scrollOffset = 2)
+                    if (!initialScrollDone) {
+                        val dividerIndex = displayItems.indexOfFirst { it is MessageDisplayItem.NewMessagesDivider }
+                        if (dividerIndex != -1) {
+                            listState.scrollToItem(dividerIndex)
+                        } else {
+                            listState.animateScrollToItem(0, scrollOffset = 2)
+                        }
+                        initialScrollDone = true
+                    } else {
+                        listState.animateScrollToItem(0, scrollOffset = 2)
+                    }
                 }
             }
 
             val scope = rememberCoroutineScope()
+
+            // Id of the message that should briefly glow after jumping to it via a reply preview
+            var highlightedMessageId by remember { mutableStateOf<String?>(null) }
+
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
                 modifier = Modifier
@@ -382,9 +411,13 @@ fun ChatScreen(
                                         if (targetIndex != -1) {
                                             scope.launch {
                                                 listState.animateScrollToItem(targetIndex)
+                                                highlightedMessageId = message.answerId
+                                                delay(1500)
+                                                highlightedMessageId = null
                                             }
                                         }
                                     },
+                                    isHighlighted = message.id != null && message.id == highlightedMessageId,
                                     onReplyCall = {
                                         viewModel.onAction(MessageAction.ReplyToMessage(message))
                                     },
@@ -773,7 +806,22 @@ fun ChatScreen(
                                 val progress by viewModel.getPlaybackProgress().collectAsState()
                                 val isThisMessagePlaying = progress.messageId == tmpMsgId
                                 val currentPosition = if (isThisMessagePlaying) progress.currentPosition else 0L
-                                val duration = if (isThisMessagePlaying) progress.duration else 0L
+
+                                // Pre-fetch the audio duration for the recorded file
+                                var prefetchedDuration by remember { mutableLongStateOf(0L) }
+                                val audioPath = content.audioPath
+
+                                LaunchedEffect(audioPath) {
+                                    if (audioPath.isNotEmpty()) {
+                                        try {
+                                            prefetchedDuration = viewModel.getAudioDuration(audioPath)
+                                        } catch (e: Exception) {
+                                            // Silently fail - duration will remain 0
+                                        }
+                                    }
+                                }
+
+                                val duration = if (isThisMessagePlaying) progress.duration else prefetchedDuration
                                 val isPlaying = isThisMessagePlaying && progress.isPlaying
                                 AudioPlayerView(
                                     isPlaying = isPlaying,

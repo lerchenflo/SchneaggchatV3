@@ -67,7 +67,7 @@ import schneaggchatv3mp.composeapp.generated.resources.username
 
 @Composable
 fun InputTextField(
-    text: String,
+    value: String,
     onValueChange: (String) -> Unit = {},
     label: String,
     hint: String,
@@ -135,7 +135,7 @@ fun InputTextField(
 
         OutlinedTextField(
             modifier = fieldModifier,
-            value = text,
+            value = value,
             maxLines = maxLines,
             singleLine = (maxLines == 1),
             onValueChange = onValueChange,
@@ -271,7 +271,7 @@ fun LoginFormSection(
         modifier = modifier
     ) {
         InputTextField(
-            text = usernameText,
+            value = usernameText,
             onValueChange = onusernameTextChange,
             label = stringResource(Res.string.username),
             hint = stringResource(Res.string.username),
@@ -287,7 +287,7 @@ fun LoginFormSection(
         Spacer(modifier = Modifier.height(16.dp))
 
         InputTextField(
-            text = passwordText,
+            value = passwordText,
             onValueChange = onPasswordTextChange,
             label = stringResource(Res.string.password),
             hint = stringResource(Res.string.password),

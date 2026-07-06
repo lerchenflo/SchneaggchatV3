@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -51,11 +52,17 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.GROUPS
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.MAP
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.MESSAGES
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.USERS
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.sendErrorSuspend
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.ErrorChannel.trySendError
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.MessageContent.AudioContent
@@ -78,13 +85,11 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteR
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryCreateRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryEditRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
@@ -108,7 +113,12 @@ import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
 import schneaggchatv3mp.composeapp.generated.resources.error_invalid_credentials
+import schneaggchatv3mp.composeapp.generated.resources.groupsync
+import schneaggchatv3mp.composeapp.generated.resources.mediasync
 import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
+import schneaggchatv3mp.composeapp.generated.resources.mapsync
+import schneaggchatv3mp.composeapp.generated.resources.messagesync
+import schneaggchatv3mp.composeapp.generated.resources.usersync
 import kotlin.time.ExperimentalTime
 
 class AppRepository(
@@ -215,7 +225,7 @@ class AppRepository(
         if (token.isEmpty()) return
 
         val android = appVersion.isAndroid()
-        println("Sending notification token to server... Android: $android")
+        //println("Sending notification token to server... Android: $android")
         networkUtils.setNotificationToken(token, android)
     }
 
@@ -272,73 +282,217 @@ class AppRepository(
 
     val dataSyncLock = Mutex()
 
-    private val _isSyncing = MutableStateFlow(false)
-    val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
+    enum class DataSyncJobStatus { IDLE, RUNNING, SUCCESS, FAILED }
+
+    enum class DataSyncJobType {
+        USERS,
+        GROUPS,
+        MESSAGES,
+        MAP,
+
+        MEDIA;
+
+        fun toUiText() : UiText {
+            return when (this) {
+                USERS -> UiText.StringResourceText(Res.string.usersync)
+                GROUPS -> UiText.StringResourceText(Res.string.groupsync)
+                MESSAGES -> UiText.StringResourceText(Res.string.messagesync)
+                MAP -> UiText.StringResourceText(Res.string.mapsync)
+                MEDIA -> UiText.StringResourceText(Res.string.mediasync)
+            }
+        }
+    }
+
+    data class DataSyncJobState(
+        val type: DataSyncJobType,
+        val status: DataSyncJobStatus = DataSyncJobStatus.IDLE,
+        val error: String? = null
+    )
+
+    data class DataSyncState(
+        val isSyncing: Boolean = false,
+        val exitedWithErrors: Boolean = false,
+        val jobs: List<DataSyncJobState> = listOf(
+            DataSyncJobState(type = USERS), DataSyncJobState(type = GROUPS),
+            DataSyncJobState(type = MESSAGES), DataSyncJobState(type = MAP),
+            DataSyncJobState(type = DataSyncJobType.MEDIA)
+        )
+    )
+
+    private fun updateSyncJob(type: DataSyncJobType, status: DataSyncJobStatus, error: String? = null) {
+        _dataSyncState.update { current ->
+            current.copy(
+                jobs = current.jobs.map {
+                    if (it.type == type) {
+                        it.copy(
+                            status = status, error = error
+                        )
+                    } else it
+                },
+                exitedWithErrors = if (current.exitedWithErrors) true else error != null //Keep error if one is set
+            )
+        }
+    }
+
+    private val _dataSyncState = MutableStateFlow(DataSyncState())
+    val dataSyncState: StateFlow<DataSyncState> = _dataSyncState.asStateFlow()
 
     suspend fun dataSync() {
 
+        val userId = SessionCache.requireLoggedIn() ?: return
+
         if (dataSyncLock.isLocked) {
-            println("Datasync running, canceling")
-            return
+            println("Datasync started but already running")
+            dataSyncLock.withLock {  } //Awaiting finish and return to apply normal data sync await logic
         }
 
         dataSyncLock.withLock {
-            _isSyncing.value = true
+            _dataSyncState.update {
+                it.copy(
+                    isSyncing = true,
+                    exitedWithErrors = false, //Reset error when synching again
+                    // Reset stale statuses from the previous run, otherwise a job that hasn't
+                    // started yet (e.g. MEDIA, which runs last) would still show its old
+                    // SUCCESS/FAILED status while other jobs are already RUNNING.
+                    jobs = it.jobs.map { job -> job.copy(status = DataSyncJobStatus.IDLE, error = null) }
+                )
+            }
             println("Starting datasync")
 
             try {
-            coroutineScope {
-                // Launch all sync operations concurrently
-                val userJob = async {
+                coroutineScope {
+                    // Launch all sync operations concurrently
+                    val userJob = async {
+                        try {
+                            updateSyncJob(
+                                type = USERS,
+                                status = DataSyncJobStatus.RUNNING,
+                                error = null
+                            )
+                            userIdSync()
+                            updateSyncJob(
+                                type = USERS,
+                                status = DataSyncJobStatus.SUCCESS,
+                                error = null
+                            )
+                            //println("User sync completed successfully")
+                        } catch (e: Exception) {
+                            updateSyncJob(
+                                type = USERS,
+                                status = DataSyncJobStatus.FAILED,
+                                error = e.message
+                            )
+                            loggingRepository.logWarning("User sync failed: ${e.message}")
+                        }
+                    }
+
+                    val messageJob = async {
+                        try {
+                            updateSyncJob(
+                                type = MESSAGES,
+                                status = DataSyncJobStatus.RUNNING,
+                                error = null
+                            )
+                            // Media is fetched afterwards as part of the MEDIA job so its
+                            // progress indicator covers the actual download work.
+                            messageIdSync(fetchMedia = false)
+                            updateSyncJob(
+                                type = MESSAGES,
+                                status = DataSyncJobStatus.SUCCESS,
+                                error = null
+                            )
+                            //println("Message sync completed successfully")
+                        } catch (e: Exception) {
+                            updateSyncJob(
+                                type = MESSAGES,
+                                status = DataSyncJobStatus.FAILED,
+                                error = e.message
+                            )
+                            loggingRepository.logWarning("Message sync failed: ${e.message}")
+                        }
+                    }
+
+                    val groupJob = async {
+                        try {
+                            updateSyncJob(
+                                type = GROUPS,
+                                status = DataSyncJobStatus.RUNNING,
+                                error = null
+                            )
+                            groupIdSync()
+                            updateSyncJob(
+                                type = GROUPS,
+                                status = DataSyncJobStatus.SUCCESS,
+                                error = null
+                            )
+                            //println("Group sync completed successfully")
+                        } catch (e: Exception) {
+                            updateSyncJob(
+                                type = GROUPS,
+                                status = DataSyncJobStatus.FAILED,
+                                error = e.message
+                            )
+                            loggingRepository.logWarning("Group sync failed: ${e.message}")
+                        }
+                    }
+
+                    val mapJob = async {
+                        try {
+                            updateSyncJob(
+                                type = MAP,
+                                status = DataSyncJobStatus.RUNNING,
+                                error = null
+                            )
+                            mapEntryIdSync()
+                            updateSyncJob(
+                                type = MAP,
+                                status = DataSyncJobStatus.SUCCESS,
+                                error = null
+                            )
+                            //println("Map sync completed successfully")
+                        } catch (e: Exception) {
+                            updateSyncJob(
+                                type = MAP,
+                                status = DataSyncJobStatus.FAILED,
+                                error = e.message
+                            )
+                            loggingRepository.logWarning("Map sync failed: ${e.message}")
+                        }
+                    }
+
+                    // Wait for all to complete (errors are already handled)
+                    awaitAll(userJob, messageJob, groupJob, mapJob)
+
                     try {
-                        userIdSync()
-                        println("User sync completed successfully")
+                        updateSyncJob(
+                            type = DataSyncJobType.MEDIA,
+                            status = DataSyncJobStatus.RUNNING,
+                            error = null
+                        )
+                        getMissingPics()
+                        getMissingAudios()
+                        updateSyncJob(
+                            type = DataSyncJobType.MEDIA,
+                            status = DataSyncJobStatus.SUCCESS,
+                            error = null
+                        )
                     } catch (e: Exception) {
-                        loggingRepository.logWarning("User sync failed: ${e.message}")
+                        updateSyncJob(
+                            type = DataSyncJobType.MEDIA,
+                            status = DataSyncJobStatus.FAILED,
+                            error = e.message
+                        )
+                        loggingRepository.logWarning("Media sync failed: ${e.message}")
                     }
                 }
 
-                val messageJob = async {
-                    try {
-                        messageIdSync()
-                        println("Message sync completed successfully")
-                    } catch (e: Exception) {
-                        loggingRepository.logWarning("Message sync failed: ${e.message}")
-                    }
-                }
-
-                val groupJob = async {
-                    try {
-                        groupIdSync()
-                        println("Group sync completed successfully")
-                    } catch (e: Exception) {
-                        loggingRepository.logWarning("Group sync failed: ${e.message}")
-                    }
-                }
-
-                val mapJob = async {
-                    try {
-                        mapEntryIdSync()
-                        println("Map sync completed successfully")
-                    } catch (e: Exception) {
-                        loggingRepository.logWarning("Map sync failed: ${e.message}")
-                    }
-                }
-
-                // Wait for all to complete (errors are already handled)
-                awaitAll(userJob, messageJob, groupJob, mapJob)
-
-                val errorProfilePicJob = async {
-                    getMissingPics()
-                    getMissingAudios()
-                }
-                awaitAll(errorProfilePicJob)
-
-            }
-
-            println("Data sync completed")
+                println("Data sync finished")
             } finally {
-                _isSyncing.value = false
+                _dataSyncState.update {
+                    it.copy(
+                        isSyncing = false
+                    )
+                }
             }
         }
     }
@@ -346,6 +500,10 @@ class AppRepository(
     // ─── Map sync (triggered only from map screen, not part of global dataSync) ─
 
     private suspend fun mapEntryIdSync() {
+
+        val userId = SessionCache.requireLoggedIn() ?: return
+
+
         val localEntries = mapRepository.getMapEntryChangeIds()
         var currentPage = 0
         var moreEntries = true
@@ -357,7 +515,7 @@ class AppRepository(
             when (response) {
                 is NetworkResult.Error<*> -> { println("Map entry sync error: ${response.error}"); break }
                 is NetworkResult.Success -> {
-                    println("Map sync success, upserting ${response.data.updatedEntries} entrys")
+                    //println("Map sync success, upserting ${response.data.updatedEntries} entrys")
                     response.data.updatedEntries.forEach { mapRepository.upsertMapEntry(it.toMapEntry()) }
                     response.data.deletedEntries.forEach { mapRepository.deleteMapEntry(it) }
                     moreEntries = response.data.moreEntries
@@ -372,33 +530,19 @@ class AppRepository(
     // ─── Map CRUD ─────────────────────────────────────────────────────────────
     // WS broadcast handles local DB upsert/delete automatically after server write.
 
-    suspend fun createMapEntry(
+    suspend fun upsertMapEntry(
+        entryId: String?,
         name: String,
         description: String,
         lat: Double,
         lon: Double,
         locationData: List<LocationData>,
-    ): NetworkResult<MapEntryResponse, NetworkError> {
-        return networkUtils.createMapEntry(
-            MapEntryCreateRequest(
-                name = name,
-                description = description,
-                coordinates = LatLong(lat = lat, long = lon),
-                locationData = locationData,
-            )
-        )
-    }
+    ) {
 
-    suspend fun editMapEntry(
-        entryId: String,
-        name: String,
-        description: String,
-        lat: Double,
-        lon: Double,
-        locationData: List<LocationData>,
-    ): NetworkResult<MapEntryResponse, NetworkError> {
-        return networkUtils.editMapEntry(
-            MapEntryEditRequest(
+
+
+        val result = networkUtils.upsertMapEntry(
+            MapEntryRequest(
                 entryId = entryId,
                 name = name,
                 description = description,
@@ -406,10 +550,26 @@ class AppRepository(
                 locationData = locationData,
             )
         )
+
+
+        when (result) {
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+            }
+            is NetworkResult.Success<MapEntryResponse> -> {
+                mapRepository.upsertMapEntry(result.data.toMapEntry())
+            }
+        }
     }
 
-    suspend fun deleteMapEntry(entryId: String): NetworkResult<Unit, NetworkError> {
-        return networkUtils.deleteMapEntry(entryId)
+    suspend fun deleteMapEntry(entryId: String) : Boolean {
+        return when (networkUtils.deleteMapEntry(entryId)) {
+            is NetworkResult.Error<*> -> false
+            is NetworkResult.Success<*> -> {
+                mapRepository.deleteMapEntry(entryId)
+                true
+            }
+        }
     }
 
 
@@ -451,12 +611,19 @@ class AppRepository(
     suspend fun getMissingAudios() = coroutineScope {
         // Check audio messages
         val messages = messageRepository.getAudioMessages()
-        val missingImageMessageIds = messages.filter { audio ->
-            audio.id != null && !audioManager.checkAudioExists(audio.audioPath ?: "")
+        val missingAudioMessageIds = messages.filter { audio ->
+            if (audio.id == null) return@filter false
+            // Null/empty audioPath means the file was never downloaded — always treat as missing.
+            // Without this guard, getRecordingPath("") returns filesDir itself, which exists as a
+            // directory, so checkAudioExists would wrongly return true and skip the download.
+            val filename = audio.audioPath?.substringAfterLast('/')?.takeIf { it.isNotEmpty() }
+                ?: return@filter true
+            !audioManager.checkAudioExists(audioManager.getRecordingPath(filename))
         }.map { it.id!! }
 
-        if (missingImageMessageIds.isNotEmpty()) {
-            launch { getAudiosForMessageIds(missingImageMessageIds) }
+        //println("Missing audio ids: $missingAudioMessageIds -------------------------------------")
+        if (missingAudioMessageIds.isNotEmpty()) {
+            launch { getAudiosForMessageIds(missingAudioMessageIds) }
         }
     }
 
@@ -520,6 +687,10 @@ class AppRepository(
                         && !it.isGroup
             }
         }
+    }
+
+    fun getSnailTrailFlow(userId: String): Flow<List<SnailTrailPoint>> {
+        return userRepository.getSnailTrailFlow(userId)
     }
 
 
@@ -687,25 +858,25 @@ class AppRepository(
      * Use this from refresh flows where we must ensure tokens are written before returning.
      */
     suspend fun onNewTokenPair(tokenPair: TokenPair){
-        loggingRepository.logDebug("Token save started: Processing new token pair")
+        //loggingRepository.logDebug("Token save started: Processing new token pair")
         
         try {
             //Parse the token to get the user id
-            loggingRepository.logDebug("Token save: Extracting user ID from refresh token")
+            //loggingRepository.logDebug("Token save: Extracting user ID from refresh token")
             val userid = JwtUtils.getUserIdFromToken(tokenPair.refreshToken)
-            loggingRepository.logInfo("Token save: User ID extracted: $userid")
+            //loggingRepository.logInfo("Token save: User ID extracted: $userid")
 
-            loggingRepository.logDebug("Token save: Saving tokens to secure storage")
+            //loggingRepository.logDebug("Token save: Saving tokens to secure storage")
             preferencemanager.saveTokens(tokenPair)
             
-            loggingRepository.logDebug("Token save: Saving user ID to preferences")
+            //loggingRepository.logDebug("Token save: Saving user ID to preferences")
             preferencemanager.saveOWNID(userid)
 
-            loggingRepository.logDebug("Token save: Updating session cache")
+            //loggingRepository.logDebug("Token save: Updating session cache")
             SessionCache.updateTokens(tokenPair)
             SessionCache.updateOnline(true)
             
-            loggingRepository.logInfo("Token save completed successfully: Session cache updated")
+            //loggingRepository.logInfo("Token save completed successfully: Session cache updated")
         } catch (e: Exception) {
             loggingRepository.logError("Token save failed: ${e.message}")
             throw e // Re-throw to maintain existing error handling behavior
@@ -838,6 +1009,9 @@ class AppRepository(
      * Execute a useridsync
      */
     suspend fun userIdSync() {
+
+        val userId = SessionCache.requireLoggedIn() ?: return
+
         val localusers = userRepository.getuserchangeid()
 
         val userSyncResponse = networkUtils.userIdSync(localusers.map { (id, changedate) -> IdTimeStamp(id, changedate) })
@@ -873,10 +1047,17 @@ class AppRepository(
                                 locationLat = existing?.locationLat,
                                 locationLong = existing?.locationLong,
                                 locationDate = existing?.locationDate,
-                                locationShared = existing?.locationShared ?: false,
+                                locationSpeed = existing?.locationSpeed,
+                                locationHeading = existing?.locationHeading,
+                                locationAltitude = existing?.locationAltitude,
+                                locationBattery = existing?.locationBattery,
+                                locationDistance24h = existing?.locationDistance24h,
+                                locationShared = newUser.shareLocation,
+                                shareSpeedHeading = newUser.shareSpeedHeading,
+                                snailTrail = newUser.shareSnailTrail,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
-                                lastOnline = existing?.lastOnline,
                                 notisMuted = existing?.notisMuted ?: false,
+                                lastSeen = newUser.lastSeen,
                                 email = null,
                                 emailVerifiedAt = null,
                                 createdAt = null,
@@ -901,9 +1082,13 @@ class AppRepository(
                                 locationLat = existing?.locationLat,
                                 locationLong = existing?.locationLong,
                                 locationDate = existing?.locationDate,
-                                locationShared = existing?.locationShared ?: false,
+                                locationSpeed = existing?.locationSpeed,
+                                locationHeading = existing?.locationHeading,
+                                locationAltitude = existing?.locationAltitude,
+                                locationBattery = existing?.locationBattery,
+                                locationDistance24h = existing?.locationDistance24h,
+                                locationShared = newUser.locationShared,
                                 wakeupEnabled = existing?.wakeupEnabled ?: false,
-                                lastOnline = existing?.lastOnline,
                                 frienshipStatus = null,
                                 requesterId = null,
                                 notisMuted = false,
@@ -930,7 +1115,6 @@ class AppRepository(
                                 locationDate = null,
                                 locationShared = false,
                                 wakeupEnabled = false,
-                                lastOnline = null,
                                 frienshipStatus = newUser.friendShipStatus,
                                 requesterId = newUser.requesterId,
                                 notisMuted = false,
@@ -1432,7 +1616,9 @@ class AppRepository(
                             if(m.audioPath == null){
                                 TextContent("Offline audio sending failed")
                             }
-                            val audio = getAudioBytes("unsent_" + m.localPK + VOICEMSG_FILE_NAME)
+                            val audio = getAudioBytes(
+                                audioManager.getRecordingPath("unsent_" + m.localPK + VOICEMSG_FILE_NAME)
+                            )
 
                             AudioContent(
                                 audio = audio
@@ -1458,8 +1644,12 @@ class AppRepository(
 
     /**
      * Execute a message sync
+     *
+     * @param fetchMedia whether to immediately download images/audios for newly-synced
+     * messages. Disabled during the full [dataSync] so that media downloads happen as part
+     * of the MEDIA job (and its progress indicator) instead of inside the MESSAGES job.
      */
-    suspend fun messageIdSync() {
+    suspend fun messageIdSync(fetchMedia: Boolean = true) {
 
         val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
@@ -1511,7 +1701,7 @@ class AppRepository(
                         messageRepository.deleteMessage(id)
                     }
 
-                    println("MessageIdSync finished, new messages: ${updatedMessages.size}")
+                    //println("MessageIdSync finished, new messages: ${updatedMessages.size}")
                 }
             }
 
@@ -1521,14 +1711,16 @@ class AppRepository(
         //println("Messagesync completed. Total pages: $currentPage")
 
 
-        if (imagesToGet.isNotEmpty()) {
-            println("Images to fetch: ${imagesToGet.size}")
-            getPicturesForMessageIds(imagesToGet)
-        }
+        if (fetchMedia) {
+            if (imagesToGet.isNotEmpty()) {
+                println("Images to fetch: ${imagesToGet.size}")
+                getPicturesForMessageIds(imagesToGet)
+            }
 
-        if (audiosToGet.isNotEmpty()) {
-            println("Audios to fetch: ${audiosToGet.size}")
-            getAudiosForMessageIds(audiosToGet)
+            if (audiosToGet.isNotEmpty()) {
+                println("Audios to fetch: ${audiosToGet.size}")
+                getAudiosForMessageIds(audiosToGet)
+            }
         }
     }
 
@@ -1550,14 +1742,17 @@ class AppRepository(
     suspend fun getAudiosForMessageIds(ids: List<String>){
         ids.forEach { messageId ->
             val savefilename = messageId + VOICEMSG_FILE_NAME
-            println("Fetching Audio for messageid $messageId")
+            //println("Fetching Audio for messageid $messageId")
 
             when (val audio = networkUtils.getAudioForAudioMessage(messageId)) {
                 is NetworkResult.Error<*> -> {println("Audio error for messageid $messageId")}
                 is NetworkResult.Success<ByteArray> -> {
                     val filepath = audioManager.saveAudioToStorage(audio.data, savefilename)
-                    println("Audio saved to $filepath")
-                    messageRepository.updateAudioPath(messageId, filepath)
+                    //println("Audio saved to $filepath")
+                    // Persist the bare filename, not the absolute container path: on iOS the
+                    // container UUID in an absolute path changes across reinstalls/updates and
+                    // would go stale. The absolute path is re-derived at use-time.
+                    messageRepository.updateAudioPath(messageId, savefilename)
                 }
             }
         }
@@ -1726,6 +1921,9 @@ class AppRepository(
 
     suspend fun groupIdSync() {
 
+        val userId = SessionCache.requireLoggedIn() ?: return
+
+
         val localgroups = groupRepository.getgroupchangeid()
         val profilepicsToGet = mutableListOf<String>()
 
@@ -1845,7 +2043,47 @@ class AppRepository(
     }
 
 
+    // Location data itself is now pushed/pulled over the WebSocket (see GlobalViewModel's
+    // location-tracking job and SocketConnectionMessage's LocationUpdate/FriendLocationChange/
+    // FriendLocationsSnapshot handling), not via HTTP.
+
+    /** Per-friend toggle: what we share with this specific friend (location, speed/heading, snail trail). */
+    suspend fun setLocationSharing(
+        friendId: String,
+        share: Boolean,
+        shareSpeedHeading: Boolean = false,
+        snailTrail: Boolean = false,
+    ): Boolean {
+        return when (networkUtils.shareLocation(friendId, share, shareSpeedHeading, snailTrail)) {
+            is NetworkResult.Error<*> -> false
+            is NetworkResult.Success<*> -> {
+                // Optimistically reflect the new value locally so UI updates immediately;
+                // the next /users/sync or UserChange socket push reconciles the authoritative value.
+                userRepository.getUserById(friendId)?.let { friend ->
+                    userRepository.upsertUser(friend.copy(
+                        locationShared = share,
+                        shareSpeedHeading = shareSpeedHeading,
+                        snailTrail = snailTrail,
+                    ).toDto())
+                }
+                true
+            }
+        }
+    }
+
+    /**
+     * Disables location sharing towards every friend. User.locationShared is derived
+     * server-side from whether any friend has share=true, so this is the real way to turn
+     * sharing off entirely (there's no standalone global switch to write to anymore).
+     */
+    suspend fun disableLocationSharingForAllFriends(): Boolean {
+        return getFriends("").all { friend ->
+            setLocationSharing(friend.id, share = false, friend.shareSpeedHeading, friend.snailTrail)
+        }
+    }
+
     /*
+
 
 
 

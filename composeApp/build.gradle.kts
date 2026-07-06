@@ -136,6 +136,9 @@ kotlin {
             //Firebase Cloud Messaging
             implementation(libs.firebase.messaging)
 
+            // Location (FusedLocationProviderClient)
+            implementation(libs.play.services.location)
+
         }
 
 
@@ -184,8 +187,8 @@ kotlin {
             //Image picker
             implementation(libs.github.imagepickerkmp)
 
-            // Audio Recorder / Player
-            implementation(libs.kmp.audio.recorder.player)
+            // Voice messages (local module, not published)
+            implementation(projects.kmpVoiceMessageLibrary)
 
             //Jwt parsing
             implementation(libs.jwt.kt)
@@ -200,6 +203,12 @@ kotlin {
 
             //Resizeable screens
             implementation(libs.material3.adaptive)
+
+            //Swipeable
+            implementation(libs.swipeable.kmp)
+
+            //Reordable Column
+            implementation(libs.reorderable)
 
             //Sharedprefs
             api(libs.datastore.preferences)
@@ -265,7 +274,7 @@ kotlin {
 
 
 //Add version info to desktop builds
-val desktopVersion = "3.0.11"
+val desktopVersion = "3.0.12"
 
 compose.desktop {
     application {

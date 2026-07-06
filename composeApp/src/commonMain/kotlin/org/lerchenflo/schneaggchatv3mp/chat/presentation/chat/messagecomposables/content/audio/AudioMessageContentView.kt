@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -25,8 +26,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.StateFlow
+import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
+import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 
 @Composable
@@ -37,13 +40,36 @@ fun AudioMessageContentView(
     myMessage: Boolean = false,
     onAction: (MessageAction) -> Unit = {},
     playbackProgress: StateFlow<PlaybackProgress>? = null,
+    audioManager: AudioManager = koinInject()
 ) {
 
     val progress by playbackProgress?.collectAsState() ?: remember { mutableStateOf(PlaybackProgress()) }
 
     val isThisMessagePlaying = progress.messageId == message.id
     val currentPosition = if (isThisMessagePlaying) progress.currentPosition else 0L
-    val duration = if (isThisMessagePlaying) progress.duration else 0L
+
+    // Pre-fetch the audio duration when the composable is first displayed.
+    // audioPath is stored as a bare filename; resolve to the platform-specific absolute path
+    // so that MediaMetadataRetriever (Android) and AudioSystem (Desktop) can open it.
+    var prefetchedDuration by remember { mutableLongStateOf(0L) }
+    val rawPath = message.audioPath ?: ""
+    val filePath = remember(rawPath) {
+        val filename = rawPath.substringAfterLast('/')
+        if (filename.isNotEmpty()) audioManager.getRecordingPath(filename) else ""
+    }
+
+    LaunchedEffect(filePath) {
+        if (filePath.isNotEmpty()) {
+            try {
+                prefetchedDuration = audioManager.getMediaDuration(filePath)
+            } catch (e: Exception) {
+                // Silently fail - duration will remain 0
+            }
+        }
+    }
+
+    // Use pre-fetched duration when not playing, use progress.duration when playing
+    val duration = if (isThisMessagePlaying) progress.duration else prefetchedDuration
     val isPlaying = isThisMessagePlaying && progress.isPlaying
 
     val textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant

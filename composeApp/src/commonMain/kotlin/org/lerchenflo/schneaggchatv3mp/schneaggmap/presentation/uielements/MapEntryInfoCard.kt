@@ -13,11 +13,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,22 +37,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.stevdza_san.swipeable.Swipeable
+import com.stevdza_san.swipeable.domain.ActionCustomization
+import com.stevdza_san.swipeable.domain.SwipeAction
+import com.stevdza_san.swipeable.domain.SwipeBehavior
+import com.stevdza_san.swipeable.domain.SwipeDirection
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
+import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.copyToClipboard
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.toSimpleLocationData
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
+import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.delete
 import schneaggchatv3mp.composeapp.generated.resources.latlong
 import schneaggchatv3mp.composeapp.generated.resources.location_belongs_to_type
+import schneaggchatv3mp.composeapp.generated.resources.open_location_in_maps
 import schneaggchatv3mp.composeapp.generated.resources.save
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_delete
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_description
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_title
 
@@ -52,6 +69,7 @@ fun MapEntryInfoCard(
     entry: MapEntry,
     onDismiss: () -> Unit,
     onSave: (MapEntry) -> Unit,
+    onDelete: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
@@ -71,7 +89,6 @@ fun MapEntryInfoCard(
                 onChange = {
                     currentEntry = it
                 },
-                onDismiss = onDismiss
             )
 
 
@@ -99,10 +116,68 @@ fun MapEntryInfoCard(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
+                val shareUtils = koinInject<ShareUtils>()
+                IconButton(
+                    onClick = {
+                        shareUtils.openLocationInMaps(
+                            currentEntry.coordinates.lat,
+                            currentEntry.coordinates.long,
+                            currentEntry.name
+                        )
+                    }
+                ) {
+                    Icon(
+                        Icons.Default.Map,
+                        contentDescription = stringResource(Res.string.open_location_in_maps)
+                    )
+                }
+
                 val changed = entry != currentEntry
 
                 //Move cancel button to the right, if something changed to the left (primary action always on the right)
                 if (!changed) {
+
+                    var showDeleteConfirmationPopup by remember { mutableStateOf(false) }
+                    IconButton(
+                        onClick = {showDeleteConfirmationPopup = true}
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+
+                    if (showDeleteConfirmationPopup) {
+                        AlertDialog(
+                            onDismissRequest = { showDeleteConfirmationPopup = false },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    onDelete(entry.id)
+                                    showDeleteConfirmationPopup = false
+
+                                }) {
+                                    Text(stringResource(Res.string.delete))
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = {
+                                    // Handle confirm action
+                                    showDeleteConfirmationPopup = false
+                                }) {
+                                    Text(stringResource(Res.string.cancel))
+                                }
+                            },
+                            text = {
+                                Text(
+                                    text = stringResource(Res.string.schneaggmap_entry_delete)
+                                )
+                            }
+                        )
+                    }
+
+
                     Spacer(modifier = Modifier.weight(1f))
                 }
 
@@ -112,8 +187,12 @@ fun MapEntryInfoCard(
                     primary = false
                 )
 
+                if (changed) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+
                 //Save button on the right side, but only if something changed
-                if (entry != currentEntry) {
+                if (changed) {
                     NormalButton(
                         text = stringResource(Res.string.save),
                         onClick = {
@@ -134,15 +213,15 @@ fun MapEntryInfoCard(
 
 
 @Composable
-fun EntryTitleView(entry: MapEntry, onChange: (MapEntry) -> Unit, onDismiss: () -> Unit) {
+fun EntryTitleView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
 
     Column {
 
         val combinedEntries = entry.locationData.map {
-            stringResource(it.stringRes())
+            stringResource(it.locationtype.stringRes())
         }
         Text(
-            text = stringResource(Res.string.location_belongs_to_type, combinedEntries.joinToString(", ")),
+            text = stringResource(Res.string.location_belongs_to_type, combinedEntries.joinToString(", ").orEmpty()),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
@@ -243,86 +322,116 @@ fun CoordinateView(coordinates: LatLong) {
 
 @Composable
 fun LocationAttributeView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
-    entry.locationData.forEach { locationData ->
-        Box(
-            modifier = Modifier
-                .padding(8.dp)
-                .border(width = 2.dp, color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(8.dp))
-                .padding(8.dp)
-        ) {
-            Column {
-                Text(
-                    text = stringResource(locationData.stringRes()),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
-                )
 
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    locationData.schema().forEach { definition ->
-                        val value = locationData.getValueByKey(definition.key)
+    Column {
+        entry.locationData.forEach { locationData ->
+            Swipeable(
+                behavior = SwipeBehavior.REVEAL,
+                direction = SwipeDirection.LEFT,
+                leftRevealActions = if (entry.locationData.size > 1) { //Only allow deletion if the entry has more than one locationdata
+                    listOf(
 
-                        KeyValueView(
-                            value = value,
-                            definition = definition,
-                            onValueChange = { newValue ->
+                        SwipeAction(
+                            customization = ActionCustomization(
+                                icon = Icons.Default.Delete,
+                                iconColor = MaterialTheme.colorScheme.onError,
+                                containerColor = MaterialTheme.colorScheme.error
+                            ),
+                            onAction = {
                                 onChange(entry.copy(
-                                    locationData = entry.locationData.map {
-                                        if (it === locationData) locationData.withValueForKey(definition.key, newValue)
-                                        else it
+                                    locationData = entry.locationData.mapNotNull {
+                                        if (it.locationtype == locationData.locationtype) {
+                                            null //Return null for this entry (gets deleted)
+                                        } else it
                                     }
                                 ))
-                            },
+                            }
                         )
+
+                    )
+                } else emptyList()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .border(width = 2.dp, color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(8.dp))
+                        .padding(8.dp)
+                ) {
+                    Column {
+                        Text(
+                            text = stringResource(locationData.locationtype.stringRes()),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            locationData.schema().forEach { definition ->
+                                val value = locationData.getValueByKey(definition.key)
+
+                                KeyValueView(
+                                    value = value,
+                                    definition = definition,
+                                    onValueChange = { newValue ->
+                                        onChange(entry.copy(
+                                            locationData = entry.locationData.map {
+                                                if (it === locationData) locationData.withValueForKey(definition.key, newValue)
+                                                else it
+                                            }
+                                        ))
+                                    },
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
     }
-}
 
 
 
 
-@Preview(
-    apiLevel = 36,
-    showSystemUi = true,
-    showBackground = true
-)
-@Composable
-private fun MapEntryInfoCardPreview() {
-    SchneaggchatTheme {
-        Box(
-            contentAlignment = Alignment.Center
+    var showLocationAddDropdown by remember { mutableStateOf(false) }
+
+    //Box for alignment of popup
+    Box(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        NormalButton(
+            text = "+",
+            primary = false,
+            onClick = {
+                showLocationAddDropdown = true
+            },
+            modifier = Modifier.fillMaxWidth()
+                .padding(8.dp)
+        )
+
+        DropdownMenu(
+            expanded = showLocationAddDropdown,
+            onDismissRequest = {
+                showLocationAddDropdown = false
+            },
+            modifier = Modifier.align(Alignment.Center)
         ) {
-            MapEntryInfoCard(
-                entry = MapEntry(
-                    id = "test",
-                    coordinates = LatLong(2.222342342342,2.223433322222332),
-                    name = "Test title entry",
-                    description = "This is a default test entry for debugging how to show a popup. there is no use in this much text other than showing if the line breaks and the padding works correctly.",
-                    locationData = listOf(
-                        LocationData.Street(
-                            mautFee = null,
-                            heightLimit = AttributeValue.DoubleValue(22.222),
-                            closedInWinter = AttributeValue.BoolValue(false),
-                            wheeliesAllowed = AttributeValue.BoolValue(true)
-                        ),
-
-                        LocationData.Radar(
-                            speedLimit = AttributeValue.IntValue(25),
-                            radarType = LocationData.RadarType.REDLIGHT
+            LocationType.entries.forEach { type ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(type.stringRes())
                         )
-                    ),
-                    createdBy = "awd",
-                    createdAt = 23232L,
-                    updatedBy = "awwad",
-                    updatedAt = 223234223L
-                ),
-                onDismiss = {},
-                onSave = {}
-            )
+                    },
+                    onClick = {
+                        onChange(entry.copy(
+                            locationData = entry.locationData + type.toSimpleLocationData()
+                        ))
+                        showLocationAddDropdown = false
+                    },
+                )
+            }
         }
     }
+
 }

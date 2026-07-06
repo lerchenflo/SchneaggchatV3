@@ -53,6 +53,9 @@ sealed interface Route : NavKey {
 
         @Serializable
         data object MiscSettings: Route, NavKey
+
+        @Serializable
+        data object SchneaggmapSettings: Route, NavKey
     }
 
 
@@ -84,6 +87,9 @@ sealed interface Route : NavKey {
 
         @Serializable
         data object SchneaggaHus: Route, NavKey
+      
+        @Serializable
+        data object Recap: Route, NavKey
     }
 }
 

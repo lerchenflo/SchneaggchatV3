@@ -161,7 +161,7 @@ fun SignUpScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         InputTextField(
-                            text = state.usernameState.text,
+                            value = state.usernameState.text,
                             onValueChange = { onAction(SignupAction.OnUsernameTextChange(it)) },
                             label = stringResource(Res.string.username),
                             hint = stringResource(Res.string.username),
@@ -301,7 +301,7 @@ fun SignUpScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         InputTextField(
-                            text = state.passwordState.text,
+                            value = state.passwordState.text,
                             onValueChange = { onAction(SignupAction.OnPasswordTextChange(it, false)) },
                             label = stringResource(Res.string.password),
                             hint = stringResource(Res.string.password),
@@ -313,7 +313,7 @@ fun SignUpScreen(
                         )
 
                         InputTextField(
-                            text = state.passwordRetypeState.text,
+                            value = state.passwordRetypeState.text,
                             onValueChange = { onAction(SignupAction.OnPasswordTextChange(it, true)) },
                             label = stringResource(Res.string.password_again),
                             hint = stringResource(Res.string.password),

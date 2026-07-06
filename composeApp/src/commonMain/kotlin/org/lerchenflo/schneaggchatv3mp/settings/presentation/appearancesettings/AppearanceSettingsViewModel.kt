@@ -32,7 +32,6 @@ class AppearanceSettingsViewModel(
     var selectedLanguage by mutableStateOf(LanguageSetting.SYSTEM)
         private set
 
-
     init {
         viewModelScope.launch { // Markdown
             preferenceManager.getUseMdFlow()

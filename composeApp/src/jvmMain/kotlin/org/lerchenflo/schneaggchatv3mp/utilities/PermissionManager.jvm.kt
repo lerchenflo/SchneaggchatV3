@@ -10,4 +10,21 @@ actual class PermissionManager {
     actual suspend fun requestMicrophonePermission(): PermissionState {
         return PermissionState.NOT_DETERMINED
     }
+
+    // No GPS on Desktop — always report as not available
+    actual suspend fun checkLocationPermission(): PermissionState {
+        return PermissionState.NOT_DETERMINED
+    }
+
+    actual suspend fun requestLocationPermission(): PermissionState {
+        return PermissionState.NOT_DETERMINED
+    }
+
+    actual suspend fun checkNotificationPermission(): PermissionState {
+        return PermissionState.NOT_DETERMINED
+    }
+
+    actual suspend fun requestNotificationPermission(): PermissionState {
+        return PermissionState.NOT_DETERMINED
+    }
 }

@@ -9,19 +9,25 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,6 +38,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,6 +54,7 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
@@ -73,6 +82,7 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_settings_allowmultip
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_infinite_custom_and_selected_answers_warning
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_infinite_custom_answers_warning
 import schneaggchatv3mp.composeapp.generated.resources.poll_visibility_title
+import sh.calvin.reorderable.ReorderableColumn
 import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -171,18 +181,12 @@ fun PollDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 //Title text input
-                Text(stringResource(Res.string.poll_create_title))
-
-                OutlinedTextField(
+                TextField(
                     value = title,
-                    maxLines = 1,
                     onValueChange = { title = it },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text(stringResource(Res.string.poll_create_title_placeholder)) },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                    ),
+                    placeholder = {Text(stringResource(Res.string.poll_create_title_placeholder))},
+                    label = {Text(stringResource(Res.string.poll_create_title))},
                     isError = titleError
                 )
 
@@ -192,16 +196,13 @@ fun PollDialog(
                 //Description text input
                 Text(stringResource(Res.string.poll_create_description))
 
-                OutlinedTextField(
+                TextField(
                     value = description,
-                    maxLines = 1,
                     onValueChange = { description = it },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text(stringResource(Res.string.poll_create_description_placeholder)) },
                     shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                    )
+
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -215,16 +216,49 @@ fun PollDialog(
                         color = MaterialTheme.colorScheme.error)
                 }
 
-                options.forEachIndexed { index, value ->
 
+                val hapticFeedback = LocalHapticFeedback.current
+
+                ReorderableColumn(
+                    list = options.toList(),
+                    onSettle = { from, to ->
+                        options.add(to, options.removeAt(from))
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                    },
+                ) { index, value, _ ->
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    OutlinedTextField(
-                        value = value,
-                        onValueChange = { options[index] = it },
-                        placeholder = { Text(stringResource(Res.string.poll_options_placeholder)) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    ReorderableItem(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            TextField(
+                                value = value,
+                                onValueChange = { options[index] = it },
+                                placeholder = { Text(stringResource(Res.string.poll_options_placeholder)) },
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            IconButton(
+                                modifier = Modifier.draggableHandle(
+                                    onDragStarted = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
+                                    },
+                                    onDragStopped = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                                    },
+                                ),
+                                onClick = {},
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.DragHandle,
+                                    contentDescription = "Reorder",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                    }
                 }
 
                 //Auto add new entry if last entry is not empty

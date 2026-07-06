@@ -10,6 +10,13 @@
     <string name="search_friend">search your Friends ...</string>
     <string name="no_status">no status</string>
     <string name="unknown_user">unknown user</string>
+    <string name="chat_last_seen_status">last seen %1$s</string>
+
+    <string name="usersync">userdata</string>
+    <string name="groupsync">groupdata</string>
+    <string name="messagesync">messages</string>
+    <string name="mapsync">map entrys</string>
+    <string name="mediasync">media</string>
 
     <string name="status_infotext">This status is available to all your friends. Currently, it is not set.</string>
     <string name="currentstatus">Your current status: %1$s</string>
@@ -26,6 +33,7 @@
     <string name="email_not_verified_email_has_been_sent2">. If you created your account some time ago, you may have to request the link again.</string>
     <string name="email_check_verified">Check email verification</string>
     <string name="email_check_problem">Having trouble? Get help</string>
+    <string name="email_check_loading_data">Loading your account data ...</string>
 
 
 
@@ -241,6 +249,29 @@
     <string name="appearance_settings">Appearance</string>
     <string name="appearance_settings_info">Change the appearance of your app</string>
 
+    <string name="schneaggmap_settings">Schneaggmap</string>
+    <string name="schneaggmap_settings_info">Change your map settings</string>
+    <string name="merge_map_locations">Merge locations when zooming</string>
+    <string name="merge_map_locations_info">Group nearby locations into one marker when zoomed out</string>
+    <string name="schneaggmap_map_style">Map style</string>
+    <string name="schneaggmap_map_style_info">Choose the map\'s appearance</string>
+    <string name="map_style_liberty">Liberty</string>
+    <string name="map_style_bright">Bright</string>
+    <string name="map_style_positron">Positron</string>
+    <string name="map_style_dark">Dark</string>
+    <string name="map_style_fiord">Fiord</string>
+    <string name="share_location_global">Share my location</string>
+    <string name="share_location_global_info">Allow friends you share with to see your location</string>
+    <string name="share_location_friends_title">Share with</string>
+    <string name="advanced_location_sharing">Advanced location sharing</string>
+    <string name="advanced_location_sharing_info">Also send your speed and heading, and reveal advanced options per friend</string>
+    <string name="share_speed_heading">Share speed &amp; heading</string>
+    <string name="share_snail_trail">Share snail trail (last 24h)</string>
+    <string name="schneaggmap_user_speed_label">Speed</string>
+    <string name="schneaggmap_user_altitude_label">Altitude</string>
+    <string name="schneaggmap_user_battery_label">Battery</string>
+    <string name="schneaggmap_user_distance_24h_label">Moved distance (24h)</string>
+
     <string name="use_default_server">Use default server</string>
     <string name="use_test_server">Use test server</string>
 
@@ -311,6 +342,7 @@
 
     <string name="pending_friend_requests">%1$s pending friend requests</string>
     <string name="no_friends_found_search">Friend not found?</string>
+    <string name="no_friends">no friends</string>
 
     <string name="message_delete_info">Do you really want to delete this message?</string>
     <string name="open_chat">Open chat</string>
@@ -593,6 +625,19 @@
     <string name="yatzi_roll_dice">Roll Dice, %1$d left</string>
     <string name="yatzi_roll_again">Roll Again, %1$d left</string>
 
+    <!-- Recap -->
+    <string name="recap_your_year">Your year</string>
+    <string name="recap_using_schneaggchat_in_numbers">using Schneaggchat in numbers</string>
+    <string name="recap_in_year_you_had_a_lot_to_say">In %1$d, you had a LOT to say.</string>
+    <string name="recap_others_sent_you">This year other People sent you</string>
+    <string name="recap_messages">messages</string>
+    <string name="recap_you_sent">You sent</string>
+    <string name="recap_messages_to_favorite_humans">messages to your favorite humans. (And maybe a few group chats you muted).</string>
+    <string name="recap_new_friends_found">New friends found</string>
+    <string name="recap_you_have">You have</string>
+    <string name="recap_are_now_your_friends">new Friends acquired.</string>
+    <string name="recap_texts_number">%1$d texts</string>
+
     <!-- Changelog Popup -->
     <string name="changelog_whats_new">What's New</string>
     <string name="changelog_announcements">Announcements</string>
@@ -609,62 +654,76 @@
     <!-- Schneaggmap -->
     <string name="schneaggmap_filter_location_types">Location types</string>
     <string name="location_belongs_to_type">Belongs to: %1$s</string>
+    <string name="location_add_type">Add a new type</string>
 
     <string name="schneaggmap_entry_title">Name</string>
     <string name="schneaggmap_entry_description">Description</string>
 
+    <string name="schneaggmap_entry_delete">Delete this entry. It will also be deleted for everyone else. You will not be able to restore it.</string>
+
     <string name="latlong">Lat %1$s, Long %2$s</string>
+    <string name="open_location_in_maps">Open in Maps</string>
     <string name="latitude">Latitude</string>
     <string name="longitude">Longitude</string>
 
+    <string name="schneaggmap_user_last_online_label">Last online</string>
+    <string name="schneaggmap_user_distance_label">Distance</string>
+    <string name="schneaggmap_user_online">Online</string>
+
+    <!-- Location Types -->
     <string name="location_type_radar">Radar</string>
-    <string name="location_type_street">Street</string>
+    <string name="location_type_police">Police</string>
+    <string name="location_type_mountain_street">Mountain Street</string>
+    <string name="location_type_wheeliespot">Wheelie Spot</string>
+    <string name="location_type_viewpoint">Viewpoint</string>
     <string name="location_type_camping">Camping</string>
-    <string name="location_type_sightseeing">Sightseeing</string>
     <string name="location_type_swimming">Swimming</string>
+    <string name="location_type_sightseeing">Sightseeing</string>
     <string name="location_type_party">Party</string>
-    <string name="location_type_food">Food</string>
-
-
-    <!-- Camping -->
-    <string name="location_camping_official">Official</string>
-
-    <!-- Street -->
-    <string name="location_street_maut_fee">Toll Fee</string>
-    <string name="location_street_height_limit">Height Limit</string>
-    <string name="location_street_closed_in_winter">Closed in Winter</string>
-    <string name="location_street_wheelies_allowed">Wheelies Allowed</string>
+    <string name="location_type_food_kebab">Kebab</string>
+    <string name="location_type_food_pizza">Pizza</string>
+    <string name="location_type_food_burger">Burger</string>
+    <string name="location_type_food_beer">Beer</string>
+    <string name="location_type_food_asian">Asian Food</string>
+    <string name="location_type_food_greek">Greek Food</string>
+    <string name="location_type_food_other">Other Food</string>
 
     <!-- Radar -->
     <string name="location_radar_speed_limit">Speed Limit</string>
-    <string name="location_radar_type">Type</string>
+    <string name="location_radar_mobile">Mobile</string>
+    <string name="location_radar_red_light">Red Light Camera</string>
 
-    <string name="location_radar_type_redlight">Red Light Camera</string>
-    <string name="location_radar_type_speed">Speed Camera</string>
-    <string name="location_radar_type_mobile">Mobile Speed Trap</string>
-    <string name="location_radar_type_police">Police Check</string>
+    <!-- Police -->
+    <string name="location_police_last_seen">Last Seen</string>
 
-    <!-- Sightseeing -->
-    <string name="location_sightseeing_entry_fee">Entry Fee</string>
+    <!-- Mountain Street -->
+    <string name="location_street_maut_fee">Toll Fee</string>
+    <string name="location_street_height_limit">Height Limit</string>
+    <string name="location_street_closed_in_winter">Closed in Winter</string>
+
+    <!-- Wheelie Spot -->
+    <string name="location_wheeliespot_only_on_weekends">Only on Weekends</string>
+
+    <!-- Camping -->
+    <string name="location_camping_official">Official</string>
+    <string name="location_camping_water_distance">Distance to Water (m)</string>
+    <string name="location_camping_sitting_possibility">Seating Available</string>
+    <string name="location_camping_grill_possibility">Grilling Allowed</string>
 
     <!-- Swimming -->
     <string name="location_swimming_indoor">Indoor</string>
+    <string name="location_swimming_jump_spot">Jump Spot</string>
 
-    <!-- Party -->
-    <string name="location_party_entry_fee">Entry Fee</string>
+    <!-- Sightseeing & Party -->
+    <string name="location_sightseeing_entry_fee">Entry Fee</string>
 
     <!-- Food -->
-    <string name="location_food_type">Cuisine</string>
-    <string name="location_food_all_you_can_eat">All You Can Eat</string>
-
-    <string name="location_food_type_kebab">Kebab</string>
-    <string name="location_food_type_pizza">Pizza</string>
-    <string name="location_food_type_greek">Greek</string>
-    <string name="location_food_type_chinese">Chinese</string>
-    <string name="location_food_type_asian">Asian</string>
-    <string name="location_food_type_austrian">Austrian</string>
-    <string name="location_food_type_burger">Burger</string>
-    <string name="location_food_type_other">Other</string>
+    <string name="location_food_all_you_can_eat">All you can eat</string>
+    <string name="location_food_kebab_price">Kebab Price</string>
+    <string name="location_food_margarita_price">Margherita Price</string>
+    <string name="location_food_cheeseburger_price">Cheeseburger Price</string>
+    <string name="location_food_beer_price">Beer Price</string>
+    <string name="location_food_cuisine">Cuisine</string>
 
 
 

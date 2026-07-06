@@ -124,7 +124,7 @@ fun MemberSelector(
                             )
                         }
                         Text(
-                            text = user.name,
+                            text = user.displayName,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             textAlign = TextAlign.Center,

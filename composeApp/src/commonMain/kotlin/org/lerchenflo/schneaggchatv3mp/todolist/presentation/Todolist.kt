@@ -100,9 +100,7 @@ fun TodolistScreen(
             PullToRefreshBox( // needs experimental opt in
                 isRefreshing = false,
                 onRefresh = { viewModel.refresh() }, // Trigger refresh
-                indicator = {
-                    null //Überschrieba dassa garned kut
-                }
+                indicator = {} //Remove refresh indicator
             ) {
 
                 //Do vlt no sortiera

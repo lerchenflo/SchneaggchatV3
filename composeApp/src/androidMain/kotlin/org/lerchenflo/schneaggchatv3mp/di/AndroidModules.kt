@@ -65,7 +65,11 @@ val androidPictureManagerModule = module {
 
 val androidPermissionManagerModule = module {
     single { PermissionManager(androidContext()) }
+    single { org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService(androidContext()) }
+    single { org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService(androidContext()) }
 }
+
+
 
 val androidAudioManagerModule = module {
     single { AudioManager(androidContext()) }
@@ -80,5 +84,5 @@ val androidLanguageManagerModule = module {
 }
 
 val androidNotifierModule = module {
-    single { Notifier(androidContext()) }
+    single { Notifier(androidContext(), get()) }
 }
