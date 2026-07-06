@@ -708,13 +708,6 @@
     <string name="location_camping_sitting_possibility">Seating Available</string>
     <string name="location_camping_grill_possibility">Grilling Allowed</string>
 
-    <!-- App Icon -->
-    <string name="app_icon">App Icon</string>
-    <string name="app_icon_desc">Choose the app icon variant</string>
-    <string name="icon_default">Default</string>
-    <string name="icon_dark">Dark</string>
-    <string name="app_icon_restart_info">Switching the app icon will restart the app and remove its shortcut from the home screen</string>
-
     <!-- Swimming -->
     <string name="location_swimming_indoor">Indoor</string>
     <string name="location_swimming_jump_spot">Jump Spot</string>
