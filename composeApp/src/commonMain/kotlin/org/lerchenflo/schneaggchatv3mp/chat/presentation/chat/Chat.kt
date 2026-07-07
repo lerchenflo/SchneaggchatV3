@@ -98,7 +98,6 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
@@ -354,6 +353,9 @@ fun ChatScreen(
                         val dividerIndex = displayItems.indexOfFirst { it is MessageDisplayItem.NewMessagesDivider }
                         if (dividerIndex != -1) {
                             listState.scrollToItem(dividerIndex)
+                            // Nudge the divider up from the very bottom edge towards the center of the screen.
+                            val viewportHeight = listState.layoutInfo.viewportSize.height
+                            listState.scrollToItem(dividerIndex, scrollOffset = -viewportHeight / 2)
                         } else {
                             listState.animateScrollToItem(0, scrollOffset = 2)
                         }
@@ -365,6 +367,7 @@ fun ChatScreen(
             }
 
             val scope = rememberCoroutineScope()
+
 
             // Id of the message that should briefly glow after jumping to it via a reply preview
             var highlightedMessageId by remember { mutableStateOf<String?>(null) }

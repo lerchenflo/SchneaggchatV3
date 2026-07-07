@@ -141,7 +141,7 @@ data class FriendLocationSnapshotEntry(
 
 suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
-    println("handling socket connection message: $message")
+    //println("handling socket connection message: $message")
 
     val appRepository = KoinPlatform.getKoin().get<AppRepository>()
     val userRepository = KoinPlatform.getKoin().get<UserRepository>()

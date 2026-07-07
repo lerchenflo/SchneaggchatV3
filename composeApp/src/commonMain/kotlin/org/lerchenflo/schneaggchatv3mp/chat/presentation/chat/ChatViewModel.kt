@@ -86,7 +86,6 @@ class ChatViewModel(
 ): ViewModel() {
 
     companion object {
-        private const val INITIAL_MESSAGE_COUNT = 12
         private const val MAX_VOICE_MSG_TIME = 2*60*1000L
     }
 
@@ -136,11 +135,6 @@ class ChatViewModel(
     fun updateReplyMessage(message: Message?) {
         replyMessage = message
     }
-
-    private val _isLoadingOlderMessages = MutableStateFlow(false)
-    val isLoadingOlderMessages: StateFlow<Boolean> = _isLoadingOlderMessages
-
-    private val _shouldLoadAllMessages = MutableStateFlow(false)
 
     private var newMessagesBoundaryComputed = false
     private val newMessagesBoundaryId = MutableStateFlow<String?>(null)
@@ -584,53 +578,25 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
 
     /**
      * Transform message flow to display items with pre-resolved sender names.
-     * Initially loads only recent messages, then switches to all messages.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     private val messageDisplayItemsFlow: Flow<List<MessageDisplayItem>> =
         globalViewModel.selectedChat
             .flatMapLatest { chat ->
-                // Combine the load-all trigger with messages
                 combine(
-                    _shouldLoadAllMessages,
+                    messageRepository.getMessagesByUserIdFlow(
+                        userId = chat.id,
+                        gruppe = chat.isGroup
+                    ),
                     userRepository.getAllUsersFlow(),
                     if (chat.isGroup) {
                         flowOf(groupRepository.getGroupMembers(chat.id))
                     } else {
                         flowOf(emptyList())
                     }
-                ) { shouldLoadAll, users, groupMembers ->
-                    Triple(shouldLoadAll, users, groupMembers)
-                }.flatMapLatest { (shouldLoadAll, users, groupMembers) ->
-                    // Choose which message flow to use based on loading state
-                    val messagesFlow = if (shouldLoadAll) {
-                        messageRepository.getMessagesByUserIdFlow(
-                            userId = chat.id,
-                            gruppe = chat.isGroup
-                        )
-                    } else {
-                        messageRepository.getMessagesByUserIdFlowPaged(
-                            userId = chat.id,
-                            gruppe = chat.isGroup,
-                            pageSize = INITIAL_MESSAGE_COUNT,
-                            offset = 0
-                        )
-                    }
-
-                    // Combine with users and group members
-                    combine(
-                        messagesFlow,
-                        flowOf(users),
-                        flowOf(groupMembers)
-                    ) { messages, userList, groupList ->
-                        // Mark loading as complete once all messages are loaded
-                        if (shouldLoadAll && _isLoadingOlderMessages.value) {
-                            _isLoadingOlderMessages.value = false
-                        }
-
-                        captureNewMessagesBoundary(messages)
-                        Triple(messages, userList, groupList)
-                    }
+                ) { messages, userList, groupList ->
+                    captureNewMessagesBoundary(messages)
+                    Triple(messages, userList, groupList)
                 }.flowOn(Dispatchers.Default)
                     .flatMapLatest { (messages, users, groupMembers) ->
                         flowOf(processMessages(messages, users, groupMembers, newMessagesBoundaryId.value))
@@ -779,14 +745,6 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                         updateSendContent(SendMessageContent.TextContent(TextFieldValue(value)))
                     }
                 }
-        }
-
-        // Trigger background loading after a short delay
-        viewModelScope.launch {
-            delay(700) // Give initial messages time to load and render
-            _isLoadingOlderMessages.value = true
-            _shouldLoadAllMessages.value = true
-            println("loading all messages")
         }
 
 
