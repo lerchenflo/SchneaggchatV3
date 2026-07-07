@@ -178,7 +178,7 @@ val sharedmodule = module{
     factory { MorseViewModel(get()) }
 
     viewModelOf(::SchneaggaHusViewmodel)
-    factory { SchneaggaHusViewmodel() }
+    factory { SchneaggaHusViewmodel(get()) }
     
     viewModelOf(::PlayerSelectorViewModel)
     factory { PlayerSelectorViewModel(get(), get()) }

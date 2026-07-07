@@ -114,11 +114,12 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
 import schneaggchatv3mp.composeapp.generated.resources.error_invalid_credentials
 import schneaggchatv3mp.composeapp.generated.resources.groupsync
-import schneaggchatv3mp.composeapp.generated.resources.mediasync
 import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
 import schneaggchatv3mp.composeapp.generated.resources.mapsync
+import schneaggchatv3mp.composeapp.generated.resources.mediasync
 import schneaggchatv3mp.composeapp.generated.resources.messagesync
 import schneaggchatv3mp.composeapp.generated.resources.usersync
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
 
 class AppRepository(
@@ -248,11 +249,11 @@ class AppRepository(
      */
     suspend fun deleteAllAppData(){
 
-        preferencemanager.saveLastStartedVersion("")
+        preferencemanager.saveLastStartedVersion("") //Show Changelog on next startup
 
-        database.allDatabaseDao().clearAll()
-        KoinPlatform.getKoin().get<Notifier>().removeToken()
-        SessionCache.logout()
+        database.allDatabaseDao().clearAll() //Drop all database tables
+        KoinPlatform.getKoin().get<Notifier>().removeToken() //Remove notificationTOken
+        SessionCache.logout() //Remove saved credentials from cache, but not from storage
     }
 
     suspend fun logout(){
@@ -260,16 +261,18 @@ class AppRepository(
 
         //Clear access tokens
 
-        preferencemanager.clearAll()
-        KoinPlatform.getKoin().get<HttpClient>(qualifier = named(HTTPCLIENTTYPE.AUTHENTICATED)).clearAuthTokens()
+        preferencemanager.clearAll() //Delete all app data to force login again
+        KoinPlatform.getKoin().get<HttpClient>(qualifier = named(HTTPCLIENTTYPE.AUTHENTICATED)).clearAuthTokens() //Remove cached access tokens
 
-        SessionCache.logout()
-        KoinPlatform.getKoin().get<Notifier>().removeToken()
+        SessionCache.logout() //Remove cached credentials (Userid)
+        KoinPlatform.getKoin().get<Notifier>().removeToken() //Remove notification token
+
+
         SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
     }
 
     /**
-     * Test the endpoint
+     * Test the server endpoint
      */
     suspend fun testServer(serverUrl: String = BASE_SERVER_URL) : Boolean {
         println("Testing server: $serverUrl")
@@ -339,7 +342,7 @@ class AppRepository(
 
     suspend fun dataSync() {
 
-        val userId = SessionCache.requireLoggedIn() ?: return
+        SessionCache.requireLoggedIn() ?: return
 
         if (dataSyncLock.isLocked) {
             println("Datasync started but already running")
@@ -1010,7 +1013,7 @@ class AppRepository(
      */
     suspend fun userIdSync() {
 
-        val userId = SessionCache.requireLoggedIn() ?: return
+        SessionCache.requireLoggedIn() ?: return
 
         val localusers = userRepository.getuserchangeid()
 
@@ -1557,7 +1560,7 @@ class AppRepository(
                 while (sendMessageLock.isLocked) {
                     //If the message sending lock is active, do not send offline messages
                     //println("OFFLINE MESSAGE SENDING: Sending in progress, waiting for lock")
-                    delay(5)
+                    delay(15.milliseconds)
                 }
 
 
