@@ -72,6 +72,22 @@ class SchneaggmapViewModel(
 
                 _state.update { it.copy(enabledTypes = updated) }
             }
+            is SchneaggmapAction.ToggleGroup -> {
+                val enabled = state.value.enabledTypes
+                val updated = if (enabled.containsAll(action.group.types)) {
+                    enabled - action.group.types.toSet()
+                } else {
+                    enabled + action.group.types
+                }
+
+                _state.update { it.copy(enabledTypes = updated) }
+            }
+            is SchneaggmapAction.ToggleGroupExpanded -> {
+                val expanded = state.value.expandedFilterGroups
+                val updated = if (action.group in expanded) expanded - action.group else expanded + action.group
+
+                _state.update { it.copy(expandedFilterGroups = updated) }
+            }
             is SchneaggmapAction.SelectEntry -> _state.update {
                 it.copy(selectedEntry = action.entry, isFilterDropdownVisible = false)
             }

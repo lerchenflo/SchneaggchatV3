@@ -8,6 +8,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
 
 data class Platform(
     val x: Float,
@@ -24,7 +30,8 @@ data class GameState(
     val score: Int = 0,
     val isGameOver: Boolean = false,
     val isGameStarted: Boolean = false,
-    val gameSpeed: Float = 2f
+    val gameSpeed: Float = 2f,
+    val elapsedMillis: Long = 0L
 )
 
 sealed class GameAction {
@@ -33,19 +40,21 @@ sealed class GameAction {
     object ResetGame : GameAction()
 }
 
-class TowerstackViewModel : ViewModel() {
-    
+class TowerstackViewModel(
+    private val gameHighscoreRepository: GameHighscoreRepository,
+) : ViewModel() {
+
     private val _gameState = MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState.asStateFlow()
-    
+
     private var gameLoopJob: kotlinx.coroutines.Job? = null
+    private var gameStartTime = 0L
+    private var currentDifficulty = GameDifficulty.MEDIUM
     
     companion object {
         private const val SCREEN_WIDTH = 300f
-        private const val SCREEN_HEIGHT = 500f
         private const val PLATFORM_WIDTH = 80f
         private const val PLATFORM_HEIGHT = 15f
-        private const val INITIAL_Y = 400f
         private const val BASE_Y = 450f
     }
     
@@ -82,13 +91,20 @@ class TowerstackViewModel : ViewModel() {
             direction = 1f
         )
         
+        currentDifficulty = GameDifficultySelection.selected
+        gameStartTime = Clock.System.now().toEpochMilliseconds()
         _gameState.value = currentState.copy(
             platforms = listOf(basePlatform),
             currentPlatform = firstMovingPlatform,
             isGameStarted = true,
-            isGameOver = false
+            isGameOver = false,
+            gameSpeed = when (currentDifficulty) {
+                GameDifficulty.LOW -> 1.5f
+                GameDifficulty.MEDIUM -> 2f
+                GameDifficulty.HIGH -> 3f
+            }
         )
-        
+
         startGameLoop()
     }
     
@@ -97,7 +113,10 @@ class TowerstackViewModel : ViewModel() {
         gameLoopJob = viewModelScope.launch {
             while (isActive) {
                 updateMovingPlatform()
-                delay(16) // ~60 FPS
+                _gameState.value = _gameState.value.copy(
+                    elapsedMillis = Clock.System.now().toEpochMilliseconds() - gameStartTime
+                )
+                delay(16.milliseconds) // ~60 FPS
             }
         }
     }
@@ -185,6 +204,21 @@ class TowerstackViewModel : ViewModel() {
     private fun gameOver() {
         gameLoopJob?.cancel()
         _gameState.value = _gameState.value.copy(isGameOver = true)
+        submitScore()
+    }
+
+    private fun submitScore() {
+        val finalScore = _gameState.value.score.toLong()
+        val finalTime = Clock.System.now().toEpochMilliseconds() - gameStartTime
+
+        viewModelScope.launch {
+            gameHighscoreRepository.submitScore(
+                game = GameId.TOWERSTACK,
+                difficulty = currentDifficulty,
+                score = finalScore,
+                timeMillis = finalTime,
+            )
+        }
     }
     
     private fun resetGame() {

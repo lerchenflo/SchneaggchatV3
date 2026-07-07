@@ -21,27 +21,32 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.highscores_not_implemented_warning
+import schneaggchatv3mp.composeapp.generated.resources.games_without_highscores
+import schneaggchatv3mp.composeapp.generated.resources.show_highscores
 import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 
 @Composable
@@ -53,44 +58,63 @@ fun GameSelectorScreen(
 ){
     val dev = SessionCache.requireLoggedIn()?.developer ?: return
 
+    var highscoreGame by remember { mutableStateOf<GameId?>(null) }
+
     Column{
         ActivityTitle(
             title = stringResource(Res.string.tools_and_games),
             onBackClick = onBackClick
         )
 
-        Box(
-            modifier = Modifier
-                .padding(4.dp)
-                .background(
-                    color = Color(red = 255, green = 165, blue = 0),
-                    shape = RoundedCornerShape(15.dp)
-                )
-                .align(Alignment.CenterHorizontally)
-        ) {
-            Text(
-                text = stringResource(Res.string.highscores_not_implemented_warning),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(4.dp)
-            )
-        }
+
+        val visibleGames = gamesList.filter { !it.inDev || dev }
+        val (leaderboardGames, otherGames) = visibleGames.partition { it.gameId != null }
 
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
         ) {
-            items(gamesList) { game ->
-                if (game.inDev) {
-                    if (dev) {
-                        GameElementView(
-                            icon = game.icon,
-                            text = game.title,
-                            subtext = game.description,
-                            onClick = { onGameSelection(game.route) }
-                        )
+            item {
+                DifficultySelector(
+                    selected = GameDifficultySelection.selected,
+                    onSelect = { GameDifficultySelection.selected = it },
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+            items(leaderboardGames) { game ->
+                GameElementView(
+                    icon = game.icon,
+                    text = game.title,
+                    subtext = game.description,
+                    onClick = { onGameSelection(game.route) },
+                    rightSideIcon = {
+                        IconButton(onClick = { highscoreGame = game.gameId }) {
+                            Icon(
+                                imageVector = Icons.Default.EmojiEvents,
+                                contentDescription = stringResource(Res.string.show_highscores),
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                     }
-                } else {
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            if (otherGames.isNotEmpty()) {
+                item {
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                    Text(
+                        text = stringResource(Res.string.games_without_highscores),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+                }
+
+                items(otherGames) { game ->
                     GameElementView(
                         icon = game.icon,
                         text = game.title,
@@ -99,10 +123,17 @@ fun GameSelectorScreen(
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
-
                 }
             }
         }
+    }
+
+    highscoreGame?.let { game ->
+        HighscoresDialog(
+            game = game,
+            initialDifficulty = GameDifficultySelection.selected,
+            onDismiss = { highscoreGame = null }
+        )
     }
 }
 

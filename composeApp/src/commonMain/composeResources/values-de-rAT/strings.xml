@@ -5,7 +5,7 @@
     <string name="profile_picture">Profilbild</string>
     <string name="schneaggmap">Schneaggmap</string>
     <string name="settings">Einstellunga</string>
-    <string name="tools_and_games">Blödsinn</string>
+    <string name="tools_and_games">Spiele</string>
     <string name="filter">Sortiera</string>
     <string name="search_friend">Suach in dina Freunde ...</string>
     <string name="no_status">kuan Status</string>
@@ -48,7 +48,8 @@
 
     <string name="email">Email</string>
     <string name="invalid_email">Du musch a richtige email agia</string>
-    <string name="email_provider_warning">Verwend ned so a Blödsinn Email sunsch wird din Account ghackt und du kannsch di Passwort num zrucksetza.</string>    <string name="sign_up">I hob no kuan Account</string>
+    <string name="email_provider_warning">Verwend ned so a Blödsinn Email sunsch wird din Account ghackt und du kannsch di Passwort num zrucksetza.</string>
+    <string name="sign_up">I hob no kuan Account</string>
     <string name="loginsubtitle">Die beste App sowieso, mit lokala Sproch und loft überall</string>
     <string name="create_account">Account erstella</string>
     <string name="create_account_subtitle">beitreata</string>

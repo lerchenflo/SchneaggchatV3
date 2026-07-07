@@ -61,6 +61,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
+import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameScreenElement
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
@@ -629,8 +630,28 @@ fun App() {
 
                             val gamesList = listOf<GameScreenElement>(
                                 GameScreenElement(
+                                    title = "Tetris",
+                                    icon = Icons.Default.Menu, // Placeholder
+                                    route = Route.Games.Tetris,
+                                    inDev = false,
+                                    gameId = GameId.TETRIS
+                                ),
+                                GameScreenElement(
+                                    title = stringResource(Res.string.games_stack_tower),
+                                    icon = Icons.Default.Menu,
+                                    route = Route.Games.TowerStack,
+                                    inDev = false,
+                                    gameId = GameId.TOWERSTACK
+                                ),
+                                GameScreenElement(
+                                    title = stringResource(Res.string.games_morse_title),
+                                    icon = Icons.Default.GraphicEq,
+                                    route = Route.Games.Morse,
+                                    inDev = false,
+                                    gameId = GameId.MORSE
+                                 ),
+                                 GameScreenElement(
                                     title = "schneaggahus",
-                                    description = "asda",
                                     icon = Icons.Default.House,
                                     route = Route.Games.SchneaggaHus,
                                     inDev = true
@@ -647,30 +668,15 @@ fun App() {
                                     route = Route.Games.Undercover,
                                     inDev = false
                                 ),
-                                GameScreenElement(
-                                    title = stringResource(Res.string.games_stack_tower),
-                                    icon = Icons.Default.Menu, //
-                                    route = Route.Games.TowerStack,
-                                    inDev = true
-                                ),
+
                                 GameScreenElement(
                                     title = "Yahtzee",
                                     icon = Icons.Default.Star,
                                     route = Route.Games.YatziSetup,
                                     inDev = false
                                 ),
-                                GameScreenElement(
-                                    title = "Tetris",
-                                    icon = Icons.Default.Menu, // Placeholder
-                                    route = Route.Games.Tetris,
-                                    inDev = false
-                                ),
-                                GameScreenElement(
-                                    title = stringResource(Res.string.games_morse_title),
-                                    icon = Icons.Default.GraphicEq,
-                                    route = Route.Games.Morse,
-                                    inDev = true
-                                ),
+
+
 
                             )
                             NavDisplay(

@@ -815,7 +815,7 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
             audioManager.initializeAudio()
         }
 
-        println("ChatViewModel Incoming Data: ${IncomingDataManager.sharedText.value}")
+        //println("ChatViewModel Incoming Data: ${IncomingDataManager.sharedText.value}")
         if(IncomingDataManager.isNewDataAvailable()){
             if (IncomingDataManager.isNewImageDataAvailable()) {
                 val sharedImages = IncomingDataManager.sharedImages.value ?: emptyList()

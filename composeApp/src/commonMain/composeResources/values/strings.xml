@@ -574,7 +574,6 @@
 
 
 
-    <string name="highscores_not_implemented_warning">Public highscores are not yet implemented!</string>
     <string name="audio_playback_on_desktop_not_supported_yet">Audio playback is not supported on Desktop yet</string>
 
 
@@ -625,6 +624,29 @@
     <string name="yatzi_roll_dice">Roll Dice, %1$d left</string>
     <string name="yatzi_roll_again">Roll Again, %1$d left</string>
 
+    <!-- Games: shared flow -->
+    <string name="game_tap_anywhere_to_start">Tap anywhere to start</string>
+    <string name="game_stop">Stop game</string>
+    <string name="game_exit">Exit</string>
+
+    <!-- Games: Tetris -->
+    <string name="games_tetris_title">Tetris</string>
+    <string name="games_tetris_score">Score: %1$d</string>
+    <string name="games_tetris_pause_resume">Pause/Resume</string>
+    <string name="games_tetris_restart">Restart</string>
+    <string name="games_tetris_instructions">Swipe left or right to move the falling piece, tap to rotate it, swipe down for a faster drop and long-press to drop instantly.\n\nComplete full rows to score points — the game speeds up over time!</string>
+
+    <!-- Games: Tower Stack -->
+    <string name="games_tower_stack_tap_to_start">Tap to Start</string>
+    <string name="games_tower_stack_instructions">Stack the platforms as high as you can!\n\nTap to place each platform.\nPerfect alignment increases your score.\nSpeed increases every 5 points!</string>
+    <string name="games_tower_stack_score">Score</string>
+    <string name="games_tower_stack_speed_up">⚡ Speed Up!</string>
+    <string name="games_tower_stack_tap_to_place">👆 Tap to place!</string>
+
+    <!-- Games: Morse -->
+    <string name="games_morse_clear">Clear</string>
+    <string name="games_morse_instructions">Press the big button to send morse signals: a short press is a dot (·), a long press is a dash (−). The tree shows which letter your code leads to.\n\nType the shown text in morse code — each correct letter scores points, after 3 mistakes the game is over.</string>
+
     <!-- Recap -->
     <string name="recap_your_year">Your year</string>
     <string name="recap_using_schneaggchat_in_numbers">using Schneaggchat in numbers</string>
@@ -669,6 +691,31 @@
     <string name="schneaggmap_user_last_online_label">Last online</string>
     <string name="schneaggmap_user_distance_label">Distance</string>
     <string name="schneaggmap_user_online">Online</string>
+
+    <!-- Game highscores -->
+    <string name="highscores_title">Highscores</string>
+    <string name="highscores_error">Could not load highscores</string>
+    <string name="highscores_empty">No highscores yet</string>
+    <string name="game_over">Game over!</string>
+    <string name="game_over_final_score">Final score: %1$d</string>
+    <string name="game_restart">Restart</string>
+    <string name="show_highscores">Show highscores</string>
+    <string name="difficulty_low">Low</string>
+    <string name="difficulty_medium">Medium</string>
+    <string name="difficulty_high">High</string>
+    <string name="games_without_highscores">Games without highscores</string>
+
+    <!-- Morse challenge -->
+    <string name="morse_challenge_start">Start challenge</string>
+    <string name="morse_challenge_stop">Exit challenge</string>
+    <string name="morse_challenge_score">Score: %1$d</string>
+    <string name="morse_challenge_type_text">Type the text in morse code:</string>
+
+    <!-- Location Groups -->
+    <string name="location_group_street">Street</string>
+    <string name="location_group_nature_activities">Nature &amp; Activities</string>
+    <string name="location_group_social_entertainment">Social &amp; Entertainment</string>
+    <string name="location_group_food">Food</string>
 
     <!-- Location Types -->
     <string name="location_type_radar">Radar</string>
