@@ -106,7 +106,7 @@ sealed interface SocketConnectionMessage {
     /** INBOUND: all currently-online friends, pushed once when we connect (initial load). */
     @Serializable
     @SerialName("friendonlinestatussnapshot")
-    data class FriendOnlineStatusSnapshot(val onlineUserIds: List<String> = emptyList()) : SocketConnectionMessage
+    data class FriendOnlineStatusSnapshot(val onlineFriendIds: List<String> = emptyList()) : SocketConnectionMessage
 }
 
 /** Wire shape of a friend's live location, pushed over the WebSocket. */
@@ -412,7 +412,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
             //Initial snapshot of all currently-online friends, pushed once on connect
             is SocketConnectionMessage.FriendOnlineStatusSnapshot -> {
-                userRepository.setOnlineFriendIds(socketMessage.onlineUserIds.toSet())
+                userRepository.setOnlineFriendIds(socketMessage.onlineFriendIds.toSet())
             }
 
             //Outbound-only - we send this ourselves, the server never echoes it back

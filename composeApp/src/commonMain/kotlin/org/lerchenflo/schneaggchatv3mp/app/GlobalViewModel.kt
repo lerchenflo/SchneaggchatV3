@@ -3,15 +3,19 @@ package org.lerchenflo.schneaggchatv3mp.app
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -55,6 +59,62 @@ class GlobalViewModel(
 
         NotificationManager.initialize()
 
+
+        viewModelScope.launch {
+            AppLifecycleManager.appResumedEvent
+                .combine(SessionCache.onlineFlow.asFlow()) { event, online ->
+                    if (online) event else null
+                }
+                .filterNotNull()
+                .combine(SessionCache.authState.asFlow()) { event, loggedin ->
+                    if (loggedin is SessionCache.AuthState.LoggedIn) event else null
+                }
+                .filterNotNull()
+                .collect {
+                    //App resumed event, only if the user is logged in and online
+
+                    val ownId = SessionCache.requireLoggedIn()?.userId ?: return@collect
+
+                    if (SessionCache.isLoggedIn()) {
+
+                        startSocketConnection()
+                        updateLocationTracking()
+
+                        //println("App resumed and logged in, triggering sync...")
+                        appRepository.sendOfflineMessages(ownId)
+                        appRepository.dataSync()
+
+                        //On resume clear all error notis
+                        NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)
+
+                        //println("Incoming Data from app resume: ${IncomingDataManager.sharedText.value}")
+                        if(IncomingDataManager.isNewDataAvailable()){
+                            navigator.navigate(Route.MessageChatSelector) // todo build backstack?
+                        }
+
+
+                    }
+                }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /*
+
         // Sync when app is resumed
         viewModelScope.launch {
             AppLifecycleManager.appResumedEvent.collectLatest {
@@ -80,12 +140,21 @@ class GlobalViewModel(
             }
         }
 
+         */
+
         viewModelScope.launch {
             while (true) {
 
                 if (SessionCache.isOnline()) {
                     if (!socketConnectionManager.isConnectedNow()) {
-                        startSocketConnection()
+
+                        if (appVersion.isDesktop()) { //On desktop always try to hold the socket connection for notifications
+                            startSocketConnection()
+                        } else { //On Mobile only connect if the app is in the foreground
+                            if (AppLifecycleManager.isAppInForeground) {
+                                startSocketConnection()
+                            }
+                        }
                     }
 
                     if (SessionCache.isLoggedIn()) {
@@ -257,8 +326,8 @@ class GlobalViewModel(
         _selectedChatTarget.value = ChatTarget(null, false)
     }
 
-    private var permissionRequestJob: kotlinx.coroutines.Job? = null
-    private var locationTrackingJob: kotlinx.coroutines.Job? = null
+    private var permissionRequestJob: Job? = null
+    private var locationTrackingJob: Job? = null
 
     private fun startLocationTracking() {
         // Desktop has no GPS and can't request the permission - never touch location tracking
