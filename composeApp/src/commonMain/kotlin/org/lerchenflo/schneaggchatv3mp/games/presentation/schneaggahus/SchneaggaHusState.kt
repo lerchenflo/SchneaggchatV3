@@ -2,8 +2,6 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus
 
 import androidx.compose.ui.graphics.Color
 
-const val SCHNEAGGHUS_GRID_WIDTH = 11
-const val SCHNEAGGHUS_GRID_HEIGHT = 8
 const val SCHNEAGGHUS_MAX_LIVES = 3
 
 sealed interface SchneaggaHusAction {
@@ -19,9 +17,13 @@ data class SchneaggaHusState(
     val score: Int = 0,
     val lives: Int = SCHNEAGGHUS_MAX_LIVES,
     val elapsedMillis: Long = 0L,
+    val gridWidth: Int = 11,
+    val gridHeight: Int = 8,
+    val spawn: Position = Position(5, 0),
+    val firstTrack: Position = Position(5, 1),
     val schneaggList: List<Schneagg> = emptyList(),
-    val schneagghusList: List<Schneaggahus> = SCHNEAGGHUS_HOUSES,
-    val trackList: List<TrackTile> = SCHNEAGGHUS_TRACK,
+    val schneagghusList: List<Schneaggahus> = emptyList(),
+    val trackList: List<TrackTile> = emptyList(),
 )
 
 data class Position(
@@ -73,42 +75,26 @@ enum class DIRECTION {
     NORTH,
     EAST,
     SOUTH,
-    WEST,
+    WEST;
+
+    fun opposite(): DIRECTION = when (this) {
+        NORTH -> SOUTH
+        EAST -> WEST
+        SOUTH -> NORTH
+        WEST -> EAST
+    }
+
+    fun turnLeft(): DIRECTION = when (this) {
+        NORTH -> WEST
+        WEST -> SOUTH
+        SOUTH -> EAST
+        EAST -> NORTH
+    }
+
+    fun turnRight(): DIRECTION = when (this) {
+        NORTH -> EAST
+        EAST -> SOUTH
+        SOUTH -> WEST
+        WEST -> NORTH
+    }
 }
-
-// Level layout: one spawn point, three switches, four houses.
-val SCHNEAGGHUS_SPAWN = Position(5, 0)
-val SCHNEAGGHUS_FIRST_TRACK = Position(5, 1)
-
-val SCHNEAGGHUS_HOUSES = listOf(
-    Schneaggahus(Position(2, 7), Color(0xFFEF5350)), // red
-    Schneaggahus(Position(5, 4), Color(0xFF42A5F5)), // blue
-    Schneaggahus(Position(8, 7), Color(0xFF66BB6A)), // green
-    Schneaggahus(Position(10, 4), Color(0xFFFFCA28)), // yellow
-)
-
-val SCHNEAGGHUS_TRACK = listOf(
-    TrackTile(Position(5, 1), DIRECTION.NORTH, listOf(DIRECTION.SOUTH)),
-    TrackTile(Position(5, 2), DIRECTION.NORTH, listOf(DIRECTION.WEST, DIRECTION.EAST)),
-
-    // West branch towards the red and blue houses
-    TrackTile(Position(4, 2), DIRECTION.EAST, listOf(DIRECTION.WEST)),
-    TrackTile(Position(3, 2), DIRECTION.EAST, listOf(DIRECTION.WEST)),
-    TrackTile(Position(2, 2), DIRECTION.EAST, listOf(DIRECTION.SOUTH)),
-    TrackTile(Position(2, 3), DIRECTION.NORTH, listOf(DIRECTION.SOUTH)),
-    TrackTile(Position(2, 4), DIRECTION.NORTH, listOf(DIRECTION.SOUTH, DIRECTION.EAST)),
-    TrackTile(Position(2, 5), DIRECTION.NORTH, listOf(DIRECTION.SOUTH)),
-    TrackTile(Position(2, 6), DIRECTION.NORTH, listOf(DIRECTION.SOUTH)),
-    TrackTile(Position(3, 4), DIRECTION.WEST, listOf(DIRECTION.EAST)),
-    TrackTile(Position(4, 4), DIRECTION.WEST, listOf(DIRECTION.EAST)),
-
-    // East branch towards the green and yellow houses
-    TrackTile(Position(6, 2), DIRECTION.WEST, listOf(DIRECTION.EAST)),
-    TrackTile(Position(7, 2), DIRECTION.WEST, listOf(DIRECTION.EAST)),
-    TrackTile(Position(8, 2), DIRECTION.WEST, listOf(DIRECTION.SOUTH)),
-    TrackTile(Position(8, 3), DIRECTION.NORTH, listOf(DIRECTION.SOUTH)),
-    TrackTile(Position(8, 4), DIRECTION.NORTH, listOf(DIRECTION.SOUTH, DIRECTION.EAST)),
-    TrackTile(Position(8, 5), DIRECTION.NORTH, listOf(DIRECTION.SOUTH)),
-    TrackTile(Position(8, 6), DIRECTION.NORTH, listOf(DIRECTION.SOUTH)),
-    TrackTile(Position(9, 4), DIRECTION.WEST, listOf(DIRECTION.EAST)),
-)

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -82,8 +81,10 @@ fun SchneaggaHusScreenRoot(
                 state = state,
                 onSwitchClick = { viewmodel.onAction(SchneaggaHusAction.OnSwitchClick(it)) },
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(horizontal = 8.dp, vertical = 8.dp)
+                    .align(Alignment.Center)
+                    .padding(horizontal = 8.dp)
+                    // Keep the board clear of the HUD and the lives display at the top
+                    .padding(top = 72.dp, bottom = 8.dp)
             )
 
             if (isStarted) {
@@ -145,14 +146,13 @@ private fun SchneaggaHusBoard(
     val schneaggIcon = imageResource(Res.drawable.icon_schneagg_alternative)
 
     BoxWithConstraints(
-        modifier = modifier
-            .fillMaxWidth()
-            .aspectRatio(SCHNEAGGHUS_GRID_WIDTH.toFloat() / SCHNEAGGHUS_GRID_HEIGHT)
+        // Largest board that fits both the available width and height
+        modifier = modifier.aspectRatio(state.gridWidth.toFloat() / state.gridHeight)
     ) {
-        val tileSize = maxWidth / SCHNEAGGHUS_GRID_WIDTH
+        val tileSize = maxWidth / state.gridWidth
 
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val tilePx = size.width / SCHNEAGGHUS_GRID_WIDTH
+            val tilePx = size.width / state.gridWidth
 
             fun tileCenter(position: Position) =
                 Offset((position.x + 0.5f) * tilePx, (position.y + 0.5f) * tilePx)
@@ -169,10 +169,10 @@ private fun SchneaggaHusBoard(
 
             // Grid
             val gridColor = colors.outlineVariant.copy(alpha = 0.4f)
-            for (i in 0..SCHNEAGGHUS_GRID_WIDTH) {
+            for (i in 0..state.gridWidth) {
                 drawLine(gridColor, Offset(i * tilePx, 0f), Offset(i * tilePx, size.height))
             }
-            for (j in 0..SCHNEAGGHUS_GRID_HEIGHT) {
+            for (j in 0..state.gridHeight) {
                 drawLine(gridColor, Offset(0f, j * tilePx), Offset(size.width, j * tilePx))
             }
 
@@ -205,11 +205,11 @@ private fun SchneaggaHusBoard(
             }
 
             // Spawn point
-            val spawnCenter = tileCenter(SCHNEAGGHUS_SPAWN)
+            val spawnCenter = tileCenter(state.spawn)
             drawLine(
                 color = colors.outline,
                 start = spawnCenter,
-                end = sideMiddle(SCHNEAGGHUS_SPAWN, DIRECTION.SOUTH),
+                end = sideMiddle(state.spawn, DIRECTION.SOUTH),
                 strokeWidth = trackWidth,
                 cap = StrokeCap.Round
             )

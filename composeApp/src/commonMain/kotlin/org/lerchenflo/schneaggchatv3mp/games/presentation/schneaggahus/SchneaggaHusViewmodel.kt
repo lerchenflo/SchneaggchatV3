@@ -21,7 +21,7 @@ class SchneaggaHusViewmodel(
     private val gameHighscoreRepository: GameHighscoreRepository,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(SchneaggaHusState())
+    private val _state = MutableStateFlow(baseState(generateSchneaggaHusMap(GameDifficultySelection.selected)))
     val state = _state.asStateFlow()
 
     private var gameLoopJob: Job? = null
@@ -54,15 +54,25 @@ class SchneaggaHusViewmodel(
         }
         gameStartTime = Clock.System.now().toEpochMilliseconds()
         nextSchneaggId = 0
-        _state.value = SchneaggaHusState(isPlaying = true)
+        // Every run gets a freshly generated map sized for the selected difficulty
+        _state.value = baseState(generateSchneaggaHusMap(currentDifficulty)).copy(isPlaying = true)
         startGameLoop()
     }
 
     /** Ends the current run without submitting a score and returns to the start screen. */
     private fun stopGame() {
         gameLoopJob?.cancel()
-        _state.value = SchneaggaHusState()
+        _state.value = baseState(generateSchneaggaHusMap(GameDifficultySelection.selected))
     }
+
+    private fun baseState(map: SchneaggaHusMap) = SchneaggaHusState(
+        gridWidth = map.gridWidth,
+        gridHeight = map.gridHeight,
+        spawn = map.spawn,
+        firstTrack = map.firstTrack,
+        schneagghusList = map.houseList,
+        trackList = map.trackList,
+    )
 
     private fun startGameLoop() {
         gameLoopJob?.cancel()
@@ -93,11 +103,12 @@ class SchneaggaHusViewmodel(
     }
 
     private fun spawnSchneagg() {
+        val current = _state.value
         val schneagg = Schneagg(
             id = nextSchneaggId++,
-            color = SCHNEAGGHUS_HOUSES.random().color,
-            fromTile = SCHNEAGGHUS_SPAWN,
-            toTile = SCHNEAGGHUS_FIRST_TRACK,
+            color = current.schneagghusList.random().color,
+            fromTile = current.spawn,
+            toTile = current.firstTrack,
             progress = 0f,
         )
         _state.update { it.copy(schneaggList = it.schneaggList + schneagg) }
