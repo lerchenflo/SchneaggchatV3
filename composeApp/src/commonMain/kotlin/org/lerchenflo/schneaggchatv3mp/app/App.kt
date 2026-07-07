@@ -101,6 +101,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
 import schneaggchatv3mp.composeapp.generated.resources.games_morse_title
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggahus_title
 import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
 
@@ -651,10 +652,11 @@ fun App() {
                                     gameId = GameId.MORSE
                                  ),
                                  GameScreenElement(
-                                    title = "schneaggahus",
+                                    title = stringResource(Res.string.games_schneaggahus_title),
                                     icon = Icons.Default.House,
                                     route = Route.Games.SchneaggaHus,
-                                    inDev = true
+                                    inDev = true,
+                                    gameId = GameId.SCHNEAGGAHUS
                                 ),
                                 GameScreenElement(
                                     title = stringResource(Res.string.games_dartcounter_title),
@@ -779,7 +781,13 @@ fun App() {
                                     }
 
                                     entry <Route.Games.SchneaggaHus> {
-                                        SchneaggaHusScreenRoot()
+                                        SchneaggaHusScreenRoot(
+                                            onBackClick = {
+                                                if (gamesBackStack.size > 1){
+                                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                                }
+                                            }
+                                        )
                                     }
                                     entry <Route.Games.Recap> {
                                         val recapViewModel: RecapViewModel = koinViewModel()
