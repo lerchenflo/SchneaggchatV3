@@ -17,7 +17,7 @@ import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
 import platform.CoreLocation.kCLAuthorizationStatusDenied
 import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
 import platform.CoreLocation.kCLAuthorizationStatusRestricted
-import platform.CoreLocation.kCLDistanceFilterNone
+import platform.CoreLocation.kCLLocationAccuracyNearestTenMeters
 import platform.Foundation.NSError
 import platform.Foundation.timeIntervalSince1970
 import platform.darwin.NSObject
@@ -36,21 +36,7 @@ actual class LocationService {
                 didUpdateLocations: List<*>
             ) {
                 val loc = didUpdateLocations.lastOrNull() as? CLLocation ?: return
-                trySend(
-                    DeviceLocation(
-                        coordinates = LatLong(
-                            lat = loc.coordinate.useContents { latitude },
-                            long = loc.coordinate.useContents { longitude }
-                        ),
-                        // verticalAccuracy is negative when altitude couldn't be determined
-                        altitude = loc.altitude.takeIf { loc.verticalAccuracy >= 0.0 }?.roundToInt(),
-                        // course is negative when the heading couldn't be determined
-                        heading = loc.course.takeIf { it >= 0.0 }?.roundToInt(),
-                        // speed is negative when it couldn't be determined
-                        speed = loc.speed.takeIf { it >= 0.0 },
-                        timestamp = (loc.timestamp.timeIntervalSince1970 * 1000).toLong(),
-                    )
-                )
+                trySend(loc.toDeviceLocation())
             }
 
             override fun locationManager(manager: CLLocationManager, didFailWithError: NSError) {
@@ -60,9 +46,14 @@ actual class LocationService {
         }
 
         manager.delegate = delegate
-        manager.desiredAccuracy = 50.0         // ~balanced accuracy (kCLLocationAccuracyHundredMeters)
+        manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
         manager.distanceFilter = 5.0
         manager.startUpdatingLocation()
+
+        // Emit cached location immediately so the flow isn't empty at start
+        manager.location?.let { loc ->
+            trySend(loc.toDeviceLocation())
+        }
 
         awaitClose {
             manager.stopUpdatingLocation()
@@ -103,3 +94,18 @@ actual class LocationService {
         else -> PermissionState.NOT_DETERMINED
     }
 }
+
+@OptIn(ExperimentalForeignApi::class)
+private fun CLLocation.toDeviceLocation(): DeviceLocation = DeviceLocation(
+    coordinates = LatLong(
+        lat = coordinate.useContents { latitude },
+        long = coordinate.useContents { longitude }
+    ),
+    // verticalAccuracy is negative when altitude couldn't be determined
+    altitude = altitude.takeIf { verticalAccuracy >= 0.0 }?.roundToInt(),
+    // course is negative when the heading couldn't be determined
+    heading = course.takeIf { it >= 0.0 }?.roundToInt(),
+    // speed is negative when it couldn't be determined
+    speed = speed.takeIf { it >= 0.0 },
+    timestamp = (timestamp.timeIntervalSince1970 * 1000).toLong(),
+)
