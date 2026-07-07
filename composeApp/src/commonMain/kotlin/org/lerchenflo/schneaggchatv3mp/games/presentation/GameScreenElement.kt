@@ -13,5 +13,7 @@ data class GameScreenElement(
     val route: Route,
     val inDev : Boolean,
     // Set for games with a server leaderboard: enables the highscore button + difficulty selection
-    val gameId: GameId? = null
+    val gameId: GameId? = null,
+    // Daily games get their own section at the top of the selector
+    val daily: Boolean = false
 )

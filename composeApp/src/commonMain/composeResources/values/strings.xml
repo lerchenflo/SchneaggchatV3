@@ -647,6 +647,12 @@
     <string name="games_schneaggahus_title">Schneaggahus</string>
     <string name="games_schneaggahus_instructions">Schneaggs crawl out of the spawn point and follow the tracks. Tap the switches to change where the tracks lead and guide every Schneagg to the house of its color.\n\nEach correct delivery scores points — after 3 Schneaggs end up in a wrong house, the game is over. Spawns get faster the longer you survive!</string>
 
+    <!-- Games: Grid Rush -->
+    <string name="games_daily_section">Daily challenge</string>
+    <string name="games_gridrush_title">Grid Rush</string>
+    <string name="games_gridrush_instructions">Drag a line through neighboring tiles of the same color — releasing on 2 or more tiles clears them and the tiles above fall down. Clear the whole board to win!\n\nLonger chains score more points and finishing under par earns a bonus. If no two matching tiles touch anymore, the run is over. Everyone plays the same board each day — the timer only starts with your first move, so plan ahead!</string>
+    <string name="games_gridrush_moves">Moves: %1$d / Par %2$d</string>
+
     <!-- Games: Morse -->
     <string name="games_morse_clear">Clear</string>
     <string name="games_morse_instructions">Press the big button to send morse signals: a short press is a dot (·), a long press is a dash (−). The tree shows which letter your code leads to.\n\nType the shown text in morse code — each correct letter scores points, after 3 mistakes the game is over.</string>

@@ -29,6 +29,7 @@ import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.SchneaggaHusViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
@@ -179,6 +180,9 @@ val sharedmodule = module{
 
     viewModelOf(::SchneaggaHusViewmodel)
     factory { SchneaggaHusViewmodel(get()) }
+
+    viewModelOf(::GridRushViewmodel)
+    factory { GridRushViewmodel(get()) }
     
     viewModelOf(::PlayerSelectorViewModel)
     factory { PlayerSelectorViewModel(get(), get()) }
