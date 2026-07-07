@@ -85,7 +85,14 @@ class GlobalViewModel(
 
                 if (SessionCache.isOnline()) {
                     if (!socketConnectionManager.isConnectedNow()) {
-                        startSocketConnection()
+
+                        if (appVersion.isDesktop()) { //On desktop always try to hold the socket connection for notifications
+                            startSocketConnection()
+                        } else { //On Mobile only connect if the app is in the foreground
+                            if (AppLifecycleManager.isAppInForeground) {
+                                startSocketConnection()
+                            }
+                        }
                     }
 
                     if (SessionCache.isLoggedIn()) {
