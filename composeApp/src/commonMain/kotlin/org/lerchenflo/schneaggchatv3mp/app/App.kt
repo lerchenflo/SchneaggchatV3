@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.Blind
 import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.House
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
@@ -66,6 +67,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.SchneaggaHusScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
@@ -190,6 +192,7 @@ fun App() {
                         subclass(Route.Games.YatziGame::class, Route.Games.YatziGame.serializer())
                         subclass(Route.Games.Tetris::class, Route.Games.Tetris.serializer())
                         subclass(Route.Games.Morse::class, Route.Games.Morse.serializer())
+                        subclass(Route.Games.SchneaggaHus::class, Route.Games.SchneaggaHus.serializer())
 
                         subclass(Route.Games.Recap::class, Route.Games.Recap.serializer())
 
@@ -646,6 +649,12 @@ fun App() {
                                     route = Route.Games.Morse,
                                     inDev = false,
                                     gameId = GameId.MORSE
+                                 ),
+                                 GameScreenElement(
+                                    title = "schneaggahus",
+                                    icon = Icons.Default.House,
+                                    route = Route.Games.SchneaggaHus,
+                                    inDev = true
                                 ),
                                 GameScreenElement(
                                     title = stringResource(Res.string.games_dartcounter_title),
@@ -769,6 +778,9 @@ fun App() {
                                         )
                                     }
 
+                                    entry <Route.Games.SchneaggaHus> {
+                                        SchneaggaHusScreenRoot()
+                                    }
                                     entry <Route.Games.Recap> {
                                         val recapViewModel: RecapViewModel = koinViewModel()
                                         RecapScreen(
