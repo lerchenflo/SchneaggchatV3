@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -289,11 +290,15 @@ class GlobalViewModel(
             }
 
             locationTrackingJob = viewModelScope.launch {
-                locationService.getLocationFlow().collect { location ->
 
-                    //println("LOCATIONSERVICE: New location received: $location")
+                locationService.getLocationFlow()
+                    .filterNotNull() //filter location for not null
+                    .combine(socketConnectionManager.connectedFlow) { location, connected ->
+                        if (connected) location else null
+                    }
+                    .filterNotNull() //filter for connected
+                    .collect { location ->
 
-                    if (location != null && socketConnectionManager.isConnectedNow()) {
                         // Altitude/battery are sent by default whenever location sharing is on at
                         // all - the server already always shares them once a friend can see your
                         // location. Speed/heading are more revealing (live driving telemetry), so
@@ -309,7 +314,19 @@ class GlobalViewModel(
                         )
                         socketConnectionManager.sendMessage(AppJson.instance.encodeToString(update as SocketConnectionMessage))
                     }
+
+
+
+                /*
+                locationService.getLocationFlow().collectLatest { location ->
+
+
+                    if (location != null && socketConnectionManager.isConnectedNow()) {
+
+                    }
                 }
+
+                 */
             }
         }
     }

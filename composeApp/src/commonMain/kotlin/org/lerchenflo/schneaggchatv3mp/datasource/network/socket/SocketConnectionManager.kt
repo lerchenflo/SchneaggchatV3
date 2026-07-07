@@ -10,13 +10,16 @@ import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
@@ -94,6 +97,9 @@ class SocketConnectionManager(
     val isConnected: StateFlow<Boolean> = _connectionState
         .map { it == ConnectionState.Connected }
         .stateIn(scope = scope, started = SharingStarted.Eagerly, initialValue = false)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val connectedFlow: Flow<Boolean> = isConnected.asFlow()
 
     /**
      * Updates the connection state, and - since friend presence is only ever valid while
