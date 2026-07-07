@@ -4,26 +4,24 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,20 +31,19 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameHud
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameOverOverlay
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameStartOverlay
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_tower_stack_instructions
-import schneaggchatv3mp.composeapp.generated.resources.games_tower_stack_score
 import schneaggchatv3mp.composeapp.generated.resources.games_tower_stack_speed_up
 import schneaggchatv3mp.composeapp.generated.resources.games_tower_stack_tap_to_place
-import schneaggchatv3mp.composeapp.generated.resources.games_tower_stack_tap_to_start
 import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
 
 @Composable
@@ -56,7 +53,21 @@ fun TowerStackScreen(
 ) {
     val gameState by viewModel.gameState.collectAsState()
     val colors = MaterialTheme.colorScheme
-    
+    var explanationDismissed by rememberSaveable { mutableStateOf(false) }
+
+    // After process death the dismissed flag is restored but the ViewModel run
+    // is lost — start a fresh run instead of showing the explanation again.
+    LaunchedEffect(Unit) {
+        if (explanationDismissed && !gameState.isGameStarted) {
+            viewModel.onAction(GameAction.StartGame)
+        }
+    }
+
+    // Leaving the game ends the run so no loop/counter keeps running in the background
+    DisposableEffect(Unit) {
+        onDispose { viewModel.onAction(GameAction.ResetGame) }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -65,7 +76,7 @@ fun TowerStackScreen(
             title = stringResource(Res.string.games_stack_tower),
             onBackClick = onBackClick
         )
-        
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -75,82 +86,36 @@ fun TowerStackScreen(
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() }
                 ) {
-                    if (!gameState.isGameStarted) {
-                        viewModel.onAction(GameAction.StartGame)
-                    } else if (!gameState.isGameOver) {
+                    if (gameState.isGameStarted && !gameState.isGameOver) {
                         viewModel.onAction(GameAction.PlacePlatform)
-                    } else {
-                        viewModel.onAction(GameAction.ResetGame)
                     }
                 },
             contentAlignment = Alignment.Center
         ) {
-        if (!gameState.isGameStarted) {
-            StartScreen()
-        } else {
             GameContent(
                 gameState = gameState,
-                onReset = { viewModel.onAction(GameAction.ResetGame) }
+                onStop = {
+                    explanationDismissed = false
+                    viewModel.onAction(GameAction.ResetGame)
+                },
+                onRestart = {
+                    viewModel.onAction(GameAction.ResetGame)
+                    viewModel.onAction(GameAction.StartGame)
+                },
+                onExit = {
+                    viewModel.onAction(GameAction.ResetGame)
+                    onBackClick()
+                }
             )
-        }
-        }
-    }
-}
 
-@Composable
-private fun StartScreen() {
-    val colors = MaterialTheme.colorScheme
-    
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.padding(32.dp)
-    ) {
-        Text(
-            text = stringResource(Res.string.games_stack_tower),
-            fontSize = 42.sp,
-            fontWeight = FontWeight.Bold,
-            color = colors.onBackground,
-            textAlign = TextAlign.Center
-        )
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = colors.surfaceVariant
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "🎮",
-                    fontSize = 48.sp
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = stringResource(Res.string.games_tower_stack_tap_to_start),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = colors.onSurfaceVariant
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = stringResource(Res.string.games_tower_stack_instructions),
-                    fontSize = 14.sp,
-                    color = colors.onSurfaceVariant.copy(alpha = 0.8f),
-                    textAlign = TextAlign.Center,
-                    lineHeight = 20.sp
+            if (!explanationDismissed && !gameState.isGameStarted) {
+                GameStartOverlay(
+                    title = stringResource(Res.string.games_stack_tower),
+                    explanation = stringResource(Res.string.games_tower_stack_instructions),
+                    onStart = {
+                        explanationDismissed = true
+                        viewModel.onAction(GameAction.StartGame)
+                    }
                 )
             }
         }
@@ -160,7 +125,9 @@ private fun StartScreen() {
 @Composable
 private fun GameContent(
     gameState: GameState,
-    onReset: () -> Unit
+    onStop: () -> Unit,
+    onRestart: () -> Unit,
+    onExit: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
     
@@ -206,42 +173,24 @@ private fun GameContent(
             }
         }
         
-        // Score display with modern design
-        Card(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(16.dp)
-                .clip(RoundedCornerShape(20.dp)),
-            colors = CardDefaults.cardColors(
-                containerColor = colors.surfaceVariant.copy(alpha = 0.9f)
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = stringResource(Res.string.games_tower_stack_score),
-                    fontSize = 14.sp,
-                    color = colors.onSurfaceVariant.copy(alpha = 0.7f),
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = "${gameState.score}",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = colors.onSurfaceVariant
-                )
-            }
+        // Unified time/points counter with stop button
+        if (gameState.isGameStarted) {
+            GameHud(
+                score = gameState.score.toLong(),
+                timeMillis = gameState.elapsedMillis,
+                onStop = onStop,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+            )
         }
-        
+
         // Speed increase indicator
         if (gameState.score > 0 && gameState.score % 5 == 0) {
             Card(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = 80.dp)
+                    .padding(top = 64.dp)
                     .clip(RoundedCornerShape(12.dp)),
                 colors = CardDefaults.cardColors(
                     containerColor = colors.tertiary.copy(alpha = 0.9f)
@@ -263,7 +212,8 @@ private fun GameContent(
             GameOverOverlay(
                 game = GameId.TOWERSTACK,
                 finalScore = gameState.score.toLong(),
-                onRestart = onReset
+                onRestart = onRestart,
+                onExit = onExit
             )
         }
         

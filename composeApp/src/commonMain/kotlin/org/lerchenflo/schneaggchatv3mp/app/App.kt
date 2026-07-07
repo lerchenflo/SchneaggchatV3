@@ -627,6 +627,27 @@ fun App() {
 
                             val gamesList = listOf<GameScreenElement>(
                                 GameScreenElement(
+                                    title = "Tetris",
+                                    icon = Icons.Default.Menu, // Placeholder
+                                    route = Route.Games.Tetris,
+                                    inDev = false,
+                                    gameId = GameId.TETRIS
+                                ),
+                                GameScreenElement(
+                                    title = stringResource(Res.string.games_stack_tower),
+                                    icon = Icons.Default.Menu,
+                                    route = Route.Games.TowerStack,
+                                    inDev = false,
+                                    gameId = GameId.TOWERSTACK
+                                ),
+                                GameScreenElement(
+                                    title = stringResource(Res.string.games_morse_title),
+                                    icon = Icons.Default.GraphicEq,
+                                    route = Route.Games.Morse,
+                                    inDev = false,
+                                    gameId = GameId.MORSE
+                                ),
+                                GameScreenElement(
                                     title = stringResource(Res.string.games_dartcounter_title),
                                     icon = Icons.Default.AdsClick, // ma darf sich gern was besseres usdenka
                                     route = Route.Games.DartCounter,
@@ -638,33 +659,15 @@ fun App() {
                                     route = Route.Games.Undercover,
                                     inDev = false
                                 ),
-                                GameScreenElement(
-                                    title = stringResource(Res.string.games_stack_tower),
-                                    icon = Icons.Default.Menu, //
-                                    route = Route.Games.TowerStack,
-                                    inDev = true,
-                                    gameId = GameId.TOWERSTACK
-                                ),
+
                                 GameScreenElement(
                                     title = "Yahtzee",
                                     icon = Icons.Default.Star,
                                     route = Route.Games.YatziSetup,
                                     inDev = false
                                 ),
-                                GameScreenElement(
-                                    title = "Tetris",
-                                    icon = Icons.Default.Menu, // Placeholder
-                                    route = Route.Games.Tetris,
-                                    inDev = false,
-                                    gameId = GameId.TETRIS
-                                ),
-                                GameScreenElement(
-                                    title = stringResource(Res.string.games_morse_title),
-                                    icon = Icons.Default.GraphicEq,
-                                    route = Route.Games.Morse,
-                                    inDev = true,
-                                    gameId = GameId.MORSE
-                                ),
+
+
 
                             )
                             NavDisplay(

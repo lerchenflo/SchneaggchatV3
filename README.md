@@ -21,6 +21,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Features
 - Freundstandorte-Preview mit Profilbildern auf der Schneaggmap
+- Highscores für Spiele
 - Map Style Einstellungen
 - Open in Maps Button
 - Echtzeit Online-Status von Freunden
@@ -34,7 +35,6 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ### 3.0.12
 
 #### Features
-- Highscores für Spiele
 - Standorttypen-Filter in Gruppen organisiert auf der Schneaggmap
 - Standorttypen beim Hinzufügen gruppiert
 - Standort teilen auf der Schneaggmap

@@ -624,11 +624,17 @@
     <string name="yatzi_roll_dice">Roll Dice, %1$d left</string>
     <string name="yatzi_roll_again">Roll Again, %1$d left</string>
 
+    <!-- Games: shared flow -->
+    <string name="game_tap_anywhere_to_start">Tap anywhere to start</string>
+    <string name="game_stop">Stop game</string>
+    <string name="game_exit">Exit</string>
+
     <!-- Games: Tetris -->
     <string name="games_tetris_title">Tetris</string>
     <string name="games_tetris_score">Score: %1$d</string>
     <string name="games_tetris_pause_resume">Pause/Resume</string>
     <string name="games_tetris_restart">Restart</string>
+    <string name="games_tetris_instructions">Swipe left or right to move the falling piece, tap to rotate it, swipe down for a faster drop and long-press to drop instantly.\n\nComplete full rows to score points — the game speeds up over time!</string>
 
     <!-- Games: Tower Stack -->
     <string name="games_tower_stack_tap_to_start">Tap to Start</string>
@@ -639,6 +645,7 @@
 
     <!-- Games: Morse -->
     <string name="games_morse_clear">Clear</string>
+    <string name="games_morse_instructions">Press the big button to send morse signals: a short press is a dot (·), a long press is a dash (−). The tree shows which letter your code leads to.\n\nType the shown text in morse code — each correct letter scores points, after 3 mistakes the game is over.</string>
 
     <!-- Recap -->
     <string name="recap_your_year">Your year</string>
@@ -696,6 +703,7 @@
     <string name="difficulty_low">Low</string>
     <string name="difficulty_medium">Medium</string>
     <string name="difficulty_high">High</string>
+    <string name="games_without_highscores">Games without highscores</string>
 
     <!-- Morse challenge -->
     <string name="morse_challenge_start">Start challenge</string>

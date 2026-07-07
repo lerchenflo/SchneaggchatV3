@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
@@ -161,6 +162,8 @@ private fun HighscoreRow(
     entry: HighscoreEntry,
     isOwn: Boolean,
 ) {
+    val contentColor = if (isOwn) MaterialTheme.colorScheme.onPrimaryContainer else Color.Unspecified
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -177,12 +180,14 @@ private fun HighscoreRow(
             text = "${entry.rank}.",
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
+            color = contentColor,
             modifier = Modifier.width(32.dp)
         )
         Text(
             text = entry.username,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = if (isOwn) FontWeight.Bold else FontWeight.Normal,
+            color = contentColor,
             modifier = Modifier.weight(1f),
             maxLines = 1,
         )
@@ -191,12 +196,13 @@ private fun HighscoreRow(
             text = entry.score.toString(),
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
+            color = contentColor,
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = formatGameTime(entry.timeMillis),
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (isOwn) contentColor else MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

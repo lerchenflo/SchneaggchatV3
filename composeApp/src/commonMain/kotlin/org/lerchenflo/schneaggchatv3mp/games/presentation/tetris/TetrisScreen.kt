@@ -8,27 +8,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,98 +28,95 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameHud
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameOverOverlay
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameStartOverlay
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.games_tetris_pause_resume
-import schneaggchatv3mp.composeapp.generated.resources.games_tetris_restart
-import schneaggchatv3mp.composeapp.generated.resources.games_tetris_score
+import schneaggchatv3mp.composeapp.generated.resources.games_tetris_instructions
 import schneaggchatv3mp.composeapp.generated.resources.games_tetris_title
-import schneaggchatv3mp.composeapp.generated.resources.go_back
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TetrisScreen(
     onBackClick: () -> Unit,
     viewModel: TetrisViewModel
 ) {
     val state by viewModel.state.collectAsState()
-    
-    // Start game initially if not playing
+    var explanationDismissed by rememberSaveable { mutableStateOf(false) }
+    val isStarted = state.isPlaying || state.isGameOver
+
+    // After process death the dismissed flag is restored but the ViewModel run
+    // is lost — start a fresh run instead of showing the explanation again.
     LaunchedEffect(Unit) {
-        if (!state.isPlaying && !state.isGameOver) {
-            viewModel.startGame()
-        }
+        if (explanationDismissed && !isStarted) viewModel.startGame()
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(Res.string.games_tetris_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(Res.string.go_back))
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {
-                        if(state.isPlaying) viewModel.pauseGame() else viewModel.resumeGame()
-                    }) {
-                        Icon(
-                            if(state.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                            contentDescription = stringResource(Res.string.games_tetris_pause_resume)
-                        )
-                    }
-                     IconButton(onClick = { viewModel.restartGame() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = stringResource(Res.string.games_tetris_restart))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                )
-            )
-        }
-    ) { padding ->
-        Column(
+    // Leaving the game ends the run so no loop/counter keeps running in the background
+    DisposableEffect(Unit) {
+        onDispose { viewModel.stopGame() }
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        ActivityTitle(
+            title = stringResource(Res.string.games_tetris_title),
+            onBackClick = onBackClick
+        )
+
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .background(MaterialTheme.colorScheme.background),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .weight(1f)
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 16.dp, top = 4.dp),
+            contentAlignment = Alignment.TopCenter
         ) {
-            
-            // Score Board
-            Text(
-                text = stringResource(Res.string.games_tetris_score, state.score),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(16.dp)
+            TetrisBoard(
+                state = state,
+                onRotate = { viewModel.rotate() },
+                onMoveLeft = { viewModel.moveLeft() },
+                onMoveRight = { viewModel.moveRight() },
+                onDrop = { viewModel.hardDrop() },
+                onSoftDropStart = { viewModel.setSoftDropping(true) },
+                onSoftDropEnd = { viewModel.setSoftDropping(false) }
             )
-            
-            // Game Area
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-               TetrisBoard(
-                   state = state,
-                   onRotate = { viewModel.rotate() },
-                   onMoveLeft = { viewModel.moveLeft() },
-                   onMoveRight = { viewModel.moveRight() },
-                   onDrop = { viewModel.hardDrop() },
-                   onSoftDropStart = { viewModel.setSoftDropping(true) },
-                   onSoftDropEnd = { viewModel.setSoftDropping(false) }
-               )
-               
-               if (state.isGameOver) {
-                   GameOverOverlay(
-                       game = GameId.TETRIS,
-                       finalScore = state.score.toLong(),
-                       onRestart = { viewModel.restartGame() }
-                   )
-               }
+
+            if (isStarted) {
+                GameHud(
+                    score = state.score.toLong(),
+                    timeMillis = state.gameTime,
+                    onStop = {
+                        explanationDismissed = false
+                        viewModel.stopGame()
+                    },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                )
+            }
+
+            if (!explanationDismissed && !isStarted) {
+                GameStartOverlay(
+                    title = stringResource(Res.string.games_tetris_title),
+                    explanation = stringResource(Res.string.games_tetris_instructions),
+                    onStart = {
+                        explanationDismissed = true
+                        viewModel.startGame()
+                    }
+                )
+            }
+
+            if (state.isGameOver) {
+                GameOverOverlay(
+                    game = GameId.TETRIS,
+                    finalScore = state.score.toLong(),
+                    onRestart = { viewModel.restartGame() },
+                    onExit = {
+                        viewModel.stopGame()
+                        onBackClick()
+                    }
+                )
             }
         }
     }

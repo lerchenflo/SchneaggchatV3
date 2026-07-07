@@ -5,30 +5,25 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
-import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.difficulty_high
 import schneaggchatv3mp.composeapp.generated.resources.difficulty_low
 import schneaggchatv3mp.composeapp.generated.resources.difficulty_medium
 
 /**
- * In-memory, app-wide difficulty selection per game. Observable from Compose
- * (backed by a snapshot state map) and read by the game ViewModels when a run starts.
+ * In-memory, app-wide difficulty selection shared by all games. Observable from
+ * Compose (backed by snapshot state) and read by the game ViewModels when a run starts.
  */
 object GameDifficultySelection {
-    private val selections = mutableStateMapOf<GameId, GameDifficulty>()
-
-    fun get(game: GameId): GameDifficulty = selections[game] ?: GameDifficulty.MEDIUM
-
-    fun set(game: GameId, difficulty: GameDifficulty) {
-        selections[game] = difficulty
-    }
+    var selected: GameDifficulty by mutableStateOf(GameDifficulty.MEDIUM)
 }
 
 @Composable

@@ -13,6 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
 
 data class Platform(
     val x: Float,
@@ -29,7 +30,8 @@ data class GameState(
     val score: Int = 0,
     val isGameOver: Boolean = false,
     val isGameStarted: Boolean = false,
-    val gameSpeed: Float = 2f
+    val gameSpeed: Float = 2f,
+    val elapsedMillis: Long = 0L
 )
 
 sealed class GameAction {
@@ -51,10 +53,8 @@ class TowerstackViewModel(
     
     companion object {
         private const val SCREEN_WIDTH = 300f
-        private const val SCREEN_HEIGHT = 500f
         private const val PLATFORM_WIDTH = 80f
         private const val PLATFORM_HEIGHT = 15f
-        private const val INITIAL_Y = 400f
         private const val BASE_Y = 450f
     }
     
@@ -91,7 +91,7 @@ class TowerstackViewModel(
             direction = 1f
         )
         
-        currentDifficulty = GameDifficultySelection.get(GameId.TOWERSTACK)
+        currentDifficulty = GameDifficultySelection.selected
         gameStartTime = Clock.System.now().toEpochMilliseconds()
         _gameState.value = currentState.copy(
             platforms = listOf(basePlatform),
@@ -113,7 +113,10 @@ class TowerstackViewModel(
         gameLoopJob = viewModelScope.launch {
             while (isActive) {
                 updateMovingPlatform()
-                delay(16) // ~60 FPS
+                _gameState.value = _gameState.value.copy(
+                    elapsedMillis = Clock.System.now().toEpochMilliseconds() - gameStartTime
+                )
+                delay(16.milliseconds) // ~60 FPS
             }
         }
     }

@@ -34,3 +34,12 @@ private fun buildNode(prefix: String, depth: Int): MorseTreeNode? {
 }
 
 val MORSE_TREE: MorseTreeNode = buildNode("", 0)!!
+
+/** Deepest existing tree node along [code]; falls back to the last valid ancestor. */
+fun nodeForCode(code: String): MorseTreeNode {
+    var node = MORSE_TREE
+    for (symbol in code) {
+        node = (if (symbol == '-') node.dash else node.dot) ?: break
+    }
+    return node
+}

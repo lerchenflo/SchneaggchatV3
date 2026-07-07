@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.game_exit
 import schneaggchatv3mp.composeapp.generated.resources.game_over
 import schneaggchatv3mp.composeapp.generated.resources.game_over_final_score
 import schneaggchatv3mp.composeapp.generated.resources.game_restart
@@ -34,18 +35,19 @@ import schneaggchatv3mp.composeapp.generated.resources.highscores_title
 
 /**
  * Unified game-over overlay for all games: shows the final score with a difficulty
- * selection for the next round, a restart button and a button opening the server
- * highscores of [game] for the selected difficulty.
+ * selection for the next round, a restart button, a button opening the server
+ * highscores of [game] for the selected difficulty and an exit button leaving the game.
  */
 @Composable
 fun GameOverOverlay(
     game: GameId,
     finalScore: Long,
     onRestart: () -> Unit,
+    onExit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showHighscores by remember { mutableStateOf(false) }
-    val selectedDifficulty = GameDifficultySelection.get(game)
+    val selectedDifficulty = GameDifficultySelection.selected
 
     Box(
         modifier = modifier
@@ -81,7 +83,7 @@ fun GameOverOverlay(
 
                 DifficultySelector(
                     selected = selectedDifficulty,
-                    onSelect = { GameDifficultySelection.set(game, it) },
+                    onSelect = { GameDifficultySelection.selected = it },
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -100,6 +102,15 @@ fun GameOverOverlay(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(Res.string.highscores_title))
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedButton(
+                    onClick = onExit,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(Res.string.game_exit))
                 }
             }
         }
