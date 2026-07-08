@@ -27,6 +27,27 @@ data class TetrisState(
     val isSoftDropping: Boolean = false
 )
 
+/** Row the current piece would land on if dropped straight down; null when no piece is active. */
+fun TetrisState.landingRow(): Int? {
+    val piece = currentPiece ?: return null
+    val (row, col) = piecePosition
+    var dropRow = row
+    while (canPlace(piece, dropRow + 1, col)) {
+        dropRow++
+    }
+    return dropRow
+}
+
+/** Whether the piece fits at the given position on this board. */
+fun TetrisState.canPlace(piece: Tetromino, row: Int, col: Int): Boolean {
+    return piece.getShape().all { (rOffset, cOffset) ->
+        val targetRow = row + rOffset
+        val targetCol = col + cOffset
+
+        targetRow < 20 && targetCol in 0..9 && (targetRow < 0 || board[targetRow][targetCol] == null)
+    }
+}
+
 enum class TetrominoType {
     I, J, L, O, S, T, Z
 }
@@ -237,13 +258,7 @@ class TetrisViewModel(
     }
 
     private fun isValidMove(piece: Tetromino, row: Int, col: Int): Boolean {
-        val board = _state.value.board
-        return piece.getShape().all { (rOffset, cOffset) ->
-            val targetRow = row + rOffset
-            val targetCol = col + cOffset
-            
-            targetRow < 20 && targetCol in 0..9 && (targetRow < 0 || board[targetRow][targetCol] == null)
-        }
+        return _state.value.canPlace(piece, row, col)
     }
 
     fun setSoftDropping(isSoftDropping: Boolean) {
