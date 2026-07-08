@@ -125,6 +125,7 @@ fun SchneaggaHusScreenRoot(
                 GameOverOverlay(
                     game = GameId.SCHNEAGGAHUS,
                     finalScore = state.score.toLong(),
+                    finalTimeMillis = state.elapsedMillis,
                     onRestart = { viewmodel.onAction(SchneaggaHusAction.RestartGame) },
                     onExit = {
                         viewmodel.onAction(SchneaggaHusAction.StopGame)

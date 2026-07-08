@@ -156,6 +156,7 @@ fun MorseScreen(
                 GameOverOverlay(
                     game = GameId.MORSE,
                     finalScore = state.challenge?.score?.toLong() ?: 0L,
+                    finalTimeMillis = state.challenge?.elapsedMillis ?: 0L,
                     onRestart = viewModel::startChallenge,
                     onExit = {
                         viewModel.exitChallenge()

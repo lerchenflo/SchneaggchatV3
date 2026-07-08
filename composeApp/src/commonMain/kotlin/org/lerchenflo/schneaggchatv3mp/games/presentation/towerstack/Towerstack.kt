@@ -212,6 +212,7 @@ private fun GameContent(
             GameOverOverlay(
                 game = GameId.TOWERSTACK,
                 finalScore = gameState.score.toLong(),
+                finalTimeMillis = gameState.elapsedMillis,
                 onRestart = onRestart,
                 onExit = onExit
             )

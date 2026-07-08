@@ -30,6 +30,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.game_exit
 import schneaggchatv3mp.composeapp.generated.resources.game_over
 import schneaggchatv3mp.composeapp.generated.resources.game_over_final_score
+import schneaggchatv3mp.composeapp.generated.resources.game_over_final_time
 import schneaggchatv3mp.composeapp.generated.resources.game_restart
 import schneaggchatv3mp.composeapp.generated.resources.highscores_title
 
@@ -42,6 +43,7 @@ import schneaggchatv3mp.composeapp.generated.resources.highscores_title
 fun GameOverOverlay(
     game: GameId,
     finalScore: Long,
+    finalTimeMillis: Long,
     onRestart: () -> Unit,
     onExit: () -> Unit,
     modifier: Modifier = Modifier,
@@ -77,6 +79,12 @@ fun GameOverOverlay(
                 Text(
                     text = stringResource(Res.string.game_over_final_score, finalScore),
                     style = MaterialTheme.typography.titleLarge,
+                )
+
+                Text(
+                    text = stringResource(Res.string.game_over_final_time, formatGameTime(finalTimeMillis)),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

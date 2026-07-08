@@ -4,13 +4,14 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 
 /**
  * Games with a server-side leaderboard. The name must match the server's Game enum.
+ * [daily] marks games with a new board every day.
  */
-enum class GameId {
+enum class GameId(val daily: Boolean = false) {
     TETRIS,
     TOWERSTACK,
     MORSE,
     SCHNEAGGAHUS,
-    GRIDRUSH,
+    GRIDRUSH(daily = true),
 }
 
 /**
@@ -21,6 +22,21 @@ enum class GameDifficulty {
     MEDIUM,
     HIGH,
 }
+
+/**
+ * Time window a leaderboard is ranked over (calendar-based, not rolling).
+ * The name must match the server's LeaderboardPeriod enum.
+ */
+enum class LeaderboardPeriod {
+    DAILY,
+    WEEKLY,
+    YEARLY,
+    ALL_TIME,
+}
+
+/** Daily games default to the daily leaderboard, everything else to the current year. */
+val GameId.defaultLeaderboardPeriod: LeaderboardPeriod
+    get() = if (daily) LeaderboardPeriod.DAILY else LeaderboardPeriod.YEARLY
 
 data class HighscoreEntry(
     val rank: Int,

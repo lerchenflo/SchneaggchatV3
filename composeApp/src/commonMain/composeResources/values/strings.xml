@@ -791,8 +791,13 @@
     <string name="highscores_title">Highscores</string>
     <string name="highscores_error">Could not load highscores</string>
     <string name="highscores_empty">No highscores yet</string>
+    <string name="highscores_period_daily">Today</string>
+    <string name="highscores_period_weekly">This week</string>
+    <string name="highscores_period_yearly">This year</string>
+    <string name="highscores_period_all_time">All time</string>
     <string name="game_over">Game over!</string>
     <string name="game_over_final_score">Final score: %1$d</string>
+    <string name="game_over_final_time">Time: %1$s</string>
     <string name="game_restart">Restart</string>
     <string name="show_highscores">Show highscores</string>
     <string name="difficulty_low">Low</string>

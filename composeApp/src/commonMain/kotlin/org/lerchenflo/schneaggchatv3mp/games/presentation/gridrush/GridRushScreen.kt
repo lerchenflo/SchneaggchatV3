@@ -122,6 +122,7 @@ fun GridRushScreenRoot(
                 GameOverOverlay(
                     game = GameId.GRIDRUSH,
                     finalScore = state.score.toLong(),
+                    finalTimeMillis = state.elapsedMillis,
                     onRestart = { viewmodel.onAction(GridRushAction.RestartGame) },
                     onExit = {
                         viewmodel.onAction(GridRushAction.StopGame)

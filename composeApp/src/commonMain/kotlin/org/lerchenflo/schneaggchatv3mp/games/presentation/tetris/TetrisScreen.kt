@@ -111,6 +111,7 @@ fun TetrisScreen(
                 GameOverOverlay(
                     game = GameId.TETRIS,
                     finalScore = state.score.toLong(),
+                    finalTimeMillis = state.gameTime,
                     onRestart = { viewModel.restartGame() },
                     onExit = {
                         viewModel.stopGame()

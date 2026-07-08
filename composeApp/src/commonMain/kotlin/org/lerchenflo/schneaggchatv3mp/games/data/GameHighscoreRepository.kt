@@ -10,6 +10,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.map
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.HighscoreEntry
+import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardPeriod
 import org.lerchenflo.schneaggchatv3mp.games.domain.toHighscoreEntry
 
 class GameHighscoreRepository(
@@ -19,8 +20,9 @@ class GameHighscoreRepository(
     suspend fun getHighscores(
         game: GameId,
         difficulty: GameDifficulty,
+        period: LeaderboardPeriod = LeaderboardPeriod.ALL_TIME,
     ): NetworkResult<List<HighscoreEntry>, NetworkError> {
-        return networkUtils.getGameHighscores(game.name, difficulty.name).map { response ->
+        return networkUtils.getGameHighscores(game.name, difficulty.name, period.name).map { response ->
             response.entries.map { it.toHighscoreEntry() }
         }
     }
