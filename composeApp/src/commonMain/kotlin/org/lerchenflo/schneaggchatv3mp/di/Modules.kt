@@ -27,8 +27,10 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectio
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.SchneaggaHusViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
@@ -176,14 +178,19 @@ val sharedmodule = module{
     factory { TetrisViewModel(get()) }
     viewModelOf(::MorseViewModel)
     factory { MorseViewModel(get()) }
+    viewModelOf(::CoinFlipViewModel)
+    factory { CoinFlipViewModel() }
 
     viewModelOf(::SchneaggaHusViewmodel)
     factory { SchneaggaHusViewmodel(get()) }
+
+    viewModelOf(::GridRushViewmodel)
+    factory { GridRushViewmodel(get()) }
     
     viewModelOf(::PlayerSelectorViewModel)
     factory { PlayerSelectorViewModel(get(), get()) }
     viewModelOf(::RecapViewModel)
-    factory { RecapViewModel(get(),get(),get(),get(),) }
+    factory { RecapViewModel(get(), get(), get()) }
 
 
     viewModelOf(::UserSettingsViewModel)

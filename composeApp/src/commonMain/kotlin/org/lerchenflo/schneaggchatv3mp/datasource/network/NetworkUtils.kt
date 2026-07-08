@@ -38,6 +38,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
+import org.lerchenflo.schneaggchatv3mp.games.domain.RecapResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
@@ -1219,5 +1220,12 @@ class NetworkUtils(
         return safePost(
             endpoint = "/games/upsert",
             body = request)
+    }
+
+    // ─── Recap ────────────────────────────────────────────────────────────────
+
+    suspend fun getRecap(year: Int? = null): NetworkResult<RecapResponse, NetworkError> {
+        val endpoint = if (year != null) "/recap?year=$year" else "/recap"
+        return safeGet(endpoint)
     }
 }

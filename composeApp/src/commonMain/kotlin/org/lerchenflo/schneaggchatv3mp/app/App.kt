@@ -1,19 +1,19 @@
 package org.lerchenflo.schneaggchatv3mp.app
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.Blind
 import androidx.compose.material.icons.filled.GraphicEq
+import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.House
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
@@ -27,9 +27,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
@@ -62,19 +60,19 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorScr
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
-import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameScreenElement
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
+import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
+import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.SchneaggaHusScreenRoot
-import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapScreen
-import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
@@ -104,7 +102,9 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
+import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_title
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
+import schneaggchatv3mp.composeapp.generated.resources.games_gridrush_title
 import schneaggchatv3mp.composeapp.generated.resources.games_morse_title
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggahus_title
 import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
@@ -202,8 +202,10 @@ fun App() {
                         subclass(Route.Games.Tetris::class, Route.Games.Tetris.serializer())
                         subclass(Route.Games.Morse::class, Route.Games.Morse.serializer())
                         subclass(Route.Games.SchneaggaHus::class, Route.Games.SchneaggaHus.serializer())
+                        subclass(Route.Games.GridRush::class, Route.Games.GridRush.serializer())
 
                         subclass(Route.Games.Recap::class, Route.Games.Recap.serializer())
+                        subclass(Route.Games.CoinFlip::class, Route.Games.CoinFlip.serializer())
 
 
                     }
@@ -667,6 +669,20 @@ fun App() {
                                     gameId = GameId.SCHNEAGGAHUS
                                 ),
                                 GameScreenElement(
+                                    title = stringResource(Res.string.games_gridrush_title),
+                                    icon = Icons.Default.GridOn,
+                                    route = Route.Games.GridRush,
+                                    inDev = true,
+                                    gameId = GameId.GRIDRUSH,
+                                    daily = true
+                                ),
+                                GameScreenElement(
+                                    title = stringResource(Res.string.games_coinflip_title),
+                                    icon = Icons.Default.MonetizationOn,
+                                    route = Route.Games.CoinFlip,
+                                    inDev = false
+                                ),
+                                GameScreenElement(
                                     title = stringResource(Res.string.games_dartcounter_title),
                                     icon = Icons.Default.AdsClick, // ma darf sich gern was besseres usdenka
                                     route = Route.Games.DartCounter,
@@ -685,6 +701,8 @@ fun App() {
                                     route = Route.Games.YatziSetup,
                                     inDev = false
                                 ),
+
+
 
 
 
@@ -797,15 +815,33 @@ fun App() {
                                             }
                                         )
                                     }
-                                    entry <Route.Games.Recap> {
-                                        val recapViewModel: RecapViewModel = koinViewModel()
-                                        RecapScreen(
+
+                                    entry <Route.Games.GridRush> {
+                                        GridRushScreenRoot(
                                             onBackClick = {
                                                 if (gamesBackStack.size > 1){
                                                     gamesBackStack.removeAt(gamesBackStack.size - 1)
                                                 }
-                                            },
-                                            recapViewModel = recapViewModel
+                                            }
+                                        )
+                                    }
+                                    entry <Route.Games.Recap> {
+                                        RecapScreenRoot(
+                                            onBackClick = {
+                                                if (gamesBackStack.size > 1){
+                                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                                }
+                                            }
+                                        )
+                                    }
+
+                                    entry <Route.Games.CoinFlip> {
+                                        CoinFlipScreen(
+                                            onBackClick = {
+                                                if (gamesBackStack.size > 1){
+                                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                                }
+                                            }
                                         )
                                     }
                                 }

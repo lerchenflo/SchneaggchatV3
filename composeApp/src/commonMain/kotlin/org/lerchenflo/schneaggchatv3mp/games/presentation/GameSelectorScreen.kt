@@ -45,6 +45,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.games_daily_section
 import schneaggchatv3mp.composeapp.generated.resources.games_without_highscores
 import schneaggchatv3mp.composeapp.generated.resources.show_highscores
 import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
@@ -68,7 +69,8 @@ fun GameSelectorScreen(
 
 
         val visibleGames = gamesList.filter { !it.inDev || dev }
-        val (leaderboardGames, otherGames) = visibleGames.partition { it.gameId != null }
+        val (dailyGames, regularGames) = visibleGames.partition { it.daily }
+        val (leaderboardGames, otherGames) = regularGames.partition { it.gameId != null }
 
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
@@ -79,6 +81,44 @@ fun GameSelectorScreen(
                     onSelect = { GameDifficultySelection.selected = it },
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
+            }
+
+            if (dailyGames.isNotEmpty()) {
+                item {
+                    Text(
+                        text = stringResource(Res.string.games_daily_section),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+                }
+
+                items(dailyGames) { game ->
+                    GameElementView(
+                        icon = game.icon,
+                        text = game.title,
+                        subtext = game.description,
+                        onClick = { onGameSelection(game.route) },
+                        rightSideIcon = {
+                            if (game.gameId != null) {
+                                IconButton(onClick = { highscoreGame = game.gameId }) {
+                                    Icon(
+                                        imageVector = Icons.Default.EmojiEvents,
+                                        contentDescription = stringResource(Res.string.show_highscores),
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
+                item {
+                    HorizontalDivider(modifier = Modifier.padding(top = 8.dp, bottom = 16.dp))
+                }
             }
 
             items(leaderboardGames) { game ->

@@ -155,6 +155,18 @@ private val SNAIL_TRAIL_COLORS = listOf(
 private fun snailTrailColor(userId: String): Color =
     SNAIL_TRAIL_COLORS[userId.hashCode().mod(SNAIL_TRAIL_COLORS.size)]
 
+//Extends the recorded trail with the user's live position so the line reaches all the way to
+//where they actually are right now, not just to the last synced trail point. Skipped if the
+//user is already sitting at that last point (no redundant zero-length segment).
+private fun appendLiveEndIfMoved(trailPositions: List<Position>, livePosition: Position?): List<Position> {
+    if (livePosition == null) return trailPositions
+    return if (trailPositions.isEmpty() || trailPositions.last() != livePosition) {
+        trailPositions + listOf(livePosition)
+    } else {
+        trailPositions
+    }
+}
+
 @Composable
 fun SchneaggmapScreenRoot() {
     val viewModel = koinViewModel<SchneaggmapViewModel>()
@@ -605,17 +617,18 @@ private fun SchneaggmapMapContent(
             state.usersWithLocation.forEach { user ->
                 key(user.id) {
                     val trail = state.snailTrails[user.id]
-                    if (trail != null && trail.size >= 2) {
+                    val trailPositions = trail?.map { point ->
+                        Position(longitude = point.long, latitude = point.lat)
+                    } ?: emptyList()
+                    val livePosition = user.location?.let { Position(longitude = it.long, latitude = it.lat) }
+                    val fullTrailPositions = appendLiveEndIfMoved(trailPositions, livePosition)
+                    if (fullTrailPositions.size >= 2) {
                         safeAdd(layerId = "snailtrail-${user.id}") {
                             val trailSource = rememberGeoJsonSource(
                                 data = GeoJsonData.Features(
                                     FeatureCollection(
                                         Feature(
-                                            geometry = LineString(
-                                                trail.map { point ->
-                                                    Position(longitude = point.long, latitude = point.lat)
-                                                }
-                                            ),
+                                            geometry = LineString(fullTrailPositions),
                                             properties = buildJsonObject {},
 
                                         )
@@ -641,18 +654,19 @@ private fun SchneaggmapMapContent(
             if (ownId != null) {
                 key(ownId) {
                     val ownTrail = state.snailTrails[ownId]
-                    if (ownTrail != null && ownTrail.size >= 2) {
+                    val ownTrailPositions = ownTrail?.map { point ->
+                        Position(longitude = point.long, latitude = point.lat)
+                    } ?: emptyList()
+                    val ownLivePosition = ownLocation?.position?.value
+                    val fullOwnTrailPositions = appendLiveEndIfMoved(ownTrailPositions, ownLivePosition)
+                    if (fullOwnTrailPositions.size >= 2) {
                         safeAdd(layerId = "snailtrail-$ownId") {
                             val ownTrailColor = MaterialTheme.colorScheme.primary
                             val ownTrailSource = rememberGeoJsonSource(
                                 data = GeoJsonData.Features(
                                     FeatureCollection(
                                         Feature(
-                                            geometry = LineString(
-                                                ownTrail.map { point ->
-                                                    Position(longitude = point.long, latitude = point.lat)
-                                                }
-                                            ),
+                                            geometry = LineString(fullOwnTrailPositions),
                                             properties = buildJsonObject {},
 
                                         )

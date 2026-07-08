@@ -204,6 +204,27 @@ fun TetrisBoard(
             }
         }
         
+        // Draw ghost piece: outline where the current piece would land
+        state.currentPiece?.let { piece ->
+            val landingRow = state.landingRow() ?: return@let
+            if (landingRow == state.piecePosition.first) return@let // Piece already at its landing spot
+
+            val pCol = state.piecePosition.second
+            piece.getShape().forEach { (rOffset, cOffset) ->
+                val drawRow = landingRow + rOffset
+                val drawCol = pCol + cOffset
+
+                if (drawRow >= 0) {
+                    drawRect(
+                        color = piece.color.copy(alpha = 0.4f),
+                        topLeft = Offset(drawCol * cellWidth, drawRow * cellHeight),
+                        size = Size(cellWidth, cellHeight),
+                        style = Stroke(width = 2.dp.toPx())
+                    )
+                }
+            }
+        }
+
         // Draw Current Piece
         state.currentPiece?.let { piece ->
             val (pRow, pCol) = state.piecePosition

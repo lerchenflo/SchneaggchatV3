@@ -10,6 +10,7 @@ enum class GameId {
     TOWERSTACK,
     MORSE,
     SCHNEAGGAHUS,
+    GRIDRUSH,
 }
 
 /**

@@ -87,9 +87,15 @@ sealed interface Route : NavKey {
 
         @Serializable
         data object SchneaggaHus: Route, NavKey
-      
+
+        @Serializable
+        data object GridRush: Route, NavKey
+
         @Serializable
         data object Recap: Route, NavKey
+
+        @Serializable
+        data object CoinFlip: Route, NavKey
     }
 }
 
