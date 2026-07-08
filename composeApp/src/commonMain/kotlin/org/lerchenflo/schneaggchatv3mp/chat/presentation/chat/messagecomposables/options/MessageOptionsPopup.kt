@@ -141,11 +141,14 @@ fun MessageOptionPopup(
                             }
                     ) {
 
+                        /* Default heart is with double tap
                         NormalButton(
                             text = "❤\uFE0F",
                             onClick = { onReact("❤\uFE0F"); onDismissRequest() },
                             primary = false
                         )
+
+                         */
 
                         NormalButton(
                             text = "👍",
@@ -156,6 +159,12 @@ fun MessageOptionPopup(
                         NormalButton(
                             text = "👎",
                             onClick = { onReact("👎"); onDismissRequest() },
+                            primary = false
+                        )
+
+                        NormalButton(
+                            text = "\uD83D\uDE02",
+                            onClick = { onReact("\uD83D\uDE02"); onDismissRequest() },
                             primary = false
                         )
 

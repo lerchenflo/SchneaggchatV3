@@ -1210,8 +1210,8 @@ class NetworkUtils(
 
     // ─── Games ────────────────────────────────────────────────────────────────
 
-    suspend fun getGameHighscores(gameId: String, difficulty: String): NetworkResult<HighscoresResponse, NetworkError> {
-        return safeGet(endpoint = "/games/highscores?gameid=$gameId&difficulty=$difficulty")
+    suspend fun getGameHighscores(gameId: String, difficulty: String, period: String): NetworkResult<HighscoresResponse, NetworkError> {
+        return safeGet(endpoint = "/games/highscores?gameid=$gameId&difficulty=$difficulty&period=$period")
     }
 
     suspend fun submitGameScore(

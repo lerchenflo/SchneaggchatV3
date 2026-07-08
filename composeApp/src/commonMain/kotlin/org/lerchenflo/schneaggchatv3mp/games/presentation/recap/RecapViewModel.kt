@@ -24,6 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.RecapPartnerUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapResponse
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapUi
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.month_april
@@ -146,7 +147,10 @@ class RecapViewModel(
                     toName = it.toName
                 )
             },
-            busiestDayFormatted = messaging.busiestDay?.date,
+            // Server sends ISO yyyy-MM-dd; fall back to the raw value if it ever fails to parse
+            busiestDayFormatted = messaging.busiestDay?.date?.let { iso ->
+                iso8601DateFormatter(iso).ifEmpty { iso }
+            },
             busiestDayCount = messaging.busiestDay?.count ?: 0L,
             busiestHourOfDay = messaging.busiestHourOfDay,
             mostActiveMonth = messaging.mostActiveMonth?.let { peak ->

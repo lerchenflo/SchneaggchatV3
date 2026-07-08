@@ -1,6 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -30,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -38,10 +42,16 @@ import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.HighscoreEntry
+import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardPeriod
+import org.lerchenflo.schneaggchatv3mp.games.domain.defaultLeaderboardPeriod
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.close
 import schneaggchatv3mp.composeapp.generated.resources.highscores_empty
 import schneaggchatv3mp.composeapp.generated.resources.highscores_error
+import schneaggchatv3mp.composeapp.generated.resources.highscores_period_all_time
+import schneaggchatv3mp.composeapp.generated.resources.highscores_period_daily
+import schneaggchatv3mp.composeapp.generated.resources.highscores_period_weekly
+import schneaggchatv3mp.composeapp.generated.resources.highscores_period_yearly
 import schneaggchatv3mp.composeapp.generated.resources.highscores_title
 
 /**
@@ -65,11 +75,12 @@ fun HighscoresDialog(
 ) {
     val repository = koinInject<GameHighscoreRepository>()
     var selectedDifficulty by remember { mutableStateOf(initialDifficulty) }
+    var selectedPeriod by remember { mutableStateOf(game.defaultLeaderboardPeriod) }
     var state by remember { mutableStateOf(HighscoreUiState(isLoading = true)) }
 
-    LaunchedEffect(game, selectedDifficulty) {
+    LaunchedEffect(game, selectedDifficulty, selectedPeriod) {
         state = HighscoreUiState(isLoading = true)
-        state = when (val result = repository.getHighscores(game, selectedDifficulty)) {
+        state = when (val result = repository.getHighscores(game, selectedDifficulty, selectedPeriod)) {
             is NetworkResult.Success -> HighscoreUiState(entries = result.data)
             is NetworkResult.Error -> HighscoreUiState(hasError = true)
         }
@@ -91,6 +102,13 @@ fun HighscoresDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                PeriodSelector(
+                    selected = selectedPeriod,
+                    onSelect = { selectedPeriod = it },
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 GameHighscores(
                     state = state,
                     modifier = Modifier.heightIn(max = 400.dp)
@@ -98,6 +116,37 @@ fun HighscoresDialog(
             }
         }
     )
+}
+
+@Composable
+private fun LeaderboardPeriod.stringRes(): StringResource = when (this) {
+    LeaderboardPeriod.DAILY    -> Res.string.highscores_period_daily
+    LeaderboardPeriod.WEEKLY   -> Res.string.highscores_period_weekly
+    LeaderboardPeriod.YEARLY   -> Res.string.highscores_period_yearly
+    LeaderboardPeriod.ALL_TIME -> Res.string.highscores_period_all_time
+}
+
+/**
+ * Row of chips to pick the leaderboard time window.
+ */
+@Composable
+private fun PeriodSelector(
+    selected: LeaderboardPeriod,
+    onSelect: (LeaderboardPeriod) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        LeaderboardPeriod.entries.forEach { period ->
+            FilterChip(
+                selected = period == selected,
+                onClick = { onSelect(period) },
+                label = { Text(stringResource(period.stringRes())) },
+            )
+        }
+    }
 }
 
 /**
@@ -205,11 +254,4 @@ private fun HighscoreRow(
             color = if (isOwn) contentColor else MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
-}
-
-private fun formatGameTime(millis: Long): String {
-    val totalSeconds = millis / 1000
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    return "$minutes:${seconds.toString().padStart(2, '0')}"
 }

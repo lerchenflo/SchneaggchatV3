@@ -96,7 +96,7 @@ fun GameHud(
     }
 }
 
-private fun formatGameTime(millis: Long): String {
+internal fun formatGameTime(millis: Long): String {
     val totalSeconds = (millis / 1000).coerceAtLeast(0)
     val minutes = totalSeconds / 60
     val seconds = totalSeconds % 60
