@@ -10,6 +10,7 @@
     <string name="search_friend">Suach in dina Freunde ...</string>
     <string name="no_status">kuan Status</string>
     <string name="unknown_user">kennsch ned</string>
+    <string name="chat_last_seen_status">letztes mol Online %1$s</string>
 
     <string name="usersync">Benutzerdata</string>
     <string name="groupsync">Gruppendata</string>
@@ -48,8 +49,7 @@
 
     <string name="email">Email</string>
     <string name="invalid_email">Du musch a richtige email agia</string>
-    <string name="email_provider_warning">Verwend ned so a Blödsinn Email sunsch wird din Account ghackt und du kannsch di Passwort num zrucksetza.</string>
-    <string name="sign_up">I hob no kuan Account</string>
+    <string name="email_provider_warning">Verwend ned so a Blödsinn Email sunsch wird din Account ghackt und du kannsch di Passwort num zrucksetza.</string>    <string name="sign_up">I hob no kuan Account</string>
     <string name="loginsubtitle">Die beste App sowieso, mit lokala Sproch und loft überall</string>
     <string name="create_account">Account erstella</string>
     <string name="create_account_subtitle">beitreata</string>
@@ -253,6 +253,13 @@
     <string name="schneaggmap_settings_info">Änder dine Mapeinstellunga</string>
     <string name="merge_map_locations">Orten zemmerga beim zoomen</string>
     <string name="merge_map_locations_info">Orte beim zoomen zemmerga dassas ned so a Chaos isch</string>
+    <string name="schneaggmap_map_style">Mapdesign</string>
+    <string name="schneaggmap_map_style_info">Verschiedene Maptypa uswähla</string>
+    <string name="map_style_liberty">Liberty</string>
+    <string name="map_style_bright">Hell</string>
+    <string name="map_style_positron">Positron</string>
+    <string name="map_style_dark">Dunkel</string>
+    <string name="map_style_fiord">Fiord</string>
     <string name="share_location_global">Min Standort teila</string>
     <string name="share_location_global_info">Usgwählta Freunde din Standort uf da Map zoaga</string>
     <string name="share_location_friends_title">Teilen mit</string>
@@ -391,6 +398,13 @@
     <string name="games_stack_tower">Turm</string>
     <string name="games_morse_title">Morse</string>
     <string name="games_morse_press_hint">Druck · kurz / lang −</string>
+    <string name="games_coinflip_title">Münzwurf</string>
+    <string name="games_coinflip_tails_label">Zahl</string>
+    <string name="games_coinflip_tails_default">Zahl</string>
+    <string name="games_coinflip_heads">Kopf</string>
+    <string name="games_coinflip_flip">werfa</string>
+    <string name="games_coinflip_flipping">wirft...</string>
+    <string name="games_coinflip_swipe_hint">Zum Werfa Knopf drucka oda nach oba wüscha</string>
     <string name="games_morse_invalid">Kuan Buchstab für dean Code</string>
 
     <!-- Games: DartCounter -->
@@ -567,7 +581,6 @@
 
 
 
-    <string name="highscores_not_implemented_warning">Öffentliche Highscores kummand bald!</string>
     <string name="audio_playback_on_desktop_not_supported_yet">Audios abspiela goht ufam Desktop aktuell no ned</string>
 
 
@@ -618,18 +631,140 @@
     <string name="yatzi_roll_dice">Uf was wartesch, %1$d left</string>
     <string name="yatzi_roll_again">Jo nomml, %1$d left</string>
 
+    <!-- Games: shared flow -->
+    <string name="game_tap_anywhere_to_start">Irgendwo tippa zum starta</string>
+    <string name="game_stop">Spiel stoppa</string>
+    <string name="game_exit">Verlo</string>
+
+    <!-- Games: Tetris -->
+    <string name="games_tetris_title">Tetris</string>
+    <string name="games_tetris_score">Punkte: %1$d</string>
+    <string name="games_tetris_pause_resume">Pause/Witta</string>
+    <string name="games_tetris_restart">Neustart</string>
+    <string name="games_tetris_instructions"/>
+
+    <!-- Games: Tower Stack -->
+    <string name="games_tower_stack_tap_to_start">Zum Starta tippa</string>
+    <string name="games_tower_stack_instructions"/>
+    <string name="games_tower_stack_score">Punkte</string>
+    <string name="games_tower_stack_speed_up">⚡ Schnealla!</string>
+    <string name="games_tower_stack_tap_to_place">&#128070; Zum Platziera tippa!</string>
+
+    <!-- Games: Schneaggahus -->
+    <string name="games_schneaggahus_title">Schneaggahus</string>
+    <string name="games_schneaggahus_instructions"/>
+
+    <!-- Games: Grid Rush -->
+    <string name="games_daily_section">Täglische Challenge</string>
+    <string name="games_gridrush_title">Grid Rush</string>
+    <string name="games_gridrush_instructions"/>
+    <string name="games_gridrush_moves">Züge: %1$d / Par %2$d</string>
+
+    <!-- Games: Morse -->
+    <string name="games_morse_clear">Löscha</string>
+    <string name="games_morse_instructions"/>
+
     <!-- Recap -->
-    <string name="recap_your_year"/>
-    <string name="recap_using_schneaggchat_in_numbers"/>
-    <string name="recap_in_year_you_had_a_lot_to_say"/>
-    <string name="recap_others_sent_you"/>
-    <string name="recap_messages"/>
-    <string name="recap_you_sent"/>
-    <string name="recap_messages_to_favorite_humans"/>
-    <string name="recap_new_friends_found"/>
-    <string name="recap_you_have"/>
-    <string name="recap_are_now_your_friends"/>
-    <string name="recap_texts_number"/>
+    <string name="recap_your_year">Din Joar</string>
+    <string name="recap_using_schneaggchat_in_numbers">SChneaggchat in Zahla</string>
+    <string name="recap_in_year_you_had_a_lot_to_say">Im Joar %1$d hosch du viel zum säga ket.</string>
+    <string name="recap_others_sent_you">Dieses Joar hond andre Lüt dir</string>
+    <string name="recap_others_sent_you_suffix">Nochrichta gschickt</string>
+    <string name="recap_you_sent">Du hosch</string>
+    <string name="recap_messages_to_favorite_humans">Nachrichta an dine Lieblingsmenscha gschickt.</string>
+    <string name="recap_new_friends_found">Neue Freunde gfunda</string>
+    <string name="recap_you_have">Du hosch</string>
+    <string name="recap_are_now_your_friends">neue Freunde gmacht.</string>
+    <string name="recap_texts_number">%1$d Texte</string>
+    <string name="recap_loading">Dine Zahla werrand bereachnat...</string>
+    <string name="recap_load_failed">Din Recap hot ned glada werra künna.</string>
+    <string name="recap_retry">Nomml versuacha</string>
+    <string name="recap_hello">He %1$s!</string>
+    <string name="recap_member_since">Dabei sit %1$s — des sind %2$d Täg.</string>
+    <string name="recap_logins_this_year">Du hosch di dieses Joar %1$s mol igloggt.</string>
+    <string name="recap_all_time_messages">%1$s Nochrichta insgesamt</string>
+    <string name="recap_type_text">Texte</string>
+    <string name="recap_type_image">Bilder</string>
+    <string name="recap_type_audio">Sprochnachrichta</string>
+    <string name="recap_type_poll">Umfroga</string>
+    <string name="recap_typing_title">Dine Tastatur hots gspürt.</string>
+    <string name="recap_characters_typed">Zeichen itippt</string>
+    <string name="recap_words_typed">%1$s Wörter insgesamt</string>
+    <string name="recap_avg_message_length">Ø %1$d Zeicha pro Nochricht</string>
+    <string name="recap_longest_message">Dine längste Nachricht: %1$d Zeicha</string>
+    <string name="recap_longest_message_to">gsendet an %1$s</string>
+    <string name="recap_rhythm_title">Du hosch an Rythmus</string>
+    <string name="recap_busiest_day">Din aktivster Tag: %1$s</string>
+    <string name="recap_busiest_day_messages">%1$d Nochrichta an uanam einziga Tag</string>
+    <string name="recap_busiest_hour">Prime Time: %1$d:00</string>
+    <string name="recap_streak_days">%1$d Täg</string>
+    <string name="recap_streak_label">Dine längste Tagesserie</string>
+    <string name="recap_most_active_month">%1$s war din lütester Monat</string>
+    <string name="recap_first_message_ever">Dine allererste Nochricht: %1$s</string>
+    <string name="recap_popular">Du bisch am chatten.</string>
+    <string name="recap_inner_circle">Din innerer Kreis.</string>
+    
+    <string name="recap_from_you_from_them">%1$s vo dir · %2$s von eana</string>
+    <string name="recap_reactions_title">Du hosch wahre Liabe vertoalt.</string>
+    <string name="recap_reactions_given">Reaktiona usteilt</string>
+    <string name="recap_reactions_received">%1$s Reaktiona erhalta</string>
+    <string name="recap_top_emoji_given">Dine Lieblingsemojis</string>
+    <string name="recap_top_emoji_received">Was du zruckkriagt hosch</string>
+    <string name="recap_most_reacted_message">Deine meistreagierte Nachricht (%1$d Reaktiona):</string>
+    <string name="recap_social_title">Din Kreis isch gwachsa.</string>
+    <string name="recap_friends_label">Dine Freunde</string>
+    <string name="recap_new_friends_this_year">%1$d neu dieses Joar</string>
+    <string name="recap_friend_requests_sent">%1$d Freundschaftsanfroga gschickt</string>
+    <string name="recap_polls_created">%1$d Umfroga erstellt</string>
+    <string name="recap_poll_votes_cast">%1$d Umfrogastimma abgia</string>
+    <string name="recap_groups_title">Gruppenchatting. Immenser Terror.</string>
+    <string name="recap_groups_member_of">Gruppen, bei deana du dabei bisch</string>
+    <string name="recap_groups_created">%1$d vo dir erstellt</string>
+    <string name="recap_most_active_group">Dine Gruppe mit am meista terror</string>
+    <string name="recap_group_message_count">%1$s Nachrichta</string>
+    <string name="recap_leaderboard_title">Die globala Charts</string>
+    <string name="recap_your_rank">Vo alla Schneaggchat User hosch du Platz</string>
+    <string name="recap_rank_number">#%1$d</string>
+    <string name="recap_leaderboard_messages">%1$s Nochrichta dieses Joar gschickt</string>
+    <string name="recap_map_title">Du hosch a Schleimspur zoga.</string>
+    <string name="recap_map_created">Mapeinträg dieses Joar erstellt</string>
+    <string name="recap_map_edited">%1$d Einträg bearbeitet</string>
+    <string name="recap_map_all_time">%1$d insgesamt erstellt</string>
+    <string name="recap_games_title">Profigamer</string>
+    <string name="recap_games_rank">Rang #%1$d</string>
+    <string name="recap_games_score">Bester Punktestand: %1$s</string>
+
+    <string name="recap_betatester_title">Zertifizierter Beta-Tester</string>
+    <string name="recap_betatester_your_rank">Vo allna, die Schneaggchat je fast zum Absturz brocht hond, bisch du uf Platz</string>
+    <string name="recap_betatester_exception_count">%1$s Systemfehler verursacht</string>
+    <string name="recap_betatester_clean_record">Du hosch Schneaggchat testet, aber es isch nix Schlimms passiert.</string>
+
+    <string name="recap_password_title">Du kummsch mit nam guata Passwort ned us.</string>
+    <string name="recap_password_reset_label">Passwort-Reset-E-Mails gschickt</string>
+    <string name="recap_password_reset_this_year">davon %1$d des Joar</string>
+    <string name="recap_password_reset_subtitle">Schriebs da viellicht amol uf.</string>
+
+    <string name="recap_outro_title">Des wars, %1$s.</string>
+    <string name="recap_outro_subtitle">Bis nägsch Joar. Blieb schleimig</string>
+    <string name="recap_outro_messages">Nochrichta</string>
+    <string name="recap_outro_friends">Freunde</string>
+    <string name="recap_outro_reactions">Reaktiona</string>
+    <string name="recap_outro_streak">Takesstreak</string>
+    <string name="recap_tap_hint">Tipp zum wittamacha</string>
+
+    <!-- Month names -->
+    <string name="month_january">Jänner</string>
+    <string name="month_february">Februar</string>
+    <string name="month_march">März</string>
+    <string name="month_april">April</string>
+    <string name="month_may">Mai</string>
+    <string name="month_june">Juni</string>
+    <string name="month_july">Juli</string>
+    <string name="month_august">August</string>
+    <string name="month_september">September</string>
+    <string name="month_october">Oktober</string>
+    <string name="month_november">November</string>
+    <string name="month_december">Dezember</string>
 
     <!-- Changelog Popup -->
     <string name="changelog_whats_new">Was isch neu</string>
@@ -655,12 +790,43 @@
     <string name="schneaggmap_entry_delete">Dean Eintrag löscha. Er wird o für alle andra glöscht. Du kannschan num wiederherstella.</string>
 
     <string name="latlong">Lat %1$s, Long %2$s</string>
+    <string name="open_location_in_maps">In Maps öffna</string>
     <string name="latitude">Latitude</string>
     <string name="longitude">Longitude</string>
 
     <string name="schneaggmap_user_last_online_label">Letztes mol online</string>
     <string name="schneaggmap_user_distance_label">Entfernung</string>
     <string name="schneaggmap_user_online">Online</string>
+
+    <!-- Game highscores -->
+    <string name="highscores_title">Highscores</string>
+    <string name="highscores_error">Highscores hond ned glada werra künna</string>
+    <string name="highscores_empty">No kua Highscores</string>
+    <string name="highscores_period_daily">Hüt</string>
+    <string name="highscores_period_weekly">Dia Wocha</string>
+    <string name="highscores_period_yearly">Dieses Joar</string>
+    <string name="highscores_period_all_time">Gesamt</string>
+    <string name="game_over">Spiel vorbei!</string>
+    <string name="game_over_final_score">Punktestand: %1$d</string>
+    <string name="game_over_final_time">Zit: %1$s</string>
+    <string name="game_restart">Neustart</string>
+    <string name="show_highscores">Bestenliste azoaga</string>
+    <string name="difficulty_low">Niedrig</string>
+    <string name="difficulty_medium">Mittel</string>
+    <string name="difficulty_high">Hoch</string>
+    <string name="games_without_highscores">Spiel ohne Highscores</string>
+
+    <!-- Morse challenge -->
+    <string name="morse_challenge_start">Challenge starta</string>
+    <string name="morse_challenge_stop">Challenge verlo</string>
+    <string name="morse_challenge_score">Punkte: %1$d</string>
+    <string name="morse_challenge_type_text">Tipp da Text in Morsecode</string>
+
+    <!-- Location Groups -->
+    <string name="location_group_street">Stroß</string>
+    <string name="location_group_nature_activities">Natur &amp; Aktivitäta</string>
+    <string name="location_group_social_entertainment">Sozial &amp; Unterhaltung</string>
+    <string name="location_group_food">Essen</string>
 
     <!-- Location Types -->
     <string name="location_type_radar">Radar</string>

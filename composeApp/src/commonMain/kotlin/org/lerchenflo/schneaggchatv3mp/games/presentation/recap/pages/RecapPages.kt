@@ -31,6 +31,10 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.recap_all_time_messages
 import schneaggchatv3mp.composeapp.generated.resources.recap_avg_message_length
+import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_clean_record
+import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_exception_count
+import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_title
+import schneaggchatv3mp.composeapp.generated.resources.recap_betatester_your_rank
 import schneaggchatv3mp.composeapp.generated.resources.recap_busiest_day
 import schneaggchatv3mp.composeapp.generated.resources.recap_busiest_day_messages
 import schneaggchatv3mp.composeapp.generated.resources.recap_busiest_hour
@@ -54,25 +58,28 @@ import schneaggchatv3mp.composeapp.generated.resources.recap_leaderboard_title
 import schneaggchatv3mp.composeapp.generated.resources.recap_logins_this_year
 import schneaggchatv3mp.composeapp.generated.resources.recap_longest_message
 import schneaggchatv3mp.composeapp.generated.resources.recap_longest_message_to
-import schneaggchatv3mp.composeapp.generated.resources.recap_loyal_friend
 import schneaggchatv3mp.composeapp.generated.resources.recap_map_all_time
 import schneaggchatv3mp.composeapp.generated.resources.recap_map_created
 import schneaggchatv3mp.composeapp.generated.resources.recap_map_edited
 import schneaggchatv3mp.composeapp.generated.resources.recap_map_title
 import schneaggchatv3mp.composeapp.generated.resources.recap_member_since
-import schneaggchatv3mp.composeapp.generated.resources.recap_messages
 import schneaggchatv3mp.composeapp.generated.resources.recap_messages_to_favorite_humans
 import schneaggchatv3mp.composeapp.generated.resources.recap_most_active_group
 import schneaggchatv3mp.composeapp.generated.resources.recap_most_active_month
 import schneaggchatv3mp.composeapp.generated.resources.recap_most_reacted_message
 import schneaggchatv3mp.composeapp.generated.resources.recap_new_friends_this_year
 import schneaggchatv3mp.composeapp.generated.resources.recap_others_sent_you
+import schneaggchatv3mp.composeapp.generated.resources.recap_others_sent_you_suffix
 import schneaggchatv3mp.composeapp.generated.resources.recap_outro_friends
 import schneaggchatv3mp.composeapp.generated.resources.recap_outro_messages
 import schneaggchatv3mp.composeapp.generated.resources.recap_outro_reactions
 import schneaggchatv3mp.composeapp.generated.resources.recap_outro_streak
 import schneaggchatv3mp.composeapp.generated.resources.recap_outro_subtitle
 import schneaggchatv3mp.composeapp.generated.resources.recap_outro_title
+import schneaggchatv3mp.composeapp.generated.resources.recap_password_reset_label
+import schneaggchatv3mp.composeapp.generated.resources.recap_password_reset_subtitle
+import schneaggchatv3mp.composeapp.generated.resources.recap_password_reset_this_year
+import schneaggchatv3mp.composeapp.generated.resources.recap_password_title
 import schneaggchatv3mp.composeapp.generated.resources.recap_poll_votes_cast
 import schneaggchatv3mp.composeapp.generated.resources.recap_polls_created
 import schneaggchatv3mp.composeapp.generated.resources.recap_popular
@@ -407,7 +414,7 @@ fun RecapMessagesReceivedPage(recap: RecapUi, visible: Boolean) {
             CountUpText(target = recap.messagesReceived, running = visible, color = Color(0xFFFFDF00), fontSize = 76.sp)
             RevealItem(visible, 1) {
                 Text(
-                    text = stringResource(Res.string.recap_messages),
+                    text = stringResource(Res.string.recap_others_sent_you_suffix),
                     color = Color.White,
                     fontSize = 34.sp,
                     fontWeight = FontWeight.Bold
@@ -522,15 +529,6 @@ fun RecapTopContactsPage(recap: RecapUi, visible: Boolean) {
                         }
                     }
                 }
-            }
-
-            RevealItem(visible, recap.topPartners.size + 1) {
-                Text(
-                    text = stringResource(Res.string.recap_loyal_friend),
-                    color = Color.Black.copy(alpha = 0.7f),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
             }
         }
     }
@@ -951,6 +949,149 @@ fun RecapGamesPage(recap: RecapUi, visible: Boolean) {
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun RecapBetaTesterPage(recap: RecapUi, visible: Boolean) {
+    RecapPageBackground(topColor = Color(0xFF4A0000), bottomColor = Color(0xFF1A0000)) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center
+        ) {
+            RevealItem(visible, 0) {
+                Text(
+                    text = stringResource(Res.string.recap_betatester_title),
+                    color = Color(0xFFFF5C5C),
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Black
+                )
+            }
+            Spacer(Modifier.height(16.dp))
+            val rank = recap.myBetaTesterRank
+            if (rank != null) {
+                RevealItem(visible, 1) {
+                    Text(
+                        text = stringResource(Res.string.recap_betatester_your_rank),
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                RevealItem(visible, 2) {
+                    Text(
+                        text = stringResource(Res.string.recap_rank_number, rank),
+                        color = Color(0xFFFF5C5C),
+                        fontSize = 88.sp,
+                        fontWeight = FontWeight.Black
+                    )
+                }
+                RevealItem(visible, 3) {
+                    Text(
+                        text = stringResource(Res.string.recap_betatester_exception_count, formatCount(recap.myExceptionCount)),
+                        color = Color.White.copy(alpha = 0.75f),
+                        fontSize = 17.sp
+                    )
+                }
+            } else {
+                RevealItem(visible, 1) {
+                    Text(
+                        text = stringResource(Res.string.recap_betatester_clean_record),
+                        color = Color.White.copy(alpha = 0.85f),
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Medium,
+                        lineHeight = 28.sp
+                    )
+                }
+            }
+            Spacer(Modifier.height(28.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                recap.betaTesterRows.forEachIndexed { index, row ->
+                    RevealItem(visible, index + 4) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(
+                                    if (row.isMe) Color(0xFFFF5C5C).copy(alpha = 0.25f)
+                                    else Color.White.copy(alpha = 0.08f)
+                                )
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "#${row.rank}  ${row.username}",
+                                color = if (row.isMe) Color(0xFFFF5C5C) else Color.White,
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = formatCount(row.exceptionCount),
+                                color = Color.White.copy(alpha = 0.7f),
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun RecapPasswordResetPage(recap: RecapUi, visible: Boolean) {
+    RecapPageBackground(topColor = Color(0xFF4A3B00), bottomColor = Color(0xFF1F1800)) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center
+        ) {
+            RevealItem(visible, 0) {
+                Text(
+                    text = stringResource(Res.string.recap_password_title),
+                    color = Color(0xFFFFDF00),
+                    fontSize = 34.sp,
+                    fontWeight = FontWeight.Black,
+                    lineHeight = 40.sp
+                )
+            }
+            Spacer(Modifier.height(24.dp))
+            CountUpText(target = recap.passwordResetEmailsSentAllTime, running = visible, color = Color.White, fontSize = 76.sp)
+            RevealItem(visible, 1) {
+                Text(
+                    text = stringResource(Res.string.recap_password_reset_label),
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            if (recap.passwordResetEmailsSentThisYear > 0) {
+                Spacer(Modifier.height(12.dp))
+                RevealItem(visible, 2) {
+                    Text(
+                        text = stringResource(Res.string.recap_password_reset_this_year, recap.passwordResetEmailsSentThisYear.toInt()),
+                        color = Color(0xFFFFDF00),
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            Spacer(Modifier.height(20.dp))
+            RevealItem(visible, 3) {
+                Text(
+                    text = stringResource(Res.string.recap_password_reset_subtitle),
+                    color = Color.White.copy(alpha = 0.6f),
+                    fontSize = 15.sp
+                )
             }
         }
     }

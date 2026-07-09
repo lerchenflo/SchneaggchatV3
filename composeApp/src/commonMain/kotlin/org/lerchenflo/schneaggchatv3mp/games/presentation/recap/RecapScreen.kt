@@ -1,8 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.recap
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,8 +21,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +40,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapUi
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapBetaTesterPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapGamesPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapGroupsPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapIntroPage
@@ -47,6 +49,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapMapPa
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapMessagesReceivedPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapMessagesSentPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapOutroPage
+import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapPasswordResetPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapReactionsPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapRhythmPage
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.pages.RecapSocialPage
@@ -155,7 +158,7 @@ private fun RecapScreenLoadingPreview() {
 // The recap story pages in display order. Pages without data are skipped when building the list.
 private enum class RecapPageKind {
     INTRO, SENT, TYPING, RHYTHM, RECEIVED, TOP_CONTACTS, REACTIONS,
-    SOCIAL, GROUPS, LEADERBOARD, MAP, GAMES, OUTRO
+    SOCIAL, GROUPS, LEADERBOARD, MAP, GAMES, BETA_TESTER, PASSWORD_RESET, OUTRO
 }
 
 private fun buildPages(recap: RecapUi): List<RecapPageKind> = buildList {
@@ -171,6 +174,8 @@ private fun buildPages(recap: RecapUi): List<RecapPageKind> = buildList {
     if (recap.myRank != null || recap.leaderboardTop.isNotEmpty()) add(RecapPageKind.LEADERBOARD)
     if (recap.mapEntriesCreated > 0 || recap.mapEntriesCreatedAllTime > 0) add(RecapPageKind.MAP)
     if (recap.games.isNotEmpty()) add(RecapPageKind.GAMES)
+    add(RecapPageKind.BETA_TESTER)
+    if (recap.passwordResetEmailsSentAllTime > 0) add(RecapPageKind.PASSWORD_RESET)
     add(RecapPageKind.OUTRO)
 }
 
@@ -184,13 +189,22 @@ private fun RecapStories(
     val scope = rememberCoroutineScope()
 
     // Story-style auto-advance: fills the current segment, then moves to the next page.
+    // isPaused is read every frame (not used as a LaunchedEffect key) so a press-and-hold
+    // can freeze the fill in place without restarting or racing this effect.
+    var isPaused by remember { mutableStateOf(false) }
     val progress = remember { Animatable(0f) }
     LaunchedEffect(pagerState.currentPage) {
         progress.snapTo(0f)
-        progress.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(PAGE_AUTO_ADVANCE_MILLIS, easing = LinearEasing)
-        )
+        var elapsedMillis = 0L
+        var lastFrameNanos = -1L
+        while (elapsedMillis < PAGE_AUTO_ADVANCE_MILLIS) {
+            val frameNanos = withFrameNanos { it }
+            if (lastFrameNanos >= 0 && !isPaused) {
+                elapsedMillis += (frameNanos - lastFrameNanos) / 1_000_000
+                progress.snapTo((elapsedMillis.toFloat() / PAGE_AUTO_ADVANCE_MILLIS).coerceIn(0f, 1f))
+            }
+            lastFrameNanos = frameNanos
+        }
         val nextPage = pagerState.currentPage + 1
         if (nextPage <= pages.lastIndex) {
             // Scroll in the screen scope: currentPage flips mid-scroll, which restarts
@@ -203,21 +217,31 @@ private fun RecapStories(
         modifier = Modifier
             .fillMaxSize()
             // Tap zones: left third goes back, the rest advances (closes on the last page).
+            // A press-and-hold only pauses the story (like Instagram/Snapchat) instead of
+            // navigating: onLongPress suppresses the onTap that would otherwise fire on release.
             // Lives on the parent so pager swipes and page scrolling keep working.
             .pointerInput(pages.size) {
-                detectTapGestures { offset ->
-                    if (offset.x < size.width * 0.35f) {
-                        if (pagerState.currentPage > 0) {
-                            scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
-                        }
-                    } else {
-                        if (pagerState.currentPage < pages.lastIndex) {
-                            scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                detectTapGestures(
+                    onPress = {
+                        isPaused = true
+                        tryAwaitRelease()
+                        isPaused = false
+                    },
+                    onLongPress = { /* no-op: presence alone suppresses onTap on release */ },
+                    onTap = { offset ->
+                        if (offset.x < size.width * 0.35f) {
+                            if (pagerState.currentPage > 0) {
+                                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
+                            }
                         } else {
-                            onClose()
+                            if (pagerState.currentPage < pages.lastIndex) {
+                                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                            } else {
+                                onClose()
+                            }
                         }
                     }
-                }
+                )
             }
     ) {
         HorizontalPager(
@@ -251,6 +275,8 @@ private fun RecapStories(
                     RecapPageKind.LEADERBOARD -> RecapLeaderboardPage(recap, visible)
                     RecapPageKind.MAP -> RecapMapPage(recap, visible)
                     RecapPageKind.GAMES -> RecapGamesPage(recap, visible)
+                    RecapPageKind.BETA_TESTER -> RecapBetaTesterPage(recap, visible)
+                    RecapPageKind.PASSWORD_RESET -> RecapPasswordResetPage(recap, visible)
                     RecapPageKind.OUTRO -> RecapOutroPage(recap, visible)
                 }
             }

@@ -10,6 +10,7 @@
     <string name="search_friend">In Freunden suchen ...</string>
     <string name="no_status">kein Status</string>
     <string name="unknown_user">unbekannter Nutzer</string>
+    <string name="chat_last_seen_status">zuletzt Online %1$s</string>
 
     <string name="usersync">Benutzerdaten</string>
     <string name="groupsync">Gruppendaten</string>
@@ -137,7 +138,7 @@
 
     <string name="send_to">Senden an ...</string>
 
-    <string name="theme">Theme</string>
+    <string name="theme">Design</string>
     <string name="theme_sel_desc">Ändere das Aussehen deiner App</string>
 
     <string name="camera">Kamera</string>
@@ -252,6 +253,13 @@
     <string name="schneaggmap_settings_info">Ändere deine Mapeinstellungen</string>
     <string name="merge_map_locations">Orte beim Zoomen zusammenführen</string>
     <string name="merge_map_locations_info">Orte mit wenig Abstand werden beim Zoomen zu einem Ort zusammengefügt</string>
+    <string name="schneaggmap_map_style">Mapdesign</string>
+    <string name="schneaggmap_map_style_info">Verschiedene Maptypen auswählen</string>
+    <string name="map_style_liberty">Liberty</string>
+    <string name="map_style_bright">Hell</string>
+    <string name="map_style_positron">Positron</string>
+    <string name="map_style_dark">Dunkel</string>
+    <string name="map_style_fiord">Fiord</string>
     <string name="share_location_global">Meinen Standort teilen</string>
     <string name="share_location_global_info">AusgewähltenFreunden deinen Standort auf der Karte zeigen</string>
     <string name="share_location_friends_title">Teilen mit</string>
@@ -379,7 +387,7 @@
     <!-- Language settings -->
     <string name="system_language">System</string>
     <string name="german_language">Deutsch (Deutschland)</string>
-    <string name="english_language">English</string>
+    <string name="english_language">Englisch</string>
     <string name="vori_language">Vori</string>
     <string name="language">Sprache</string>
     <string name="language_sel_desc">Wähle die Sprache deiner App</string>
@@ -390,6 +398,13 @@
     <string name="games_stack_tower">Stack Tower</string>
     <string name="games_morse_title">Morse</string>
     <string name="games_morse_press_hint">Drücke · kurz / lang −</string>
+    <string name="games_coinflip_title">Münzwurf</string>
+    <string name="games_coinflip_tails_label">Zahlenfolge</string>
+    <string name="games_coinflip_tails_default">Zahl</string>
+    <string name="games_coinflip_heads">Kopf</string>
+    <string name="games_coinflip_flip">werfen</string>
+    <string name="games_coinflip_flipping">wirft...</string>
+    <string name="games_coinflip_swipe_hint">Nach oben wischen oder auf den Button tippen zum Werfen</string>
     <string name="games_morse_invalid">Kein Buchstabe für diesen Code</string>
 
     <!-- Games: DartCounter -->
@@ -405,8 +420,8 @@
     <string name="dartcounter_undo">Rückgängig</string>
     <string name="dartcounter_list_separator">, </string>
     <string name="dartcounter_winners_format">Gewinner: %1$s</string>
-    <string name="dartcounter_current_player_format">Current Player: %1$s, (Dart %2$d/3)</string>
-    <string name="dartcounter_avg_format">Avg: %1$s</string>
+    <string name="dartcounter_current_player_format">Aktueller Spieler: %1$s, (Dart %2$d/3)</string>
+    <string name="dartcounter_avg_format">Schnitt: %1$s</string>
     <string name="dartcounter_finished_suffix"> ✓</string>
     <string name="dartcounter_player_name_label">Spielername</string>
     <string name="dartcounter_add">Hinzufügen</string>
@@ -568,13 +583,12 @@
 
 
 
-    <string name="highscores_not_implemented_warning">Öffentliche Highscores sind noch nicht eingebaut!</string>
     <string name="audio_playback_on_desktop_not_supported_yet">Audios abspielen ist auf Desktop aktuell nicht unterstützt</string>
 
 
     <!-- Bug Report Dialog -->
-    <string name="bugreportdialog_title_bug">Bug Report</string>
-    <string name="bugreportdialog_title_feature">Feature Request</string>
+    <string name="bugreportdialog_title_bug">Fehlermeldung</string>
+    <string name="bugreportdialog_title_feature">Featureanfrage</string>
     <string name="bugreportdialog_type_bug">Bug</string>
     <string name="bugreportdialog_type_feature">Feature</string>
     <string name="bugreportdialog_field_title">Titel *</string>
@@ -613,24 +627,146 @@
     <string name="yatzi_back_to_menu">Zurück</string>
     <string name="yatzi_no_active_game">Kein aktuelles Spiel.</string>
     <string name="yatzi_category">Kategorie</string>
-    <string name="yatzi_upper_sum">Upper Sum</string>
+    <string name="yatzi_upper_sum">Obere Summe</string>
     <string name="yatzi_bonus">Bonus</string>
     <string name="yatzi_total">Gesammt</string>
     <string name="yatzi_roll_dice">Würfeln, %1$d left</string>
     <string name="yatzi_roll_again">Erneut Würfeln, %1$d left</string>
 
+    <!-- Games: shared flow -->
+    <string name="game_tap_anywhere_to_start">Tippe irgendwo, um zu starten</string>
+    <string name="game_stop">Spiel stoppen</string>
+    <string name="game_exit">Verlassen</string>
+
+    <!-- Games: Tetris -->
+    <string name="games_tetris_title">Tetris</string>
+    <string name="games_tetris_score">Punkte: %1$d</string>
+    <string name="games_tetris_pause_resume">Pause/Fortsetzen</string>
+    <string name="games_tetris_restart">Neustart</string>
+    <string name="games_tetris_instructions">Wische nach links oder rechts, um den fallenden Stein zu bewegen, tippe, um ihn zu drehen, wische nach unten für schnelleren Fall und halte gedrückt, um ihn sofort fallen zu lassen.\n\nVolle Reihen bringen Punkte — das Spiel wird mit der Zeit schneller!</string>
+
+    <!-- Games: Tower Stack -->
+    <string name="games_tower_stack_tap_to_start">Zum Starten tippen</string>
+    <string name="games_tower_stack_instructions">Staple die Plattformen so hoch du kannst!\n\nTippe, um jede Plattform zu platzieren.\nPerfekte Ausrichtung erhöht deinen Punktestand.\nAlle 5 Punkte wird es schneller!</string>
+    <string name="games_tower_stack_score">Punkte</string>
+    <string name="games_tower_stack_speed_up">⚡ Schneller!</string>
+    <string name="games_tower_stack_tap_to_place">&#128070; Zum Platzieren tippen!</string>
+
+    <!-- Games: Schneaggahus -->
+    <string name="games_schneaggahus_title">Schneaggahus</string>
+    <string name="games_schneaggahus_instructions">Schneagga krabbeln aus dem Startpunkt und folgen den Gleisen. Tippe auf die Weichen, um die Gleise umzuleiten, und lenke jeden Schneagg zum Haus seiner Farbe.\n\nJede richtige Zustellung bringt Punkte — sobald 3 Schneaggs im falschen Haus gelandet sind, ist das Spiel vorbei. Je länger du überlebst, desto schneller kommen neue Schneaggs!</string>
+
+    <!-- Games: Grid Rush -->
+    <string name="games_daily_section">Tägliche Challenge</string>
+    <string name="games_gridrush_title">Grid Rush</string>
+    <string name="games_gridrush_instructions">Ziehe eine Linie durch benachbarte Felder derselben Farbe — lässt du bei 2 oder mehr Feldern los, verschwinden sie und die Felder darüber rutschen nach unten. Räume das ganze Feld leer, um zu gewinnen!\n\nLängere Ketten bringen mehr Punkte, und wer unter dem Par bleibt, bekommt einen Bonus. Berühren sich keine zwei gleichfarbigen Felder mehr, ist der Versuch vorbei. Jeder spielt jeden Tag dasselbe Feld — der Timer startet erst mit deinem ersten Zug, also plane voraus!</string>
+    <string name="games_gridrush_moves">Züge: %1$d / Par %2$d</string>
+
+    <!-- Games: Morse -->
+    <string name="games_morse_clear">Löschen</string>
+    <string name="games_morse_instructions">Drücke den großen Knopf, um Morsesignale zu senden: ein kurzer Druck ist ein Punkt (·), ein langer Druck ein Strich (−). Der Baum zeigt, zu welchem Buchstaben dein Code führt.\n\nTippe den angezeigten Text in Morsecode — jeder richtige Buchstabe bringt Punkte, nach 3 Fehlern ist das Spiel vorbei.</string>
+
     <!-- Recap -->
-    <string name="recap_your_year"/>
-    <string name="recap_using_schneaggchat_in_numbers"/>
-    <string name="recap_in_year_you_had_a_lot_to_say"/>
-    <string name="recap_others_sent_you"/>
-    <string name="recap_messages"/>
-    <string name="recap_you_sent"/>
-    <string name="recap_messages_to_favorite_humans"/>
-    <string name="recap_new_friends_found"/>
-    <string name="recap_you_have"/>
-    <string name="recap_are_now_your_friends"/>
-    <string name="recap_texts_number"/>
+    <string name="recap_your_year">Dein Jahr</string>
+    <string name="recap_using_schneaggchat_in_numbers">Schneaggchat in Zahlen</string>
+    <string name="recap_in_year_you_had_a_lot_to_say">Im Jahr %1$d hattest du eine Menge zu sagen.</string>
+    <string name="recap_others_sent_you">Dieses Jahr haben andere Leute dir</string>
+    <string name="recap_others_sent_you_suffix">Nachrichten geschickt</string>
+    <string name="recap_you_sent">Du hast</string>
+    <string name="recap_messages_to_favorite_humans">Nachrichten an deine Lieblingsmenschen geschickt.</string>
+    <string name="recap_new_friends_found">Neue Freunde gefunden</string>
+    <string name="recap_you_have">Du hast</string>
+    <string name="recap_are_now_your_friends">neue Freunde dazugewonnen.</string>
+    <string name="recap_texts_number">%1$d Texte</string>
+    <string name="recap_loading">Deine Zahlen werden berechnet…</string>
+    <string name="recap_load_failed">Dein Recap konnte nicht geladen werden.</string>
+    <string name="recap_retry">Erneut versuchen</string>
+    <string name="recap_hello">Hey %1$s!</string>
+    <string name="recap_member_since">Dabei seit %1$s — das sind %2$d Tage.</string>
+    <string name="recap_logins_this_year">Du hast dich dieses Jahr %1$s mal eingeloggt.</string>
+    <string name="recap_all_time_messages">%1$s Nachrichten insgesamt</string>
+    <string name="recap_type_text">Texte</string>
+    <string name="recap_type_image">Bilder</string>
+    <string name="recap_type_audio">Sprachnachrichten</string>
+    <string name="recap_type_poll">Umfragen</string>
+    <string name="recap_typing_title">Deine Tastatur hat's gespürt.</string>
+    <string name="recap_characters_typed">Zeichen getippt</string>
+    <string name="recap_words_typed">%1$s Wörter insgesamt</string>
+    <string name="recap_avg_message_length">Ø %1$d Zeichen pro Nachricht</string>
+    <string name="recap_longest_message">Deine längste Nachricht: %1$d Zeichen</string>
+    <string name="recap_longest_message_to">gesendet an %1$s</string>
+    <string name="recap_rhythm_title">Du hast einen Rhythmus.</string>
+    <string name="recap_busiest_day">Dein aktivster Tag: %1$s</string>
+    <string name="recap_busiest_day_messages">%1$d Nachrichten an einem einzigen Tag</string>
+    <string name="recap_busiest_hour">Prime Time: %1$d:00</string>
+    <string name="recap_streak_days">%1$d Tage</string>
+    <string name="recap_streak_label">Deine längste Tagesserie</string>
+    <string name="recap_most_active_month">%1$s war dein lautester Monat</string>
+    <string name="recap_first_message_ever">Deine allererste Nachricht: %1$s</string>
+    <string name="recap_popular">Du bist irgendwie eine große Nummer.</string>
+    <string name="recap_inner_circle">Dein innerer Kreis.</string>
+    
+    <string name="recap_from_you_from_them">%1$s von dir · %2$s von ihnen</string>
+    <string name="recap_reactions_title">Du hast Liebe verteilt.</string>
+    <string name="recap_reactions_given">Reaktionen vergeben</string>
+    <string name="recap_reactions_received">%1$s Reaktionen erhalten</string>
+    <string name="recap_top_emoji_given">Deine Signatur-Emojis</string>
+    <string name="recap_top_emoji_received">Was du zurückbekommen hast</string>
+    <string name="recap_most_reacted_message">Deine meistreagierte Nachricht (%1$d Reaktionen):</string>
+    <string name="recap_social_title">Dein Kreis ist gewachsen.</string>
+    <string name="recap_friends_label">Freunde an deiner Seite</string>
+    <string name="recap_new_friends_this_year">%1$d neu dieses Jahr</string>
+    <string name="recap_friend_requests_sent">%1$d Freundschaftsanfragen gesendet</string>
+    <string name="recap_polls_created">%1$d Umfragen erstellt</string>
+    <string name="recap_poll_votes_cast">%1$d Umfrage-Stimmen abgegeben</string>
+    <string name="recap_groups_title">Gruppenchats. Wunderschönes Chaos.</string>
+    <string name="recap_groups_member_of">Gruppen, in denen du Mitglied bist</string>
+    <string name="recap_groups_created">%1$d von dir erstellt</string>
+    <string name="recap_most_active_group">Deine lauteste Gruppe</string>
+    <string name="recap_group_message_count">%1$s Nachrichten</string>
+    <string name="recap_leaderboard_title">Die globalen Charts.</string>
+    <string name="recap_your_rank">Von allen auf Schneaggchat hast du Rang</string>
+    <string name="recap_rank_number">#%1$d</string>
+    <string name="recap_leaderboard_messages">%1$s Nachrichten dieses Jahr gesendet</string>
+    <string name="recap_map_title">Du hast deine Schleimspur hinterlassen.</string>
+    <string name="recap_map_created">Karteneinträge dieses Jahr erstellt</string>
+    <string name="recap_map_edited">%1$d Einträge bearbeitet</string>
+    <string name="recap_map_all_time">%1$d insgesamt erstellt</string>
+    <string name="recap_games_title">Zertifizierter Zocker.</string>
+    <string name="recap_games_rank">Rang #%1$d</string>
+    <string name="recap_games_score">Bester Punktestand: %1$s</string>
+
+    <string name="recap_betatester_title">Zertifizierter Beta-Tester.</string>
+    <string name="recap_betatester_your_rank">Von allen, die Schneaggchat je fast zum Absturz gebracht haben, liegst du auf Platz</string>
+    <string name="recap_betatester_exception_count">%1$s Systemfehler verursacht</string>
+    <string name="recap_betatester_clean_record">Du hast Schneaggchat getestet, aber es ist nichts Schlimmes passiert.</string>
+
+    <string name="recap_password_title">Du kommst mit einem guten Passwort nicht klar.</string>
+    <string name="recap_password_reset_label">Passwort-Reset-E-Mails erhalten</string>
+    <string name="recap_password_reset_this_year">davon %1$d dieses Jahr</string>
+    <string name="recap_password_reset_subtitle">Schreib es dir diesmal vielleicht auf.</string>
+
+    <string name="recap_outro_title">Das war's, %1$s.</string>
+    <string name="recap_outro_subtitle">Bis nächstes Jahr. Bleib schleimig.</string>
+    <string name="recap_outro_messages">Nachrichten</string>
+    <string name="recap_outro_friends">Freunde</string>
+    <string name="recap_outro_reactions">Reaktionen</string>
+    <string name="recap_outro_streak">Tage-Serie</string>
+    <string name="recap_tap_hint">Tippen, um fortzufahren</string>
+
+    <!-- Month names -->
+    <string name="month_january">Januar</string>
+    <string name="month_february">Februar</string>
+    <string name="month_march">März</string>
+    <string name="month_april">April</string>
+    <string name="month_may">Mai</string>
+    <string name="month_june">Juni</string>
+    <string name="month_july">Juli</string>
+    <string name="month_august">August</string>
+    <string name="month_september">September</string>
+    <string name="month_october">Oktober</string>
+    <string name="month_november">November</string>
+    <string name="month_december">Dezember</string>
 
     <!-- Changelog Popup -->
     <string name="changelog_whats_new">Neuigkeiten</string>
@@ -655,13 +791,44 @@
 
     <string name="schneaggmap_entry_delete">Diesen Eintrag löschen. Er wird auch für alle anderen gelöscht. Du wirst ihn nicht wiederherstellen können.</string>
 
-    <string name="latlong">Lat %1$s, Long %2$s</string>
-    <string name="latitude">Latitude</string>
-    <string name="longitude">Longitude</string>
+    <string name="latlong">Breite %1$s, Länge %2$s</string>
+    <string name="open_location_in_maps">In Maps öffnen</string>
+    <string name="latitude">Breitengrad</string>
+    <string name="longitude">Längengrad</string>
 
     <string name="schneaggmap_user_last_online_label">Zuletzt online</string>
     <string name="schneaggmap_user_distance_label">Entfernung</string>
     <string name="schneaggmap_user_online">Online</string>
+
+    <!-- Game highscores -->
+    <string name="highscores_title">Bestenliste</string>
+    <string name="highscores_error">Bestenliste konnte nicht geladen werden</string>
+    <string name="highscores_empty">Noch keine Bestenliste</string>
+    <string name="highscores_period_daily">Heute</string>
+    <string name="highscores_period_weekly">Diese Woche</string>
+    <string name="highscores_period_yearly">Dieses Jahr</string>
+    <string name="highscores_period_all_time">Gesamt</string>
+    <string name="game_over">Spiel vorbei!</string>
+    <string name="game_over_final_score">Endpunktestand: %1$d</string>
+    <string name="game_over_final_time">Zeit: %1$s</string>
+    <string name="game_restart">Neustart</string>
+    <string name="show_highscores">Bestenliste anzeigen</string>
+    <string name="difficulty_low">Niedrig</string>
+    <string name="difficulty_medium">Mittel</string>
+    <string name="difficulty_high">Hoch</string>
+    <string name="games_without_highscores">Spiele ohne Bestenliste</string>
+
+    <!-- Morse challenge -->
+    <string name="morse_challenge_start">Challenge starten</string>
+    <string name="morse_challenge_stop">Challenge verlassen</string>
+    <string name="morse_challenge_score">Punkte: %1$d</string>
+    <string name="morse_challenge_type_text">Tippe den Text in Morsecode:</string>
+
+    <!-- Location Groups -->
+    <string name="location_group_street">Straße</string>
+    <string name="location_group_nature_activities">Natur &amp; Aktivitäten</string>
+    <string name="location_group_social_entertainment">Sozial &amp; Unterhaltung</string>
+    <string name="location_group_food">Essen</string>
 
     <!-- Location Types -->
     <string name="location_type_radar">Radar</string>

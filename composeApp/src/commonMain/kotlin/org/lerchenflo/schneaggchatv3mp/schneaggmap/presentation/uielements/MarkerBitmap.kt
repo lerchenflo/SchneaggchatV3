@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.ImageBitmapConfig
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
@@ -21,7 +22,10 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.math.roundToInt
+import kotlin.math.sin
 
 /**
  * Composites [profilePicture] (scaled into a [pictureSize] square, top/top-center) with
@@ -109,6 +113,83 @@ fun mergeProfilePictureWithStatusText(
             textLayoutResult = statusLayout,
             topLeft = Offset(pillLeft + (pillWidth - statusLayout.size.width) / 2f, statusTop),
         )
+    }
+
+    return result
+}
+
+/**
+ * Composites [profilePictures] into a ring around a translucent [backgroundColor] disc, with a
+ * [beerIcon] between each adjacent pair of avatars - a "Hock" (group hangout) marker for several
+ * users merged into one point on the map. [avatarSize] is the diameter of each avatar; the ring
+ * radius and beer size scale off of it.
+ */
+fun mergeClusterAvatarsIcon(
+    profilePictures: List<ImageBitmap>,
+    beerIcon: ImageBitmap,
+    backgroundColor: Color,
+    density: Density,
+    avatarSize: Dp = 24.dp,
+): ImageBitmap {
+    val avatarSizePx = with(density) { avatarSize.toPx() }
+    val borderWidthPx = with(density) { 2.dp.toPx() }
+    val smallBeerSizePx = avatarSizePx * 0.45f
+    val ringRadiusPx = avatarSizePx * 1.05f
+    val smallBeerRadiusPx = avatarSizePx * 0.7f
+
+    val canvasRadiusPx = ringRadiusPx + avatarSizePx / 2f + borderWidthPx
+    val canvasSizePx = canvasRadiusPx * 2f
+
+    val result = ImageBitmap(
+        width = canvasSizePx.roundToInt().coerceAtLeast(1),
+        height = canvasSizePx.roundToInt().coerceAtLeast(1),
+        config = ImageBitmapConfig.Argb8888,
+        hasAlpha = true,
+    )
+
+    fun DrawScope.drawCenteredImage(image: ImageBitmap, center: Offset, size: Float) {
+        drawImage(
+            image = image,
+            srcOffset = IntOffset.Zero,
+            srcSize = IntSize(image.width, image.height),
+            dstOffset = IntOffset((center.x - size / 2f).roundToInt(), (center.y - size / 2f).roundToInt()),
+            dstSize = IntSize(size.roundToInt(), size.roundToInt()),
+        )
+    }
+
+    CanvasDrawScope().draw(
+        density = density,
+        layoutDirection = LayoutDirection.Ltr,
+        canvas = Canvas(result),
+        size = Size(canvasSizePx, canvasSizePx),
+    ) {
+        val center = Offset(canvasRadiusPx, canvasRadiusPx)
+
+        //Translucent disc, like a table seen from above.
+        drawCircle(color = backgroundColor, radius = canvasRadiusPx, center = center)
+
+        val count = profilePictures.size
+        if (count > 0) {
+            val angleStep = (2 * PI / count).toFloat()
+            profilePictures.forEachIndexed { index, avatar ->
+                val angle = index * angleStep
+
+                //Avatar on the outer ring.
+                val avatarCenter = Offset(
+                    center.x + ringRadiusPx * cos(angle),
+                    center.y + ringRadiusPx * sin(angle),
+                )
+                drawCenteredImage(avatar, avatarCenter, avatarSizePx)
+
+                //Beer drawn on top of the avatar, pulled towards the center so it faces inward -
+                //as if each person is holding it out towards the middle of the table.
+                val beerCenter = Offset(
+                    center.x + smallBeerRadiusPx * cos(angle),
+                    center.y + smallBeerRadiusPx * sin(angle),
+                )
+                drawCenteredImage(beerIcon, beerCenter, smallBeerSizePx)
+            }
+        }
     }
 
     return result

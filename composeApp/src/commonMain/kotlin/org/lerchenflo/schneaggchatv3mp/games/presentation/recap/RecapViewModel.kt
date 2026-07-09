@@ -12,6 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onSuccess
+import org.lerchenflo.schneaggchatv3mp.games.domain.BetaTesterRowUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.EmojiCountUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameRecapUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.GroupActivityUi
@@ -209,6 +210,20 @@ class RecapViewModel(
                         rank = it.rank
                     )
                 },
+
+            betaTesterRows = betaTester.all.map {
+                BetaTesterRowUi(
+                    rank = it.rank,
+                    username = it.username,
+                    exceptionCount = it.exceptionCount,
+                    isMe = it.userId == account.userId
+                )
+            },
+            myBetaTesterRank = betaTester.myRank,
+            myExceptionCount = betaTester.myExceptionCount,
+
+            passwordResetEmailsSentThisYear = passwordResets.passwordResetEmailsSentThisYear,
+            passwordResetEmailsSentAllTime = passwordResets.passwordResetEmailsSentAllTime,
         )
     }
 

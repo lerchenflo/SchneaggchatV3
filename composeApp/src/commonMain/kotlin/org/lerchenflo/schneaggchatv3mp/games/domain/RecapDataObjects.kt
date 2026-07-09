@@ -22,6 +22,8 @@ data class RecapResponse(
     val groups: GroupsRecapDto,
     val map: MapRecapDto,
     val games: List<GameRecapEntryDto>,
+    val betaTester: BetaTesterRecapDto = BetaTesterRecapDto(),
+    val passwordResets: PasswordResetRecapDto = PasswordResetRecapDto(),
 )
 
 @Serializable
@@ -160,6 +162,27 @@ data class GameRecapEntryDto(
     val achievedAt: Long,
 )
 
+@Serializable
+data class BetaTesterRowDto(
+    val rank: Int,
+    val userId: String,
+    val username: String,
+    val exceptionCount: Long,
+)
+
+@Serializable
+data class BetaTesterRecapDto(
+    val all: List<BetaTesterRowDto> = emptyList(),
+    val myRank: Int? = null,
+    val myExceptionCount: Long = 0,
+)
+
+@Serializable
+data class PasswordResetRecapDto(
+    val passwordResetEmailsSentThisYear: Long = 0,
+    val passwordResetEmailsSentAllTime: Long = 0,
+)
+
 // ─── UI models (formatted, enriched with local data) ──────────────────────
 
 data class RecapUi(
@@ -214,6 +237,13 @@ data class RecapUi(
     val mapEntriesCreatedAllTime: Long,
 
     val games: List<GameRecapUi>,
+
+    val betaTesterRows: List<BetaTesterRowUi>,
+    val myBetaTesterRank: Int?,
+    val myExceptionCount: Long,
+
+    val passwordResetEmailsSentThisYear: Long,
+    val passwordResetEmailsSentAllTime: Long,
 )
 
 data class MessageTypeCountUi(
@@ -269,4 +299,11 @@ data class GameRecapUi(
     val difficulty: String,
     val bestScore: Long,
     val rank: Int,
+)
+
+data class BetaTesterRowUi(
+    val rank: Int,
+    val username: String,
+    val exceptionCount: Long,
+    val isMe: Boolean,
 )
