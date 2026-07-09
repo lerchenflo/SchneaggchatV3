@@ -22,6 +22,7 @@ data class SchneaggmapState(
 
     val selectedEntry: MapEntry? = null,
     val selectedUser: User? = null,
+    val ownUser: User? = null,
 
     val locationPermissionGranted: Boolean = false,
     val ownLocationShared: Boolean = false,

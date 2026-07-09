@@ -17,6 +17,7 @@ sealed interface SchneaggmapAction {
     data class OnMapClick(val coordinates: LatLong, val longClick: Boolean) : SchneaggmapAction
     data class OnEntryClick(val entryId: String) : SchneaggmapAction
     data class OnUserClick(val userId: String) : SchneaggmapAction
+    data object OnOwnUserClick : SchneaggmapAction
     data class OnOpenChatClick(val user: User) : SchneaggmapAction
 
     data object OnPopupDismiss: SchneaggmapAction

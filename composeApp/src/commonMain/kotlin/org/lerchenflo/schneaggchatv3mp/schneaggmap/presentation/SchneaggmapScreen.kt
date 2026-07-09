@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Navigation
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Polyline
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
@@ -59,9 +60,11 @@ import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.CAMPING
@@ -86,6 +89,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.Shown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.mergeClusterAvatarsIcon
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.mergeProfilePictureWithStatusText
+import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import org.maplibre.compose.camera.CameraMoveReason
 import org.maplibre.compose.camera.CameraPosition
@@ -143,6 +147,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
+import kotlin.time.Clock
 
 private const val OWN_LOCATION_START_ZOOM = 14.0
 private const val OWN_LOCATION_CLICK_ZOOM = 16.0
@@ -321,6 +326,15 @@ fun SchneaggmapScreen(
                     Icon(Icons.Default.Settings, contentDescription = null)
                 }
 
+                FloatingActionButton(
+                    onClick = { onAction(SchneaggmapAction.OnOwnUserClick) },
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier.padding(start = 8.dp),
+                ) {
+                    Icon(Icons.Default.Person, contentDescription = null)
+                }
+
                 DisappearingCompassButton(
                     cameraState = cameraState,
                     modifier = Modifier.padding(start = 8.dp),
@@ -450,9 +464,32 @@ fun SchneaggmapScreen(
         }
 
         state.selectedUser?.let { user ->
+            val isOwnUser = user.id == SessionCache.requireLoggedIn()?.userId
+            val batteryService = koinInject<BatteryService>()
+
+            //Own user has no synced `location` in the local DB (only ever pushed to the server,
+            //never written back) - build it from the same live GPS fix the map puck already uses.
+            val displayUser = if (isOwnUser) {
+                user.copy(
+                    location = ownLocation?.let { location ->
+                        UserLocation(
+                            lat = location.position.value.latitude,
+                            long = location.position.value.longitude,
+                            date = Clock.System.now().toEpochMilliseconds(),
+                            speed = location.speed?.distancePerSecond?.inMeters,
+                            heading = location.course?.value?.let { bearing -> (bearing - Bearing.North).inDegrees },
+                            altitude = location.position.value.altitude,
+                            batteryLevel = batteryService.getBatteryLevel(),
+                        )
+                    }
+                )
+            } else {
+                user
+            }
+
             UserInfoCard(
-                user = user,
-                isOnline = user.id in state.onlineFriendIds,
+                user = displayUser,
+                isOnline = isOwnUser || user.id in state.onlineFriendIds,
                 ownLocation = ownLocation?.position?.value?.let { position ->
                     LatLong(lat = position.latitude, long = position.longitude)
                 },
@@ -462,6 +499,7 @@ fun SchneaggmapScreen(
                 onOpenChat = { clickedUser ->
                     onAction(SchneaggmapAction.OnOpenChatClick(clickedUser))
                 },
+                isOwnUser = isOwnUser,
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
         }

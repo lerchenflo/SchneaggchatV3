@@ -660,6 +660,11 @@
     <string name="games_gridrush_instructions">Drag a line through neighboring tiles of the same color — releasing on 2 or more tiles clears them and the tiles above fall down. Clear the whole board to win!\n\nLonger chains score more points and finishing under par earns a bonus. If no two matching tiles touch anymore, the run is over. Everyone plays the same board each day — the timer only starts with your first move, so plan ahead!</string>
     <string name="games_gridrush_moves">Moves: %1$d / Par %2$d</string>
 
+    <!-- Games: Odd One Out -->
+    <string name="games_oddoneout_title">Odd One Out</string>
+    <string name="games_oddoneout_instructions">A grid of tiles appears — every tile is identical except one. Tap the odd one out before the timer runs out!\n\nA correct tap scores more points the faster you find it. A wrong tap or a timeout costs one of your 3 lives — lose them all and the run ends. Rounds get faster and the odd tile gets sneakier the longer you survive!</string>
+    <string name="games_oddoneout_lives_remaining">%1$d lives remaining</string>
+
     <!-- Games: Morse -->
     <string name="games_morse_clear">Clear</string>
     <string name="games_morse_instructions">Press the big button to send morse signals: a short press is a dot (·), a long press is a dash (−). The tree shows which letter your code leads to.\n\nType the shown text in morse code — each correct letter scores points, after 3 mistakes the game is over.</string>

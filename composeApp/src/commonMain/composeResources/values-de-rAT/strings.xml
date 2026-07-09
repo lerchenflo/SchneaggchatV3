@@ -641,28 +641,33 @@
     <string name="games_tetris_score">Punkte: %1$d</string>
     <string name="games_tetris_pause_resume">Pause/Witta</string>
     <string name="games_tetris_restart">Neustart</string>
-    <string name="games_tetris_instructions"/>
+    <string name="games_tetris_instructions">Wüsch nach links oder rechts, zum die fallanda Stüa zum Bewega. Tippa zum Dreha, nach unta wüscha oda heba zum schneall abe tua.\n\nVolle Reiha bringand Punkte. Es wird mit da zit schnealla!</string>
 
     <!-- Games: Tower Stack -->
     <string name="games_tower_stack_tap_to_start">Zum Starta tippa</string>
-    <string name="games_tower_stack_instructions"/>
+    <string name="games_tower_stack_instructions">Stapl die Plattforma so hoch wie du kannsch!\n\nTippa um a Plattform zum platziera.\nWenns perfekt platziert hosch kriagsch Extrapunkte. \nAlle 5 Punkte wirds schnealla!</string>
     <string name="games_tower_stack_score">Punkte</string>
     <string name="games_tower_stack_speed_up">⚡ Schnealla!</string>
     <string name="games_tower_stack_tap_to_place">&#128070; Zum Platziera tippa!</string>
 
     <!-- Games: Schneaggahus -->
     <string name="games_schneaggahus_title">Schneaggahus</string>
-    <string name="games_schneaggahus_instructions"/>
+    <string name="games_schneaggahus_instructions">Schneagga krabbeln us am Startpunkt und folgen dam Weag. Tipp uf die Weichen, um die Gleise umleiten, und lenke jeden Schneagg zu sinem Hus.\n\nJede richtige Zustellung bringt Punkte — sobald 3 Schneagga im falscha Hus glandet sind, ischas Spiel vorbei. Je länger du überleabsch, desto schneller kumman neue Schneagga!</string>
 
     <!-- Games: Grid Rush -->
     <string name="games_daily_section">Täglische Challenge</string>
     <string name="games_gridrush_title">Grid Rush</string>
-    <string name="games_gridrush_instructions"/>
+    <string name="games_gridrush_instructions">Züh a Linie durch benachbarte Felder mit da glicha Farb — wenn  du loslosch verschwindand die Fealda und die drübat rutschand abe.\n\nDin Highscore zellt nur wenn du alle Blöck wekkriagsch. Jeden Tag ändert sich s Spielfeld, jeder kriagt s gliche.</string>
     <string name="games_gridrush_moves">Züge: %1$d / Par %2$d</string>
+
+    <!-- Games: Odd One Out -->
+    <string name="games_oddoneout_title">Odd One Out</string>
+    <string name="games_oddoneout_instructions">A Raster us Fealda kut, alle luagand glich us außer uans. Druck druf und es kut a neues Feald. Umso schnealla umso besser.</string>
+    <string name="games_oddoneout_lives_remaining">%1$d Lebaba übrig</string>
 
     <!-- Games: Morse -->
     <string name="games_morse_clear">Löscha</string>
-    <string name="games_morse_instructions"/>
+    <string name="games_morse_instructions">Druck da große Knopf zum Morsesignale senda. Kurza Druck isch an Punkt (·), an langer Druck an Strich (−). Da Bom zoagt wo du grad anenavigiersch, zu wellam Buchstabe.\n\nTipp ab was oba stoht, jeder richtige Buchstabe git Punkte.</string>
 
     <!-- Recap -->
     <string name="recap_your_year">Din Joar</string>

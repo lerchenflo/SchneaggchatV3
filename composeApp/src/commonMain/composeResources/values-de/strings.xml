@@ -654,13 +654,18 @@
 
     <!-- Games: Schneaggahus -->
     <string name="games_schneaggahus_title">Schneaggahus</string>
-    <string name="games_schneaggahus_instructions">Schneagga krabbeln aus dem Startpunkt und folgen den Gleisen. Tippe auf die Weichen, um die Gleise umzuleiten, und lenke jeden Schneagg zum Haus seiner Farbe.\n\nJede richtige Zustellung bringt Punkte — sobald 3 Schneaggs im falschen Haus gelandet sind, ist das Spiel vorbei. Je länger du überlebst, desto schneller kommen neue Schneaggs!</string>
+    <string name="games_schneaggahus_instructions">Schneagga krabbeln aus dem Startpunkt und folgen den Gleisen. Tippe auf die Weichen, um die Gleise umzuleiten, und lenke jeden Schneagg zum Haus seiner Farbe.\n\nJede richtige Zustellung bringt Punkte — sobald 3 Schneagga im falschen Haus gelandet sind, ist das Spiel vorbei. Je länger du überlebst, desto schneller kommen neue Schneagga!</string>
 
     <!-- Games: Grid Rush -->
     <string name="games_daily_section">Tägliche Challenge</string>
     <string name="games_gridrush_title">Grid Rush</string>
     <string name="games_gridrush_instructions">Ziehe eine Linie durch benachbarte Felder derselben Farbe — lässt du bei 2 oder mehr Feldern los, verschwinden sie und die Felder darüber rutschen nach unten. Räume das ganze Feld leer, um zu gewinnen!\n\nLängere Ketten bringen mehr Punkte, und wer unter dem Par bleibt, bekommt einen Bonus. Berühren sich keine zwei gleichfarbigen Felder mehr, ist der Versuch vorbei. Jeder spielt jeden Tag dasselbe Feld — der Timer startet erst mit deinem ersten Zug, also plane voraus!</string>
     <string name="games_gridrush_moves">Züge: %1$d / Par %2$d</string>
+
+    <!-- Games: Odd One Out -->
+    <string name="games_oddoneout_title">Odd One Out</string>
+    <string name="games_oddoneout_instructions">Ein Raster aus Feldern erscheint — alle Felder sind identisch bis auf eins. Tippe das andersartige Feld an, bevor die Zeit abläuft!\n\nJe schneller du es findest, desto mehr Punkte gibt es. Ein falscher Tipp oder eine abgelaufene Zeit kostet eines deiner 3 Leben — sind alle aufgebraucht, ist der Versuch vorbei. Die Runden werden schneller und das andersartige Feld schwerer zu erkennen, je länger du durchhältst!</string>
+    <string name="games_oddoneout_lives_remaining">%1$d Leben übrig</string>
 
     <!-- Games: Morse -->
     <string name="games_morse_clear">Löschen</string>

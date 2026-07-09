@@ -31,6 +31,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipViewM
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushViewmodel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout.OddOneOutViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.SchneaggaHusViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
@@ -186,7 +187,10 @@ val sharedmodule = module{
 
     viewModelOf(::GridRushViewmodel)
     factory { GridRushViewmodel(get()) }
-    
+
+    viewModelOf(::OddOneOutViewmodel)
+    factory { OddOneOutViewmodel(get()) }
+
     viewModelOf(::PlayerSelectorViewModel)
     factory { PlayerSelectorViewModel(get(), get()) }
     viewModelOf(::RecapViewModel)

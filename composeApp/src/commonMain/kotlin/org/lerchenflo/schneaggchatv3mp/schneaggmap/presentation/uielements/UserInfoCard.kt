@@ -77,6 +77,7 @@ fun UserInfoCard(
     onDismiss: () -> Unit,
     onOpenChat: (User) -> Unit,
     modifier: Modifier = Modifier,
+    isOwnUser: Boolean = false,
 ) {
 
     ModalBottomSheet(
@@ -123,14 +124,16 @@ fun UserInfoCard(
                         }
                     )
                 )
-                add(
-                    StatTileData(
-                        icon = Icons.Default.Straighten,
-                        tint = onSurfaceVariant,
-                        caption = stringResource(Res.string.schneaggmap_user_distance_label),
-                        value = userDistanceText
+                if (!isOwnUser) {
+                    add(
+                        StatTileData(
+                            icon = Icons.Default.Straighten,
+                            tint = onSurfaceVariant,
+                            caption = stringResource(Res.string.schneaggmap_user_distance_label),
+                            value = userDistanceText
+                        )
                     )
-                )
+                }
                 location?.speed?.let { speed ->
                     add(
                         StatTileData(
@@ -212,11 +215,13 @@ fun UserInfoCard(
                     )
                 }
 
-                NormalButton(
-                    text = stringResource(Res.string.open_chat),
-                    onClick = { onOpenChat(user) },
-                    primary = true
-                )
+                if (!isOwnUser) {
+                    NormalButton(
+                        text = stringResource(Res.string.open_chat),
+                        onClick = { onOpenChat(user) },
+                        primary = true
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
