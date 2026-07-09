@@ -676,7 +676,7 @@ fun App() {
                                     title = stringResource(Res.string.games_gridrush_title),
                                     icon = Icons.Default.GridOn,
                                     route = Route.Games.GridRush,
-                                    inDev = true,
+                                    inDev = false,
                                     gameId = GameId.GRIDRUSH,
                                     daily = true
                                 ),
@@ -684,7 +684,7 @@ fun App() {
                                     title = stringResource(Res.string.games_oddoneout_title),
                                     icon = Icons.Default.Search,
                                     route = Route.Games.OddOneOut,
-                                    inDev = true,
+                                    inDev = false,
                                     gameId = GameId.ODDONEOUT
                                 ),
                                 GameScreenElement(
