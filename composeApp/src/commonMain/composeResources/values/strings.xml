@@ -755,6 +755,8 @@
     <string name="recap_outro_friends">friends</string>
     <string name="recap_outro_reactions">reactions</string>
     <string name="recap_outro_streak">day streak</string>
+    <string name="recap_outro_rank_messages">messages rank</string>
+    <string name="recap_outro_rank_errors">error rank</string>
     <string name="recap_tap_hint">Tap to continue</string>
 
     <!-- Month names -->

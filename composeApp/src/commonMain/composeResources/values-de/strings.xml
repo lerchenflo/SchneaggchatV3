@@ -757,6 +757,8 @@
     <string name="recap_outro_friends">Freunde</string>
     <string name="recap_outro_reactions">Reaktionen</string>
     <string name="recap_outro_streak">Tage-Serie</string>
+    <string name="recap_outro_rank_messages">Nachrichten-Rang</string>
+    <string name="recap_outro_rank_errors">Fehler-Rang</string>
     <string name="recap_tap_hint">Tippen, um fortzufahren</string>
 
     <!-- Month names -->

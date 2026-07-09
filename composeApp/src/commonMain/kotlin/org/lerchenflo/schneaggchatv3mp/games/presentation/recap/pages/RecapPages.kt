@@ -72,6 +72,8 @@ import schneaggchatv3mp.composeapp.generated.resources.recap_others_sent_you
 import schneaggchatv3mp.composeapp.generated.resources.recap_others_sent_you_suffix
 import schneaggchatv3mp.composeapp.generated.resources.recap_outro_friends
 import schneaggchatv3mp.composeapp.generated.resources.recap_outro_messages
+import schneaggchatv3mp.composeapp.generated.resources.recap_outro_rank_errors
+import schneaggchatv3mp.composeapp.generated.resources.recap_outro_rank_messages
 import schneaggchatv3mp.composeapp.generated.resources.recap_outro_reactions
 import schneaggchatv3mp.composeapp.generated.resources.recap_outro_streak
 import schneaggchatv3mp.composeapp.generated.resources.recap_outro_subtitle
@@ -1097,6 +1099,10 @@ fun RecapPasswordResetPage(recap: RecapUi, visible: Boolean) {
     }
 }
 
+// Value/label/color for one shareable summary tile - color echoes the accent of the page the
+// stat originally came from, so the recognizable palette carries over into the screenshot.
+private data class OutroTileData(val value: String, val label: String, val valueColor: Color)
+
 @Composable
 fun RecapOutroPage(recap: RecapUi, visible: Boolean) {
     RecapPageBackground(topColor = Color(0xFF0A1ED3), bottomColor = Color(0xFFD63CFF)) {
@@ -1108,27 +1114,51 @@ fun RecapOutroPage(recap: RecapUi, visible: Boolean) {
                 Text(
                     text = stringResource(Res.string.recap_outro_title, recap.username),
                     color = Color.White,
-                    fontSize = 40.sp,
+                    fontSize = 34.sp,
                     fontWeight = FontWeight.Black,
-                    lineHeight = 46.sp
+                    lineHeight = 40.sp
                 )
             }
-            Spacer(Modifier.height(32.dp))
-            RevealItem(visible, 1) {
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    OutroStat(formatCount(recap.messagesSent), stringResource(Res.string.recap_outro_messages), Modifier.weight(1f))
-                    OutroStat(formatCount(recap.friendsCount.toLong()), stringResource(Res.string.recap_outro_friends), Modifier.weight(1f))
+            Spacer(Modifier.height(28.dp))
+
+            // Most important stats (streak, global ranks) first so they land in the top rows
+            // of the tile grid - this page is meant to be screenshotted, so priority order matters.
+            val streakLabel = stringResource(Res.string.recap_outro_streak)
+            val rankMessagesLabel = stringResource(Res.string.recap_outro_rank_messages)
+            val rankErrorsLabel = stringResource(Res.string.recap_outro_rank_errors)
+            val messagesLabel = stringResource(Res.string.recap_outro_messages)
+            val friendsLabel = stringResource(Res.string.recap_outro_friends)
+            val reactionsLabel = stringResource(Res.string.recap_outro_reactions)
+
+            val tiles = buildList {
+                add(OutroTileData(recap.longestStreakDays.toString(), streakLabel, Color(0xFFFF007F)))
+                recap.myRank?.let { rank ->
+                    add(OutroTileData(stringResource(Res.string.recap_rank_number, rank), rankMessagesLabel, Color(0xFFFFD700)))
                 }
-            }
-            Spacer(Modifier.height(16.dp))
-            RevealItem(visible, 2) {
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    OutroStat(formatCount(recap.reactionsGiven), stringResource(Res.string.recap_outro_reactions), Modifier.weight(1f))
-                    OutroStat(recap.longestStreakDays.toString(), stringResource(Res.string.recap_outro_streak), Modifier.weight(1f))
+                recap.myBetaTesterRank?.let { rank ->
+                    add(OutroTileData(stringResource(Res.string.recap_rank_number, rank), rankErrorsLabel, Color(0xFFFF5C5C)))
                 }
+                add(OutroTileData(formatCount(recap.messagesSent), messagesLabel, Color(0xFF1DB954)))
+                add(OutroTileData(formatCount(recap.friendsCount.toLong()), friendsLabel, Color(0xFFFFDF00)))
+                add(OutroTileData(formatCount(recap.reactionsGiven), reactionsLabel, Color(0xFFFFB6F9)))
             }
-            Spacer(Modifier.height(40.dp))
-            RevealItem(visible, 3) {
+
+            tiles.chunked(2).forEachIndexed { rowIndex, rowTiles ->
+                RevealItem(visible, rowIndex + 1) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        rowTiles.forEach { tile ->
+                            OutroStat(tile.value, tile.label, tile.valueColor, Modifier.weight(1f))
+                        }
+                        if (rowTiles.size < 2) {
+                            Spacer(Modifier.weight(1f))
+                        }
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+
+            Spacer(Modifier.height(24.dp))
+            RevealItem(visible, tiles.chunked(2).size + 1) {
                 Text(
                     text = stringResource(Res.string.recap_outro_subtitle),
                     color = Color.White.copy(alpha = 0.85f),
@@ -1141,7 +1171,7 @@ fun RecapOutroPage(recap: RecapUi, visible: Boolean) {
 }
 
 @Composable
-private fun OutroStat(value: String, label: String, modifier: Modifier = Modifier) {
+private fun OutroStat(value: String, label: String, valueColor: Color = Color.White, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
@@ -1150,8 +1180,8 @@ private fun OutroStat(value: String, label: String, modifier: Modifier = Modifie
     ) {
         Text(
             text = value,
-            color = Color.White,
-            fontSize = 30.sp,
+            color = valueColor,
+            fontSize = 28.sp,
             fontWeight = FontWeight.Black
         )
         Text(

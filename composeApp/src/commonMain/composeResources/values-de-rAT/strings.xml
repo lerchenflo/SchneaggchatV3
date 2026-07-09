@@ -671,7 +671,7 @@
 
     <!-- Recap -->
     <string name="recap_your_year">Din Joar</string>
-    <string name="recap_using_schneaggchat_in_numbers">SChneaggchat in Zahla</string>
+    <string name="recap_using_schneaggchat_in_numbers">Schneaggchat in Zahla</string>
     <string name="recap_in_year_you_had_a_lot_to_say">Im Joar %1$d hosch du viel zum säga ket.</string>
     <string name="recap_others_sent_you">Dieses Joar hond andre Lüt dir</string>
     <string name="recap_others_sent_you_suffix">Nochrichta gschickt</string>
@@ -755,6 +755,8 @@
     <string name="recap_outro_friends">Freunde</string>
     <string name="recap_outro_reactions">Reaktiona</string>
     <string name="recap_outro_streak">Takesstreak</string>
+    <string name="recap_outro_rank_messages">Nochrichta-Rang</string>
+    <string name="recap_outro_rank_errors">Fehler-Rang</string>
     <string name="recap_tap_hint">Tipp zum wittamacha</string>
 
     <!-- Month names -->
