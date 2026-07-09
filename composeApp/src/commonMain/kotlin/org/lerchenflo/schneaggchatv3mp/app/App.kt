@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.Blind
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.GridOn
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.House
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MonetizationOn
@@ -69,6 +70,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
 import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushScreenRoot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout.OddOneOutScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapScreenRoot
@@ -106,6 +108,7 @@ import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_title
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
 import schneaggchatv3mp.composeapp.generated.resources.games_gridrush_title
 import schneaggchatv3mp.composeapp.generated.resources.games_morse_title
+import schneaggchatv3mp.composeapp.generated.resources.games_oddoneout_title
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggahus_title
 import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
@@ -203,6 +206,7 @@ fun App() {
                         subclass(Route.Games.Morse::class, Route.Games.Morse.serializer())
                         subclass(Route.Games.SchneaggaHus::class, Route.Games.SchneaggaHus.serializer())
                         subclass(Route.Games.GridRush::class, Route.Games.GridRush.serializer())
+                        subclass(Route.Games.OddOneOut::class, Route.Games.OddOneOut.serializer())
 
                         subclass(Route.Games.Recap::class, Route.Games.Recap.serializer())
                         subclass(Route.Games.CoinFlip::class, Route.Games.CoinFlip.serializer())
@@ -677,6 +681,13 @@ fun App() {
                                     daily = true
                                 ),
                                 GameScreenElement(
+                                    title = stringResource(Res.string.games_oddoneout_title),
+                                    icon = Icons.Default.Search,
+                                    route = Route.Games.OddOneOut,
+                                    inDev = true,
+                                    gameId = GameId.ODDONEOUT
+                                ),
+                                GameScreenElement(
                                     title = stringResource(Res.string.games_coinflip_title),
                                     icon = Icons.Default.MonetizationOn,
                                     route = Route.Games.CoinFlip,
@@ -818,6 +829,15 @@ fun App() {
 
                                     entry <Route.Games.GridRush> {
                                         GridRushScreenRoot(
+                                            onBackClick = {
+                                                if (gamesBackStack.size > 1){
+                                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                                }
+                                            }
+                                        )
+                                    }
+                                    entry <Route.Games.OddOneOut> {
+                                        OddOneOutScreenRoot(
                                             onBackClick = {
                                                 if (gamesBackStack.size > 1){
                                                     gamesBackStack.removeAt(gamesBackStack.size - 1)

@@ -92,6 +92,9 @@ sealed interface Route : NavKey {
         data object GridRush: Route, NavKey
 
         @Serializable
+        data object OddOneOut: Route, NavKey
+
+        @Serializable
         data object Recap: Route, NavKey
 
         @Serializable

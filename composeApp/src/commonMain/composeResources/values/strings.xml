@@ -254,7 +254,7 @@
     <string name="merge_map_locations">Merge locations when zooming</string>
     <string name="merge_map_locations_info">Group nearby locations into one marker when zoomed out</string>
     <string name="schneaggmap_map_style">Map style</string>
-    <string name="schneaggmap_map_style_info">Choose the map\'s appearance</string>
+    <string name="schneaggmap_map_style_info">Choose the map's appearance</string>
     <string name="map_style_liberty">Liberty</string>
     <string name="map_style_bright">Bright</string>
     <string name="map_style_positron">Positron</string>
@@ -648,7 +648,7 @@
     <string name="games_tower_stack_instructions">Stack the platforms as high as you can!\n\nTap to place each platform.\nPerfect alignment increases your score.\nSpeed increases every 5 points!</string>
     <string name="games_tower_stack_score">Score</string>
     <string name="games_tower_stack_speed_up">⚡ Speed Up!</string>
-    <string name="games_tower_stack_tap_to_place">👆 Tap to place!</string>
+    <string name="games_tower_stack_tap_to_place">&#128070; Tap to place!</string>
 
     <!-- Games: Schneaggahus -->
     <string name="games_schneaggahus_title">Schneaggahus</string>
@@ -660,6 +660,11 @@
     <string name="games_gridrush_instructions">Drag a line through neighboring tiles of the same color — releasing on 2 or more tiles clears them and the tiles above fall down. Clear the whole board to win!\n\nLonger chains score more points and finishing under par earns a bonus. If no two matching tiles touch anymore, the run is over. Everyone plays the same board each day — the timer only starts with your first move, so plan ahead!</string>
     <string name="games_gridrush_moves">Moves: %1$d / Par %2$d</string>
 
+    <!-- Games: Odd One Out -->
+    <string name="games_oddoneout_title">Odd One Out</string>
+    <string name="games_oddoneout_instructions">A grid of tiles appears — every tile is identical except one. Tap the odd one out before the timer runs out!\n\nA correct tap scores more points the faster you find it. A wrong tap or a timeout costs one of your 3 lives — lose them all and the run ends. Rounds get faster and the odd tile gets sneakier the longer you survive!</string>
+    <string name="games_oddoneout_lives_remaining">%1$d lives remaining</string>
+
     <!-- Games: Morse -->
     <string name="games_morse_clear">Clear</string>
     <string name="games_morse_instructions">Press the big button to send morse signals: a short press is a dot (·), a long press is a dash (−). The tree shows which letter your code leads to.\n\nType the shown text in morse code — each correct letter scores points, after 3 mistakes the game is over.</string>
@@ -669,19 +674,19 @@
     <string name="recap_using_schneaggchat_in_numbers">using Schneaggchat in numbers</string>
     <string name="recap_in_year_you_had_a_lot_to_say">In %1$d, you had a LOT to say.</string>
     <string name="recap_others_sent_you">This year other People sent you</string>
-    <string name="recap_messages">messages</string>
+    <string name="recap_others_sent_you_suffix">messages</string>
     <string name="recap_you_sent">You sent</string>
-    <string name="recap_messages_to_favorite_humans">messages to your favorite humans. (And maybe a few group chats you muted).</string>
+    <string name="recap_messages_to_favorite_humans">messages to your favorite humans.</string>
     <string name="recap_new_friends_found">New friends found</string>
     <string name="recap_you_have">You have</string>
     <string name="recap_are_now_your_friends">new Friends acquired.</string>
     <string name="recap_texts_number">%1$d texts</string>
     <string name="recap_loading">Crunching your numbers…</string>
-    <string name="recap_load_failed">Couldn\'t load your recap.</string>
+    <string name="recap_load_failed">Couldn't load your recap.</string>
     <string name="recap_retry">Try again</string>
     <string name="recap_hello">Hey %1$s!</string>
     <string name="recap_member_since">On board since %1$s — that\'s %2$d days.</string>
-    <string name="recap_logins_this_year">You opened Schneaggchat %1$s times this year.</string>
+    <string name="recap_logins_this_year">You logged into your account  %1$s times this year.</string>
     <string name="recap_all_time_messages">%1$s messages all-time</string>
     <string name="recap_type_text">Texts</string>
     <string name="recap_type_image">Images</string>
@@ -701,9 +706,9 @@
     <string name="recap_streak_label">Your longest daily streak</string>
     <string name="recap_most_active_month">%1$s was your loudest month</string>
     <string name="recap_first_message_ever">Your very first message: %1$s</string>
-    <string name="recap_popular">You\'re kind of a big deal.</string>
+    <string name="recap_popular">You're kind of a big deal.</string>
     <string name="recap_inner_circle">Your Inner Circle.</string>
-    <string name="recap_loyal_friend">You\'re a loyal friend. Or codependent. We won\'t judge.</string>
+    
     <string name="recap_from_you_from_them">%1$s from you · %2$s from them</string>
     <string name="recap_reactions_title">You spread some love.</string>
     <string name="recap_reactions_given">reactions given</string>
@@ -718,7 +723,7 @@
     <string name="recap_polls_created">%1$d polls created</string>
     <string name="recap_poll_votes_cast">%1$d poll votes cast</string>
     <string name="recap_groups_title">Group chats. Beautiful chaos.</string>
-    <string name="recap_groups_member_of">groups you\'re part of</string>
+    <string name="recap_groups_member_of">groups you're part of</string>
     <string name="recap_groups_created">%1$d created by you</string>
     <string name="recap_most_active_group">Your loudest group</string>
     <string name="recap_group_message_count">%1$s messages</string>
@@ -726,14 +731,25 @@
     <string name="recap_your_rank">Out of everyone on Schneaggchat, you ranked</string>
     <string name="recap_rank_number">#%1$d</string>
     <string name="recap_leaderboard_messages">%1$s messages sent this year</string>
-    <string name="recap_map_title">You left your mark.</string>
+    <string name="recap_map_title">You left your snailtrail.</string>
     <string name="recap_map_created">map entries created this year</string>
     <string name="recap_map_edited">%1$d entries edited</string>
     <string name="recap_map_all_time">%1$d created all-time</string>
     <string name="recap_games_title">Certified gamer.</string>
     <string name="recap_games_rank">Rank #%1$d</string>
     <string name="recap_games_score">Best score: %1$s</string>
-    <string name="recap_outro_title">That\'s a wrap, %1$s.</string>
+
+    <string name="recap_betatester_title">Certified beta tester.</string>
+    <string name="recap_betatester_your_rank">Out of everyone who ever broke Schneaggchat, you rank</string>
+    <string name="recap_betatester_exception_count">%1$s exceptions caused</string>
+    <string name="recap_betatester_clean_record">You tested Schneaggchat, but no real harm was done.</string>
+
+    <string name="recap_password_title">You can't handle a good password.</string>
+    <string name="recap_password_reset_label">password reset emails sent</string>
+    <string name="recap_password_reset_this_year">%1$d of those this year</string>
+    <string name="recap_password_reset_subtitle">Maybe write it down this time.</string>
+
+    <string name="recap_outro_title">That's a wrap, %1$s.</string>
     <string name="recap_outro_subtitle">See you next year. Keep schneagging.</string>
     <string name="recap_outro_messages">messages</string>
     <string name="recap_outro_friends">friends</string>

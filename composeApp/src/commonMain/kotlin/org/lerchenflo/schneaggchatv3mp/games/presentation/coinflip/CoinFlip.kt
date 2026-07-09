@@ -42,6 +42,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.sin
 import kotlin.random.Random
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -62,6 +65,15 @@ private const val MIN_SPINS = 3
 private const val MAX_SPINS = 5
 private val THROW_HEIGHT = 150.dp
 private val SWIPE_THRESHOLD = 60.dp
+
+//Secondary wobble layered on top of the main X-axis flip so the coin tumbles diagonally instead
+//of rotating flat on one axis. Kept well under 90° - the X-axis counter-rotation trick (see the
+//back-face Box below) only needs to exist because X sweeps past edge-on; as long as Y/Z stay
+//bounded here they never go edge-on, so no equivalent counter-rotation is needed for them.
+private const val MIN_WOBBLE_Y_DEGREES = 15
+private const val MAX_WOBBLE_Y_DEGREES = 30
+private const val MIN_WOBBLE_Z_DEGREES = 5
+private const val MAX_WOBBLE_Z_DEGREES = 15
 
 @Composable
 fun CoinFlipScreen(
@@ -179,6 +191,13 @@ private fun Coin(
     val offsetY = remember { Animatable(0f) }
     val density = LocalDensity.current
 
+    // Secondary wobble (see MIN/MAX_WOBBLE_* above) - randomized per toss, and its 0..1 progress
+    // is derived from `rotation` itself below rather than adding a third Animatable.
+    val wobbleAmplitudeY = remember { mutableStateOf(0f) }
+    val wobbleAmplitudeZ = remember { mutableStateOf(0f) }
+    val flipStartRotation = remember { mutableStateOf(0f) }
+    val flipTargetRotation = remember { mutableStateOf(0f) }
+
     LaunchedEffect(flipTrigger) {
         // Trigger 0 is the initial resting state - nothing to animate yet
         if (flipTrigger == 0) return@LaunchedEffect
@@ -188,6 +207,13 @@ private fun Coin(
         val currentBase = rotation.value - (rotation.value % 360f)
         val targetRotation = currentBase + spins * 360f + faceOffset
         val peakOffsetPx = with(density) { -THROW_HEIGHT.toPx() }
+
+        flipStartRotation.value = rotation.value
+        flipTargetRotation.value = targetRotation
+        wobbleAmplitudeY.value = (if (Random.nextBoolean()) 1f else -1f) *
+            Random.nextInt(MIN_WOBBLE_Y_DEGREES, MAX_WOBBLE_Y_DEGREES + 1)
+        wobbleAmplitudeZ.value = (if (Random.nextBoolean()) 1f else -1f) *
+            Random.nextInt(MIN_WOBBLE_Z_DEGREES, MAX_WOBBLE_Z_DEGREES + 1)
 
         offsetY.snapTo(0f)
 
@@ -222,13 +248,22 @@ private fun Coin(
     val normalizedRotation = rotation.value % 360f
     val showFront = normalizedRotation <= 90f || normalizedRotation >= 270f
 
+    // 0 -> 1 -> 0 across the toss, derived from rotation's own progress, so the wobble peaks
+    // mid-flip and always returns to exactly 0 by the time the coin lands (flat, readable result).
+    val flipSpan = flipTargetRotation.value - flipStartRotation.value
+    val flipProgress = if (abs(flipSpan) < 0.01f) 0f
+        else ((rotation.value - flipStartRotation.value) / flipSpan).coerceIn(0f, 1f)
+    val wobbleEnvelope = sin(flipProgress * PI.toFloat())
+
     Box(
         modifier = modifier
             .size(160.dp)
             .graphicsLayer {
                 translationY = offsetY.value
                 rotationX = rotation.value
-                cameraDistance = 16f * density.density
+                rotationY = wobbleAmplitudeY.value * wobbleEnvelope
+                rotationZ = wobbleAmplitudeZ.value * wobbleEnvelope
+                cameraDistance = 10f * density.density
             },
         contentAlignment = Alignment.Center
     ) {

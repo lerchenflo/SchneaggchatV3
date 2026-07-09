@@ -12,6 +12,7 @@ enum class GameId(val daily: Boolean = false) {
     MORSE,
     SCHNEAGGAHUS,
     GRIDRUSH(daily = true),
+    ODDONEOUT,
 }
 
 /**

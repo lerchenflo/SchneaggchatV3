@@ -215,6 +215,15 @@ class SchneaggmapViewModel(
                 }
             }
 
+            SchneaggmapAction.OnOwnUserClick -> {
+                _state.update { currentState ->
+                    currentState.copy(
+                        selectedUser = currentState.ownUser,
+                        isFilterDropdownVisible = false
+                    )
+                }
+            }
+
             is SchneaggmapAction.OnOpenChatClick -> {
                 viewModelScope.launch {
                     globalViewModel.onSelectChat(
@@ -272,7 +281,7 @@ class SchneaggmapViewModel(
         viewModelScope.launch {
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
             appRepository.getUserByIdFlow(ownId).collectLatest { ownUser ->
-                _state.update { it.copy(ownLocationShared = ownUser?.locationShared ?: false) }
+                _state.update { it.copy(ownLocationShared = ownUser?.locationShared ?: false, ownUser = ownUser) }
             }
         }
 
