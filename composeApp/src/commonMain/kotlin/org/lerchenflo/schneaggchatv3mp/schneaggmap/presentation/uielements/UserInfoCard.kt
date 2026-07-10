@@ -2,6 +2,7 @@
 
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,12 +37,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.copyToClipboard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
@@ -50,6 +53,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.formatDistance
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.latlong
 import schneaggchatv3mp.composeapp.generated.resources.open_chat
 import schneaggchatv3mp.composeapp.generated.resources.open_location_in_maps
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_altitude_label
@@ -93,10 +97,29 @@ fun UserInfoCard(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
-
             val location = user.location
             val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+
+            location?.let { userLocation ->
+                val clipboard = LocalClipboard.current.nativeClipboard
+                val latText = userLocation.lat.toString().take(8)
+                val longText = userLocation.long.toString().take(8)
+
+                Text(
+                    text = stringResource(Res.string.latlong, latText, longText),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().clickable {
+                        copyToClipboard(
+                            text = "$latText, $longText",
+                            clipboard = clipboard
+                        )
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             val userDistanceText = remember(ownLocation, location) {
                 if (ownLocation != null && location != null) {
