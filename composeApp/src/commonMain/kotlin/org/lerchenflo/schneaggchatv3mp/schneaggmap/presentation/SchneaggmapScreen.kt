@@ -85,6 +85,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.VIEWPOINT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.WHEELIESPOT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.FriendLocationsPreview
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapZoomSlider
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.mergeClusterAvatarsIcon
@@ -316,10 +317,18 @@ fun SchneaggmapScreen(
             onAction = onAction
         )
 
-        Column(
-            modifier = Modifier.align(Alignment.TopStart).padding(8.dp),
+        // Top row: settings/own-user/compass (start), speed pill (center), location filter (end) -
+        // all coordinated inside one Box so they space themselves out instead of overlapping.
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .padding(8.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.align(Alignment.CenterStart)
+            ) {
                 FloatingActionButton(
                     onClick = { onAction(SchneaggmapAction.OnSettingsClick) },
                 ) {
@@ -341,36 +350,52 @@ fun SchneaggmapScreen(
                 )
             }
 
-        }
-
-        ownLocation?.speed?.let { speed ->
-            if (speed.distancePerSecond.inMeters > 3) {
-                val speedKmh = (speed.distancePerSecond.inMeters * 3.6).roundToInt()
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(16.dp)
-                        .size(56.dp)
-                        .background(Color.White, CircleShape)
-                        .border(width = 4.dp, color = Color.Red, shape = CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "$speedKmh",
-                        color = Color.Black,
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleLarge
-                    )
+            ownLocation?.speed?.let { speed ->
+                if (speed.distancePerSecond.inMeters > 3) {
+                    val speedKmh = (speed.distancePerSecond.inMeters * 3.6).roundToInt()
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(56.dp)
+                            .background(Color.White, CircleShape)
+                            .border(width = 4.dp, color = Color.Red, shape = CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "$speedKmh",
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleLarge
+                        )
+                    }
                 }
             }
+
+            ShownLocationsDropdown(
+                state = state,
+                onAction = onAction,
+                modifier = Modifier.align(Alignment.TopEnd),
+            )
         }
 
-        ShownLocationsDropdown(
-            state = state,
-            onAction = onAction,
-            modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
+        // Right edge: vertical zoom scrollbar, centered between the top and bottom rows so it
+        // never collides with the filter dropdown above or the snail-trail toggle below.
+        MapZoomSlider(
+            zoom = cameraState.position.zoom,
+            onZoomChange = { newZoom ->
+                //Like Snap Map's slider, which always zooms in on a person - here that's the
+                //user's own location, if we currently have a fix on it.
+                val ownPosition = ownLocation?.position?.value
+                cameraState.position = if (ownPosition != null) {
+                    cameraState.position.copy(target = ownPosition, zoom = newZoom)
+                } else {
+                    cameraState.position.copy(zoom = newZoom)
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 8.dp)
         )
-
 
         Column(
             modifier = Modifier

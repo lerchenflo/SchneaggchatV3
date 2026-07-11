@@ -42,6 +42,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
+import org.lerchenflo.schneaggchatv3mp.roadmap.presentation.RoadmapViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
@@ -52,8 +53,6 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DevSett
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettingsViewModel
-import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoRepository
-import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 
 enum class HTTPCLIENTTYPE {
@@ -96,7 +95,6 @@ val sharedmodule = module{
     singleOf(::GroupRepository)
     singleOf(::UserRepository)
     singleOf(::MessageRepository)
-    singleOf(::TodoRepository)
     singleOf(::LoggingRepository)
     singleOf(::MapRepository)
     singleOf(::GameHighscoreRepository)
@@ -148,9 +146,6 @@ val sharedmodule = module{
 
     viewModelOf(::SignUpViewModel)
     factory { SignUpViewModel(get(), get(), get(), get()) }
-
-    viewModelOf(::TodolistViewModel)
-    factory { TodolistViewModel(get(), get(), get()) }
 
     viewModelOf(::SchneaggmapViewModel)
     factory { SchneaggmapViewModel(get(), get(), get(), get(), get(), get(), get()) }
@@ -211,4 +206,7 @@ val sharedmodule = module{
 
     viewModelOf(::SchneaggmapSettingsViewModel)
     factory { SchneaggmapSettingsViewModel(get(), get(), get(), get()) }
+
+    viewModelOf(::RoadmapViewModel)
+    factory { RoadmapViewModel(get()) }
 }

@@ -145,34 +145,6 @@
     <string name="gallery">Gallery</string>
     <string name="choose_image_source">Choose image source</string>
 
-    <!-- Todoliste -->
-    <string name="todolist">Todos</string>
-    <string name="not_assigned">Not assigned</string>
-    <string name="assignedto">Assigned to</string>
-    <string name="bugplatform">Platform</string>
-    <string name="bugtype">Type</string>
-    <string name="bugstatus_unfinished">Not done</string>
-    <string name="bugstatus_in_progress">In progress</string>
-    <string name="bugstatus_finished">Done</string>
-    <string name="bugpriority_low">Low</string>
-    <string name="bugpriority_normal">Normal</string>
-    <string name="bugpriority_high">High</string>
-    <string name="bugpriority_extreme">Extreme</string>
-
-    <string name="bugpriority">Priority</string>
-    <string name="enteredby">Entered by</string>
-    <string name="bugstatus">Status</string>
-    <string name="buglastchanged">Last changed</string>
-
-    <string name="bug_sort_all">All</string>
-    <string name="bug_sort_mine">Mine</string>
-    <string name="bug_sort_unfinished">Unfinished</string>
-    <string name="bug_sort_important">Important</string>
-    <string name="bug_sort_bug">Bugs</string>
-    <string name="bug_sort_feature">Features</string>
-    <string name="bug_sort_todo">Todos</string>
-    <string name="bug_sort_assigned_to_me">Assigned to me</string>
-
     <string name="new_chat">new chat</string>
     <string name="new_group">create group</string>
     <string name="invite_friend">invite friend</string>
@@ -224,6 +196,7 @@
 
     <string name="misc_settings">Misc</string>
     <string name="misc_setting_info">Other settings which might be useful if the app does not work correctly.</string>
+    <string name="misc_settings_logs">Logs</string>
 
     <string name="friend_request_title">Do you want to accept this friend request?</string>
     <string name="friend_request_cancel_title">Do you want to cancel this friend request?</string>
@@ -617,6 +590,7 @@
 
 
     <!-- Games: Yatzi -->
+    <string name="games_yahtzee_title">Yahtzee</string>
     <string name="yatzi_setup_title">Yahtzee Setup</string>
     <string name="yatzi_game_title">Yahtzee Game</string>
     <string name="yatzi_add_manage_players">Add / Manage Players</string>
@@ -788,6 +762,15 @@
     <string name="changelog_no_details">No details available for this version.</string>
     <string name="changelog_got_it">Got it</string>
 
+    <!-- Roadmap -->
+    <string name="roadmap">Roadmap</string>
+    <string name="roadmap_info">See what has already shipped and what is coming next</string>
+    <string name="roadmap_status_done">Done</string>
+    <string name="roadmap_status_upcoming">Planned</string>
+    <string name="roadmap_load_error">Couldn\'t load the roadmap. Check your connection and try again.</string>
+    <string name="roadmap_retry">Retry</string>
+    <string name="roadmap_view_issue">View issue #%1$d</string>
+
 
     <string name="custom_reaction">Custom reaction</string>
     <string name="enter_reaction">Enter reaction</string>
@@ -897,8 +880,4 @@
     <string name="location_food_cheeseburger_price">Cheeseburger Price</string>
     <string name="location_food_beer_price">Beer Price</string>
     <string name="location_food_cuisine">Cuisine</string>
-
-
-
-
 </resources>

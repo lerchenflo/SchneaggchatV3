@@ -31,6 +31,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GameScoreResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GithubIssueDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.HighscoresResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoreRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest
@@ -260,6 +261,13 @@ class NetworkUtils(
         return safeAuthGet(
             endpoint = "",
             url = githubUrl
+        )
+    }
+
+    suspend fun getOpenGithubIssues(githubIssuesApiUrl: String) : NetworkResult<List<GithubIssueDto>, NetworkError> {
+        return safeAuthGet(
+            endpoint = "",
+            url = githubIssuesApiUrl
         )
     }
 

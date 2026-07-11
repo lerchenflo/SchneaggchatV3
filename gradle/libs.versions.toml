@@ -25,7 +25,7 @@ moko = "0.20.1"
 
 jwtKt = "1.2.1"
 kotlin = "2.4.0"
-ksp = "2.3.5"
+ksp = "2.3.9"
 
 kotlinx-coroutines = "1.11.0"
 kotlinxIo = "0.9.1"
@@ -66,6 +66,7 @@ map = "0.13.0"
 
 swipeableKmp = "1.0.7"
 reorderable = "3.1.0"
+jetlime = "4.3.0"
 
 
 [libraries]
@@ -75,6 +76,7 @@ maplibre-compose-material3 = { module = "org.maplibre.compose:maplibre-compose-m
 
 swipeable-kmp = { module = "com.stevdza-san:swipeable-kmp", version.ref = "swipeableKmp" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
+jetlime = { module = "io.github.pushpalroy:jetlime", version.ref = "jetlime" }
 
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 

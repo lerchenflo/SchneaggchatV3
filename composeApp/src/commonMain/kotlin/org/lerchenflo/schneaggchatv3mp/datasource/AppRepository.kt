@@ -31,6 +31,7 @@ import org.jetbrains.compose.resources.getString
 import org.koin.core.qualifier.named
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
+import org.lerchenflo.schneaggchatv3mp.GITHUB_ISSUES_API_URL
 import org.lerchenflo.schneaggchatv3mp.GITHUB_URL
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
@@ -85,6 +86,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteR
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GithubIssueDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
@@ -640,6 +642,37 @@ class AppRepository(
             is NetworkResult.Success<*> -> {
                 val changelog = ChangelogParser.getParsedChangelog(networkResult.data.toString(), version)
                 changelog
+            }
+        }
+    }
+
+    /**
+     * Fetches the full changelog history (all versions, newest first) for the Roadmap screen.
+     */
+    suspend fun getFullChangelog() : List<ChangelogEntry>? {
+        return when (val networkResult = networkUtils.getChangeLog("$GITHUB_URL/main/README.md")) {
+            is NetworkResult.Error<*> -> {
+                println("get full changelog network error: ${networkResult.error.message}")
+                null
+            }
+            is NetworkResult.Success<*> -> {
+                ChangelogParser.getFullChangelog(networkResult.data.toString())
+            }
+        }
+    }
+
+    /**
+     * Fetches the currently open GitHub issues for the Roadmap screen's "Upcoming" section.
+     * Pull requests (which the GitHub issues endpoint also returns) are filtered out.
+     */
+    suspend fun getOpenGithubIssues() : List<GithubIssueDto>? {
+        return when (val networkResult = networkUtils.getOpenGithubIssues(GITHUB_ISSUES_API_URL)) {
+            is NetworkResult.Error<*> -> {
+                println("get github issues network error: ${networkResult.error.message}")
+                null
+            }
+            is NetworkResult.Success<List<GithubIssueDto>?> -> {
+                networkResult.data?.filterNot { it.isPullRequest }
             }
         }
     }
@@ -2129,17 +2162,8 @@ class AppRepository(
                         }
                     }
 
-                    val todoSync = async {
-                        try {
-                            networkUtils.executeTodoIDSync(todoRepository = todoRepository)
-                        } catch (e: Exception) {
-                            loggingRepository.logWarning("Delayed action failed: ${e.message}")
-                        }
-                    }
-
-
                     // wait for all to finish; exceptions were handled in each async block so awaitAll won't throw
-                    awaitAll(msgSync, userSync, groupSync, todoSync)
+                    awaitAll(msgSync, userSync, groupSync)
                 }
             } finally {
                 onLoadingStateChange(false)

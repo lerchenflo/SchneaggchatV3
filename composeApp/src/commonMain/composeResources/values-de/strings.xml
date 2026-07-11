@@ -145,34 +145,6 @@
     <string name="gallery">Gallerie</string>
     <string name="choose_image_source">Bildquelle auswählen</string>
 
-    <!-- Todoliste -->
-    <string name="todolist">Todos</string>
-    <string name="not_assigned">Nicht zugewiesen</string>
-    <string name="assignedto">Zugewiesen zu</string>
-    <string name="bugplatform">Plattform</string>
-    <string name="bugtype">Typ</string>
-    <string name="bugstatus_unfinished">Nicht erledigt</string>
-    <string name="bugstatus_in_progress">In Bearbeitung</string>
-    <string name="bugstatus_finished">Abgeschlossen</string>
-    <string name="bugpriority_low">Schwach</string>
-    <string name="bugpriority_normal">Normal</string>
-    <string name="bugpriority_high">Hoch</string>
-    <string name="bugpriority_extreme">Extrem</string>
-
-    <string name="bugpriority">Priorität</string>
-    <string name="enteredby">Hinzugefügt von</string>
-    <string name="bugstatus">Status</string>
-    <string name="buglastchanged">Zuletzt geändert</string>
-
-    <string name="bug_sort_all">Alle</string>
-    <string name="bug_sort_mine">Meine</string>
-    <string name="bug_sort_unfinished">Nicht fertig</string>
-    <string name="bug_sort_important">Wichtig</string>
-    <string name="bug_sort_bug">Fehler</string>
-    <string name="bug_sort_feature">Features</string>
-    <string name="bug_sort_todo">Todos</string>
-    <string name="bug_sort_assigned_to_me">Mir zugewiesen</string>
-
     <string name="new_chat">Neuer Chat</string>
     <string name="new_group">Gruppe erstellen</string>
     <string name="invite_friend">Freund einladen</string>
@@ -897,8 +869,4 @@
     <string name="location_food_cheeseburger_price">Cheeseburgerpreis</string>
     <string name="location_food_beer_price">Bierpreis</string>
     <string name="location_food_cuisine">Essenstyp</string>
-
-
-
-
 </resources>

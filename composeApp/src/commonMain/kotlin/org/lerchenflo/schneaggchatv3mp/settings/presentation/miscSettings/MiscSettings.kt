@@ -9,6 +9,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Science
+import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
@@ -39,6 +40,9 @@ import schneaggchatv3mp.composeapp.generated.resources.become_beta_tester_desc
 import schneaggchatv3mp.composeapp.generated.resources.bugreport_request
 import schneaggchatv3mp.composeapp.generated.resources.bugreport_request_info
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings
+import schneaggchatv3mp.composeapp.generated.resources.misc_settings_logs
+import schneaggchatv3mp.composeapp.generated.resources.roadmap
+import schneaggchatv3mp.composeapp.generated.resources.roadmap_info
 import schneaggchatv3mp.composeapp.generated.resources.show_logs
 
 @Composable
@@ -47,7 +51,8 @@ fun MiscSettings(
         .fillMaxWidth(),
     miscSettingsViewModel: MiscSettingsViewModel,
     sharedSettingsViewmodel: SharedSettingsViewmodel,
-    onBackClick : () -> Unit
+    onBackClick : () -> Unit,
+    navigateRoadmap: () -> Unit
 ) {
 
     val currentAppVersion = koinInject<AppVersion>()
@@ -73,7 +78,7 @@ fun MiscSettings(
             var showLogsDialog by remember { mutableStateOf(false) }
             SettingsOption(
                 icon = Icons.AutoMirrored.Filled.List,
-                text = "Logs",
+                text = stringResource(Res.string.misc_settings_logs),
                 subtext = stringResource(Res.string.show_logs),
                 onClick = {
                     showLogsDialog = true
@@ -140,6 +145,15 @@ fun MiscSettings(
                     }
                 )
             }
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            SettingsOption(
+                icon = Icons.Default.Timeline,
+                text = stringResource(Res.string.roadmap),
+                subtext = stringResource(Res.string.roadmap_info),
+                onClick = navigateRoadmap
+            )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 

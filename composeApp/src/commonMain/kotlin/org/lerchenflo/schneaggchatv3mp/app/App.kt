@@ -92,6 +92,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
+import org.lerchenflo.schneaggchatv3mp.roadmap.presentation.RoadmapScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
@@ -99,7 +100,6 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.SnackbarPopup
-import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -114,7 +114,9 @@ import schneaggchatv3mp.composeapp.generated.resources.games_morse_title
 import schneaggchatv3mp.composeapp.generated.resources.games_oddoneout_title
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggahus_title
 import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
+import schneaggchatv3mp.composeapp.generated.resources.games_tetris_title
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
+import schneaggchatv3mp.composeapp.generated.resources.games_yahtzee_title
 
 
 @Composable
@@ -161,7 +163,6 @@ fun App() {
                         subclass(Route.SignUp::class, Route.SignUp.serializer())
                         subclass(Route.EmailVerifiedCheck::class, Route.EmailVerifiedCheck.serializer())
                         subclass(Route.ChatDetails::class, Route.ChatDetails.serializer())
-                        subclass(Route.Todolist::class, Route.Todolist.serializer())
                         subclass(Route.Schneaggmap::class, Route.Schneaggmap.serializer())
 
                         //Subgraph for settings
@@ -187,6 +188,7 @@ fun App() {
                         subclass(Route.Settings.AppearanceSettings::class, Route.Settings.AppearanceSettings.serializer())
                         subclass(Route.Settings.MiscSettings::class, Route.Settings.MiscSettings.serializer())
                         subclass(Route.Settings.SchneaggmapSettings::class, Route.Settings.SchneaggmapSettings.serializer())
+                        subclass(Route.Settings.Roadmap::class, Route.Settings.Roadmap.serializer())
                     }
                 }
             },
@@ -612,7 +614,8 @@ fun App() {
                                                 if (settingsBackStack.size > 1){
                                                     settingsBackStack.removeAt(settingsBackStack.size - 1)
                                                 }
-                                            }
+                                            },
+                                            navigateRoadmap = {settingsBackStack.add(Route.Settings.Roadmap)}
                                         )
                                     }
 
@@ -627,16 +630,20 @@ fun App() {
                                             }
                                         )
                                     }
+
+                                    entry<Route.Settings.Roadmap> {
+                                        RoadmapScreen(
+                                            roadmapViewModel = koinInject(),
+                                            onBackClick = {
+                                                if (settingsBackStack.size > 1){
+                                                    settingsBackStack.removeAt(settingsBackStack.size - 1)
+                                                }
+                                            }
+                                        )
+                                    }
                                 }
                             )
                         }
-
-
-                        entry<Route.Todolist> {
-                            TodolistScreen()
-
-                        }
-
 
 
                         entry<Route.Schneaggmap> {
@@ -649,7 +656,7 @@ fun App() {
 
                             val gamesList = listOf<GameScreenElement>(
                                 GameScreenElement(
-                                    title = "Tetris",
+                                    title = stringResource(Res.string.games_tetris_title),
                                     icon = Icons.Default.Menu, // Placeholder
                                     route = Route.Games.Tetris,
                                     inDev = false,
@@ -717,14 +724,11 @@ fun App() {
                                 ),
 
                                 GameScreenElement(
-                                    title = "Yahtzee",
+                                    title = stringResource(Res.string.games_yahtzee_title),
                                     icon = Icons.Default.Star,
                                     route = Route.Games.YatziSetup,
                                     inDev = false
                                 ),
-
-
-
 
 
                             )

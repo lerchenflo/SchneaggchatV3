@@ -31,9 +31,6 @@ sealed interface Route : NavKey {
     data object ChatDetails: Route, NavKey
 
     @Serializable
-    data object Todolist: Route, NavKey
-
-    @Serializable
     data object Schneaggmap: Route, NavKey
 
 
@@ -56,6 +53,9 @@ sealed interface Route : NavKey {
 
         @Serializable
         data object SchneaggmapSettings: Route, NavKey
+
+        @Serializable
+        data object Roadmap: Route, NavKey
     }
 
 

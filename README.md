@@ -16,6 +16,13 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 # Changelog
 
+### 3.0.14
+
+#### Features
+- Roadmap in den Misc Einstellungen mit Github issues
+
+#### Bugfixes
+- Überlappende Schaltflächen auf der Schneaggmap behoben
 
 ### 3.0.13
 

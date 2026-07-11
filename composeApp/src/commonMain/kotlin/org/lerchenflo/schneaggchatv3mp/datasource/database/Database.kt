@@ -14,13 +14,12 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.SnailTrailPointDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MapEntryDto
-import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
 
 
 @Database(
-    entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, TodoEntityDto::class, LogEntry::class, PlayerEntity::class, MapEntryDto::class, SnailTrailPointDto::class],
+    entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, LogEntry::class, PlayerEntity::class, MapEntryDto::class, SnailTrailPointDto::class],
     exportSchema = true,
-    version = 65
+    version = 66
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -33,8 +32,6 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun messageReaderDao(): MessageReaderDao
 
     abstract fun groupDao(): GroupDao
-
-    abstract fun todoListDao(): TodolistDao
 
     abstract fun logDao(): LogDao
 

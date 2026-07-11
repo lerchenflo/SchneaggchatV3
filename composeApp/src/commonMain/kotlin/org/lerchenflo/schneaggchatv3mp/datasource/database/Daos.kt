@@ -21,7 +21,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReade
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MapEntryDto
-import org.lerchenflo.schneaggchatv3mp.todolist.data.TodoEntityDto
 
 @Dao
 interface UserDao {
@@ -223,31 +222,6 @@ interface GroupDao {
 
 
 @Dao
-interface TodolistDao{
-    @Upsert
-    suspend fun upsertTodo(todo: TodoEntityDto)
-
-    @Update
-    suspend fun updateTodo(todo: TodoEntityDto)
-
-    @Insert
-    suspend fun insertTodo(todo: TodoEntityDto)
-
-    @Query("DELETE FROM todoentitydto WHERE id = :todoid")
-    suspend fun delete(todoid: String)
-
-    @Transaction
-    @Query("SELECT * FROM todoentitydto")
-    fun getAllTodos(): Flow<List<TodoEntityDto>>
-
-    @Query("SELECT id, updatedAt FROM todoentitydto")
-    suspend fun getTodoIdsWithChangeDates(): List<IdChangeDate>
-
-    @Query("SELECT * FROM todoentitydto WHERE id = :id")
-    suspend fun getTodoById(id: String) : TodoEntityDto?
-}
-
-@Dao
 interface LogDao {
     @Upsert
     suspend fun upsertLog(logEntry: LogEntry)
@@ -287,11 +261,6 @@ interface AllDatabaseDao {
     @Query("DELETE FROM group_members")
     suspend fun clearGroupMembers()
 
-    @Query("DELETE FROM todoentitydto")
-    suspend fun clearTodos()
-
-
-
     @Query("DELETE FROM map_entries")
     suspend fun clearMapEntries()
 
@@ -305,7 +274,6 @@ interface AllDatabaseDao {
         clearUsers()           // Finally users table
         clearGroupMembers()
         clearGroups()
-        clearTodos()
         clearMapEntries()
     }
 }
