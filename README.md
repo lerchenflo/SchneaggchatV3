@@ -16,12 +16,20 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 # Changelog
 
+### 3.0.14
+
+#### Features
+- Roadmap in den Misc Einstellungen mit Github issues
+
+#### Bugfixes
+- Überlappende Schaltflächen auf der Schneaggmap behoben
 
 ### 3.0.13
 
 #### Features
 - Freundstandorte-Preview mit Profilbildern auf der Schneaggmap
 - Highscores für Spiele + Spiele unified + Verbessert + Neue Spiele
+- Finger Picker Spiel
 - Map Style Einstellungen
 - Open in Maps Button
 - Echtzeit Online-Status von Freunden

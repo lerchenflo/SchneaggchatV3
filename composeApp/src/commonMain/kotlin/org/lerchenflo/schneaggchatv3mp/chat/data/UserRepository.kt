@@ -17,7 +17,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.FriendLocationPayload
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.FriendLocationSnapshotEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SnailTrailPointPayload
-import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
+import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
 
 class UserRepository(
     private val database: AppDatabase,
@@ -156,6 +156,17 @@ class UserRepository(
 
     fun setFriendOnline(userId: String, online: Boolean) {
         _onlineFriendIds.update { current -> if (online) current + userId else current - userId }
+    }
+
+    /** Best-effort local timestamp for the moment a friend went offline. The next [dataSync][org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.dataSync]
+     * will overwrite this with the server's authoritative `lastSeen`. */
+    suspend fun updateUserLastSeenNow(userId: String) {
+        val dbUser = database.userDao().getUserbyId(userId)
+        if (dbUser != null) {
+            database.userDao().upsert(dbUser.copy(
+                lastSeen = getCurrentTimeMillisLong()
+            ))
+        }
     }
 
     fun setOnlineFriendIds(ids: Set<String>) {

@@ -16,6 +16,8 @@ var URL_INSTAGRAM = "https://www.instagram.com/schneaggchat?utm_source=ig_web_bu
 
 val GITHUB_URL = "https://raw.githubusercontent.com/lerchenflo/SchneaggchatV3"
 
+val GITHUB_ISSUES_API_URL = "https://api.github.com/repos/lerchenflo/SchneaggchatV3/issues?state=open&per_page=100"
+
 val PLAYSTORE_TESTER_URI = "https://play.google.com/apps/testing/org.lerchenflo.schneaggchatv3mp"
 
 var USERPROFILEPICTURE_FILE_NAME = ".upb"

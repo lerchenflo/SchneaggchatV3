@@ -210,6 +210,9 @@ kotlin {
             //Reordable Column
             implementation(libs.reorderable)
 
+            //Roadmap timeline
+            implementation(libs.jetlime)
+
             //Sharedprefs
             api(libs.datastore.preferences)
             api(libs.datastore)

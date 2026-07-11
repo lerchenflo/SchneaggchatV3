@@ -408,6 +408,10 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
             //A friend connected or disconnected (live push)
             is SocketConnectionMessage.FriendOnlineStatusChange -> {
                 userRepository.setFriendOnline(socketMessage.userId, socketMessage.online)
+                if (!socketMessage.online) {
+                    //Best-effort local lastSeen, corrected later by the server's authoritative value via dataSync
+                    userRepository.updateUserLastSeenNow(socketMessage.userId)
+                }
             }
 
             //Initial snapshot of all currently-online friends, pushed once on connect

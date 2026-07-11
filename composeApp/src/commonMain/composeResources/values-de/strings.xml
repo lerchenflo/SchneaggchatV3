@@ -145,34 +145,6 @@
     <string name="gallery">Gallerie</string>
     <string name="choose_image_source">Bildquelle auswählen</string>
 
-    <!-- Todoliste -->
-    <string name="todolist">Todos</string>
-    <string name="not_assigned">Nicht zugewiesen</string>
-    <string name="assignedto">Zugewiesen zu</string>
-    <string name="bugplatform">Plattform</string>
-    <string name="bugtype">Typ</string>
-    <string name="bugstatus_unfinished">Nicht erledigt</string>
-    <string name="bugstatus_in_progress">In Bearbeitung</string>
-    <string name="bugstatus_finished">Abgeschlossen</string>
-    <string name="bugpriority_low">Schwach</string>
-    <string name="bugpriority_normal">Normal</string>
-    <string name="bugpriority_high">Hoch</string>
-    <string name="bugpriority_extreme">Extrem</string>
-
-    <string name="bugpriority">Priorität</string>
-    <string name="enteredby">Hinzugefügt von</string>
-    <string name="bugstatus">Status</string>
-    <string name="buglastchanged">Zuletzt geändert</string>
-
-    <string name="bug_sort_all">Alle</string>
-    <string name="bug_sort_mine">Meine</string>
-    <string name="bug_sort_unfinished">Nicht fertig</string>
-    <string name="bug_sort_important">Wichtig</string>
-    <string name="bug_sort_bug">Fehler</string>
-    <string name="bug_sort_feature">Features</string>
-    <string name="bug_sort_todo">Todos</string>
-    <string name="bug_sort_assigned_to_me">Mir zugewiesen</string>
-
     <string name="new_chat">Neuer Chat</string>
     <string name="new_group">Gruppe erstellen</string>
     <string name="invite_friend">Freund einladen</string>
@@ -405,6 +377,12 @@
     <string name="games_coinflip_flip">werfen</string>
     <string name="games_coinflip_flipping">wirft...</string>
     <string name="games_coinflip_swipe_hint">Nach oben wischen oder auf den Button tippen zum Werfen</string>
+    <string name="games_fingerpicker_title">Fingerauswahl</string>
+    <string name="games_fingerpicker_hint">Alle legen einen Finger auf den Bildschirm</string>
+    <string name="games_fingerpicker_holding">Ruhig halten…</string>
+    <string name="games_fingerpicker_result">%1$d Finger ausgewählt!</string>
+    <string name="games_fingerpicker_lift_hint">Alle Finger heben, um erneut zu spielen</string>
+    <string name="games_fingerpicker_winner_count">Anzahl Gewinner</string>
     <string name="games_morse_invalid">Kein Buchstabe für diesen Code</string>
 
     <!-- Games: DartCounter -->
@@ -757,6 +735,8 @@
     <string name="recap_outro_friends">Freunde</string>
     <string name="recap_outro_reactions">Reaktionen</string>
     <string name="recap_outro_streak">Tage-Serie</string>
+    <string name="recap_outro_rank_messages">Nachrichten-Rang</string>
+    <string name="recap_outro_rank_errors">Fehler-Rang</string>
     <string name="recap_tap_hint">Tippen, um fortzufahren</string>
 
     <!-- Month names -->
@@ -889,8 +869,4 @@
     <string name="location_food_cheeseburger_price">Cheeseburgerpreis</string>
     <string name="location_food_beer_price">Bierpreis</string>
     <string name="location_food_cuisine">Essenstyp</string>
-
-
-
-
 </resources>

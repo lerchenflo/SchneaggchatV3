@@ -145,34 +145,6 @@
     <string name="gallery">Gallerie</string>
     <string name="choose_image_source">Bildquelle uswähla</string>
 
-    <!-- Todoliste -->
-    <string name="todolist">Todos</string>
-    <string name="not_assigned">Ned zuagwiesa</string>
-    <string name="assignedto">Zugwiesa zu</string>
-    <string name="bugplatform">Plattform</string>
-    <string name="bugtype">Typ</string>
-    <string name="bugstatus_unfinished">Ned erledigt</string>
-    <string name="bugstatus_in_progress">In Bearbeitung</string>
-    <string name="bugstatus_finished">Abgschlossa</string>
-    <string name="bugpriority_low">Schwach</string>
-    <string name="bugpriority_normal">Normal</string>
-    <string name="bugpriority_high">Hoch</string>
-    <string name="bugpriority_extreme">Extrem</string>
-
-    <string name="bugpriority">Priorität</string>
-    <string name="enteredby">Dazuato vo</string>
-    <string name="bugstatus">Status</string>
-    <string name="buglastchanged">S letzte mol gändert</string>
-
-    <string name="bug_sort_all">Alle</string>
-    <string name="bug_sort_mine">Mine</string>
-    <string name="bug_sort_unfinished">Ned fertig</string>
-    <string name="bug_sort_important">Wichtig</string>
-    <string name="bug_sort_bug">Fehler</string>
-    <string name="bug_sort_feature">Features</string>
-    <string name="bug_sort_todo">Todos</string>
-    <string name="bug_sort_assigned_to_me">Mir zuagwiesa</string>
-
     <string name="new_chat">Neuer Chat</string>
     <string name="new_group">Gruppe erstella</string>
     <string name="invite_friend">Freund ilada</string>
@@ -655,7 +627,7 @@
     <string name="games_schneaggahus_instructions">Schneagga krabbeln us am Startpunkt und folgen dam Weag. Tipp uf die Weichen, um die Gleise umleiten, und lenke jeden Schneagg zu sinem Hus.\n\nJede richtige Zustellung bringt Punkte — sobald 3 Schneagga im falscha Hus glandet sind, ischas Spiel vorbei. Je länger du überleabsch, desto schneller kumman neue Schneagga!</string>
 
     <!-- Games: Grid Rush -->
-    <string name="games_daily_section">Täglische Challenge</string>
+    <string name="games_daily_section">Tägliche Challenge</string>
     <string name="games_gridrush_title">Grid Rush</string>
     <string name="games_gridrush_instructions">Züh a Linie durch benachbarte Felder mit da glicha Farb — wenn  du loslosch verschwindand die Fealda und die drübat rutschand abe.\n\nDin Highscore zellt nur wenn du alle Blöck wekkriagsch. Jeden Tag ändert sich s Spielfeld, jeder kriagt s gliche.</string>
     <string name="games_gridrush_moves">Züge: %1$d / Par %2$d</string>
@@ -671,7 +643,7 @@
 
     <!-- Recap -->
     <string name="recap_your_year">Din Joar</string>
-    <string name="recap_using_schneaggchat_in_numbers">SChneaggchat in Zahla</string>
+    <string name="recap_using_schneaggchat_in_numbers">Schneaggchat in Zahla</string>
     <string name="recap_in_year_you_had_a_lot_to_say">Im Joar %1$d hosch du viel zum säga ket.</string>
     <string name="recap_others_sent_you">Dieses Joar hond andre Lüt dir</string>
     <string name="recap_others_sent_you_suffix">Nochrichta gschickt</string>
@@ -755,6 +727,8 @@
     <string name="recap_outro_friends">Freunde</string>
     <string name="recap_outro_reactions">Reaktiona</string>
     <string name="recap_outro_streak">Takesstreak</string>
+    <string name="recap_outro_rank_messages">Nochrichta-Rang</string>
+    <string name="recap_outro_rank_errors">Fehler-Rang</string>
     <string name="recap_tap_hint">Tipp zum wittamacha</string>
 
     <!-- Month names -->

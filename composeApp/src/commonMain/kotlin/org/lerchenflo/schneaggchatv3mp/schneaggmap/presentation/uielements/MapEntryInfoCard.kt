@@ -57,6 +57,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.toSimpleLocationData
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.delete
@@ -66,6 +67,7 @@ import schneaggchatv3mp.composeapp.generated.resources.open_location_in_maps
 import schneaggchatv3mp.composeapp.generated.resources.save
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_delete
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_description
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_last_changed_label
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_title
 
 @Composable
@@ -99,6 +101,15 @@ fun MapEntryInfoCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             CoordinateView(currentEntry.coordinates)
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = stringResource(Res.string.schneaggmap_entry_last_changed_label) + ": " + millisToTimeDateOrYesterday(currentEntry.updatedAt),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 

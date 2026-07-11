@@ -19,10 +19,12 @@ object ChangelogParser {
     fun getChangelog(readme: String, version: String): String? {
         val lines = readme.lines()
 
-        // Find the line index of the requested version heading
+        // Find the line index of the requested version heading. Matches the exact version
+        // token (not just a prefix) so e.g. "3.0.1" doesn't accidentally match "3.0.10".
         val startIndex = lines.indexOfFirst { line ->
-            line.trimStart().startsWith("### ") &&
-                    line.trimStart().removePrefix("### ").trim().startsWith(version)
+            val trimmed = line.trimStart()
+            trimmed.startsWith("### ") &&
+                    trimmed.removePrefix("### ").trim().substringBefore(' ') == version
         }
 
         if (startIndex == -1) return null
@@ -62,6 +64,25 @@ object ChangelogParser {
         }
 
         return ChangelogEntry(version = version, features = features, bugfixes = bugfixes, announcements = announcements)
+    }
+
+    /**
+     * Returns every version heading found in the changelog, in the order they appear
+     * (newest first, matching the README).
+     */
+    fun getAllVersions(readme: String): List<String> {
+        return readme.lines().mapNotNull { line ->
+            val trimmed = line.trimStart()
+            if (!trimmed.startsWith("### ")) return@mapNotNull null
+            trimmed.removePrefix("### ").trim().substringBefore(' ').takeIf { it.isNotBlank() }
+        }
+    }
+
+    /**
+     * Returns the parsed [ChangelogEntry] for every version in the changelog, newest first.
+     */
+    fun getFullChangelog(readme: String): List<ChangelogEntry> {
+        return getAllVersions(readme).mapNotNull { version -> getParsedChangelog(readme, version) }
     }
 }
 

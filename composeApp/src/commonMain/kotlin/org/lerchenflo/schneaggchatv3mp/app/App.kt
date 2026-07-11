@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.House
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -69,6 +70,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameScreenElement
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
+import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout.OddOneOutScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
@@ -90,6 +92,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
+import org.lerchenflo.schneaggchatv3mp.roadmap.presentation.RoadmapScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
@@ -97,7 +100,6 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.OfflineBar
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.SnackbarPopup
-import org.lerchenflo.schneaggchatv3mp.todolist.presentation.TodolistScreen
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -106,12 +108,15 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_title
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
+import schneaggchatv3mp.composeapp.generated.resources.games_fingerpicker_title
 import schneaggchatv3mp.composeapp.generated.resources.games_gridrush_title
 import schneaggchatv3mp.composeapp.generated.resources.games_morse_title
 import schneaggchatv3mp.composeapp.generated.resources.games_oddoneout_title
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggahus_title
 import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
+import schneaggchatv3mp.composeapp.generated.resources.games_tetris_title
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
+import schneaggchatv3mp.composeapp.generated.resources.games_yahtzee_title
 
 
 @Composable
@@ -158,7 +163,6 @@ fun App() {
                         subclass(Route.SignUp::class, Route.SignUp.serializer())
                         subclass(Route.EmailVerifiedCheck::class, Route.EmailVerifiedCheck.serializer())
                         subclass(Route.ChatDetails::class, Route.ChatDetails.serializer())
-                        subclass(Route.Todolist::class, Route.Todolist.serializer())
                         subclass(Route.Schneaggmap::class, Route.Schneaggmap.serializer())
 
                         //Subgraph for settings
@@ -184,6 +188,7 @@ fun App() {
                         subclass(Route.Settings.AppearanceSettings::class, Route.Settings.AppearanceSettings.serializer())
                         subclass(Route.Settings.MiscSettings::class, Route.Settings.MiscSettings.serializer())
                         subclass(Route.Settings.SchneaggmapSettings::class, Route.Settings.SchneaggmapSettings.serializer())
+                        subclass(Route.Settings.Roadmap::class, Route.Settings.Roadmap.serializer())
                     }
                 }
             },
@@ -210,6 +215,7 @@ fun App() {
 
                         subclass(Route.Games.Recap::class, Route.Games.Recap.serializer())
                         subclass(Route.Games.CoinFlip::class, Route.Games.CoinFlip.serializer())
+                        subclass(Route.Games.FingerPicker::class, Route.Games.FingerPicker.serializer())
 
 
                     }
@@ -608,7 +614,8 @@ fun App() {
                                                 if (settingsBackStack.size > 1){
                                                     settingsBackStack.removeAt(settingsBackStack.size - 1)
                                                 }
-                                            }
+                                            },
+                                            navigateRoadmap = {settingsBackStack.add(Route.Settings.Roadmap)}
                                         )
                                     }
 
@@ -623,16 +630,20 @@ fun App() {
                                             }
                                         )
                                     }
+
+                                    entry<Route.Settings.Roadmap> {
+                                        RoadmapScreen(
+                                            roadmapViewModel = koinInject(),
+                                            onBackClick = {
+                                                if (settingsBackStack.size > 1){
+                                                    settingsBackStack.removeAt(settingsBackStack.size - 1)
+                                                }
+                                            }
+                                        )
+                                    }
                                 }
                             )
                         }
-
-
-                        entry<Route.Todolist> {
-                            TodolistScreen()
-
-                        }
-
 
 
                         entry<Route.Schneaggmap> {
@@ -645,7 +656,7 @@ fun App() {
 
                             val gamesList = listOf<GameScreenElement>(
                                 GameScreenElement(
-                                    title = "Tetris",
+                                    title = stringResource(Res.string.games_tetris_title),
                                     icon = Icons.Default.Menu, // Placeholder
                                     route = Route.Games.Tetris,
                                     inDev = false,
@@ -694,6 +705,12 @@ fun App() {
                                     inDev = false
                                 ),
                                 GameScreenElement(
+                                    title = stringResource(Res.string.games_fingerpicker_title),
+                                    icon = Icons.Default.TouchApp,
+                                    route = Route.Games.FingerPicker,
+                                    inDev = false
+                                ),
+                                GameScreenElement(
                                     title = stringResource(Res.string.games_dartcounter_title),
                                     icon = Icons.Default.AdsClick, // ma darf sich gern was besseres usdenka
                                     route = Route.Games.DartCounter,
@@ -707,14 +724,11 @@ fun App() {
                                 ),
 
                                 GameScreenElement(
-                                    title = "Yahtzee",
+                                    title = stringResource(Res.string.games_yahtzee_title),
                                     icon = Icons.Default.Star,
                                     route = Route.Games.YatziSetup,
                                     inDev = false
                                 ),
-
-
-
 
 
                             )
@@ -857,6 +871,16 @@ fun App() {
 
                                     entry <Route.Games.CoinFlip> {
                                         CoinFlipScreen(
+                                            onBackClick = {
+                                                if (gamesBackStack.size > 1){
+                                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                                }
+                                            }
+                                        )
+                                    }
+
+                                    entry <Route.Games.FingerPicker> {
+                                        FingerPickerScreen(
                                             onBackClick = {
                                                 if (gamesBackStack.size > 1){
                                                     gamesBackStack.removeAt(gamesBackStack.size - 1)
