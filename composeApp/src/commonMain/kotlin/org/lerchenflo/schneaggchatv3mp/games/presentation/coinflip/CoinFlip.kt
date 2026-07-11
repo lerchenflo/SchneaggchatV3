@@ -12,10 +12,8 @@ import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -42,10 +40,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.sin
-import kotlin.random.Random
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -59,6 +53,10 @@ import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_tails_defa
 import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_tails_label
 import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_title
 import schneaggchatv3mp.composeapp.generated.resources.icon_schneagg_alternative
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.sin
+import kotlin.random.Random
 
 private const val FLIP_DURATION_MS = 900
 private const val MIN_SPINS = 3
@@ -81,7 +79,6 @@ fun CoinFlipScreen(
     onBackClick: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
-    val hasFlippedOnce = state.flipTrigger > 0
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -135,23 +132,6 @@ fun CoinFlipScreen(
                 tailsLabel = state.tailsLabel.ifBlank { stringResource(Res.string.games_coinflip_tails_default) },
                 onAnimationFinished = { viewModel.onAction(CoinFlipAction.AnimationFinished) }
             )
-
-            if (hasFlippedOnce) {
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = when (state.result) {
-                        CoinSide.HEADS -> stringResource(Res.string.games_coinflip_heads)
-                        CoinSide.TAILS -> state.tailsLabel.ifBlank { stringResource(Res.string.games_coinflip_tails_default) }
-                    },
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = if (state.isFlipping)
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
-                    else
-                        MaterialTheme.colorScheme.onSurface
-                )
-            }
         }
 
         Text(
