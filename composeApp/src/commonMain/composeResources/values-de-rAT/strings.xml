@@ -655,7 +655,7 @@
     <string name="games_schneaggahus_instructions">Schneagga krabbeln us am Startpunkt und folgen dam Weag. Tipp uf die Weichen, um die Gleise umleiten, und lenke jeden Schneagg zu sinem Hus.\n\nJede richtige Zustellung bringt Punkte — sobald 3 Schneagga im falscha Hus glandet sind, ischas Spiel vorbei. Je länger du überleabsch, desto schneller kumman neue Schneagga!</string>
 
     <!-- Games: Grid Rush -->
-    <string name="games_daily_section">Täglische Challenge</string>
+    <string name="games_daily_section">Tägliche Challenge</string>
     <string name="games_gridrush_title">Grid Rush</string>
     <string name="games_gridrush_instructions">Züh a Linie durch benachbarte Felder mit da glicha Farb — wenn  du loslosch verschwindand die Fealda und die drübat rutschand abe.\n\nDin Highscore zellt nur wenn du alle Blöck wekkriagsch. Jeden Tag ändert sich s Spielfeld, jeder kriagt s gliche.</string>
     <string name="games_gridrush_moves">Züge: %1$d / Par %2$d</string>

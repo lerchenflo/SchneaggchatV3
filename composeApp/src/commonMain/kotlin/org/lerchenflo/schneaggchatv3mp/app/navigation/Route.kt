@@ -99,6 +99,9 @@ sealed interface Route : NavKey {
 
         @Serializable
         data object CoinFlip: Route, NavKey
+
+        @Serializable
+        data object FingerPicker: Route, NavKey
     }
 }
 

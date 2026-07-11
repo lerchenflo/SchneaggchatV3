@@ -405,6 +405,12 @@
     <string name="games_coinflip_flip">Flip</string>
     <string name="games_coinflip_flipping">Flipping…</string>
     <string name="games_coinflip_swipe_hint">Swipe up or tap the button to flip</string>
+    <string name="games_fingerpicker_title">Finger Picker</string>
+    <string name="games_fingerpicker_hint">Everyone place a finger on the screen</string>
+    <string name="games_fingerpicker_holding">Hold still…</string>
+    <string name="games_fingerpicker_result">%1$d fingers picked!</string>
+    <string name="games_fingerpicker_lift_hint">Lift all fingers to play again</string>
+    <string name="games_fingerpicker_winner_count">Number of winners</string>
     <string name="games_morse_invalid">No character for this code</string>
 
     <!-- Games: DartCounter -->
@@ -819,6 +825,7 @@
     <string name="game_over_final_time">Time: %1$s</string>
     <string name="game_restart">Restart</string>
     <string name="show_highscores">Show highscores</string>
+    <string name="difficulty">Difficulty</string>
     <string name="difficulty_low">Low</string>
     <string name="difficulty_medium">Medium</string>
     <string name="difficulty_high">High</string>

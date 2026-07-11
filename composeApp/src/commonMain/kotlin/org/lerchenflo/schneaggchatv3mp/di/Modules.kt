@@ -28,6 +28,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushViewmodel
@@ -181,6 +182,8 @@ val sharedmodule = module{
     factory { MorseViewModel(get()) }
     viewModelOf(::CoinFlipViewModel)
     factory { CoinFlipViewModel() }
+    viewModelOf(::FingerPickerViewModel)
+    factory { FingerPickerViewModel() }
 
     viewModelOf(::SchneaggaHusViewmodel)
     factory { SchneaggaHusViewmodel(get()) }

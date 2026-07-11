@@ -45,6 +45,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.difficulty
 import schneaggchatv3mp.composeapp.generated.resources.games_daily_section
 import schneaggchatv3mp.composeapp.generated.resources.games_without_highscores
 import schneaggchatv3mp.composeapp.generated.resources.show_highscores
@@ -67,6 +68,18 @@ fun GameSelectorScreen(
             onBackClick = onBackClick
         )
 
+        Text(
+            text = stringResource(Res.string.difficulty),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp)
+        )
+
+        DifficultySelector(
+            selected = GameDifficultySelection.selected,
+            onSelect = { GameDifficultySelection.selected = it },
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+        )
 
         val visibleGames = gamesList.filter { !it.inDev || dev }
         val (dailyGames, regularGames) = visibleGames.partition { it.daily }
@@ -75,14 +88,6 @@ fun GameSelectorScreen(
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
         ) {
-            item {
-                DifficultySelector(
-                    selected = GameDifficultySelection.selected,
-                    onSelect = { GameDifficultySelection.selected = it },
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-            }
-
             if (dailyGames.isNotEmpty()) {
                 item {
                     Text(

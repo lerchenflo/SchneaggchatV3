@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.House
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -69,6 +70,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameScreenElement
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
+import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout.OddOneOutScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
@@ -106,6 +108,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_title
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
+import schneaggchatv3mp.composeapp.generated.resources.games_fingerpicker_title
 import schneaggchatv3mp.composeapp.generated.resources.games_gridrush_title
 import schneaggchatv3mp.composeapp.generated.resources.games_morse_title
 import schneaggchatv3mp.composeapp.generated.resources.games_oddoneout_title
@@ -210,6 +213,7 @@ fun App() {
 
                         subclass(Route.Games.Recap::class, Route.Games.Recap.serializer())
                         subclass(Route.Games.CoinFlip::class, Route.Games.CoinFlip.serializer())
+                        subclass(Route.Games.FingerPicker::class, Route.Games.FingerPicker.serializer())
 
 
                     }
@@ -694,6 +698,12 @@ fun App() {
                                     inDev = false
                                 ),
                                 GameScreenElement(
+                                    title = stringResource(Res.string.games_fingerpicker_title),
+                                    icon = Icons.Default.TouchApp,
+                                    route = Route.Games.FingerPicker,
+                                    inDev = false
+                                ),
+                                GameScreenElement(
                                     title = stringResource(Res.string.games_dartcounter_title),
                                     icon = Icons.Default.AdsClick, // ma darf sich gern was besseres usdenka
                                     route = Route.Games.DartCounter,
@@ -857,6 +867,16 @@ fun App() {
 
                                     entry <Route.Games.CoinFlip> {
                                         CoinFlipScreen(
+                                            onBackClick = {
+                                                if (gamesBackStack.size > 1){
+                                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                                }
+                                            }
+                                        )
+                                    }
+
+                                    entry <Route.Games.FingerPicker> {
+                                        FingerPickerScreen(
                                             onBackClick = {
                                                 if (gamesBackStack.size > 1){
                                                     gamesBackStack.removeAt(gamesBackStack.size - 1)
