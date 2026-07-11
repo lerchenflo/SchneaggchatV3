@@ -45,6 +45,26 @@ fun LocationData.getValueByKey(key: String): AttributeValue? = when (this) {
         else                -> null
     }
 
+    // Sport
+    is LocationData.Volleyball       -> when (key) {
+        "goodNet"           -> goodNet
+        "goodField"         -> goodField
+        "outdoor"           -> outdoor
+        else                -> null
+    }
+    is LocationData.OutdoorFitness   -> when (key) {
+        "shadow"            -> shadow
+        else                -> null
+    }
+    is LocationData.TableTennis      -> when (key) {
+        "private"           -> `private`
+        else                -> null
+    }
+    is LocationData.Tennis           -> when (key) {
+        "paddle"            -> paddle
+        else                -> null
+    }
+
     // Social & Entertainment
     is LocationData.SightSeeing      -> when (key) {
         "entryFee"         -> entryFee
@@ -124,6 +144,26 @@ fun LocationData.withValueForKey(key: String, value: AttributeValue): LocationDa
     is LocationData.SwimmingLocation -> when (key) {
         "indoor"            -> copy(indoor = value)
         "jumpSpot"           -> copy(jumpSpot = value)
+        else                -> this
+    }
+
+    // Sport
+    is LocationData.Volleyball       -> when (key) {
+        "goodNet"           -> copy(goodNet = value)
+        "goodField"         -> copy(goodField = value)
+        "outdoor"           -> copy(outdoor = value)
+        else                -> this
+    }
+    is LocationData.OutdoorFitness   -> when (key) {
+        "shadow"            -> copy(shadow = value)
+        else                -> this
+    }
+    is LocationData.TableTennis      -> when (key) {
+        "private"           -> copy(`private` = value)
+        else                -> this
+    }
+    is LocationData.Tennis           -> when (key) {
+        "paddle"            -> copy(paddle = value)
         else                -> this
     }
 

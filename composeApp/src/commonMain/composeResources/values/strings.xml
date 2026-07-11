@@ -823,6 +823,7 @@
     <!-- Location Groups -->
     <string name="location_group_street">Street</string>
     <string name="location_group_nature_activities">Nature &amp; Activities</string>
+    <string name="location_group_sport">Sport</string>
     <string name="location_group_social_entertainment">Social &amp; Entertainment</string>
     <string name="location_group_food">Food</string>
 
@@ -834,6 +835,10 @@
     <string name="location_type_viewpoint">Viewpoint</string>
     <string name="location_type_camping">Camping</string>
     <string name="location_type_swimming">Swimming</string>
+    <string name="location_type_volleyball">Volleyball</string>
+    <string name="location_type_outdoor_fitness">Outdoor Fitness</string>
+    <string name="location_type_table_tennis">Table Tennis</string>
+    <string name="location_type_tennis">Tennis</string>
     <string name="location_type_sightseeing">Sightseeing</string>
     <string name="location_type_party">Party</string>
     <string name="location_type_food_kebab">Kebab</string>
@@ -869,6 +874,20 @@
     <!-- Swimming -->
     <string name="location_swimming_indoor">Indoor</string>
     <string name="location_swimming_jump_spot">Jump Spot</string>
+
+    <!-- Volleyball -->
+    <string name="location_volleyball_good_net">Good Net</string>
+    <string name="location_volleyball_good_field">Good Field</string>
+    <string name="location_volleyball_outdoor">Outdoor</string>
+
+    <!-- Outdoor Fitness -->
+    <string name="location_outdoor_fitness_shadow">Shadow</string>
+
+    <!-- Table Tennis -->
+    <string name="location_table_tennis_private">Private</string>
+
+    <!-- Tennis -->
+    <string name="location_tennis_paddle">Paddle</string>
 
     <!-- Sightseeing & Party -->
     <string name="location_sightseeing_entry_fee">Entry Fee</string>

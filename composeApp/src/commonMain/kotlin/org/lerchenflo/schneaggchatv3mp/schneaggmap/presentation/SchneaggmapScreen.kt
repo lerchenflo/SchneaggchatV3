@@ -67,6 +67,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.*
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.CAMPING
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_ASIAN
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_BEER
@@ -327,7 +328,7 @@ fun SchneaggmapScreen(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.align(Alignment.CenterStart)
+                modifier = Modifier.align(Alignment.TopStart)
             ) {
                 FloatingActionButton(
                     onClick = { onAction(SchneaggmapAction.OnSettingsClick) },
@@ -355,7 +356,7 @@ fun SchneaggmapScreen(
                     val speedKmh = (speed.distancePerSecond.inMeters * 3.6).roundToInt()
                     Box(
                         modifier = Modifier
-                            .align(Alignment.Center)
+                            .align(Alignment.TopCenter)
                             .size(56.dp)
                             .background(Color.White, CircleShape)
                             .border(width = 4.dp, color = Color.Red, shape = CircleShape),
@@ -564,6 +565,11 @@ private fun SchneaggmapMapContent(
                 FOOD_ASIAN -> Res.drawable.icon_chinese_food
                 FOOD_GREEK -> Res.drawable.icon_food //TODO: CHANGE ICON
                 FOOD_OTHER -> Res.drawable.icon_food
+
+                VOLLEYBALL -> Res.drawable.icon_camping //TODO: CHANGE ICON
+                OUTDOOR_FITNESS -> Res.drawable.icon_camping //TODO: CHANGE ICON
+                TABLE_TENNIS -> Res.drawable.icon_camping //TODO: CHANGE ICON
+                TENNIS -> Res.drawable.icon_camping //TODO: CHANGE ICON
             }
         }
     }

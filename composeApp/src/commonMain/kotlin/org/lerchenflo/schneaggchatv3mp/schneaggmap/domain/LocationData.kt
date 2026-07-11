@@ -26,6 +26,12 @@ enum class LocationType {
     CAMPING,
     SWIMMING,
 
+    // Sport
+    VOLLEYBALL,
+    OUTDOOR_FITNESS,
+    TABLE_TENNIS,
+    TENNIS,
+
     // Social & Entertainment
     PARTY,
 
@@ -43,6 +49,7 @@ enum class LocationType {
 enum class LocationGroup(val types: List<LocationType>) {
     STREET(listOf(RADAR, POLICE, MOUNTAIN_STREET, WHEELIESPOT)),
     NATURE_ACTIVITIES(listOf(SIGHTSEEING, VIEWPOINT, CAMPING, SWIMMING)),
+    SPORT(listOf(VOLLEYBALL, OUTDOOR_FITNESS, TABLE_TENNIS, TENNIS)),
     SOCIAL_ENTERTAINMENT(listOf(PARTY)),
     FOOD(listOf(FOOD_KEBAB, FOOD_PIZZA, FOOD_BURGER, FOOD_BEER, FOOD_ASIAN, FOOD_GREEK, FOOD_OTHER)),
 }
@@ -175,6 +182,71 @@ sealed class LocationData {
         override fun schema() = listOf(
             AttributeDefinition.BoolDef(key = "indoor",   required = false),
             AttributeDefinition.BoolDef(key = "jumpSpot", required = false),
+        )
+    }
+
+
+    // Sport
+
+    @Serializable
+    @SerialName("volleyball")
+    data class Volleyball(
+        val goodNet: AttributeValue?,
+        val goodField: AttributeValue?,
+        val outdoor: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = VOLLEYBALL
+
+        val goodNetValue   get() = goodNet?.asBool
+        val goodFieldValue get() = goodField?.asBool
+        val outdoorValue   get() = outdoor?.asBool
+
+        override fun schema() = listOf(
+            AttributeDefinition.BoolDef(key = "goodNet",   required = false),
+            AttributeDefinition.BoolDef(key = "goodField", required = false),
+            AttributeDefinition.BoolDef(key = "outdoor",   required = false),
+        )
+    }
+
+    @Serializable
+    @SerialName("outdoor_fitness")
+    data class OutdoorFitness(
+        val shadow: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = OUTDOOR_FITNESS
+
+        val shadowValue get() = shadow?.asBool
+
+        override fun schema() = listOf(
+            AttributeDefinition.BoolDef(key = "shadow", required = false),
+        )
+    }
+
+    @Serializable
+    @SerialName("table_tennis")
+    data class TableTennis(
+        val `private`: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = TABLE_TENNIS
+
+        val privateValue get() = `private`?.asBool
+
+        override fun schema() = listOf(
+            AttributeDefinition.BoolDef(key = "private", required = false),
+        )
+    }
+
+    @Serializable
+    @SerialName("tennis")
+    data class Tennis(
+        val paddle: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = TENNIS
+
+        val paddleValue get() = paddle?.asBool
+
+        override fun schema() = listOf(
+            AttributeDefinition.BoolDef(key = "paddle", required = false),
         )
     }
 
@@ -318,6 +390,10 @@ fun LocationType.toSimpleLocationData(): LocationData = when (this) {
     VIEWPOINT       -> LocationData.Viewpoint()
     CAMPING         -> LocationData.Camping(official = AttributeValue.BoolValue(true), waterDistance = null, sittingPossibility = null, grillPossibility = null)
     SWIMMING        -> LocationData.SwimmingLocation(indoor = null, jumpSpot = null)
+    VOLLEYBALL      -> LocationData.Volleyball(goodNet = null, goodField = null, outdoor = null)
+    OUTDOOR_FITNESS -> LocationData.OutdoorFitness(shadow = null)
+    TABLE_TENNIS    -> LocationData.TableTennis(`private` = null)
+    TENNIS          -> LocationData.Tennis(paddle = null)
     SIGHTSEEING     -> LocationData.SightSeeing(entryFee = null)
     PARTY           -> LocationData.PartyLocation(entryFee = null)
     FOOD_KEBAB      -> LocationData.FoodKebab(kebabPrice = null)
@@ -359,6 +435,20 @@ fun AttributeDefinition.label(): String {
         "indoor"             -> stringResource(Res.string.location_swimming_indoor)
         "jumpSpot"            -> stringResource(Res.string.location_swimming_jump_spot)
 
+        // Volleyball
+        "goodNet"           -> stringResource(Res.string.location_volleyball_good_net)
+        "goodField"         -> stringResource(Res.string.location_volleyball_good_field)
+        "outdoor"           -> stringResource(Res.string.location_volleyball_outdoor)
+
+        // Outdoor Fitness
+        "shadow"            -> stringResource(Res.string.location_outdoor_fitness_shadow)
+
+        // Table Tennis
+        "private"           -> stringResource(Res.string.location_table_tennis_private)
+
+        // Tennis
+        "paddle"            -> stringResource(Res.string.location_tennis_paddle)
+
         // Sightseeing & Party
         "entryFee"          -> stringResource(Res.string.location_sightseeing_entry_fee)
 
@@ -387,6 +477,10 @@ fun LocationType.stringRes(): StringResource = when (this) {
     VIEWPOINT       -> Res.string.location_type_viewpoint
     CAMPING         -> Res.string.location_type_camping
     SWIMMING        -> Res.string.location_type_swimming
+    VOLLEYBALL      -> Res.string.location_type_volleyball
+    OUTDOOR_FITNESS -> Res.string.location_type_outdoor_fitness
+    TABLE_TENNIS    -> Res.string.location_type_table_tennis
+    TENNIS          -> Res.string.location_type_tennis
     SIGHTSEEING     -> Res.string.location_type_sightseeing
     PARTY           -> Res.string.location_type_party
     FOOD_KEBAB      -> Res.string.location_type_food_kebab
@@ -402,6 +496,7 @@ fun LocationType.stringRes(): StringResource = when (this) {
 fun LocationGroup.stringRes(): StringResource = when (this) {
     LocationGroup.STREET               -> Res.string.location_group_street
     LocationGroup.NATURE_ACTIVITIES    -> Res.string.location_group_nature_activities
+    LocationGroup.SPORT                -> Res.string.location_group_sport
     LocationGroup.SOCIAL_ENTERTAINMENT -> Res.string.location_group_social_entertainment
     LocationGroup.FOOD                 -> Res.string.location_group_food
 }
