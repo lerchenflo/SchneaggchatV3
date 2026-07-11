@@ -47,7 +47,7 @@ actual class LocationService {
 
         manager.delegate = delegate
         manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-        manager.distanceFilter = 5.0
+        manager.distanceFilter = 20.0
         manager.startUpdatingLocation()
 
         // Emit cached location immediately so the flow isn't empty at start
