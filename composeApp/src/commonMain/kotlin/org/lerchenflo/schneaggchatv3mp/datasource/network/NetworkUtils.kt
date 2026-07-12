@@ -927,6 +927,7 @@ class NetworkUtils(
     data class PollVoteOptionCreateRequest(
         //Ids get assigned by the server
         val text: String,
+        val maxVoters: Int? = null, // null = unlimited
     )
     
 

@@ -71,6 +71,13 @@ data class PollMessage(
     fun acceptsMultipleAnswers(): Boolean {
         return (maxAnswers == null || maxAnswers > 1)
     }
+
+    /**
+     * Check if an option has reached its own per-entry vote limit for anyone other than excludingUserId
+     */
+    fun optionIsFull(option: PollVoteOption, excludingUserId: String): Boolean {
+        return option.maxVoters != null && option.voters.count { it.userId != excludingUserId } >= option.maxVoters
+    }
 }
 
 
@@ -80,7 +87,8 @@ data class PollVoteOption(
     val text: String,
     val custom: Boolean,
     val creatorId: String,
-    val voters : List<PollVoter>
+    val voters : List<PollVoter>,
+    val maxVoters: Int? = null, // null = unlimited
 ) {
     /**
      * Get list of user IDs who voted for this option

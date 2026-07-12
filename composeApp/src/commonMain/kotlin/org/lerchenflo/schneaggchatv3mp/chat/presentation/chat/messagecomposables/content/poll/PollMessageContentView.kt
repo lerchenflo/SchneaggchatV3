@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Blind
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PersonSearch
 import androidx.compose.material.icons.filled.Public
@@ -92,8 +93,11 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_answers_count
 import schneaggchatv3mp.composeapp.generated.resources.poll_closed
 import schneaggchatv3mp.composeapp.generated.resources.poll_customoption_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_ends_in
+import schneaggchatv3mp.composeapp.generated.resources.poll_haslimitedentries_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_maxoptions_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_oneoption_info
+import schneaggchatv3mp.composeapp.generated.resources.poll_option_claimed_count
+import schneaggchatv3mp.composeapp.generated.resources.poll_option_full
 import schneaggchatv3mp.composeapp.generated.resources.poll_private_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_public_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_show_answers
@@ -223,6 +227,7 @@ fun PollMessageContentView(
                 votePercentage = option.voters.size.toFloat() / poll.getTotalVoteCount().toFloat(),
                 myMessage = myMessage,
                 voterIds = option.getVoterIdsForOption(),
+                full = poll.optionIsFull(option, ownId),
                 onOptionSelected = {
                     onAction(
                         MessageAction.VotePoll(
@@ -461,15 +466,17 @@ fun PollMessageOptionView(
     myMessage: Boolean,
     voterIds: List<String?>,
     onOptionSelected: (Boolean) -> Unit,
+    full: Boolean = false,
     useMD: Boolean = false
 ) {
-    
+
     val optionCheckedByMe = option.voters.any { it.userId == ownId }
+    val selectable = optionCheckedByMe || !full
 
 
     Row(
         modifier = Modifier
-            .clickable { onOptionSelected(!optionCheckedByMe) },
+            .clickable(enabled = selectable) { onOptionSelected(!optionCheckedByMe) },
         verticalAlignment = Alignment.CenterVertically
     ) {
 
@@ -478,6 +485,7 @@ fun PollMessageOptionView(
             Checkbox(
                 checked = optionCheckedByMe,
                 onCheckedChange = { onOptionSelected(!optionCheckedByMe) },
+                enabled = selectable,
                 modifier = Modifier.size(24.dp),
                 colors = CheckboxDefaults.colors(
                     checkedColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
@@ -489,6 +497,7 @@ fun PollMessageOptionView(
             RadioButton(
                 selected = optionCheckedByMe,
                 onClick = { onOptionSelected(!optionCheckedByMe) },
+                enabled = selectable,
                 modifier = Modifier.size(24.dp),
                 colors = RadioButtonDefaults.colors(
                     selectedColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
@@ -603,6 +612,27 @@ fun PollMessageOptionView(
                             text = "+$anonymousVoterCount",
                             fontSize = 12.sp,
                             color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    // Per-entry vote limit (claimed/max, or "full")
+                    option.maxVoters?.let { maxVoters ->
+                        Spacer(modifier = Modifier.width(4.dp))
+
+                        Text(
+                            text = if (full) {
+                                stringResource(Res.string.poll_option_full)
+                            } else {
+                                stringResource(Res.string.poll_option_claimed_count, option.voters.size.toString(), maxVoters.toString())
+                            },
+                            fontSize = 10.sp,
+                            color = if (full) {
+                                MaterialTheme.colorScheme.error
+                            } else if (myMessage) {
+                                MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            }
                         )
                     }
                 }
@@ -739,6 +769,16 @@ fun PollSmallInfoWindow(
                         )
                     }
                 }
+
+                // Per-entry vote limits
+                if (poll.voteOptions.any { it.maxVoters != null }) {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = "Limited entries",
+                        modifier = Modifier.size(12.dp),
+                        tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             poll.expiresAt?.let {
@@ -793,6 +833,14 @@ fun PollInfoTooltipContent(poll: PollMessage) {
                 PollVisibility.ANONYMOUS -> stringResource(Res.string.poll_anonymous_info)
             }
         )
+
+        // Per-entry vote limits
+        if (poll.voteOptions.any { it.maxVoters != null }) {
+            TooltipRow(
+                icon = Icons.Default.Lock,
+                text = stringResource(Res.string.poll_haslimitedentries_info)
+            )
+        }
 
         // Stats if available
         if (poll.getTotalVoteCount() > 0) {

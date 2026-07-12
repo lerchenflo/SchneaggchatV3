@@ -515,6 +515,10 @@
     <string name="poll_settings_infinite_custom_answers_warning">WARNING: Users will be able to create infinite custom answers!</string>
     <string name="poll_settings_infinite_custom_and_selected_answers_warning">WARNING: Users will be able to create and select unlimited answers!</string>
 
+    <string name="poll_settings_limitperentry">Limit users per entry</string>
+    <string name="poll_settings_limitperentry_info">Set a maximum number of users who can vote for each entry (useful for bring lists)</string>
+    <string name="poll_option_maxvoters_withcount">Max %1$s users for this entry</string>
+
     <string name="poll_visibility_title">Visibility: %1$s</string>
 
     <string name="poll_visibility_public">public (Everyone can see who voted where)</string>
@@ -553,6 +557,10 @@
     <string name="poll_answer_summary">%1$s votes from %2$s users</string>
 
     <string name="poll_show_answers">show answers</string>
+
+    <string name="poll_option_claimed_count">%1$s/%2$s</string>
+    <string name="poll_option_full">full</string>
+    <string name="poll_haslimitedentries_info">Some entries have a limited number of voters</string>
 
 
 

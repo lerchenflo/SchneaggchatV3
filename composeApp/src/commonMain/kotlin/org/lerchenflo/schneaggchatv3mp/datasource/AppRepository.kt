@@ -1379,7 +1379,8 @@ class AppRepository(
                                     text = request.text,
                                     custom = false,
                                     creatorId = ownId,
-                                    voters = emptyList()
+                                    voters = emptyList(),
+                                    maxVoters = request.maxVoters
                                 )
                             }
                         ),
@@ -1643,7 +1644,8 @@ class AppRepository(
                                     closeDate = poll.expiresAt,
                                     voteOptions = poll.voteOptions.map {
                                         PollVoteOptionCreateRequest(
-                                            text = it.text
+                                            text = it.text,
+                                            maxVoters = it.maxVoters
                                         )
                                     }
                                 )

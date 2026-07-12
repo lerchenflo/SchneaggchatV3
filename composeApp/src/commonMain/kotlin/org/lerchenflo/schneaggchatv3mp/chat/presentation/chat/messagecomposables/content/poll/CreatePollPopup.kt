@@ -81,9 +81,21 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_settings_allowmultip
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_allowmultiple_withcount
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_infinite_custom_and_selected_answers_warning
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_infinite_custom_answers_warning
+import schneaggchatv3mp.composeapp.generated.resources.poll_settings_limitperentry
+import schneaggchatv3mp.composeapp.generated.resources.poll_settings_limitperentry_info
+import schneaggchatv3mp.composeapp.generated.resources.poll_option_maxvoters_withcount
 import schneaggchatv3mp.composeapp.generated.resources.poll_visibility_title
 import sh.calvin.reorderable.ReorderableColumn
 import kotlin.time.Clock
+
+/**
+ * Mutable holder for a single poll option row so text and its per-entry vote limit
+ * survive drag-to-reorder (identity-based, not index-based).
+ */
+private class PollOptionInput(text: String = "", maxVoters: Int? = null) {
+    var text by mutableStateOf(text)
+    var maxVoters by mutableStateOf(maxVoters)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(
@@ -105,12 +117,14 @@ fun PollDialog(
     var allowedAnswerCount by remember { mutableStateOf(1) }
 
     var visibility by remember { mutableStateOf(PollVisibility.PUBLIC) }
-    
+
     var expiresAt by remember { mutableStateOf<LocalDateTime?>(null) }
     var showExpiresAtDatePickerDialog by remember { mutableStateOf(false) }
 
+    var limitVotersPerEntry by remember { mutableStateOf(false) }
+
     val options = remember {
-        mutableStateListOf("", "")
+        mutableStateListOf(PollOptionInput(), PollOptionInput())
     }
 
     //Errors
@@ -123,7 +137,7 @@ fun PollDialog(
             return false
         }
 
-        if (options.filter { it.isNotEmpty() }.size < 2) {
+        if (options.filter { it.text.isNotEmpty() }.size < 2) {
             optionsError = true
             return false
         }
@@ -132,7 +146,7 @@ fun PollDialog(
     }
 
     //Reset errors with launchedeffect
-    LaunchedEffect(title, options.toList(), options.size) {
+    LaunchedEffect(title, options.map { it.text }, options.size) {
         if (titleError) {
             if (title.length >= 2) {
                 titleError = false
@@ -140,7 +154,7 @@ fun PollDialog(
         }
 
         if (optionsError) {
-            if (options.filter { it.isNotEmpty() }.size >= 2) {
+            if (options.filter { it.text.isNotEmpty() }.size >= 2) {
                 optionsError = false
             }
         }
@@ -225,7 +239,7 @@ fun PollDialog(
                         options.add(to, options.removeAt(from))
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
                     },
-                ) { index, value, _ ->
+                ) { _, value, _ ->
                     Spacer(modifier = Modifier.height(8.dp))
 
                     ReorderableItem(modifier = Modifier.fillMaxWidth()) {
@@ -233,12 +247,36 @@ fun PollDialog(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            TextField(
-                                value = value,
-                                onValueChange = { options[index] = it },
-                                placeholder = { Text(stringResource(Res.string.poll_options_placeholder)) },
-                                modifier = Modifier.weight(1f)
-                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                TextField(
+                                    value = value.text,
+                                    onValueChange = { value.text = it },
+                                    placeholder = { Text(stringResource(Res.string.poll_options_placeholder)) },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+
+                                if (limitVotersPerEntry && value.text.isNotEmpty()) {
+                                    val sliderValue = value.maxVoters ?: 10
+
+                                    Text(
+                                        text = stringResource(
+                                            Res.string.poll_option_maxvoters_withcount,
+                                            if (sliderValue in 1..9) sliderValue.toString() else "∞"
+                                        ),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        modifier = Modifier.padding(start = 8.dp)
+                                    )
+                                    Slider(
+                                        value = sliderValue.toFloat(),
+                                        onValueChange = { value.maxVoters = it.toInt().let { count -> if (count == 10) null else count } },
+                                        valueRange = 1f..10f,
+                                        steps = 9,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(start = 8.dp, bottom = 4.dp)
+                                    )
+                                }
+                            }
 
                             IconButton(
                                 modifier = Modifier.draggableHandle(
@@ -262,8 +300,8 @@ fun PollDialog(
                 }
 
                 //Auto add new entry if last entry is not empty
-                if (options[options.size-1].isNotEmpty()) {
-                    options.add("")
+                if (options[options.size-1].text.isNotEmpty()) {
+                    options.add(PollOptionInput())
                 }
 
 
@@ -359,6 +397,17 @@ fun PollDialog(
                     }
                 }
 
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                SettingsSwitch(
+                    modifier = Modifier.fillMaxWidth(),
+                    titletext = stringResource(Res.string.poll_settings_limitperentry),
+                    infotext = stringResource(Res.string.poll_settings_limitperentry_info),
+                    switchchecked = limitVotersPerEntry,
+                    onSwitchChange = { limitVotersPerEntry = it },
+                    icon = null
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -496,10 +545,11 @@ fun PollDialog(
                                     closeDate = expiresAt?.toInstant(TimeZone.currentSystemDefault())
                                         ?.toEpochMilliseconds(),
                                     voteOptions = options
-                                        .filter { it.trim().isNotEmpty() }
+                                        .filter { it.text.trim().isNotEmpty() }
                                         .map {
                                             NetworkUtils.PollVoteOptionCreateRequest(
-                                                text = it
+                                                text = it.text,
+                                                maxVoters = if (limitVotersPerEntry) it.maxVoters else null
                                             )
                                         }
                                 )
