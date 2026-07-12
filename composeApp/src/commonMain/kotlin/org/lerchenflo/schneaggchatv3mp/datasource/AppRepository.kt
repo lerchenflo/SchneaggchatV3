@@ -92,6 +92,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
@@ -269,6 +270,7 @@ class AppRepository(
         SessionCache.logout() //Remove cached credentials (Userid)
         KoinPlatform.getKoin().get<Notifier>().removeToken() //Remove notification token
 
+        KoinPlatform.getKoin().get<SocketConnectionManager>().close() //Close socket connection
 
         SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
     }
