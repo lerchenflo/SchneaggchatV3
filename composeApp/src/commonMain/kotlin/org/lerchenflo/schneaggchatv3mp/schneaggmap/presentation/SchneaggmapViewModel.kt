@@ -281,6 +281,17 @@ class SchneaggmapViewModel(
         }
 
         viewModelScope.launch {
+            preferenceManager.getMergeMapUsersFlow()
+                .collectLatest { mergeUsers ->
+                    _state.update {
+                        it.copy(
+                            mergeUsers = mergeUsers
+                        )
+                    }
+                }
+        }
+
+        viewModelScope.launch {
             preferenceManager.getMapStyleSettingFlow()
                 .collectLatest { style ->
                     _state.update { it.copy(mapStyle = style, mapStyleUrl = style.tileUrl) }

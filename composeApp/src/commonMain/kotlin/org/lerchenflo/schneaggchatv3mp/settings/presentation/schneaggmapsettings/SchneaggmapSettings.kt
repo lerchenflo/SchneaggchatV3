@@ -27,6 +27,8 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.merge_map_locations
 import schneaggchatv3mp.composeapp.generated.resources.merge_map_locations_info
+import schneaggchatv3mp.composeapp.generated.resources.merge_map_users
+import schneaggchatv3mp.composeapp.generated.resources.merge_map_users_info
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_settings
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global_info
@@ -59,6 +61,17 @@ fun SchneaggmapSettings(
                 infotext = stringResource(Res.string.merge_map_locations_info),
                 switchchecked = schneaggmapSettingsViewModel.mergeMapLocations,
                 onSwitchChange = { schneaggmapSettingsViewModel.updateMergeMapLocations(it) },
+                icon = null
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            // Merge nearby friend markers when zooming (local preference only)
+            SettingsSwitch(
+                titletext = stringResource(Res.string.merge_map_users),
+                infotext = stringResource(Res.string.merge_map_users_info),
+                switchchecked = schneaggmapSettingsViewModel.mergeMapUsers,
+                onSwitchChange = { schneaggmapSettingsViewModel.updateMergeMapUsers(it) },
                 icon = null
             )
 

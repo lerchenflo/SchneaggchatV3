@@ -653,8 +653,17 @@ private fun SchneaggmapMapContent(
     //so a continuous pinch/pan gesture doesn't re-cluster (and churn the GL layers) every frame.
     val rawClusterRadiusMeters = USER_CLUSTER_RADIUS_DP * cameraState.metersPerDpAtTarget
     val clusterRadiusMeters = (rawClusterRadiusMeters / 5.0).roundToInt() * 5.0
-    val userClusters = remember(state.usersWithLocation, clusterRadiusMeters) {
-        clusterUsersByProximity(state.usersWithLocation, clusterRadiusMeters)
+    val userClusters = remember(state.usersWithLocation, clusterRadiusMeters, state.mergeUsers) {
+        if (state.mergeUsers) {
+            clusterUsersByProximity(state.usersWithLocation, clusterRadiusMeters)
+        } else {
+            state.usersWithLocation.filter { it.location != null }.map { user ->
+                UserCluster(
+                    users = listOf(user),
+                    centroid = Position(longitude = user.location!!.long, latitude = user.location.lat)
+                )
+            }
+        }
     }
 
     val clusterIcons: Map<String, UserMarkerIcon> = remember(

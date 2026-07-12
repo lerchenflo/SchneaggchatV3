@@ -21,6 +21,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 #### Features
 - Roadmap in den Misc Einstellungen mit Github issues
 - Neue Schneaggmap-Standorttypen (Volleyball, Trainingspark, Tischtennis, Tennis)
+- Freunde-Zusammenfassung beim Zoomen - Einstellung auf der Schneaggmap
 
 #### Bugfixes
 - Überlappende Schaltflächen auf der Schneaggmap behoben

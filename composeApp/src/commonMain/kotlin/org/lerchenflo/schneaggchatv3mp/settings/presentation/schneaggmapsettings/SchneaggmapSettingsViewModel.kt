@@ -35,6 +35,9 @@ class SchneaggmapSettingsViewModel(
     var mergeMapLocations by mutableStateOf(true)
         private set
 
+    var mergeMapUsers by mutableStateOf(true)
+        private set
+
     // Derived server-side from whether any friend has locationShared=true. Only used to seed
     // the dialog's local draft toggle - there is no standalone switch to write to.
     var shareLocationGlobal by mutableStateOf(false)
@@ -54,6 +57,16 @@ class SchneaggmapSettingsViewModel(
                 }
                 .collect { value ->
                     mergeMapLocations = value
+                }
+        }
+
+        viewModelScope.launch { // Merge map users when zooming
+            preferenceManager.getMergeMapUsersFlow()
+                .catch { exception ->
+                    loggingRepository.logWarning("Problem getting merge map users preference: ${exception.message}")
+                }
+                .collect { value ->
+                    mergeMapUsers = value
                 }
         }
 
@@ -93,6 +106,12 @@ class SchneaggmapSettingsViewModel(
     fun updateMergeMapLocations(newValue: Boolean) {
         CoroutineScope(Dispatchers.IO).launch {
             preferenceManager.saveMergeMapLocations(newValue)
+        }
+    }
+
+    fun updateMergeMapUsers(newValue: Boolean) {
+        viewModelScope.launch {
+            preferenceManager.saveMergeMapUsers(newValue)
         }
     }
 

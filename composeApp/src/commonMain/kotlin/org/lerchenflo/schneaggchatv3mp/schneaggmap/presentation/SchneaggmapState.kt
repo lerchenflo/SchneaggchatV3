@@ -31,6 +31,7 @@ data class SchneaggmapState(
     val error: String? = null,
 
     val useClustering: Boolean = false,
+    val mergeUsers: Boolean = true,
 
     val mapStyle: MapStyleSetting = MapStyleSetting.LIBERTY,
     val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl,
