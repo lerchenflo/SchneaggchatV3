@@ -226,7 +226,6 @@
     <string name="merge_map_locations">Orten zemmerga beim zoomen</string>
     <string name="merge_map_locations_info">Orte beim zoomen zemmerga dassas ned so a Chaos isch</string>
     <string name="schneaggmap_map_style">Mapdesign</string>
-    <string name="schneaggmap_map_style_info">Verschiedene Maptypa uswähla</string>
     <string name="map_style_liberty">Liberty</string>
     <string name="map_style_bright">Hell</string>
     <string name="map_style_positron">Positron</string>

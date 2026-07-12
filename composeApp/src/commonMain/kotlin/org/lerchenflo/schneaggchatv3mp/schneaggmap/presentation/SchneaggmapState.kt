@@ -32,5 +32,7 @@ data class SchneaggmapState(
 
     val useClustering: Boolean = false,
 
-    val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl
+    val mapStyle: MapStyleSetting = MapStyleSetting.LIBERTY,
+    val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl,
+    val isMapStyleDropdownVisible: Boolean = false,
 )

@@ -227,7 +227,6 @@
     <string name="merge_map_locations">Merge locations when zooming</string>
     <string name="merge_map_locations_info">Group nearby locations into one marker when zoomed out</string>
     <string name="schneaggmap_map_style">Map style</string>
-    <string name="schneaggmap_map_style_info">Choose the map's appearance</string>
     <string name="map_style_liberty">Liberty</string>
     <string name="map_style_bright">Bright</string>
     <string name="map_style_positron">Positron</string>

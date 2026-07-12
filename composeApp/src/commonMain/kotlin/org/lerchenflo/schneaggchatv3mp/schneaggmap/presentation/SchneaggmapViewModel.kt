@@ -64,7 +64,11 @@ class SchneaggmapViewModel(
         when (action) {
             SchneaggmapAction.OnBackClicked -> viewModelScope.launch { navigator.navigateBack() }
             SchneaggmapAction.ToggleFilterDropdown -> _state.update {
-                it.copy(isFilterDropdownVisible = !it.isFilterDropdownVisible, selectedEntry = null)
+                it.copy(
+                    isFilterDropdownVisible = !it.isFilterDropdownVisible,
+                    isMapStyleDropdownVisible = false,
+                    selectedEntry = null,
+                )
             }
             is SchneaggmapAction.ToggleMainType -> {
                 val enabled = state.value.enabledTypes
@@ -95,10 +99,10 @@ class SchneaggmapViewModel(
             is SchneaggmapAction.OnMapClick -> {
                 println("Onclick. Longclick: ${action.longClick}")
 
-                //Dismiss filter dropdown on map click
-                if (_state.value.isFilterDropdownVisible) {
+                //Dismiss filter/map-style dropdowns on map click
+                if (_state.value.isFilterDropdownVisible || _state.value.isMapStyleDropdownVisible) {
                     _state.update {
-                        it.copy(isFilterDropdownVisible = false)
+                        it.copy(isFilterDropdownVisible = false, isMapStyleDropdownVisible = false)
                     }
                 }
 
@@ -242,6 +246,21 @@ class SchneaggmapViewModel(
             SchneaggmapAction.ToggleSnailTrails -> _state.update {
                 it.copy(showSnailTrails = !it.showSnailTrails)
             }
+
+            SchneaggmapAction.ToggleMapStyleDropdown -> _state.update {
+                it.copy(
+                    isMapStyleDropdownVisible = !it.isMapStyleDropdownVisible,
+                    isFilterDropdownVisible = false,
+                    selectedEntry = null,
+                )
+            }
+
+            is SchneaggmapAction.SelectMapStyle -> {
+                _state.update { it.copy(isMapStyleDropdownVisible = false) }
+                viewModelScope.launch {
+                    preferenceManager.saveMapStyleSetting(action.style)
+                }
+            }
         }
     }
 
@@ -264,7 +283,7 @@ class SchneaggmapViewModel(
         viewModelScope.launch {
             preferenceManager.getMapStyleSettingFlow()
                 .collectLatest { style ->
-                    _state.update { it.copy(mapStyleUrl = style.tileUrl) }
+                    _state.update { it.copy(mapStyle = style, mapStyleUrl = style.tileUrl) }
                 }
         }
 

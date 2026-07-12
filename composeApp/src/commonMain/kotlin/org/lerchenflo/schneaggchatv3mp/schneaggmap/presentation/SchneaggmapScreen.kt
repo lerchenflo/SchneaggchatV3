@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -86,6 +87,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.VIEWPOINT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.WHEELIESPOT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.FriendLocationsPreview
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapStyleDropdown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapZoomSlider
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
@@ -318,8 +320,8 @@ fun SchneaggmapScreen(
             onAction = onAction
         )
 
-        // Top row: settings/own-user/compass (start), speed pill (center), location filter (end) -
-        // all coordinated inside one Box so they space themselves out instead of overlapping.
+        // Top row: settings/own-user/compass (start), speed pill (center), map style + location
+        // filter (end) - all coordinated inside one Box so they space themselves out instead of overlapping.
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -372,11 +374,20 @@ fun SchneaggmapScreen(
                 }
             }
 
-            ShownLocationsDropdown(
-                state = state,
-                onAction = onAction,
-                modifier = Modifier.align(Alignment.TopEnd),
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.align(Alignment.TopEnd)
+            ) {
+                MapStyleDropdown(
+                    state = state,
+                    onAction = onAction,
+                )
+
+                ShownLocationsDropdown(
+                    state = state,
+                    onAction = onAction,
+                )
+            }
         }
 
         // Right edge: vertical zoom scrollbar, centered between the top and bottom rows so it

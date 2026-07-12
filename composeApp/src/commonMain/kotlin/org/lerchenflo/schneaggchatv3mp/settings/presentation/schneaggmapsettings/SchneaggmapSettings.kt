@@ -8,7 +8,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -21,17 +20,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.MapStyleSelector
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.merge_map_locations
 import schneaggchatv3mp.composeapp.generated.resources.merge_map_locations_info
-import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_map_style
-import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_map_style_info
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_settings
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global_info
@@ -66,35 +61,6 @@ fun SchneaggmapSettings(
                 onSwitchChange = { schneaggmapSettingsViewModel.updateMergeMapLocations(it) },
                 icon = null
             )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            var mapStyleSelDialog by remember { mutableStateOf(false) }
-            var previousMapStyle by remember { mutableStateOf(MapStyleSetting.LIBERTY) }
-            // Map style selector
-            SettingsOption(
-                icon = Icons.Default.Map,
-                text = stringResource(Res.string.schneaggmap_map_style),
-                subtext = stringResource(Res.string.schneaggmap_map_style_info),
-                onClick = {
-                    previousMapStyle = schneaggmapSettingsViewModel.mapStyle
-                    mapStyleSelDialog = true
-                }
-            )
-            if (mapStyleSelDialog) {
-                MapStyleSelector(
-                    onDismiss = {
-                        mapStyleSelDialog = false
-                        schneaggmapSettingsViewModel.saveMapStyleSetting(previousMapStyle)
-                    },
-                    onConfirm = {
-                        previousMapStyle = it
-                        mapStyleSelDialog = false
-                    },
-                    selectedMapStyle = schneaggmapSettingsViewModel.mapStyle,
-                    onMapStyleSelected = { schneaggmapSettingsViewModel.saveMapStyleSetting(it) }
-                )
-            }
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
