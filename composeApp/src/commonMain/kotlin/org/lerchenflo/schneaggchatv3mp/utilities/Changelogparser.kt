@@ -48,6 +48,7 @@ object ChangelogParser {
         val raw = getChangelog(readme, version) ?: return null
         val lines = raw.lines()
 
+        val highlights = mutableListOf<String>()
         val features = mutableListOf<String>()
         val bugfixes = mutableListOf<String>()
         val announcements = mutableListOf<String>()
@@ -56,6 +57,7 @@ object ChangelogParser {
         for (line in lines) {
             val trimmed = line.trim()
             when {
+                trimmed.startsWith("#### Highlights") -> currentSection = highlights
                 trimmed.startsWith("#### Announcements") -> currentSection = announcements
                 trimmed.startsWith("#### Features") -> currentSection = features
                 trimmed.startsWith("#### Bugfixes") -> currentSection = bugfixes
@@ -63,7 +65,7 @@ object ChangelogParser {
             }
         }
 
-        return ChangelogEntry(version = version, features = features, bugfixes = bugfixes, announcements = announcements)
+        return ChangelogEntry(version = version, highlights = highlights, features = features, bugfixes = bugfixes, announcements = announcements)
     }
 
     /**
@@ -88,6 +90,7 @@ object ChangelogParser {
 
 data class ChangelogEntry(
     val version: String,
+    val highlights: List<String>,
     val features: List<String>,
     val bugfixes: List<String>,
     val announcements: List<String>
