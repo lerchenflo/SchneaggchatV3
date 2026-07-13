@@ -52,12 +52,11 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.GROUPS
@@ -700,11 +699,13 @@ class AppRepository(
         return database.userDao().getUserbyId(userId)?.toUser()
     }
 
-    fun getPendingFriends(searchTerm: String): Flow<List<SelectedChat>> {
+    fun getPendingFriends(searchTerm: String): Flow<List<ChatListItem>> {
         return userRepository.getAllUsersFlow(searchTerm)
             .map { list ->
                 list.filter {
                     it.friendshipStatus == FriendshipStatus.PENDING
+                }.map { user ->
+                    user.toChatListItem()
                 }
             }
     }
@@ -714,7 +715,6 @@ class AppRepository(
         return userRepository.getAllUsers().filter {
             it.name.contains(searchTerm)
                     && it.friendshipStatus == FriendshipStatus.ACCEPTED
-                    && !it.isGroup
         }
     }
 
@@ -722,7 +722,6 @@ class AppRepository(
         return userRepository.getAllUsersFlow(searchTerm).map { users ->
             users.filter {
                 it.friendshipStatus == FriendshipStatus.ACCEPTED
-                        && !it.isGroup
             }
         }
     }
@@ -739,7 +738,7 @@ class AppRepository(
         searchTerm: String,
         userId: String,
         filter: ChatFilter = ChatFilter.NONE
-    ): Flow<List<SelectedChat>> {
+    ): Flow<List<ChatListItem>> {
         val messagesFlow = messageRepository.getAllMessages()
         val usersFlow = userRepository.getAllUsersFlow()
         val groupsFlow = groupRepository.getAllGroupswithMembersFlow()
@@ -798,7 +797,7 @@ class AppRepository(
                         if (!message.sent) unsentCount++
                     }
 
-                    user.toSelectedChat(
+                    user.toChatListItem(
                         unreadCount = unreadCount,
                         unsentCount = unsentCount,
                         lastMessage = last,
@@ -830,7 +829,7 @@ class AppRepository(
                         if (!message.sent) unsentCount++
                     }
 
-                    gwm.toSelectedChat(
+                    gwm.toChatListItem(
                         unreadCount = unreadCount,
                         unsentCount = unsentCount,
                         lastMessage = last,
@@ -848,12 +847,12 @@ class AppRepository(
                 ChatFilter.PERSONS -> allItems.filter { !it.isGroup }
             }
 
-            //filtered.sortedByDescending { it.lastmessage?.getSendDateAsLong() ?: 0L }
+            //filtered.sortedByDescending { it.lastMessage?.getSendDateAsLong() ?: 0L }
             filtered.sortedWith { a, b ->
                 val aPinned = a.pinned > 0L
                 val bPinned = b.pinned > 0L
-                val aBirthday = (a as? UserChat)?.let { isBirthdayToday(it.birthDate) } == true
-                val bBirthday = (b as? UserChat)?.let { isBirthdayToday(it.birthDate) } == true
+                val aBirthday = isBirthdayToday(a.birthDate)
+                val bBirthday = isBirthdayToday(b.birthDate)
                 when {
                     // Tier 1: Both pinned -> newest pin first
                     aPinned && bPinned -> b.pinned.compareTo(a.pinned)
@@ -862,8 +861,8 @@ class AppRepository(
 
                     // Tier 2: Birthday today (users only) -> under pinned
                     aBirthday && bBirthday -> {
-                        val timeA = a.lastmessage?.getSendDateAsLong() ?: 0L
-                        val timeB = b.lastmessage?.getSendDateAsLong() ?: 0L
+                        val timeA = a.lastMessage?.getSendDateAsLong() ?: 0L
+                        val timeB = b.lastMessage?.getSendDateAsLong() ?: 0L
                         timeB.compareTo(timeA)
                     }
                     aBirthday -> -1
@@ -871,8 +870,8 @@ class AppRepository(
 
                     // Tier 3: Sort by last message date
                     else -> {
-                        val timeA = a.lastmessage?.getSendDateAsLong() ?: 0L
-                        val timeB = b.lastmessage?.getSendDateAsLong() ?: 0L
+                        val timeA = a.lastMessage?.getSendDateAsLong() ?: 0L
+                        val timeB = b.lastMessage?.getSendDateAsLong() ?: 0L
                         timeB.compareTo(timeA)
                     }
                 }

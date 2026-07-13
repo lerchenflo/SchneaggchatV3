@@ -19,7 +19,7 @@ import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
@@ -31,6 +31,7 @@ import schneaggchatv3mp.composeapp.generated.resources.copied_to_clipboard
 import schneaggchatv3mp.composeapp.generated.resources.error_friend_request
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 import schneaggchatv3mp.composeapp.generated.resources.invitation_text
+import kotlin.time.Duration.Companion.milliseconds
 
 class NewChatViewModel (
     private val appRepository: AppRepository,
@@ -51,8 +52,8 @@ class NewChatViewModel (
     val availableChats: StateFlow<List<NetworkUtils.NewFriendsUserResponse>> = _availableChats.asStateFlow()
 
 
-    private val _pendingFriends = MutableStateFlow<List<SelectedChat>>(emptyList())
-    val pendingFriends: StateFlow<List<SelectedChat>> = _pendingFriends.asStateFlow()
+    private val _pendingFriends = MutableStateFlow<List<ChatListItem>>(emptyList())
+    val pendingFriends: StateFlow<List<ChatListItem>> = _pendingFriends.asStateFlow()
 
     init {
         //On start remove all friend request notis
@@ -61,7 +62,7 @@ class NewChatViewModel (
         // Kombiniere searchTerm mit einem Flow der die Daten lädt
         viewModelScope.launch {
             searchterm
-                .debounce(300) // Warte 300ms nach letzter Eingabe
+                .debounce(300.milliseconds) // Warte 300ms nach letzter Eingabe
                 .distinctUntilChanged() // Nur wenn sich der Wert ändert
                 .collectLatest { term ->
                     loadAvailableUsers(term)
@@ -107,8 +108,8 @@ class NewChatViewModel (
 
 
     //Friend accept / Deny
-    private val _pendingFriendPopup = MutableStateFlow<SelectedChat?>(null)
-    val pendingFriendPopup: StateFlow<SelectedChat?> = _pendingFriendPopup.asStateFlow()
+    private val _pendingFriendPopup = MutableStateFlow<ChatListItem?>(null)
+    val pendingFriendPopup: StateFlow<ChatListItem?> = _pendingFriendPopup.asStateFlow()
 
     fun dismissPendingFriendDialog() {
         _pendingFriendPopup.value = null
@@ -128,10 +129,10 @@ class NewChatViewModel (
         dismissPendingFriendDialog()
     }
 
-    fun onPendingFriendRequestClick(selectedChat: SelectedChat) {
+    fun onPendingFriendRequestClick(selectedChat: ChatListItem) {
         //You are friends with this person, open chat
         if (selectedChat.friendshipStatus != NetworkUtils.FriendshipStatus.PENDING) {
-
+            //TODO: Open chat? What is this code doing
         }else {
             //Friendshipstatus pending
             _pendingFriendPopup.value = selectedChat

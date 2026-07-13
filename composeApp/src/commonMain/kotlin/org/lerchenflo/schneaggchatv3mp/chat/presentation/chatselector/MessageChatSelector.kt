@@ -213,9 +213,9 @@ fun MessageChatSelector(
             ) { gegner ->
 
                 UserButton(
-                    selectedChat = gegner,
+                    chat = gegner,
                     useOnClickGes = true,
-                    lastMessage = gegner.lastmessage,
+                    lastMessage = gegner.lastMessage,
                     onClickGes = { chatSelectorViewModel.onChatSelectedWithMessage(gegner) },
                     showPin = true,
                     ownId = ownId

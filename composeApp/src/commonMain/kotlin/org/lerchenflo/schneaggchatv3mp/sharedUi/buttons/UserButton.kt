@@ -36,10 +36,9 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
@@ -67,7 +66,7 @@ import schneaggchatv3mp.composeapp.generated.resources.you_sender
 @Composable
 fun UserButton(
     ownId : String,
-    selectedChat: SelectedChat,
+    chat: ChatListItem,
     showProfilePicture: Boolean = true,
     lastMessage: Message? = null,
     bottomTextOverride: String? = "",
@@ -104,13 +103,13 @@ fun UserButton(
 
             Box {
                 ProfilePictureView(
-                    filepath = selectedChat.profilePictureUrl,
+                    filepath = chat.profilePictureUrl,
                     modifier = modifierImage
                 )
 
                 // Live "online right now" presence dot - only shown when the friend is
                 // actually online, never as a false "offline" indicator.
-                if ((selectedChat as? UserChat)?.isOnline == true) {
+                if (chat.isOnline) {
                     Box(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
@@ -149,7 +148,7 @@ fun UserButton(
                     modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (selectedChat.pinned > 0L && showPin) {
+                    if (chat.pinned > 0L && showPin) {
                         Icon(
                             imageVector = Icons.Default.PushPin,
                             contentDescription = "pinned",
@@ -160,7 +159,7 @@ fun UserButton(
                         )
                     }
 
-                    if ((selectedChat as? UserChat)?.let { isBirthdayToday(it.birthDate) } == true) {
+                    if (isBirthdayToday(chat.birthDate)) {
                         Icon(
                             imageVector = Icons.Default.Cake,
                             contentDescription = "birthdate today",
@@ -173,7 +172,7 @@ fun UserButton(
 
 
                     Text(
-                        text = selectedChat.displayName.takeIf { it.isNotBlank() } ?: stringResource(Res.string.unknown_user),
+                        text = chat.displayName.takeIf { it.isNotBlank() } ?: stringResource(Res.string.unknown_user),
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -185,26 +184,26 @@ fun UserButton(
 
 
                 if (showNotiIcons) {
-                    if (selectedChat.unsentMessageCount != 0){
+                    if (chat.unsentMessageCount != 0){
                         Badge(
                             containerColor = MaterialTheme.colorScheme.error,
                             contentColor = MaterialTheme.colorScheme.onError
                         ){
                             Text(
-                                text = "${selectedChat.unsentMessageCount}",
+                                text = "${chat.unsentMessageCount}",
                             )
                         }
                     }
 
                     Spacer(modifier = Modifier.width(4.dp))
 
-                    if (selectedChat.unreadMessageCount != 0 && selectedChat.unreadMessageCount - selectedChat.unsentMessageCount != 0){
+                    if (chat.unreadMessageCount != 0 && chat.unreadMessageCount - chat.unsentMessageCount != 0){
                         Badge(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
                         ){
                             Text(
-                                text = "${selectedChat.unreadMessageCount - selectedChat.unsentMessageCount}", // ungesendete messages sind no ned gleasa vo mir
+                                text = "${chat.unreadMessageCount - chat.unsentMessageCount}", // ungesendete messages sind no ned gleasa vo mir
                             )
                         }
                     }
@@ -281,13 +280,13 @@ fun UserButton(
             }
 
             // Bottom Text (status ...)
-            if (selectedChat.friendshipStatus == NetworkUtils.FriendshipStatus.PENDING){
+            if (chat.friendshipStatus == NetworkUtils.FriendshipStatus.PENDING){
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        // ALSO get requesterid (Who made the request (If i made it the other can accept it)) selectedChat.requesterId
-                        text = selectedChat.friendshipStatus!!.toUiText().asString(),
+                        // ALSO get requesterid (Who made the request (If i made it the other can accept it)) chat.requesterId
+                        text = chat.friendshipStatus.toUiText().asString(),
                         style = MaterialTheme.typography.bodySmall,
                     )
 
@@ -296,7 +295,7 @@ fun UserButton(
                             .size(24.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (selectedChat.requesterId == ownId) {
+                        if (chat.requesterId == ownId) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.CallMade,
                                 contentDescription = "outgoing friend request",
@@ -318,7 +317,7 @@ fun UserButton(
 
                     Text(
                         text = bottomTextOverride
-                            ?: selectedChat.status
+                            ?: chat.status
                                 .takeIf { !it.isNullOrBlank() }
                             ?: stringResource(Res.string.no_status),
                         style = MaterialTheme.typography.bodySmall,

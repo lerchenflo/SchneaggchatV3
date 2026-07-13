@@ -12,9 +12,8 @@ import kotlinx.datetime.format
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlinx.datetime.format.byUnicodePattern
 import kotlinx.datetime.toLocalDateTime
-import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -28,7 +27,8 @@ class MiscSettingsViewModel(
     private val appRepository: AppRepository,
     private val navigator: Navigator,
     private val loggingRepository: LoggingRepository,
-    private val shareUtils: ShareUtils
+    private val shareUtils: ShareUtils,
+    private val applicationScope: ApplicationScope
 ): ViewModel() {
 
     var logs by mutableStateOf<List<LogEntry>>(emptyList())
@@ -53,7 +53,7 @@ class MiscSettingsViewModel(
     fun deleteAllAppData(){
         viewModelScope.launch {
             appRepository.deleteAllAppData()
-            KoinPlatform.getKoin().get<GlobalViewModel>().viewModelScope.launch {
+            applicationScope.launch {
                 appRepository.dataSync() //Trigger datasync that user does not get stuck in the email verify screen
             }
             navigator.navigate(Route.AutoLoginCredChecker, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))

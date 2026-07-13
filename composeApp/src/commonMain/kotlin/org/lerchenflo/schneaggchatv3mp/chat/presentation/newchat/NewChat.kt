@@ -185,7 +185,7 @@ fun NewChat(
                     key = {it.id}
                 ) { friend ->
                     UserButton(
-                        selectedChat = friend,
+                        chat = friend,
                         useOnClickGes = true,
                         onClickGes = {
                             viewModel.onPendingFriendRequestClick(friend)

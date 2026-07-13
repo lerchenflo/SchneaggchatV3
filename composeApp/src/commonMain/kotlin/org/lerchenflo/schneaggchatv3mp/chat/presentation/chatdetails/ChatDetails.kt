@@ -61,10 +61,8 @@ import io.github.ismoy.imagepickerkmp.features.imagepicker.model.ImagePickerResu
 import io.github.ismoy.imagepickerkmp.features.imagepicker.ui.rememberImagePickerKMP
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
@@ -102,27 +100,17 @@ import schneaggchatv3mp.composeapp.generated.resources.today
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatDetails(
+    chatId: String,
+    isGroup: Boolean,
     modifier: Modifier = Modifier
         .fillMaxWidth()
 ) {
 
-    val chatdetailsViewmodel = koinViewModel<ChatDetailsViewmodel>()
+    val chatdetailsViewmodel = koinViewModel<ChatDetailsViewmodel> { parametersOf(chatId, isGroup) }
 
     val selectedChat by chatdetailsViewmodel.chatDetails.collectAsStateWithLifecycle()
     val availableMembers by chatdetailsViewmodel.availableNewMembers.collectAsStateWithLifecycle()
     val searchTerm by chatdetailsViewmodel.searchterm.collectAsStateWithLifecycle()
-
-    // Early return if chat not selected - don't render anything
-    /*
-    if (chatDetails.isNotSelected()){
-        println("Chat not selected, navigating back")
-        chatdetailsViewmodel.onBackClick()
-        return
-    }
-
-     */
-
-    val group = selectedChat.isGroup
 
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
@@ -141,7 +129,7 @@ fun ChatDetails(
         ProfilePictureBigDialog(
             onDismiss = { profilePictureDialogShown = false },
             filepath = selectedChat.profilePictureUrl,
-            showEditButton = group,
+            showEditButton = isGroup,
             onEdit = {
                 profilePictureDialogShown = false
                 showImagePickerDialog = true
@@ -173,7 +161,7 @@ fun ChatDetails(
 
     if (showNicknameDialog) {
         var errorMessage by remember { mutableStateOf<ErrorMessage?>(null) }
-        val currentNickname = chatdetailsViewmodel.selectedUser?.displayName ?: "Unknown"
+        val currentNickname = (selectedChat as? ChatDetailsState.UserDetails)?.user?.displayName ?: "Unknown"
 
         ChangeStringDialog(
             title = stringResource(Res.string.change_nickname),
@@ -210,7 +198,7 @@ fun ChatDetails(
     ) {
 
         ActivityTitle(
-            alternativeTitleComposable = if (group) {
+            alternativeTitleComposable = if (isGroup) {
                 {
                     Row(
                         modifier = Modifier
@@ -259,7 +247,8 @@ fun ChatDetails(
                                 append(selectedChat.name)
 
                                 //Show nickname if set
-                                if (selectedChat is UserChat && (selectedChat as UserChat).nickName != null) {
+                                val nickName = (selectedChat as? ChatDetailsState.UserDetails)?.user?.nickName
+                                if (nickName != null) {
                                     append(" (\"")
 
                                     withStyle(
@@ -268,7 +257,7 @@ fun ChatDetails(
                                             fontSize = nicknameFontSize
                                         )
                                     ) {
-                                        append((selectedChat as UserChat).nickName)
+                                        append(nickName)
                                     }
 
                                     append("\")")
@@ -320,11 +309,11 @@ fun ChatDetails(
             }
 
             // Status only for user
-            if (!group) {
+            if (!isGroup) {
                 HorizontalDivider()
 
                 // Birthdate
-                chatdetailsViewmodel.selectedUser?.birthDate?.let { birthDate ->
+                (selectedChat as? ChatDetailsState.UserDetails)?.user?.birthDate?.let { birthDate ->
 
                     val isToday = remember { isBirthdayToday(birthDate) }
 
@@ -434,17 +423,17 @@ fun ChatDetails(
             if (showDescriptionChangeDialog) {
                 ChangeDescription(
                     onDismiss = { showDescriptionChangeDialog = false },
-                    selectedChat = selectedChat,
+                    currentDescription = selectedChat.description,
                     descriptionText = chatdetailsViewmodel.descriptionText,
                     updateDescriptionText = chatdetailsViewmodel::updateDescriptionText,
                     updateDescription = chatdetailsViewmodel::updateDescription,
-                    isGroup = group
+                    isGroup = isGroup
                 )
             }
 
             DescriptionStatusRow(
                 onClick = { showDescriptionChangeDialog = true },
-                titleText = if (group) stringResource(Res.string.group_description) else stringResource(
+                titleText = if (isGroup) stringResource(Res.string.group_description) else stringResource(
                     Res.string.others_say_about,
                     selectedChat.name
                 ),
@@ -452,7 +441,7 @@ fun ChatDetails(
                     .takeIf { !it.isNullOrBlank() }
                     ?.replace("\\n", "\n")
                     ?: stringResource(Res.string.no_description),
-                infoText = if (group) stringResource(Res.string.description_info_group) else stringResource(
+                infoText = if (isGroup) stringResource(Res.string.description_info_group) else stringResource(
                     Res.string.description_info_user,
                     selectedChat.name
                 )
@@ -461,10 +450,10 @@ fun ChatDetails(
             HorizontalDivider()
 
             //Common groups / Common friends
-            if (group) {
-                selectedChat.toGroup()?.let { groupChat ->
+            if (isGroup) {
+                (selectedChat as? ChatDetailsState.GroupDetails)?.let { groupDetails ->
                     GroupMembersView(
-                        members = groupChat.groupMembersWithUsers,
+                        members = groupDetails.members,
                         navigateToChat = chatdetailsViewmodel::navigateToChat,
                         changeAdminStatus = chatdetailsViewmodel::changeAdminStatus,
                         removeMember = chatdetailsViewmodel::removeMember,
@@ -473,10 +462,10 @@ fun ChatDetails(
                     )
                 }
             } else {
-                selectedChat.toUser()?.let { userChat ->
-                    if (userChat.commonGroups.isNotEmpty()) {
+                (selectedChat as? ChatDetailsState.UserDetails)?.let { userDetails ->
+                    if (userDetails.commonGroups.isNotEmpty()) {
                         CommonGroupsView(
-                            groups = userChat.commonGroups,
+                            groups = userDetails.commonGroups,
                             viewmodel = chatdetailsViewmodel
                         )
                     }
@@ -486,10 +475,10 @@ fun ChatDetails(
             HorizontalDivider()
 
 
-            if (group) {
+            if (isGroup) {
 
                 val iAmAdmin =
-                    selectedChat.toGroup()?.groupMembersWithUsers?.find { it.groupMember.userId == ownId }?.groupMember?.admin == true
+                    (selectedChat as? ChatDetailsState.GroupDetails)?.members?.find { it.groupMember.userId == ownId }?.groupMember?.admin == true
 
                 if (iAmAdmin) {
                     // add partypeople

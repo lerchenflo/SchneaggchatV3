@@ -15,12 +15,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -36,9 +34,10 @@ class SchneaggmapViewModel(
     private val mapRepository: MapRepository,
     private val appRepository: AppRepository,
     private val preferenceManager: Preferencemanager,
-    private val globalViewModel: GlobalViewModel,
     private val locationService: LocationService,
     private val userRepository: UserRepository,
+
+    private val initialEntryId: String?
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SchneaggmapState())
@@ -230,14 +229,7 @@ class SchneaggmapViewModel(
 
             is SchneaggmapAction.OnOpenChatClick -> {
                 viewModelScope.launch {
-                    globalViewModel.onSelectChat(
-                        action.user.toSelectedChat(
-                            unreadCount = 0,
-                            unsentCount = 0,
-                            lastMessage = null
-                        )
-                    )
-                    navigator.navigate(Route.Chat)
+                    navigator.navigate(Route.Chat(chatId = action.user.id, isGroup = false))
                 }
 
                 _state.update { it.copy(selectedUser = null) }
@@ -265,6 +257,8 @@ class SchneaggmapViewModel(
     }
 
     init {
+        //TODO: HANDLE INITIAL NAVIGATION AND POPUP OF PASSED ITEM ID
+
         viewModelScope.launch {
             appRepository.dataSync()
         }

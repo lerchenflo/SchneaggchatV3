@@ -10,8 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
-import org.koin.mp.KoinPlatform
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -33,7 +32,8 @@ class SignUpViewModel(
     private val appRepository: AppRepository,
     private val navigator: Navigator,
     private val pictureManager: PictureManager,
-    private val loggingRepository: LoggingRepository
+    private val loggingRepository: LoggingRepository,
+    private val applicationScope: ApplicationScope
 ): ViewModel() {
 
     var state by mutableStateOf(SignupState())
@@ -42,7 +42,7 @@ class SignUpViewModel(
 
     fun onAction(action: SignupAction){
         viewModelScope.launch {
-            val x = /* Variable for exhaustive when */when(action){
+            when(action){
                 is SignupAction.OnUsernameTextChange -> {
                     state = state.copy(
                         usernameState = state.usernameState.copy(
@@ -210,8 +210,7 @@ class SignUpViewModel(
                     if (accCreationSuccessful){
                         appRepository.login(state.usernameState.text, state.passwordState.text) { success ->
                             if (success){
-                                val globalViewModel = KoinPlatform.getKoin().get<GlobalViewModel>()
-                                globalViewModel.viewModelScope.launch {
+                                applicationScope.launch {
                                     appRepository.dataSync()
                                 }
                                 viewModelScope.launch {

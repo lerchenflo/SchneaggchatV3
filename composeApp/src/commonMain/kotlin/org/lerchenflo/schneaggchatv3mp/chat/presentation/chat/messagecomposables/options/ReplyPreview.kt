@@ -16,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -25,9 +24,8 @@ import schneaggchatv3mp.composeapp.generated.resources.close
 @Composable
 fun ReplyPreview(
     ownId: String,
-    //TODO: Remove viewmodel from this preview and pass replymessage etc
-    viewModel: ChatViewModel,
-    globalViewModel: GlobalViewModel
+    //TODO: Remove viewmodel from this preview and pass correct values and callbacks
+    viewModel: ChatViewModel
 ){
 
 
@@ -56,7 +54,7 @@ fun ReplyPreview(
                     .padding(6.dp),
                 message = viewModel.replyMessage!!,
                 useMD = viewModel.markdownEnabled,
-                selectedChatId = globalViewModel.selectedChat.value.id,
+                selectedChatId = viewModel.chatId,
                 senderColor = viewModel.replyMessage!!.senderColor,
                 ownId = ownId,
             )

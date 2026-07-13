@@ -24,8 +24,10 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -36,7 +38,7 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -44,8 +46,10 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
@@ -72,17 +76,19 @@ import kotlin.time.Instant
 import kotlin.time.TimeSource
 
 class ChatViewModel(
+    val chatId: String,
+    val isGroup: Boolean,
     private val appRepository: AppRepository,
     private val messageRepository: MessageRepository,
     private val userRepository: UserRepository,
     private val groupRepository: GroupRepository,
     private val settingsRepository: SettingsRepository,
-    private val globalViewModel: GlobalViewModel,
     private val navigator: Navigator,
     private val loggingRepository: LoggingRepository,
     private val pictureManager: PictureManager,
     private val permissionsManager: PermissionManager,
-    private val audioManager: AudioManager
+    private val audioManager: AudioManager,
+    private val applicationScope: ApplicationScope
 ): ViewModel() {
 
     companion object {
@@ -93,10 +99,26 @@ class ChatViewModel(
     private var recordingTickerJob: Job? = null // live elapsed-time updates + auto-stop while recording
     private var audioPlayer: AudioPlayer = AudioPlayer(isDesktop = isDesktop())
 
-    // chat id und group bool wörrend im init oamol glada
-    // Damit leabt des o solang wie es viewmodel o wenn des im globalviewmodel scho tötet worra isch
-    var chatId: String = ""
-    var isGroup: Boolean = false
+    /**
+     * The chat partner (user or group) for the top bar, kept up to date from the database.
+     * Null until the first database emission.
+     */
+    val chatPartner: StateFlow<ChatListItem?> = if (isGroup) {
+        groupRepository.getGroupFlow(chatId).map { group ->
+            group?.toChatListItem()
+        }
+    } else {
+        combine(
+            userRepository.getUserFlow(chatId),
+            userRepository.onlineFriendIdsFlow
+        ) { user, onlineFriendIds ->
+            user?.toChatListItem(isOnline = chatId in onlineFriendIds)
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = null
+    )
 
 
     var markdownEnabled by mutableStateOf(false)
@@ -122,7 +144,7 @@ class ChatViewModel(
     }
 
     // In your ViewModel
-    private val _currentSendContent = MutableStateFlow<SendMessageContent>(SendMessageContent.TextContent(TextFieldValue("")))
+    private val _currentSendContent = MutableStateFlow<SendMessageContent>(TextContent(TextFieldValue("")))
     val currentSendContent: StateFlow<SendMessageContent> = _currentSendContent.asStateFlow()
 
     fun updateSendContent(content: SendMessageContent) {
@@ -166,11 +188,11 @@ class ChatViewModel(
     fun saveDraft(){
         CoroutineScope(Dispatchers.IO).launch {
             // todo wenn bild oder sprachnachricht oder so künnt ma des speichera
-            if(currentSendContent.value is SendMessageContent.TextContent) { // schoua ob es textfeld leer isch
+            if(currentSendContent.value is TextContent) { // schoua ob es textfeld leer isch
                 settingsRepository.saveDraft(
                     chatId = chatId,
                     group = isGroup,
-                    string = (currentSendContent.value as SendMessageContent.TextContent).textMessage.text
+                    string = (currentSendContent.value as TextContent).textMessage.text
                 )
             }
         }
@@ -182,7 +204,7 @@ class ChatViewModel(
 
         //Validation of message
         when (message) {
-            is SendMessageContent.TextContent -> {
+            is TextContent -> {
                 if (message.textMessage.text.isBlank()) return
 
                 require(message.textMessage.text.length < 10000) {
@@ -214,12 +236,14 @@ class ChatViewModel(
         }
 
 
+        // Sends run in the application scope (not viewModelScope) so an in-flight send survives
+        // leaving the chat screen
         when (message) {
-            is SendMessageContent.TextContent -> {
-                globalViewModel.viewModelScope.launch {
+            is TextContent -> {
+                applicationScope.launch {
                     appRepository.sendMessage(
-                        empfaenger = globalViewModel.selectedChat.value.id,
-                        gruppe = globalViewModel.selectedChat.value.isGroup,
+                        empfaenger = chatId,
+                        gruppe = isGroup,
                         content = AppRepository.MessageContent.TextContent(message.textMessage.text),
                         answerid = replyTo?.id,
                         messageId = null,
@@ -230,10 +254,10 @@ class ChatViewModel(
 
             is SendMessageContent.ImageContent -> {
                 message.images.forEachIndexed { index, image ->
-                    globalViewModel.viewModelScope.launch {
+                    applicationScope.launch {
                         appRepository.sendMessage(
-                            empfaenger = globalViewModel.selectedChat.value.id,
-                            gruppe = globalViewModel.selectedChat.value.isGroup,
+                            empfaenger = chatId,
+                            gruppe = isGroup,
                             content = AppRepository.MessageContent.ImageContent(
                                 image = image,
                                 text = if (index == 0) message.text.text else ""
@@ -247,10 +271,10 @@ class ChatViewModel(
             }
 
             is SendMessageContent.AudioContent -> {
-                globalViewModel.viewModelScope.launch {
+                applicationScope.launch {
                     appRepository.sendMessage(
-                        empfaenger = globalViewModel.selectedChat.value.id,
-                        gruppe = globalViewModel.selectedChat.value.isGroup,
+                        empfaenger = chatId,
+                        gruppe = isGroup,
                         content = AppRepository.MessageContent.AudioContent(
                             audio = getAudioBytes(
                                 audioManager.getRecordingPath(message.audioPath.substringAfterLast('/'))
@@ -265,7 +289,7 @@ class ChatViewModel(
         }
 
         updateReplyMessage(null)
-        updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
+        updateSendContent(TextContent(TextFieldValue("")))
     }
 
     fun onImagesSelected(results: List<GalleryPhotoResult>) {
@@ -278,7 +302,7 @@ class ChatViewModel(
 
             updateSendContent(SendMessageContent.ImageContent(
                 images = downscaledImages,
-                text = (currentSendContent.value as? SendMessageContent.TextContent)?.textMessage ?: TextFieldValue("")
+                text = (currentSendContent.value as? TextContent)?.textMessage ?: TextFieldValue("")
             ))
         }
 
@@ -288,7 +312,7 @@ class ChatViewModel(
 
         val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
-        globalViewModel.viewModelScope.launch {
+        applicationScope.launch {
             appRepository.sendMessage(
                 empfaenger = chatId,
                 gruppe = isGroup,
@@ -402,7 +426,7 @@ class ChatViewModel(
     fun editMessage(message: Message?, content: SendMessageContent) {
         viewModelScope.launch {
 
-            if (content !is SendMessageContent.TextContent) return@launch
+            if (content !is TextContent) return@launch
             if (message == null) return@launch
 
             //Block empty edit
@@ -425,25 +449,17 @@ class ChatViewModel(
 
     fun onBackClick() {
         saveDraft()
-        viewModelScope.launch {
-            /*
-
-navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
-                removeAllScreensByRoute = listOf(Route.ChatDetails, Route.Chat)))
-            */
-
-        }
 
         runBlocking {
             navigator.navigateBack(navigationOptions = Navigator.NavigationOptions(
-                removeAllScreensByRoute = listOf(Route.ChatDetails, Route.Chat)
+                removeAllScreensByClass = listOf(Route.ChatDetails::class, Route.Chat::class)
             ))
         }
     }
 
     fun onChatDetailsClick() {
         viewModelScope.launch {
-            navigator.navigate(Route.ChatDetails)
+            navigator.navigate(Route.ChatDetails(chatId = chatId, isGroup = isGroup))
         }
     }
 
@@ -581,26 +597,21 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     private val messageDisplayItemsFlow: Flow<List<MessageDisplayItem>> =
-        globalViewModel.selectedChat
-            .flatMapLatest { chat ->
-                combine(
-                    messageRepository.getMessagesByUserIdFlow(
-                        userId = chat.id,
-                        gruppe = chat.isGroup
-                    ),
-                    userRepository.getAllUsersFlow(),
-                    if (chat.isGroup) {
-                        flowOf(groupRepository.getGroupMembers(chat.id))
-                    } else {
-                        flowOf(emptyList())
-                    }
-                ) { messages, userList, groupList ->
-                    captureNewMessagesBoundary(messages)
-                    Triple(messages, userList, groupList)
-                }.flowOn(Dispatchers.Default)
-                    .flatMapLatest { (messages, users, groupMembers) ->
-                        flowOf(processMessages(messages, users, groupMembers, newMessagesBoundaryId.value))
-                    }
+        combine(
+            messageRepository.getMessagesByUserIdFlow(
+                userId = chatId,
+                gruppe = isGroup
+            ),
+            userRepository.getAllUsersFlow(),
+            flow {
+                emit(if (isGroup) groupRepository.getGroupMembers(chatId) else emptyList())
+            }
+        ) { messages, userList, groupList ->
+            captureNewMessagesBoundary(messages)
+            Triple(messages, userList, groupList)
+        }.flowOn(Dispatchers.Default)
+            .flatMapLatest { (messages, users, groupMembers) ->
+                flowOf(processMessages(messages, users, groupMembers, newMessagesBoundaryId.value))
             }
             .flowOn(Dispatchers.Default)
 
@@ -714,13 +725,7 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
 
 
 
-    //Beim call vom init sind alle values initialisiert
     init {
-        viewModelScope.launch {
-            chatId = globalViewModel.selectedChat.value.id
-            isGroup = globalViewModel.selectedChat.value.isGroup
-        }
-
         viewModelScope.launch {
             settingsRepository.getUsemd()
                 .catch { exception ->
@@ -741,8 +746,8 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                     loggingRepository.logWarning("ChatViewModel: Problem getting draft: ${exception.message}")
                 }
                 .collect { value ->
-                    if(value != null && (currentSendContent.value as SendMessageContent.TextContent).textMessage.text.isNotEmpty()){
-                        updateSendContent(SendMessageContent.TextContent(TextFieldValue(value)))
+                    if(value != null && (currentSendContent.value as TextContent).textMessage.text.isNotEmpty()){
+                        updateSendContent(TextContent(TextFieldValue(value)))
                     }
                 }
         }
@@ -788,7 +793,7 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
                     IncomingDataManager.clearAllData()
                 }
             } else {
-                updateSendContent(SendMessageContent.TextContent(TextFieldValue(IncomingDataManager.sharedText.value ?: "")))
+                updateSendContent(TextContent(TextFieldValue(IncomingDataManager.sharedText.value ?: "")))
                 IncomingDataManager.updateText(null)
             }
         }
@@ -798,7 +803,6 @@ navigator.navigate(Route.ChatSelector, Navigator.NavigationOptions(
     override fun onCleared() {
         super.onCleared()
         saveDraft()
-        globalViewModel.onLeaveChat()
     }
 
     fun isDesktop(): Boolean{

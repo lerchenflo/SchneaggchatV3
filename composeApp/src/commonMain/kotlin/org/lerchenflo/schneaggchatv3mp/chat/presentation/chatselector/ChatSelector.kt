@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
-import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Search
@@ -76,7 +75,7 @@ import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
@@ -585,9 +584,9 @@ fun Chatauswahlscreen(
                             var userOptionDropdownExpanded by remember{mutableStateOf(false)}
 
                             UserButton(
-                                selectedChat = gegner,
+                                chat = gegner,
                                 useOnClickGes = false,
-                                lastMessage = gegner.lastmessage,
+                                lastMessage = gegner.lastMessage,
                                 onClickText = { viewModel.onChatSelected(gegner) },
                                 onLongClickText = {
                                     userOptionDropdownExpanded = true
@@ -674,7 +673,7 @@ fun Chatauswahlscreen(
 @Composable
 fun UserOptionDropdown(
     expanded: Boolean,
-    selectedChat: SelectedChat,
+    selectedChat: ChatListItem,
     onDismissRequest: () -> Unit,
     onPin: () -> Unit,
     onMarkAsUnread: () -> Unit,

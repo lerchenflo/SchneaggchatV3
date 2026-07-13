@@ -29,12 +29,11 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
@@ -51,7 +50,6 @@ import kotlin.time.Clock
 class ChatSelectorViewModel(
     private val appRepository: AppRepository,
     private val navigator: Navigator,
-    private val globalViewModel: GlobalViewModel,
     private val loggingRepository: LoggingRepository,
     private val preferenceManager: Preferencemanager,
 ): ViewModel() {
@@ -111,14 +109,13 @@ class ChatSelectorViewModel(
 
 
     //Navigation
-    fun onChatSelected(selectedChat: SelectedChat) {
+    fun onChatSelected(selectedChat: ChatListItem) {
         viewModelScope.launch {
 
             //Chat opened, clear searchterm
             _searchTerm.value = ""
 
-            globalViewModel.onSelectChat(selectedChat)
-            navigator.navigate(Route.Chat)
+            navigator.navigate(Route.Chat(chatId = selectedChat.id, isGroup = selectedChat.isGroup))
         }
     }
 
@@ -130,14 +127,16 @@ class ChatSelectorViewModel(
     }
 
 
-    fun onChatSelectedWithMessage(selectedChat: SelectedChat) {
+    fun onChatSelectedWithMessage(selectedChat: ChatListItem) {
         viewModelScope.launch {
 
             //Chat opened, clear searchterm
             _searchTerm.value = ""
 
-            globalViewModel.onSelectChat(selectedChat)
-            navigator.navigate(Route.Chat, navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true))
+            navigator.navigate(
+                Route.Chat(chatId = selectedChat.id, isGroup = selectedChat.isGroup),
+                navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true)
+            )
         }
     }
 
@@ -158,7 +157,7 @@ class ChatSelectorViewModel(
     }
     fun onMapClick(){
         viewModelScope.launch {
-            navigator.navigate(Route.Schneaggmap)
+            navigator.navigate(Route.Schneaggmap())
         }
     }
 
@@ -178,7 +177,7 @@ class ChatSelectorViewModel(
         _filter.value = newValue
     }
 
-    fun pinUnpinChat(chat: SelectedChat) {
+    fun pinUnpinChat(chat: ChatListItem) {
         viewModelScope.launch {
             if(chat.pinned > 0L){
                 preferenceManager.removePinnedChat(chat.id)
@@ -202,7 +201,7 @@ class ChatSelectorViewModel(
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val chatSelectorFlow: Flow<List<SelectedChat>> = combine(
+    private val chatSelectorFlow: Flow<List<ChatListItem>> = combine(
         _searchTerm,
         _filter,
         SessionCache.authState
@@ -220,7 +219,7 @@ class ChatSelectorViewModel(
         }
         .flowOn(Dispatchers.Default)
 
-    val chatSelectorState: StateFlow<List<SelectedChat>> = chatSelectorFlow
+    val chatSelectorState: StateFlow<List<ChatListItem>> = chatSelectorFlow
         .distinctUntilChanged()
         .stateIn(
             scope = viewModelScope,

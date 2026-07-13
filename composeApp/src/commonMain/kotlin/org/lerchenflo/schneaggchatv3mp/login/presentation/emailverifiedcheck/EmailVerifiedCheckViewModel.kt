@@ -7,18 +7,13 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.buffer
-import kotlinx.coroutines.flow.cache
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -28,7 +23,8 @@ import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 class EmailVerifiedCheckViewModel(
     private val appRepository: AppRepository,
     private val navigator: Navigator,
-    private val shareUtils: ShareUtils
+    private val shareUtils: ShareUtils,
+    private val applicationScope: ApplicationScope
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(EmailVerifiedCheckState())
@@ -102,8 +98,8 @@ class EmailVerifiedCheckViewModel(
                     isLoading = true
                 )
             }
-            val syncJob = KoinPlatform.getKoin().get<GlobalViewModel>().viewModelScope.launch {
-                appRepository.dataSync() //Launch in global viewmodel scope to not cancel when logging in suddenly
+            val syncJob = applicationScope.launch {
+                appRepository.dataSync() //Launch in application scope to not cancel when logging in suddenly
             }
             syncJob.join() //await data sync finish
 
@@ -117,8 +113,7 @@ class EmailVerifiedCheckViewModel(
 
     init {
 
-        val globalViewModel = KoinPlatform.getKoin().get<GlobalViewModel>()
-        globalViewModel.viewModelScope.launch {
+        applicationScope.launch {
             appRepository.dataSync()
         }
 

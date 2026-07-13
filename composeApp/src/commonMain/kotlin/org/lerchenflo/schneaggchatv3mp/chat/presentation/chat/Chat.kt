@@ -51,9 +51,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -93,18 +93,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 import org.koin.mp.KoinPlatform
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
-import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
-import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel.SendMessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.DayDivider
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
@@ -139,28 +135,30 @@ import schneaggchatv3mp.composeapp.generated.resources.poll
 import schneaggchatv3mp.composeapp.generated.resources.read_at_time
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
+import kotlin.time.Duration.Companion.milliseconds
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
+    chatId: String,
+    isGroup: Boolean,
     modifier: Modifier = Modifier
         .fillMaxSize()
 ){
-    val globalViewModel = koinInject<GlobalViewModel>()
-    val viewModel = koinViewModel<ChatViewModel>()
+    val viewModel = koinViewModel<ChatViewModel> { parametersOf(chatId, isGroup) }
     val displayItems by viewModel.messageDisplayState.collectAsStateWithLifecycle()
     val focusManager = LocalFocusManager.current
     val clipboard = LocalClipboard.current.nativeClipboard
-    val selectedChat by globalViewModel.selectedChat.collectAsStateWithLifecycle()
+    val chatPartner by viewModel.chatPartner.collectAsStateWithLifecycle()
 
     //Leave chat when not logged in
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
-    // Leave chat when not selected
-    if (selectedChat.isNotSelected()) {
-        println("Unselected chat, navigating back")
-        viewModel.onBackClick()
+    // Track the visible chat so the socket handler can suppress notifications for it
+    DisposableEffect(chatId, isGroup) {
+        OpenChatTracker.onChatOpened(chatId, isGroup)
+        onDispose { OpenChatTracker.onChatClosed(chatId, isGroup) }
     }
 
     var addMediaDropdownExpanded by remember { mutableStateOf(false) }
@@ -305,35 +303,27 @@ fun ChatScreen(
                 }
 
 
-                val userButtonselectedChat by derivedStateOf {
-                    when (val chat = selectedChat) {
-                        is UserChat -> chat.copy(unreadMessageCount = 0, unsentMessageCount = 0)
-                        is GroupChat -> chat.copy(unreadMessageCount = 0, unsentMessageCount = 0)
-                        is NotSelected -> chat.copy(unreadMessageCount = 0, unsentMessageCount = 0)
-                        else -> chat
+                chatPartner?.let { partner ->
+                    // Presence text for the chat header: "Online" while connected, otherwise the
+                    // persisted last-seen time. Empty (not null) for anything else so UserButton's
+                    // bottom text stays hidden, matching its existing default.
+                    val lastSeen = partner.lastSeen
+                    val presenceText = when {
+                        partner.isGroup -> ""
+                        partner.isOnline -> stringResource(Res.string.schneaggmap_user_online)
+                        lastSeen != null -> stringResource(Res.string.chat_last_seen_status, millisToTimeDateOrYesterday(lastSeen))
+                        else -> ""
                     }
 
+                    UserButton(
+                        chat = partner,
+                        bottomTextOverride = presenceText,
+                        onClickGes = {
+                            viewModel.onChatDetailsClick()
+                        },
+                        ownId = ownId,
+                    )
                 }
-
-                // Presence text for the chat header: "Online" while connected, otherwise the
-                // persisted last-seen time. Empty (not null) for anything else so UserButton's
-                // bottom text stays hidden, matching its existing default.
-                val presenceText = (userButtonselectedChat as? UserChat)?.let { chat ->
-                    when {
-                        chat.isOnline -> stringResource(Res.string.schneaggmap_user_online)
-                        chat.lastSeen != null -> stringResource(Res.string.chat_last_seen_status, millisToTimeDateOrYesterday(chat.lastSeen))
-                        else -> null
-                    }
-                } ?: ""
-
-                UserButton(
-                    selectedChat = userButtonselectedChat,
-                    bottomTextOverride = presenceText,
-                    onClickGes = {
-                        viewModel.onChatDetailsClick()
-                    },
-                    ownId = ownId,
-                )
             }
         },
     ) {innerPadding ->
@@ -400,7 +390,7 @@ fun ChatScreen(
                             Box(modifier = Modifier.fillMaxWidth()){
                                 MessageViewWithActions(
                                     useMD = viewModel.markdownEnabled,
-                                    selectedChatId = globalViewModel.selectedChat.value.id,
+                                    selectedChatId = viewModel.chatId,
                                     message = message,
                                     senderName = item.senderName,  // Pre-resolved sender name!
                                     senderColor = item.senderColor, // Pre-resolved sender color!
@@ -415,7 +405,7 @@ fun ChatScreen(
                                             scope.launch {
                                                 listState.animateScrollToItem(targetIndex)
                                                 highlightedMessageId = message.answerId
-                                                delay(1500)
+                                                delay(1500.milliseconds)
                                                 highlightedMessageId = null
                                             }
                                         }
@@ -432,8 +422,6 @@ fun ChatScreen(
                                     readerMap = item.resolvedReaders,
                                     ownId = ownId
                                 )
-
-                                val copiedToClipboardString = stringResource(Res.string.copied_to_clipboard)
 
                                 var showDeleteAlert by remember { mutableStateOf(false) }
                                 var showDetailsDialog by remember { mutableStateOf(false) }
@@ -477,7 +465,7 @@ fun ChatScreen(
                                             showDeleteAlert = false
                                         },
                                         message = message,
-                                        selectedChatId = globalViewModel.selectedChat.value.id,
+                                        selectedChatId = viewModel.chatId,
                                         ownId = ownId
                                     )
                                 }
@@ -486,7 +474,7 @@ fun ChatScreen(
                                     MessageDetailsDialog(
                                         onDismiss = { showDetailsDialog = false },
                                         message = message,
-                                        selectedChatId = globalViewModel.selectedChat.value.id,
+                                        selectedChatId = viewModel.chatId,
                                         ownId = ownId,
                                         resolvedReactions = item.resolvedReactions
                                     )
@@ -511,7 +499,7 @@ fun ChatScreen(
 
             // Reply view
             if (viewModel.replyMessage != null) {
-                ReplyPreview(ownId, viewModel, globalViewModel)
+                ReplyPreview(ownId, viewModel)
             }
 
             //Inputrow for sending messages

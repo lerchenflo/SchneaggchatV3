@@ -63,6 +63,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
@@ -236,8 +237,10 @@ private fun clusterUsersByProximity(users: List<User>, radiusMeters: Double): Li
 }
 
 @Composable
-fun SchneaggmapScreenRoot() {
-    val viewModel = koinViewModel<SchneaggmapViewModel>()
+fun SchneaggmapScreenRoot(
+    initialEntryId: String? = null
+) {
+    val viewModel = koinViewModel<SchneaggmapViewModel> { parametersOf(initialEntryId) }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     SchneaggmapScreen(

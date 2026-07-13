@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.app.navigation
 
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlin.reflect.KClass
 
 class Navigator {
     private val _navigationActions = Channel<NavigationAction>()
@@ -34,7 +35,7 @@ class Navigator {
     data class NavigationOptions(
         val exitPreviousScreen: Boolean = false,
         val exitAllPreviousScreens: Boolean = false,
-        val removeAllScreensByRoute: List<Route> = emptyList(), //Remove all of these types
+        val removeAllScreensByClass: List<KClass<out Route>> = emptyList(), //Remove all screens of these route types
         val removeAllExceptByRoute: Route? = null //Remove all but this route
     )
 }

@@ -264,14 +264,11 @@ fun App() {
                 }
             }
 
-            //Helper function to remove all routes of a specific type from the backstack
-            fun removeAllScreens(route: Route) {
-                rootBackStack.removeAll { navKey -> navKey == route }
-            }
-
-            if (navigationOptions.removeAllScreensByRoute.isNotEmpty()) {
-                navigationOptions.removeAllScreensByRoute.forEach {
-                    removeAllScreens(it)
+            //Remove all routes of the given types from the backstack (class-based so routes with
+            //arguments match regardless of their argument values)
+            if (navigationOptions.removeAllScreensByClass.isNotEmpty()) {
+                navigationOptions.removeAllScreensByClass.forEach { routeClass ->
+                    rootBackStack.removeAll { navKey -> navKey::class == routeClass }
                 }
             }
 
@@ -522,11 +519,17 @@ fun App() {
                             Chatauswahlscreen()
                         }
 
-                        entry<Route.Chat> {
-                            ChatScreen()
+                        entry<Route.Chat> { route ->
+                            ChatScreen(
+                                chatId = route.chatId,
+                                isGroup = route.isGroup
+                            )
                         }
-                        entry<Route.ChatDetails> {
-                            ChatDetails()
+                        entry<Route.ChatDetails> { route ->
+                            ChatDetails(
+                                chatId = route.chatId,
+                                isGroup = route.isGroup
+                            )
                         }
                         entry<Route.MessageChatSelector> {
                             MessageChatSelector()
@@ -646,8 +649,10 @@ fun App() {
                         }
 
 
-                        entry<Route.Schneaggmap> {
-                            SchneaggmapScreenRoot()
+                        entry<Route.Schneaggmap> { route ->
+                            SchneaggmapScreenRoot(
+                                initialEntryId = route.initialEntryId
+                            )
                         }
 
                         entry<Route.Games> {
