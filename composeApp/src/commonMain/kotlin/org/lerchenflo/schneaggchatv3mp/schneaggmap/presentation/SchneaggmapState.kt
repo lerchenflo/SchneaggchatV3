@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
@@ -23,6 +24,10 @@ data class SchneaggmapState(
     val selectedEntry: MapEntry? = null,
     val selectedUser: User? = null,
     val ownUser: User? = null,
+
+    // One-shot camera target for opening the map with a specific entry (deep link);
+    // cleared again via OnFocusEntryHandled once the camera has moved there.
+    val focusEntryTarget: LatLong? = null,
 
     val locationPermissionGranted: Boolean = false,
     val ownLocationShared: Boolean = false,

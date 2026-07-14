@@ -9,9 +9,11 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -158,6 +160,10 @@ class SchneaggmapViewModel(
                 }
             }
 
+            SchneaggmapAction.OnFocusEntryHandled -> {
+                _state.update { it.copy(focusEntryTarget = null) }
+            }
+
             is SchneaggmapAction.OnEntryPopupSave -> {
                 val entry = action.entry
 
@@ -257,7 +263,25 @@ class SchneaggmapViewModel(
     }
 
     init {
-        //TODO: HANDLE INITIAL NAVIGATION AND POPUP OF PASSED ITEM ID
+        // Opened with a specific entry (deep link): once the entry shows up in the database,
+        // show its popup and hand the screen a one-shot camera target to fly to.
+        if (initialEntryId != null) {
+            viewModelScope.launch {
+                val entry = mapRepository.getAllMapEntriesFlow()
+                    .mapNotNull { entries -> entries.firstOrNull { it.id == initialEntryId } }
+                    .first()
+
+                _state.update {
+                    it.copy(
+                        selectedEntry = entry,
+                        focusEntryTarget = entry.coordinates,
+                        isFilterDropdownVisible = false,
+                        // Make sure the entry's marker is actually visible on the map
+                        enabledTypes = it.enabledTypes + entry.locationData.map { data -> data.locationtype }
+                    )
+                }
+            }
+        }
 
         viewModelScope.launch {
             appRepository.dataSync()

@@ -22,6 +22,7 @@ sealed interface SchneaggmapAction {
     data class OnOpenChatClick(val user: User) : SchneaggmapAction
 
     data object OnPopupDismiss: SchneaggmapAction
+    data object OnFocusEntryHandled: SchneaggmapAction
     data class OnEntryPopupSave(val entry: MapEntry): SchneaggmapAction
 
     data class OnEntryPopupDelete(val entryId: String): SchneaggmapAction

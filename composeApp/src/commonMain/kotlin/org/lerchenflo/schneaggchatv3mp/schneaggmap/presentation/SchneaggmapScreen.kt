@@ -156,6 +156,7 @@ import kotlin.time.Clock
 
 private const val OWN_LOCATION_START_ZOOM = 14.0
 private const val OWN_LOCATION_CLICK_ZOOM = 16.0
+private const val ENTRY_FOCUS_ZOOM = 16.0
 
 //Radius, in dp, within which nearby friends get merged into one marker - converted to meters via
 //the camera's current scale so it stays a constant on-screen size regardless of zoom level.
@@ -283,6 +284,21 @@ fun SchneaggmapScreen(
         if (!hasAutoCentered && state.ownLocationShared && position != null) {
             hasAutoCentered = true
             cameraState.animateTo(CameraPosition(target = position, zoom = OWN_LOCATION_START_ZOOM))
+        }
+    }
+
+    //Opened with a specific entry (deep link): fly to it once. Marks the own-location
+    //auto-center as done so it can't yank the camera away from the entry afterwards.
+    LaunchedEffect(state.focusEntryTarget) {
+        state.focusEntryTarget?.let { target ->
+            hasAutoCentered = true
+            cameraState.animateTo(
+                CameraPosition(
+                    target = Position(longitude = target.long, latitude = target.lat),
+                    zoom = ENTRY_FOCUS_ZOOM
+                )
+            )
+            onAction(SchneaggmapAction.OnFocusEntryHandled)
         }
     }
 
