@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Search
@@ -88,6 +89,7 @@ import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.app_name
 import schneaggchatv3mp.composeapp.generated.resources.chat_add_on_24px
 import schneaggchatv3mp.composeapp.generated.resources.filter
+import schneaggchatv3mp.composeapp.generated.resources.more_info
 import schneaggchatv3mp.composeapp.generated.resources.no_friends_found_search
 import schneaggchatv3mp.composeapp.generated.resources.pin_chat
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap
@@ -592,7 +594,6 @@ fun Chatauswahlscreen(
                                     userOptionDropdownExpanded = true
                                 },
                                 onClickImage = {
-                                    //TODO: Fix for empty images (No profilepic)
                                     profilePictureDialogShown = true
                                     profilePictureFilePathTemp = gegner.profilePictureUrl
                                 },
@@ -612,7 +613,7 @@ fun Chatauswahlscreen(
                                 onMarkAsUnread = {
 
                                 },
-                                onOpenChatDetails = { TODO() },
+                                onOpenChatDetails = { viewModel.onOpenChatDetails(gegner) },
                             )
                         }
                     }
@@ -689,7 +690,6 @@ fun UserOptionDropdown(
             onDismissRequest = onDismissRequest,
             modifier = modifier
         ) {
-            // todo unpin when pinned
             DropdownMenuItem(
                 text = {
                     if(selectedChat.pinned > 0L)
@@ -733,7 +733,6 @@ fun UserOptionDropdown(
 
  */
 
-            /* // für Chatdetails
             DropdownMenuItem(
                 text = { Text(stringResource(Res.string.more_info)) },
                 onClick = {
@@ -747,8 +746,6 @@ fun UserOptionDropdown(
                     )
                 }
             )
-
-             */
 
         }
     }

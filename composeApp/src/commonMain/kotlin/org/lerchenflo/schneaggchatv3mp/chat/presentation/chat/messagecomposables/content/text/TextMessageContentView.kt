@@ -20,7 +20,6 @@ fun TextMessageContentView(
         Markdown(
             content = message.content,
             modifier = modifier,
-            //TODO: Nocham neua theme do die message text color flicka
 
             colors = DefaultMarkdownColors(
                 text = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,

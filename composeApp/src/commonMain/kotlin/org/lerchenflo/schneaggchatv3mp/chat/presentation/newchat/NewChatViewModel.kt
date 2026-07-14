@@ -130,9 +130,11 @@ class NewChatViewModel (
     }
 
     fun onPendingFriendRequestClick(selectedChat: ChatListItem) {
-        //You are friends with this person, open chat
         if (selectedChat.friendshipStatus != NetworkUtils.FriendshipStatus.PENDING) {
-            //TODO: Open chat? What is this code doing
+            //You are already friends with this person, open the chat
+            viewModelScope.launch {
+                navigator.navigate(Route.Chat(chatId = selectedChat.id, isGroup = selectedChat.isGroup), navigationOptions = Navigator.NavigationOptions(removeAllScreensByClass = listOf(Route.NewChat::class)))
+            }
         }else {
             //Friendshipstatus pending
             _pendingFriendPopup.value = selectedChat

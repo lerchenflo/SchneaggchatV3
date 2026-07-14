@@ -1,45 +1,38 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 
-import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Reply
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.stevdza_san.swipeable.Swipeable
+import com.stevdza_san.swipeable.domain.ActionCustomization
+import com.stevdza_san.swipeable.domain.SwipeAction
+import com.stevdza_san.swipeable.domain.SwipeBackground
+import com.stevdza_san.swipeable.domain.SwipeBehavior
+import com.stevdza_san.swipeable.domain.SwipeDirection
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
-import kotlin.math.roundToInt
 
 @Composable
 fun MessageViewWithActions(
@@ -62,38 +55,28 @@ fun MessageViewWithActions(
 ){
 
 
-    var contextMenuWidth by remember {
-        mutableFloatStateOf(0f)
-    }
-
-    val offset = remember {
-        Animatable(initialValue = 0f)
-    }
-
-    val scope = rememberCoroutineScope()
-    Box(
+    //Swipe right to reply, same library usage as LocationAttributeView on the map
+    Swipeable(
         modifier = modifier
-            .fillMaxWidth()
-            //.height(IntrinsicSize.Min)
+            .fillMaxWidth(),
+        behavior = SwipeBehavior.DISMISS,
+        direction = SwipeDirection.LEFT,
+        leftDismissAction = SwipeAction(
+            customization = ActionCustomization(
+                icon = Icons.AutoMirrored.Filled.Reply,
+                iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ),
+            onAction = onReplyCall
+        ),
+        leftBackground = SwipeBackground.solid(MaterialTheme.colorScheme.background)
     ){
-        Row(
-            modifier = Modifier
-                .onSizeChanged {
-                    contextMenuWidth = it.width.toFloat()
-                },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ReplyArrow()
-        }
-
-        //TODO: Replace with swipable library: https://github.com/stevdza-san/Swipeable-KMP (Ibout im locationattributeview)
         Surface(
             color = MaterialTheme.colorScheme.background,
             tonalElevation = 0.dp,
             shadowElevation = 0.dp,
             modifier = Modifier
-                .fillMaxSize()
-                .offset { IntOffset(offset.value.roundToInt(), 0) }
+                .fillMaxWidth()
                 .pointerInput(Unit) {
                     awaitEachGesture {
                         val viewConfig = this@pointerInput.viewConfiguration
@@ -141,25 +124,6 @@ fun MessageViewWithActions(
                             // single tap — handle if needed
                         }
                     }
-                }
-                .pointerInput(contextMenuWidth) {
-                    // detect swipe for reply
-                    detectHorizontalDragGestures(
-                        onHorizontalDrag = { _, dragAmount ->
-                            scope.launch {
-                                val newOffset = (offset.value + dragAmount)
-                                    .coerceIn(0f, contextMenuWidth)
-                                offset.snapTo(newOffset)
-                            }
-                        },
-                        onDragEnd = {
-                            if(offset.value > contextMenuWidth * 0.9) onReplyCall() // call Reply when swiped 90% of the way
-
-                            scope.launch {
-                                offset.animateTo(0f)
-                            }
-                        }
-                    )
                 }
         ) {
             MessageView(

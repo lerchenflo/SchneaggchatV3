@@ -119,6 +119,12 @@ class ChatSelectorViewModel(
         }
     }
 
+    fun onOpenChatDetails(selectedChat: ChatListItem) {
+        viewModelScope.launch {
+            navigator.navigate(Route.ChatDetails(chatId = selectedChat.id, isGroup = selectedChat.isGroup))
+        }
+    }
+
     // for MessageChatSelector
     fun onBackClick() {
         viewModelScope.launch {
