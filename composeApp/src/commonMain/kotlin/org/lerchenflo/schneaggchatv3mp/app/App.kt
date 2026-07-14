@@ -788,6 +788,7 @@ fun App() {
                                     }
 
                                     entry <Route.Games.YatziSetup> {
+                                        //TODO: Merge setup and game into one nav entry and clean up the viewmodel mess here
                                         YatziSetupScreen(
                                             onBack = {
                                                 if (gamesBackStack.size > 1){

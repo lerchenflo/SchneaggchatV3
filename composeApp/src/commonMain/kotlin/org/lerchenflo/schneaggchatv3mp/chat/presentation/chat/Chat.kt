@@ -498,8 +498,14 @@ fun ChatScreen(
             }
 
             // Reply view
-            if (viewModel.replyMessage != null) {
-                ReplyPreview(ownId, viewModel)
+            viewModel.replyMessage?.let { replyMessage ->
+                ReplyPreview(
+                    ownId = ownId,
+                    message = replyMessage,
+                    useMD = viewModel.markdownEnabled,
+                    selectedChatId = viewModel.chatId,
+                    onDismiss = { viewModel.updateReplyMessage(null) }
+                )
             }
 
             //Inputrow for sending messages

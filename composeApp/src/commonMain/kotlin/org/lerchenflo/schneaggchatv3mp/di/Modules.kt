@@ -21,13 +21,13 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChatViewMode
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
-import org.lerchenflo.schneaggchatv3mp.datasource.database.PlayerDao
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.data.PlayerRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerViewModel
@@ -71,9 +71,6 @@ val sharedmodule = module{
     //Database
     single <AppDatabase> { CreateAppDatabase(get()).getDatabase() }
 
-    single <PlayerDao> { get<AppDatabase>().playerDao() } //TODO: remove this and fix the call site
-
-
     singleOf(::TokenManager)
 
     //Network utils must be created before HttpClients to avoid circular dependency
@@ -100,6 +97,7 @@ val sharedmodule = module{
     singleOf(::LoggingRepository)
     singleOf(::MapRepository)
     singleOf(::GameHighscoreRepository)
+    singleOf(::PlayerRepository)
 
 
     // Socket Connection Manager
