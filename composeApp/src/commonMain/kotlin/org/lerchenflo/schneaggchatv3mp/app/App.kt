@@ -6,17 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AdsClick
-import androidx.compose.material.icons.filled.Blind
-import androidx.compose.material.icons.filled.GraphicEq
-import androidx.compose.material.icons.filled.GridOn
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.House
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MonetizationOn
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -45,7 +34,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
-import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
@@ -65,9 +53,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
-import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
-import org.lerchenflo.schneaggchatv3mp.games.presentation.GameScreenElement
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
 import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerScreen
@@ -106,17 +93,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
-import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_title
-import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
-import schneaggchatv3mp.composeapp.generated.resources.games_fingerpicker_title
-import schneaggchatv3mp.composeapp.generated.resources.games_gridrush_title
-import schneaggchatv3mp.composeapp.generated.resources.games_morse_title
-import schneaggchatv3mp.composeapp.generated.resources.games_oddoneout_title
-import schneaggchatv3mp.composeapp.generated.resources.games_schneaggahus_title
-import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
-import schneaggchatv3mp.composeapp.generated.resources.games_tetris_title
-import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
-import schneaggchatv3mp.composeapp.generated.resources.games_yahtzee_title
 
 
 @Composable
@@ -656,87 +632,10 @@ fun App() {
                         }
 
                         entry<Route.Games> {
-                            //TODO GAMES: Shared games viewmodel for game selection
                             val yatziViewModel: YatziViewModel = koinViewModel<YatziViewModel>()
 
-                            val gamesList = listOf<GameScreenElement>(
-                                GameScreenElement(
-                                    title = stringResource(Res.string.games_tetris_title),
-                                    icon = Icons.Default.Menu, // Placeholder
-                                    route = Route.Games.Tetris,
-                                    inDev = false,
-                                    gameId = GameId.TETRIS
-                                ),
-                                GameScreenElement(
-                                    title = stringResource(Res.string.games_stack_tower),
-                                    icon = Icons.Default.Menu,
-                                    route = Route.Games.TowerStack,
-                                    inDev = false,
-                                    gameId = GameId.TOWERSTACK
-                                ),
-                                GameScreenElement(
-                                    title = stringResource(Res.string.games_morse_title),
-                                    icon = Icons.Default.GraphicEq,
-                                    route = Route.Games.Morse,
-                                    inDev = false,
-                                    gameId = GameId.MORSE
-                                 ),
-                                 GameScreenElement(
-                                    title = stringResource(Res.string.games_schneaggahus_title),
-                                    icon = Icons.Default.House,
-                                    route = Route.Games.SchneaggaHus,
-                                    inDev = true,
-                                    gameId = GameId.SCHNEAGGAHUS
-                                ),
-                                GameScreenElement(
-                                    title = stringResource(Res.string.games_gridrush_title),
-                                    icon = Icons.Default.GridOn,
-                                    route = Route.Games.GridRush,
-                                    inDev = false,
-                                    gameId = GameId.GRIDRUSH,
-                                    daily = true
-                                ),
-                                GameScreenElement(
-                                    title = stringResource(Res.string.games_oddoneout_title),
-                                    icon = Icons.Default.Search,
-                                    route = Route.Games.OddOneOut,
-                                    inDev = false,
-                                    gameId = GameId.ODDONEOUT
-                                ),
-                                GameScreenElement(
-                                    title = stringResource(Res.string.games_coinflip_title),
-                                    icon = Icons.Default.MonetizationOn,
-                                    route = Route.Games.CoinFlip,
-                                    inDev = false
-                                ),
-                                GameScreenElement(
-                                    title = stringResource(Res.string.games_fingerpicker_title),
-                                    icon = Icons.Default.TouchApp,
-                                    route = Route.Games.FingerPicker,
-                                    inDev = false
-                                ),
-                                GameScreenElement(
-                                    title = stringResource(Res.string.games_dartcounter_title),
-                                    icon = Icons.Default.AdsClick, // ma darf sich gern was besseres usdenka
-                                    route = Route.Games.DartCounter,
-                                    inDev = false
-                                ),
-                                GameScreenElement(
-                                    title = stringResource(Res.string.games_undercover_title),
-                                    icon = Icons.Default.Blind,
-                                    route = Route.Games.Undercover,
-                                    inDev = false
-                                ),
-
-                                GameScreenElement(
-                                    title = stringResource(Res.string.games_yahtzee_title),
-                                    icon = Icons.Default.Star,
-                                    route = Route.Games.YatziSetup,
-                                    inDev = false
-                                ),
-
-
-                            )
+                            //Shared over the games nav graph, owns the selectable games list
+                            val gameSelectorViewModel = koinViewModel<GameSelectorViewModel>()
                             NavDisplay(
                                 backStack = gamesBackStack,
                                 entryProvider = entryProvider {
@@ -752,7 +651,7 @@ fun App() {
                                                     gamesBackStack.add(it)
                                                 }
                                             },
-                                            gamesList = gamesList
+                                            viewModel = gameSelectorViewModel
                                         )
 
                                     }

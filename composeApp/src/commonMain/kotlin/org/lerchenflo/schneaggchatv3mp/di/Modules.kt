@@ -29,6 +29,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
@@ -182,6 +183,7 @@ val sharedmodule = module{
 
     viewModelOf(::PlayerSelectorViewModel)
     viewModelOf(::RecapViewModel)
+    viewModelOf(::GameSelectorViewModel)
 
 
     viewModelOf(::UserSettingsViewModel)

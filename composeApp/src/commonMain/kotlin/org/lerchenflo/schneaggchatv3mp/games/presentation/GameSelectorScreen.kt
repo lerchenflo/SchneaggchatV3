@@ -55,9 +55,10 @@ import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 fun GameSelectorScreen(
     onBackClick: () -> Unit,
     onGameSelection: (Route) -> Unit,
-    gamesList: List<GameScreenElement>
-
+    viewModel: GameSelectorViewModel
 ){
+    val gamesList = viewModel.gamesList
+
     val dev = SessionCache.requireLoggedIn()?.developer ?: return
 
     var highscoreGame by remember { mutableStateOf<GameId?>(null) }
@@ -101,8 +102,8 @@ fun GameSelectorScreen(
                 items(dailyGames) { game ->
                     GameElementView(
                         icon = game.icon,
-                        text = game.title,
-                        subtext = game.description,
+                        text = stringResource(game.title),
+                        subtext = game.description?.let { stringResource(it) },
                         onClick = { onGameSelection(game.route) },
                         rightSideIcon = {
                             if (game.gameId != null) {
@@ -129,8 +130,8 @@ fun GameSelectorScreen(
             items(leaderboardGames) { game ->
                 GameElementView(
                     icon = game.icon,
-                    text = game.title,
-                    subtext = game.description,
+                    text = stringResource(game.title),
+                    subtext = game.description?.let { stringResource(it) },
                     onClick = { onGameSelection(game.route) },
                     rightSideIcon = {
                         IconButton(onClick = { highscoreGame = game.gameId }) {
@@ -162,8 +163,8 @@ fun GameSelectorScreen(
                 items(otherGames) { game ->
                     GameElementView(
                         icon = game.icon,
-                        text = game.title,
-                        subtext = game.description,
+                        text = stringResource(game.title),
+                        subtext = game.description?.let { stringResource(it) },
                         onClick = { onGameSelection(game.route) }
                     )
 
