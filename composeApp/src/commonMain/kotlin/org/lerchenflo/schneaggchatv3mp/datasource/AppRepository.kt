@@ -1952,6 +1952,30 @@ class AppRepository(
                 null
             }
             is NetworkResult.Success<GroupResponse> -> {
+
+                val groupResponse = response.data
+
+                groupRepository.upsertGroup(Group(
+                    id = groupResponse.id,
+                    name = groupResponse.name,
+                    profilePictureUrl = "",
+                    description = groupResponse.description,
+                    createDate = groupResponse.createdAt,
+                    updatedAt = groupResponse.updatedAt,
+                    profilePicUpdatedAt = groupResponse.profilePicUpdatedAt,
+                    notisMuted = false,
+                    members = groupResponse.members.map { groupMemberresp ->
+                        GroupMember(
+                            groupId = groupResponse.id,
+                            userId = groupMemberresp.userid,
+                            joinDate = groupMemberresp.joinedAt,
+                            admin = groupMemberresp.admin,
+                            color = groupMemberresp.color,
+                            memberName = groupMemberresp.memberName
+                        )
+                    }
+                ))
+
                 response.data.id
             }
         }

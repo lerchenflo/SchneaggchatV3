@@ -241,8 +241,11 @@ class GroupCreatorViewModel (
                     appRepository.dataSync()
                 }
 
-                //TODO: Navigate directly to group chat?
-                navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true))
+                //Navigate directly into the new group chat, keeping only the chat selector below it
+                navigator.navigate(
+                    Route.Chat(chatId = groupId, isGroup = true),
+                    navigationOptions = Navigator.NavigationOptions(removeAllExceptByRoute = Route.ChatSelector)
+                )
             }
 
 

@@ -56,6 +56,7 @@ fun ReplyPreview(
                     .padding(6.dp),
                 message = message,
                 useMD = useMD,
+                mymessage = message.myMessage,
                 selectedChatId = selectedChatId,
                 senderColor = message.senderColor,
                 ownId = ownId,
