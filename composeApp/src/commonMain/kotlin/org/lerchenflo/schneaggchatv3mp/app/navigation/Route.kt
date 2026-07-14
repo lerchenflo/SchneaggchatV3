@@ -74,10 +74,7 @@ sealed interface Route : NavKey {
         data object TowerStack: Route
 
         @Serializable
-        data object YatziSetup: Route
-
-        @Serializable
-        data object YatziGame: Route
+        data object Yatzi: Route
 
         @Serializable
         data object Tetris: Route

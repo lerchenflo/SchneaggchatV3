@@ -20,20 +20,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,9 +37,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
-import androidx.lifecycle.viewmodel.compose.viewModel
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelector
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.yatzi_add_manage_players
 import schneaggchatv3mp.composeapp.generated.resources.yatzi_back_to_menu
@@ -66,29 +63,45 @@ import schneaggchatv3mp.composeapp.generated.resources.yatzi_upper_sum
 import schneaggchatv3mp.composeapp.generated.resources.yatzi_winner
 
 @Composable
-fun YatziSetupScreen(
+fun YatziScreenRoot(
+    onBackClick: () -> Unit,
+) {
+    val viewModel = koinViewModel<YatziViewModel>()
+
+    //Setup and game share the same nav entry (and viewmodel), switching is plain UI state
+    var showGame by rememberSaveable { mutableStateOf(false) }
+
+    if (showGame) {
+        YatziGameScreen(
+            onBack = { showGame = false },
+            viewModel = viewModel
+        )
+    } else {
+        YatziSetupScreen(
+            onBack = onBackClick,
+            onStartGame = { showGame = true },
+            viewModel = viewModel
+        )
+    }
+}
+
+@Composable
+private fun YatziSetupScreen(
     onBack: () -> Unit,
     onStartGame: () -> Unit,
-    viewModel: YatziViewModel = viewModel { YatziViewModel() }
+    viewModel: YatziViewModel
 ) {
 
     // var newPlayerName by remember { mutableStateOf("") } // Removed local state for player input
     val state by viewModel.state.collectAsState()
 
-    Scaffold(
-        topBar = {
-            @OptIn(ExperimentalMaterial3Api::class)
-            TopAppBar(
-                title = { Text(stringResource(Res.string.yatzi_setup_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Column(modifier = Modifier.padding(padding).padding(16.dp)) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        ActivityTitle(
+            title = stringResource(Res.string.yatzi_setup_title),
+            onBackClick = onBack
+        )
+
+        Column(modifier = Modifier.weight(1f).padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Button(
                     onClick = { viewModel.showPlayerSelector() },
@@ -172,25 +185,18 @@ fun YatziSetupScreen(
 }
 
 @Composable
-fun YatziGameScreen(
+private fun YatziGameScreen(
     onBack: () -> Unit,
-    viewModel: YatziViewModel // Injected
+    viewModel: YatziViewModel
 ) {
     val state by viewModel.state.collectAsState()
 
-    Scaffold(
-        topBar = {
-            @OptIn(ExperimentalMaterial3Api::class)
-            TopAppBar(
-                title = { Text(stringResource(Res.string.yatzi_game_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
-                    }
-                }
-            )
-        }
-    ) { padding ->
+    Column(modifier = Modifier.fillMaxSize()) {
+         ActivityTitle(
+             title = stringResource(Res.string.yatzi_game_title),
+             onBackClick = onBack
+         )
+
          if (state.winner != null) {
              WinnerScreen(state.winner!!, onBack)
          } else if (state.players.isEmpty()) {
@@ -198,7 +204,7 @@ fun YatziGameScreen(
                  Text(stringResource(Res.string.yatzi_no_active_game))
              }
          } else {
-             Column(modifier = Modifier.padding(padding)) {
+             Column(modifier = Modifier.weight(1f)) {
                  // Scorecard - takes most of the space but is scrollable
                  Scorecard(
                      modifier = Modifier.weight(1f),

@@ -33,7 +33,7 @@ data class AccountRecapDto(
     val memberSince: Long,
     val accountAgeDays: Int,
     val emailVerified: Boolean,
-    val loginCountThisYear: Long, //TODO: These are actual logins with username and password, this doesnt tell how often the app was opened
+    val loginCountThisYear: Long, //Note: These are actual logins with username and password, this doesnt tell how often the app was opened
     val loginCountAllTime: Long,
     val friendRequestsSentThisYear: Long,
     val friendRequestsSentAllTime: Long,

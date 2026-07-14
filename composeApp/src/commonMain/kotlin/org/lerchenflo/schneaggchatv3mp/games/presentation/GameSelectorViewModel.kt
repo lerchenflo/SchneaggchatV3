@@ -101,7 +101,7 @@ class GameSelectorViewModel : ViewModel() {
         GameScreenElement(
             title = Res.string.games_yahtzee_title,
             icon = Icons.Default.Star,
-            route = Route.Games.YatziSetup,
+            route = Route.Games.Yatzi,
             inDev = false
         ),
     )

@@ -930,7 +930,7 @@ private fun SchneaggmapMapContent(
                                 ?: painterResource(Res.drawable.icon_nutzer)
                             val markerSize = markerIcon?.size ?: DpSize(33.dp, 33.dp)
 
-                            //TODO: rotate this marker using user.location?.heading once we have a directional
+                            //Note: rotate this marker using user.location?.heading once we have a directional
                             // marker design - heading is already stored/synced per friend but unused for rendering.
                             SymbolLayer(
                                 id = "user-${user.id}",

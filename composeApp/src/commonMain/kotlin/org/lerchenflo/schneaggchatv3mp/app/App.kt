@@ -68,9 +68,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
-import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziGameScreen
-import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziSetupScreen
-import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
@@ -181,8 +179,7 @@ fun App() {
 
                         subclass(Route.Games.Undercover::class, Route.Games.Undercover.serializer())
                         subclass(Route.Games.TowerStack::class, Route.Games.TowerStack.serializer())
-                        subclass(Route.Games.YatziSetup::class, Route.Games.YatziSetup.serializer())
-                        subclass(Route.Games.YatziGame::class, Route.Games.YatziGame.serializer())
+                        subclass(Route.Games.Yatzi::class, Route.Games.Yatzi.serializer())
                         subclass(Route.Games.Tetris::class, Route.Games.Tetris.serializer())
                         subclass(Route.Games.Morse::class, Route.Games.Morse.serializer())
                         subclass(Route.Games.SchneaggaHus::class, Route.Games.SchneaggaHus.serializer())
@@ -632,8 +629,6 @@ fun App() {
                         }
 
                         entry<Route.Games> {
-                            val yatziViewModel: YatziViewModel = koinViewModel<YatziViewModel>()
-
                             //Shared over the games nav graph, owns the selectable games list
                             val gameSelectorViewModel = koinViewModel<GameSelectorViewModel>()
                             NavDisplay(
@@ -686,29 +681,13 @@ fun App() {
                                         )
                                     }
 
-                                    entry <Route.Games.YatziSetup> {
-                                        //TODO: Merge setup and game into one nav entry and clean up the viewmodel mess here
-                                        YatziSetupScreen(
-                                            onBack = {
+                                    entry <Route.Games.Yatzi> {
+                                        YatziScreenRoot(
+                                            onBackClick = {
                                                 if (gamesBackStack.size > 1){
                                                     gamesBackStack.removeAt(gamesBackStack.size - 1)
                                                 }
-                                            },
-                                            onStartGame = {
-                                                gamesBackStack.add(Route.Games.YatziGame)
-                                            },
-                                            viewModel = yatziViewModel
-                                        )
-                                    }
-
-                                    entry <Route.Games.YatziGame> {
-                                        YatziGameScreen(
-                                            onBack = {
-                                                if (gamesBackStack.size > 1){
-                                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
-                                                }
-                                            },
-                                            viewModel = yatziViewModel
+                                            }
                                         )
                                     }
 
