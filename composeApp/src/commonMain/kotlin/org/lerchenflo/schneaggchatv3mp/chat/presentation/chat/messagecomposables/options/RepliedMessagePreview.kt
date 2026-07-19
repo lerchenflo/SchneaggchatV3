@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboAnnotationSources
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.resolveComboAnnotationsToPlainText
 import schneaggchatv3mp.composeapp.generated.resources.you_sender
 
 /**
@@ -33,6 +35,7 @@ fun RepliedMessagePreview(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val annotationSources = rememberComboAnnotationSources()
     Surface(
         onClick = onClick,
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
@@ -73,7 +76,7 @@ fun RepliedMessagePreview(
                 }
 
                 Text(
-                    text = message.content,
+                    text = resolveComboAnnotationsToPlainText(message.content, annotationSources),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,

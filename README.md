@@ -19,15 +19,15 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ### 3.0.14
 
 #### Features
+- @Map Annotations in Nachrichten + Umfragen
 - Roadmap in den Misc Einstellungen mit Github issues
 - Neue Schneaggmap-Standorttypen (Volleyball, Trainingspark, Tischtennis, Tennis)
 - Freunde-Zusammenfassung beim Zoomen - Einstellung auf der Schneaggmap
 - Polls mit Stimmen-Begrenzung pro Option
-- Neue-Freunde-Suche: Verbesserte Text-Hierarchie und Lesbarkeit
 
 #### Bugfixes
-- Überlappende Schaltflächen auf der Schneaggmap behoben
-- Chat-Navigation rebuild
+- Schneaggmap UI fixes
+- Chat-Navigation neu aufgebaut
 - Chat öffnen bei Freundschaftsanfrage annehmen / Gruppe erstellen
 
 ### 3.0.13

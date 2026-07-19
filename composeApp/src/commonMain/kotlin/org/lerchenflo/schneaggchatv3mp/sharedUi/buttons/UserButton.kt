@@ -41,6 +41,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboText
 import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -243,8 +244,9 @@ fun UserButton(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Last message preview
-                    Text(
+                    // Last message preview — annotations resolve to clickable location names,
+                    // taps outside the annotation still open the chat
+                    ComboText(
                         text = (
                                 if (lastMessage.myMessage) {
                                     stringResource(Res.string.you_sender) + ": "
@@ -260,9 +262,9 @@ fun UserButton(
                             MessageType.POLL -> stringResource(Res.string.poll)
                             MessageType.AUDIO -> stringResource(Res.string.audio)
                         },
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) // 👈 lighter text
-                        ),
+                        useMD = false,
+                        textColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f), // 👈 lighter text
+                        style = MaterialTheme.typography.bodyMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f)

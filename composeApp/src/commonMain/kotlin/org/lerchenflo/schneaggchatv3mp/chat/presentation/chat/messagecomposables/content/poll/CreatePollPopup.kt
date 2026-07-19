@@ -22,12 +22,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,6 +56,7 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboInputField
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.ok
@@ -92,7 +91,7 @@ import kotlin.time.Clock
  * Mutable holder for a single poll option row so text and its per-entry vote limit
  * survive drag-to-reorder (identity-based, not index-based).
  */
-private class PollOptionInput(text: String = "", maxVoters: Int? = null) {
+private class PollOptionInput(text: TextFieldValue = TextFieldValue(""), maxVoters: Int? = null) {
     var text by mutableStateOf(text)
     var maxVoters by mutableStateOf(maxVoters)
 }
@@ -107,8 +106,8 @@ fun PollDialog(
     onDismiss: () -> Unit = {},
     onCreatePoll: (NetworkUtils.PollCreateRequest) -> Unit = {}
 ) {
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
+    var title by remember { mutableStateOf(TextFieldValue("")) }
+    var description by remember { mutableStateOf(TextFieldValue("")) }
 
     var allowCustomAnswers by remember { mutableStateOf(false) }
     var allowedCustomAnswerCount by remember { mutableStateOf(1) }
@@ -132,12 +131,12 @@ fun PollDialog(
     var optionsError by remember { mutableStateOf(false) }
 
     fun validateInputs() : Boolean {
-        if (title.length < 2) {
+        if (title.text.length < 2) {
             titleError = true
             return false
         }
 
-        if (options.filter { it.text.isNotEmpty() }.size < 2) {
+        if (options.filter { it.text.text.isNotEmpty() }.size < 2) {
             optionsError = true
             return false
         }
@@ -146,15 +145,15 @@ fun PollDialog(
     }
 
     //Reset errors with launchedeffect
-    LaunchedEffect(title, options.map { it.text }, options.size) {
+    LaunchedEffect(title.text, options.map { it.text.text }, options.size) {
         if (titleError) {
-            if (title.length >= 2) {
+            if (title.text.length >= 2) {
                 titleError = false
             }
         }
 
         if (optionsError) {
-            if (options.filter { it.text.isNotEmpty() }.size >= 2) {
+            if (options.filter { it.text.text.isNotEmpty() }.size >= 2) {
                 optionsError = false
             }
         }
@@ -195,7 +194,7 @@ fun PollDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 //Title text input
-                TextField(
+                ComboInputField(
                     value = title,
                     onValueChange = { title = it },
                     modifier = Modifier.fillMaxWidth(),
@@ -210,13 +209,12 @@ fun PollDialog(
                 //Description text input
                 Text(stringResource(Res.string.poll_create_description))
 
-                TextField(
+                ComboInputField(
                     value = description,
                     onValueChange = { description = it },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text(stringResource(Res.string.poll_create_description_placeholder)) },
                     shape = RoundedCornerShape(12.dp),
-
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -248,14 +246,14 @@ fun PollDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                TextField(
+                                ComboInputField(
                                     value = value.text,
                                     onValueChange = { value.text = it },
                                     placeholder = { Text(stringResource(Res.string.poll_options_placeholder)) },
                                     modifier = Modifier.fillMaxWidth()
                                 )
 
-                                if (limitVotersPerEntry && value.text.isNotEmpty()) {
+                                if (limitVotersPerEntry && value.text.text.isNotEmpty()) {
                                     val sliderValue = value.maxVoters ?: 10
 
                                     Text(
@@ -300,7 +298,7 @@ fun PollDialog(
                 }
 
                 //Auto add new entry if last entry is not empty
-                if (options[options.size-1].text.isNotEmpty()) {
+                if (options[options.size-1].text.text.isNotEmpty()) {
                     options.add(PollOptionInput())
                 }
 
@@ -530,8 +528,8 @@ fun PollDialog(
 
                             onCreatePoll(
                                 NetworkUtils.PollCreateRequest(
-                                    title = title,
-                                    description = description.ifEmpty { null },
+                                    title = title.text,
+                                    description = description.text.ifEmpty { null },
                                     maxAnswers = if (allowMultipleAnswers) {
                                         if (allowedAnswerCount == 10) {
                                             null
@@ -545,10 +543,10 @@ fun PollDialog(
                                     closeDate = expiresAt?.toInstant(TimeZone.currentSystemDefault())
                                         ?.toEpochMilliseconds(),
                                     voteOptions = options
-                                        .filter { it.text.trim().isNotEmpty() }
+                                        .filter { it.text.text.trim().isNotEmpty() }
                                         .map {
                                             NetworkUtils.PollVoteOptionCreateRequest(
-                                                text = it.text,
+                                                text = it.text.text,
                                                 maxVoters = if (limitVotersPerEntry) it.maxVoters else null
                                             )
                                         }

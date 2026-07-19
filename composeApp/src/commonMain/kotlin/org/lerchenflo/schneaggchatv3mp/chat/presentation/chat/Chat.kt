@@ -46,7 +46,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -114,6 +113,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.ReplyPreview
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboInputField
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
@@ -591,7 +591,7 @@ fun ChatScreen(
                 //sendinput (This is a rowscope)
                 when (val content = currentContent) {
                     is SendMessageContent.TextContent -> {
-                        OutlinedTextField(
+                        ComboInputField(
                             value = content.textMessage,
                             onValueChange = { newValue ->
                                 viewModel.updateSendContent(SendMessageContent.TextContent(newValue))
@@ -693,7 +693,7 @@ fun ChatScreen(
                                 }
                             }
 
-                            OutlinedTextField(
+                            ComboInputField(
                                 value = content.text,
                                 onValueChange = { newValue ->
                                     viewModel.updateSendContent(

@@ -38,7 +38,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.RichTooltip
@@ -64,8 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mikepenz.markdown.m3.Markdown
-import com.mikepenz.markdown.model.DefaultMarkdownColors
+import androidx.compose.ui.text.input.TextFieldValue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -79,6 +77,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoter
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboInputField
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboText
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboAnnotationSources
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.resolveComboAnnotationsToPlainText
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToDuration
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -139,26 +141,13 @@ fun PollMessageContentView(
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (useMD) {
-                Markdown(
-                    content = poll.title,
-                    modifier = Modifier.weight(1f),
-                    colors = DefaultMarkdownColors(
-                        text = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        inlineCodeBackground = MaterialTheme.colorScheme.error,
-                        dividerColor = MaterialTheme.colorScheme.onPrimary,
-                        tableBackground = MaterialTheme.colorScheme.onSurface,
-                        codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                )
-            } else {
-                Text(
-                    text = poll.title,
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.weight(1f),
-                    color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            ComboText(
+                text = poll.title,
+                useMD = useMD,
+                textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f)
+            )
 
             Spacer(modifier = Modifier.width(4.dp))
 
@@ -196,24 +185,12 @@ fun PollMessageContentView(
 
         //Description
         poll.description?.let {
-            if (useMD) {
-                Markdown(
-                    content = poll.description,
-                    colors = DefaultMarkdownColors(
-                        text = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        inlineCodeBackground = MaterialTheme.colorScheme.error,
-                        dividerColor = MaterialTheme.colorScheme.onPrimary,
-                        tableBackground = MaterialTheme.colorScheme.onSurface,
-                        codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                )
-            } else {
-                Text(
-                    text = poll.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            ComboText(
+                text = poll.description,
+                useMD = useMD,
+                textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium
+            )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
@@ -339,12 +316,13 @@ fun PollVoterOverviewDialog(
     onDismiss: () -> Unit
 ) {
     val pictureManager = koinInject<PictureManager>()
+    val annotationSources = rememberComboAnnotationSources()
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = poll.title,
+                text = resolveComboAnnotationsToPlainText(poll.title, annotationSources),
                 style = MaterialTheme.typography.titleLarge
             )
         },
@@ -359,7 +337,7 @@ fun PollVoterOverviewDialog(
 
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
-                            text = option.text,
+                            text = resolveComboAnnotationsToPlainText(option.text, annotationSources),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -417,7 +395,7 @@ fun CustomPollOptionDialog(
     onDismiss: () -> Unit,
     onSubmit: (String) -> Unit
 ) {
-    var customOptionText by remember { mutableStateOf("") }
+    var customOptionText by remember { mutableStateOf(TextFieldValue("")) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -428,7 +406,7 @@ fun CustomPollOptionDialog(
             )
         },
         text = {
-            OutlinedTextField(
+            ComboInputField(
                 value = customOptionText,
                 onValueChange = { customOptionText = it },
                 label = { Text(stringResource(Res.string.poll_answer_label)) },
@@ -440,11 +418,11 @@ fun CustomPollOptionDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (customOptionText.isNotBlank()) {
-                        onSubmit(customOptionText.trim())
+                    if (customOptionText.text.isNotBlank()) {
+                        onSubmit(customOptionText.text.trim())
                     }
                 },
-                enabled = customOptionText.isNotBlank()
+                enabled = customOptionText.text.isNotBlank()
             ) {
                 Text(stringResource(Res.string.add))
             }
@@ -538,48 +516,22 @@ fun PollMessageOptionView(
                                 tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
 
-                            if (useMD) {
-                                Markdown(
-                                    content = option.text,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = DefaultMarkdownColors(
-                                        text = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        inlineCodeBackground = MaterialTheme.colorScheme.error,
-                                        dividerColor = MaterialTheme.colorScheme.onPrimary,
-                                        tableBackground = MaterialTheme.colorScheme.onSurface,
-                                        codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                )
-                            } else {
-                                Text(
-                                    text = option.text,
-                                    color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 4,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            }
+                            ComboText(
+                                text = option.text,
+                                useMD = useMD,
+                                textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 4,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
                     } else {
-                        if (useMD) {
-                            Markdown(
-                                content = option.text,
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = DefaultMarkdownColors(
-                                    text = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    inlineCodeBackground = MaterialTheme.colorScheme.error,
-                                    dividerColor = MaterialTheme.colorScheme.onPrimary,
-                                    tableBackground = MaterialTheme.colorScheme.onSurface,
-                                    codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            )
-                        } else {
-                            Text(
-                                text = option.text,
-                                color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 4,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
+                        ComboText(
+                            text = option.text,
+                            useMD = useMD,
+                            textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 4,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
                 }
 
