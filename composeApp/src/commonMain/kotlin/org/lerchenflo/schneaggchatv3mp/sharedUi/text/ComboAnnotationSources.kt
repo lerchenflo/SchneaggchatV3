@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatformTools
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 
 /**
@@ -24,11 +25,18 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
     // getOrNull keeps @Previews (no Koin context) working — they just render raw text
     val koin = KoinPlatformTools.defaultContext().getOrNull() ?: return emptyList()
     val mapRepository = remember(koin) { koin.get<MapRepository>() }
+    val userRepository = remember(koin) { koin.get<UserRepository>() }
+
     val navigator = remember(koin) { koin.get<Navigator>() }
     val scope = rememberCoroutineScope()
 
     val locationNames by remember(mapRepository) {
         mapRepository.getAllMapEntriesFlow()
+            .map { entries -> entries.associate { it.id to it.name } }
+    }.collectAsState(initial = emptyMap())
+
+    val userNames by remember(userRepository) {
+        userRepository.getAllUsersFlow()
             .map { entries -> entries.associate { it.id to it.name } }
     }.collectAsState(initial = emptyMap())
 
@@ -39,6 +47,13 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
                 names = locationNames,
                 onClick = { entryId ->
                     scope.launch { navigator.navigate(Route.Schneaggmap(initialEntryId = entryId)) }
+                }
+            ),
+            ComboAnnotationSource(
+                type = ComboAnnotationTypes.USER,
+                names = userNames,
+                onClick = { entryId ->
+                    scope.launch { navigator.navigate(Route.Chat(entryId, false)) }
                 }
             )
         )

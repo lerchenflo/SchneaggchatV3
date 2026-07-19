@@ -30,7 +30,7 @@ class ComboAnnotationType(
 
 object ComboAnnotationTypes {
     val MAP_LOCATION = ComboAnnotationType(key = "map/location", displayPrefix = "📍")
-    // Future: val USER = ComboAnnotationType(key = "user", displayPrefix = "@")
+    val USER = ComboAnnotationType(key = "user", displayPrefix = "@")
 }
 
 /**
