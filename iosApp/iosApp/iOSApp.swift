@@ -99,22 +99,22 @@ struct iOSApp: App {
 
     private func handleIncomingShare() {
         let suiteName = "group.org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtension"
-        logger.info("DEBUG: App side suite name: \(suiteName, privacy: .public)")
+        //logger.info("DEBUG: App side suite name: \(suiteName, privacy: .public)")
 
         guard let userDefaults = UserDefaults(suiteName: suiteName) else {
-            logger.info("DEBUG: App side - UserDefaults suite is NIL")
+            //logger.info("DEBUG: App side - UserDefaults suite is NIL")
             return
         }
 
         if let containerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: suiteName) {
-            logger.info("DEBUG: App side container URL: \(containerURL.path, privacy: .public)")
+            //logger.info("DEBUG: App side container URL: \(containerURL.path, privacy: .public)")
         } else {
-            logger.error("DEBUG: App side container URL is NIL (App Group is invalid/not provisioned correctly)")
+            //logger.error("DEBUG: App side container URL is NIL (App Group is invalid/not provisioned correctly)")
         }
 
         userDefaults.synchronize()
         if let sharedText = userDefaults.string(forKey: "sharedTextKey") {
-            logger.info("DEBUG: App side - Found data immediately: \(sharedText, privacy: .public)")
+            //logger.info("DEBUG: App side - Found data immediately: \(sharedText, privacy: .public)")
             IncomingDataManager.shared.updateText(text: sharedText)
             userDefaults.removeObject(forKey: "sharedTextKey")
             userDefaults.synchronize()
@@ -156,7 +156,7 @@ struct iOSApp: App {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [self] in
             userDefaults.synchronize()
             if let sharedText = userDefaults.string(forKey: "sharedTextKey") {
-                logger.info("DEBUG: App side - Found data after delay: \(sharedText, privacy: .public)")
+                //logger.info("DEBUG: App side - Found data after delay: \(sharedText, privacy: .public)")
                 IncomingDataManager.shared.updateText(text: sharedText)
                 userDefaults.removeObject(forKey: "sharedTextKey")
                 userDefaults.synchronize()
@@ -189,7 +189,7 @@ struct iOSApp: App {
                 userDefaults.removeObject(forKey: "sharedImageKeys")
                 userDefaults.synchronize()
             } else {
-                logger.info("DEBUG: App side - No data found for key 'sharedTextKey'")
+                //logger.info("DEBUG: App side - No data found for key 'sharedTextKey'")
             }
         }
     }

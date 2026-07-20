@@ -107,6 +107,7 @@ import org.maplibre.compose.expressions.value.LineJoin
 import org.maplibre.compose.layers.CircleLayer
 import org.maplibre.compose.layers.LineLayer
 import org.maplibre.compose.layers.SymbolLayer
+import org.maplibre.compose.location.DesiredAccuracy
 import org.maplibre.compose.location.Location
 import org.maplibre.compose.location.rememberDefaultLocationProvider
 import org.maplibre.compose.location.rememberNullLocationProvider
@@ -277,7 +278,7 @@ fun SchneaggmapScreen(
     //Own position, resolved once here (not in SchneaggmapMapContent) so we don't open a second,
     //redundant GPS subscription just to also show the speed readout below.
     val locationProvider = if (state.locationPermissionGranted) {
-        rememberDefaultLocationProvider()
+        rememberDefaultLocationProvider(desiredAccuracy = DesiredAccuracy.Highest)
     } else {
         rememberNullLocationProvider()
     }
