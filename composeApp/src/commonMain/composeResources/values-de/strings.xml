@@ -755,6 +755,7 @@
 
     <!-- Changelog Popup -->
     <string name="changelog_whats_new">Neuigkeiten</string>
+    <string name="changelog_highlights">Highlights</string>
     <string name="changelog_announcements">Neuigkeiten</string>
     <string name="changelog_version">Version %1$s</string>
     <string name="changelog_features">Features</string>

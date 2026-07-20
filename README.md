@@ -18,6 +18,9 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 ### 3.0.14
 
+#### Highlights
+- Roadmap jetzt in der App einsehbar
+
 #### Features
 - Roadmap in den Misc Einstellungen mit Github issues
 

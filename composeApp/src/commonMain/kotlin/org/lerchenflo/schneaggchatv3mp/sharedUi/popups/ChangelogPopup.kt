@@ -50,6 +50,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.changelog_announcements
 import schneaggchatv3mp.composeapp.generated.resources.changelog_bug_fixes
 import schneaggchatv3mp.composeapp.generated.resources.changelog_features
+import schneaggchatv3mp.composeapp.generated.resources.changelog_highlights
 import schneaggchatv3mp.composeapp.generated.resources.changelog_got_it
 import schneaggchatv3mp.composeapp.generated.resources.changelog_no_details
 import schneaggchatv3mp.composeapp.generated.resources.changelog_version
@@ -146,6 +147,23 @@ fun ChangelogPopup(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
 
+                        if (content.highlights.isNotEmpty()) {
+                            ChangelogSection(
+                                title = stringResource(Res.string.changelog_highlights),
+                                icon = Icons.Default.Star,
+                                iconTint = MaterialTheme.colorScheme.tertiary,
+                                items = content.highlights
+                            )
+                        }
+
+                        if (content.highlights.isNotEmpty() && (content.announcements.isNotEmpty() || content.features.isNotEmpty() || content.bugfixes.isNotEmpty())) {
+                            HorizontalDivider(
+                                Modifier,
+                                DividerDefaults.Thickness,
+                                color = MaterialTheme.colorScheme.outlineVariant
+                            )
+                        }
+
                         if (content.announcements.isNotEmpty()) {
                             ChangelogSection(
                                 title = stringResource(Res.string.changelog_announcements),
@@ -189,7 +207,7 @@ fun ChangelogPopup(
                             )
                         }
 
-                        if (content.features.isEmpty() && content.bugfixes.isEmpty()) {
+                        if (content.highlights.isEmpty() && content.features.isEmpty() && content.bugfixes.isEmpty()) {
                             Text(
                                 text = stringResource(Res.string.changelog_no_details),
                                 style = MaterialTheme.typography.bodyMedium,
@@ -277,6 +295,9 @@ private fun ChangelogPopupPreview() {
             onDismiss = {},
             content = ChangelogEntry(
                 version = "3.0.6",
+                highlights = listOf(
+                    "Roadmap jetzt in der App einsehbar"
+                ),
                 features = listOf(
                     "Show birthdate of others"
                 ),
