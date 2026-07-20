@@ -7,7 +7,9 @@
     <string name="settings">settings</string>
     <string name="tools_and_games">tools and games</string>
     <string name="filter">filter</string>
-    <string name="search_friend">search your Friends ...</string>
+    <string name="search_friend">search chats and messages ...</string>
+    <string name="search_section_chats">Chats</string>
+    <string name="search_section_messages">Messages (%1$d)</string>
     <string name="no_status">no status</string>
     <string name="unknown_user">unknown user</string>
     <string name="chat_last_seen_status">last seen %1$s</string>
@@ -119,6 +121,7 @@
     <string name="app_broken_desc">Will fix most of the errors</string>
     <string name="app_broken_are_you_sure">This will delete the local database and fetch all data from the server again.\nAre you sure you want to continue?</string>
     <string name="please_restart_app">Please restart the app</string>
+    <string name="verification_email_sent">Verification email sent</string>
     <string name="others_say_about">others wrote about %1$s:</string>
     <string name="status_info">This Text is written by the user himself</string>
     <string name="description_info_user">All friends of %1$s can edit this text, but %1$s cannot.</string>
@@ -175,8 +178,8 @@
     <string name="group_picture">group picture</string>
     <string name="group_name">group name</string>
     <string name="group_description">group description</string>
-    <string name="user_description">Userbeschreibung</string>
-    <string name="leave_group">leave Group</string>
+    <string name="user_description">user description</string>
+    <string name="leave_group">leave group</string>
     <string name="add_users_to_group">add users</string>
     <string name="member_since">member since %1$s</string>
     <string name="change_group_name">Change the name of this Group</string>
@@ -191,7 +194,7 @@
 
     <string name="steps_until_developer">in %1$s steps you are a developer</string>
     <string name="you_are_now_developer">you are now a developer</string>
-    <string name="you_are_already_developer">you are already are a developer</string>
+    <string name="you_are_already_developer">you are already a developer</string>
     <string name="developer_setting_info">Be careful with the developer settings. Make sure you know what you are doing.</string>
 
     <string name="misc_settings">Misc</string>
@@ -226,8 +229,9 @@
     <string name="schneaggmap_settings_info">Change your map settings</string>
     <string name="merge_map_locations">Merge locations when zooming</string>
     <string name="merge_map_locations_info">Group nearby locations into one marker when zoomed out</string>
+    <string name="merge_map_users">Merge friends when zooming</string>
+    <string name="merge_map_users_info">Group nearby friends into one marker when zoomed out</string>
     <string name="schneaggmap_map_style">Map style</string>
-    <string name="schneaggmap_map_style_info">Choose the map's appearance</string>
     <string name="map_style_liberty">Liberty</string>
     <string name="map_style_bright">Bright</string>
     <string name="map_style_positron">Positron</string>
@@ -514,6 +518,10 @@
     <string name="poll_settings_infinite_custom_answers_warning">WARNING: Users will be able to create infinite custom answers!</string>
     <string name="poll_settings_infinite_custom_and_selected_answers_warning">WARNING: Users will be able to create and select unlimited answers!</string>
 
+    <string name="poll_settings_limitperentry">Limit users per entry</string>
+    <string name="poll_settings_limitperentry_info">Set a maximum number of users who can vote for each entry (useful for bring lists)</string>
+    <string name="poll_option_maxvoters_withcount">Max %1$s users for this entry</string>
+
     <string name="poll_visibility_title">Visibility: %1$s</string>
 
     <string name="poll_visibility_public">public (Everyone can see who voted where)</string>
@@ -552,6 +560,10 @@
     <string name="poll_answer_summary">%1$s votes from %2$s users</string>
 
     <string name="poll_show_answers">show answers</string>
+
+    <string name="poll_option_claimed_count">%1$s/%2$s</string>
+    <string name="poll_option_full">full</string>
+    <string name="poll_haslimitedentries_info">Some entries have a limited number of voters</string>
 
 
 
@@ -809,6 +821,13 @@
     <string name="game_over_final_time">Time: %1$s</string>
     <string name="game_restart">Restart</string>
     <string name="show_highscores">Show highscores</string>
+    <string name="global_ranking_title">Overall ranking</string>
+    <string name="global_ranking_explanation">Points over all games and difficulties</string>
+    <string name="global_ranking_error">Could not load the ranking</string>
+    <string name="global_ranking_empty">Nobody has played yet</string>
+    <string name="global_ranking_points">%1$d pts</string>
+    <string name="global_ranking_boards">%1$d boards · %2$d games</string>
+    <string name="show_global_ranking">Show overall ranking</string>
     <string name="difficulty">Difficulty</string>
     <string name="difficulty_low">Low</string>
     <string name="difficulty_medium">Medium</string>
@@ -822,8 +841,9 @@
     <string name="morse_challenge_type_text">Type the text in morse code:</string>
 
     <!-- Location Groups -->
-    <string name="location_group_street">Street</string>
+    <string name="location_group_driving">Driving</string>
     <string name="location_group_nature_activities">Nature &amp; Activities</string>
+    <string name="location_group_sport">Sport</string>
     <string name="location_group_social_entertainment">Social &amp; Entertainment</string>
     <string name="location_group_food">Food</string>
 
@@ -832,9 +852,15 @@
     <string name="location_type_police">Police</string>
     <string name="location_type_mountain_street">Mountain Street</string>
     <string name="location_type_wheeliespot">Wheelie Spot</string>
+    <string name="location_type_offroad_motorcycle">Offroad Motorcycle</string>
     <string name="location_type_viewpoint">Viewpoint</string>
     <string name="location_type_camping">Camping</string>
     <string name="location_type_swimming">Swimming</string>
+    <string name="location_type_volleyball">Volleyball</string>
+    <string name="location_type_bicycle">Bicycle Trail</string>
+    <string name="location_type_outdoor_fitness">Outdoor Fitness</string>
+    <string name="location_type_table_tennis">Table Tennis</string>
+    <string name="location_type_tennis">Tennis</string>
     <string name="location_type_sightseeing">Sightseeing</string>
     <string name="location_type_party">Party</string>
     <string name="location_type_food_kebab">Kebab</string>
@@ -860,6 +886,12 @@
 
     <!-- Wheelie Spot -->
     <string name="location_wheeliespot_only_on_weekends">Only on Weekends</string>
+    <string name="location_legal">Legal</string>
+    <string name="location_offroad_motocross">Motocross</string>
+    <string name="location_offroad_enduro">Enduro</string>
+    <string name="location_bicycle_difficulty">Difficulty (1-10)</string>
+    <string name="location_bicycle_underground_type">Underground Type</string>
+    <string name="location_lie_down_friendly">Good for Lying Down</string>
 
     <!-- Camping -->
     <string name="location_camping_official">Official</string>
@@ -870,6 +902,20 @@
     <!-- Swimming -->
     <string name="location_swimming_indoor">Indoor</string>
     <string name="location_swimming_jump_spot">Jump Spot</string>
+
+    <!-- Volleyball -->
+    <string name="location_volleyball_good_net">Good Net</string>
+    <string name="location_volleyball_good_field">Good Field</string>
+    <string name="location_volleyball_outdoor">Outdoor</string>
+
+    <!-- Outdoor Fitness -->
+    <string name="location_outdoor_fitness_shadow">Shadow</string>
+
+    <!-- Table Tennis -->
+    <string name="location_table_tennis_private">Private</string>
+
+    <!-- Tennis -->
+    <string name="location_tennis_paddle">Paddle</string>
 
     <!-- Sightseeing & Party -->
     <string name="location_sightseeing_entry_fee">Entry Fee</string>

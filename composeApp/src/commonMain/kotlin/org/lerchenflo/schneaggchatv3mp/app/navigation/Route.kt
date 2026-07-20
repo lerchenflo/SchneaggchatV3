@@ -7,101 +7,98 @@ sealed interface Route : NavKey {
 
     // Chat - Feature
     @Serializable
-    data object ChatSelector: Route, NavKey
+    data object ChatSelector: Route
     @Serializable
-    data object MessageChatSelector: Route, NavKey
+    data object MessageChatSelector: Route
     @Serializable
-    data object Chat: Route, NavKey
+    data class Chat(val chatId: String, val isGroup: Boolean, val highlightMessageId: String? = null): Route
     @Serializable
-    data object NewChat: Route, NavKey
+    data object NewChat: Route
     @Serializable
-    data object GroupCreator: Route, NavKey
+    data object GroupCreator: Route
     @Serializable
-    data object AutoLoginCredChecker: Route, NavKey
+    data object AutoLoginCredChecker: Route
 
     @Serializable
-    data object Login: Route, NavKey
+    data object Login: Route
     @Serializable
-    data object SignUp: Route, NavKey
+    data object SignUp: Route
     @Serializable
-    data object EmailVerifiedCheck: Route, NavKey
-
-
-    @Serializable
-    data object ChatDetails: Route, NavKey
-
-    @Serializable
-    data object Schneaggmap: Route, NavKey
+    data object EmailVerifiedCheck: Route
 
 
     @Serializable
-    data object Settings: Route, NavKey {
+    data class ChatDetails(val chatId: String, val isGroup: Boolean): Route
+
+    @Serializable
+    data class Schneaggmap(val initialEntryId: String? = null): Route
+
+
+    @Serializable
+    data object Settings: Route {
         @Serializable
-        data object SettingsScreen: Route, NavKey
-
-        @Serializable
-        data object DeveloperSettings: Route, NavKey
+        data object SettingsScreen: Route
 
         @Serializable
-        data object UserSettings: Route, NavKey
+        data object DeveloperSettings: Route
 
         @Serializable
-        data object AppearanceSettings: Route, NavKey
+        data object UserSettings: Route
 
         @Serializable
-        data object MiscSettings: Route, NavKey
+        data object AppearanceSettings: Route
 
         @Serializable
-        data object SchneaggmapSettings: Route, NavKey
+        data object MiscSettings: Route
 
         @Serializable
-        data object Roadmap: Route, NavKey
+        data object SchneaggmapSettings: Route
+
+        @Serializable
+        data object Roadmap: Route
     }
 
 
     @Serializable
-    data object Games: Route, NavKey {
+    data object Games: Route {
         @Serializable
-        data object GamesSelector: Route, NavKey
+        data object GamesSelector: Route
 
         @Serializable
-        data object DartCounter: Route, NavKey
+        data object DartCounter: Route
 
         @Serializable
-        data object Undercover: Route, NavKey
+        data object Undercover: Route
 
         @Serializable
-        data object TowerStack: Route, NavKey
+        data object TowerStack: Route
 
         @Serializable
-        data object YatziSetup: Route, NavKey
+        data object Yatzi: Route
 
         @Serializable
-        data object YatziGame: Route, NavKey
+        data object Tetris: Route
 
         @Serializable
-        data object Tetris: Route, NavKey
+        data object Morse: Route
 
         @Serializable
-        data object Morse: Route, NavKey
+        data object SchneaggaHus: Route
 
         @Serializable
-        data object SchneaggaHus: Route, NavKey
+        data object GridRush: Route
 
         @Serializable
-        data object GridRush: Route, NavKey
+        data object OddOneOut: Route
 
         @Serializable
-        data object OddOneOut: Route, NavKey
+        data object Recap: Route
 
         @Serializable
-        data object Recap: Route, NavKey
+        data object CoinFlip: Route
 
         @Serializable
-        data object CoinFlip: Route, NavKey
-
-        @Serializable
-        data object FingerPicker: Route, NavKey
+        data object FingerPicker: Route
     }
 }
 

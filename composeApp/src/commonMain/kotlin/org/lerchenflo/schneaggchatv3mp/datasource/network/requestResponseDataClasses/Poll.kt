@@ -31,7 +31,8 @@ fun PollResponse.toPollMessage(ownId: String): PollMessage {
                             userId = voter.userId,
                             votedAt = voter.votedAt
                         )
-                    }
+                    },
+                    maxVoters = option.maxVoters
                 )
             }
             is PollResponse.AnonymousPollResponse -> this.voteOptions.map { option ->
@@ -45,7 +46,8 @@ fun PollResponse.toPollMessage(ownId: String): PollMessage {
                             userId = if (voter.myAnswer) ownId else null, // Anonymous — no userId
                             votedAt = voter.votedAt
                         )
-                    }
+                    },
+                    maxVoters = option.maxVoters
                 )
             }
             else -> emptyList()
@@ -112,7 +114,8 @@ interface PollResponse {
 data class AnonymousPollVoteOptionResponse(
     val id: String,
     val text: String,
-    val voters : List<AnonymousPollVoterResponse>
+    val voters : List<AnonymousPollVoterResponse>,
+    val maxVoters: Int? = null,
 )
 
 @Serializable
@@ -129,7 +132,8 @@ data class PublicPollVoteOptionResponse(
     val text: String,
     val custom: Boolean,
     val creatorId: String,
-    val voters : List<PublicPollVoterResponse>
+    val voters : List<PublicPollVoterResponse>,
+    val maxVoters: Int? = null,
 )
 
 @Serializable

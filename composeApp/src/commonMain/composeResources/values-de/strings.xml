@@ -226,7 +226,6 @@
     <string name="merge_map_locations">Orte beim Zoomen zusammenführen</string>
     <string name="merge_map_locations_info">Orte mit wenig Abstand werden beim Zoomen zu einem Ort zusammengefügt</string>
     <string name="schneaggmap_map_style">Mapdesign</string>
-    <string name="schneaggmap_map_style_info">Verschiedene Maptypen auswählen</string>
     <string name="map_style_liberty">Liberty</string>
     <string name="map_style_bright">Hell</string>
     <string name="map_style_positron">Positron</string>
@@ -811,7 +810,7 @@
     <string name="morse_challenge_type_text">Tippe den Text in Morsecode:</string>
 
     <!-- Location Groups -->
-    <string name="location_group_street">Straße</string>
+    <string name="location_group_driving">Fahren</string>
     <string name="location_group_nature_activities">Natur &amp; Aktivitäten</string>
     <string name="location_group_social_entertainment">Sozial &amp; Unterhaltung</string>
     <string name="location_group_food">Essen</string>

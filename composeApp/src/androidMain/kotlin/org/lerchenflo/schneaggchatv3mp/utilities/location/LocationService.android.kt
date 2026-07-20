@@ -40,6 +40,7 @@ actual class LocationService(private val context: Context) {
                 Priority.PRIORITY_HIGH_ACCURACY,   // or keep BALANCED if battery matters more
                 5_000L
             )
+                .setMinUpdateDistanceMeters(20f)
                 .build()
 
             // emit cached location immediately so the flow isn't empty at start

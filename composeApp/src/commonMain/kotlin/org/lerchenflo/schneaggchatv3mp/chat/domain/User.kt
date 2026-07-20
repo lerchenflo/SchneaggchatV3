@@ -7,21 +7,21 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Instant
 
 data class User(
-    override val id: String,
+    val id: String,
     val lastChanged: Long = 0L,
-    override val name: String = "",
+    val name: String = "",
     val nickName: String? = null,
-    override val description: String?,
-    override val status: String?,
+    val description: String?,
+    val status: String?,
     val location: UserLocation? = null,
     val locationShared: Boolean = false,
     // Per-friend advanced-location settings (what we share TOWARDS this friend)
     val shareSpeedHeading: Boolean = false,
     val snailTrail: Boolean = false,
     val wakeupEnabled: Boolean = false,
-    override val profilePictureUrl: String = "",
-    override val friendshipStatus: NetworkUtils.FriendshipStatus?,
-    override val requesterId: String? = null,
+    val profilePictureUrl: String = "",
+    val friendshipStatus: NetworkUtils.FriendshipStatus?,
+    val requesterId: String? = null,
     val notisMuted: Boolean = false,
     // Epoch millis this friend was last seen online, null if unknown/never. Not to be confused
     // with "online right now", which lives in UserRepository.onlineFriendIdsFlow and is never
@@ -35,16 +35,7 @@ data class User(
     val createdAt: Long?,
 
     val profilePicUpdatedAt: Long,
-
-    //Not in db
-    override val unreadMessageCount: Int = 0,
-    override val unsentMessageCount: Int = 0,
-    override val lastmessage: Message? = null,
-    override val pinned: Long = 0L,
-) : SelectedChat {
-    override val isGroup: Boolean
-        get() = false
-
+) {
     fun isEmailVerified() : Boolean {
         return emailVerifiedAt != null
     }
@@ -56,7 +47,7 @@ data class User(
 
     }
 
-    override val displayName: String get() = nickName?.takeIf { it.isNotBlank() } ?: name
+    val displayName: String get() = nickName?.takeIf { it.isNotBlank() } ?: name
 
     override fun toString(): String {
         return """
@@ -81,11 +72,6 @@ data class User(
             email=$email,
             emailVerifiedAt=$emailVerifiedAt,
             createdAt=$createdAt,
-            unreadMessageCount=$unreadMessageCount,
-            unsentMessageCount=$unsentMessageCount,
-            lastmessage=$lastmessage,
-            isGroup=$isGroup,
-            pinned=$pinned,
         )
     """.trimIndent()
     }

@@ -2,9 +2,11 @@ package org.lerchenflo.schneaggchatv3mp.di
 
 import io.ktor.client.HttpClient
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -19,14 +21,15 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChatViewMode
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
-import org.lerchenflo.schneaggchatv3mp.datasource.database.PlayerDao
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
+import org.lerchenflo.schneaggchatv3mp.games.data.PlayerRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
@@ -69,9 +72,6 @@ val sharedmodule = module{
     //Database
     single <AppDatabase> { CreateAppDatabase(get()).getDatabase() }
 
-    single <PlayerDao> { get<AppDatabase>().playerDao() } //TODO: Manu warum musch du inegrätscha und alles andersch macha
-
-
     singleOf(::TokenManager)
 
     //Network utils must be created before HttpClients to avoid circular dependency
@@ -98,6 +98,7 @@ val sharedmodule = module{
     singleOf(::LoggingRepository)
     singleOf(::MapRepository)
     singleOf(::GameHighscoreRepository)
+    singleOf(::PlayerRepository)
 
 
     // Socket Connection Manager
@@ -117,6 +118,9 @@ val sharedmodule = module{
     //Language
     singleOf(::LanguageService)
 
+    //App-wide coroutine scope for work that must survive screen/ViewModel lifecycles
+    singleOf(::ApplicationScope)
+
     //View model
     singleOf(::GlobalViewModel)
 
@@ -124,89 +128,71 @@ val sharedmodule = module{
     //Alle viewmodels mit factory für desktop
 
     viewModelOf(::ChatSelectorViewModel)
-    factory { ChatSelectorViewModel(get(), get(), get(), get(), get()) }
 
     viewModelOf(::ChatViewModel)
-    factory { ChatViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
 
     viewModelOf(::ChatDetailsViewmodel)
-    factory { ChatDetailsViewmodel(get(), get(), get(), get(), get(), get()) }
 
     viewModelOf(::NewChatViewModel)
-    factory { NewChatViewModel(get(), get(), get(),get(), get()) }
 
     viewModelOf(::GroupCreatorViewModel)
-    factory { GroupCreatorViewModel(get(), get(), get()) }
 
     viewModelOf(::EmailVerifiedCheckViewModel)
-    factory { EmailVerifiedCheckViewModel(get(), get(), get()) }
 
     viewModelOf(::LoginViewModel)
-    factory { LoginViewModel(get(), get(), get()) }
 
     viewModelOf(::SignUpViewModel)
-    factory { SignUpViewModel(get(), get(), get(), get()) }
 
-    viewModelOf(::SchneaggmapViewModel)
-    factory { SchneaggmapViewModel(get(), get(), get(), get(), get(), get(), get()) }
+    // Explicit lambda because the nullable initialEntryId can't be resolved by viewModelOf
+    viewModel { (initialEntryId: String?) ->
+        SchneaggmapViewModel(
+            navigator = get(),
+            mapRepository = get(),
+            appRepository = get(),
+            preferenceManager = get(),
+            locationService = get(),
+            userRepository = get(),
+            initialEntryId = initialEntryId
+        )
+    }
 
 
 
     //Settings
     viewModelOf(::SharedSettingsViewmodel)
-    factory { SharedSettingsViewmodel(get(), get(), get()) }
 
 
     viewModelOf(::SettingsViewModel)
-    factory { SettingsViewModel() } // factory -> new instance each injection
 
 
     viewModelOf(::DevSettingsViewModel)
-    factory { DevSettingsViewModel(get(), get()) }
     viewModelOf(::DartCounterViewModel)
-    factory { DartCounterViewModel() }
     viewModelOf(::TowerstackViewModel)
-    factory { TowerstackViewModel(get()) }
     viewModelOf(::UndercoverViewModel)
-    factory { UndercoverViewModel(get()) }
     viewModelOf(::YatziViewModel)
-    factory { YatziViewModel() }
     viewModelOf(::TetrisViewModel)
-    factory { TetrisViewModel(get()) }
     viewModelOf(::MorseViewModel)
-    factory { MorseViewModel(get()) }
     viewModelOf(::CoinFlipViewModel)
-    factory { CoinFlipViewModel() }
     viewModelOf(::FingerPickerViewModel)
-    factory { FingerPickerViewModel() }
 
     viewModelOf(::SchneaggaHusViewmodel)
-    factory { SchneaggaHusViewmodel(get()) }
 
     viewModelOf(::GridRushViewmodel)
-    factory { GridRushViewmodel(get()) }
 
     viewModelOf(::OddOneOutViewmodel)
-    factory { OddOneOutViewmodel(get()) }
 
     viewModelOf(::PlayerSelectorViewModel)
-    factory { PlayerSelectorViewModel(get(), get()) }
     viewModelOf(::RecapViewModel)
-    factory { RecapViewModel(get(), get(), get()) }
+    viewModelOf(::GameSelectorViewModel)
 
 
     viewModelOf(::UserSettingsViewModel)
-    factory { UserSettingsViewModel(get(), get(), get(), get()) }
 
     viewModelOf(::AppearanceSettingsViewModel)
-    factory { AppearanceSettingsViewModel(get(), get(), get()) }
 
     viewModelOf(::MiscSettingsViewModel)
-    factory { MiscSettingsViewModel(get(), get(), get(), get()) }
 
     viewModelOf(::SchneaggmapSettingsViewModel)
-    factory { SchneaggmapSettingsViewModel(get(), get(), get(), get()) }
 
     viewModelOf(::RoadmapViewModel)
-    factory { RoadmapViewModel(get()) }
 }

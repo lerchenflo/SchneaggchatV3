@@ -9,13 +9,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -24,8 +25,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+import kotlin.math.abs
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameHud
@@ -82,6 +85,16 @@ fun TetrisScreen(
                 onSoftDropEnd = { viewModel.setSoftDropping(false) }
             )
 
+            val nextPiece = state.nextPiece
+            if (nextPiece != null && state.isPlaying) {
+                NextPiecePreview(
+                    piece = nextPiece,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(8.dp)
+                )
+            }
+
             if (isStarted) {
                 GameHud(
                     score = state.score.toLong(),
@@ -123,6 +136,59 @@ fun TetrisScreen(
     }
 }
 
+private const val BOARD_COLUMNS = 10
+private const val BOARD_ROWS = 20
+
+/**
+ * Shows the piece that will spawn next. All pieces are drawn on the same
+ * 4-cell grid so they keep a consistent scale instead of the I piece
+ * appearing smaller than the O piece.
+ */
+@Composable
+private fun NextPiecePreview(
+    piece: Tetromino,
+    modifier: Modifier = Modifier,
+) {
+    Canvas(
+        modifier = modifier
+            .size(64.dp)
+            .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
+            .padding(6.dp)
+    ) {
+        val shape = piece.getShape()
+        val minRow = shape.minOf { it.first }
+        val maxRow = shape.maxOf { it.first }
+        val minCol = shape.minOf { it.second }
+        val maxCol = shape.maxOf { it.second }
+
+        val cell = minOf(size.width, size.height) / 4f
+        // Center the piece's bounding box inside the preview
+        val originX = (size.width - (maxCol - minCol + 1) * cell) / 2f
+        val originY = (size.height - (maxRow - minRow + 1) * cell) / 2f
+
+        shape.forEach { (rOffset, cOffset) ->
+            val topLeft = Offset(
+                originX + (cOffset - minCol) * cell,
+                originY + (rOffset - minRow) * cell
+            )
+            drawRect(
+                color = piece.color,
+                topLeft = topLeft,
+                size = Size(cell, cell)
+            )
+            drawRect(
+                color = Color.White.copy(alpha = 0.5f),
+                topLeft = topLeft,
+                size = Size(cell, cell),
+                style = Stroke(width = 1.dp.toPx())
+            )
+        }
+    }
+}
+
+/** Axis a drag gesture has committed to, so horizontal swipes never trigger the soft drop. */
+private enum class DragAxis { Undecided, Horizontal, Vertical }
+
 @Composable
 fun TetrisBoard(
     state: TetrisState,
@@ -135,15 +201,10 @@ fun TetrisBoard(
 ) {
     // Determine cell size based on screen width/height available
     // Tetris board is 10x20
-    
-    var dragAccumulator by remember { mutableStateOf(0f) }
-    var verticalDragAccumulator by remember { mutableStateOf(0f) }
-    val dragThreshold = 80f // Pixels to move one cell
-    val verticalDragThreshold = 40f // Pixels for vertical swipe detection
 
     Canvas(
         modifier = Modifier
-            .aspectRatio(10f / 20f)
+            .aspectRatio(BOARD_COLUMNS.toFloat() / BOARD_ROWS)
             .fillMaxSize()
             .background(Color.Black)
             .pointerInput(Unit) {
@@ -153,38 +214,72 @@ fun TetrisBoard(
                 )
             }
             .pointerInput(Unit) {
+                // One cell of travel moves the piece one cell, so it follows the
+                // finger like in the original Tetris app.
+                val cellWidth = (size.width.toFloat() / BOARD_COLUMNS).coerceAtLeast(1f)
+                // A gesture locks onto an axis once it has moved half a cell in a
+                // clear direction. Without this, the vertical drift of a left/right
+                // swipe would start the soft drop and speed the whole game up.
+                val axisLockThreshold = cellWidth / 2f
+
+                var horizontalAccumulator = 0f
+                var verticalAccumulator = 0f
+                var axis = DragAxis.Undecided
+
                 detectDragGestures(
-                    onDragStart = { 
-                        dragAccumulator = 0f
-                        verticalDragAccumulator = 0f
+                    onDragStart = {
+                        horizontalAccumulator = 0f
+                        verticalAccumulator = 0f
+                        axis = DragAxis.Undecided
                     },
-                    onDragEnd = { 
+                    onDragEnd = {
+                        onSoftDropEnd()
+                    },
+                    onDragCancel = {
+                        // Without this the soft drop would stay latched on and the
+                        // game would keep running at 10x speed.
                         onSoftDropEnd()
                     },
                     onDrag = { change, dragAmount ->
                         change.consume()
-                        dragAccumulator += dragAmount.x
-                        verticalDragAccumulator += dragAmount.y
-                        
-                        // Handle horizontal movement
-                        if (dragAccumulator > dragThreshold) {
-                            onMoveRight()
-                            dragAccumulator -= dragThreshold
-                        } else if (dragAccumulator < -dragThreshold) {
-                            onMoveLeft()
-                            dragAccumulator += dragThreshold
+                        horizontalAccumulator += dragAmount.x
+                        verticalAccumulator += dragAmount.y
+
+                        if (axis == DragAxis.Undecided) {
+                            val absHorizontal = abs(horizontalAccumulator)
+                            val absVertical = abs(verticalAccumulator)
+                            if (absHorizontal >= axisLockThreshold && absHorizontal > absVertical) {
+                                axis = DragAxis.Horizontal
+                                verticalAccumulator = 0f
+                            } else if (absVertical >= axisLockThreshold && absVertical > absHorizontal) {
+                                axis = DragAxis.Vertical
+                                horizontalAccumulator = 0f
+                            }
                         }
-                        
-                        // Handle vertical swipe down for soft drop
-                        if (verticalDragAccumulator > verticalDragThreshold) {
-                            onSoftDropStart()
+
+                        when (axis) {
+                            DragAxis.Horizontal -> {
+                                while (horizontalAccumulator >= cellWidth) {
+                                    onMoveRight()
+                                    horizontalAccumulator -= cellWidth
+                                }
+                                while (horizontalAccumulator <= -cellWidth) {
+                                    onMoveLeft()
+                                    horizontalAccumulator += cellWidth
+                                }
+                            }
+                            // Dragging back up above the start point releases the soft drop again
+                            DragAxis.Vertical -> {
+                                if (verticalAccumulator > 0f) onSoftDropStart() else onSoftDropEnd()
+                            }
+                            DragAxis.Undecided -> Unit
                         }
                     }
                 )
             }
     ) {
-        val cellWidth = size.width / 10
-        val cellHeight = size.height / 20
+        val cellWidth = size.width / BOARD_COLUMNS
+        val cellHeight = size.height / BOARD_ROWS
         
         // Draw Board
         state.board.forEachIndexed { rowIndex, row ->
@@ -216,8 +311,15 @@ fun TetrisBoard(
                 val drawCol = pCol + cOffset
 
                 if (drawRow >= 0) {
+                    // Lighter, washed-out version of the falling piece's color
+                    val ghostColor = lerp(piece.color, Color.White, 0.55f)
                     drawRect(
-                        color = piece.color.copy(alpha = 0.4f),
+                        color = ghostColor.copy(alpha = 0.35f),
+                        topLeft = Offset(drawCol * cellWidth, drawRow * cellHeight),
+                        size = Size(cellWidth, cellHeight)
+                    )
+                    drawRect(
+                        color = ghostColor.copy(alpha = 0.7f),
                         topLeft = Offset(drawCol * cellWidth, drawRow * cellHeight),
                         size = Size(cellWidth, cellHeight),
                         style = Stroke(width = 2.dp.toPx())

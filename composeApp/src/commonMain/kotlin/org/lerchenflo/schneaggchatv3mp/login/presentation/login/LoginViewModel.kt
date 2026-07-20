@@ -6,8 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import org.koin.mp.KoinPlatform
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -20,7 +19,8 @@ import schneaggchatv3mp.composeapp.generated.resources.server_not_reachable
 class LoginViewModel(
     private val appRepository: AppRepository,
     private val preferenceManager: Preferencemanager,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val applicationScope: ApplicationScope
 ): ViewModel() {
 
 
@@ -101,9 +101,8 @@ class LoginViewModel(
                     appRepository.login(username, password) { success ->
                         if (success) {
                             println("Login erfolgreich, triggering data sync")
-                            val globalViewModel = KoinPlatform.getKoin().get<GlobalViewModel>()
-                            globalViewModel.viewModelScope.launch {
-                                appRepository.dataSync()
+                            applicationScope.launch {
+                                appRepository.dataSync(reason = "loginSuccess")
                             }
                             viewModelScope.launch {
                                 navigator.navigate(Route.EmailVerifiedCheck, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))

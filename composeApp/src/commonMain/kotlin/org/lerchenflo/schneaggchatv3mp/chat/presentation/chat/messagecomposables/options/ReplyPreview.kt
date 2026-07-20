@@ -16,8 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.close
@@ -25,9 +24,10 @@ import schneaggchatv3mp.composeapp.generated.resources.close
 @Composable
 fun ReplyPreview(
     ownId: String,
-    //TODO: Remove viewmodel from this preview and pass replymessage etc
-    viewModel: ChatViewModel,
-    globalViewModel: GlobalViewModel
+    message: Message,
+    useMD: Boolean,
+    selectedChatId: String,
+    onDismiss: () -> Unit
 ){
 
 
@@ -46,7 +46,7 @@ fun ReplyPreview(
                 modifier = Modifier
                     //.wrapContentSize()
                     .background(
-                        color = if (viewModel.replyMessage!!.myMessage) {
+                        color = if (message.myMessage) {
                             MaterialTheme.colorScheme.primaryContainer.copy(alpha = alphaValue)
                         } else {
                             MaterialTheme.colorScheme.surfaceVariant.copy(alpha = alphaValue)
@@ -54,18 +54,17 @@ fun ReplyPreview(
                         shape = RoundedCornerShape(15.dp)
                     )
                     .padding(6.dp),
-                message = viewModel.replyMessage!!,
-                useMD = viewModel.markdownEnabled,
-                selectedChatId = globalViewModel.selectedChat.value.id,
-                senderColor = viewModel.replyMessage!!.senderColor,
+                message = message,
+                useMD = useMD,
+                mymessage = message.myMessage,
+                selectedChatId = selectedChatId,
+                senderColor = message.senderColor,
                 ownId = ownId,
             )
         }
         Column {
             IconButton(
-                onClick = {
-                    viewModel.updateReplyMessage(null)
-                },
+                onClick = onDismiss,
                 modifier = Modifier
             ) {
                 Icon(

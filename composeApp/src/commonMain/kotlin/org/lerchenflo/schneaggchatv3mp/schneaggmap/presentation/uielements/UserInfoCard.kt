@@ -129,7 +129,7 @@ fun UserInfoCard(
                 }
             }
 
-            //TODO: heading is available on user.location?.heading but intentionally not shown
+            //Note: heading is available on user.location?.heading but intentionally not shown
             // here - there's currently no good way to render it usefully (no compass/rotation
             // display), so it's left out of the popup for now.
             val onlineColor = MaterialTheme.colorScheme.primary

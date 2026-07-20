@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Blind
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PersonSearch
 import androidx.compose.material.icons.filled.Public
@@ -37,7 +38,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.RichTooltip
@@ -63,8 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mikepenz.markdown.m3.Markdown
-import com.mikepenz.markdown.model.DefaultMarkdownColors
+import androidx.compose.ui.text.input.TextFieldValue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -78,6 +77,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoter
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboInputField
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboText
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboAnnotationSources
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.resolveComboAnnotationsToPlainText
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToDuration
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -92,8 +95,11 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_answers_count
 import schneaggchatv3mp.composeapp.generated.resources.poll_closed
 import schneaggchatv3mp.composeapp.generated.resources.poll_customoption_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_ends_in
+import schneaggchatv3mp.composeapp.generated.resources.poll_haslimitedentries_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_maxoptions_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_oneoption_info
+import schneaggchatv3mp.composeapp.generated.resources.poll_option_claimed_count
+import schneaggchatv3mp.composeapp.generated.resources.poll_option_full
 import schneaggchatv3mp.composeapp.generated.resources.poll_private_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_public_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_show_answers
@@ -135,26 +141,13 @@ fun PollMessageContentView(
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (useMD) {
-                Markdown(
-                    content = poll.title,
-                    modifier = Modifier.weight(1f),
-                    colors = DefaultMarkdownColors(
-                        text = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        inlineCodeBackground = MaterialTheme.colorScheme.error,
-                        dividerColor = MaterialTheme.colorScheme.onPrimary,
-                        tableBackground = MaterialTheme.colorScheme.onSurface,
-                        codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                )
-            } else {
-                Text(
-                    text = poll.title,
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.weight(1f),
-                    color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            ComboText(
+                text = poll.title,
+                useMD = useMD,
+                textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f)
+            )
 
             Spacer(modifier = Modifier.width(4.dp))
 
@@ -192,24 +185,12 @@ fun PollMessageContentView(
 
         //Description
         poll.description?.let {
-            if (useMD) {
-                Markdown(
-                    content = poll.description,
-                    colors = DefaultMarkdownColors(
-                        text = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        inlineCodeBackground = MaterialTheme.colorScheme.error,
-                        dividerColor = MaterialTheme.colorScheme.onPrimary,
-                        tableBackground = MaterialTheme.colorScheme.onSurface,
-                        codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                )
-            } else {
-                Text(
-                    text = poll.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            ComboText(
+                text = poll.description,
+                useMD = useMD,
+                textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium
+            )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
@@ -223,6 +204,7 @@ fun PollMessageContentView(
                 votePercentage = option.voters.size.toFloat() / poll.getTotalVoteCount().toFloat(),
                 myMessage = myMessage,
                 voterIds = option.getVoterIdsForOption(),
+                full = poll.optionIsFull(option, ownId),
                 onOptionSelected = {
                     onAction(
                         MessageAction.VotePoll(
@@ -334,12 +316,13 @@ fun PollVoterOverviewDialog(
     onDismiss: () -> Unit
 ) {
     val pictureManager = koinInject<PictureManager>()
+    val annotationSources = rememberComboAnnotationSources()
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = poll.title,
+                text = resolveComboAnnotationsToPlainText(poll.title, annotationSources),
                 style = MaterialTheme.typography.titleLarge
             )
         },
@@ -354,7 +337,7 @@ fun PollVoterOverviewDialog(
 
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
-                            text = option.text,
+                            text = resolveComboAnnotationsToPlainText(option.text, annotationSources),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -412,7 +395,7 @@ fun CustomPollOptionDialog(
     onDismiss: () -> Unit,
     onSubmit: (String) -> Unit
 ) {
-    var customOptionText by remember { mutableStateOf("") }
+    var customOptionText by remember { mutableStateOf(TextFieldValue("")) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -423,7 +406,7 @@ fun CustomPollOptionDialog(
             )
         },
         text = {
-            OutlinedTextField(
+            ComboInputField(
                 value = customOptionText,
                 onValueChange = { customOptionText = it },
                 label = { Text(stringResource(Res.string.poll_answer_label)) },
@@ -435,11 +418,11 @@ fun CustomPollOptionDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (customOptionText.isNotBlank()) {
-                        onSubmit(customOptionText.trim())
+                    if (customOptionText.text.isNotBlank()) {
+                        onSubmit(customOptionText.text.trim())
                     }
                 },
-                enabled = customOptionText.isNotBlank()
+                enabled = customOptionText.text.isNotBlank()
             ) {
                 Text(stringResource(Res.string.add))
             }
@@ -461,15 +444,17 @@ fun PollMessageOptionView(
     myMessage: Boolean,
     voterIds: List<String?>,
     onOptionSelected: (Boolean) -> Unit,
+    full: Boolean = false,
     useMD: Boolean = false
 ) {
-    
+
     val optionCheckedByMe = option.voters.any { it.userId == ownId }
+    val selectable = optionCheckedByMe || !full
 
 
     Row(
         modifier = Modifier
-            .clickable { onOptionSelected(!optionCheckedByMe) },
+            .clickable(enabled = selectable) { onOptionSelected(!optionCheckedByMe) },
         verticalAlignment = Alignment.CenterVertically
     ) {
 
@@ -478,6 +463,7 @@ fun PollMessageOptionView(
             Checkbox(
                 checked = optionCheckedByMe,
                 onCheckedChange = { onOptionSelected(!optionCheckedByMe) },
+                enabled = selectable,
                 modifier = Modifier.size(24.dp),
                 colors = CheckboxDefaults.colors(
                     checkedColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
@@ -489,6 +475,7 @@ fun PollMessageOptionView(
             RadioButton(
                 selected = optionCheckedByMe,
                 onClick = { onOptionSelected(!optionCheckedByMe) },
+                enabled = selectable,
                 modifier = Modifier.size(24.dp),
                 colors = RadioButtonDefaults.colors(
                     selectedColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
@@ -529,48 +516,22 @@ fun PollMessageOptionView(
                                 tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                             )
 
-                            if (useMD) {
-                                Markdown(
-                                    content = option.text,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = DefaultMarkdownColors(
-                                        text = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        inlineCodeBackground = MaterialTheme.colorScheme.error,
-                                        dividerColor = MaterialTheme.colorScheme.onPrimary,
-                                        tableBackground = MaterialTheme.colorScheme.onSurface,
-                                        codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                )
-                            } else {
-                                Text(
-                                    text = option.text,
-                                    color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    maxLines = 4,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
-                            }
+                            ComboText(
+                                text = option.text,
+                                useMD = useMD,
+                                textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 4,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
                     } else {
-                        if (useMD) {
-                            Markdown(
-                                content = option.text,
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = DefaultMarkdownColors(
-                                    text = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    inlineCodeBackground = MaterialTheme.colorScheme.error,
-                                    dividerColor = MaterialTheme.colorScheme.onPrimary,
-                                    tableBackground = MaterialTheme.colorScheme.onSurface,
-                                    codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            )
-                        } else {
-                            Text(
-                                text = option.text,
-                                color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 4,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
+                        ComboText(
+                            text = option.text,
+                            useMD = useMD,
+                            textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 4,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
                 }
 
@@ -603,6 +564,27 @@ fun PollMessageOptionView(
                             text = "+$anonymousVoterCount",
                             fontSize = 12.sp,
                             color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+
+                    // Per-entry vote limit (claimed/max, or "full")
+                    option.maxVoters?.let { maxVoters ->
+                        Spacer(modifier = Modifier.width(4.dp))
+
+                        Text(
+                            text = if (full) {
+                                stringResource(Res.string.poll_option_full)
+                            } else {
+                                stringResource(Res.string.poll_option_claimed_count, option.voters.size.toString(), maxVoters.toString())
+                            },
+                            fontSize = 10.sp,
+                            color = if (full) {
+                                MaterialTheme.colorScheme.error
+                            } else if (myMessage) {
+                                MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            }
                         )
                     }
                 }
@@ -739,6 +721,16 @@ fun PollSmallInfoWindow(
                         )
                     }
                 }
+
+                // Per-entry vote limits
+                if (poll.voteOptions.any { it.maxVoters != null }) {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = "Limited entries",
+                        modifier = Modifier.size(12.dp),
+                        tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             poll.expiresAt?.let {
@@ -793,6 +785,14 @@ fun PollInfoTooltipContent(poll: PollMessage) {
                 PollVisibility.ANONYMOUS -> stringResource(Res.string.poll_anonymous_info)
             }
         )
+
+        // Per-entry vote limits
+        if (poll.voteOptions.any { it.maxVoters != null }) {
+            TooltipRow(
+                icon = Icons.Default.Lock,
+                text = stringResource(Res.string.poll_haslimitedentries_info)
+            )
+        }
 
         // Stats if available
         if (poll.getTotalVoteCount() > 0) {

@@ -25,7 +25,7 @@ import org.lerchenflo.schneaggchatv3mp.MIN_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.InputfieldState
@@ -42,8 +42,8 @@ data class GroupCreatorState(
 
     val profilepic : ByteArray?,
 
-    val availableUsers: List<SelectedChat>,
-    val selectedUsers: List<SelectedChat>,
+    val availableUsers: List<ChatListItem>,
+    val selectedUsers: List<ChatListItem>,
 
     val creationPermitted : Boolean
 
@@ -91,8 +91,8 @@ sealed interface GroupCreatorAction {
     data class updateGroupdescription(val newValue: String) : GroupCreatorAction
     data class updateProfilePic(val profilePicUri: GalleryPhotoResult) : GroupCreatorAction
 
-    data class addGroupMember(val member: SelectedChat) : GroupCreatorAction
-    data class removeGroupMember(val member: SelectedChat) : GroupCreatorAction
+    data class addGroupMember(val member: ChatListItem) : GroupCreatorAction
+    data class removeGroupMember(val member: ChatListItem) : GroupCreatorAction
 
     data object createGroup : GroupCreatorAction
     data object navigateBack: GroupCreatorAction
@@ -238,11 +238,14 @@ class GroupCreatorViewModel (
 
                 //Launch sync
                 CoroutineScope(Dispatchers.IO).launch {
-                    appRepository.dataSync()
+                    appRepository.dataSync(reason = "groupCreated")
                 }
 
-                //TODO: Navigate directly to group chat?
-                navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true))
+                //Navigate directly into the new group chat, keeping only the chat selector below it
+                navigator.navigate(
+                    Route.Chat(chatId = groupId, isGroup = true),
+                    navigationOptions = Navigator.NavigationOptions(removeAllExceptByRoute = Route.ChatSelector)
+                )
             }
 
 

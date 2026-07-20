@@ -51,11 +51,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.FriendRequestAlert
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.TooltipIconButton
@@ -117,7 +116,7 @@ fun ConfirmationDialog(
 fun GroupMembersView(
     ownId: String,
     members: List<GroupMemberWithUser>,
-    navigateToChat:(selectedChat: SelectedChat)-> Unit,
+    navigateToChat:(chatId: String, isGroup: Boolean)-> Unit,
     changeAdminStatus:(groupMember: GroupMember)-> Unit,
     removeMember: (memberId: String)-> Unit,
     sendFriendRequest:(id: String) -> Unit,
@@ -206,11 +205,7 @@ fun GroupMembersView(
                 user = user,
                 onDismissRequest = { userOptionPopupExpanded = false },
                 onOpenChat = {
-                    if(user != null) navigateToChat(user.toSelectedChat(
-                        unreadCount = 0,
-                        unsentCount = 0,
-                        lastMessage = null
-                    ))
+                    if(user != null) navigateToChat(user.id, false)
                 },
                 onAdminStatusChange = {
                     changeAdminStatus(groupMember)
@@ -254,11 +249,7 @@ fun CommonGroupsView(
                 profilePictureFilePath = group.profilePictureUrl,
                 name = group.name,
                 onClickText = {
-                    viewmodel.navigateToChat(group.toSelectedChat(
-                        unreadCount = 0,
-                        unsentCount = 0,
-                        lastMessage = null
-                    ))
+                    viewmodel.navigateToChat(group.id, true)
                 },
                 onClickImage = {
                     profilePictureDialogShown = true
@@ -452,16 +443,16 @@ fun UserOptionPopup(
 fun ChangeDescription(
     onDismiss: () -> Unit,
     descriptionText: TextFieldValue = TextFieldValue(""),
-    updateDescription:(selectedChat: SelectedChat) -> Unit = {},
+    updateDescription:() -> Unit = {},
     updateDescriptionText:(value: TextFieldValue) -> Unit = {},
-    selectedChat: SelectedChat,
+    currentDescription: String?,
     isGroup: Boolean
 ){
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current // Also helpful to hide keyboard
 
-    LaunchedEffect(selectedChat) {
-        updateDescriptionText(TextFieldValue(selectedChat.description ?: ""))
+    LaunchedEffect(currentDescription) {
+        updateDescriptionText(TextFieldValue(currentDescription ?: ""))
     }
 
     AlertDialog(
@@ -469,7 +460,7 @@ fun ChangeDescription(
         confirmButton = {
             TextButton(
                 onClick = {
-                    updateDescription(selectedChat)
+                    updateDescription()
                     onDismiss()
                 },
             ) {
@@ -591,13 +582,13 @@ fun DescriptionStatusRow(
 @Composable
 fun AddUserToGroupPopup(
     onDismiss: () -> Unit,
-    onSuccess: (List<SelectedChat>) -> Unit,
-    availableUsers: List<SelectedChat>,
-    selectedUsers: List<SelectedChat>,
+    onSuccess: (List<ChatListItem>) -> Unit,
+    availableUsers: List<ChatListItem>,
+    selectedUsers: List<ChatListItem>,
     searchterm: String,
     onSearchTermChange: (String) -> Unit,
-    onUserSelected: (SelectedChat) -> Unit,
-    onUserDeselected: (SelectedChat) -> Unit,
+    onUserSelected: (ChatListItem) -> Unit,
+    onUserDeselected: (ChatListItem) -> Unit,
 ) {
 
 

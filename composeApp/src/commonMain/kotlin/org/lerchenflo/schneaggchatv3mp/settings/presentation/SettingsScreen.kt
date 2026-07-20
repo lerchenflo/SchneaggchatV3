@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +37,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -55,10 +58,13 @@ import schneaggchatv3mp.composeapp.generated.resources.misc_settings
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_settings
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_settings_info
 import schneaggchatv3mp.composeapp.generated.resources.settings
+import schneaggchatv3mp.composeapp.generated.resources.steps_until_developer
 import schneaggchatv3mp.composeapp.generated.resources.user_settings
 import schneaggchatv3mp.composeapp.generated.resources.user_settingsinfo
 import schneaggchatv3mp.composeapp.generated.resources.user_since
 import schneaggchatv3mp.composeapp.generated.resources.version
+import schneaggchatv3mp.composeapp.generated.resources.you_are_already_developer
+import schneaggchatv3mp.composeapp.generated.resources.you_are_now_developer
 
 @Composable
 fun SettingsScreen(
@@ -206,7 +212,8 @@ fun SettingsScreen(
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
-        var openDevSettingsCounter by mutableIntStateOf(0)
+        var openDevSettingsCounter by remember { mutableIntStateOf(0) }
+        val scope = rememberCoroutineScope()
 
         Text(
             text = stringResource(Res.string.version, appRepository.appVersion.getVersionName()) + " Buildnr: " + appRepository.appVersion.getVersionCode(),
@@ -233,33 +240,43 @@ fun SettingsScreen(
                             openDevSettingsCounter++
 
                             when {
+                                // Nothing left to unlock — don't count them up again
+                                sharedSettingsViewmodel.devSettingsEnabled -> {
+                                    scope.launch {
+                                        SnackbarManager.showMessage(getString(Res.string.you_are_already_developer))
+                                    }
+                                    openDevSettingsCounter = 0
+                                }
+
                                 // Still counting down
                                 openDevSettingsCounter < requiredClicks -> {
                                     val stepsRemaining = requiredClicks - openDevSettingsCounter
 
                                     //Show popup after x clicks
                                     if (stepsRemaining < requiredClicks - 4) {
-                                        SnackbarManager.showMessage(
-                                            if (stepsRemaining == 1) {
-                                                "You are now 1 step away from being a developer"
-                                            } else {
-                                                "You are now $stepsRemaining steps away from being a developer"
-                                            }
-                                        )
+                                        scope.launch {
+                                            SnackbarManager.showMessage(
+                                                getString(
+                                                    Res.string.steps_until_developer,
+                                                    stepsRemaining.toString()
+                                                )
+                                            )
+                                        }
                                     }
                                 }
 
                                 // Exactly at the threshold - activate dev mode
                                 openDevSettingsCounter == requiredClicks -> {
-                                    SnackbarManager.showMessage("You are now a developer!")
+                                    scope.launch {
+                                        SnackbarManager.showMessage(getString(Res.string.you_are_now_developer))
+                                    }
                                     sharedSettingsViewmodel.updateDevSettings(true) // save in preferences
                                     openDevSettingsCounter = 0
                                     navigateDevSettings()
                                 }
 
-                                // Already a developer (shouldn't normally happen, but just in case)
+                                // Overshot the threshold (shouldn't normally happen, but just in case)
                                 else -> {
-                                    SnackbarManager.showMessage("You are already a developer")
                                     openDevSettingsCounter = 0
                                 }
                             }

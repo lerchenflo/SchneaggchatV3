@@ -20,7 +20,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.stringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -81,12 +80,14 @@ fun NewFriendUserButton(
 
             Text(
                 text = annotatedUsername,
+                style = MaterialTheme.typography.titleMedium
             )
 
             if (commonFriendCount != 0){
                 Text(
                     text = stringResource(Res.string.common_friends, commonFriendCount.toString()),
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 8.sp) //TODO Fabi: Eventuell die unterschiede zwüschat da textsizes kle größer macha es luagt alls glich us?
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 

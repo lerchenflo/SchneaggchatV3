@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
@@ -47,17 +48,17 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.chat.domain.UserChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.GROUPS
@@ -92,6 +93,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
@@ -123,6 +125,11 @@ import schneaggchatv3mp.composeapp.generated.resources.messagesync
 import schneaggchatv3mp.composeapp.generated.resources.usersync
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
+
+//Message search in the chat selector: how much the user has to type before the message table is
+//scanned, and how many hits are kept so a common word cannot build a list of thousands of rows.
+private const val MESSAGE_SEARCH_MIN_TERM_LENGTH = 2
+private const val MESSAGE_SEARCH_RESULT_LIMIT = 50
 
 class AppRepository(
     private val database: AppDatabase,
@@ -269,6 +276,7 @@ class AppRepository(
         SessionCache.logout() //Remove cached credentials (Userid)
         KoinPlatform.getKoin().get<Notifier>().removeToken() //Remove notification token
 
+        KoinPlatform.getKoin().get<SocketConnectionManager>().close() //Close socket connection
 
         SnackbarManager.showMessage(getString(Res.string.log_out_successfully))
     }
@@ -342,13 +350,18 @@ class AppRepository(
     private val _dataSyncState = MutableStateFlow(DataSyncState())
     val dataSyncState: StateFlow<DataSyncState> = _dataSyncState.asStateFlow()
 
-    suspend fun dataSync() {
+    /**
+     * @param reason short tag identifying what triggered this sync, logged so the origin of a
+     * sync run is visible. Keep it stable and call-site specific (e.g. "appResumed").
+     */
+    suspend fun dataSync(reason: String) {
 
         SessionCache.requireLoggedIn() ?: return
 
         if (dataSyncLock.isLocked) {
-            println("Datasync started but already running")
+            println("Datasync started but already running (reason: $reason)")
             dataSyncLock.withLock {  } //Awaiting finish and return to apply normal data sync await logic
+            return
         }
 
         dataSyncLock.withLock {
@@ -362,7 +375,7 @@ class AppRepository(
                     jobs = it.jobs.map { job -> job.copy(status = DataSyncJobStatus.IDLE, error = null) }
                 )
             }
-            println("Starting datasync")
+            println("Starting datasync (reason: $reason)")
 
             try {
                 coroutineScope {
@@ -491,7 +504,7 @@ class AppRepository(
                     }
                 }
 
-                println("Data sync finished")
+                println("Data sync finished, started from $reason")
             } finally {
                 _dataSyncState.update {
                     it.copy(
@@ -698,11 +711,13 @@ class AppRepository(
         return database.userDao().getUserbyId(userId)?.toUser()
     }
 
-    fun getPendingFriends(searchTerm: String): Flow<List<SelectedChat>> {
+    fun getPendingFriends(searchTerm: String): Flow<List<ChatListItem>> {
         return userRepository.getAllUsersFlow(searchTerm)
             .map { list ->
                 list.filter {
                     it.friendshipStatus == FriendshipStatus.PENDING
+                }.map { user ->
+                    user.toChatListItem()
                 }
             }
     }
@@ -712,7 +727,6 @@ class AppRepository(
         return userRepository.getAllUsers().filter {
             it.name.contains(searchTerm)
                     && it.friendshipStatus == FriendshipStatus.ACCEPTED
-                    && !it.isGroup
         }
     }
 
@@ -720,7 +734,6 @@ class AppRepository(
         return userRepository.getAllUsersFlow(searchTerm).map { users ->
             users.filter {
                 it.friendshipStatus == FriendshipStatus.ACCEPTED
-                        && !it.isGroup
             }
         }
     }
@@ -737,7 +750,7 @@ class AppRepository(
         searchTerm: String,
         userId: String,
         filter: ChatFilter = ChatFilter.NONE
-    ): Flow<List<SelectedChat>> {
+    ): Flow<List<ChatListItem>> {
         val messagesFlow = messageRepository.getAllMessages()
         val usersFlow = userRepository.getAllUsersFlow()
         val groupsFlow = groupRepository.getAllGroupswithMembersFlow()
@@ -796,7 +809,7 @@ class AppRepository(
                         if (!message.sent) unsentCount++
                     }
 
-                    user.toSelectedChat(
+                    user.toChatListItem(
                         unreadCount = unreadCount,
                         unsentCount = unsentCount,
                         lastMessage = last,
@@ -828,7 +841,7 @@ class AppRepository(
                         if (!message.sent) unsentCount++
                     }
 
-                    gwm.toSelectedChat(
+                    gwm.toChatListItem(
                         unreadCount = unreadCount,
                         unsentCount = unsentCount,
                         lastMessage = last,
@@ -846,12 +859,12 @@ class AppRepository(
                 ChatFilter.PERSONS -> allItems.filter { !it.isGroup }
             }
 
-            //filtered.sortedByDescending { it.lastmessage?.getSendDateAsLong() ?: 0L }
+            //filtered.sortedByDescending { it.lastMessage?.getSendDateAsLong() ?: 0L }
             filtered.sortedWith { a, b ->
                 val aPinned = a.pinned > 0L
                 val bPinned = b.pinned > 0L
-                val aBirthday = (a as? UserChat)?.let { isBirthdayToday(it.birthDate) } == true
-                val bBirthday = (b as? UserChat)?.let { isBirthdayToday(it.birthDate) } == true
+                val aBirthday = isBirthdayToday(a.birthDate)
+                val bBirthday = isBirthdayToday(b.birthDate)
                 when {
                     // Tier 1: Both pinned -> newest pin first
                     aPinned && bPinned -> b.pinned.compareTo(a.pinned)
@@ -860,8 +873,8 @@ class AppRepository(
 
                     // Tier 2: Birthday today (users only) -> under pinned
                     aBirthday && bBirthday -> {
-                        val timeA = a.lastmessage?.getSendDateAsLong() ?: 0L
-                        val timeB = b.lastmessage?.getSendDateAsLong() ?: 0L
+                        val timeA = a.lastMessage?.getSendDateAsLong() ?: 0L
+                        val timeB = b.lastMessage?.getSendDateAsLong() ?: 0L
                         timeB.compareTo(timeA)
                     }
                     aBirthday -> -1
@@ -869,8 +882,8 @@ class AppRepository(
 
                     // Tier 3: Sort by last message date
                     else -> {
-                        val timeA = a.lastmessage?.getSendDateAsLong() ?: 0L
-                        val timeB = b.lastmessage?.getSendDateAsLong() ?: 0L
+                        val timeA = a.lastMessage?.getSendDateAsLong() ?: 0L
+                        val timeB = b.lastMessage?.getSendDateAsLong() ?: 0L
                         timeB.compareTo(timeA)
                     }
                 }
@@ -878,6 +891,86 @@ class AppRepository(
 
         }.flowOn(Dispatchers.Default)
     }
+
+
+    /**
+     * Messages whose text matches [searchTerm], newest first, for the message section of the chat
+     * selector search. Returns an empty flow for terms shorter than [MESSAGE_SEARCH_MIN_TERM_LENGTH]
+     * so typing a single character never scans the whole message table.
+     *
+     * Matches message text (which doubles as the caption of image/audio messages) plus poll title,
+     * description and vote options. Deleted messages are skipped - their content is a tombstone.
+     */
+    fun getMessageSearchFlow(
+        searchTerm: String,
+        userId: String
+    ): Flow<List<MessageSearchResult>> {
+        val loweredSearch = searchTerm.trim().lowercase()
+        if (loweredSearch.length < MESSAGE_SEARCH_MIN_TERM_LENGTH) return flowOf(emptyList())
+
+        val messagesFlow = messageRepository.getAllMessages()
+        val usersFlow = userRepository.getAllUsersFlow()
+        val groupsFlow = groupRepository.getAllGroupswithMembersFlow()
+
+        return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
+            val userIdMap = users.associateBy { it.id }
+            val groupIdMap = groups.associateBy { it.id }
+
+            messages
+                .asSequence()
+                .filter { it.matchesSearchTerm(loweredSearch) }
+                .sortedByDescending { it.getSendDateAsLong() }
+                .take(MESSAGE_SEARCH_RESULT_LIMIT)
+                .mapNotNull { message ->
+                    val messageId = message.id ?: return@mapNotNull null
+
+                    //Resolve which chat this message belongs to: for groups that is always the
+                    //receiver, for direct messages it is whichever side is not us.
+                    val chatId: String
+                    val chatName: String
+                    val chatPicture: String
+                    if (message.isGroupMessage()) {
+                        chatId = message.receiverId
+                        val group = groupIdMap[chatId] ?: return@mapNotNull null
+                        chatName = group.name
+                        chatPicture = group.profilePictureUrl
+                    } else {
+                        chatId = if (message.senderId == userId) message.receiverId else message.senderId
+                        val partner = userIdMap[chatId] ?: return@mapNotNull null
+                        chatName = partner.nickName?.takeIf { it.isNotBlank() } ?: partner.name
+                        chatPicture = partner.profilePictureUrl
+                    }
+
+                    MessageSearchResult(
+                        messageId = messageId,
+                        chatId = chatId,
+                        isGroup = message.isGroupMessage(),
+                        chatName = chatName,
+                        chatProfilePictureUrl = chatPicture,
+                        senderName = userIdMap[message.senderId]?.name
+                            ?: message.senderAsString,
+                        preview = message.searchPreview(),
+                        sendDate = message.getSendDateAsLong(),
+                    )
+                }
+                .toList()
+        }.flowOn(Dispatchers.Default)
+    }
+
+    /** True when any searchable text of this message contains the already lowercased [term]. */
+    private fun Message.matchesSearchTerm(term: String): Boolean {
+        if (deleted) return false
+        if (content.lowercase().contains(term)) return true
+
+        val poll = poll ?: return false
+        return poll.title.lowercase().contains(term) ||
+                poll.description?.lowercase()?.contains(term) == true ||
+                poll.voteOptions.any { it.text.lowercase().contains(term) }
+    }
+
+    /** Text shown underneath a search result - the poll title stands in for polls without text. */
+    private fun Message.searchPreview(): String =
+        content.takeIf { it.isNotBlank() } ?: poll?.title.orEmpty()
 
 
     /*
@@ -1230,7 +1323,7 @@ class AppRepository(
         when (val success = networkUtils.sendFriendRequest(friendId)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "friendRequestSent")
                 return true
             }
         }
@@ -1243,7 +1336,7 @@ class AppRepository(
         when (val success = networkUtils.denyFriendRequest(friendId)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "friendRequestDenied")
                 return true
             }
         }
@@ -1254,7 +1347,7 @@ class AppRepository(
         when (val success = networkUtils.removeFriend(friendId)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "friendRemoved")
                 return true
             }
         }
@@ -1265,7 +1358,7 @@ class AppRepository(
         when (val success = networkUtils.changeUsername(newUsername)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "usernameChanged")
                 return true
             }
         }
@@ -1286,7 +1379,7 @@ class AppRepository(
         when (val success = networkUtils.changeProfilePic(newPic)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "profilePicChanged")
                 return true
             }
         }
@@ -1377,7 +1470,8 @@ class AppRepository(
                                     text = request.text,
                                     custom = false,
                                     creatorId = ownId,
-                                    voters = emptyList()
+                                    voters = emptyList(),
+                                    maxVoters = request.maxVoters
                                 )
                             }
                         ),
@@ -1641,7 +1735,8 @@ class AppRepository(
                                     closeDate = poll.expiresAt,
                                     voteOptions = poll.voteOptions.map {
                                         PollVoteOptionCreateRequest(
-                                            text = it.text
+                                            text = it.text,
+                                            maxVoters = it.maxVoters
                                         )
                                     }
                                 )
@@ -1949,6 +2044,30 @@ class AppRepository(
                 null
             }
             is NetworkResult.Success<GroupResponse> -> {
+
+                val groupResponse = response.data
+
+                groupRepository.upsertGroup(Group(
+                    id = groupResponse.id,
+                    name = groupResponse.name,
+                    profilePictureUrl = "",
+                    description = groupResponse.description,
+                    createDate = groupResponse.createdAt,
+                    updatedAt = groupResponse.updatedAt,
+                    profilePicUpdatedAt = groupResponse.profilePicUpdatedAt,
+                    notisMuted = false,
+                    members = groupResponse.members.map { groupMemberresp ->
+                        GroupMember(
+                            groupId = groupResponse.id,
+                            userId = groupMemberresp.userid,
+                            joinDate = groupMemberresp.joinedAt,
+                            admin = groupMemberresp.admin,
+                            color = groupMemberresp.color,
+                            memberName = groupMemberresp.memberName
+                        )
+                    }
+                ))
+
                 response.data.id
             }
         }
@@ -2038,7 +2157,7 @@ class AppRepository(
         when (val success = networkUtils.changeGroupProfilePic(newPic, groupId)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "groupProfilePicChanged")
                 return true
             }
         }
@@ -2048,7 +2167,7 @@ class AppRepository(
         when (val success = networkUtils.changeGroupDescription(newDescription, groupId)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "groupDescriptionChanged")
                 return true
             }
         }
@@ -2058,7 +2177,7 @@ class AppRepository(
         when (val success = networkUtils.changeGroupName(newName, groupId)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "groupNameChanged")
                 return true
             }
         }
@@ -2072,7 +2191,7 @@ class AppRepository(
         )){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "groupMembersChanged")
                 return true
             }
         }

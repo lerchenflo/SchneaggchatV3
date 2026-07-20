@@ -1,12 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.text
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.mikepenz.markdown.m3.Markdown
-import com.mikepenz.markdown.model.DefaultMarkdownColors
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboText
 
 @Composable
 fun TextMessageContentView(
@@ -16,30 +14,10 @@ fun TextMessageContentView(
     modifier: Modifier = Modifier
 ){
 
-    if(useMD){ // get setting if if md is enabled
-        Markdown(
-            content = message.content,
-            modifier = modifier,
-            //TODO: Nocham neua theme do die message text color flicka
-
-            colors = DefaultMarkdownColors(
-                text = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                inlineCodeBackground = MaterialTheme.colorScheme.error,
-                dividerColor = MaterialTheme.colorScheme.onPrimary,
-                tableBackground = MaterialTheme.colorScheme.onSurface,
-                codeBackground = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-
-
-        )
-    }else{
-        Text(
-            text = message.content,
-            color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = modifier
-        )
-    }
-
-
-
+    ComboText(
+        text = message.content,
+        useMD = useMD,
+        textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier
+    )
 }

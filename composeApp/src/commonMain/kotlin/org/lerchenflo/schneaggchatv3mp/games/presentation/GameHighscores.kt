@@ -119,7 +119,7 @@ fun HighscoresDialog(
 }
 
 @Composable
-private fun LeaderboardPeriod.stringRes(): StringResource = when (this) {
+internal fun LeaderboardPeriod.stringRes(): StringResource = when (this) {
     LeaderboardPeriod.DAILY    -> Res.string.highscores_period_daily
     LeaderboardPeriod.WEEKLY   -> Res.string.highscores_period_weekly
     LeaderboardPeriod.YEARLY   -> Res.string.highscores_period_yearly
@@ -130,7 +130,7 @@ private fun LeaderboardPeriod.stringRes(): StringResource = when (this) {
  * Row of chips to pick the leaderboard time window.
  */
 @Composable
-private fun PeriodSelector(
+internal fun PeriodSelector(
     selected: LeaderboardPeriod,
     onSelect: (LeaderboardPeriod) -> Unit,
     modifier: Modifier = Modifier,

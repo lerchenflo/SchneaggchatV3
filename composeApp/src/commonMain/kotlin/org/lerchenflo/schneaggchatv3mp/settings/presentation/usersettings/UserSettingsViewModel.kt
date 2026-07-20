@@ -18,6 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_username_must_not_be_empty
 import schneaggchatv3mp.composeapp.generated.resources.please_restart_app
+import schneaggchatv3mp.composeapp.generated.resources.verification_email_sent
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
@@ -61,8 +62,9 @@ class UserSettingsViewModel(
             appRepository.sendEmailVerify()
         }
 
-        //TODO: Stringressource
-        SnackbarManager.showMessage("Verification email sent")
+        viewModelScope.launch {
+            SnackbarManager.showMessage(getString(Res.string.verification_email_sent))
+        }
     }
 
     fun updateUsernameOnServer(newUsername: String){
@@ -87,7 +89,7 @@ class UserSettingsViewModel(
 
         viewModelScope.launch {
             appRepository.changeUserDetails(newEmail = newEmail, userId = userId)
-            appRepository.dataSync()
+            appRepository.dataSync(reason = "emailChanged")
         }
     }
 
@@ -96,7 +98,7 @@ class UserSettingsViewModel(
             val userId = SessionCache.requireLoggedIn()?.userId ?: return@launch
 
             appRepository.changeUserDetails(newStatus = newStatus, userId = userId)
-            appRepository.dataSync()
+            appRepository.dataSync(reason = "statusChanged")
         }
     }
 
@@ -105,7 +107,7 @@ class UserSettingsViewModel(
 
         viewModelScope.launch {
             appRepository.changeUserDetails(newBirthDate = newBirthDate, userId = userId)
-            appRepository.dataSync()
+            appRepository.dataSync(reason = "birthDateChanged")
         }
     }
 

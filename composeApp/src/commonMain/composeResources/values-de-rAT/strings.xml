@@ -7,7 +7,6 @@
     <string name="settings">Einstellunga</string>
     <string name="tools_and_games">Spiele</string>
     <string name="filter">Sortiera</string>
-    <string name="search_friend">Suach in dina Freunde ...</string>
     <string name="no_status">kuan Status</string>
     <string name="unknown_user">kennsch ned</string>
     <string name="chat_last_seen_status">letztes mol Online %1$s</string>
@@ -226,7 +225,6 @@
     <string name="merge_map_locations">Orten zemmerga beim zoomen</string>
     <string name="merge_map_locations_info">Orte beim zoomen zemmerga dassas ned so a Chaos isch</string>
     <string name="schneaggmap_map_style">Mapdesign</string>
-    <string name="schneaggmap_map_style_info">Verschiedene Maptypa uswähla</string>
     <string name="map_style_liberty">Liberty</string>
     <string name="map_style_bright">Hell</string>
     <string name="map_style_positron">Positron</string>
@@ -803,7 +801,6 @@
     <string name="morse_challenge_type_text">Tipp da Text in Morsecode</string>
 
     <!-- Location Groups -->
-    <string name="location_group_street">Stroß</string>
     <string name="location_group_nature_activities">Natur &amp; Aktivitäta</string>
     <string name="location_group_social_entertainment">Sozial &amp; Unterhaltung</string>
     <string name="location_group_food">Essen</string>

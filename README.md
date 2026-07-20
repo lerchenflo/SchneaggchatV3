@@ -22,11 +22,21 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Roadmap jetzt in der App einsehbar
 
 #### Features
-- Roadmap in den Misc Einstellungen mit Github issues
+- Nachrichtensuche in der Chat-Auswahl - durchsucht Nachrichteninhalte, Bildunterschriften und Umfragen
+- @Map & @User Annotations in Nachrichten + Umfragen
+- Roadmap in den Misc Einstellungen mit GitHub issues
+- Neue Schneaggmap-Standorttypen (Volleyball, Trainingspark, Tischtennis, Tennis, Fahrrad und Enduro)
+- Freunde-Zusammenfassung beim Zoomen - Einstellung auf der Schneaggmap
+- Polls mit Stimmen-Begrenzung pro Option
+- Gesamtranking über alle Spiele mit Zeitraumselektor
+- Tetris nächster Block Vorschau in der oberen linken Ecke
+- Schneaggahus Spiel verbessert
 
 #### Bugfixes
-- Überlappende Schaltflächen auf der Schneaggmap behoben
-
+- Schneaggmap UI fixes
+- Chat-Navigation neu aufgebaut
+- Chat öffnen bei Freundschaftsanfrage annehmen / Gruppe erstellen
+- Tetris Steuerung repariert
 ### 3.0.13
 
 #### Features

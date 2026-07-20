@@ -37,7 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -53,12 +53,12 @@ import schneaggchatv3mp.composeapp.generated.resources.search_user
  */
 @Composable
 fun MemberSelector(
-    availableUsers: List<SelectedChat>,
-    selectedUsers: List<SelectedChat>,
+    availableUsers: List<ChatListItem>,
+    selectedUsers: List<ChatListItem>,
     searchTerm: String,
     onSearchTermChange: (String) -> Unit,
-    onUserSelected: (SelectedChat) -> Unit,
-    onUserDeselected: (SelectedChat) -> Unit,
+    onUserSelected: (ChatListItem) -> Unit,
+    onUserDeselected: (ChatListItem) -> Unit,
     minUsers: Int = 2,
     modifier: Modifier = Modifier
 ) {
@@ -195,7 +195,7 @@ fun MemberSelector(
                 val selected = selectedUsers.contains(user)
 
                 UserButton(
-                    selectedChat = user,
+                    chat = user,
                     useOnClickGes = true,
                     lastMessage = null,
                     bottomTextOverride = "",

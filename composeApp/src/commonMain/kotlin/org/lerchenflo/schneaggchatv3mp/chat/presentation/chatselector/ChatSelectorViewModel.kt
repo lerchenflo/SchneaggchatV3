@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -29,12 +30,12 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
@@ -47,11 +48,11 @@ import schneaggchatv3mp.composeapp.generated.resources.none
 import schneaggchatv3mp.composeapp.generated.resources.persons
 import schneaggchatv3mp.composeapp.generated.resources.unread
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
 
 class ChatSelectorViewModel(
     private val appRepository: AppRepository,
     private val navigator: Navigator,
-    private val globalViewModel: GlobalViewModel,
     private val loggingRepository: LoggingRepository,
     private val preferenceManager: Preferencemanager,
 ): ViewModel() {
@@ -84,7 +85,7 @@ class ChatSelectorViewModel(
         }
 
         viewModelScope.launch {
-            appRepository.dataSync()
+            //appRepository.dataSync(reason = "chatSelectorInit") //Already runs from the app resumed event
             getChangelog()
         }
 
@@ -101,7 +102,7 @@ class ChatSelectorViewModel(
         refreshJob = viewModelScope.launch {
             try {
                 appRepository.sendOfflineMessages(ownId)
-                appRepository.dataSync()
+                appRepository.dataSync(reason = "chatSelectorRefresh")
             } catch (e: Exception) {
                 ensureActive()
                 loggingRepository.logWarning("ChatSelector refresh failed: ${e.message}")
@@ -111,14 +112,19 @@ class ChatSelectorViewModel(
 
 
     //Navigation
-    fun onChatSelected(selectedChat: SelectedChat) {
+    fun onChatSelected(selectedChat: ChatListItem) {
         viewModelScope.launch {
 
             //Chat opened, clear searchterm
             _searchTerm.value = ""
 
-            globalViewModel.onSelectChat(selectedChat)
-            navigator.navigate(Route.Chat)
+            navigator.navigate(Route.Chat(chatId = selectedChat.id, isGroup = selectedChat.isGroup))
+        }
+    }
+
+    fun onOpenChatDetails(selectedChat: ChatListItem) {
+        viewModelScope.launch {
+            navigator.navigate(Route.ChatDetails(chatId = selectedChat.id, isGroup = selectedChat.isGroup))
         }
     }
 
@@ -130,14 +136,16 @@ class ChatSelectorViewModel(
     }
 
 
-    fun onChatSelectedWithMessage(selectedChat: SelectedChat) {
+    fun onChatSelectedWithMessage(selectedChat: ChatListItem) {
         viewModelScope.launch {
 
             //Chat opened, clear searchterm
             _searchTerm.value = ""
 
-            globalViewModel.onSelectChat(selectedChat)
-            navigator.navigate(Route.Chat, navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true))
+            navigator.navigate(
+                Route.Chat(chatId = selectedChat.id, isGroup = selectedChat.isGroup),
+                navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true)
+            )
         }
     }
 
@@ -158,7 +166,7 @@ class ChatSelectorViewModel(
     }
     fun onMapClick(){
         viewModelScope.launch {
-            navigator.navigate(Route.Schneaggmap)
+            navigator.navigate(Route.Schneaggmap())
         }
     }
 
@@ -178,7 +186,7 @@ class ChatSelectorViewModel(
         _filter.value = newValue
     }
 
-    fun pinUnpinChat(chat: SelectedChat) {
+    fun pinUnpinChat(chat: ChatListItem) {
         viewModelScope.launch {
             if(chat.pinned > 0L){
                 preferenceManager.removePinnedChat(chat.id)
@@ -202,7 +210,7 @@ class ChatSelectorViewModel(
 
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val chatSelectorFlow: Flow<List<SelectedChat>> = combine(
+    private val chatSelectorFlow: Flow<List<ChatListItem>> = combine(
         _searchTerm,
         _filter,
         SessionCache.authState
@@ -220,13 +228,55 @@ class ChatSelectorViewModel(
         }
         .flowOn(Dispatchers.Default)
 
-    val chatSelectorState: StateFlow<List<SelectedChat>> = chatSelectorFlow
+    val chatSelectorState: StateFlow<List<ChatListItem>> = chatSelectorFlow
         .distinctUntilChanged()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+
+
+    //Messages matching the search term, shown underneath the matching chats. Debounced because
+    //every keystroke otherwise re-scans every message.
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val messageSearchResults: StateFlow<List<MessageSearchResult>> = combine(
+        _searchTerm.debounce(250.milliseconds),
+        SessionCache.authState
+    ) { term, authState -> term to authState }
+        .flatMapLatest { (term, authState) ->
+            val loggedIn = authState as? SessionCache.AuthState.LoggedIn
+                ?: return@flatMapLatest flowOf(emptyList<MessageSearchResult>())
+
+            appRepository.getMessageSearchFlow(
+                searchTerm = term,
+                userId = loggedIn.userId
+            )
+        }
+        .flowOn(Dispatchers.Default)
+        .distinctUntilChanged()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
+
+    /** Opens the chat a search result lives in and jumps to that message. */
+    fun onMessageSearchResultSelected(result: MessageSearchResult) {
+        viewModelScope.launch {
+
+            //Chat opened, clear searchterm
+            _searchTerm.value = ""
+
+            navigator.navigate(
+                Route.Chat(
+                    chatId = result.chatId,
+                    isGroup = result.isGroup,
+                    highlightMessageId = result.messageId
+                )
+            )
+        }
+    }
 }
 
 enum class ChatFilter{

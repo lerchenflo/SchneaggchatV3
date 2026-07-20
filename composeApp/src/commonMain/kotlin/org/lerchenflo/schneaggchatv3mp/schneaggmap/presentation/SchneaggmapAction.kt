@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
@@ -21,6 +22,7 @@ sealed interface SchneaggmapAction {
     data class OnOpenChatClick(val user: User) : SchneaggmapAction
 
     data object OnPopupDismiss: SchneaggmapAction
+    data object OnFocusEntryHandled: SchneaggmapAction
     data class OnEntryPopupSave(val entry: MapEntry): SchneaggmapAction
 
     data class OnEntryPopupDelete(val entryId: String): SchneaggmapAction
@@ -29,5 +31,8 @@ sealed interface SchneaggmapAction {
     data object OnSettingsClick: SchneaggmapAction
 
     data object ToggleSnailTrails: SchneaggmapAction
+
+    data object ToggleMapStyleDropdown: SchneaggmapAction
+    data class SelectMapStyle(val style: MapStyleSetting): SchneaggmapAction
 
 }

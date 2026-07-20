@@ -7,9 +7,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
@@ -42,10 +41,9 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
                     && decoded is DecodedNotification.Message //Suppress only messages
                     && decoded.senderId.isNotEmpty() && decoded.receiverId.isNotEmpty()
                     && run {
-                        val currentChat = KoinPlatform.getKoin().get<GlobalViewModel>().selectedChat.value
-                        !currentChat.isNotSelected() //Suppress only when chat is selected
-                                && ((currentChat.id == decoded.senderId && decoded.groupMessage == currentChat.isGroup) //Single messages
-                                || (currentChat.id == decoded.receiverId && decoded.groupMessage == currentChat.isGroup)) //Group messages
+                        //Suppress only when the chat is currently open on screen
+                        OpenChatTracker.isChatOpen(chatId = decoded.senderId, isGroup = decoded.groupMessage) //Single messages
+                                || OpenChatTracker.isChatOpen(chatId = decoded.receiverId, isGroup = decoded.groupMessage) //Group messages
                     }
 
                 if (!suppressNotification) {

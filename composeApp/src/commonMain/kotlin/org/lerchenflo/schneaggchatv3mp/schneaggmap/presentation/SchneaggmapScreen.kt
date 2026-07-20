@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -62,11 +63,13 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.*
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.CAMPING
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_ASIAN
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_BEER
@@ -85,6 +88,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.VIEWPOINT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.WHEELIESPOT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.FriendLocationsPreview
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapStyleDropdown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapZoomSlider
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
@@ -129,19 +133,26 @@ import org.maplibre.spatialk.units.extensions.inMeters
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.icon_badespot
 import schneaggchatv3mp.composeapp.generated.resources.icon_beer
+import schneaggchatv3mp.composeapp.generated.resources.icon_bicycle
 import schneaggchatv3mp.composeapp.generated.resources.icon_burger
 import schneaggchatv3mp.composeapp.generated.resources.icon_camping
 import schneaggchatv3mp.composeapp.generated.resources.icon_chinese_food
 import schneaggchatv3mp.composeapp.generated.resources.icon_doener
 import schneaggchatv3mp.composeapp.generated.resources.icon_food
+import schneaggchatv3mp.composeapp.generated.resources.icon_food_greek
+import schneaggchatv3mp.composeapp.generated.resources.icon_offroad_motorcycle
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
+import schneaggchatv3mp.composeapp.generated.resources.icon_outdoor_fitness
 import schneaggchatv3mp.composeapp.generated.resources.icon_partylocation
 import schneaggchatv3mp.composeapp.generated.resources.icon_pizza
 import schneaggchatv3mp.composeapp.generated.resources.icon_police
 import schneaggchatv3mp.composeapp.generated.resources.icon_radar_variant
 import schneaggchatv3mp.composeapp.generated.resources.icon_sightseeing
 import schneaggchatv3mp.composeapp.generated.resources.icon_street
+import schneaggchatv3mp.composeapp.generated.resources.icon_table_tennis
+import schneaggchatv3mp.composeapp.generated.resources.icon_tennis
 import schneaggchatv3mp.composeapp.generated.resources.icon_viewpoint
+import schneaggchatv3mp.composeapp.generated.resources.icon_volleyball
 import schneaggchatv3mp.composeapp.generated.resources.icon_wheeliespot
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 import kotlin.math.PI
@@ -152,6 +163,7 @@ import kotlin.time.Clock
 
 private const val OWN_LOCATION_START_ZOOM = 14.0
 private const val OWN_LOCATION_CLICK_ZOOM = 16.0
+private const val ENTRY_FOCUS_ZOOM = 16.0
 
 //Radius, in dp, within which nearby friends get merged into one marker - converted to meters via
 //the camera's current scale so it stays a constant on-screen size regardless of zoom level.
@@ -233,8 +245,10 @@ private fun clusterUsersByProximity(users: List<User>, radiusMeters: Double): Li
 }
 
 @Composable
-fun SchneaggmapScreenRoot() {
-    val viewModel = koinViewModel<SchneaggmapViewModel>()
+fun SchneaggmapScreenRoot(
+    initialEntryId: String? = null
+) {
+    val viewModel = koinViewModel<SchneaggmapViewModel> { parametersOf(initialEntryId) }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     SchneaggmapScreen(
@@ -280,6 +294,21 @@ fun SchneaggmapScreen(
         }
     }
 
+    //Opened with a specific entry (deep link): fly to it once. Marks the own-location
+    //auto-center as done so it can't yank the camera away from the entry afterwards.
+    LaunchedEffect(state.focusEntryTarget) {
+        state.focusEntryTarget?.let { target ->
+            hasAutoCentered = true
+            cameraState.animateTo(
+                CameraPosition(
+                    target = Position(longitude = target.long, latitude = target.lat),
+                    zoom = ENTRY_FOCUS_ZOOM
+                )
+            )
+            onAction(SchneaggmapAction.OnFocusEntryHandled)
+        }
+    }
+
     //"Follow me" mode, toggled on by the locate button. Stops as soon as the user manually
     //pans/zooms the map - any GESTURE-driven camera move is treated as "I don't want to follow".
     var isFollowingLocation by remember { mutableStateOf(false) }
@@ -317,8 +346,8 @@ fun SchneaggmapScreen(
             onAction = onAction
         )
 
-        // Top row: settings/own-user/compass (start), speed pill (center), location filter (end) -
-        // all coordinated inside one Box so they space themselves out instead of overlapping.
+        // Top row: settings/own-user/compass (start), speed pill (center), map style + location
+        // filter (end) - all coordinated inside one Box so they space themselves out instead of overlapping.
         Box(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -327,7 +356,7 @@ fun SchneaggmapScreen(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.align(Alignment.CenterStart)
+                modifier = Modifier.align(Alignment.TopStart)
             ) {
                 FloatingActionButton(
                     onClick = { onAction(SchneaggmapAction.OnSettingsClick) },
@@ -355,7 +384,7 @@ fun SchneaggmapScreen(
                     val speedKmh = (speed.distancePerSecond.inMeters * 3.6).roundToInt()
                     Box(
                         modifier = Modifier
-                            .align(Alignment.Center)
+                            .align(Alignment.TopCenter)
                             .size(56.dp)
                             .background(Color.White, CircleShape)
                             .border(width = 4.dp, color = Color.Red, shape = CircleShape),
@@ -371,11 +400,20 @@ fun SchneaggmapScreen(
                 }
             }
 
-            ShownLocationsDropdown(
-                state = state,
-                onAction = onAction,
-                modifier = Modifier.align(Alignment.TopEnd),
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.align(Alignment.TopEnd)
+            ) {
+                MapStyleDropdown(
+                    state = state,
+                    onAction = onAction,
+                )
+
+                ShownLocationsDropdown(
+                    state = state,
+                    onAction = onAction,
+                )
+            }
         }
 
         // Right edge: vertical zoom scrollbar, centered between the top and bottom rows so it
@@ -556,14 +594,21 @@ private fun SchneaggmapMapContent(
                 POLICE -> Res.drawable.icon_police
                 MOUNTAIN_STREET -> Res.drawable.icon_street
                 WHEELIESPOT -> Res.drawable.icon_wheeliespot
+                OFFROAD_MOTORCYCLE -> Res.drawable.icon_offroad_motorcycle
                 VIEWPOINT -> Res.drawable.icon_viewpoint
                 FOOD_KEBAB -> Res.drawable.icon_doener
                 FOOD_PIZZA -> Res.drawable.icon_pizza
                 FOOD_BURGER -> Res.drawable.icon_burger
                 FOOD_BEER -> Res.drawable.icon_beer
                 FOOD_ASIAN -> Res.drawable.icon_chinese_food
-                FOOD_GREEK -> Res.drawable.icon_food //TODO: CHANGE ICON
+                FOOD_GREEK -> Res.drawable.icon_food_greek
                 FOOD_OTHER -> Res.drawable.icon_food
+
+                VOLLEYBALL -> Res.drawable.icon_volleyball
+                BICYCLE -> Res.drawable.icon_bicycle
+                OUTDOOR_FITNESS -> Res.drawable.icon_outdoor_fitness
+                TABLE_TENNIS -> Res.drawable.icon_table_tennis
+                TENNIS -> Res.drawable.icon_tennis
             }
         }
     }
@@ -636,8 +681,17 @@ private fun SchneaggmapMapContent(
     //so a continuous pinch/pan gesture doesn't re-cluster (and churn the GL layers) every frame.
     val rawClusterRadiusMeters = USER_CLUSTER_RADIUS_DP * cameraState.metersPerDpAtTarget
     val clusterRadiusMeters = (rawClusterRadiusMeters / 5.0).roundToInt() * 5.0
-    val userClusters = remember(state.usersWithLocation, clusterRadiusMeters) {
-        clusterUsersByProximity(state.usersWithLocation, clusterRadiusMeters)
+    val userClusters = remember(state.usersWithLocation, clusterRadiusMeters, state.mergeUsers) {
+        if (state.mergeUsers) {
+            clusterUsersByProximity(state.usersWithLocation, clusterRadiusMeters)
+        } else {
+            state.usersWithLocation.filter { it.location != null }.map { user ->
+                UserCluster(
+                    users = listOf(user),
+                    centroid = Position(longitude = user.location!!.long, latitude = user.location.lat)
+                )
+            }
+        }
     }
 
     val clusterIcons: Map<String, UserMarkerIcon> = remember(
@@ -885,7 +939,7 @@ private fun SchneaggmapMapContent(
                                 ?: painterResource(Res.drawable.icon_nutzer)
                             val markerSize = markerIcon?.size ?: DpSize(33.dp, 33.dp)
 
-                            //TODO: rotate this marker using user.location?.heading once we have a directional
+                            //Note: rotate this marker using user.location?.heading once we have a directional
                             // marker design - heading is already stored/synced per friend but unused for rendering.
                             SymbolLayer(
                                 id = "user-${user.id}",

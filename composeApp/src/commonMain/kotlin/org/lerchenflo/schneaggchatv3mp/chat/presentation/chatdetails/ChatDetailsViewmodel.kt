@@ -20,29 +20,22 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.MAX_GROUPNAME_LENGTH
 import org.lerchenflo.schneaggchatv3mp.MIN_GROUPNAME_LENGTH
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
-import org.lerchenflo.schneaggchatv3mp.chat.domain.NotSelected
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.chat.domain.isNotSelected
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toGroup
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
@@ -59,9 +52,48 @@ data class GroupMemberWithUser(
     val user: User?
 )
 
+/**
+ * Screen state for the chat details screen. Either the enriched user details or the enriched
+ * group details, depending on what chat the screen was opened for.
+ */
+sealed interface ChatDetailsState {
+    val name: String
+    val profilePictureUrl: String
+    val description: String?
+    val status: String?
+
+    data object Loading : ChatDetailsState {
+        override val name: String = ""
+        override val profilePictureUrl: String = ""
+        override val description: String? = null
+        override val status: String? = null
+    }
+
+    data class UserDetails(
+        val user: User,
+        val commonGroups: List<Group> = emptyList()
+    ) : ChatDetailsState {
+        override val name: String get() = user.name
+        override val profilePictureUrl: String get() = user.profilePictureUrl
+        override val description: String? get() = user.description
+        override val status: String? get() = user.status
+    }
+
+    data class GroupDetails(
+        val group: Group,
+        val members: List<GroupMemberWithUser> = emptyList()
+    ) : ChatDetailsState {
+        override val name: String get() = group.name
+        override val profilePictureUrl: String get() = group.profilePictureUrl
+        override val description: String get() = group.description
+        override val status: String? get() = null
+    }
+}
+
 class ChatDetailsViewmodel(
+    val chatId: String,
+    val isGroup: Boolean,
     private val groupRepository: GroupRepository,
-    private val globalViewModel: GlobalViewModel,
     private val navigator: Navigator,
     private val userRepository: UserRepository,
     private val appRepository: AppRepository,
@@ -69,82 +101,41 @@ class ChatDetailsViewmodel(
 ) : ViewModel() {
 
 
-    var selectedNewMembers  by mutableStateOf<List<SelectedChat>>(emptyList())
+    var selectedNewMembers by mutableStateOf<List<ChatListItem>>(emptyList())
     private val _searchTerm = MutableStateFlow("")
     val searchterm = _searchTerm.asStateFlow()
-    var selectedUser by mutableStateOf<User?>(null)
 
-    val availableNewMembers: StateFlow<List<User>> = combine(
-        _searchTerm,
-        SessionCache.authState,
-        globalViewModel.selectedChat
-    ) { term, auth, chat -> Triple(term, auth, chat) }
-        .flatMapLatest { (term, auth, chat) ->
-            val loggedIn = auth as? SessionCache.AuthState.LoggedIn
+    /** Friends that can still be added to this group (groups only, empty for user chats). */
+    val availableNewMembers: StateFlow<List<ChatListItem>> = if (!isGroup) {
+        MutableStateFlow<List<ChatListItem>>(emptyList())
+    } else {
+        combine(
+            _searchTerm.flatMapLatest { term -> appRepository.getFriendsFlow(term) },
+            groupRepository.getGroupFlow(chatId)
+        ) { friends, group ->
+            val currentMemberIds = group?.members?.map { it.userId }?.toSet() ?: emptySet()
 
-            // If not logged in or not a group, we don't need to show "New Members"
-            if (loggedIn == null || !chat.isGroup) {
-                println("Not logged in or not a group, returning empty list")
-                return@flatMapLatest flowOf(emptyList())
-            }
-
-            // 1. Get friends from repository (filtered by search term if supported)
-            appRepository.getFriendsFlow(term).map { friends ->
-                // 2. Get current group members to filter them out
-                val currentMemberIds = groupRepository.getGroupMembers(chat.id)
-                    .map { it.userId }
-                    .toSet()
-
-                // 3. Only show friends who are NOT already in the group
-                friends.filter { friend -> friend.id !in currentMemberIds }
-            }
+            // Only show friends who are NOT already in the group
+            friends
+                .filter { friend -> friend.id !in currentMemberIds }
+                .map { it.toChatListItem() }
         }
-        .onEach { list ->
-            println("Flow emitted new members: ${list.size} found")
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-
-
-    init {
-        if (globalViewModel.selectedChat.value.isNotSelected()) {
-            println("No selectedgegner, leaving chatdetails")
-            viewModelScope.launch {
-                navigator.navigateBack()
-            }
-        }
-
-
-        if (!globalViewModel.selectedChat.value.isGroup) {
-            viewModelScope.launch {
-                selectedUser = userRepository.getUserById(globalViewModel.selectedChat.value.id)
-            }
-        }else{
-            /*
-            viewModelScope.launch {
-                appRepository.getFriendsFlow("").collectLatest { allFriends ->
-                    val members = groupRepository.getGroupMembers(globalViewModel.selectedChat.value.id)
-                    availableNewMembers = allFriends.filter { friend ->
-                        !members.any { member -> member.userId == friend.id }
-                    }                }
-            }
-            */
-        }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
     }
 
 
     fun onSearchTermChange(newValue: String) {
-
         _searchTerm.value = newValue
     }
 
-    fun onUserSelected(user: SelectedChat){
+    fun onUserSelected(user: ChatListItem){
         selectedNewMembers = selectedNewMembers + user
     }
-    fun onUserDeSelected(user: SelectedChat){
+    fun onUserDeSelected(user: ChatListItem){
         selectedNewMembers = selectedNewMembers - user
     }
 
@@ -163,55 +154,45 @@ class ChatDetailsViewmodel(
 
 
     /**
-     * Enriched chat details with group members or common groups populated.
-     * This flow automatically transforms the selected chat by fetching and populating:
-     * - For groups: groupMembers list
-     * - For users: commonGroups list
+     * Enriched chat details, kept up to date from the database:
+     * - For groups: group with resolved members
+     * - For users: user with common groups
      */
-    //TODO: Use selectedchat from globalbiewmodel???
-    val chatDetails: StateFlow<SelectedChat> = combine(
-        globalViewModel.selectedChat,
-        SessionCache.authState
-    ) { chat, authState -> chat to authState }
-        .flatMapLatest { (chat, authState) ->
-            val loggedIn = authState as? SessionCache.AuthState.LoggedIn
-
-            when {
-                chat.isGroup -> {
-                    groupRepository.getGroupFlow(chat.id).map { updatedGroup ->
-                        val membersWithUsers = getGroupMembersWithUsers(chat.id)
-                        updatedGroup?.toSelectedChat(
-                            unreadCount = chat.unreadMessageCount,
-                            unsentCount = chat.unsentMessageCount,
-                            lastMessage = chat.lastmessage
-                        )?.toGroup()?.copy(
-                            groupMembersWithUsers = membersWithUsers
-                        ) ?: chat
-                    }
-                }
-                !chat.isNotSelected() -> {
-                    userRepository.getUserFlow(chat.id).map { updatedUser ->
-                        val commonGroups = loggedIn?.let {
-                            groupRepository.getCommonGroups(
-                                ownId = it.userId,
-                                otherUserId = chat.id
-                            )
-                        } ?: emptyList()
-
-                        updatedUser?.toSelectedChat(
-                            unreadCount = chat.unreadMessageCount,
-                            unsentCount = chat.unsentMessageCount,
-                            lastMessage = chat.lastmessage
-                        )?.toUser()?.copy(commonGroups = commonGroups) ?: chat
-                    }
-                }
-                else -> flow { emit(chat) }
+    val chatDetails: StateFlow<ChatDetailsState> = if (isGroup) {
+        groupRepository.getGroupFlow(chatId).map { group ->
+            if (group == null) {
+                ChatDetailsState.Loading
+            } else {
+                ChatDetailsState.GroupDetails(
+                    group = group,
+                    members = getGroupMembersWithUsers(chatId)
+                )
             }
         }
+    } else {
+        userRepository.getUserFlow(chatId).map { user ->
+            if (user == null) {
+                ChatDetailsState.Loading
+            } else {
+                val ownId = SessionCache.requireLoggedIn()?.userId
+                val commonGroups = ownId?.let {
+                    groupRepository.getCommonGroups(
+                        ownId = it,
+                        otherUserId = chatId
+                    )
+                } ?: emptyList()
+
+                ChatDetailsState.UserDetails(
+                    user = user,
+                    commonGroups = commonGroups
+                )
+            }
+        }
+    }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = NotSelected()
+            initialValue = ChatDetailsState.Loading
         )
 
 
@@ -228,29 +209,29 @@ class ChatDetailsViewmodel(
         }
     }
 
-    fun navigateToChat(selectedChat: SelectedChat){
+    fun navigateToChat(chatId: String, isGroup: Boolean){
         viewModelScope.launch {
-            globalViewModel.onSelectChat(selectedChat)
-            // Exit all previous screen weil ma jo da selectedgegner im globalviewmodel gändert hot und denn ind chatdetails vo deam typ kummt
-            navigator.navigate(Route.Chat, navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true))
+            navigator.navigate(
+                Route.Chat(chatId = chatId, isGroup = isGroup),
+                navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true)
+            )
         }
     }
 
-    fun updateDescription(selectedChat: SelectedChat){
+    fun updateDescription(){
         viewModelScope.launch {
-            if (selectedChat.isGroup) {
-                appRepository.changeGroupDescription(selectedChat.id, descriptionText.text)
+            if (isGroup) {
+                appRepository.changeGroupDescription(chatId, descriptionText.text)
             }else {
-                appRepository.changeUserDetails(newStatus = null, newDescription =  descriptionText.text, userId = selectedChat.id)
-
+                appRepository.changeUserDetails(newStatus = null, newDescription =  descriptionText.text, userId = chatId)
             }
         }
     }
 
     fun removeFriend() {
-        if (!chatDetails.value.isGroup) {
+        if (!isGroup) {
             viewModelScope.launch {
-                if(appRepository.removeFriend(chatDetails.value.id)){
+                if(appRepository.removeFriend(chatId)){
                     navigator.navigate(Route.ChatSelector, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
                 }
             }
@@ -278,7 +259,7 @@ class ChatDetailsViewmodel(
 
             //println("Downscaled image size: ${downscaledimage.size}")
             val success = appRepository.changeGroupProfilePic(
-                groupId = chatDetails.value.id,
+                groupId = chatId,
                 newPic = downscaledimage
             )
 
@@ -293,7 +274,7 @@ class ChatDetailsViewmodel(
             appRepository.changeGroupMembers(
                 action = NetworkUtils.GroupMemberAction.ADD_USER,
                 memberId = userId,
-                groupId = chatDetails.value.id
+                groupId = chatId
             )
         }
     }
@@ -303,7 +284,7 @@ class ChatDetailsViewmodel(
             appRepository.changeGroupMembers(
                 action = NetworkUtils.GroupMemberAction.REMOVE_USER,
                 memberId = memberId,
-                groupId = chatDetails.value.id
+                groupId = chatId
             )
         }
     }
@@ -314,7 +295,7 @@ class ChatDetailsViewmodel(
 
     fun updateGroupName(name: String){
         viewModelScope.launch {
-            appRepository.changeGroupName(chatDetails.value.id, name)
+            appRepository.changeGroupName(chatId, name)
         }
     }
 
@@ -336,10 +317,8 @@ class ChatDetailsViewmodel(
 
     fun updateNickname(newNickname: String) {
         viewModelScope.launch {
-            val userId = chatDetails.value.id
-            
-            val success = appRepository.changeUserDetails(
-                userId = userId,
+            appRepository.changeUserDetails(
+                userId = chatId,
                 newNickName = newNickname
             )
         }

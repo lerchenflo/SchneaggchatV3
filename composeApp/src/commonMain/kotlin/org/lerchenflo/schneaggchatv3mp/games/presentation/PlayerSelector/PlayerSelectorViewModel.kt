@@ -7,11 +7,11 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.database.PlayerDao
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
+import org.lerchenflo.schneaggchatv3mp.games.data.PlayerRepository
 
 class PlayerSelectorViewModel(
-    private val playerDao: PlayerDao,
+    private val playerRepository: PlayerRepository,
     private val appRepository: AppRepository
 ) : ViewModel() {
 
@@ -30,7 +30,7 @@ class PlayerSelectorViewModel(
     init {
         viewModelScope.launch {
             // Load local players
-            playerDao.getAllPlayersFlow().collectLatest { playerList ->
+            playerRepository.getAllPlayersFlow().collectLatest { playerList ->
                 _localPlayers.clear()
                 _localPlayers.addAll(playerList)
             }
@@ -48,13 +48,13 @@ class PlayerSelectorViewModel(
     fun addPlayer(name: String) {
         if (name.isBlank()) return
         viewModelScope.launch {
-            playerDao.upsert(PlayerEntity(name = name.trim()))
+            playerRepository.upsertPlayer(PlayerEntity(name = name.trim()))
         }
     }
 
     fun deletePlayer(player: PlayerEntity) {
         viewModelScope.launch {
-            playerDao.delete(player.id)
+            playerRepository.deletePlayer(player.id)
             _selectedPlayers.remove(player)
         }
     }

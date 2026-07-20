@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -71,7 +72,7 @@ import schneaggchatv3mp.composeapp.generated.resources.search_user
 import schneaggchatv3mp.composeapp.generated.resources.send_friend_request
 import schneaggchatv3mp.composeapp.generated.resources.send_friend_request_description
 
-@OptIn(InternalResourceApi::class)
+@OptIn(InternalResourceApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun NewChat(
     modifier: Modifier = Modifier
@@ -162,55 +163,7 @@ fun NewChat(
                 )
             }
 
-            //pending friends view
-            if (pendingFriends.isNotEmpty()) {
-                Text(
-                    text = stringResource(Res.string.pending_friend_requests, pendingFriends.size),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                ),
-            ) {
-                items(
-                    items = pendingFriends,
-                    key = {it.id}
-                ) { friend ->
-                    UserButton(
-                        selectedChat = friend,
-                        useOnClickGes = true,
-                        onClickGes = {
-                            viewModel.onPendingFriendRequestClick(friend)
-                        },
-                        ownId = ownId
-                    )
-                    HorizontalDivider(
-                        thickness = 0.5.dp
-                    )
-                }
-            }
-
-
-
-            // Results Text
-            if (newChats.isNotEmpty()) {
-                Text(
-                    text = stringResource(Res.string.search_results, newChats.size),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
-
-            //New users lazycolumn
+            // Pending friend requests + search results in one list with sticky section headers
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -221,7 +174,43 @@ fun NewChat(
                     bottom = 16.dp
                 ),
             ) {
-                items(newChats) { user ->
+                if (pendingFriends.isNotEmpty()) {
+                    stickyHeader(key = "pending_header") {
+                        SectionHeader(
+                            text = stringResource(Res.string.pending_friend_requests, pendingFriends.size)
+                        )
+                    }
+                }
+
+                items(
+                    items = pendingFriends,
+                    key = { "pending_${it.id}" }
+                ) { friend ->
+                    UserButton(
+                        chat = friend,
+                        useOnClickGes = true,
+                        onClickGes = {
+                            viewModel.onPendingFriendRequestClick(friend)
+                        },
+                        ownId = ownId
+                    )
+                    HorizontalDivider(
+                        thickness = 0.5.dp
+                    )
+                }
+
+                if (newChats.isNotEmpty()) {
+                    stickyHeader(key = "search_results_header") {
+                        SectionHeader(
+                            text = stringResource(Res.string.search_results, newChats.size)
+                        )
+                    }
+                }
+
+                items(
+                    items = newChats,
+                    key = { "search_${it.id}" }
+                ) { user ->
 
                     var showFriendRequestAlert by remember { mutableStateOf(false) }
 
@@ -338,6 +327,22 @@ fun NewChat(
 }
 
 
+
+@Composable
+private fun SectionHeader(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(vertical = 8.dp)
+    )
+}
 
 @Composable
 fun ActionCard(

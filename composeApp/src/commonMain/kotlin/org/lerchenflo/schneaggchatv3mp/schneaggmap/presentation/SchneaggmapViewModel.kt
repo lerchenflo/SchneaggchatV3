@@ -9,18 +9,18 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
-import org.lerchenflo.schneaggchatv3mp.chat.domain.toSelectedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -36,9 +36,10 @@ class SchneaggmapViewModel(
     private val mapRepository: MapRepository,
     private val appRepository: AppRepository,
     private val preferenceManager: Preferencemanager,
-    private val globalViewModel: GlobalViewModel,
     private val locationService: LocationService,
     private val userRepository: UserRepository,
+
+    private val initialEntryId: String?
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SchneaggmapState())
@@ -64,7 +65,11 @@ class SchneaggmapViewModel(
         when (action) {
             SchneaggmapAction.OnBackClicked -> viewModelScope.launch { navigator.navigateBack() }
             SchneaggmapAction.ToggleFilterDropdown -> _state.update {
-                it.copy(isFilterDropdownVisible = !it.isFilterDropdownVisible, selectedEntry = null)
+                it.copy(
+                    isFilterDropdownVisible = !it.isFilterDropdownVisible,
+                    isMapStyleDropdownVisible = false,
+                    selectedEntry = null,
+                )
             }
             is SchneaggmapAction.ToggleMainType -> {
                 val enabled = state.value.enabledTypes
@@ -95,10 +100,10 @@ class SchneaggmapViewModel(
             is SchneaggmapAction.OnMapClick -> {
                 println("Onclick. Longclick: ${action.longClick}")
 
-                //Dismiss filter dropdown on map click
-                if (_state.value.isFilterDropdownVisible) {
+                //Dismiss filter/map-style dropdowns on map click
+                if (_state.value.isFilterDropdownVisible || _state.value.isMapStyleDropdownVisible) {
                     _state.update {
-                        it.copy(isFilterDropdownVisible = false)
+                        it.copy(isFilterDropdownVisible = false, isMapStyleDropdownVisible = false)
                     }
                 }
 
@@ -153,6 +158,10 @@ class SchneaggmapViewModel(
                         selectedUser = null
                     )
                 }
+            }
+
+            SchneaggmapAction.OnFocusEntryHandled -> {
+                _state.update { it.copy(focusEntryTarget = null) }
             }
 
             is SchneaggmapAction.OnEntryPopupSave -> {
@@ -226,14 +235,7 @@ class SchneaggmapViewModel(
 
             is SchneaggmapAction.OnOpenChatClick -> {
                 viewModelScope.launch {
-                    globalViewModel.onSelectChat(
-                        action.user.toSelectedChat(
-                            unreadCount = 0,
-                            unsentCount = 0,
-                            lastMessage = null
-                        )
-                    )
-                    navigator.navigate(Route.Chat)
+                    navigator.navigate(Route.Chat(chatId = action.user.id, isGroup = false))
                 }
 
                 _state.update { it.copy(selectedUser = null) }
@@ -242,12 +244,47 @@ class SchneaggmapViewModel(
             SchneaggmapAction.ToggleSnailTrails -> _state.update {
                 it.copy(showSnailTrails = !it.showSnailTrails)
             }
+
+            SchneaggmapAction.ToggleMapStyleDropdown -> _state.update {
+                it.copy(
+                    isMapStyleDropdownVisible = !it.isMapStyleDropdownVisible,
+                    isFilterDropdownVisible = false,
+                    selectedEntry = null,
+                )
+            }
+
+            is SchneaggmapAction.SelectMapStyle -> {
+                _state.update { it.copy(isMapStyleDropdownVisible = false) }
+                viewModelScope.launch {
+                    preferenceManager.saveMapStyleSetting(action.style)
+                }
+            }
         }
     }
 
     init {
+        // Opened with a specific entry (deep link): once the entry shows up in the database,
+        // show its popup and hand the screen a one-shot camera target to fly to.
+        if (initialEntryId != null) {
+            viewModelScope.launch {
+                val entry = mapRepository.getAllMapEntriesFlow()
+                    .mapNotNull { entries -> entries.firstOrNull { it.id == initialEntryId } }
+                    .first()
+
+                _state.update {
+                    it.copy(
+                        selectedEntry = entry,
+                        focusEntryTarget = entry.coordinates,
+                        isFilterDropdownVisible = false,
+                        // Make sure the entry's marker is actually visible on the map
+                        enabledTypes = it.enabledTypes + entry.locationData.map { data -> data.locationtype }
+                    )
+                }
+            }
+        }
+
         viewModelScope.launch {
-            appRepository.dataSync()
+            appRepository.dataSync(reason = "mapInit")
         }
 
         viewModelScope.launch {
@@ -262,9 +299,20 @@ class SchneaggmapViewModel(
         }
 
         viewModelScope.launch {
+            preferenceManager.getMergeMapUsersFlow()
+                .collectLatest { mergeUsers ->
+                    _state.update {
+                        it.copy(
+                            mergeUsers = mergeUsers
+                        )
+                    }
+                }
+        }
+
+        viewModelScope.launch {
             preferenceManager.getMapStyleSettingFlow()
                 .collectLatest { style ->
-                    _state.update { it.copy(mapStyleUrl = style.tileUrl) }
+                    _state.update { it.copy(mapStyle = style, mapStyleUrl = style.tileUrl) }
                 }
         }
 

@@ -29,7 +29,7 @@ import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
-import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Search
@@ -76,23 +76,29 @@ import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.domain.SelectedChat
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangelogPopup
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.app_name
 import schneaggchatv3mp.composeapp.generated.resources.chat_add_on_24px
 import schneaggchatv3mp.composeapp.generated.resources.filter
+import schneaggchatv3mp.composeapp.generated.resources.more_info
 import schneaggchatv3mp.composeapp.generated.resources.no_friends_found_search
 import schneaggchatv3mp.composeapp.generated.resources.pin_chat
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap
 import schneaggchatv3mp.composeapp.generated.resources.search_friend
+import schneaggchatv3mp.composeapp.generated.resources.search_section_chats
+import schneaggchatv3mp.composeapp.generated.resources.search_section_messages
 import schneaggchatv3mp.composeapp.generated.resources.settings
 import schneaggchatv3mp.composeapp.generated.resources.unpin_chat
 
@@ -108,6 +114,7 @@ fun Chatauswahlscreen(
 
     val availablegegners by viewModel.chatSelectorState.collectAsStateWithLifecycle(emptyList())
     val searchterm by viewModel.searchTerm.collectAsStateWithLifecycle()
+    val messageSearchResults by viewModel.messageSearchResults.collectAsStateWithLifecycle()
 
     val pendingFriendCount by viewModel.pendingFriendCount.collectAsStateWithLifecycle()
 
@@ -578,6 +585,18 @@ fun Chatauswahlscreen(
                         ),
                         state = liststate
                     ) {
+                        //Chats and messages are only split into labelled sections while a search
+                        //actually matched messages - otherwise the list looks exactly as before.
+                        val showSearchSections = messageSearchResults.isNotEmpty()
+
+                        if (showSearchSections && availablegegners.isNotEmpty()) {
+                            item(key = "search_header_chats") {
+                                SearchSectionHeader(
+                                    text = stringResource(Res.string.search_section_chats)
+                                )
+                            }
+                        }
+
                         items(
                             items = availablegegners,
                             key = {"${it.id}_${it.isGroup}"}
@@ -585,15 +604,14 @@ fun Chatauswahlscreen(
                             var userOptionDropdownExpanded by remember{mutableStateOf(false)}
 
                             UserButton(
-                                selectedChat = gegner,
+                                chat = gegner,
                                 useOnClickGes = false,
-                                lastMessage = gegner.lastmessage,
+                                lastMessage = gegner.lastMessage,
                                 onClickText = { viewModel.onChatSelected(gegner) },
                                 onLongClickText = {
                                     userOptionDropdownExpanded = true
                                 },
                                 onClickImage = {
-                                    //TODO: Fix for empty images (No profilepic)
                                     profilePictureDialogShown = true
                                     profilePictureFilePathTemp = gegner.profilePictureUrl
                                 },
@@ -613,12 +631,36 @@ fun Chatauswahlscreen(
                                 onMarkAsUnread = {
 
                                 },
-                                onOpenChatDetails = { TODO() },
+                                onOpenChatDetails = { viewModel.onOpenChatDetails(gegner) },
                             )
+                        }
+
+                        if (showSearchSections) {
+                            item(key = "search_header_messages") {
+                                SearchSectionHeader(
+                                    text = stringResource(
+                                        Res.string.search_section_messages,
+                                        messageSearchResults.size
+                                    )
+                                )
+                            }
+
+                            items(
+                                items = messageSearchResults,
+                                key = { "message_${it.messageId}" }
+                            ) { result ->
+                                MessageSearchResultRow(
+                                    result = result,
+                                    onClick = { viewModel.onMessageSearchResultSelected(result) }
+                                )
+                                HorizontalDivider(
+                                    thickness = 0.5.dp
+                                )
+                            }
                         }
                     }
 
-                if (availablegegners.isEmpty()){
+                if (availablegegners.isEmpty() && messageSearchResults.isEmpty()){
                     //Add friend if list is empty
                     Row(
                         modifier = Modifier
@@ -671,10 +713,84 @@ fun Chatauswahlscreen(
 }
 
 
+/** Small caps label separating the "chats" and "messages" blocks of the search results. */
+@Composable
+private fun SearchSectionHeader(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = text,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 12.dp, bottom = 4.dp, start = 6.dp),
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.primary
+    )
+}
+
+/**
+ * One matching message: the chat it was sent in, who wrote it, the matching text and when it was
+ * sent. Tapping it opens that chat scrolled to the message.
+ */
+@Composable
+private fun MessageSearchResultRow(
+    result: MessageSearchResult,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(6.dp)
+            .height(60.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        ProfilePictureView(
+            filepath = result.chatProfilePictureUrl,
+            modifier = Modifier
+                .size(50.dp)
+                .padding(end = 8.dp)
+                .clip(CircleShape)
+        )
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = result.chatName,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = millisToTimeDateOrYesterday(result.sendDate),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = LocalContentColor.current.copy(alpha = 0.6f)
+                )
+            }
+
+            Text(
+                text = "${result.senderName}: ${result.preview}",
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodySmall,
+                color = LocalContentColor.current.copy(alpha = 0.7f)
+            )
+        }
+    }
+}
+
+
 @Composable
 fun UserOptionDropdown(
     expanded: Boolean,
-    selectedChat: SelectedChat,
+    selectedChat: ChatListItem,
     onDismissRequest: () -> Unit,
     onPin: () -> Unit,
     onMarkAsUnread: () -> Unit,
@@ -690,7 +806,6 @@ fun UserOptionDropdown(
             onDismissRequest = onDismissRequest,
             modifier = modifier
         ) {
-            // todo unpin when pinned
             DropdownMenuItem(
                 text = {
                     if(selectedChat.pinned > 0L)
@@ -734,7 +849,6 @@ fun UserOptionDropdown(
 
  */
 
-            /* // für Chatdetails
             DropdownMenuItem(
                 text = { Text(stringResource(Res.string.more_info)) },
                 onClick = {
@@ -748,8 +862,6 @@ fun UserOptionDropdown(
                     )
                 }
             )
-
-             */
 
         }
     }
