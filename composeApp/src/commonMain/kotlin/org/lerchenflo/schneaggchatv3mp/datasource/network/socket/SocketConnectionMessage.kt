@@ -230,7 +230,8 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 email = null,
                                 emailVerifiedAt = null,
                                 createdAt = null,
-                                profilePictureUrl = ""
+                                //Local file path, the server never sends it - keep what we already have
+                                profilePictureUrl = existing?.profilePictureUrl ?: ""
                             ))
 
                             //Update profile picture if user is new or the profile pic got updated
@@ -308,7 +309,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 email = newUser.email,
                                 emailVerifiedAt = newUser.emailVerifiedAt,
                                 createdAt = newUser.createdAt,
-                                profilePictureUrl = ""
+                                profilePictureUrl = existing?.profilePictureUrl ?: ""
 
                             ))
 
@@ -334,7 +335,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     groupRepository.upsertGroup(Group(
                         id = socketMessage.group.id,
                         name = socketMessage.group.name,
-                        profilePictureUrl = "",
+                        profilePictureUrl = existing?.profilePictureUrl ?: "",
                         description = socketMessage.group.description,
                         createDate = socketMessage.group.createdAt,
                         updatedAt = socketMessage.group.updatedAt,

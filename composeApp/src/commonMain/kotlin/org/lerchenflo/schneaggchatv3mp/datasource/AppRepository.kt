@@ -1190,7 +1190,9 @@ class AppRepository(
                                 email = null,
                                 emailVerifiedAt = null,
                                 createdAt = null,
-                                profilePictureUrl = "",
+                                //Local file path, the server never sends it. Clearing it here would
+                                //blank the picture on every unrelated user change (e.g. lastSeen)
+                                profilePictureUrl = existing?.profilePictureUrl ?: "",
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt,
                             ))
                             if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
@@ -1224,7 +1226,7 @@ class AppRepository(
                                 email = newUser.email,
                                 emailVerifiedAt = newUser.emailVerifiedAt,
                                 createdAt = newUser.createdAt,
-                                profilePictureUrl = "",
+                                profilePictureUrl = existing?.profilePictureUrl ?: "",
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt,
                                 ))
                             if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
@@ -1251,7 +1253,7 @@ class AppRepository(
                                 email = null,
                                 emailVerifiedAt = null,
                                 createdAt = null,
-                                profilePictureUrl = "",
+                                profilePictureUrl = existing?.profilePictureUrl ?: "",
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt
                                 ))
 
@@ -2102,7 +2104,7 @@ class AppRepository(
                     groupRepository.upsertGroup(Group(
                         id = groupResponse.id,
                         name = groupResponse.name,
-                        profilePictureUrl = "",
+                        profilePictureUrl = existing?.profilePictureUrl ?: "",
                         description = groupResponse.description,
                         createDate = groupResponse.createdAt,
                         updatedAt = groupResponse.updatedAt,

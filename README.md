@@ -17,6 +17,16 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 # Changelog
 
+### 3.0.15
+
+#### Features
+- Standorteinträge zeigen letzten Bearbeiter an
+- Benachrichtigungen "Als gelesen markieren" button
+
+#### Bugfixes
+- Profilbilder neu laden repariert
+
+
 ### 3.0.14
 
 #### Highlights
