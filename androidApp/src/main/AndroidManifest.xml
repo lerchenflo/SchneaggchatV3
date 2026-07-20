@@ -55,6 +55,14 @@
             </intent-filter>
         </service>
 
+        <receiver
+            android:name="org.lerchenflo.schneaggchatv3mp.utilities.notifications.MarkAsReadReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="org.lerchenflo.schneaggchatv3mp.MARK_AS_READ" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

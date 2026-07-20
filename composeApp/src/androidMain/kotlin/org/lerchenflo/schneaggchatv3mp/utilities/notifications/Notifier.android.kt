@@ -6,13 +6,17 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.mark_as_read
 import kotlin.coroutines.resume
 
 private const val CHANNEL_ID = "schneaggchat_messages"
@@ -55,14 +59,26 @@ actual class Notifier(private val context: Context, private val permissionManage
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(NotificationConfig.iconResId)
             .setContentTitle(content.title)
             .setContentText(content.body)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
-            .build()
+
+        //Only message notifications carry a chat, only those can be marked as read
+        content.chatId?.let { chatId ->
+            //Tag the notification so every notification of this chat can be dismissed at once
+            builder.addExtras(Bundle().apply { putString(EXTRA_CHAT_ID, chatId) })
+            builder.addAction(
+                NotificationConfig.markAsReadIconResId,
+                runBlocking { getString(Res.string.mark_as_read) },
+                markAsReadIntent(chatId, content.groupChat, content.id)
+            )
+        }
+
+        val notification = builder.build()
         if (runBlocking { hasPermission() }) {
             @SuppressLint("MissingPermission")
             NotificationManagerCompat.from(context).notify(content.id, notification)
@@ -83,6 +99,21 @@ actual class Notifier(private val context: Context, private val permissionManage
 
     actual fun cancelMessageNotifications(ids: List<Int>) {
         ids.forEach { NotificationManagerCompat.from(context).cancel(it) }
+    }
+
+    private fun markAsReadIntent(chatId: String, groupChat: Boolean, notificationId: Int): PendingIntent {
+        val intent = Intent(context, MarkAsReadReceiver::class.java).apply {
+            action = ACTION_MARK_AS_READ
+            putExtra(EXTRA_CHAT_ID, chatId)
+            putExtra(EXTRA_GROUP_CHAT, groupChat)
+            putExtra(EXTRA_NOTIFICATION_ID, notificationId)
+        }
+        return PendingIntent.getBroadcast(
+            context,
+            notificationId,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
     }
 
     private fun createChannelIfNeeded() {

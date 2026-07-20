@@ -54,8 +54,8 @@ private suspend fun resolveMessage(
     val msg = Message(
         msgType = decoded.messageType,
         content = body,
-        senderId = "",
-        receiverId = "",
+        senderId = decoded.senderId,
+        receiverId = decoded.receiverId,
         groupMessage = decoded.groupMessage,
         senderAsString = decoded.senderName,
         myMessage = false,

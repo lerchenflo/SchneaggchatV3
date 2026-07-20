@@ -24,5 +24,15 @@ suspend fun Message.toNotificationContent(fallbackGroupName: String? = null): No
         MessageType.POLL  -> getString(Res.string.poll)
     }
     val notifId = id?.hashCode()?.absoluteValue ?: 0
-    return NotificationContent(id = notifId, title = title, body = body)
+
+    //Group messages live under the receiver (the group), single messages under the sender
+    val chatId = if (groupMessage) receiverId else senderId
+
+    return NotificationContent(
+        id = notifId,
+        title = title,
+        body = body,
+        chatId = chatId.ifBlank { null },
+        groupChat = groupMessage,
+    )
 }
