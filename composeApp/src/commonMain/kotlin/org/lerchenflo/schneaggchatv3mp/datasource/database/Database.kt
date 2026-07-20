@@ -19,7 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MapEntryDto
 @Database(
     entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, LogEntry::class, PlayerEntity::class, MapEntryDto::class, SnailTrailPointDto::class],
     exportSchema = true,
-    version = 66
+    version = 67
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)

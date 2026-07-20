@@ -67,6 +67,7 @@ import schneaggchatv3mp.composeapp.generated.resources.open_location_in_maps
 import schneaggchatv3mp.composeapp.generated.resources.save
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_delete
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_description
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_last_changed_by
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_last_changed_label
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_title
 
@@ -104,8 +105,20 @@ fun MapEntryInfoCard(
 
             Spacer(modifier = Modifier.height(4.dp))
 
+            //The editor name is resolved server side, but old cached entries may not have one yet
+            val lastChangedText = if (currentEntry.updatedByName.isNotBlank()) {
+                stringResource(
+                    Res.string.schneaggmap_entry_last_changed_by,
+                    currentEntry.updatedByName,
+                    millisToTimeDateOrYesterday(currentEntry.updatedAt)
+                )
+            } else {
+                stringResource(Res.string.schneaggmap_entry_last_changed_label) + ": " +
+                        millisToTimeDateOrYesterday(currentEntry.updatedAt)
+            }
+
             Text(
-                text = stringResource(Res.string.schneaggmap_entry_last_changed_label) + ": " + millisToTimeDateOrYesterday(currentEntry.updatedAt),
+                text = lastChangedText,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
