@@ -7,7 +7,7 @@
     <string name="settings">settings</string>
     <string name="tools_and_games">tools and games</string>
     <string name="filter">filter</string>
-    <string name="search_friend">search chats and messages ...</string>
+    <string name="search_friend">search friends and messages ...</string>
     <string name="search_section_chats">Chats</string>
     <string name="search_section_messages">Messages (%1$d)</string>
     <string name="no_status">no status</string>
@@ -270,7 +270,7 @@
     <string name="own_birthday_noti_title">Happy Birthday! &#127874;</string>
     <string name="own_birthday_noti_body">Wishing you a wonderful day!</string>
     <string name="friend_birthday_noti_title">%1$s has birthday today! &#127874;</string>
-    <string name="friend_birthday_noti_body">Don\'t forget to congratulate them!</string>
+    <string name="friend_birthday_noti_body">Don't forget to congratulate them!</string>
 
 
     <string name="tooltip_username">Choose a unique username others will see</string>
@@ -519,7 +519,7 @@
     <string name="poll_settings_infinite_custom_and_selected_answers_warning">WARNING: Users will be able to create and select unlimited answers!</string>
 
     <string name="poll_settings_limitperentry">Limit users per entry</string>
-    <string name="poll_settings_limitperentry_info">Set a maximum number of users who can vote for each entry (useful for bring lists)</string>
+    <string name="poll_settings_limitperentry_info">Set a maximum number of users who can vote for each entry</string>
     <string name="poll_option_maxvoters_withcount">Max %1$s users for this entry</string>
 
     <string name="poll_visibility_title">Visibility: %1$s</string>
@@ -677,7 +677,7 @@
     <string name="recap_load_failed">Couldn't load your recap.</string>
     <string name="recap_retry">Try again</string>
     <string name="recap_hello">Hey %1$s!</string>
-    <string name="recap_member_since">On board since %1$s — that\'s %2$d days.</string>
+    <string name="recap_member_since">On board since %1$s — that's %2$d days.</string>
     <string name="recap_logins_this_year">You logged into your account  %1$s times this year.</string>
     <string name="recap_all_time_messages">%1$s messages all-time</string>
     <string name="recap_type_text">Texts</string>
@@ -775,12 +775,22 @@
     <string name="changelog_no_details">No details available for this version.</string>
     <string name="changelog_got_it">Got it</string>
 
+    <!-- Contribute Popup -->
+    <string name="contribute_title">Help shape Schneaggchat</string>
+    <string name="contribute_message">This app only gets better if you speak up. Nothing improves on its own — if something bugs you or you're missing a feature, let us know!</string>
+    <string name="contribute_bug_title">Found a bug?</string>
+    <string name="contribute_bug_hint">Something crashing, broken or just feeling off? Report it, no matter how small.</string>
+    <string name="contribute_feature_title">Missing a feature?</string>
+    <string name="contribute_feature_hint">Tell us what you would like to see — many features started as a user request or got copied from other apps.</string>
+    <string name="contribute_open_form">Report a bug or request a feature</string>
+    <string name="contribute_later">Maybe later</string>
+
     <!-- Roadmap -->
     <string name="roadmap">Roadmap</string>
     <string name="roadmap_info">See what has already shipped and what is coming next</string>
     <string name="roadmap_status_done">Done</string>
     <string name="roadmap_status_upcoming">Planned</string>
-    <string name="roadmap_load_error">Couldn\'t load the roadmap. Check your connection and try again.</string>
+    <string name="roadmap_load_error">Couldn't load the roadmap. Check your connection and try again.</string>
     <string name="roadmap_retry">Retry</string>
     <string name="roadmap_view_issue">View issue #%1$d</string>
 

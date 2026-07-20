@@ -71,21 +71,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.runBlocking
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.BugReportDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangelogPopup
+import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ContributePopup
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
+import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
@@ -101,6 +107,9 @@ import schneaggchatv3mp.composeapp.generated.resources.search_section_chats
 import schneaggchatv3mp.composeapp.generated.resources.search_section_messages
 import schneaggchatv3mp.composeapp.generated.resources.settings
 import schneaggchatv3mp.composeapp.generated.resources.unpin_chat
+
+/** How long the contribute popup stays away between two appearances. */
+private val CONTRIBUTE_POPUP_INTERVAL_MILLIS = 19.days.inWholeMilliseconds
 
 @OptIn(ExperimentalMaterial3Api::class) // PullToRefreshBox is experimental
 @Composable
@@ -118,8 +127,12 @@ fun Chatauswahlscreen(
 
     val pendingFriendCount by viewModel.pendingFriendCount.collectAsStateWithLifecycle()
 
+    val shareUtils = koinInject<ShareUtils>()
+
     var profilePictureDialogShown by remember { mutableStateOf(false) }
     var changeLogDialogContent by remember { mutableStateOf<ChangelogEntry?>(null) }
+    var contributePopupShown by remember { mutableStateOf(false) }
+    var bugReportDialogShown by remember { mutableStateOf(false) }
 
     var profilePictureFilePathTemp by remember { mutableStateOf("") }
 
@@ -142,7 +155,9 @@ fun Chatauswahlscreen(
         val lastStartedVersion = preferencemanager.getLastStartedVersion()
         val currentVersion = appRepository.appVersion.getVersionName()
 
-        if (lastStartedVersion != currentVersion) {
+        val showChangelog = lastStartedVersion != currentVersion
+
+        if (showChangelog) {
 
             //println("showing changelog")
 
@@ -152,6 +167,22 @@ fun Chatauswahlscreen(
 
             preferencemanager.saveLastStartedVersion(currentVersion)
 
+        }
+
+        // Never two popups in the same launch — the contribute nudge waits for the next one
+        if (!showChangelog) {
+            val now = Clock.System.now().toEpochMilliseconds()
+            val lastShown = preferencemanager.getLastContributePopupShown()
+
+            when {
+                // First launch: seed the timestamp so the popup is due in two weeks, not now
+                lastShown == null -> preferencemanager.saveLastContributePopupShown(now)
+
+                now - lastShown >= CONTRIBUTE_POPUP_INTERVAL_MILLIS -> {
+                    contributePopupShown = true
+                    preferencemanager.saveLastContributePopupShown(now)
+                }
+            }
         }
 
     }
@@ -702,6 +733,30 @@ fun Chatauswahlscreen(
             ChangelogPopup(
                 onDismiss = { changeLogDialogContent = null },
                 content = it
+            )
+        }
+
+        if (contributePopupShown) {
+            ContributePopup(
+                onDismiss = { contributePopupShown = false },
+                onOpenReportForm = {
+                    contributePopupShown = false
+                    bugReportDialogShown = true
+                }
+            )
+        }
+
+        if (bugReportDialogShown) {
+            BugReportDialog(
+                onDismiss = { bugReportDialogShown = false },
+                onSubmit = { emailContent ->
+                    shareUtils.openMailClient(
+                        recipient = SUPPORT_EMAIL,
+                        subject = "Bug Report / Feature Request",
+                        body = emailContent
+                    )
+                    bugReportDialogShown = false
+                }
             )
         }
 
