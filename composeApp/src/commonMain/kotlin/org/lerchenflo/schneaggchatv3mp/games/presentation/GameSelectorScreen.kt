@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Leaderboard
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -48,6 +49,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.difficulty
 import schneaggchatv3mp.composeapp.generated.resources.games_daily_section
 import schneaggchatv3mp.composeapp.generated.resources.games_without_highscores
+import schneaggchatv3mp.composeapp.generated.resources.show_global_ranking
 import schneaggchatv3mp.composeapp.generated.resources.show_highscores
 import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 
@@ -62,6 +64,7 @@ fun GameSelectorScreen(
     val dev = SessionCache.requireLoggedIn()?.developer ?: return
 
     var highscoreGame by remember { mutableStateOf<GameId?>(null) }
+    var showGlobalRanking by remember { mutableStateOf(false) }
 
     Column{
         ActivityTitle(
@@ -76,11 +79,25 @@ fun GameSelectorScreen(
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp)
         )
 
-        DifficultySelector(
-            selected = GameDifficultySelection.selected,
-            onSelect = { GameDifficultySelection.selected = it },
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            DifficultySelector(
+                selected = GameDifficultySelection.selected,
+                onSelect = { GameDifficultySelection.selected = it },
+                modifier = Modifier.weight(1f)
+            )
+
+            IconButton(onClick = { showGlobalRanking = true }) {
+                Icon(
+                    imageVector = Icons.Default.Leaderboard,
+                    contentDescription = stringResource(Res.string.show_global_ranking),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
 
         val visibleGames = gamesList.filter { !it.inDev || dev }
         val (dailyGames, regularGames) = visibleGames.partition { it.daily }
@@ -180,6 +197,10 @@ fun GameSelectorScreen(
             initialDifficulty = GameDifficultySelection.selected,
             onDismiss = { highscoreGame = null }
         )
+    }
+
+    if (showGlobalRanking) {
+        GlobalRankingDialog(onDismiss = { showGlobalRanking = false })
     }
 }
 

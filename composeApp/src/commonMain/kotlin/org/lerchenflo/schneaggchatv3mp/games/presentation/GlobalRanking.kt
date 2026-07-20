@@ -1,24 +1,21 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -33,56 +30,49 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
-import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
-import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
-import org.lerchenflo.schneaggchatv3mp.games.domain.HighscoreEntry
+import org.lerchenflo.schneaggchatv3mp.games.domain.GlobalRankingEntry
 import org.lerchenflo.schneaggchatv3mp.games.domain.LeaderboardPeriod
-import org.lerchenflo.schneaggchatv3mp.games.domain.defaultLeaderboardPeriod
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.close
-import schneaggchatv3mp.composeapp.generated.resources.highscores_empty
-import schneaggchatv3mp.composeapp.generated.resources.highscores_error
-import schneaggchatv3mp.composeapp.generated.resources.highscores_period_all_time
-import schneaggchatv3mp.composeapp.generated.resources.highscores_period_daily
-import schneaggchatv3mp.composeapp.generated.resources.highscores_period_weekly
-import schneaggchatv3mp.composeapp.generated.resources.highscores_period_yearly
-import schneaggchatv3mp.composeapp.generated.resources.highscores_title
+import schneaggchatv3mp.composeapp.generated.resources.global_ranking_boards
+import schneaggchatv3mp.composeapp.generated.resources.global_ranking_empty
+import schneaggchatv3mp.composeapp.generated.resources.global_ranking_error
+import schneaggchatv3mp.composeapp.generated.resources.global_ranking_explanation
+import schneaggchatv3mp.composeapp.generated.resources.global_ranking_points
+import schneaggchatv3mp.composeapp.generated.resources.global_ranking_title
 
 /**
- * Shared UI state for the server leaderboard, embedded in each game's screen state.
+ * UI state for the cross-game leaderboard.
  */
-data class HighscoreUiState(
-    val entries: List<HighscoreEntry> = emptyList(),
+data class GlobalRankingUiState(
+    val entries: List<GlobalRankingEntry> = emptyList(),
     val isLoading: Boolean = false,
     val hasError: Boolean = false,
 )
 
 /**
- * Self-contained highscores dialog: fetches the leaderboard of [game] from the server
- * every time it is opened or another difficulty is selected.
+ * Self-contained ranking dialog over all games: fetches the global leaderboard from the server
+ * every time it is opened or another period is selected. Unlike the per-game highscores this
+ * has no difficulty filter — the server sums points over every game and difficulty.
  */
 @Composable
-fun HighscoresDialog(
-    game: GameId,
-    initialDifficulty: GameDifficulty,
+fun GlobalRankingDialog(
     onDismiss: () -> Unit,
 ) {
     val repository = koinInject<GameHighscoreRepository>()
-    var selectedDifficulty by remember { mutableStateOf(initialDifficulty) }
-    var selectedPeriod by remember { mutableStateOf(game.defaultLeaderboardPeriod) }
-    var state by remember { mutableStateOf(HighscoreUiState(isLoading = true)) }
+    var selectedPeriod by remember { mutableStateOf(LeaderboardPeriod.YEARLY) }
+    var state by remember { mutableStateOf(GlobalRankingUiState(isLoading = true)) }
 
-    LaunchedEffect(game, selectedDifficulty, selectedPeriod) {
-        state = HighscoreUiState(isLoading = true)
-        state = when (val result = repository.getHighscores(game, selectedDifficulty, selectedPeriod)) {
-            is NetworkResult.Success -> HighscoreUiState(entries = result.data)
-            is NetworkResult.Error -> HighscoreUiState(hasError = true)
+    LaunchedEffect(selectedPeriod) {
+        state = GlobalRankingUiState(isLoading = true)
+        state = when (val result = repository.getGlobalRanking(selectedPeriod)) {
+            is NetworkResult.Success -> GlobalRankingUiState(entries = result.data)
+            is NetworkResult.Error -> GlobalRankingUiState(hasError = true)
         }
     }
 
@@ -95,13 +85,6 @@ fun HighscoresDialog(
         },
         text = {
             Column {
-                DifficultySelector(
-                    selected = selectedDifficulty,
-                    onSelect = { selectedDifficulty = it },
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
                 PeriodSelector(
                     selected = selectedPeriod,
                     onSelect = { selectedPeriod = it },
@@ -109,7 +92,7 @@ fun HighscoresDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                GameHighscores(
+                GlobalRanking(
                     state = state,
                     modifier = Modifier.heightIn(max = 400.dp)
                 )
@@ -118,53 +101,27 @@ fun HighscoresDialog(
     )
 }
 
-@Composable
-internal fun LeaderboardPeriod.stringRes(): StringResource = when (this) {
-    LeaderboardPeriod.DAILY    -> Res.string.highscores_period_daily
-    LeaderboardPeriod.WEEKLY   -> Res.string.highscores_period_weekly
-    LeaderboardPeriod.YEARLY   -> Res.string.highscores_period_yearly
-    LeaderboardPeriod.ALL_TIME -> Res.string.highscores_period_all_time
-}
-
 /**
- * Row of chips to pick the leaderboard time window.
+ * Leaderboard over all games, highlighting the logged-in user's own entry.
  */
 @Composable
-internal fun PeriodSelector(
-    selected: LeaderboardPeriod,
-    onSelect: (LeaderboardPeriod) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier.horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        LeaderboardPeriod.entries.forEach { period ->
-            FilterChip(
-                selected = period == selected,
-                onClick = { onSelect(period) },
-                label = { Text(stringResource(period.stringRes())) },
-            )
-        }
-    }
-}
-
-/**
- * Reusable leaderboard for game screens. Shows the live server highscores of one game,
- * highlighting the logged-in user's own entry.
- */
-@Composable
-fun GameHighscores(
-    state: HighscoreUiState,
+fun GlobalRanking(
+    state: GlobalRankingUiState,
     modifier: Modifier = Modifier,
 ) {
     val ownUserId = SessionCache.requireLoggedIn()?.userId
 
     Column(modifier = modifier) {
         Text(
-            text = stringResource(Res.string.highscores_title),
+            text = stringResource(Res.string.global_ranking_title),
             style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Text(
+            text = stringResource(Res.string.global_ranking_explanation),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
         )
 
         when {
@@ -178,14 +135,14 @@ fun GameHighscores(
             }
             state.hasError -> {
                 Text(
-                    text = stringResource(Res.string.highscores_error),
+                    text = stringResource(Res.string.global_ranking_error),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error,
                 )
             }
             state.entries.isEmpty() -> {
                 Text(
-                    text = stringResource(Res.string.highscores_empty),
+                    text = stringResource(Res.string.global_ranking_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -195,7 +152,7 @@ fun GameHighscores(
                     modifier = Modifier.verticalScroll(rememberScrollState())
                 ) {
                     state.entries.forEach { entry ->
-                        HighscoreRow(
+                        GlobalRankingRow(
                             entry = entry,
                             isOwn = entry.userId == ownUserId,
                         )
@@ -207,8 +164,8 @@ fun GameHighscores(
 }
 
 @Composable
-private fun HighscoreRow(
-    entry: HighscoreEntry,
+private fun GlobalRankingRow(
+    entry: GlobalRankingEntry,
     isOwn: Boolean,
 ) {
     val contentColor = if (isOwn) MaterialTheme.colorScheme.onPrimaryContainer else Color.Unspecified
@@ -232,26 +189,31 @@ private fun HighscoreRow(
             color = contentColor,
             modifier = Modifier.width(32.dp)
         )
-        Text(
-            text = entry.username,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = if (isOwn) FontWeight.Bold else FontWeight.Normal,
-            color = contentColor,
-            modifier = Modifier.weight(1f),
-            maxLines = 1,
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = entry.username,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = if (isOwn) FontWeight.Bold else FontWeight.Normal,
+                color = contentColor,
+                maxLines = 1,
+            )
+            Text(
+                text = stringResource(
+                    Res.string.global_ranking_boards,
+                    entry.boardsPlayed,
+                    entry.gamesPlayed
+                ),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (isOwn) contentColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+            )
+        }
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = entry.score.toString(),
+            text = stringResource(Res.string.global_ranking_points, entry.points),
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
             color = contentColor,
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = formatGameTime(entry.timeMillis),
-            style = MaterialTheme.typography.bodySmall,
-            color = if (isOwn) contentColor else MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

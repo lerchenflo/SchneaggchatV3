@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.games.domain
 
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GlobalRankingEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.HighscoreEntryResponse
 
 /**
@@ -55,4 +56,26 @@ fun HighscoreEntryResponse.toHighscoreEntry(): HighscoreEntry = HighscoreEntry(
     score = score,
     timeMillis = timeMillis,
     achievedAt = achievedAt,
+)
+
+/**
+ * One row of the cross-game leaderboard. [points] is the sum of percentile points the user
+ * scored over every (game, difficulty) board they played — up to 100 per board.
+ */
+data class GlobalRankingEntry(
+    val rank: Int,
+    val userId: String,
+    val username: String,
+    val points: Long,
+    val boardsPlayed: Int,
+    val gamesPlayed: Int,
+)
+
+fun GlobalRankingEntryResponse.toGlobalRankingEntry(): GlobalRankingEntry = GlobalRankingEntry(
+    rank = rank,
+    userId = userId,
+    username = username,
+    points = points,
+    boardsPlayed = boardsPlayed,
+    gamesPlayed = gamesPlayed,
 )

@@ -32,6 +32,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GameScoreResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GithubIssueDto
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GlobalRankingResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.HighscoresResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoreRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest
@@ -1221,6 +1222,11 @@ class NetworkUtils(
 
     suspend fun getGameHighscores(gameId: String, difficulty: String, period: String): NetworkResult<HighscoresResponse, NetworkError> {
         return safeGet(endpoint = "/games/highscores?gameid=$gameId&difficulty=$difficulty&period=$period")
+    }
+
+    /** Cross-game leaderboard: percentile points summed over every board the user played. */
+    suspend fun getGlobalRanking(period: String): NetworkResult<GlobalRankingResponse, NetworkError> {
+        return safeGet(endpoint = "/games/globalranking?period=$period")
     }
 
     suspend fun submitGameScore(

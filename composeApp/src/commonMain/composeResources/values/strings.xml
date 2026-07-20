@@ -818,6 +818,13 @@
     <string name="game_over_final_time">Time: %1$s</string>
     <string name="game_restart">Restart</string>
     <string name="show_highscores">Show highscores</string>
+    <string name="global_ranking_title">Overall ranking</string>
+    <string name="global_ranking_explanation">Points over all games and difficulties</string>
+    <string name="global_ranking_error">Could not load the ranking</string>
+    <string name="global_ranking_empty">Nobody has played yet</string>
+    <string name="global_ranking_points">%1$d pts</string>
+    <string name="global_ranking_boards">%1$d boards · %2$d games</string>
+    <string name="show_global_ranking">Show overall ranking</string>
     <string name="difficulty">Difficulty</string>
     <string name="difficulty_low">Low</string>
     <string name="difficulty_medium">Medium</string>
