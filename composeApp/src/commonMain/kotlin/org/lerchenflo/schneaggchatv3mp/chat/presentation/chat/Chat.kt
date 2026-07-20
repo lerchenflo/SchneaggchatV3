@@ -143,6 +143,7 @@ import kotlin.time.Duration.Companion.milliseconds
 fun ChatScreen(
     chatId: String,
     isGroup: Boolean,
+    highlightMessageId: String? = null,
     modifier: Modifier = Modifier
         .fillMaxSize()
 ){
@@ -340,6 +341,13 @@ fun ChatScreen(
             if (displayItems.isNotEmpty()) {
                 LaunchedEffect(displayItems.first()) {
                     if (!initialScrollDone) {
+                        //Opened from the message search - the jump effect below scrolls to the
+                        //searched message instead of the unread divider.
+                        if (highlightMessageId != null) {
+                            initialScrollDone = true
+                            return@LaunchedEffect
+                        }
+
                         val dividerIndex = displayItems.indexOfFirst { it is MessageDisplayItem.NewMessagesDivider }
                         if (dividerIndex != -1) {
                             listState.scrollToItem(dividerIndex)
@@ -361,6 +369,27 @@ fun ChatScreen(
 
             // Id of the message that should briefly glow after jumping to it via a reply preview
             var highlightedMessageId by remember { mutableStateOf<String?>(null) }
+
+            // Opened from the chat selector's message search: scroll the searched message into view
+            // and glow it, the same way a reply preview jump does. Keyed on displayItems because the
+            // messages stream in asynchronously - the first emission may not contain it yet.
+            //Guarded inside the effect rather than around it: flipping the flag must not remove the
+            //effect from composition, which would cancel the glow before it is cleared again.
+            var messageJumpDone by remember(highlightMessageId) { mutableStateOf(false) }
+            LaunchedEffect(highlightMessageId, displayItems) {
+                if (highlightMessageId == null || messageJumpDone) return@LaunchedEffect
+
+                val targetIndex = displayItems.indexOfFirst {
+                    it is MessageDisplayItem.MessageItem && it.message.id == highlightMessageId
+                }
+                if (targetIndex == -1) return@LaunchedEffect
+
+                messageJumpDone = true
+                listState.scrollToItem(targetIndex)
+                highlightedMessageId = highlightMessageId
+                delay(1500.milliseconds)
+                highlightedMessageId = null
+            }
 
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),

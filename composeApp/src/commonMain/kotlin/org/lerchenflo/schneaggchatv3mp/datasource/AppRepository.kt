@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
@@ -47,6 +48,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
@@ -123,6 +125,11 @@ import schneaggchatv3mp.composeapp.generated.resources.messagesync
 import schneaggchatv3mp.composeapp.generated.resources.usersync
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
+
+//Message search in the chat selector: how much the user has to type before the message table is
+//scanned, and how many hits are kept so a common word cannot build a list of thousands of rows.
+private const val MESSAGE_SEARCH_MIN_TERM_LENGTH = 2
+private const val MESSAGE_SEARCH_RESULT_LIMIT = 50
 
 class AppRepository(
     private val database: AppDatabase,
@@ -884,6 +891,86 @@ class AppRepository(
 
         }.flowOn(Dispatchers.Default)
     }
+
+
+    /**
+     * Messages whose text matches [searchTerm], newest first, for the message section of the chat
+     * selector search. Returns an empty flow for terms shorter than [MESSAGE_SEARCH_MIN_TERM_LENGTH]
+     * so typing a single character never scans the whole message table.
+     *
+     * Matches message text (which doubles as the caption of image/audio messages) plus poll title,
+     * description and vote options. Deleted messages are skipped - their content is a tombstone.
+     */
+    fun getMessageSearchFlow(
+        searchTerm: String,
+        userId: String
+    ): Flow<List<MessageSearchResult>> {
+        val loweredSearch = searchTerm.trim().lowercase()
+        if (loweredSearch.length < MESSAGE_SEARCH_MIN_TERM_LENGTH) return flowOf(emptyList())
+
+        val messagesFlow = messageRepository.getAllMessages()
+        val usersFlow = userRepository.getAllUsersFlow()
+        val groupsFlow = groupRepository.getAllGroupswithMembersFlow()
+
+        return combine(messagesFlow, usersFlow, groupsFlow) { messages, users, groups ->
+            val userIdMap = users.associateBy { it.id }
+            val groupIdMap = groups.associateBy { it.id }
+
+            messages
+                .asSequence()
+                .filter { it.matchesSearchTerm(loweredSearch) }
+                .sortedByDescending { it.getSendDateAsLong() }
+                .take(MESSAGE_SEARCH_RESULT_LIMIT)
+                .mapNotNull { message ->
+                    val messageId = message.id ?: return@mapNotNull null
+
+                    //Resolve which chat this message belongs to: for groups that is always the
+                    //receiver, for direct messages it is whichever side is not us.
+                    val chatId: String
+                    val chatName: String
+                    val chatPicture: String
+                    if (message.isGroupMessage()) {
+                        chatId = message.receiverId
+                        val group = groupIdMap[chatId] ?: return@mapNotNull null
+                        chatName = group.name
+                        chatPicture = group.profilePictureUrl
+                    } else {
+                        chatId = if (message.senderId == userId) message.receiverId else message.senderId
+                        val partner = userIdMap[chatId] ?: return@mapNotNull null
+                        chatName = partner.nickName?.takeIf { it.isNotBlank() } ?: partner.name
+                        chatPicture = partner.profilePictureUrl
+                    }
+
+                    MessageSearchResult(
+                        messageId = messageId,
+                        chatId = chatId,
+                        isGroup = message.isGroupMessage(),
+                        chatName = chatName,
+                        chatProfilePictureUrl = chatPicture,
+                        senderName = userIdMap[message.senderId]?.name
+                            ?: message.senderAsString,
+                        preview = message.searchPreview(),
+                        sendDate = message.getSendDateAsLong(),
+                    )
+                }
+                .toList()
+        }.flowOn(Dispatchers.Default)
+    }
+
+    /** True when any searchable text of this message contains the already lowercased [term]. */
+    private fun Message.matchesSearchTerm(term: String): Boolean {
+        if (deleted) return false
+        if (content.lowercase().contains(term)) return true
+
+        val poll = poll ?: return false
+        return poll.title.lowercase().contains(term) ||
+                poll.description?.lowercase()?.contains(term) == true ||
+                poll.voteOptions.any { it.text.lowercase().contains(term) }
+    }
+
+    /** Text shown underneath a search result - the poll title stands in for polls without text. */
+    private fun Message.searchPreview(): String =
+        content.takeIf { it.isNotBlank() } ?: poll?.title.orEmpty()
 
 
     /*

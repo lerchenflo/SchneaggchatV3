@@ -7,7 +7,9 @@
     <string name="settings">settings</string>
     <string name="tools_and_games">tools and games</string>
     <string name="filter">filter</string>
-    <string name="search_friend">search your Friends ...</string>
+    <string name="search_friend">search chats and messages ...</string>
+    <string name="search_section_chats">Chats</string>
+    <string name="search_section_messages">Messages (%1$d)</string>
     <string name="no_status">no status</string>
     <string name="unknown_user">unknown user</string>
     <string name="chat_last_seen_status">last seen %1$s</string>
@@ -192,7 +194,7 @@
 
     <string name="steps_until_developer">in %1$s steps you are a developer</string>
     <string name="you_are_now_developer">you are now a developer</string>
-    <string name="you_are_already_developer">you are already are a developer</string>
+    <string name="you_are_already_developer">you are already a developer</string>
     <string name="developer_setting_info">Be careful with the developer settings. Make sure you know what you are doing.</string>
 
     <string name="misc_settings">Misc</string>

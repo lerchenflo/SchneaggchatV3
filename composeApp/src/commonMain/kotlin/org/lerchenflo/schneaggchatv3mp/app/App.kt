@@ -495,7 +495,8 @@ fun App() {
                         entry<Route.Chat> { route ->
                             ChatScreen(
                                 chatId = route.chatId,
-                                isGroup = route.isGroup
+                                isGroup = route.isGroup,
+                                highlightMessageId = route.highlightMessageId
                             )
                         }
                         entry<Route.ChatDetails> { route ->

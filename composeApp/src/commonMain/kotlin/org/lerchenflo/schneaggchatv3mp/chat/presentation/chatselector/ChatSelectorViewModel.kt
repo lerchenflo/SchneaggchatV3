@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -34,6 +35,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
@@ -46,6 +48,7 @@ import schneaggchatv3mp.composeapp.generated.resources.none
 import schneaggchatv3mp.composeapp.generated.resources.persons
 import schneaggchatv3mp.composeapp.generated.resources.unread
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
 
 class ChatSelectorViewModel(
     private val appRepository: AppRepository,
@@ -232,6 +235,48 @@ class ChatSelectorViewModel(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+
+
+    //Messages matching the search term, shown underneath the matching chats. Debounced because
+    //every keystroke otherwise re-scans every message.
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val messageSearchResults: StateFlow<List<MessageSearchResult>> = combine(
+        _searchTerm.debounce(250.milliseconds),
+        SessionCache.authState
+    ) { term, authState -> term to authState }
+        .flatMapLatest { (term, authState) ->
+            val loggedIn = authState as? SessionCache.AuthState.LoggedIn
+                ?: return@flatMapLatest flowOf(emptyList<MessageSearchResult>())
+
+            appRepository.getMessageSearchFlow(
+                searchTerm = term,
+                userId = loggedIn.userId
+            )
+        }
+        .flowOn(Dispatchers.Default)
+        .distinctUntilChanged()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
+
+    /** Opens the chat a search result lives in and jumps to that message. */
+    fun onMessageSearchResultSelected(result: MessageSearchResult) {
+        viewModelScope.launch {
+
+            //Chat opened, clear searchterm
+            _searchTerm.value = ""
+
+            navigator.navigate(
+                Route.Chat(
+                    chatId = result.chatId,
+                    isGroup = result.isGroup,
+                    highlightMessageId = result.messageId
+                )
+            )
+        }
+    }
 }
 
 enum class ChatFilter{

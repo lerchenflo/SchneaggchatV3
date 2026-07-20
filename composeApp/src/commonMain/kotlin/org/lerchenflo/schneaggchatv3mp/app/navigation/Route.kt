@@ -11,7 +11,7 @@ sealed interface Route : NavKey {
     @Serializable
     data object MessageChatSelector: Route
     @Serializable
-    data class Chat(val chatId: String, val isGroup: Boolean): Route
+    data class Chat(val chatId: String, val isGroup: Boolean, val highlightMessageId: String? = null): Route
     @Serializable
     data object NewChat: Route
     @Serializable

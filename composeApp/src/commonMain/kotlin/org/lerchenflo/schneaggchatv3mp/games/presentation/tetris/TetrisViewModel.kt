@@ -19,6 +19,7 @@ import kotlin.time.Duration.Companion.milliseconds
 data class TetrisState(
     val board: List<List<Color?>> = List(20) { List(10) { null } },
     val currentPiece: Tetromino? = null,
+    val nextPiece: Tetromino? = null,
     val piecePosition: Pair<Int, Int> = 0 to 0, // Row, Column
     val score: Int = 0,
     val isGameOver: Boolean = false,
@@ -95,6 +96,9 @@ data class Tetromino(
     }
 }
 
+/** Granularity of the game loop in ms — small enough for the soft drop to react instantly. */
+private const val LOOP_RESOLUTION = 25L
+
 class TetrisViewModel(
     private val gameHighscoreRepository: GameHighscoreRepository,
 ) : ViewModel() {
@@ -144,13 +148,21 @@ class TetrisViewModel(
     private fun startGameLoop() {
         gameLoopJob?.cancel()
         gameLoopJob = viewModelScope.launch {
+            var elapsedInTick = 0L
             while (state.value.isPlaying && !state.value.isGameOver) {
                 val currentTime = Clock.System.now().toEpochMilliseconds()
                 val gameTime = currentTime - gameStartTime
                 _state.update { it.copy(gameTime = gameTime) }
-                
-                delay(getCurrentTickRate().milliseconds)
-                moveDown()
+
+                // Tick in small slices so starting a soft drop takes effect right
+                // away instead of only after the current (slow) tick has elapsed.
+                delay(LOOP_RESOLUTION.milliseconds)
+                elapsedInTick += LOOP_RESOLUTION
+
+                if (elapsedInTick >= getCurrentTickRate()) {
+                    elapsedInTick = 0L
+                    moveDown()
+                }
             }
         }
     }
@@ -166,7 +178,7 @@ class TetrisViewModel(
         startGame()
     }
 
-    private fun spawnPiece() {
+    private fun randomPiece(): Tetromino {
         val type = TetrominoType.entries.random()
         val color = when (type) {
             TetrominoType.I -> Color.Cyan
@@ -177,18 +189,25 @@ class TetrisViewModel(
             TetrominoType.T -> Color.Magenta
             TetrominoType.Z -> Color.Red
         }
-        val piece = Tetromino(type, 0, color)
+        return Tetromino(type, 0, color)
+    }
+
+    private fun spawnPiece() {
+        // The piece shown in the preview becomes the falling one, and a new
+        // preview piece is drawn behind it.
+        val piece = _state.value.nextPiece ?: randomPiece()
         val startRow = 1 // Start slightly visible
         val startCol = 4
-        
+
         if (!isValidMove(piece, startRow, startCol)) {
-             _state.update { it.copy(isGameOver = true, isPlaying = false) }
+             _state.update { it.copy(isGameOver = true, isPlaying = false, nextPiece = null) }
              gameLoopJob?.cancel()
              submitScore()
         } else {
              _state.update {
                 it.copy(
                     currentPiece = piece,
+                    nextPiece = randomPiece(),
                     piecePosition = startRow to startCol
                 )
             }
