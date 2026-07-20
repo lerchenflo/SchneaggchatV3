@@ -39,6 +39,9 @@ class GlobalViewModel(
     private val appVersion: AppVersion
 ): ViewModel() {
 
+    /** Guards the app-resume handler so overlapping resume events are dropped instead of queued. */
+    private var appResumeJob: Job? = null
+
     init {
 
         NotificationManager.initialize()
@@ -57,26 +60,32 @@ class GlobalViewModel(
                 .collect {
                     //App resumed event, only if the user is logged in and online
 
+                    // Discard resume events that arrive while a previous one is still being
+                    // handled. The collector must not block: appResumedEvent has an
+                    // extraBufferCapacity of 1, so suspending here would park an event that
+                    // immediately re-triggers a full sync once we return.
+                    if (appResumeJob?.isActive == true) return@collect
+
                     val ownId = SessionCache.requireLoggedIn()?.userId ?: return@collect
 
                     if (SessionCache.isLoggedIn()) {
 
-                        startSocketConnection()
-                        updateLocationTracking()
+                        appResumeJob = viewModelScope.launch {
+                            startSocketConnection()
+                            updateLocationTracking()
 
-                        //println("App resumed and logged in, triggering sync...")
-                        appRepository.sendOfflineMessages(ownId)
-                        appRepository.dataSync()
+                            //println("App resumed and logged in, triggering sync...")
+                            appRepository.sendOfflineMessages(ownId)
+                            appRepository.dataSync(reason = "appResumed")
 
-                        //On resume clear all error notis
-                        NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)
+                            //On resume clear all error notis
+                            NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)
 
-                        //println("Incoming Data from app resume: ${IncomingDataManager.sharedText.value}")
-                        if(IncomingDataManager.isNewDataAvailable()){
-                            navigator.navigate(Route.MessageChatSelector) // todo build backstack?
+                            //println("Incoming Data from app resume: ${IncomingDataManager.sharedText.value}")
+                            if(IncomingDataManager.isNewDataAvailable()){
+                                navigator.navigate(Route.MessageChatSelector) // todo build backstack?
+                            }
                         }
-
-
                     }
                 }
         }
@@ -108,7 +117,7 @@ class GlobalViewModel(
                 if (SessionCache.isLoggedIn()) {
                     //println("App resumed and logged in, triggering sync...")
                     appRepository.sendOfflineMessages(ownId)
-                    appRepository.dataSync()
+                    appRepository.dataSync(reason = "appResumed")
 
                     //On resume clear all error notis
                     NotificationManager.removeNotification(NotificationManager.NotiIdType.ERROR.baseId)
@@ -172,7 +181,7 @@ class GlobalViewModel(
                 val ownId = SessionCache.requireLoggedIn()?.userId ?: return@collectLatest
                 if (SessionCache.isLoggedIn()) {
                     appRepository.sendOfflineMessages(ownId)
-                    appRepository.dataSync()
+                    appRepository.dataSync(reason = "notificationOpened")
                 }
             }
         }

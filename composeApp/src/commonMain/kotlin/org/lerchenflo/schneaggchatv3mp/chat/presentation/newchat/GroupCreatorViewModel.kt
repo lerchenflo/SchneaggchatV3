@@ -238,7 +238,7 @@ class GroupCreatorViewModel (
 
                 //Launch sync
                 CoroutineScope(Dispatchers.IO).launch {
-                    appRepository.dataSync()
+                    appRepository.dataSync(reason = "groupCreated")
                 }
 
                 //Navigate directly into the new group chat, keeping only the chat selector below it

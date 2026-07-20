@@ -89,7 +89,7 @@ class UserSettingsViewModel(
 
         viewModelScope.launch {
             appRepository.changeUserDetails(newEmail = newEmail, userId = userId)
-            appRepository.dataSync()
+            appRepository.dataSync(reason = "emailChanged")
         }
     }
 
@@ -98,7 +98,7 @@ class UserSettingsViewModel(
             val userId = SessionCache.requireLoggedIn()?.userId ?: return@launch
 
             appRepository.changeUserDetails(newStatus = newStatus, userId = userId)
-            appRepository.dataSync()
+            appRepository.dataSync(reason = "statusChanged")
         }
     }
 
@@ -107,7 +107,7 @@ class UserSettingsViewModel(
 
         viewModelScope.launch {
             appRepository.changeUserDetails(newBirthDate = newBirthDate, userId = userId)
-            appRepository.dataSync()
+            appRepository.dataSync(reason = "birthDateChanged")
         }
     }
 

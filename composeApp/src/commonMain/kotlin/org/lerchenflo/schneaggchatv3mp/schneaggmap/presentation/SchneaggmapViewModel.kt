@@ -284,7 +284,7 @@ class SchneaggmapViewModel(
         }
 
         viewModelScope.launch {
-            appRepository.dataSync()
+            appRepository.dataSync(reason = "mapInit")
         }
 
         viewModelScope.launch {

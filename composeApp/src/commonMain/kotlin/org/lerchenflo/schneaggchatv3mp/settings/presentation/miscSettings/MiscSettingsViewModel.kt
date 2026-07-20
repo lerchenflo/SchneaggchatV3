@@ -54,7 +54,7 @@ class MiscSettingsViewModel(
         viewModelScope.launch {
             appRepository.deleteAllAppData()
             applicationScope.launch {
-                appRepository.dataSync() //Trigger datasync that user does not get stuck in the email verify screen
+                appRepository.dataSync(reason = "appDataDeleted") //Trigger datasync that user does not get stuck in the email verify screen
             }
             navigator.navigate(Route.AutoLoginCredChecker, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
 

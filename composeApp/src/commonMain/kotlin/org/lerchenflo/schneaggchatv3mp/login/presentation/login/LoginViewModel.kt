@@ -102,7 +102,7 @@ class LoginViewModel(
                         if (success) {
                             println("Login erfolgreich, triggering data sync")
                             applicationScope.launch {
-                                appRepository.dataSync()
+                                appRepository.dataSync(reason = "loginSuccess")
                             }
                             viewModelScope.launch {
                                 navigator.navigate(Route.EmailVerifiedCheck, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))

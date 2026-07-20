@@ -801,7 +801,6 @@
     <string name="morse_challenge_type_text">Tipp da Text in Morsecode</string>
 
     <!-- Location Groups -->
-    <string name="location_group_street">Stroß</string>
     <string name="location_group_nature_activities">Natur &amp; Aktivitäta</string>
     <string name="location_group_social_entertainment">Sozial &amp; Unterhaltung</string>
     <string name="location_group_food">Essen</string>

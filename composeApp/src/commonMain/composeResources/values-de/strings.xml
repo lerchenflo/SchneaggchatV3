@@ -809,7 +809,7 @@
     <string name="morse_challenge_type_text">Tippe den Text in Morsecode:</string>
 
     <!-- Location Groups -->
-    <string name="location_group_street">Straße</string>
+    <string name="location_group_driving">Fahren</string>
     <string name="location_group_nature_activities">Natur &amp; Aktivitäten</string>
     <string name="location_group_social_entertainment">Sozial &amp; Unterhaltung</string>
     <string name="location_group_food">Essen</string>

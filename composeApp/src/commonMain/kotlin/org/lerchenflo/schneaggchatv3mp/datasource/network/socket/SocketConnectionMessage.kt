@@ -361,7 +361,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
 
             //Friend request was sent
             is SocketConnectionMessage.FriendRequest -> {
-                appRepository.dataSync()
+                appRepository.dataSync(reason = "socketFriendRequest")
                 if (socketMessage.accepted) {
                     NotificationManager.showNotification(
                         titletext = getString(Res.string.new_friend_accepted_noti),

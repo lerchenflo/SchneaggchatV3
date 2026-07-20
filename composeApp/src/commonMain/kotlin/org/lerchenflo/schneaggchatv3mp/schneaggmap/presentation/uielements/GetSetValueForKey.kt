@@ -29,7 +29,16 @@ fun LocationData.getValueByKey(key: String): AttributeValue? = when (this) {
         "onlyOnWeekends"   -> onlyOnWeekends
         else               -> null
     }
-    is LocationData.Viewpoint        -> null
+    is LocationData.OffroadMotorcycle -> when (key) {
+        "legal"            -> legal
+        "motocross"        -> motocross
+        "enduro"           -> enduro
+        else               -> null
+    }
+    is LocationData.Viewpoint        -> when (key) {
+        "lieDownFriendly"  -> lieDownFriendly
+        else               -> null
+    }
 
     // Nature & Activities
     is LocationData.Camping          -> when (key) {
@@ -42,6 +51,7 @@ fun LocationData.getValueByKey(key: String): AttributeValue? = when (this) {
     is LocationData.SwimmingLocation -> when (key) {
         "indoor"            -> indoor
         "jumpSpot"           -> jumpSpot
+        "lieDownFriendly"   -> lieDownFriendly
         else                -> null
     }
 
@@ -50,6 +60,12 @@ fun LocationData.getValueByKey(key: String): AttributeValue? = when (this) {
         "goodNet"           -> goodNet
         "goodField"         -> goodField
         "outdoor"           -> outdoor
+        else                -> null
+    }
+    is LocationData.Bicycle          -> when (key) {
+        "legal"             -> legal
+        "difficulty"        -> difficulty
+        "undergroundType"   -> undergroundType
         else                -> null
     }
     is LocationData.OutdoorFitness   -> when (key) {
@@ -131,7 +147,16 @@ fun LocationData.withValueForKey(key: String, value: AttributeValue): LocationDa
         "onlyOnWeekends"    -> copy(onlyOnWeekends = value)
         else                -> this
     }
-    is LocationData.Viewpoint        -> this
+    is LocationData.OffroadMotorcycle -> when (key) {
+        "legal"             -> copy(legal = value)
+        "motocross"         -> copy(motocross = value)
+        "enduro"            -> copy(enduro = value)
+        else                -> this
+    }
+    is LocationData.Viewpoint        -> when (key) {
+        "lieDownFriendly"   -> copy(lieDownFriendly = value)
+        else                -> this
+    }
 
     // Nature & Activities
     is LocationData.Camping          -> when (key) {
@@ -144,6 +169,7 @@ fun LocationData.withValueForKey(key: String, value: AttributeValue): LocationDa
     is LocationData.SwimmingLocation -> when (key) {
         "indoor"            -> copy(indoor = value)
         "jumpSpot"           -> copy(jumpSpot = value)
+        "lieDownFriendly"   -> copy(lieDownFriendly = value)
         else                -> this
     }
 
@@ -152,6 +178,12 @@ fun LocationData.withValueForKey(key: String, value: AttributeValue): LocationDa
         "goodNet"           -> copy(goodNet = value)
         "goodField"         -> copy(goodField = value)
         "outdoor"           -> copy(outdoor = value)
+        else                -> this
+    }
+    is LocationData.Bicycle          -> when (key) {
+        "legal"             -> copy(legal = value)
+        "difficulty"        -> copy(difficulty = value)
+        "undergroundType"   -> copy(undergroundType = value)
         else                -> this
     }
     is LocationData.OutdoorFitness   -> when (key) {

@@ -99,7 +99,7 @@ class EmailVerifiedCheckViewModel(
                 )
             }
             val syncJob = applicationScope.launch {
-                appRepository.dataSync() //Launch in application scope to not cancel when logging in suddenly
+                appRepository.dataSync(reason = "emailVerifiedCheck") //Launch in application scope to not cancel when logging in suddenly
             }
             syncJob.join() //await data sync finish
 
@@ -114,7 +114,7 @@ class EmailVerifiedCheckViewModel(
     init {
 
         applicationScope.launch {
-            appRepository.dataSync()
+            appRepository.dataSync(reason = "emailVerifiedCheckInit")
         }
 
 

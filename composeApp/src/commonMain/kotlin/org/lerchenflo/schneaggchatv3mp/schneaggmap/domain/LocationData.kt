@@ -12,11 +12,12 @@ import schneaggchatv3mp.composeapp.generated.resources.*
 
 enum class LocationType {
 
-    // Street
+    // Driving
     RADAR,
     POLICE,
     MOUNTAIN_STREET,
     WHEELIESPOT,
+    OFFROAD_MOTORCYCLE,
 
     // Nature & Activities
 
@@ -28,6 +29,7 @@ enum class LocationType {
 
     // Sport
     VOLLEYBALL,
+    BICYCLE,
     OUTDOOR_FITNESS,
     TABLE_TENNIS,
     TENNIS,
@@ -47,9 +49,9 @@ enum class LocationType {
 
 
 enum class LocationGroup(val types: List<LocationType>) {
-    STREET(listOf(RADAR, POLICE, MOUNTAIN_STREET, WHEELIESPOT)),
+    DRIVING(listOf(RADAR, POLICE, MOUNTAIN_STREET, WHEELIESPOT, OFFROAD_MOTORCYCLE)),
     NATURE_ACTIVITIES(listOf(SIGHTSEEING, VIEWPOINT, CAMPING, SWIMMING)),
-    SPORT(listOf(VOLLEYBALL, OUTDOOR_FITNESS, TABLE_TENNIS, TENNIS)),
+    SPORT(listOf(VOLLEYBALL, BICYCLE, OUTDOOR_FITNESS, TABLE_TENNIS, TENNIS)),
     SOCIAL_ENTERTAINMENT(listOf(PARTY)),
     FOOD(listOf(FOOD_KEBAB, FOOD_PIZZA, FOOD_BURGER, FOOD_BEER, FOOD_ASIAN, FOOD_GREEK, FOOD_OTHER)),
 }
@@ -135,11 +137,38 @@ sealed class LocationData {
     }
 
     @Serializable
+    @SerialName("offroad_motorcycle")
+    data class OffroadMotorcycle(
+        val legal: AttributeValue,
+        val motocross: AttributeValue? = null,
+        val enduro: AttributeValue? = null,
+    ) : LocationData() {
+        override val locationtype = OFFROAD_MOTORCYCLE
+
+        val legalValue     get() = legal.asBool
+        val motocrossValue get() = motocross?.asBool
+        val enduroValue    get() = enduro?.asBool
+
+        override fun schema() = listOf(
+            AttributeDefinition.BoolDef(key = "legal",     required = true),
+            AttributeDefinition.BoolDef(key = "motocross", required = false),
+            AttributeDefinition.BoolDef(key = "enduro",    required = false),
+        )
+    }
+
+    @Serializable
     @SerialName("viewpoint")
-    class Viewpoint : LocationData() {
+    data class Viewpoint(
+        //Defaulted so map entries cached before this attribute existed still deserialize
+        val lieDownFriendly: AttributeValue? = null,
+    ) : LocationData() {
         override val locationtype = VIEWPOINT
 
-        override fun schema() = emptyList<AttributeDefinition>()
+        val lieDownFriendlyValue get() = lieDownFriendly?.asBool
+
+        override fun schema() = listOf(
+            AttributeDefinition.BoolDef(key = "lieDownFriendly", required = false),
+        )
     }
 
 
@@ -173,15 +202,19 @@ sealed class LocationData {
     data class SwimmingLocation(
         val indoor: AttributeValue?,
         val jumpSpot: AttributeValue?,
+        //Defaulted so map entries cached before this attribute existed still deserialize
+        val lieDownFriendly: AttributeValue? = null,
     ) : LocationData() {
         override val locationtype = SWIMMING
 
-        val indoorValue   get() = indoor?.asBool
-        val jumpSpotValue get() = jumpSpot?.asBool
+        val indoorValue          get() = indoor?.asBool
+        val jumpSpotValue        get() = jumpSpot?.asBool
+        val lieDownFriendlyValue get() = lieDownFriendly?.asBool
 
         override fun schema() = listOf(
-            AttributeDefinition.BoolDef(key = "indoor",   required = false),
-            AttributeDefinition.BoolDef(key = "jumpSpot", required = false),
+            AttributeDefinition.BoolDef(key = "indoor",          required = false),
+            AttributeDefinition.BoolDef(key = "jumpSpot",        required = false),
+            AttributeDefinition.BoolDef(key = "lieDownFriendly", required = false),
         )
     }
 
@@ -205,6 +238,26 @@ sealed class LocationData {
             AttributeDefinition.BoolDef(key = "goodNet",   required = false),
             AttributeDefinition.BoolDef(key = "goodField", required = false),
             AttributeDefinition.BoolDef(key = "outdoor",   required = false),
+        )
+    }
+
+    @Serializable
+    @SerialName("bicycle")
+    data class Bicycle(
+        val legal: AttributeValue,
+        val difficulty: AttributeValue,
+        val undergroundType: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = BICYCLE
+
+        val legalValue           get() = legal.asBool
+        val difficultyValue      get() = difficulty.asInt
+        val undergroundTypeValue get() = undergroundType?.asString
+
+        override fun schema() = listOf(
+            AttributeDefinition.BoolDef  (key = "legal",           required = true),
+            AttributeDefinition.IntDef   (key = "difficulty",      required = true, min = 1, max = 10),
+            AttributeDefinition.StringDef(key = "undergroundType", required = false),
         )
     }
 
@@ -387,10 +440,12 @@ fun LocationType.toSimpleLocationData(): LocationData = when (this) {
     POLICE          -> LocationData.Police(lastSeen = null)
     MOUNTAIN_STREET -> LocationData.MountainStreet(null, null, null)
     WHEELIESPOT     -> LocationData.Wheeliespot(onlyOnWeekends = null)
-    VIEWPOINT       -> LocationData.Viewpoint()
+    OFFROAD_MOTORCYCLE -> LocationData.OffroadMotorcycle(legal = AttributeValue.BoolValue(false), motocross = null, enduro = null)
+    VIEWPOINT       -> LocationData.Viewpoint(lieDownFriendly = null)
     CAMPING         -> LocationData.Camping(official = AttributeValue.BoolValue(true), waterDistance = null, sittingPossibility = null, grillPossibility = null)
-    SWIMMING        -> LocationData.SwimmingLocation(indoor = null, jumpSpot = null)
+    SWIMMING        -> LocationData.SwimmingLocation(indoor = null, jumpSpot = null, lieDownFriendly = null)
     VOLLEYBALL      -> LocationData.Volleyball(goodNet = null, goodField = null, outdoor = null)
+    BICYCLE         -> LocationData.Bicycle(legal = AttributeValue.BoolValue(true), difficulty = AttributeValue.IntValue(1), undergroundType = null)
     OUTDOOR_FITNESS -> LocationData.OutdoorFitness(shadow = null)
     TABLE_TENNIS    -> LocationData.TableTennis(`private` = null)
     TENNIS          -> LocationData.Tennis(paddle = null)
@@ -424,6 +479,18 @@ fun AttributeDefinition.label(): String {
 
         // Wheelie Spot
         "onlyOnWeekends"    -> stringResource(Res.string.location_wheeliespot_only_on_weekends)
+
+        // Offroad Motorcycle
+        "legal"             -> stringResource(Res.string.location_legal)
+        "motocross"         -> stringResource(Res.string.location_offroad_motocross)
+        "enduro"            -> stringResource(Res.string.location_offroad_enduro)
+
+        // Bicycle
+        "difficulty"        -> stringResource(Res.string.location_bicycle_difficulty)
+        "undergroundType"   -> stringResource(Res.string.location_bicycle_underground_type)
+
+        // Viewpoint & Swimming
+        "lieDownFriendly"   -> stringResource(Res.string.location_lie_down_friendly)
 
         // Camping
         "official"           -> stringResource(Res.string.location_camping_official)
@@ -474,10 +541,12 @@ fun LocationType.stringRes(): StringResource = when (this) {
     POLICE          -> Res.string.location_type_police
     MOUNTAIN_STREET -> Res.string.location_type_mountain_street
     WHEELIESPOT     -> Res.string.location_type_wheeliespot
+    OFFROAD_MOTORCYCLE -> Res.string.location_type_offroad_motorcycle
     VIEWPOINT       -> Res.string.location_type_viewpoint
     CAMPING         -> Res.string.location_type_camping
     SWIMMING        -> Res.string.location_type_swimming
     VOLLEYBALL      -> Res.string.location_type_volleyball
+    BICYCLE         -> Res.string.location_type_bicycle
     OUTDOOR_FITNESS -> Res.string.location_type_outdoor_fitness
     TABLE_TENNIS    -> Res.string.location_type_table_tennis
     TENNIS          -> Res.string.location_type_tennis
@@ -494,7 +563,7 @@ fun LocationType.stringRes(): StringResource = when (this) {
 
 @Composable
 fun LocationGroup.stringRes(): StringResource = when (this) {
-    LocationGroup.STREET               -> Res.string.location_group_street
+    LocationGroup.DRIVING              -> Res.string.location_group_driving
     LocationGroup.NATURE_ACTIVITIES    -> Res.string.location_group_nature_activities
     LocationGroup.SPORT                -> Res.string.location_group_sport
     LocationGroup.SOCIAL_ENTERTAINMENT -> Res.string.location_group_social_entertainment

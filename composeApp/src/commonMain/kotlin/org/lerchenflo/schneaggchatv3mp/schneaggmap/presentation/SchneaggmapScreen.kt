@@ -133,19 +133,26 @@ import org.maplibre.spatialk.units.extensions.inMeters
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.icon_badespot
 import schneaggchatv3mp.composeapp.generated.resources.icon_beer
+import schneaggchatv3mp.composeapp.generated.resources.icon_bicycle
 import schneaggchatv3mp.composeapp.generated.resources.icon_burger
 import schneaggchatv3mp.composeapp.generated.resources.icon_camping
 import schneaggchatv3mp.composeapp.generated.resources.icon_chinese_food
 import schneaggchatv3mp.composeapp.generated.resources.icon_doener
 import schneaggchatv3mp.composeapp.generated.resources.icon_food
+import schneaggchatv3mp.composeapp.generated.resources.icon_food_greek
+import schneaggchatv3mp.composeapp.generated.resources.icon_offroad_motorcycle
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
+import schneaggchatv3mp.composeapp.generated.resources.icon_outdoor_fitness
 import schneaggchatv3mp.composeapp.generated.resources.icon_partylocation
 import schneaggchatv3mp.composeapp.generated.resources.icon_pizza
 import schneaggchatv3mp.composeapp.generated.resources.icon_police
 import schneaggchatv3mp.composeapp.generated.resources.icon_radar_variant
 import schneaggchatv3mp.composeapp.generated.resources.icon_sightseeing
 import schneaggchatv3mp.composeapp.generated.resources.icon_street
+import schneaggchatv3mp.composeapp.generated.resources.icon_table_tennis
+import schneaggchatv3mp.composeapp.generated.resources.icon_tennis
 import schneaggchatv3mp.composeapp.generated.resources.icon_viewpoint
+import schneaggchatv3mp.composeapp.generated.resources.icon_volleyball
 import schneaggchatv3mp.composeapp.generated.resources.icon_wheeliespot
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 import kotlin.math.PI
@@ -587,19 +594,21 @@ private fun SchneaggmapMapContent(
                 POLICE -> Res.drawable.icon_police
                 MOUNTAIN_STREET -> Res.drawable.icon_street
                 WHEELIESPOT -> Res.drawable.icon_wheeliespot
+                OFFROAD_MOTORCYCLE -> Res.drawable.icon_offroad_motorcycle
                 VIEWPOINT -> Res.drawable.icon_viewpoint
                 FOOD_KEBAB -> Res.drawable.icon_doener
                 FOOD_PIZZA -> Res.drawable.icon_pizza
                 FOOD_BURGER -> Res.drawable.icon_burger
                 FOOD_BEER -> Res.drawable.icon_beer
                 FOOD_ASIAN -> Res.drawable.icon_chinese_food
-                FOOD_GREEK -> Res.drawable.icon_food //TODO: CHANGE ICON
+                FOOD_GREEK -> Res.drawable.icon_food_greek
                 FOOD_OTHER -> Res.drawable.icon_food
 
-                VOLLEYBALL -> Res.drawable.icon_camping //TODO: CHANGE ICON
-                OUTDOOR_FITNESS -> Res.drawable.icon_camping //TODO: CHANGE ICON
-                TABLE_TENNIS -> Res.drawable.icon_camping //TODO: CHANGE ICON
-                TENNIS -> Res.drawable.icon_camping //TODO: CHANGE ICON
+                VOLLEYBALL -> Res.drawable.icon_volleyball
+                BICYCLE -> Res.drawable.icon_bicycle
+                OUTDOOR_FITNESS -> Res.drawable.icon_outdoor_fitness
+                TABLE_TENNIS -> Res.drawable.icon_table_tennis
+                TENNIS -> Res.drawable.icon_tennis
             }
         }
     }

@@ -82,7 +82,7 @@ class ChatSelectorViewModel(
         }
 
         viewModelScope.launch {
-            appRepository.dataSync()
+            //appRepository.dataSync(reason = "chatSelectorInit") //Already runs from the app resumed event
             getChangelog()
         }
 
@@ -99,7 +99,7 @@ class ChatSelectorViewModel(
         refreshJob = viewModelScope.launch {
             try {
                 appRepository.sendOfflineMessages(ownId)
-                appRepository.dataSync()
+                appRepository.dataSync(reason = "chatSelectorRefresh")
             } catch (e: Exception) {
                 ensureActive()
                 loggingRepository.logWarning("ChatSelector refresh failed: ${e.message}")

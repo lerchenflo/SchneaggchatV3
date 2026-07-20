@@ -343,13 +343,18 @@ class AppRepository(
     private val _dataSyncState = MutableStateFlow(DataSyncState())
     val dataSyncState: StateFlow<DataSyncState> = _dataSyncState.asStateFlow()
 
-    suspend fun dataSync() {
+    /**
+     * @param reason short tag identifying what triggered this sync, logged so the origin of a
+     * sync run is visible. Keep it stable and call-site specific (e.g. "appResumed").
+     */
+    suspend fun dataSync(reason: String) {
 
         SessionCache.requireLoggedIn() ?: return
 
         if (dataSyncLock.isLocked) {
-            println("Datasync started but already running")
+            println("Datasync started but already running (reason: $reason)")
             dataSyncLock.withLock {  } //Awaiting finish and return to apply normal data sync await logic
+            return
         }
 
         dataSyncLock.withLock {
@@ -363,7 +368,7 @@ class AppRepository(
                     jobs = it.jobs.map { job -> job.copy(status = DataSyncJobStatus.IDLE, error = null) }
                 )
             }
-            println("Starting datasync")
+            println("Starting datasync (reason: $reason)")
 
             try {
                 coroutineScope {
@@ -492,7 +497,7 @@ class AppRepository(
                     }
                 }
 
-                println("Data sync finished")
+                println("Data sync finished, started from $reason")
             } finally {
                 _dataSyncState.update {
                     it.copy(
@@ -1231,7 +1236,7 @@ class AppRepository(
         when (val success = networkUtils.sendFriendRequest(friendId)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "friendRequestSent")
                 return true
             }
         }
@@ -1244,7 +1249,7 @@ class AppRepository(
         when (val success = networkUtils.denyFriendRequest(friendId)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "friendRequestDenied")
                 return true
             }
         }
@@ -1255,7 +1260,7 @@ class AppRepository(
         when (val success = networkUtils.removeFriend(friendId)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "friendRemoved")
                 return true
             }
         }
@@ -1266,7 +1271,7 @@ class AppRepository(
         when (val success = networkUtils.changeUsername(newUsername)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "usernameChanged")
                 return true
             }
         }
@@ -1287,7 +1292,7 @@ class AppRepository(
         when (val success = networkUtils.changeProfilePic(newPic)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "profilePicChanged")
                 return true
             }
         }
@@ -2065,7 +2070,7 @@ class AppRepository(
         when (val success = networkUtils.changeGroupProfilePic(newPic, groupId)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "groupProfilePicChanged")
                 return true
             }
         }
@@ -2075,7 +2080,7 @@ class AppRepository(
         when (val success = networkUtils.changeGroupDescription(newDescription, groupId)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "groupDescriptionChanged")
                 return true
             }
         }
@@ -2085,7 +2090,7 @@ class AppRepository(
         when (val success = networkUtils.changeGroupName(newName, groupId)){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "groupNameChanged")
                 return true
             }
         }
@@ -2099,7 +2104,7 @@ class AppRepository(
         )){
             is NetworkResult.Error<*> -> return false
             is NetworkResult.Success<*> -> {
-                dataSync()
+                dataSync(reason = "groupMembersChanged")
                 return true
             }
         }

@@ -838,7 +838,7 @@
     <string name="morse_challenge_type_text">Type the text in morse code:</string>
 
     <!-- Location Groups -->
-    <string name="location_group_street">Street</string>
+    <string name="location_group_driving">Driving</string>
     <string name="location_group_nature_activities">Nature &amp; Activities</string>
     <string name="location_group_sport">Sport</string>
     <string name="location_group_social_entertainment">Social &amp; Entertainment</string>
@@ -849,10 +849,12 @@
     <string name="location_type_police">Police</string>
     <string name="location_type_mountain_street">Mountain Street</string>
     <string name="location_type_wheeliespot">Wheelie Spot</string>
+    <string name="location_type_offroad_motorcycle">Offroad Motorcycle</string>
     <string name="location_type_viewpoint">Viewpoint</string>
     <string name="location_type_camping">Camping</string>
     <string name="location_type_swimming">Swimming</string>
     <string name="location_type_volleyball">Volleyball</string>
+    <string name="location_type_bicycle">Bicycle Trail</string>
     <string name="location_type_outdoor_fitness">Outdoor Fitness</string>
     <string name="location_type_table_tennis">Table Tennis</string>
     <string name="location_type_tennis">Tennis</string>
@@ -881,6 +883,12 @@
 
     <!-- Wheelie Spot -->
     <string name="location_wheeliespot_only_on_weekends">Only on Weekends</string>
+    <string name="location_legal">Legal</string>
+    <string name="location_offroad_motocross">Motocross</string>
+    <string name="location_offroad_enduro">Enduro</string>
+    <string name="location_bicycle_difficulty">Difficulty (1-10)</string>
+    <string name="location_bicycle_underground_type">Underground Type</string>
+    <string name="location_lie_down_friendly">Good for Lying Down</string>
 
     <!-- Camping -->
     <string name="location_camping_official">Official</string>

@@ -211,7 +211,7 @@ class SignUpViewModel(
                         appRepository.login(state.usernameState.text, state.passwordState.text) { success ->
                             if (success){
                                 applicationScope.launch {
-                                    appRepository.dataSync()
+                                    appRepository.dataSync(reason = "signUpSuccess")
                                 }
                                 viewModelScope.launch {
                                     navigator.navigate(Route.EmailVerifiedCheck, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
