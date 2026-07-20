@@ -15,6 +15,7 @@ fun MapEntryResponse.toMapEntry(): MapEntry = MapEntry(
     createdAt = createdAt,
     updatedBy = updatedBy,
     updatedAt = updatedAt,
+    updatedByName = updatedByName,
 )
 
 fun MapEntry.toDto(): MapEntryDto = MapEntryDto(
@@ -27,6 +28,7 @@ fun MapEntry.toDto(): MapEntryDto = MapEntryDto(
     createdAt = createdAt,
     updatedBy = updatedBy,
     updatedAt = updatedAt,
+    updatedByName = updatedByName,
 )
 
 fun MapEntryDto.toMapEntry(): MapEntry = MapEntry(
@@ -39,6 +41,7 @@ fun MapEntryDto.toMapEntry(): MapEntry = MapEntry(
     createdAt = createdAt,
     updatedBy = updatedBy,
     updatedAt = updatedAt,
+    updatedByName = updatedByName,
 )
 
 fun MapEntryResponse.toDto(): MapEntryDto = toMapEntry().toDto()

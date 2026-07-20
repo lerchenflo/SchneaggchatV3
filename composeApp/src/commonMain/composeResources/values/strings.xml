@@ -311,6 +311,7 @@
     <string name="pin_chat">Pin Chat</string>
     <string name="unpin_chat">unpin Chat</string>
     <string name="mark_as_unread">mark as unread</string>
+    <string name="mark_as_read">mark as read</string>
     <string name="more_info">more info</string>
     <string name="edit_profile_picture">edit profile picture</string>
 
@@ -817,6 +818,7 @@
     <string name="schneaggmap_user_distance_label">Distance</string>
     <string name="schneaggmap_user_online">Online</string>
     <string name="schneaggmap_entry_last_changed_label">Last changed</string>
+    <string name="schneaggmap_entry_last_changed_by">Last changed by %1$s on %2$s</string>
 
     <!-- Game highscores -->
     <string name="highscores_title">Highscores</string>

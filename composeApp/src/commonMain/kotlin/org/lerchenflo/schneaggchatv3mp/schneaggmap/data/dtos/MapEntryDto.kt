@@ -19,5 +19,6 @@ data class MapEntryDto(
     val createdAt: Long,
 
     val updatedBy: String,
-    val updatedAt: Long
+    val updatedAt: Long,
+    val updatedByName: String = "",
 )

@@ -2,6 +2,7 @@
 
 package org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck
 
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -111,6 +112,8 @@ class EmailVerifiedCheckViewModel(
         }
     }
 
+    var reroutingToChatselector = false
+
     init {
 
         applicationScope.launch {
@@ -121,7 +124,7 @@ class EmailVerifiedCheckViewModel(
         viewModelScope.launch {
             SessionCache.authState
                 .flatMapLatest { authState ->
-                    println("AUTHSTATE CHANGED: $authState")
+                    //println("AUTHSTATE CHANGED: $authState")
                     if (authState is SessionCache.AuthState.LoggedIn) {
                         appRepository.getUserByIdFlow(userId = authState.userId)
                     } else {
@@ -129,9 +132,13 @@ class EmailVerifiedCheckViewModel(
                     }
                 }
                 .collect { user ->
+
+                    if (reroutingToChatselector) return@collect
+
                     if (user != null && user.emailVerifiedAt != null) {
                         println("Email verified in verify screen, rerouting to chatselector")
                         runBlocking {
+                            reroutingToChatselector = true
                             navigator.navigate(
                                 destination = Route.ChatSelector,
                                 navigationOptions = Navigator.NavigationOptions(
