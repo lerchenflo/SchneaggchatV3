@@ -7,6 +7,9 @@
     <string name="settings">Einstellunga</string>
     <string name="tools_and_games">Spiele</string>
     <string name="filter">Sortiera</string>
+    <string name="search_friend">In Freunden und Nochrichta suacha ...</string>
+    <string name="search_section_chats">Chats</string>
+    <string name="search_section_messages">Nochrichta (%1$d)</string>
     <string name="no_status">kuan Status</string>
     <string name="unknown_user">kennsch ned</string>
     <string name="chat_last_seen_status">letztes mol Online %1$s</string>
@@ -118,6 +121,7 @@
     <string name="app_broken_desc">Behebt die meista fehler mit da App</string>
     <string name="app_broken_are_you_sure">Löscht alle Appdaten vom handy und startet d App neu.\nBisch da sicha dassd des willsch?</string>
     <string name="please_restart_app">Bitte start dine App neu</string>
+    <string name="verification_email_sent">Verifizierungsemail gschickt</string>
     <string name="others_say_about">Freunde hond über %1$s gschrieba:</string>
     <string name="status_info">Der Text isch vo eam verfasst worra</string>
     <string name="description_info_user">Alle Freunde vo %1$s künnan dean Text bearbeita, aber %1$s kannan nur leasa.</string>
@@ -195,6 +199,7 @@
 
     <string name="misc_settings">Alles andre</string>
     <string name="misc_setting_info">Alles andre des ma brucht wenn dia App kaputt isch.</string>
+    <string name="misc_settings_logs">Logs</string>
 
     <string name="friend_request_title">Magsch die Freundschaftsanfrog ania?</string>
     <string name="friend_request_cancel_title">Magsch die Freundschaftsanfrog abbreacha</string>
@@ -224,6 +229,8 @@
     <string name="schneaggmap_settings_info">Änder dine Mapeinstellunga</string>
     <string name="merge_map_locations">Orten zemmerga beim zoomen</string>
     <string name="merge_map_locations_info">Orte beim zoomen zemmerga dassas ned so a Chaos isch</string>
+    <string name="merge_map_users">Freunde beim Zoomen zemmerga</string>
+    <string name="merge_map_users_info">Freunde glich wie Orte beim Zoomen zemmergen wenn ma ussezoomt</string>
     <string name="schneaggmap_map_style">Mapdesign</string>
     <string name="map_style_liberty">Liberty</string>
     <string name="map_style_bright">Hell</string>
@@ -375,6 +382,12 @@
     <string name="games_coinflip_flip">werfa</string>
     <string name="games_coinflip_flipping">wirft...</string>
     <string name="games_coinflip_swipe_hint">Zum Werfa Knopf drucka oda nach oba wüscha</string>
+    <string name="games_fingerpicker_title">Fingeruswahl</string>
+    <string name="games_fingerpicker_hint">Alle legand ihren Finger ufan Bildschirm</string>
+    <string name="games_fingerpicker_holding">Ruhig heba...</string>
+    <string name="games_fingerpicker_result">%1$d Finger usgwählt!</string>
+    <string name="games_fingerpicker_lift_hint">Alle Finger lupfa zum nomml spiela</string>
+    <string name="games_fingerpicker_winner_count">Anzahl Gewinner</string>
     <string name="games_morse_invalid">Kuan Buchstab für dean Code</string>
 
     <!-- Games: DartCounter -->
@@ -505,6 +518,10 @@
     <string name="poll_settings_infinite_custom_answers_warning">WARNUNG: Jeder darf so viele Antwortmöglichkeita erstella wie er mag</string>
     <string name="poll_settings_infinite_custom_and_selected_answers_warning">WARNUNG: Alle künnand tua und lo was se wennd!</string>
 
+    <string name="poll_settings_limitperentry">User pro Eintrag begrenza</string>
+    <string name="poll_settings_limitperentry_info">Leg fest, wie viele User maximal für uan Eintrag stimma künnand</string>
+    <string name="poll_option_maxvoters_withcount">Maxi. %1$s Nutzer für dean Eintrag</string>
+
     <string name="poll_visibility_title">Sichtbarkeit: %1$s</string>
 
     <string name="poll_visibility_public">Öffentlich (Jeder siaht wo wer abgstimmt hot)</string>
@@ -544,6 +561,10 @@
 
     <string name="poll_show_answers">Antworta azoaga</string>
 
+    <string name="poll_option_claimed_count">%1$s/%2$s</string>
+    <string name="poll_option_full">voll</string>
+    <string name="poll_haslimitedentries_info">Manche Einträg hond a begrente Anzahl an Stimma</string>
+
 
 
 
@@ -581,6 +602,7 @@
 
 
     <!-- Games: Yatzi -->
+    <string name="games_yahtzee_title">Yahtzee</string>
     <string name="yatzi_setup_title">Yahtzee Einstellunga</string>
     <string name="yatzi_game_title">Yahtzee Spiel</string>
     <string name="yatzi_add_manage_players">Spielerverwaltung</string>
@@ -753,6 +775,26 @@
     <string name="changelog_no_details">Kua Details verfügbar für dia Version.</string>
     <string name="changelog_got_it">Gleasa</string>
 
+    <!-- Contribute Popup -->
+    <string name="contribute_title">Gestalt Schneaggchat mit</string>
+    <string name="contribute_message">Dia App wird nur besser wenn du di mealdasch. Vo allua wird ned alles besser. Wenn di was stört oda a Feature fehlt, säg Bescheid!</string>
+    <string name="contribute_bug_title">Fehler gfunda?</string>
+    <string name="contribute_bug_hint">Stürzt was ab, isch kaputt oder fühlt sich einfach falsch a?
+Mealds, egal wie klenn.</string>
+    <string name="contribute_feature_title">Fehlt dir a Feature?</string>
+    <string name="contribute_feature_hint">Säg was du dir wünschas, viele Features hond als Wunsch agfanga oder sind us andra Apps kopiert worra.</string>
+    <string name="contribute_open_form">Fehler mealda oder Feature vorschlaga</string>
+    <string name="contribute_later">Eventuell später</string>
+
+    <!-- Roadmap -->
+    <string name="roadmap">Roadmap</string>
+    <string name="roadmap_info">Schou a wassas scho git und was als Nächstes kut</string>
+    <string name="roadmap_status_done">Erledigt</string>
+    <string name="roadmap_status_upcoming">Plant</string>
+    <string name="roadmap_load_error">Die Roadmap hot ned glada werra künna. Prüf dine Verbindung und versuachs nomml.</string>
+    <string name="roadmap_retry">Nomml versuacha</string>
+    <string name="roadmap_view_issue">Issue #%1$d aschoua</string>
+
 
     <string name="custom_reaction">Eigne Reaktion</string>
     <string name="enter_reaction">Reaktion igia</string>
@@ -775,6 +817,7 @@
     <string name="schneaggmap_user_last_online_label">Letztes mol online</string>
     <string name="schneaggmap_user_distance_label">Entfernung</string>
     <string name="schneaggmap_user_online">Online</string>
+    <string name="schneaggmap_entry_last_changed_label">Zuletzt gändert</string>
 
     <!-- Game highscores -->
     <string name="highscores_title">Highscores</string>
@@ -789,6 +832,14 @@
     <string name="game_over_final_time">Zit: %1$s</string>
     <string name="game_restart">Neustart</string>
     <string name="show_highscores">Bestenliste azoaga</string>
+    <string name="global_ranking_title">Gesamtwertung</string>
+    <string name="global_ranking_explanation">Punkte über alle Spiele und alle Schwierigkeita</string>
+    <string name="global_ranking_error">Rangliste hot ned glada werra künna</string>
+    <string name="global_ranking_empty">Es hot noch niemand gspielt</string>
+    <string name="global_ranking_points">%1$d Pkt.</string>
+    <string name="global_ranking_boards">%1$d Boards · %2$d Spiele</string>
+    <string name="show_global_ranking">Gesamtwertung azoaga</string>
+    <string name="difficulty">Schwierigkeit</string>
     <string name="difficulty_low">Niedrig</string>
     <string name="difficulty_medium">Mittel</string>
     <string name="difficulty_high">Hoch</string>
@@ -801,7 +852,9 @@
     <string name="morse_challenge_type_text">Tipp da Text in Morsecode</string>
 
     <!-- Location Groups -->
+    <string name="location_group_driving">Fahra</string>
     <string name="location_group_nature_activities">Natur &amp; Aktivitäta</string>
+    <string name="location_group_sport">Sport</string>
     <string name="location_group_social_entertainment">Sozial &amp; Unterhaltung</string>
     <string name="location_group_food">Essen</string>
 
@@ -810,9 +863,15 @@
     <string name="location_type_police">Polizei</string>
     <string name="location_type_mountain_street">Bergstroß</string>
     <string name="location_type_wheeliespot">Wheeliespot</string>
+    <string name="location_type_offroad_motorcycle">Offroad-Motorrad</string>
     <string name="location_type_viewpoint">Aussichtspunkt</string>
     <string name="location_type_camping">Camping</string>
     <string name="location_type_swimming">Bada</string>
+    <string name="location_type_volleyball">Volleyball</string>
+    <string name="location_type_bicycle">MTB Strecke</string>
+    <string name="location_type_outdoor_fitness">Stangen</string>
+    <string name="location_type_table_tennis">Tischtennis</string>
+    <string name="location_type_tennis">Tennis</string>
     <string name="location_type_sightseeing">Sightseeing</string>
     <string name="location_type_party">Party</string>
     <string name="location_type_food_kebab">Döner</string>
@@ -838,6 +897,12 @@
 
     <!-- Wheelie Spot -->
     <string name="location_wheeliespot_only_on_weekends">Nur am Wochenende</string>
+    <string name="location_legal">Legal</string>
+    <string name="location_offroad_motocross">Motocross</string>
+    <string name="location_offroad_enduro">Enduro</string>
+    <string name="location_bicycle_difficulty">Schwierigkeit (1-10)</string>
+    <string name="location_bicycle_underground_type">Untergrund</string>
+    <string name="location_lie_down_friendly">Kama aneliega</string>
 
     <!-- Camping -->
     <string name="location_camping_official">Ned Illegal</string>
@@ -849,6 +914,20 @@
     <string name="location_swimming_indoor">Dinna</string>
     <string name="location_swimming_jump_spot">Kama Springa</string>
 
+    <!-- Volleyball -->
+    <string name="location_volleyball_good_net">Guats Netz</string>
+    <string name="location_volleyball_good_field">Guats Feald</string>
+    <string name="location_volleyball_outdoor">Dussa</string>
+
+    <!-- Outdoor Fitness -->
+    <string name="location_outdoor_fitness_shadow">Schatta</string>
+
+    <!-- Table Tennis -->
+    <string name="location_table_tennis_private">Privat</string>
+
+    <!-- Tennis -->
+    <string name="location_tennis_paddle">Paddle</string>
+
     <!-- Sightseeing & Party -->
     <string name="location_sightseeing_entry_fee">Eintrittspreis</string>
 
@@ -859,8 +938,4 @@
     <string name="location_food_cheeseburger_price">Cheeseburgerpreis</string>
     <string name="location_food_beer_price">Bierpreis</string>
     <string name="location_food_cuisine">Essenstyp</string>
-
-
-
-
 </resources>

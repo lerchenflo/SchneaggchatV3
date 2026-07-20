@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import eu.anifantakis.lib.ksafe.KSafe
 import kotlinx.coroutines.flow.Flow
@@ -120,6 +121,7 @@ class Preferencemanager(
         val PINNED_CHATS = stringPreferencesKey("pinned_chats")
         val DRAFTS = stringPreferencesKey("drafts")
         val LAST_STARTED_VERSION = stringPreferencesKey("last_started_version")
+        val LAST_CONTRIBUTE_POPUP_SHOWN = longPreferencesKey("last_contribute_popup_shown")
     }
 
     // Markdown Format
@@ -243,6 +245,19 @@ class Preferencemanager(
 
     suspend fun getLastStartedVersion(): String {
         return prefs.data.first()[PrefsKeys.LAST_STARTED_VERSION] ?: ""
+    }
+
+
+    suspend fun saveLastContributePopupShown(epochMillis: Long) {
+        prefs.edit { it[PrefsKeys.LAST_CONTRIBUTE_POPUP_SHOWN] = epochMillis }
+    }
+
+    /**
+     * Null when nothing has been stored yet. The caller seeds the timestamp in that
+     * case so the popup only appears one interval later, never right on first launch.
+     */
+    suspend fun getLastContributePopupShown(): Long? {
+        return prefs.data.first()[PrefsKeys.LAST_CONTRIBUTE_POPUP_SHOWN]
     }
 
 

@@ -73,9 +73,9 @@ fun createHttpClient(
 
 
         install(HttpTimeout) {
-            requestTimeoutMillis = 30000
+            requestTimeoutMillis = 5000
             connectTimeoutMillis = 10000
-            socketTimeoutMillis = 60000
+            socketTimeoutMillis = 5000
         }
 
         /*

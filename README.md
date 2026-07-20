@@ -12,6 +12,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Geburtstagsanzeige + Benachrichtigungen
 - App kaputt Button
 - Standort mit Verlauf teilen
+- @Annotations für Standorte + User
 
 
 # Changelog
@@ -19,7 +20,10 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ### 3.0.14
 
 #### Highlights
-- Roadmap jetzt in der App einsehbar
+- @User & @Map Annotations
+- Nachrichtensuche in der Chatauswahl
+- Umfragen mit Stimmenbegrenzung
+- Neue Standorttypen
 
 #### Features
 - Nachrichtensuche in der Chat-Auswahl - durchsucht Nachrichteninhalte, Bildunterschriften und Umfragen
@@ -37,6 +41,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Chat-Navigation neu aufgebaut
 - Chat öffnen bei Freundschaftsanfrage annehmen / Gruppe erstellen
 - Tetris Steuerung repariert
+
 ### 3.0.13
 
 #### Features

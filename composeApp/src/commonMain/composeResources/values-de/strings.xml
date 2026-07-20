@@ -7,7 +7,9 @@
     <string name="settings">Einstellungen</string>
     <string name="tools_and_games">Tools und Spiele</string>
     <string name="filter">Filter</string>
-    <string name="search_friend">In Freunden suchen ...</string>
+    <string name="search_friend">In Freunden und Nachrichten suchen ...</string>
+    <string name="search_section_chats">Chats</string>
+    <string name="search_section_messages">Nachrichten (%1$d)</string>
     <string name="no_status">kein Status</string>
     <string name="unknown_user">unbekannter Nutzer</string>
     <string name="chat_last_seen_status">zuletzt Online %1$s</string>
@@ -119,6 +121,7 @@
     <string name="app_broken_desc">Behebt die meisten gängigen Fehler mit der App</string>
     <string name="app_broken_are_you_sure">Dies wird die Lokale Datenbank löschen und erneut alle Daten vom Server herunterladen.\nBist du sicher dass du fortfahren willst?</string>
     <string name="please_restart_app">Bitte starte die App neu</string>
+    <string name="verification_email_sent">Verifizierungsemail gesendet</string>
     <string name="others_say_about">Andere User haben über %1$s geschrieben:</string>
     <string name="status_info">Dieser Text wurde vom User verfasst</string>
     <string name="description_info_user">Alle Freunde von %1$s können diesen Text bearbeiten und %1$s kann ihn nur sehen.</string>
@@ -196,6 +199,7 @@
 
     <string name="misc_settings">Miscellaneous</string>
     <string name="misc_setting_info">Andere Einstellungen die nützlich sind wenn die App nicht funktioniert.</string>
+    <string name="misc_settings_logs">Logs</string>
 
     <string name="friend_request_title">Willst du diese Freundschaftsanfrage akzeptieren?</string>
     <string name="friend_request_cancel_title">Willst du diese Freundschafstanfrage abbrechen?</string>
@@ -225,6 +229,8 @@
     <string name="schneaggmap_settings_info">Ändere deine Mapeinstellungen</string>
     <string name="merge_map_locations">Orte beim Zoomen zusammenführen</string>
     <string name="merge_map_locations_info">Orte mit wenig Abstand werden beim Zoomen zu einem Ort zusammengefügt</string>
+    <string name="merge_map_users">Freunde beim Zoomen zusammenfassen</string>
+    <string name="merge_map_users_info">Fasst nah beieinander liegende Freunde zu einem Marker zusammen, wenn herausgezoomt ist</string>
     <string name="schneaggmap_map_style">Mapdesign</string>
     <string name="map_style_liberty">Liberty</string>
     <string name="map_style_bright">Hell</string>
@@ -514,6 +520,10 @@
     <string name="poll_settings_infinite_custom_answers_warning">WARNUNG: Benutzer können unlimitiert viele eigene Antwortmöglichkeiten erstellen!</string>
     <string name="poll_settings_infinite_custom_and_selected_answers_warning">WARNUNG: Benutzer dürfen unlimitiert viele Antwortmöglichkeiten erstellen und auswählen!</string>
 
+    <string name="poll_settings_limitperentry">User pro Eintrag begrenzen</string>
+    <string name="poll_settings_limitperentry_info">Lege fest, wie viele Nutzer maximal für einen Eintrag stimmen können</string>
+    <string name="poll_option_maxvoters_withcount">Max. %1$s Nutzer für diesen Eintrag</string>
+
     <string name="poll_visibility_title">Sichtbarkeit: %1$s</string>
 
     <string name="poll_visibility_public">Öffentlich (Jeder sieht wer wo abgestimmt hat)</string>
@@ -553,6 +563,10 @@
 
     <string name="poll_show_answers">Antworten anzeigen</string>
 
+    <string name="poll_option_claimed_count">%1$s/%2$s</string>
+    <string name="poll_option_full">voll</string>
+    <string name="poll_haslimitedentries_info">Manche Einträge haben eine begrenzte Anzahl an Stimmen</string>
+
 
 
 
@@ -590,6 +604,7 @@
 
 
     <!-- Games: Yatzi -->
+    <string name="games_yahtzee_title">Yahtzee</string>
     <string name="yatzi_setup_title">Yahtzee Einstellungen</string>
     <string name="yatzi_game_title">Yahtzee Spiel</string>
     <string name="yatzi_add_manage_players">Spielerverwaltung</string>
@@ -762,6 +777,25 @@
     <string name="changelog_no_details">Keine Details verfügbar für diese Version.</string>
     <string name="changelog_got_it">Gelesen</string>
 
+    <!-- Contribute Popup -->
+    <string name="contribute_title">Gestalte Schneaggchat mit</string>
+    <string name="contribute_message">Diese App wird nur besser, wenn du dich meldest. Von allein verbessert sich nicht alles — wenn dich etwas stört oder dir ein Feature fehlt, sag Bescheid!</string>
+    <string name="contribute_bug_title">Fehler gefunden?</string>
+    <string name="contribute_bug_hint">Stürzt etwas ab, ist kaputt oder fühlt sich einfach falsch an? Melde es, egal wie klein.</string>
+    <string name="contribute_feature_title">Fehlt dir ein Feature?</string>
+    <string name="contribute_feature_hint">Sag, was du dir wünschst — viele Features haben als Wunsch angefangen oder wurden aus anderen Apps kopiert.</string>
+    <string name="contribute_open_form">Fehler melden oder Feature vorschlagen</string>
+    <string name="contribute_later">Vielleicht später</string>
+
+    <!-- Roadmap -->
+    <string name="roadmap">Roadmap</string>
+    <string name="roadmap_info">Sieh dir an, was es schon gibt und was als Nächstes kommt</string>
+    <string name="roadmap_status_done">Erledigt</string>
+    <string name="roadmap_status_upcoming">Geplant</string>
+    <string name="roadmap_load_error">Roadmap konnte nicht geladen werden. Überprüfe deine Verbindung und versuche es erneut.</string>
+    <string name="roadmap_retry">Erneut versuchen</string>
+    <string name="roadmap_view_issue">Issue #%1$d ansehen</string>
+
 
     <string name="custom_reaction">Eigene Reaktion</string>
     <string name="enter_reaction">Reaktion eingeben</string>
@@ -784,6 +818,7 @@
     <string name="schneaggmap_user_last_online_label">Zuletzt online</string>
     <string name="schneaggmap_user_distance_label">Entfernung</string>
     <string name="schneaggmap_user_online">Online</string>
+    <string name="schneaggmap_entry_last_changed_label">Zuletzt geändert</string>
 
     <!-- Game highscores -->
     <string name="highscores_title">Bestenliste</string>
@@ -798,6 +833,14 @@
     <string name="game_over_final_time">Zeit: %1$s</string>
     <string name="game_restart">Neustart</string>
     <string name="show_highscores">Bestenliste anzeigen</string>
+    <string name="global_ranking_title">Gesamtwertung</string>
+    <string name="global_ranking_explanation">Punkte über alle Spiele und Schwierigkeiten</string>
+    <string name="global_ranking_error">Rangliste konnte nicht geladen werden</string>
+    <string name="global_ranking_empty">Es hat noch niemand gespielt</string>
+    <string name="global_ranking_points">%1$d Pkt.</string>
+    <string name="global_ranking_boards">%1$d Boards · %2$d Spiele</string>
+    <string name="show_global_ranking">Gesamtwertung anzeigen</string>
+    <string name="difficulty">Schwierigkeit</string>
     <string name="difficulty_low">Niedrig</string>
     <string name="difficulty_medium">Mittel</string>
     <string name="difficulty_high">Hoch</string>
@@ -812,6 +855,7 @@
     <!-- Location Groups -->
     <string name="location_group_driving">Fahren</string>
     <string name="location_group_nature_activities">Natur &amp; Aktivitäten</string>
+    <string name="location_group_sport">Sport</string>
     <string name="location_group_social_entertainment">Sozial &amp; Unterhaltung</string>
     <string name="location_group_food">Essen</string>
 
@@ -820,9 +864,15 @@
     <string name="location_type_police">Polizei</string>
     <string name="location_type_mountain_street">Bergstraße</string>
     <string name="location_type_wheeliespot">Wheeliespot</string>
+    <string name="location_type_offroad_motorcycle">Offroad-Motorrad</string>
     <string name="location_type_viewpoint">Aussichtspunkt</string>
     <string name="location_type_camping">Camping</string>
     <string name="location_type_swimming">Baden</string>
+    <string name="location_type_volleyball">Volleyball</string>
+    <string name="location_type_bicycle">MTB Strecke</string>
+    <string name="location_type_outdoor_fitness">Outdoor-Fitness</string>
+    <string name="location_type_table_tennis">Tischtennis</string>
+    <string name="location_type_tennis">Tennis</string>
     <string name="location_type_sightseeing">Sightseeing</string>
     <string name="location_type_party">Party</string>
     <string name="location_type_food_kebab">Döner</string>
@@ -848,6 +898,12 @@
 
     <!-- Wheelie Spot -->
     <string name="location_wheeliespot_only_on_weekends">Nur am Wochenende</string>
+    <string name="location_legal">Legal</string>
+    <string name="location_offroad_motocross">Motocross</string>
+    <string name="location_offroad_enduro">Enduro</string>
+    <string name="location_bicycle_difficulty">Schwierigkeit (1-10)</string>
+    <string name="location_bicycle_underground_type">Untergrund</string>
+    <string name="location_lie_down_friendly">Zum Liegen geeignet</string>
 
     <!-- Camping -->
     <string name="location_camping_official">Offiziell</string>
@@ -858,6 +914,20 @@
     <!-- Swimming -->
     <string name="location_swimming_indoor">Indoor</string>
     <string name="location_swimming_jump_spot">Sprungstelle</string>
+
+    <!-- Volleyball -->
+    <string name="location_volleyball_good_net">Gutes Netz</string>
+    <string name="location_volleyball_good_field">Gutes Feld</string>
+    <string name="location_volleyball_outdoor">Outdoor</string>
+
+    <!-- Outdoor Fitness -->
+    <string name="location_outdoor_fitness_shadow">Schatten</string>
+
+    <!-- Table Tennis -->
+    <string name="location_table_tennis_private">Privat</string>
+
+    <!-- Tennis -->
+    <string name="location_tennis_paddle">Paddle</string>
 
     <!-- Sightseeing & Party -->
     <string name="location_sightseeing_entry_fee">Eintrittspreis</string>
