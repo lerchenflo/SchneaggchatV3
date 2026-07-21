@@ -7,6 +7,12 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
+    <!-- Wake feature: alarm plays from a foreground service, over the lock screen -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
     <application
         android:name=".MainApp"
         android:allowBackup="true"
@@ -54,6 +60,24 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
+        <service
+            android:name="org.lerchenflo.schneaggchatv3mp.utilities.wake.WakeAlarmService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Urgent alarm played when a contact explicitly wakes the user" />
+        </service>
+
+        <activity
+            android:name="org.lerchenflo.schneaggchatv3mp.utilities.wake.WakeAlarmActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:theme="@style/Theme.App.Splash" />
 
         <receiver
             android:name="org.lerchenflo.schneaggchatv3mp.utilities.notifications.MarkAsReadReceiver"

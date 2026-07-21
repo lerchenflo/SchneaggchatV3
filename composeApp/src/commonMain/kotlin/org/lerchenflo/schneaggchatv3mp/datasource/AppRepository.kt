@@ -19,8 +19,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
@@ -45,16 +45,16 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
-import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
@@ -94,6 +94,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
@@ -1184,7 +1185,8 @@ class AppRepository(
                                 locationShared = newUser.shareLocation,
                                 shareSpeedHeading = newUser.shareSpeedHeading,
                                 snailTrail = newUser.shareSnailTrail,
-                                wakeupEnabled = existing?.wakeupEnabled ?: false,
+                                //On a friend's row this means "this friend may wake me"
+                                wakeupEnabled = newUser.allowWake,
                                 notisMuted = existing?.notisMuted ?: false,
                                 lastSeen = newUser.lastSeen,
                                 email = null,
@@ -1219,7 +1221,8 @@ class AppRepository(
                                 locationBattery = existing?.locationBattery,
                                 locationDistance24h = existing?.locationDistance24h,
                                 locationShared = newUser.locationShared,
-                                wakeupEnabled = existing?.wakeupEnabled ?: false,
+                                //On my own row this is the master wake switch
+                                wakeupEnabled = newUser.allowWakeGlobal,
                                 frienshipStatus = null,
                                 requesterId = null,
                                 notisMuted = false,
@@ -1231,7 +1234,8 @@ class AppRepository(
                                 ))
                             if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
                                 profilePicsToGet += newUser.id
-                            }                        }
+                            }
+                        }
                         is UserResponse.SimpleUserResponse -> {
                             val existing = database.userDao().getUserbyId(newUser.id)
                             database.userDao().upsert(UserDto(
@@ -2237,6 +2241,54 @@ class AppRepository(
         return getFriends("").all { friend ->
             setLocationSharing(friend.id, share = false, friend.shareSpeedHeading, friend.snailTrail)
         }
+    }
+
+    // ─── Wake ─────────────────────────────────────────────────────────────────
+
+    /**
+     * Per-friend toggle: may this friend wake us. Stored on the friend's local row as
+     * [UserDto.wakeupEnabled] - on our own row that same column is the master switch instead.
+     */
+    suspend fun setWakePermission(friendId: String, allowWake: Boolean): Boolean {
+        return when (networkUtils.setWakePermission(friendId, allowWake)) {
+            is NetworkResult.Error<*> -> false
+            is NetworkResult.Success<*> -> {
+                // Optimistic local write, reconciled by the next /users/sync or UserChange push.
+                userRepository.getUserById(friendId)?.let { friend ->
+                    userRepository.upsertUser(friend.copy(wakeupEnabled = allowWake).toDto())
+                }
+                true
+            }
+        }
+    }
+
+    /** Master switch: while off nobody can wake us, whatever the per-friend toggles say. */
+    suspend fun setWakeGlobal(enabled: Boolean): Boolean {
+        return when (networkUtils.setWakeGlobal(enabled)) {
+            is NetworkResult.Error<*> -> false
+            is NetworkResult.Success<*> -> {
+                SessionCache.requireLoggedIn()?.userId?.let { ownId ->
+                    userRepository.getUserById(ownId)?.let { own ->
+                        userRepository.upsertUser(own.copy(wakeupEnabled = enabled).toDto())
+                    }
+                }
+                true
+            }
+        }
+    }
+
+
+    /**
+     * Ask the server to wake a friend or a group. A successful response can still report that
+     * nobody was reachable - see WakeOutcome. Errors are passed through rather than flattened,
+     * because the caller needs to tell "not friends" (403) apart from a plain network failure.
+     */
+    suspend fun sendWake(
+        targetId: String,
+        isGroup: Boolean,
+        reason: String,
+    ): NetworkResult<NetworkUtils.WakeResponse, NetworkError> {
+        return networkUtils.sendWake(targetId, isGroup, reason)
     }
 
     /*

@@ -2,9 +2,13 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
 import android.Manifest
+import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.ContextCompat
@@ -80,6 +84,37 @@ actual class PermissionManager(private val context: Context) {
 
         val deferred = ActivityHolder.requestNotificationPermission()
         return deferred.await()
+    }
+
+    actual suspend fun checkFullScreenIntentPermission(): PermissionState {
+        //Unrestricted before API 34 - any app could use full screen intents.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+            return PermissionState.GRANTED
+
+        val notificationManager = context.getSystemService(NotificationManager::class.java)
+        return if (notificationManager?.canUseFullScreenIntent() == true) {
+            PermissionState.GRANTED
+        } else {
+            PermissionState.NOT_DETERMINED
+        }
+    }
+
+    actual suspend fun requestFullScreenIntentPermission(): PermissionState {
+        val current = checkFullScreenIntentPermission()
+        if (current == PermissionState.GRANTED) return current
+
+        println("Opening fullscreen settings")
+        //There is no ActivityResultContract for this one - it can only be granted in Settings,
+        //so all we can do is take the user there. The caller must re-check afterwards.
+        runCatching {
+            val intent = Intent(
+                Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,
+                Uri.fromParts("package", context.packageName, null)
+            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        }
+
+        return current
     }
 
     private fun Context.findActivity(): android.app.Activity? {

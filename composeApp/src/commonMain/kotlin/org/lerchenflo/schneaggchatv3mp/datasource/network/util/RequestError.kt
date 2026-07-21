@@ -19,6 +19,11 @@ sealed class NetworkError : RequestError {
         override val message: String? = null
     ) : NetworkError()
 
+    data class Forbidden(
+        override val errorCode: Int = 403,
+        override val message: String? = null
+    ) : NetworkError()
+
     data class NotFound(
         override val errorCode: Int = 404,
         override val message: String? = null
@@ -71,6 +76,7 @@ fun RequestError.isConnectionError(): Boolean {
 
 fun errorCodeToMessage(code: Int?): String = when (code) {
     401 -> "Access denied (invalid credentials)"
+    403 -> "Not allowed"
     408 -> "Request timed out"
     409 -> "Conflict (resource already exists or invalid state)"
     413 -> "Payload too large"

@@ -35,6 +35,19 @@ expect class PermissionManager {
      * Returns the resulting [PermissionState].
      */
     suspend fun requestNotificationPermission(): PermissionState
+
+    /**
+     * Whether this platform may show a full screen UI over the lock screen (used by the wake
+     * alarm). Platforms without the concept report [PermissionState.GRANTED].
+     */
+    suspend fun checkFullScreenIntentPermission(): PermissionState
+
+    /**
+     * Sends the user to the OS screen where full screen intents can be granted. This is not a
+     * runtime permission dialog, so the returned state is simply the state as it was before
+     * leaving the app - re-check it once the user comes back.
+     */
+    suspend fun requestFullScreenIntentPermission(): PermissionState
 }
 
 // commonMain

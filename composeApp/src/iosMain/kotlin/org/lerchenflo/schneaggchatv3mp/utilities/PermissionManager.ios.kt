@@ -95,6 +95,11 @@ actual class PermissionManager {
         }
     }
 
+    // iOS has no equivalent concept - the wake feature is Android only anyway.
+    actual suspend fun checkFullScreenIntentPermission(): PermissionState = PermissionState.GRANTED
+
+    actual suspend fun requestFullScreenIntentPermission(): PermissionState = PermissionState.GRANTED
+
     private fun clStatusToState(status: CLAuthorizationStatus): PermissionState = when (status) {
         kCLAuthorizationStatusAuthorizedWhenInUse,
         kCLAuthorizationStatusAuthorizedAlways -> PermissionState.GRANTED

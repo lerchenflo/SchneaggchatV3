@@ -31,6 +31,20 @@ sealed interface DecodedNotification {
         val birthdayUserName: String,
         val ownBirthday: Boolean,
     ) : DecodedNotification
+
+    /** Someone wants to wake us. Android only - handled by the alarm service, not the Notifier. */
+    data class Wake(
+        val senderId: String,
+        val senderName: String,
+        val reason: String,
+        val groupId: String,
+        val groupName: String,
+        //How many people were woken by the same request, us included
+        val wokenUserCount: Int,
+        val wokenDeviceCount: Int,
+    ) : DecodedNotification {
+        val isGroupWake: Boolean get() = groupId.isNotEmpty()
+    }
 }
 
 object PayloadDecoder {
@@ -61,6 +75,15 @@ object PayloadDecoder {
                 birthdayUserId = data["birthdayUserId"] ?: "",
                 birthdayUserName = data["birthdayUserName"] ?: "",
                 ownBirthday = data["ownBirthday"]?.toBoolean() ?: false,
+            )
+            "wake" -> DecodedNotification.Wake(
+                senderId = data["senderId"] ?: return null,
+                senderName = data["senderName"] ?: "",
+                reason = data["reason"] ?: "",
+                groupId = data["groupId"] ?: "",
+                groupName = data["groupName"] ?: "",
+                wokenUserCount = data["wokenUserCount"]?.toIntOrNull() ?: 1,
+                wokenDeviceCount = data["wokenDeviceCount"]?.toIntOrNull() ?: 1,
             )
             else -> null
         }

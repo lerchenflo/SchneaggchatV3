@@ -43,9 +43,10 @@ sealed interface SocketConnectionMessage {
 
     @Serializable
     @SerialName("userchange")
-
     data class UserChange(val user: NetworkUtils.UserResponse, val deleted: Boolean) : SocketConnectionMessage
 
+    @Serializable
+    @SerialName("groupchange")
     data class GroupChange(val group: NetworkUtils.GroupResponse, val deleted: Boolean) : SocketConnectionMessage
 
     @Serializable
@@ -268,7 +269,8 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 locationShared = newUser.shareLocation,
                                 shareSpeedHeading = newUser.shareSpeedHeading,
                                 snailTrail = newUser.shareSnailTrail,
-                                wakeupEnabled = existing?.wakeupEnabled ?: false,
+                                //On a friend's row this means "this friend may wake me"
+                                wakeupEnabled = newUser.allowWake,
                                 notisMuted = existing?.notisMuted ?: false,
                                 lastSeen = newUser.lastSeen,
                                 email = null,
@@ -302,7 +304,8 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 locationBattery = existing?.location?.batteryLevel,
                                 locationDistance24h = existing?.location?.distanceTraveled24h,
                                 locationShared = newUser.locationShared,
-                                wakeupEnabled = existing?.wakeupEnabled ?: false,
+                                //On my own row this is the master wake switch
+                                wakeupEnabled = newUser.allowWakeGlobal,
                                 frienshipStatus = null,
                                 requesterId = null,
                                 notisMuted = false,

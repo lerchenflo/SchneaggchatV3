@@ -314,6 +314,8 @@
     <string name="mark_as_read">mark as read</string>
     <string name="more_info">more info</string>
     <string name="edit_profile_picture">edit profile picture</string>
+    <string name="edit_group_name">edit group name</string>
+    <string name="edit_nickname">edit nickname</string>
 
     <string name="admin">Admin</string>
 
@@ -939,4 +941,28 @@
     <string name="location_food_cheeseburger_price">Cheeseburger Price</string>
     <string name="location_food_beer_price">Beer Price</string>
     <string name="location_food_cuisine">Cuisine</string>
+
+    <!-- Wake -->
+    <string name="wake_settings">Wake-ups</string>
+    <string name="wake_settings_info">Choose who is allowed to wake you</string>
+    <string name="wake_allow_global">Allow being woken</string>
+    <string name="wake_allow_global_info">Lets chosen friends play an alarm on your phone</string>
+    <string name="wake_allow_friends_title">Allowed to wake me</string>
+    <string name="wake_button">Wake</string>
+    <string name="wake_reason_title">Why are you waking them?</string>
+    <string name="wake_reason_placeholder">Reason</string>
+    <string name="wake_sent_users">Woke %1$d users on %2$d devices</string>
+    <string name="wake_sent_user">Woke %1$s on %2$d devices</string>
+    <string name="wake_sent_skipped">%1$s (%2$d skipped)</string>
+    <string name="wake_not_allowed_user">%1$s has wake-ups turned off for you</string>
+    <string name="wake_not_allowed_group">Nobody in this group allows wake-ups from you</string>
+    <string name="wake_no_devices">%1$s has no Android device registered</string>
+    <string name="wake_not_friends">You can only wake friends</string>
+    <string name="wake_failed">Could not send the wake-up</string>
+    <string name="wake_notification_title">%1$s is waking you</string>
+    <string name="wake_notification_title_group">%1$s is waking %2$s</string>
+    <string name="wake_stop">Stop</string>
+    <string name="wake_swipe_to_stop">Swipe to stop</string>
+    <string name="wake_woken_alongside">%1$d people woken on %2$d devices</string>
+    <string name="wake_log_entry">Woken by %1$s: %2$s</string>
 </resources>

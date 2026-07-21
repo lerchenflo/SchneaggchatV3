@@ -30,6 +30,9 @@ suspend fun resolveLocalizedContent(
     is DecodedNotification.FriendRequest -> resolveFriendRequest(decoded)
     is DecodedNotification.System        -> resolveSystem(decoded)
     is DecodedNotification.Birthday      -> resolveBirthday(decoded)
+    //Wakes never go through the normal notification path - the alarm service owns its own
+    //foreground notification, so there is nothing for the Notifier to show.
+    is DecodedNotification.Wake          -> null
 }
 
 private suspend fun resolveMessage(

@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EditNote
@@ -61,6 +62,7 @@ import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
+import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
@@ -101,6 +103,8 @@ import schneaggchatv3mp.composeapp.generated.resources.status_infotext
 import schneaggchatv3mp.composeapp.generated.resources.status_nosemicolon
 import schneaggchatv3mp.composeapp.generated.resources.user_attributes_24px
 import schneaggchatv3mp.composeapp.generated.resources.user_settings
+import schneaggchatv3mp.composeapp.generated.resources.wake_settings
+import schneaggchatv3mp.composeapp.generated.resources.wake_settings_info
 import schneaggchatv3mp.composeapp.generated.resources.your_friends_wrote_this
 
 @Composable
@@ -412,6 +416,31 @@ fun UserSettings(
                         }
                     },
                 )
+
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+            }
+
+            //Waking is Android only - the alarm service has no counterpart on iOS/Desktop.
+            if (koinInject<AppVersion>().isAndroid()) {
+                var showWakeSettingsDialog by rememberSaveable { mutableStateOf(false) }
+
+                SettingsOption(
+                    icon = Icons.Default.Alarm,
+                    text = stringResource(Res.string.wake_settings),
+                    subtext = stringResource(Res.string.wake_settings_info),
+                    onClick = { showWakeSettingsDialog = true }
+                )
+
+                if (showWakeSettingsDialog) {
+                    WakeSettingsDialog(
+                        wakeEnabledGlobal = userSettingsViewModel.wakeEnabledGlobal,
+                        friends = userSettingsViewModel.friends,
+                        onSave = { global, friendDrafts ->
+                            userSettingsViewModel.saveWakeSettings(global, friendDrafts)
+                        },
+                        onDismiss = { showWakeSettingsDialog = false }
+                    )
+                }
 
                 HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
             }
