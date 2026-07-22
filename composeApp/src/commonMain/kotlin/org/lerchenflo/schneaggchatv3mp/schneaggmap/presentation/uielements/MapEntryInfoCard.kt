@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -93,51 +95,62 @@ fun MapEntryInfoCard(
     ) {
         Column(modifier = modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp)) {
 
-            EntryTitleView(
-                entry = currentEntry,
-                onChange = {
-                    currentEntry = it
-                },
-            )
-
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            CoordinateView(currentEntry.coordinates)
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            //The editor name is resolved server side, but old cached entries may not have one yet
-            val lastChangedText = if (currentEntry.updatedByName.isNotBlank()) {
-                stringResource(
-                    Res.string.schneaggmap_entry_last_changed_by,
-                    currentEntry.updatedByName,
-                    millisToTimeDateOrYesterday(currentEntry.updatedAt)
+            //Scrollable column to be able to hoist multiple attributevalues
+            Column(
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                EntryTitleView(
+                    entry = currentEntry,
+                    onChange = {
+                        currentEntry = it
+                    },
                 )
-            } else {
-                stringResource(Res.string.schneaggmap_entry_last_changed_label) + ": " +
+
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                CoordinateView(currentEntry.coordinates)
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                //The editor name is resolved server side, but old cached entries may not have one yet
+                val lastChangedText = if (currentEntry.updatedByName.isNotBlank()) {
+                    stringResource(
+                        Res.string.schneaggmap_entry_last_changed_by,
+                        currentEntry.updatedByName,
                         millisToTimeDateOrYesterday(currentEntry.updatedAt)
+                    )
+                } else {
+                    stringResource(Res.string.schneaggmap_entry_last_changed_label) + ": " +
+                            millisToTimeDateOrYesterday(currentEntry.updatedAt)
+                }
+
+                Text(
+                    text = lastChangedText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                HorizontalDivider(thickness = 4.dp)
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                LocationAttributeView(
+                    entry = currentEntry,
+                    onChange = {
+                        currentEntry = it
+                    }
+                )
             }
 
-            Text(
-                text = lastChangedText,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
 
-            Spacer(modifier = Modifier.height(12.dp))
 
-            HorizontalDivider(thickness = 4.dp)
 
-            Spacer(modifier = Modifier.height(4.dp))
-
-            LocationAttributeView(
-                entry = currentEntry,
-                onChange = {
-                    currentEntry = it
-                }
-            )
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -251,7 +264,7 @@ fun EntryTitleView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
             stringResource(it.locationtype.stringRes())
         }
         Text(
-            text = stringResource(Res.string.location_belongs_to_type, combinedEntries.joinToString(", ").orEmpty()),
+            text = stringResource(Res.string.location_belongs_to_type, combinedEntries.joinToString(", ")),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
