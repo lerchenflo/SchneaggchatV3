@@ -162,6 +162,7 @@ class NetworkUtils(
     private fun mapHttpStatusToError(statusCode: Int, message: String?): NetworkError {
         return when (statusCode) {
             401 -> NetworkError.Unauthorized(message = message)
+            403 -> NetworkError.Forbidden(message = message)
             404 -> NetworkError.NotFound(message = message)
             408 -> NetworkError.RequestTimeout(message = message)
             409 -> NetworkError.Conflict(message = message)
@@ -478,6 +479,9 @@ class NetworkUtils(
             //Whether i share my snail trail (full 24h history) with this friend
             val shareSnailTrail: Boolean = false,
 
+            //Do i allow this friend to wake me (alarm ringtone on my devices)
+            val allowWake: Boolean = false,
+
             //Epoch millis this friend was last seen online, null if unknown/never
             val lastSeen: Long? = null,
 
@@ -506,6 +510,9 @@ class NetworkUtils(
 
             //Do i have location sharing enabled
             val locationShared: Boolean = false,
+
+            //Master switch: do i allow anyone to wake me at all
+            val allowWakeGlobal: Boolean = false,
 
 
         ) : UserResponse
@@ -1215,6 +1222,69 @@ class NetworkUtils(
         return safePost(
             endpoint = "/users/sharelocation",
             body = LocationShareRequest(friendId, share, shareSpeedHeading, shareSnailTrail)
+        )
+    }
+
+    // ─── Wake ─────────────────────────────────────────────────────────────────
+
+    @Serializable
+    data class WakePermissionRequest(
+        val friendId: String,
+        val allowWake: Boolean,
+    )
+
+    /** Per-friend toggle: may this friend wake us (play an alarm on our devices). */
+    suspend fun setWakePermission(friendId: String, allowWake: Boolean): NetworkResult<Unit, NetworkError> {
+        return safePost(
+            endpoint = "/users/setwakepermission",
+            body = WakePermissionRequest(friendId, allowWake)
+        )
+    }
+
+    @Serializable
+    data class WakeGlobalRequest(
+        val enabled: Boolean,
+    )
+
+    /** Master switch: while off nobody can wake us, whatever the per-friend toggles say. */
+    suspend fun setWakeGlobal(enabled: Boolean): NetworkResult<Unit, NetworkError> {
+        return safePost(
+            endpoint = "/users/setwakeglobal",
+            body = WakeGlobalRequest(enabled)
+        )
+    }
+
+    /**
+     * Mirrors the server's WakeOutcome - why a wake did or did not reach anybody.
+     * Waking a non-friend is not represented here: the server rejects it with 403.
+     */
+    @Serializable
+    enum class WakeOutcome {
+        WOKEN,
+        NOT_ALLOWED,
+        NO_DEVICES,
+    }
+
+    @Serializable
+    data class WakeRequest(
+        val targetId: String,
+        val isGroup: Boolean,
+        val reason: String,
+    )
+
+    @Serializable
+    data class WakeResponse(
+        val outcome: WakeOutcome,
+        val userCount: Int = 0,
+        val deviceCount: Int = 0,
+        val skippedCount: Int = 0,
+    )
+
+    /** Wake a friend or a group - plays an alarm on every consenting Android device. */
+    suspend fun sendWake(targetId: String, isGroup: Boolean, reason: String): NetworkResult<WakeResponse, NetworkError> {
+        return safePost(
+            endpoint = "/wake/send",
+            body = WakeRequest(targetId, isGroup, reason)
         )
     }
 

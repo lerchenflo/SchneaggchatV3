@@ -47,6 +47,8 @@ fun ChangeStringDialog(
     maxLines: Int = 5,
     placeholder: String = "",
     errorMessage: ErrorMessage? = null,
+    /** Confirm button label. Defaults to "change" - override for dialogs that are not edits. */
+    confirmText: String? = null,
     onDismiss: () -> Unit,
     updateString: (String) -> Unit,
     thirdButton: @Composable (() -> Unit)? = null
@@ -65,7 +67,7 @@ fun ChangeStringDialog(
                 },
             ) {
                 Text(
-                    text = stringResource(Res.string.change)
+                    text = confirmText ?: stringResource(Res.string.change)
                 )
             }
         },

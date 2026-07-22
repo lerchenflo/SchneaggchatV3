@@ -43,9 +43,10 @@ sealed interface SocketConnectionMessage {
 
     @Serializable
     @SerialName("userchange")
-
     data class UserChange(val user: NetworkUtils.UserResponse, val deleted: Boolean) : SocketConnectionMessage
 
+    @Serializable
+    @SerialName("groupchange")
     data class GroupChange(val group: NetworkUtils.GroupResponse, val deleted: Boolean) : SocketConnectionMessage
 
     @Serializable
@@ -230,7 +231,8 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 email = null,
                                 emailVerifiedAt = null,
                                 createdAt = null,
-                                profilePictureUrl = ""
+                                //Local file path, the server never sends it - keep what we already have
+                                profilePictureUrl = existing?.profilePictureUrl ?: ""
                             ))
 
                             //Update profile picture if user is new or the profile pic got updated
@@ -267,7 +269,8 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 locationShared = newUser.shareLocation,
                                 shareSpeedHeading = newUser.shareSpeedHeading,
                                 snailTrail = newUser.shareSnailTrail,
-                                wakeupEnabled = existing?.wakeupEnabled ?: false,
+                                //On a friend's row this means "this friend may wake me"
+                                wakeupEnabled = newUser.allowWake,
                                 notisMuted = existing?.notisMuted ?: false,
                                 lastSeen = newUser.lastSeen,
                                 email = null,
@@ -301,14 +304,15 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 locationBattery = existing?.location?.batteryLevel,
                                 locationDistance24h = existing?.location?.distanceTraveled24h,
                                 locationShared = newUser.locationShared,
-                                wakeupEnabled = existing?.wakeupEnabled ?: false,
+                                //On my own row this is the master wake switch
+                                wakeupEnabled = newUser.allowWakeGlobal,
                                 frienshipStatus = null,
                                 requesterId = null,
                                 notisMuted = false,
                                 email = newUser.email,
                                 emailVerifiedAt = newUser.emailVerifiedAt,
                                 createdAt = newUser.createdAt,
-                                profilePictureUrl = ""
+                                profilePictureUrl = existing?.profilePictureUrl ?: ""
 
                             ))
 
@@ -334,7 +338,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     groupRepository.upsertGroup(Group(
                         id = socketMessage.group.id,
                         name = socketMessage.group.name,
-                        profilePictureUrl = "",
+                        profilePictureUrl = existing?.profilePictureUrl ?: "",
                         description = socketMessage.group.description,
                         createDate = socketMessage.group.createdAt,
                         updatedAt = socketMessage.group.updatedAt,

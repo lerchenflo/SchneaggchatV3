@@ -84,6 +84,8 @@ import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.description_info_group
 import schneaggchatv3mp.composeapp.generated.resources.description_info_user
+import schneaggchatv3mp.composeapp.generated.resources.edit_group_name
+import schneaggchatv3mp.composeapp.generated.resources.edit_nickname
 import schneaggchatv3mp.composeapp.generated.resources.enter_nickname
 import schneaggchatv3mp.composeapp.generated.resources.gallery
 import schneaggchatv3mp.composeapp.generated.resources.group_description
@@ -95,6 +97,9 @@ import schneaggchatv3mp.composeapp.generated.resources.remove
 import schneaggchatv3mp.composeapp.generated.resources.remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.status_info
 import schneaggchatv3mp.composeapp.generated.resources.today
+import schneaggchatv3mp.composeapp.generated.resources.wake_button
+import schneaggchatv3mp.composeapp.generated.resources.wake_reason_placeholder
+import schneaggchatv3mp.composeapp.generated.resources.wake_reason_title
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -122,6 +127,7 @@ fun ChatDetails(
     var showImagePickerDialog by remember { mutableStateOf(false) }
     var showGroupRenameDialog by remember { mutableStateOf(false) }
     var showNicknameDialog by remember { mutableStateOf(false) }
+    var showWakeReasonDialog by remember { mutableStateOf(false) }
 
 
     // Profilbild größer azoaga
@@ -156,6 +162,21 @@ fun ChatDetails(
                 }
             },
 
+        )
+    }
+
+    if (showWakeReasonDialog) {
+        ChangeStringDialog(
+            title = stringResource(Res.string.wake_reason_title),
+            oldString = "",
+            maxLines = 3,
+            placeholder = stringResource(Res.string.wake_reason_placeholder),
+            confirmText = stringResource(Res.string.wake_button),
+            onDismiss = { showWakeReasonDialog = false },
+            updateString = { reason ->
+                chatdetailsViewmodel.sendWake(reason)
+                showWakeReasonDialog = false
+            },
         )
     }
 
@@ -219,7 +240,7 @@ fun ChatDetails(
                         )
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit group name",
+                            contentDescription = stringResource(Res.string.edit_group_name),
                             modifier = Modifier.padding(start = 8.dp)
                         )
 
@@ -273,7 +294,7 @@ fun ChatDetails(
 
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit nickname",
+                            contentDescription = stringResource(Res.string.edit_nickname),
                             modifier = Modifier.padding(start = 8.dp)
                         )
                     }
@@ -473,6 +494,20 @@ fun ChatDetails(
             }
 
             HorizontalDivider()
+
+
+            //Waking is Android only - the receiving alarm service has no iOS/Desktop counterpart.
+            //if (koinInject<AppVersion>().isAndroid()) {
+
+            //}
+            //Allow wakeup from everyone
+            NormalButton(
+                text = stringResource(Res.string.wake_button),
+                onClick = { showWakeReasonDialog = true },
+                primary = false,
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
 
 
             if (isGroup) {

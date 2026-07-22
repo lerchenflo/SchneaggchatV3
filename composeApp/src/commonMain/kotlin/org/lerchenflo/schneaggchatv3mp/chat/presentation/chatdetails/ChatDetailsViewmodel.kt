@@ -38,6 +38,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -45,6 +47,14 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_friend_request
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 import schneaggchatv3mp.composeapp.generated.resources.please_restart_app
+import schneaggchatv3mp.composeapp.generated.resources.wake_failed
+import schneaggchatv3mp.composeapp.generated.resources.wake_no_devices
+import schneaggchatv3mp.composeapp.generated.resources.wake_not_allowed_group
+import schneaggchatv3mp.composeapp.generated.resources.wake_not_allowed_user
+import schneaggchatv3mp.composeapp.generated.resources.wake_not_friends
+import schneaggchatv3mp.composeapp.generated.resources.wake_sent_skipped
+import schneaggchatv3mp.composeapp.generated.resources.wake_sent_user
+import schneaggchatv3mp.composeapp.generated.resources.wake_sent_users
 
 
 data class GroupMemberWithUser(
@@ -127,6 +137,59 @@ class ChatDetailsViewmodel(
             )
     }
 
+
+    /**
+     * Ask the server to wake this chat's user or group. The server filters out everyone who has
+     * not allowed us, so the outcome is reported back rather than silently swallowed - otherwise
+     * a wake nobody permitted would look identical to one that worked.
+     */
+    fun sendWake(reason: String) {
+        viewModelScope.launch {
+            val chatName = chatDetails.value.name
+            val result = appRepository.sendWake(
+                targetId = chatId,
+                isGroup = isGroup,
+                reason = reason
+            )
+
+            val response = when (result) {
+                is NetworkResult.Success -> result.data
+                is NetworkResult.Error -> {
+                    //The server rejects waking a non-friend outright rather than reporting it
+                    //as an outcome, so it arrives here as a 403.
+                    SnackbarManager.showMessage(
+                        if (result.error is NetworkError.Forbidden) getString(Res.string.wake_not_friends)
+                        else getString(Res.string.wake_failed)
+                    )
+                    return@launch
+                }
+            }
+
+            val message = when (response.outcome) {
+                NetworkUtils.WakeOutcome.WOKEN -> {
+                    val base = if (isGroup) {
+                        getString(Res.string.wake_sent_users, response.userCount, response.deviceCount)
+                    } else {
+                        getString(Res.string.wake_sent_user, chatName, response.deviceCount)
+                    }
+                    if (response.skippedCount > 0) {
+                        getString(Res.string.wake_sent_skipped, base, response.skippedCount)
+                    } else {
+                        base
+                    }
+                }
+
+                NetworkUtils.WakeOutcome.NOT_ALLOWED ->
+                    if (isGroup) getString(Res.string.wake_not_allowed_group)
+                    else getString(Res.string.wake_not_allowed_user, chatName)
+
+                NetworkUtils.WakeOutcome.NO_DEVICES ->
+                    getString(Res.string.wake_no_devices, chatName)
+            }
+
+            SnackbarManager.showMessage(message)
+        }
+    }
 
     fun onSearchTermChange(newValue: String) {
         _searchTerm.value = newValue
