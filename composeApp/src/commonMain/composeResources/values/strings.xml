@@ -862,6 +862,8 @@
     <string name="location_group_food">Food</string>
 
     <!-- Location Types -->
+    <string name="location_type_user">Freunde</string>
+
     <string name="location_type_radar">Radar</string>
     <string name="location_type_police">Police</string>
     <string name="location_type_mountain_street">Mountain Street</string>

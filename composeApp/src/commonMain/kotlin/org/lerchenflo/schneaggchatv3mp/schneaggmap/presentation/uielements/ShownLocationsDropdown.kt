@@ -29,6 +29,8 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
@@ -36,6 +38,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapAction
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.location_type_user
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_filter_location_types
 
 @Composable
@@ -66,7 +69,9 @@ fun ShownLocationsDropdown(
                     onAction(SchneaggmapAction.ToggleGroupExpanded(it))
                 },
                 enabledTypes = state.enabledTypes,
-                expandedGroups = state.expandedFilterGroups
+                expandedGroups = state.expandedFilterGroups,
+                onToggleShowUsersClick =  { onAction(SchneaggmapAction.ToggleShowUsers)},
+                showUsers = state.showUsers,
             )
         }
     }
@@ -74,6 +79,9 @@ fun ShownLocationsDropdown(
 
 @Composable
 fun LocationDropdownContent(
+    onToggleShowUsersClick: () -> Unit,
+    showUsers: Boolean,
+
     onTypeClick: (LocationType) -> Unit,
     onGroupClick: (LocationGroup) -> Unit,
     onGroupExpandClick: (LocationGroup) -> Unit,
@@ -93,6 +101,28 @@ fun LocationDropdownContent(
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             )
             HorizontalDivider()
+
+            //Toggle users sperately
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable{
+                        onToggleShowUsersClick()
+                    }
+            ) {
+                Checkbox(
+                    checked = showUsers,
+                    onCheckedChange = null,
+                    modifier = Modifier.padding(8.dp)
+                )
+                Text(
+                    text = stringResource(Res.string.location_type_user),
+                    modifier = Modifier.weight(1f)
+                )
+
+            }
+
 
             LocationGroup.entries.forEach { group ->
                 val expanded = group in expandedGroups

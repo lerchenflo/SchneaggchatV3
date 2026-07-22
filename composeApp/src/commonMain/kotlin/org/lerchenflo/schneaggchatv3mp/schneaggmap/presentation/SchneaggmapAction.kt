@@ -10,6 +10,8 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 sealed interface SchneaggmapAction {
     data object OnBackClicked : SchneaggmapAction
     data object ToggleFilterDropdown : SchneaggmapAction
+
+    data object ToggleShowUsers: SchneaggmapAction
     data class ToggleMainType(val key: LocationType) : SchneaggmapAction
     data class ToggleGroup(val group: LocationGroup) : SchneaggmapAction
     data class ToggleGroupExpanded(val group: LocationGroup) : SchneaggmapAction

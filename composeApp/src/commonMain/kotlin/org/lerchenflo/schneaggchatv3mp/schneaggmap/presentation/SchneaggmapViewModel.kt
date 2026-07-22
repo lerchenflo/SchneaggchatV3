@@ -24,6 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route.*
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -235,7 +236,7 @@ class SchneaggmapViewModel(
 
             is SchneaggmapAction.OnOpenChatClick -> {
                 viewModelScope.launch {
-                    navigator.navigate(Route.Chat(chatId = action.user.id, isGroup = false))
+                    navigator.navigate(Chat(chatId = action.user.id, isGroup = false))
                 }
 
                 _state.update { it.copy(selectedUser = null) }
@@ -257,6 +258,14 @@ class SchneaggmapViewModel(
                 _state.update { it.copy(isMapStyleDropdownVisible = false) }
                 viewModelScope.launch {
                     preferenceManager.saveMapStyleSetting(action.style)
+                }
+            }
+
+            SchneaggmapAction.ToggleShowUsers -> {
+                _state.update {
+                    it.copy(
+                        showUsers = !it.showUsers
+                    )
                 }
             }
         }

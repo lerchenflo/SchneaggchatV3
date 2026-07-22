@@ -912,7 +912,7 @@ private fun SchneaggmapMapContent(
 
         //Show user locations - friends close enough together at the current zoom are merged into
         //a single "stacked avatars" marker (see userClusters) instead of overlapping pins.
-        if (state.usersWithLocation.isNotEmpty()) {
+        if (state.usersWithLocation.isNotEmpty() && state.showUsers) {
             userClusters.forEach { cluster ->
                 if (cluster.users.size == 1) {
                     val user = cluster.users.first()
