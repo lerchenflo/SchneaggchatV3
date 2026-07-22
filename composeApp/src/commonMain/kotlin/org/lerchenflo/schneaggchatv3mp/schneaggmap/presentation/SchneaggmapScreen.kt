@@ -590,6 +590,7 @@ private fun SchneaggmapMapContent(
                 CAMPING -> Res.drawable.icon_camping
                 SIGHTSEEING -> Res.drawable.icon_sightseeing
                 SWIMMING -> Res.drawable.icon_badespot
+                CLIMBINGSPOT -> Res.drawable.icon_badespot // TODO: Add proper icon for climbingspot
                 PARTY -> Res.drawable.icon_partylocation
 
                 POLICE -> Res.drawable.icon_police
@@ -603,6 +604,7 @@ private fun SchneaggmapMapContent(
                 FOOD_BEER -> Res.drawable.icon_beer
                 FOOD_ASIAN -> Res.drawable.icon_chinese_food
                 FOOD_GREEK -> Res.drawable.icon_food_greek
+                FOOD_CAFE_BAKERY -> Res.drawable.icon_food // TODO: Add proper icon for cafe_bakery
                 FOOD_OTHER -> Res.drawable.icon_food
 
                 VOLLEYBALL -> Res.drawable.icon_volleyball

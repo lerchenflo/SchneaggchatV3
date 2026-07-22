@@ -1,7 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
-
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
+package org.lerchenflo.schneaggchatv3mp.schneaggmap.domain
 
 fun LocationData.getValueByKey(key: String): AttributeValue? = when (this) {
 
@@ -52,6 +49,13 @@ fun LocationData.getValueByKey(key: String): AttributeValue? = when (this) {
         "indoor"            -> indoor
         "jumpSpot"           -> jumpSpot
         "lieDownFriendly"   -> lieDownFriendly
+        "price"             -> price
+        else                -> null
+    }
+    is LocationData.Climbingspot -> when (key) {
+        "viaFerrata"        -> viaFerrata
+        "outdoor"           -> outdoor
+        "price"             -> price
         else                -> null
     }
 
@@ -107,6 +111,13 @@ fun LocationData.getValueByKey(key: String): AttributeValue? = when (this) {
     is LocationData.FoodBeer         -> when (key) {
         "beerPrice"        -> beerPrice
         else               -> null
+    }
+    is LocationData.FoodCafeBakery   -> when (key) {
+        "outdoorSeating"    -> outdoorSeating
+        "alcohol"           -> alcohol
+        "coffee"            -> coffee
+        "breakfast"         -> breakfast
+        else                -> null
     }
 
     // Restaurant
@@ -170,6 +181,13 @@ fun LocationData.withValueForKey(key: String, value: AttributeValue): LocationDa
         "indoor"            -> copy(indoor = value)
         "jumpSpot"           -> copy(jumpSpot = value)
         "lieDownFriendly"   -> copy(lieDownFriendly = value)
+        "price"             -> copy(price = value)
+        else                -> this
+    }
+    is LocationData.Climbingspot -> when (key) {
+        "viaFerrata"        -> copy(viaFerrata = value)
+        "outdoor"           -> copy(outdoor = value)
+        "price"             -> copy(price = value)
         else                -> this
     }
 
@@ -224,6 +242,13 @@ fun LocationData.withValueForKey(key: String, value: AttributeValue): LocationDa
     }
     is LocationData.FoodBeer         -> when (key) {
         "beerPrice"         -> copy(beerPrice = value)
+        else                -> this
+    }
+    is LocationData.FoodCafeBakery   -> when (key) {
+        "outdoorSeating"    -> copy(outdoorSeating = value)
+        "alcohol"           -> copy(alcohol = value)
+        "coffee"            -> copy(coffee = value)
+        "breakfast"         -> copy(breakfast = value)
         else                -> this
     }
 
