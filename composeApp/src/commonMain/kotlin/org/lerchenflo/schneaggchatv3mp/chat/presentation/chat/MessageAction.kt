@@ -5,7 +5,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 sealed interface MessageAction {
     // Poll actions
     data class VotePoll(val messageId: String, val optionId: String, val checked: Boolean) : MessageAction
-    data class AddCustomPollOption(val messageId: String, val text: String) : MessageAction
+    data class AddCustomPollOption(val messageId: String, val text: String, val maxAnswers: Int?) : MessageAction
 
     // Audio actions
     data class PlayAudio(val messageId: String, val audioPath: String, ) : MessageAction

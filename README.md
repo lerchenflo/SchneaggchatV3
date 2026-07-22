@@ -25,9 +25,11 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Weckerfeature
 - Standorteinträge zeigen letzten Bearbeiter an
 - Benachrichtigungen "Als gelesen markieren" button
+- Umfragen Custom optionen mit Abstimmungslimiteinstellung
 
 #### Bugfixes
 - Profilbilder neu laden repariert
+- Map Popup scroll fix
 
 
 ### 3.0.14

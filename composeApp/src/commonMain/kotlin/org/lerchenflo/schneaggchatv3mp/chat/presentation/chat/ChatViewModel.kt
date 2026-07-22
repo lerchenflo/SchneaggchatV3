@@ -354,6 +354,7 @@ class ChatViewModel(
                             messageId = action.messageId,
                             id = action.optionId,
                             text = null,
+                            maxAllowedAnswers = null,
                             selected = action.checked
                         ),
                         ownId = ownId
@@ -369,6 +370,7 @@ class ChatViewModel(
                             messageId = action.messageId,
                             id = null,
                             text = action.text,
+                            maxAllowedAnswers = action.maxAnswers,
                             selected = true
                         )
                     )
