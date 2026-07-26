@@ -9,6 +9,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Features
 - Morse Code Wörter je nach Sprache
+- Kurz den richtigen tile anzeige bei odd one out
 
 #### Bugfixes
 

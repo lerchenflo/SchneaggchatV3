@@ -16,6 +16,7 @@ import kotlin.random.Random
 import kotlin.time.Clock
 
 private const val WRONG_TAP_PAUSE_MILLIS = 400L
+private const val CORRECT_HIGHLIGHT_MILLIS = 500L
 
 class OddOneOutViewmodel(
     private val gameHighscoreRepository: GameHighscoreRepository,
@@ -77,6 +78,7 @@ class OddOneOutViewmodel(
                 roundTimeMillis = roundTime,
                 roundTimeRemainingMillis = roundTime,
                 wrongIndex = null,
+                correctHighlightIndex = null,
             )
         }
     }
@@ -125,15 +127,22 @@ class OddOneOutViewmodel(
                     isPlaying = false,
                     isGameOver = true,
                     wrongIndex = wrongIndex,
+                    correctHighlightIndex = current.oddIndex,
                     elapsedMillis = elapsed,
                 )
             }
             submitScore(current.score, elapsed)
         } else {
-            _state.update { it.copy(lives = lives, wrongIndex = wrongIndex) }
-            // Briefly show the miss before the next round starts
+            _state.update {
+                it.copy(
+                    lives = lives,
+                    wrongIndex = wrongIndex,
+                    correctHighlightIndex = current.oddIndex,
+                )
+            }
+            // Show the correct tile and the miss briefly before the next round
             viewModelScope.launch {
-                delay(WRONG_TAP_PAUSE_MILLIS)
+                delay(maxOf(WRONG_TAP_PAUSE_MILLIS, CORRECT_HIGHLIGHT_MILLIS))
                 if (_state.value.isPlaying) startRound(round + 1)
             }
         }

@@ -39,4 +39,6 @@ data class OddOneOutState(
     val elapsedMillis: Long = 0L,
     /** Tile index most recently tapped incorrectly; briefly highlighted red, cleared on the next round */
     val wrongIndex: Int? = null,
+    /** Tile index of the correct (odd) tile; shown briefly after a miss or timeout so the player sees the answer */
+    val correctHighlightIndex: Int? = null,
 )
