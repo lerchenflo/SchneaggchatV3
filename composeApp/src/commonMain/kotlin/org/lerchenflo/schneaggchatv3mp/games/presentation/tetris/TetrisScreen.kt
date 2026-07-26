@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -23,12 +24,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import kotlin.math.abs
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameHud
@@ -38,6 +37,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_tetris_instructions
 import schneaggchatv3mp.composeapp.generated.resources.games_tetris_title
+import kotlin.math.abs
 
 @Composable
 fun TetrisScreen(
@@ -149,10 +149,13 @@ private fun NextPiecePreview(
     piece: Tetromino,
     modifier: Modifier = Modifier,
 ) {
+    val backgroundColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.6f)
+    val cellBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+
     Canvas(
         modifier = modifier
             .size(64.dp)
-            .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(8.dp))
+            .background(backgroundColor, RoundedCornerShape(8.dp))
             .padding(6.dp)
     ) {
         val shape = piece.getShape()
@@ -177,7 +180,7 @@ private fun NextPiecePreview(
                 size = Size(cell, cell)
             )
             drawRect(
-                color = Color.White.copy(alpha = 0.5f),
+                color = cellBorderColor,
                 topLeft = topLeft,
                 size = Size(cell, cell),
                 style = Stroke(width = 1.dp.toPx())
@@ -202,11 +205,18 @@ fun TetrisBoard(
     // Determine cell size based on screen width/height available
     // Tetris board is 10x20
 
+    val colorScheme = MaterialTheme.colorScheme
+    val boardBackgroundColor = colorScheme.surface
+    val cellBorderColor = colorScheme.onSurface.copy(alpha = 0.2f)
+    val ghostHighlightColor = colorScheme.onSurface
+    val currentPieceBorderColor = colorScheme.onSurface.copy(alpha = 0.5f)
+    val gridLineColor = colorScheme.onSurface.copy(alpha = 0.3f)
+
     Canvas(
         modifier = Modifier
             .aspectRatio(BOARD_COLUMNS.toFloat() / BOARD_ROWS)
             .fillMaxSize()
-            .background(Color.Black)
+            .background(boardBackgroundColor)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = { onRotate() },
@@ -217,10 +227,10 @@ fun TetrisBoard(
                 // One cell of travel moves the piece one cell, so it follows the
                 // finger like in the original Tetris app.
                 val cellWidth = (size.width.toFloat() / BOARD_COLUMNS).coerceAtLeast(1f)
-                // A gesture locks onto an axis once it has moved half a cell in a
-                // clear direction. Without this, the vertical drift of a left/right
-                // swipe would start the soft drop and speed the whole game up.
-                val axisLockThreshold = cellWidth / 2f
+                // A gesture locks onto an axis once it has moved a small fraction of a
+                // cell in a clear direction. Without this, the vertical drift of a
+                // left/right swipe would start the soft drop and speed the game up.
+                val axisLockThreshold = cellWidth / 7f
 
                 var horizontalAccumulator = 0f
                 var verticalAccumulator = 0f
@@ -280,7 +290,7 @@ fun TetrisBoard(
     ) {
         val cellWidth = size.width / BOARD_COLUMNS
         val cellHeight = size.height / BOARD_ROWS
-        
+
         // Draw Board
         state.board.forEachIndexed { rowIndex, row ->
             row.forEachIndexed { colIndex, color ->
@@ -291,7 +301,7 @@ fun TetrisBoard(
                         size = Size(cellWidth, cellHeight)
                     )
                     drawRect(
-                        color = Color.White.copy(alpha = 0.2f),
+                        color = cellBorderColor,
                         topLeft = Offset(colIndex * cellWidth, rowIndex * cellHeight),
                         size = Size(cellWidth, cellHeight),
                         style = Stroke(width = 1.dp.toPx())
@@ -299,7 +309,7 @@ fun TetrisBoard(
                 }
             }
         }
-        
+
         // Draw ghost piece: outline where the current piece would land
         state.currentPiece?.let { piece ->
             val landingRow = state.landingRow() ?: return@let
@@ -312,7 +322,7 @@ fun TetrisBoard(
 
                 if (drawRow >= 0) {
                     // Lighter, washed-out version of the falling piece's color
-                    val ghostColor = lerp(piece.color, Color.White, 0.55f)
+                    val ghostColor = lerp(piece.color, ghostHighlightColor, 0.55f)
                     drawRect(
                         color = ghostColor.copy(alpha = 0.35f),
                         topLeft = Offset(drawCol * cellWidth, drawRow * cellHeight),
@@ -334,15 +344,15 @@ fun TetrisBoard(
             piece.getShape().forEach { (rOffset, cOffset) ->
                 val drawRow = pRow + rOffset
                 val drawCol = pCol + cOffset
-                
+
                 if (drawRow >= 0) { // Don't draw if above board (shouldn't really happen but safety)
-                     drawRect(
+                    drawRect(
                         color = piece.color,
                         topLeft = Offset(drawCol * cellWidth, drawRow * cellHeight),
                         size = Size(cellWidth, cellHeight)
                     )
-                     drawRect(
-                        color = Color.White.copy(alpha = 0.5f),
+                    drawRect(
+                        color = currentPieceBorderColor,
                         topLeft = Offset(drawCol * cellWidth, drawRow * cellHeight),
                         size = Size(cellWidth, cellHeight),
                         style = Stroke(width = 2.dp.toPx())
@@ -350,18 +360,18 @@ fun TetrisBoard(
                 }
             }
         }
-        
+
         // Draw Grid Lines (Optional, but helps visualization)
         for (i in 0..10) {
-             drawLine(
-                color = Color.Gray.copy(alpha = 0.3f),
+            drawLine(
+                color = gridLineColor,
                 start = Offset(i * cellWidth, 0f),
                 end = Offset(i * cellWidth, size.height)
             )
         }
         for (i in 0..20) {
             drawLine(
-                color = Color.Gray.copy(alpha = 0.3f),
+                color = gridLineColor,
                 start = Offset(0f, i * cellHeight),
                 end = Offset(size.width, i * cellHeight)
             )
