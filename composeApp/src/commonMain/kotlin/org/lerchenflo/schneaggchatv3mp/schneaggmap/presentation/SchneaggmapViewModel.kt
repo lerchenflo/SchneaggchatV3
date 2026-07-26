@@ -29,6 +29,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
+import kotlin.collections.map
 import kotlin.time.Clock
 
 
@@ -51,9 +52,19 @@ class SchneaggmapViewModel(
         userRepository.onlineFriendIdsFlow,
     ) { state, entries, onlineFriendIds ->
 
+        val results = if (state.searchTerm.isEmpty()) emptyList() else entries.filter {
+            it.name.contains(state.searchTerm, ignoreCase = true)
+                    || it.description.contains(state.searchTerm, ignoreCase = true)
+        }
+
+        println("Results: ${results.size}")
+
+
         state.copy(
             entries = entries,
             onlineFriendIds = onlineFriendIds,
+
+            searchResults = results
         )
     }.stateIn(
         scope = viewModelScope,
@@ -208,8 +219,8 @@ class SchneaggmapViewModel(
             SchneaggmapAction.OnSettingsClick -> {
                 viewModelScope.launch {
                     navigator.navigateToSubRoute(
-                        rootRoute = Route.Settings,
-                        destination = Route.Settings.SchneaggmapSettings
+                        rootRoute = Settings,
+                        destination = Settings.SchneaggmapSettings
                     )
                 }
             }
@@ -267,6 +278,25 @@ class SchneaggmapViewModel(
                         showUsers = !it.showUsers
                     )
                 }
+            }
+
+            is SchneaggmapAction.OnSearchTermChange -> {
+                _state.update {
+                    it.copy(
+                        searchTerm = action.newTerm
+                    )
+                }
+            }
+
+            is SchneaggmapAction.OnSearchResultClick -> {
+                _state.update {
+                    it.copy(
+                        selectedEntry = action.entry, //Show popup for this entry
+                        focusEntryTarget = action.entry.coordinates, //Zoom to this entry
+                        enabledTypes = it.enabledTypes + action.entry.locationData.map { data -> data.locationtype } //Enable the entries types on the map
+                    )
+                }
+
             }
         }
     }

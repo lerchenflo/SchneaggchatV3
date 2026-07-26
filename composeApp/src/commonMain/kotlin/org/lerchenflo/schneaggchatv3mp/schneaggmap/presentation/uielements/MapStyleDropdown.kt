@@ -1,15 +1,12 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -40,7 +37,11 @@ fun MapStyleDropdown(
         ) {
             Icon(Icons.Default.Layers, contentDescription = null)
         }
-        AnimatedVisibility(visible = state.isMapStyleDropdownVisible) {
+
+        DropdownMenu(
+            expanded = state.isMapStyleDropdownVisible,
+            onDismissRequest = { onAction(SchneaggmapAction.ToggleMapStyleDropdown) },
+        ) {
             MapStyleDropdownContent(
                 selectedStyle = state.mapStyle,
                 onStyleClick = { onAction(SchneaggmapAction.SelectMapStyle(it)) },
@@ -54,39 +55,35 @@ fun MapStyleDropdownContent(
     selectedStyle: MapStyleSetting,
     onStyleClick: (MapStyleSetting) -> Unit,
 ) {
-    Card(modifier = Modifier.padding(top = 8.dp).width(180.dp)) {
-        Column(modifier = Modifier.padding(8.dp)) {
-            Text(
-                text = stringResource(Res.string.schneaggmap_map_style),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            )
-            HorizontalDivider()
+    Column(modifier = Modifier.width(180.dp)) {
+        Text(
+            text = stringResource(Res.string.schneaggmap_map_style),
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+        )
+        HorizontalDivider()
 
-            MapStyleSetting.entries.forEach { style ->
-                val selected = style == selectedStyle
-                val color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+        MapStyleSetting.entries.forEach { style ->
+            val selected = style == selectedStyle
+            val color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onStyleClick(style) }
-                        .padding(horizontal = 8.dp, vertical = 8.dp)
-                ) {
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = style.toUiText().asString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = color,
+                    )
+                },
+                onClick = { onStyleClick(style) },
+                leadingIcon = {
                     Icon(
                         imageVector = style.getIcon(),
                         contentDescription = null,
                         tint = color,
                     )
-                    Text(
-                        text = style.toUiText().asString(),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = color,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
-            }
+                },
+            )
         }
     }
 }

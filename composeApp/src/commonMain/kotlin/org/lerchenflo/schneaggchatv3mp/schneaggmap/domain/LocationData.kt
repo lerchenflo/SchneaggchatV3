@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.domain
 import androidx.compose.runtime.Composable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.*
@@ -657,6 +658,36 @@ fun LocationType.stringRes(): StringResource = when (this) {
     FOOD_GREEK      -> Res.string.location_type_food_greek
     FOOD_CAFE_BAKERY -> Res.string.location_type_food_cafe_bakery
     FOOD_OTHER      -> Res.string.location_type_food_other
+}
+
+
+fun LocationType.drawableRes(): DrawableResource = when (this) {
+    RADAR -> Res.drawable.icon_radar_variant
+    CAMPING -> Res.drawable.icon_camping
+    SIGHTSEEING -> Res.drawable.icon_sightseeing
+    SWIMMING -> Res.drawable.icon_badespot
+    CLIMBINGSPOT -> Res.drawable.icon_badespot // TODO: Add proper icon for climbingspot
+    PARTY -> Res.drawable.icon_partylocation
+
+    POLICE -> Res.drawable.icon_police
+    MOUNTAIN_STREET -> Res.drawable.icon_street
+    WHEELIESPOT -> Res.drawable.icon_wheeliespot
+    OFFROAD_MOTORCYCLE -> Res.drawable.icon_offroad_motorcycle
+    VIEWPOINT -> Res.drawable.icon_viewpoint
+    FOOD_KEBAB -> Res.drawable.icon_doener
+    FOOD_PIZZA -> Res.drawable.icon_pizza
+    FOOD_BURGER -> Res.drawable.icon_burger
+    FOOD_BEER -> Res.drawable.icon_beer
+    FOOD_ASIAN -> Res.drawable.icon_chinese_food
+    FOOD_GREEK -> Res.drawable.icon_food_greek
+    FOOD_CAFE_BAKERY -> Res.drawable.icon_food // TODO: Add proper icon for cafe_bakery
+    FOOD_OTHER -> Res.drawable.icon_food
+
+    VOLLEYBALL -> Res.drawable.icon_volleyball
+    BICYCLE -> Res.drawable.icon_bicycle
+    OUTDOOR_FITNESS -> Res.drawable.icon_outdoor_fitness
+    TABLE_TENNIS -> Res.drawable.icon_table_tennis
+    TENNIS -> Res.drawable.icon_tennis
 }
 
 @Composable

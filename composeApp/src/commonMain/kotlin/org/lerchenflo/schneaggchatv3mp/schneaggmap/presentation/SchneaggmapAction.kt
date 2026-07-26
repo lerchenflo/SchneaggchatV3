@@ -37,4 +37,8 @@ sealed interface SchneaggmapAction {
     data object ToggleMapStyleDropdown: SchneaggmapAction
     data class SelectMapStyle(val style: MapStyleSetting): SchneaggmapAction
 
+
+    data class OnSearchTermChange(val newTerm: String) : SchneaggmapAction
+
+    data class OnSearchResultClick(val entry: MapEntry) : SchneaggmapAction
 }

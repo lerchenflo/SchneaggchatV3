@@ -979,4 +979,9 @@
     <string name="wake_swipe_to_stop">Swipe to stop</string>
     <string name="wake_woken_alongside">%1$d people woken on %2$d devices</string>
     <string name="wake_log_entry">Woken by %1$s: %2$s</string>
+
+
+    <string name="schneaggmap_search_label">search ...</string>
+
+
 </resources>

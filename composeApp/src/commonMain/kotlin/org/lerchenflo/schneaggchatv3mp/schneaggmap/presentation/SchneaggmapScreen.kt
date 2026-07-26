@@ -14,18 +14,27 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Navigation
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Polyline
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -41,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -49,7 +59,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.trace
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.room.util.TableInfo
 import kotlinx.coroutines.launch
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
@@ -86,8 +98,10 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.SIGHTSEEI
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.SWIMMING
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.VIEWPOINT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.WHEELIESPOT
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.drawableRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.FriendLocationsPreview
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapSearchBar
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapStyleDropdown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapZoomSlider
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
@@ -155,6 +169,7 @@ import schneaggchatv3mp.composeapp.generated.resources.icon_tennis
 import schneaggchatv3mp.composeapp.generated.resources.icon_viewpoint
 import schneaggchatv3mp.composeapp.generated.resources.icon_volleyball
 import schneaggchatv3mp.composeapp.generated.resources.icon_wheeliespot
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_search_label
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 import kotlin.math.PI
 import kotlin.math.cos
@@ -347,75 +362,36 @@ fun SchneaggmapScreen(
             onAction = onAction
         )
 
-        // Top row: settings/own-user/compass (start), speed pill (center), map style + location
-        // filter (end) - all coordinated inside one Box so they space themselves out instead of overlapping.
-        Box(
-            modifier = Modifier
+
+        Column(
+            modifier = Modifier.fillMaxWidth()
                 .align(Alignment.TopCenter)
-                .fillMaxWidth()
-                .padding(8.dp)
+                .padding(4.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.align(Alignment.TopStart)
-            ) {
-                FloatingActionButton(
-                    onClick = { onAction(SchneaggmapAction.OnSettingsClick) },
-                ) {
-                    Icon(Icons.Default.Settings, contentDescription = null)
-                }
+            //Map Search bar with settings and user info button
+            MapSearchBar(
+                state = state,
+                onAction = onAction,
+                modifier = Modifier.fillMaxWidth()
+            )
 
-                FloatingActionButton(
-                    onClick = { onAction(SchneaggmapAction.OnOwnUserClick) },
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                    modifier = Modifier.padding(start = 8.dp),
-                ) {
-                    Icon(Icons.Default.Person, contentDescription = null)
-                }
-
-                DisappearingCompassButton(
-                    cameraState = cameraState,
-                    modifier = Modifier.padding(start = 8.dp),
-                )
-            }
-
-            ownLocation?.speed?.let { speed ->
-                if (speed.distancePerSecond.inMeters > 3) {
-                    val speedKmh = (speed.distancePerSecond.inMeters * 3.6).roundToInt()
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .size(56.dp)
-                            .background(Color.White, CircleShape)
-                            .border(width = 4.dp, color = Color.Red, shape = CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "$speedKmh",
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                    }
-                }
-            }
+            Spacer(modifier = Modifier.height(4.dp))
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.align(Alignment.TopEnd)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
             ) {
-                MapStyleDropdown(
-                    state = state,
-                    onAction = onAction,
-                )
-
+                //Shown locations dropdown menu
                 ShownLocationsDropdown(
                     state = state,
-                    onAction = onAction,
+                    onAction = onAction
                 )
             }
         }
+
+
+
+
 
         // Right edge: vertical zoom scrollbar, centered between the top and bottom rows so it
         // never collides with the filter dropdown above or the snail-trail toggle below.
@@ -436,13 +412,53 @@ fun SchneaggmapScreen(
                 .padding(end = 8.dp)
         )
 
+        //Bottom column
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .padding(8.dp)
         ) {
+
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                    //compass
+                    DisappearingCompassButton(
+                        cameraState = cameraState,
+                        size = 32.dp
+                    )
+
+                    //Map style dropdown menu
+                    MapStyleDropdown(
+                        state = state,
+                        onAction = onAction,
+                    )
+
+                    //Center to own location button
+                    ownLocation?.let {
+                        SmallFloatingActionButton(
+                            onClick = { isFollowingLocation = true },
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MyLocation,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                    }
+                }
+            }
+
             if (state.usersWithLocation.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+
                 FriendLocationsPreview(
                     friends = state.usersWithLocation,
                     onlineFriendIds = state.onlineFriendIds,
@@ -475,15 +491,28 @@ fun SchneaggmapScreen(
                     modifier = Modifier.align(Alignment.CenterStart)
                 )
 
-                // Center: Own location FAB
-                ownLocation?.let {
-                    FloatingActionButton(
-                        onClick = { isFollowingLocation = true },
-                        modifier = Modifier.align(Alignment.Center)
-                    ) {
-                        Icon(Icons.Default.LocationOn, contentDescription = null)
+                //Round speed indicator
+                ownLocation?.speed?.let { speed ->
+                    if (speed.distancePerSecond.inMeters > 3) {
+                        val speedKmh = (speed.distancePerSecond.inMeters * 3.6).roundToInt()
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .size(56.dp)
+                                .background(Color.White, CircleShape)
+                                .border(width = 4.dp, color = Color.Red, shape = CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "$speedKmh",
+                                color = Color.Black,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                        }
                     }
                 }
+
 
                 // Right: Snail trails toggle
                 Card(
@@ -508,7 +537,7 @@ fun SchneaggmapScreen(
         }
 
 
-
+        //Popup cards from the bottom
         state.selectedEntry?.let { entry ->
             MapEntryInfoCard(
                 entry = entry,
@@ -584,35 +613,8 @@ private fun SchneaggmapMapContent(
 
     //Resolve all icons (Cycle trough the entrys, code is more garbage otherwise (Auto resolves new types)
     val typeIcons: Map<LocationType, DrawableResource> = remember {
-        LocationType.entries.associateWith { type ->
-            when (type) {
-                RADAR -> Res.drawable.icon_radar_variant
-                CAMPING -> Res.drawable.icon_camping
-                SIGHTSEEING -> Res.drawable.icon_sightseeing
-                SWIMMING -> Res.drawable.icon_badespot
-                CLIMBINGSPOT -> Res.drawable.icon_badespot // TODO: Add proper icon for climbingspot
-                PARTY -> Res.drawable.icon_partylocation
-
-                POLICE -> Res.drawable.icon_police
-                MOUNTAIN_STREET -> Res.drawable.icon_street
-                WHEELIESPOT -> Res.drawable.icon_wheeliespot
-                OFFROAD_MOTORCYCLE -> Res.drawable.icon_offroad_motorcycle
-                VIEWPOINT -> Res.drawable.icon_viewpoint
-                FOOD_KEBAB -> Res.drawable.icon_doener
-                FOOD_PIZZA -> Res.drawable.icon_pizza
-                FOOD_BURGER -> Res.drawable.icon_burger
-                FOOD_BEER -> Res.drawable.icon_beer
-                FOOD_ASIAN -> Res.drawable.icon_chinese_food
-                FOOD_GREEK -> Res.drawable.icon_food_greek
-                FOOD_CAFE_BAKERY -> Res.drawable.icon_food // TODO: Add proper icon for cafe_bakery
-                FOOD_OTHER -> Res.drawable.icon_food
-
-                VOLLEYBALL -> Res.drawable.icon_volleyball
-                BICYCLE -> Res.drawable.icon_bicycle
-                OUTDOOR_FITNESS -> Res.drawable.icon_outdoor_fitness
-                TABLE_TENNIS -> Res.drawable.icon_table_tennis
-                TENNIS -> Res.drawable.icon_tennis
-            }
+        entries.associateWith { type ->
+            type.drawableRes()
         }
     }
 
@@ -744,7 +746,7 @@ private fun SchneaggmapMapContent(
 
             val enabledTypeKeysMap = state.enabledTypes
 
-            LocationType.entries.forEach { type ->
+            entries.forEach { type ->
 
                 //Skip if not enabled on map
                 if (!enabledTypeKeysMap.contains(type)) return@forEach
