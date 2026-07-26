@@ -27,7 +27,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.AlarmOff
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -173,21 +175,19 @@ private fun WakeAlarmScreen(
                     }
                 }
 
-                // Deliberately a swipe rather than a button: a tap is far too easy to hit by
-                // accident while half asleep, which would silence the alarm unintentionally.
-                ConfirmSlider(
-                    text = stringResource(Res.string.wake_swipe_to_stop),
-                    thumbIcon = Icons.Default.AlarmOff,
-                    width = 280.dp,
-                    progressColor = accent,
-                    thumbColor = MaterialTheme.colorScheme.onError,
-                    //Stopping is terminal - the screen closes, so resetting the track is pointless.
-                    autoResetMillis = null,
-                    trailingIcon = {
-                        Icon(imageVector = Icons.Default.AlarmOff, contentDescription = null)
-                    },
-                    onConfirm = onStop
-                )
+
+                IconButton(
+                    onClick = onStop,
+                    modifier = Modifier.size(100.dp)
+
+                ) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = null,
+                        modifier = Modifier.size(70.dp)
+                    )
+                }
+
             }
         }
     }
