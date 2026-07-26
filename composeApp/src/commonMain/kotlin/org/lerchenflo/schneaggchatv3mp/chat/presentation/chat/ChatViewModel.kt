@@ -51,6 +51,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageMinimal
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel.SendMessageContent.TextContent
@@ -93,6 +94,7 @@ class ChatViewModel(
 
     companion object {
         private const val MAX_VOICE_MSG_TIME = 2*60*1000L
+        private const val TIME_TO_MINIMIZE = 30_000L //Time between messages to remove name and space between messages (in ms)
     }
 
     private var voiceRecorder: VoiceRecorder? = null // Object for Audio Recording
@@ -654,10 +656,12 @@ class ChatViewModel(
         val displayItems = mutableListOf<MessageDisplayItem>()
 
         messages.forEachIndexed { index, message ->
+            val currentDateLong = message.sendDate.toLongOrNull() ?: 0
             val currentDate = message.sendDate.toLongOrNull()?.toLocalDate()
-            val nextDate = if (index + 1 < messages.size) {
+            val nextDate = if (index + 1 in messages.indices) {
                 messages[index + 1].sendDate.toLongOrNull()?.toLocalDate()
             } else null
+
 
             val user = userMap[message.senderId]
             val senderName = user?.displayName ?: groupMap[message.senderId]?.memberName ?: "Unresolved Username"
@@ -688,11 +692,38 @@ class ChatViewModel(
                 )
             }
 
+
+            val hasPrevNeighbor = if(index + 1 in messages.indices) {
+                val prevDate_ = messages[index + 1].sendDate.toLongOrNull() ?: 0
+                val nextSenderId = messages[index + 1].senderId
+                if(currentDateLong - prevDate_  in 0..TIME_TO_MINIMIZE && nextSenderId == message.senderId){
+                    true
+                }else false
+            }else false
+
+
+            val hasNextNeighbor = if(index - 1 in messages.indices) {
+                val nextDate_ = messages[index - 1].sendDate.toLongOrNull() ?: 0
+                val nextSenderId = messages[index - 1].senderId
+                if(nextDate_ - currentDateLong in 0..TIME_TO_MINIMIZE && nextSenderId == message.senderId){
+                    true
+                }else false
+            }else false
+
+            val minimalState = when {
+                hasPrevNeighbor && hasNextNeighbor -> MessageMinimal.MIDDLE
+                hasPrevNeighbor -> MessageMinimal.LAST
+                hasNextNeighbor -> MessageMinimal.FIRST
+                else -> MessageMinimal.NONE
+            }
+            println("Messageminimal Status viewmodel: " + minimalState)
+
             displayItems.add(
                 MessageDisplayItem.MessageItem(
                     id = "msg_${message.localPK}",
                     message = message,
                     senderName = senderName,
+                    messageMinimal = minimalState,
                     senderColor = resolvedColor,
                     resolvedReaders = resolvedReaders,
                     resolvedReactions = resolvedReactions

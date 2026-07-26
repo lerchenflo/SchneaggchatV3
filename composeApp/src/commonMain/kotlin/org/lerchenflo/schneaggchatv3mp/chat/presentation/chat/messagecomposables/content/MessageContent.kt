@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.StateFlow
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageMinimal
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReadIndicator
@@ -36,6 +37,7 @@ fun MessageContent(
     selectedChatId: String,
     senderName: String? = null,
     senderColor: Int = 0,
+    minimal: MessageMinimal = MessageMinimal.NONE,
     readerMap: Map<String, String> = emptyMap(),
     onAction: (MessageAction) -> Unit = {},
     playbackProgress: StateFlow<PlaybackProgress>? = null,
@@ -50,7 +52,7 @@ fun MessageContent(
             modifier = Modifier // Remove the modifier parameter here
         ){
             // Show name for groups/other senders
-            if (!mymessage && message.senderAsString != "" && message.groupMessage) {
+            if (!mymessage && message.senderAsString != "" && message.groupMessage && (minimal == MessageMinimal.FIRST || minimal == MessageMinimal.NONE)) {
                 Text(
                     text = message.senderAsString,
                     color = if (senderColor == 0) Color.Red else Color(senderColor.toLong() and 0xFFFFFFFFL),

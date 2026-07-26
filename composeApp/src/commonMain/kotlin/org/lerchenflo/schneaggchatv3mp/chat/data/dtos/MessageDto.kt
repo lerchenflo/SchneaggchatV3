@@ -5,6 +5,7 @@ import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageMinimal
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
@@ -58,6 +59,9 @@ data class MessageDto(
     ) {
     @Ignore
     var senderAsString: String = ""
+
+    @Ignore
+    var minimizeMessage: MessageMinimal = MessageMinimal.NONE
 
     @Ignore
     var senderColor: Int = 0

@@ -13,6 +13,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - App kaputt Button
 - Standort mit Verlauf teilen
 - @Annotations für Standorte + User
+- Weckerfeature (Wecker-ton bei Freunden abspielen, auch wenn das Gerät auf lautlos ist)
 
 
 # Changelog
@@ -29,6 +30,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Map Suchfeld + neue UI
 - Map Richtungsanzeige für Freunde
 - Heutige Nachrichten in der Chatauswahl mit farbigem Datum
+- Kleinerer abstand zwischen Nachrichten die weniger als 30sec hintereinander gesendet wurden
 
 #### Bugfixes
 - Profilbilder neu laden repariert

@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -99,6 +100,7 @@ import org.lerchenflo.schneaggchatv3mp.app.OpenChatTracker
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageMinimal
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel.SendMessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.DayDivider
@@ -405,6 +407,7 @@ fun ChatScreen(
                             val message = item.message
                             //println("Message read by: ${message.readers}")
 
+
                             var answerMessage: Message? = null
                             if (message.answerId != null) {
                                 // Find answer message from display items
@@ -423,6 +426,7 @@ fun ChatScreen(
                                     message = message,
                                     senderName = item.senderName,  // Pre-resolved sender name!
                                     senderColor = item.senderColor, // Pre-resolved sender color!
+                                    minimal = item.messageMinimal,
                                     modifier = Modifier,
                                     replyMessage = answerMessage,
                                     replyMessageOnClick = {
@@ -1058,5 +1062,42 @@ enum class AddMediaOptions{
         IMAGE -> onImageAction()
         POLL -> onPollAction()
         //AUDIO -> onAudioAction()
+    }
+}
+
+
+fun List<MessageDisplayItem>.withCalculatedGrouping(
+    timeToMinimizeMs: Long
+): List<Pair<MessageDisplayItem, MessageMinimal>> {
+    return mapIndexed { index, item ->
+        if (item !is MessageDisplayItem.MessageItem) {
+            return@mapIndexed item to MessageMinimal.NONE
+        }
+
+        val currentMsg = item.message
+
+        // 1. Check message before current (older message in reverse lists, or previous item in normal lists)
+        val prevItem = getOrNull(index - 1) as? MessageDisplayItem.MessageItem
+        val hasPrevNeighbor = prevItem?.message?.let { prevMsg ->
+            prevMsg.senderId == currentMsg.senderId &&
+                    kotlin.math.abs(currentMsg.sendDate.toLong() - prevMsg.sendDate.toLong()) <= timeToMinimizeMs
+        } ?: false
+
+        // 2. Check message after current
+        val nextItem = getOrNull(index + 1) as? MessageDisplayItem.MessageItem
+        val hasNextNeighbor = nextItem?.message?.let { nextMsg ->
+            nextMsg.senderId == currentMsg.senderId &&
+                    kotlin.math.abs(nextMsg.sendDate.toLong() - currentMsg.sendDate.toLong()) <= timeToMinimizeMs
+        } ?: false
+
+        // 3. Determine grouping state based on neighbors
+        val minimalState = when {
+            hasPrevNeighbor && hasNextNeighbor -> MessageMinimal.MIDDLE
+            hasPrevNeighbor -> MessageMinimal.LAST
+            hasNextNeighbor -> MessageMinimal.FIRST
+            else -> MessageMinimal.NONE
+        }
+
+        item to minimalState
     }
 }
