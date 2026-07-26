@@ -606,6 +606,10 @@ fun Chatauswahlscreen(
                         }
                     }
 
+                    LaunchedEffect(searchterm) {
+                        liststate.animateScrollToItem(0)
+                    }
+
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize(),
