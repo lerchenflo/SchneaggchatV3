@@ -232,6 +232,16 @@ private fun OddOneOutBoard(
                     style = Stroke(width = tilePx * 0.08f, cap = StrokeCap.Round),
                 )
             }
+
+            if (index == state.correctHighlightIndex) {
+                drawRoundRect(
+                    color = Color(0xFF4CAF50),
+                    topLeft = Offset(col * tilePx + gap, row * tilePx + gap),
+                    size = Size(tilePx - 2 * gap, tilePx - 2 * gap),
+                    cornerRadius = CornerRadius(corner, corner),
+                    style = Stroke(width = tilePx * 0.08f, cap = StrokeCap.Round),
+                )
+            }
         }
     }
 }
