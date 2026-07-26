@@ -1,8 +1,13 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.todayIn
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @Serializable
 data class Reaction(val userId: String, val content: String)
@@ -47,6 +52,10 @@ data class Message(
     fun isText() : Boolean = msgType == MessageType.TEXT
 
     fun getSendDateAsLong(): Long = sendDate.toLongOrNull() ?: 0L
+
+    fun wasSentToday(): Boolean =
+        Clock.System.todayIn(TimeZone.currentSystemDefault()) == Instant.fromEpochMilliseconds(getSendDateAsLong()).toLocalDateTime(
+        TimeZone.currentSystemDefault()).date
 
     fun isReadById(id: String): Boolean =
         readers.any { it.readerId == id }

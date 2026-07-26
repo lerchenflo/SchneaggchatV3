@@ -276,7 +276,8 @@ fun UserButton(
                         text = millisToTimeDateOrYesterday(lastMessage.sendDate.toLong()),
                         style = MaterialTheme.typography.labelSmall,
                         maxLines = 1,
-                        modifier = Modifier.padding(start = 4.dp)
+                        modifier = Modifier.padding(start = 4.dp),
+                        color = if (lastMessage.wasSentToday()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

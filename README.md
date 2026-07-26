@@ -28,6 +28,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Umfragen Custom optionen mit Abstimmungslimiteinstellung
 - Map Suchfeld + neue UI
 - Map Richtungsanzeige für Freunde
+- Heutige Nachrichten in der Chatauswahl mit farbigem Datum
 
 #### Bugfixes
 - Profilbilder neu laden repariert
