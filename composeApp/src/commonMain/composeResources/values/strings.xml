@@ -862,6 +862,8 @@
     <string name="location_group_food">Food</string>
 
     <!-- Location Types -->
+    <string name="location_type_user">Freunde</string>
+
     <string name="location_type_radar">Radar</string>
     <string name="location_type_police">Police</string>
     <string name="location_type_mountain_street">Mountain Street</string>
@@ -870,6 +872,7 @@
     <string name="location_type_viewpoint">Viewpoint</string>
     <string name="location_type_camping">Camping</string>
     <string name="location_type_swimming">Swimming</string>
+    <string name="location_type_climbingspot">Climbing Spot</string>
     <string name="location_type_volleyball">Volleyball</string>
     <string name="location_type_bicycle">Bicycle Trail</string>
     <string name="location_type_outdoor_fitness">Outdoor Fitness</string>
@@ -883,6 +886,7 @@
     <string name="location_type_food_beer">Beer</string>
     <string name="location_type_food_asian">Asian Food</string>
     <string name="location_type_food_greek">Greek Food</string>
+    <string name="location_type_food_cafe_bakery">Cafe / Bakery</string>
     <string name="location_type_food_other">Other Food</string>
 
     <!-- Radar -->
@@ -916,6 +920,12 @@
     <!-- Swimming -->
     <string name="location_swimming_indoor">Indoor</string>
     <string name="location_swimming_jump_spot">Jump Spot</string>
+    <string name="location_swimming_price">Price</string>
+
+    <!-- Climbingspot -->
+    <string name="location_climbingspot_via_ferrata">Via Ferrata</string>
+    <string name="location_climbingspot_outdoor">Outdoor</string>
+    <string name="location_climbingspot_price">Price</string>
 
     <!-- Volleyball -->
     <string name="location_volleyball_good_net">Good Net</string>
@@ -941,6 +951,10 @@
     <string name="location_food_cheeseburger_price">Cheeseburger Price</string>
     <string name="location_food_beer_price">Beer Price</string>
     <string name="location_food_cuisine">Cuisine</string>
+    <string name="location_food_cafe_bakery_outdoor_seating">Outdoor Seating</string>
+    <string name="location_food_cafe_bakery_alcohol">Alcohol</string>
+    <string name="location_food_cafe_bakery_coffee">Coffee</string>
+    <string name="location_food_cafe_bakery_breakfast">Breakfast</string>
 
     <!-- Wake -->
     <string name="wake_settings">Wake-ups</string>
@@ -965,4 +979,9 @@
     <string name="wake_swipe_to_stop">Swipe to stop</string>
     <string name="wake_woken_alongside">%1$d people woken on %2$d devices</string>
     <string name="wake_log_entry">Woken by %1$s: %2$s</string>
+
+
+    <string name="schneaggmap_search_label">search ...</string>
+
+
 </resources>

@@ -3,11 +3,49 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.domain
 import androidx.compose.runtime.Composable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.*
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.*
+
+/**
+ * HOW TO ADD A NEW LOCATION ENTRY
+ * ================================
+ *
+ * CLIENT SIDE (SchneaggchatV3):
+ * 1. Add the new enum value to LocationType enum (group it appropriately)
+ * 2. Add the new type to the appropriate LocationGroup
+ * 3. Add the data class in LocationData sealed class with:
+ *    - @Serializable annotation
+ *    - @SerialName annotation with snake_case name
+ *    - Properties with AttributeValue types (nullable if optional)
+ *    - Override val locationtype
+ *    - Getter properties for each field (e.g., val fieldNameValue get() = field?.asType)
+ *    - Override fun schema() returning list of AttributeDefinitions
+ * 4. Add the new type to toSimpleLocationData() function
+ * 5. Add string resolution for each attribute in AttributeDefinition.label() function
+ * 6. Add the type to LocationType.stringRes() function
+ * 7. Add string entries in strings.xml:
+ *    - location_type_[name] for the type name
+ *    - location_[type]_[attribute] for each attribute label
+ * 8. Add icon mapping in SchneaggmapScreen.kt with TODO comment for proper icon
+ * 9. Update GetSetValueForKey.kt:
+ *    - Add case in getValueByKey() for each attribute
+ *    - Add case in withValueForKey() for each attribute with copy()
+ *
+ * SERVER SIDE (SchneaggchatV3server):
+ * 1. Add the new type to @JsonSubTypes annotation in LocationData.kt
+ * 2. Add the data class in LocationData sealed class with:
+ *    - @TypeAlias annotation with snake_case name
+ *    - Properties with AttributeValue types (nullable if optional)
+ *    - Override fun schema() returning list of AttributeDefinitions
+ * 3. Add the new type to LocationDataWriteConverter in MongoConfig.kt
+ * 4. Update any service files that instantiate LocationData (e.g., SchneaggmapService.kt)
+ *
+ * IMPORTANT: Keep the serial names consistent between client and server (snake_case)
+ */
 
 
 enum class LocationType {
@@ -26,6 +64,7 @@ enum class LocationType {
     VIEWPOINT,
     CAMPING,
     SWIMMING,
+    CLIMBINGSPOT,
 
     // Sport
     VOLLEYBALL,
@@ -44,16 +83,17 @@ enum class LocationType {
     FOOD_BEER,
     FOOD_ASIAN,
     FOOD_GREEK,
+    FOOD_CAFE_BAKERY,
     FOOD_OTHER,
 }
 
 
 enum class LocationGroup(val types: List<LocationType>) {
     DRIVING(listOf(RADAR, POLICE, MOUNTAIN_STREET, WHEELIESPOT, OFFROAD_MOTORCYCLE)),
-    NATURE_ACTIVITIES(listOf(SIGHTSEEING, VIEWPOINT, CAMPING, SWIMMING)),
+    NATURE_ACTIVITIES(listOf(SIGHTSEEING, VIEWPOINT, CAMPING, SWIMMING, CLIMBINGSPOT)),
     SPORT(listOf(VOLLEYBALL, BICYCLE, OUTDOOR_FITNESS, TABLE_TENNIS, TENNIS)),
     SOCIAL_ENTERTAINMENT(listOf(PARTY)),
-    FOOD(listOf(FOOD_KEBAB, FOOD_PIZZA, FOOD_BURGER, FOOD_BEER, FOOD_ASIAN, FOOD_GREEK, FOOD_OTHER)),
+    FOOD(listOf(FOOD_KEBAB, FOOD_PIZZA, FOOD_BURGER, FOOD_BEER, FOOD_ASIAN, FOOD_GREEK, FOOD_CAFE_BAKERY, FOOD_OTHER)),
 }
 
 
@@ -204,17 +244,40 @@ sealed class LocationData {
         val jumpSpot: AttributeValue?,
         //Defaulted so map entries cached before this attribute existed still deserialize
         val lieDownFriendly: AttributeValue? = null,
+        val price: AttributeValue? = null,
     ) : LocationData() {
         override val locationtype = SWIMMING
 
         val indoorValue          get() = indoor?.asBool
         val jumpSpotValue        get() = jumpSpot?.asBool
         val lieDownFriendlyValue get() = lieDownFriendly?.asBool
+        val priceValue           get() = price?.asInt
 
         override fun schema() = listOf(
             AttributeDefinition.BoolDef(key = "indoor",          required = false),
             AttributeDefinition.BoolDef(key = "jumpSpot",        required = false),
             AttributeDefinition.BoolDef(key = "lieDownFriendly", required = false),
+            AttributeDefinition.IntDef (key = "price",          required = false, min = 0),
+        )
+    }
+
+    @Serializable
+    @SerialName("climbingspot")
+    data class Climbingspot(
+        val viaFerrata: AttributeValue?,
+        val outdoor: AttributeValue?,
+        val price: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = CLIMBINGSPOT
+
+        val viaFerrataValue get() = viaFerrata?.asBool
+        val outdoorValue    get() = outdoor?.asBool
+        val priceValue      get() = price?.asInt
+
+        override fun schema() = listOf(
+            AttributeDefinition.BoolDef(key = "viaFerrata", required = false),
+            AttributeDefinition.BoolDef(key = "outdoor",    required = false),
+            AttributeDefinition.IntDef (key = "price",      required = false, min = 0),
         )
     }
 
@@ -393,6 +456,29 @@ sealed class LocationData {
         )
     }
 
+    @Serializable
+    @SerialName("food_cafe_bakery")
+    data class FoodCafeBakery(
+        val outdoorSeating: AttributeValue?,
+        val alcohol: AttributeValue?,
+        val coffee: AttributeValue?,
+        val breakfast: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = FOOD_CAFE_BAKERY
+
+        val outdoorSeatingValue get() = outdoorSeating?.asBool
+        val alcoholValue       get() = alcohol?.asBool
+        val coffeeValue        get() = coffee?.asBool
+        val breakfastValue    get() = breakfast?.asBool
+
+        override fun schema() = listOf(
+            AttributeDefinition.BoolDef(key = "outdoorSeating", required = false),
+            AttributeDefinition.BoolDef(key = "alcohol",       required = false),
+            AttributeDefinition.BoolDef(key = "coffee",        required = false),
+            AttributeDefinition.BoolDef(key = "breakfast",     required = false),
+        )
+    }
+
 
     // Restaurant
 
@@ -443,7 +529,8 @@ fun LocationType.toSimpleLocationData(): LocationData = when (this) {
     OFFROAD_MOTORCYCLE -> LocationData.OffroadMotorcycle(legal = AttributeValue.BoolValue(false), motocross = null, enduro = null)
     VIEWPOINT       -> LocationData.Viewpoint(lieDownFriendly = null)
     CAMPING         -> LocationData.Camping(official = AttributeValue.BoolValue(true), waterDistance = null, sittingPossibility = null, grillPossibility = null)
-    SWIMMING        -> LocationData.SwimmingLocation(indoor = null, jumpSpot = null, lieDownFriendly = null)
+    SWIMMING        -> LocationData.SwimmingLocation(indoor = null, jumpSpot = null, lieDownFriendly = null, price = null)
+    CLIMBINGSPOT    -> LocationData.Climbingspot(viaFerrata = null, outdoor = null, price = null)
     VOLLEYBALL      -> LocationData.Volleyball(goodNet = null, goodField = null, outdoor = null)
     BICYCLE         -> LocationData.Bicycle(legal = AttributeValue.BoolValue(true), difficulty = AttributeValue.IntValue(1), undergroundType = null)
     OUTDOOR_FITNESS -> LocationData.OutdoorFitness(shadow = null)
@@ -457,6 +544,7 @@ fun LocationType.toSimpleLocationData(): LocationData = when (this) {
     FOOD_BEER       -> LocationData.FoodBeer(beerPrice = null)
     FOOD_ASIAN      -> LocationData.FoodAsian(allYouCanEat = null)
     FOOD_GREEK      -> LocationData.FoodGreek()
+    FOOD_CAFE_BAKERY -> LocationData.FoodCafeBakery(outdoorSeating = null, alcohol = null, coffee = null, breakfast = null)
     FOOD_OTHER      -> LocationData.FoodOther(cuisine = AttributeValue.StringValue(""))
 }
 
@@ -501,6 +589,11 @@ fun AttributeDefinition.label(): String {
         // Swimming
         "indoor"             -> stringResource(Res.string.location_swimming_indoor)
         "jumpSpot"            -> stringResource(Res.string.location_swimming_jump_spot)
+        "price"              -> stringResource(Res.string.location_swimming_price)
+
+        // Climbingspot
+        "viaFerrata"         -> stringResource(Res.string.location_climbingspot_via_ferrata)
+        "outdoor"            -> stringResource(Res.string.location_climbingspot_outdoor)
 
         // Volleyball
         "goodNet"           -> stringResource(Res.string.location_volleyball_good_net)
@@ -526,6 +619,10 @@ fun AttributeDefinition.label(): String {
         "cheeseburgerPrice" -> stringResource(Res.string.location_food_cheeseburger_price)
         "beerPrice"         -> stringResource(Res.string.location_food_beer_price)
         "cuisine"           -> stringResource(Res.string.location_food_cuisine)
+        "outdoorSeating"    -> stringResource(Res.string.location_food_cafe_bakery_outdoor_seating)
+        "alcohol"           -> stringResource(Res.string.location_food_cafe_bakery_alcohol)
+        "coffee"            -> stringResource(Res.string.location_food_cafe_bakery_coffee)
+        "breakfast"         -> stringResource(Res.string.location_food_cafe_bakery_breakfast)
 
         else -> {
             println("ERROR: SCHNEAGGMAP: KEY NOT RESOLVED: $key")
@@ -545,6 +642,7 @@ fun LocationType.stringRes(): StringResource = when (this) {
     VIEWPOINT       -> Res.string.location_type_viewpoint
     CAMPING         -> Res.string.location_type_camping
     SWIMMING        -> Res.string.location_type_swimming
+    CLIMBINGSPOT    -> Res.string.location_type_climbingspot
     VOLLEYBALL      -> Res.string.location_type_volleyball
     BICYCLE         -> Res.string.location_type_bicycle
     OUTDOOR_FITNESS -> Res.string.location_type_outdoor_fitness
@@ -558,7 +656,38 @@ fun LocationType.stringRes(): StringResource = when (this) {
     FOOD_BEER       -> Res.string.location_type_food_beer
     FOOD_ASIAN      -> Res.string.location_type_food_asian
     FOOD_GREEK      -> Res.string.location_type_food_greek
+    FOOD_CAFE_BAKERY -> Res.string.location_type_food_cafe_bakery
     FOOD_OTHER      -> Res.string.location_type_food_other
+}
+
+
+fun LocationType.drawableRes(): DrawableResource = when (this) {
+    RADAR -> Res.drawable.icon_radar_variant
+    CAMPING -> Res.drawable.icon_camping
+    SIGHTSEEING -> Res.drawable.icon_sightseeing
+    SWIMMING -> Res.drawable.icon_badespot
+    CLIMBINGSPOT -> Res.drawable.icon_badespot // TODO: Add proper icon for climbingspot
+    PARTY -> Res.drawable.icon_partylocation
+
+    POLICE -> Res.drawable.icon_police
+    MOUNTAIN_STREET -> Res.drawable.icon_street
+    WHEELIESPOT -> Res.drawable.icon_wheeliespot
+    OFFROAD_MOTORCYCLE -> Res.drawable.icon_offroad_motorcycle
+    VIEWPOINT -> Res.drawable.icon_viewpoint
+    FOOD_KEBAB -> Res.drawable.icon_doener
+    FOOD_PIZZA -> Res.drawable.icon_pizza
+    FOOD_BURGER -> Res.drawable.icon_burger
+    FOOD_BEER -> Res.drawable.icon_beer
+    FOOD_ASIAN -> Res.drawable.icon_chinese_food
+    FOOD_GREEK -> Res.drawable.icon_food_greek
+    FOOD_CAFE_BAKERY -> Res.drawable.icon_food // TODO: Add proper icon for cafe_bakery
+    FOOD_OTHER -> Res.drawable.icon_food
+
+    VOLLEYBALL -> Res.drawable.icon_volleyball
+    BICYCLE -> Res.drawable.icon_bicycle
+    OUTDOOR_FITNESS -> Res.drawable.icon_outdoor_fitness
+    TABLE_TENNIS -> Res.drawable.icon_table_tennis
+    TENNIS -> Res.drawable.icon_tennis
 }
 
 @Composable

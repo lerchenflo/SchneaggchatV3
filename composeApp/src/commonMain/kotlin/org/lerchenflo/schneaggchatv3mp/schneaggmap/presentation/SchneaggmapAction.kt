@@ -10,6 +10,8 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 sealed interface SchneaggmapAction {
     data object OnBackClicked : SchneaggmapAction
     data object ToggleFilterDropdown : SchneaggmapAction
+
+    data object ToggleShowUsers: SchneaggmapAction
     data class ToggleMainType(val key: LocationType) : SchneaggmapAction
     data class ToggleGroup(val group: LocationGroup) : SchneaggmapAction
     data class ToggleGroupExpanded(val group: LocationGroup) : SchneaggmapAction
@@ -35,4 +37,8 @@ sealed interface SchneaggmapAction {
     data object ToggleMapStyleDropdown: SchneaggmapAction
     data class SelectMapStyle(val style: MapStyleSetting): SchneaggmapAction
 
+
+    data class OnSearchTermChange(val newTerm: String) : SchneaggmapAction
+
+    data class OnSearchResultClick(val entry: MapEntry) : SchneaggmapAction
 }

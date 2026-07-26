@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -27,12 +28,10 @@ import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
-/**
- * Composites [profilePicture] (scaled into a [pictureSize] square, top/top-center) with
- * [username] and [statusText] drawn underneath, stacked on a rounded [backgroundColor] pill.
- * Everything else in the resulting bitmap is transparent, so it can be used directly as a map
- * marker icon.
- */
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.rotate
+import kotlin.math.roundToInt
+
 fun mergeProfilePictureWithStatusText(
     profilePicture: ImageBitmap,
     username: String,
@@ -43,7 +42,12 @@ fun mergeProfilePictureWithStatusText(
     textMeasurer: TextMeasurer,
     density: Density,
     pictureSize: Dp = 40.dp,
+    heading: Double?,
+    speed: Double?,
+    headingIndicatorColor: Color,
 ): ImageBitmap {
+    val showHeading = heading != null && speed != null && speed != 0.0
+
     val nameStyle = TextStyle(
         color = nameColor,
         fontSize = 11.sp,
@@ -68,8 +72,13 @@ fun mergeProfilePictureWithStatusText(
     val pillWidth = textBlockWidth + horizontalPaddingPx * 2
     val pillHeight = textBlockHeight + verticalPaddingPx * 2
 
-    val totalWidth = maxOf(pictureSizePx.toFloat(), pillWidth)
-    val totalHeight = pictureSizePx + spacingPx + pillHeight
+    // Extra room around the picture so a rotated heading arrow can poke out past its edge
+    // in any direction without getting clipped.
+    val headingMarginPx = if (showHeading) pictureSizePx * 0.35f else 0f
+
+    val pictureAreaWidth = pictureSizePx + headingMarginPx * 2
+    val totalWidth = maxOf(pictureAreaWidth, pillWidth)
+    val totalHeight = pictureSizePx + headingMarginPx * 2 + spacingPx + pillHeight
 
     val result = ImageBitmap(
         width = totalWidth.roundToInt(),
@@ -85,16 +94,40 @@ fun mergeProfilePictureWithStatusText(
         size = Size(totalWidth, totalHeight),
     ) {
         val pictureLeft = ((totalWidth - pictureSizePx) / 2f).roundToInt()
+        val pictureTop = headingMarginPx.roundToInt()
+
+        if (showHeading) {
+            val pictureCenter = Offset(
+                pictureLeft + pictureSizePx / 2f,
+                pictureTop + pictureSizePx / 2f,
+            )
+            val arrowHalfWidth = pictureSizePx * 0.16f
+            val arrowTipY = pictureTop - headingMarginPx * 0.9f
+            val arrowBaseY = pictureTop + pictureSizePx * 0.18f
+
+            // Compass heading (0 = up/North) maps directly onto rotate()'s clockwise degrees.
+            rotate(degrees = heading.toFloat(), pivot = pictureCenter) {
+                val arrowPath = Path().apply {
+                    moveTo(pictureCenter.x, arrowTipY)
+                    lineTo(pictureCenter.x - arrowHalfWidth, arrowBaseY)
+                    lineTo(pictureCenter.x, arrowBaseY - pictureSizePx * 0.08f)
+                    lineTo(pictureCenter.x + arrowHalfWidth, arrowBaseY)
+                    close()
+                }
+                drawPath(path = arrowPath, color = headingIndicatorColor)
+            }
+        }
+
         drawImage(
             image = profilePicture,
             srcOffset = IntOffset.Zero,
             srcSize = IntSize(profilePicture.width, profilePicture.height),
-            dstOffset = IntOffset(pictureLeft, 0),
+            dstOffset = IntOffset(pictureLeft, pictureTop),
             dstSize = IntSize(pictureSizePx, pictureSizePx),
         )
 
         val pillLeft = (totalWidth - pillWidth) / 2f
-        val pillTop = pictureSizePx + spacingPx
+        val pillTop = pictureTop + pictureSizePx + spacingPx
         drawRoundRect(
             color = backgroundColor,
             topLeft = Offset(pillLeft, pillTop),

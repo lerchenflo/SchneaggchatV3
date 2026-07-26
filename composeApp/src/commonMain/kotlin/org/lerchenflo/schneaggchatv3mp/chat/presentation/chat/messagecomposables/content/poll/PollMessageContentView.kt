@@ -19,8 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Blind
@@ -41,7 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.RichTooltip
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TooltipAnchorPosition
@@ -57,23 +55,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.input.TextFieldValue
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoteOption
-import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVoter
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
@@ -100,6 +96,7 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_maxoptions_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_oneoption_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_option_claimed_count
 import schneaggchatv3mp.composeapp.generated.resources.poll_option_full
+import schneaggchatv3mp.composeapp.generated.resources.poll_option_maxvoters_withcount
 import schneaggchatv3mp.composeapp.generated.resources.poll_private_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_public_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_show_answers
@@ -269,9 +266,10 @@ fun PollMessageContentView(
 
             if (showDialog) {
                 CustomPollOptionDialog(
+                    showSlider = poll.voteOptions.any { it.maxVoters != null },
                     onDismiss = { showDialog = false },
                     onSubmit = { customOption ->
-                        onAction(MessageAction.AddCustomPollOption(message.id!!, customOption))
+                        onAction(MessageAction.AddCustomPollOption(message.id!!, customOption.text.text.trim(), customOption.maxVoters))
                         showDialog = false
                     }
                 )
@@ -392,10 +390,13 @@ fun PollVoterOverviewDialog(
 
 @Composable
 fun CustomPollOptionDialog(
+    showSlider: Boolean,
     onDismiss: () -> Unit,
-    onSubmit: (String) -> Unit
+    onSubmit: (PollOptionInput) -> Unit
 ) {
-    var customOptionText by remember { mutableStateOf(TextFieldValue("")) }
+
+    var option by remember { mutableStateOf(PollOptionInput()) }
+
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -406,23 +407,47 @@ fun CustomPollOptionDialog(
             )
         },
         text = {
-            ComboInputField(
-                value = customOptionText,
-                onValueChange = { customOptionText = it },
-                label = { Text(stringResource(Res.string.poll_answer_label)) },
-                placeholder = { Text(stringResource(Res.string.poll_answer_placeholder)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Column {
+                ComboInputField(
+                    value = option.text,
+                    onValueChange = { option.text = it },
+                    label = { Text(stringResource(Res.string.poll_answer_label)) },
+                    placeholder = { Text(stringResource(Res.string.poll_answer_placeholder)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                if (showSlider) {
+                    val sliderValue = option.maxVoters ?: 10
+
+                    Text(
+                        text = stringResource(
+                            Res.string.poll_option_maxvoters_withcount,
+                            if (sliderValue in 1..9) sliderValue.toString() else "∞"
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                    Slider(
+                        value = sliderValue.toFloat(),
+                        onValueChange = { option.maxVoters = it.toInt().let { count -> if (count == 10) null else count } },
+                        valueRange = 1f..10f,
+                        steps = 9,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 8.dp, bottom = 4.dp)
+                    )
+                }
+            }
         },
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (customOptionText.text.isNotBlank()) {
-                        onSubmit(customOptionText.text.trim())
+                    if (option.text.text.isNotBlank()) {
+                        onSubmit(option)
                     }
                 },
-                enabled = customOptionText.text.isNotBlank()
+                enabled = option.text.text.isNotBlank()
             ) {
                 Text(stringResource(Res.string.add))
             }
@@ -535,9 +560,30 @@ fun PollMessageOptionView(
                     }
                 }
 
+                // Per-entry vote limit (claimed/max, or "full")
+                option.maxVoters?.let { maxVoters ->
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    Text(
+                        text = if (full) {
+                            stringResource(Res.string.poll_option_full)
+                        } else {
+                            stringResource(Res.string.poll_option_claimed_count, option.voters.size.toString(), maxVoters.toString())
+                        },
+                        fontSize = 10.sp,
+                        color = if (full) {
+                            MaterialTheme.colorScheme.error
+                        } else if (myMessage) {
+                            MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        }
+                    )
+                }
 
 
-                //Spacer(modifier = Modifier.weight(1f))
+
+                Spacer(modifier = Modifier.width(4.dp))
 
                 val pictureManager = koinInject<PictureManager>()
 
@@ -550,6 +596,7 @@ fun PollMessageOptionView(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.horizontalScroll(rememberScrollState())
                 ) {
+
                     // Show profile pictures for identified voters
                     nonNullVoterIds.forEach { userId ->
                         ProfilePictureView(
@@ -564,27 +611,6 @@ fun PollMessageOptionView(
                             text = "+$anonymousVoterCount",
                             fontSize = 12.sp,
                             color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-
-                    // Per-entry vote limit (claimed/max, or "full")
-                    option.maxVoters?.let { maxVoters ->
-                        Spacer(modifier = Modifier.width(4.dp))
-
-                        Text(
-                            text = if (full) {
-                                stringResource(Res.string.poll_option_full)
-                            } else {
-                                stringResource(Res.string.poll_option_claimed_count, option.voters.size.toString(), maxVoters.toString())
-                            },
-                            fontSize = 10.sp,
-                            color = if (full) {
-                                MaterialTheme.colorScheme.error
-                            } else if (myMessage) {
-                                MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                            }
                         )
                     }
                 }

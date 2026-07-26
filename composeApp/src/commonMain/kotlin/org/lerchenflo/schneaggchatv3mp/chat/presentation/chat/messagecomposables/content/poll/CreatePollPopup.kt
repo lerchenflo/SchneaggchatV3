@@ -52,7 +52,6 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.login.presentation.login.InputTextField
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
@@ -69,6 +68,7 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_create_title_placeho
 import schneaggchatv3mp.composeapp.generated.resources.poll_expiry_title
 import schneaggchatv3mp.composeapp.generated.resources.poll_expiry_title_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_expiry_title_withdate
+import schneaggchatv3mp.composeapp.generated.resources.poll_option_maxvoters_withcount
 import schneaggchatv3mp.composeapp.generated.resources.poll_options_error
 import schneaggchatv3mp.composeapp.generated.resources.poll_options_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.poll_options_title
@@ -82,7 +82,6 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_settings_infinite_cu
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_infinite_custom_answers_warning
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_limitperentry
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_limitperentry_info
-import schneaggchatv3mp.composeapp.generated.resources.poll_option_maxvoters_withcount
 import schneaggchatv3mp.composeapp.generated.resources.poll_visibility_title
 import sh.calvin.reorderable.ReorderableColumn
 import kotlin.time.Clock
@@ -91,7 +90,7 @@ import kotlin.time.Clock
  * Mutable holder for a single poll option row so text and its per-entry vote limit
  * survive drag-to-reorder (identity-based, not index-based).
  */
-private class PollOptionInput(text: TextFieldValue = TextFieldValue(""), maxVoters: Int? = null) {
+class PollOptionInput(text: TextFieldValue = TextFieldValue(""), maxVoters: Int? = null) {
     var text by mutableStateOf(text)
     var maxVoters by mutableStateOf(maxVoters)
 }

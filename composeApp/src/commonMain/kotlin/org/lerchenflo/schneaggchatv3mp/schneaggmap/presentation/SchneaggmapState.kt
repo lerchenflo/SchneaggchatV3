@@ -37,8 +37,13 @@ data class SchneaggmapState(
 
     val useClustering: Boolean = false,
     val mergeUsers: Boolean = true,
+    val showUsers: Boolean = true,
 
     val mapStyle: MapStyleSetting = MapStyleSetting.LIBERTY,
     val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl,
     val isMapStyleDropdownVisible: Boolean = false,
+
+    //Searching
+    val searchTerm: String = "",
+    val searchResults: List<MapEntry> = emptyList()
 )
