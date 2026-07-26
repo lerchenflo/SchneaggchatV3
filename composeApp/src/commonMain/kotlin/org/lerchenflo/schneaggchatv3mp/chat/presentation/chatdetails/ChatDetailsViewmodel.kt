@@ -47,7 +47,6 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_friend_request
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 import schneaggchatv3mp.composeapp.generated.resources.please_restart_app
-import schneaggchatv3mp.composeapp.generated.resources.wake_failed
 import schneaggchatv3mp.composeapp.generated.resources.wake_no_devices
 import schneaggchatv3mp.composeapp.generated.resources.wake_not_allowed_group
 import schneaggchatv3mp.composeapp.generated.resources.wake_not_allowed_user
@@ -159,7 +158,7 @@ class ChatDetailsViewmodel(
                     //as an outcome, so it arrives here as a 403.
                     SnackbarManager.showMessage(
                         if (result.error is NetworkError.Forbidden) getString(Res.string.wake_not_friends)
-                        else getString(Res.string.wake_failed)
+                        else "You are not Friends with this User or other error (401)"
                     )
                     return@launch
                 }
