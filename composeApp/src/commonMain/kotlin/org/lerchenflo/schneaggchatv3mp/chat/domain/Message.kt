@@ -42,6 +42,7 @@ data class Message(
     var myMessage: Boolean,
     var readByMe: Boolean,
     var senderAsString: String = "",
+    var minimizeMessage: MessageMinimal = MessageMinimal.NONE,
     var senderColor: Int = 0,
     var readers : List<MessageReader>,
     var reactions: List<Reaction> = emptyList()
@@ -135,6 +136,7 @@ fun MessageWithReadersDto.toMessage(): Message = Message(
     answerId = this.messageDto.answerId,
     sent = this.messageDto.sent,
     senderAsString = this.messageDto.senderAsString,
+    minimizeMessage = this.messageDto.minimizeMessage,
     senderColor = this.messageDto.senderColor,
     myMessage = this.messageDto.myMessage,
     readByMe = this.messageDto.readByMe,
@@ -169,3 +171,7 @@ fun Message.toDto(): MessageWithReadersDto = MessageWithReadersDto(
         reader.toDto()
     }
 )
+
+enum class MessageMinimal {
+    NONE, FIRST, MIDDLE, LAST
+}

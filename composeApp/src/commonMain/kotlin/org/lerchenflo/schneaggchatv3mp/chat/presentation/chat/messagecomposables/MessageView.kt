@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.StateFlow
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageMinimal
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.ReactionView
@@ -33,6 +34,7 @@ fun MessageView(
     selectedChatId: String,
     senderName: String? = null,
     senderColor: Int = 0,
+    minimal: MessageMinimal = MessageMinimal.NONE,
     readerMap: Map<String,String> = emptyMap(),
     replyMessage: Message? = null,
     replyMessageOnClick: () -> Unit = {},
@@ -41,9 +43,7 @@ fun MessageView(
     playbackProgress: StateFlow<PlaybackProgress>? = null,
 )
 {
-
-    val spaceAfterMessage = 6.dp
-
+   val spaceAfterMessage = if(minimal == MessageMinimal.FIRST || minimal == MessageMinimal.MIDDLE) 1.dp else 6.dp
 
     val mymessage = message.myMessage
 
@@ -113,6 +113,7 @@ fun MessageView(
                 selectedChatId = selectedChatId,
                 senderName = senderName,
                 senderColor = senderColor,
+                minimal = minimal,
                 readerMap = readerMap,
                 onAction = onAction,
                 playbackProgress = playbackProgress,

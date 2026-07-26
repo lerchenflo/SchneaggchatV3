@@ -28,6 +28,7 @@ import com.stevdza_san.swipeable.domain.SwipeBehavior
 import com.stevdza_san.swipeable.domain.SwipeDirection
 import kotlinx.coroutines.flow.StateFlow
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageMinimal
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
@@ -42,6 +43,7 @@ fun MessageViewWithActions(
     message: Message,
     senderName: String? = null,
     senderColor: Int = 0,
+    minimal: MessageMinimal = MessageMinimal.NONE,
     readerMap: Map<String, String> = emptyMap(),
     replyMessage: Message? = null,
     replyMessageOnClick: () -> Unit = {},
@@ -132,6 +134,7 @@ fun MessageViewWithActions(
                 selectedChatId = selectedChatId,
                 senderName = senderName,
                 senderColor = senderColor,
+                minimal = minimal,
                 readerMap = readerMap,
                 replyMessage = replyMessage,
                 replyMessageOnClick = replyMessageOnClick,
