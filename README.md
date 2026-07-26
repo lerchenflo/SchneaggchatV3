@@ -27,6 +27,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Benachrichtigungen "Als gelesen markieren" button
 - Umfragen Custom optionen mit Abstimmungslimiteinstellung
 - Map Suchfeld + neue UI
+- Map Richtungsanzeige für Freunde
 
 #### Bugfixes
 - Profilbilder neu laden repariert

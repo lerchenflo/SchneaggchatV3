@@ -14,27 +14,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Polyline
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -50,7 +39,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -59,9 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.trace
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.room.util.TableInfo
 import kotlinx.coroutines.launch
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
@@ -82,22 +68,6 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.*
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.CAMPING
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_ASIAN
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_BEER
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_BURGER
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_GREEK
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_KEBAB
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_OTHER
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.FOOD_PIZZA
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.MOUNTAIN_STREET
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.PARTY
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.POLICE
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.RADAR
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.SIGHTSEEING
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.SWIMMING
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.VIEWPOINT
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.WHEELIESPOT
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.drawableRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.FriendLocationsPreview
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
@@ -146,30 +116,8 @@ import org.maplibre.spatialk.units.Bearing
 import org.maplibre.spatialk.units.extensions.inDegrees
 import org.maplibre.spatialk.units.extensions.inMeters
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.icon_badespot
 import schneaggchatv3mp.composeapp.generated.resources.icon_beer
-import schneaggchatv3mp.composeapp.generated.resources.icon_bicycle
-import schneaggchatv3mp.composeapp.generated.resources.icon_burger
-import schneaggchatv3mp.composeapp.generated.resources.icon_camping
-import schneaggchatv3mp.composeapp.generated.resources.icon_chinese_food
-import schneaggchatv3mp.composeapp.generated.resources.icon_doener
-import schneaggchatv3mp.composeapp.generated.resources.icon_food
-import schneaggchatv3mp.composeapp.generated.resources.icon_food_greek
-import schneaggchatv3mp.composeapp.generated.resources.icon_offroad_motorcycle
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
-import schneaggchatv3mp.composeapp.generated.resources.icon_outdoor_fitness
-import schneaggchatv3mp.composeapp.generated.resources.icon_partylocation
-import schneaggchatv3mp.composeapp.generated.resources.icon_pizza
-import schneaggchatv3mp.composeapp.generated.resources.icon_police
-import schneaggchatv3mp.composeapp.generated.resources.icon_radar_variant
-import schneaggchatv3mp.composeapp.generated.resources.icon_sightseeing
-import schneaggchatv3mp.composeapp.generated.resources.icon_street
-import schneaggchatv3mp.composeapp.generated.resources.icon_table_tennis
-import schneaggchatv3mp.composeapp.generated.resources.icon_tennis
-import schneaggchatv3mp.composeapp.generated.resources.icon_viewpoint
-import schneaggchatv3mp.composeapp.generated.resources.icon_volleyball
-import schneaggchatv3mp.composeapp.generated.resources.icon_wheeliespot
-import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_search_label
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 import kotlin.math.PI
 import kotlin.math.cos
@@ -188,7 +136,7 @@ private const val EARTH_RADIUS_METERS = 6371000.0
 
 private data class UserMarkerIcon(val bitmap: ImageBitmap, val size: DpSize)
 
-private data class UserMarkerData(val username: String, val statusText: String, val isOnline: Boolean)
+private data class UserMarkerData(val username: String, val statusText: String, val isOnline: Boolean, val speed: Double?, val heading: Double?)
 
 //Distinct, stable color per user for snail trails - picked by hashing the user id into a
 //small curated palette so colors stay visually distinguishable from each other.
@@ -609,6 +557,8 @@ private fun SchneaggmapMapContent(
     onAction: (SchneaggmapAction) -> Unit
 ) {
 
+    val directionHeadingColor = MaterialTheme.colorScheme.surface
+
     val ownId = SessionCache.requireLoggedIn()?.userId
 
     //Resolve all icons (Cycle trough the entrys, code is more garbage otherwise (Auto resolves new types)
@@ -649,7 +599,7 @@ private fun SchneaggmapMapContent(
         val isOnline = user.id in state.onlineFriendIds
         val statusText = if (isOnline) onlineLabel else user.lastSeen?.let { millisToTimeDateOrYesterday(it) } ?: "-"
         val username = user.displayName
-        user.id to UserMarkerData(username = username, statusText = statusText, isOnline = isOnline)
+        user.id to UserMarkerData(username = username, statusText = statusText, isOnline = isOnline, speed = user.location?.speed, heading = user.location?.heading)
     }
 
     val userPicturePaths = state.usersWithLocation.map { it.profilePictureUrl }
@@ -671,6 +621,9 @@ private fun SchneaggmapMapContent(
                     statusColor = if (markerData.isOnline) onlineColor else offlineColor,
                     textMeasurer = textMeasurer,
                     density = density,
+                    heading = markerData.heading,
+                    speed = markerData.speed,
+                    headingIndicatorColor = directionHeadingColor
                 )
                 val markerSize = with(density) {
                     DpSize(mergedBitmap.width.toDp(), mergedBitmap.height.toDp())

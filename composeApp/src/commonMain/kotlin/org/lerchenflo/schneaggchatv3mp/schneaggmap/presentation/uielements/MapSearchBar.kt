@@ -155,6 +155,7 @@ fun MapSearchBar(
             modifier = Modifier.verticalScroll(rememberScrollState())
         ) {
             state.searchResults.forEach { entry ->
+
                 MapSearchResult(
                     entry = entry,
                     modifier = Modifier.clickable {
