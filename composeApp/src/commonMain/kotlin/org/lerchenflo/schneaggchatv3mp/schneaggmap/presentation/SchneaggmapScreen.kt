@@ -15,11 +15,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Polyline
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Switch
@@ -67,7 +71,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.*
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.entries
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.drawableRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.FriendLocationsPreview
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
@@ -316,12 +320,35 @@ fun SchneaggmapScreen(
                 .align(Alignment.TopCenter)
                 .padding(4.dp)
         ) {
-            //Map Search bar with settings and user info button
-            MapSearchBar(
-                state = state,
-                onAction = onAction,
-                modifier = Modifier.fillMaxWidth()
-            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                //Settingsbutton
+                IconButton(
+                    onClick = { onAction(SchneaggmapAction.OnSettingsClick) },
+                    colors = IconButtonDefaults.iconButtonColors().copy(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(4.dp))
+
+                //Map Search bar with user info button
+                MapSearchBar(
+                    state = state,
+                    onAction = onAction,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
 
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -380,6 +407,18 @@ fun SchneaggmapScreen(
                         cameraState = cameraState,
                         size = 32.dp
                     )
+
+                    //Own user detail button
+                    SmallFloatingActionButton(
+                        onClick = { onAction(SchneaggmapAction.OnOwnUserClick) },
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null
+                        )
+                    }
 
                     //Map style dropdown menu
                     MapStyleDropdown(
