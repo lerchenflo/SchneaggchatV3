@@ -26,6 +26,14 @@ class LanguageService(
     fun getSystemLanguage(): String {
         return languageManager.getSystemLanguage()
     }
+
+    /**
+     * Resolves the system's current language string (e.g. "DE", "EN")
+     * into a LanguageSetting.
+     */
+    fun getSystemLanguageSetting(): LanguageSetting {
+        return LanguageSetting.fromIsoCode(getSystemLanguage())
+    }
     
     /**
      * Apply a new language setting

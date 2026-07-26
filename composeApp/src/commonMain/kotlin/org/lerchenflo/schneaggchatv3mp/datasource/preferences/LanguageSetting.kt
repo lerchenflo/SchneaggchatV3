@@ -37,4 +37,25 @@ enum class LanguageSetting {
         ENGLISH -> "en"
         VORI -> "de-at"
     }
+
+    companion object {
+        /**
+         * Converts a language code string (e.g. "DE", "en", "de-AT") into a LanguageSetting.
+         * Falls back to SYSTEM if the code doesn't match any known language.
+         *
+         * Note: VORI's code ("de-at") is checked before plain "de" so that
+         * region-specific German (Austria) resolves to VORI rather than GERMAN.
+         */
+        fun fromIsoCode(code: String): LanguageSetting {
+            val normalized = code.trim().lowercase()
+
+            return when {
+                normalized.isEmpty() -> SYSTEM
+                normalized == VORI.getIsoCode() || normalized.startsWith("de-at") -> VORI
+                normalized == GERMAN.getIsoCode() || normalized.startsWith("de") -> GERMAN
+                normalized == ENGLISH.getIsoCode() || normalized.startsWith("en") -> ENGLISH
+                else -> SYSTEM
+            }
+        }
+    }
 }

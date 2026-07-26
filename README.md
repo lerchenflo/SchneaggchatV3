@@ -4,6 +4,14 @@ https://schneaggchatv3.lerchenflo.eu/
 # Schneaggchat V3
 CMP Multiplatform Chat - App für Android, iOS und Desktop
 
+### 3.0.16
+##### Highlights
+
+#### Features
+- Morse Code Wörter je nach Sprache
+
+#### Bugfixes
+
 ## Was macht Schneaggchat besonders
 - Vorarlbergerisch als Sprachoption
 - Umfragen mit custom Antworten

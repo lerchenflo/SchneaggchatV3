@@ -1,5 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.morse
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
@@ -7,12 +10,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -44,14 +52,10 @@ private const val MAX_CODE_DEPTH = 5
 const val CHALLENGE_MAX_ERRORS = 3
 private const val CHALLENGE_POINTS_PER_CHAR = 10
 
-private val CHALLENGE_WORDS = listOf(
-    "HELLO", "WORLD", "RADIO", "SIGNAL", "MORSE", "CODE", "SHIP", "OCEAN", "PILOT", "TOWER",
-    "APPLE", "HOUSE", "LIGHT", "SOUND", "MUSIC", "PIZZA", "TIGER", "EAGLE", "RIVER", "STONE",
-    "CLOUD", "STORM", "BEACH", "TRAIL", "NIGHT",
-)
-
 class MorseViewModel(
     private val gameHighscoreRepository: GameHighscoreRepository,
+    private val loggingRepository: LoggingRepository,
+    private val languageService: LanguageService
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MorseState())
@@ -61,6 +65,23 @@ class MorseViewModel(
     private var challengeTimerJob: Job? = null
     private var challengeStartTime = 0L
     private var challengeDifficulty = GameDifficulty.MEDIUM
+
+    var selectedLanguage by mutableStateOf(LanguageSetting.ENGLISH)
+        private set
+
+    init {
+        viewModelScope.launch { // Language
+            selectedLanguage = languageService.getSystemLanguageSetting()
+        }
+    }
+
+    var wordsList = when (selectedLanguage){
+        LanguageSetting.ENGLISH -> ENGLISH_WORDS
+        LanguageSetting.GERMAN -> GERMAN_WORDS
+        LanguageSetting.VORI -> VORI_WORDS
+        else -> ENGLISH_WORDS
+    }
+
 
     fun addDot() = addSymbol(".")
     fun addDash() = addSymbol("-")
@@ -131,7 +152,7 @@ class MorseViewModel(
             GameDifficulty.MEDIUM -> 4
             GameDifficulty.HIGH -> 6
         }
-        val targetText = CHALLENGE_WORDS.shuffled().take(wordCount).joinToString(" ")
+        val targetText = wordsList.shuffled().take(wordCount).joinToString(" ")
         challengeStartTime = Clock.System.now().toEpochMilliseconds()
 
         _state.update {
