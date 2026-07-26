@@ -35,6 +35,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 #### Bugfixes
 - Profilbilder neu laden repariert
 - Map Popup scroll fix
+- Mose code tree voll angezeigt
 
 
 ### 3.0.14

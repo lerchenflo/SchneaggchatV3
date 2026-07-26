@@ -5,9 +5,9 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -22,16 +22,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 private const val MAX_DEPTH = 5
-private const val LEAF_SLOTS = 32  // 2^5
-private const val SUBTREE_LEVELS = 3  // levels below the current node on narrow screens
-private val SLOT_WIDTH = 38.dp
 private val Y_STEP = 68.dp
-private val NODE_RADIUS = 17.dp
+private val NODE_RADIUS = 10.dp
+private val LAST_ROW_EXTRA_SPACING = 32.dp  // extra vertical gap before the leaf (letter/digit) row
 
 @Composable
 fun MorseTreeView(currentCode: String, modifier: Modifier = Modifier) {
     val textMeasurer = rememberTextMeasurer()
-
     val activeColor = MaterialTheme.colorScheme.primary
     val activeOnColor = MaterialTheme.colorScheme.onPrimary
     val inactiveColor = MaterialTheme.colorScheme.surfaceVariant
@@ -39,40 +36,42 @@ fun MorseTreeView(currentCode: String, modifier: Modifier = Modifier) {
     val dotEdgeColor = MaterialTheme.colorScheme.tertiary
     val dashEdgeColor = MaterialTheme.colorScheme.secondary
 
-    val fullTreeWidthDp = SLOT_WIDTH * LEAF_SLOTS
+    val rootNode = MORSE_TREE
+    val shownLevels = MAX_DEPTH
+
+    // The tree isn't a perfect binary tree — only the digits reach the last
+    // row, and their raw binary-tree slots leave them bunched at the two
+    // ends with a large empty gap in the middle. Spread the leaf nodes that
+    // actually exist evenly across the width instead of using their slot,
+    // even though that means their connecting lines are no longer vertical.
+    val leafXFractions = remember(rootNode) {
+        val leaves = mutableListOf<String>()
+        fun collect(node: MorseTreeNode) {
+            if (node.code.length == MAX_DEPTH) {
+                leaves += node.code
+                return
+            }
+            node.dot?.let { collect(it) }
+            node.dash?.let { collect(it) }
+        }
+        collect(rootNode)
+        leaves.mapIndexed { index, code -> code to (index + 0.5f) / leaves.size }.toMap()
+    }
 
     BoxWithConstraints(modifier = modifier) {
-        val fullTreeFits = maxWidth >= fullTreeWidthDp
-
-        // On narrow (portrait) screens the full tree can never fit, so the view
-        // re-roots at the currently entered code and only shows the reachable
-        // subtree — everything stays full size without scrolling.
-        val rootNode = if (fullTreeFits) MORSE_TREE else nodeForCode(currentCode)
-        val rootDepth = rootNode.code.length
-        val shownLevels = if (fullTreeFits) {
-            MAX_DEPTH
-        } else {
-            minOf(SUBTREE_LEVELS, MAX_DEPTH - rootDepth)
-        }
-
-        val widthModifier = if (fullTreeFits) {
-            Modifier.width(fullTreeWidthDp)
-        } else {
-            Modifier.fillMaxWidth()
-        }
-
         Canvas(
-            modifier = widthModifier
+            modifier = Modifier
+                .fillMaxWidth()
                 .align(Alignment.TopCenter)
                 .heightIn(max = Y_STEP * (shownLevels + 1))
                 .fillMaxHeight()
         ) {
             drawMorseNode(
                 node = rootNode,
-                rootDepth = rootDepth,
                 shownLevels = shownLevels,
                 position = 0,
                 currentCode = currentCode,
+                leafXFractions = leafXFractions,
                 textMeasurer = textMeasurer,
                 activeColor = activeColor,
                 activeOnColor = activeOnColor,
@@ -85,12 +84,31 @@ fun MorseTreeView(currentCode: String, modifier: Modifier = Modifier) {
     }
 }
 
+/** x-position (in px) for a node at [relativeDepth] / tree-[position]. Leaf-row
+ *  nodes use their evenly spread fraction from [leafXFractions] instead of
+ *  their raw binary-tree slot. */
+private fun DrawScope.xPositionFor(
+    code: String,
+    position: Int,
+    relativeDepth: Int,
+    shownLevels: Int,
+    leafXFractions: Map<String, Float>,
+): Float {
+    return if (relativeDepth == shownLevels) {
+        val fraction = leafXFractions[code] ?: ((position + 0.5f) / (1 shl relativeDepth))
+        fraction * size.width
+    } else {
+        val slotSize = size.width / (1 shl relativeDepth)
+        (position + 0.5f) * slotSize
+    }
+}
+
 private fun DrawScope.drawMorseNode(
     node: MorseTreeNode,
-    rootDepth: Int,
     shownLevels: Int,
     position: Int,
     currentCode: String,
+    leafXFractions: Map<String, Float>,
     textMeasurer: TextMeasurer,
     activeColor: Color,
     activeOnColor: Color,
@@ -99,26 +117,29 @@ private fun DrawScope.drawMorseNode(
     dotEdgeColor: Color,
     dashEdgeColor: Color,
 ) {
-    val relativeDepth = node.code.length - rootDepth
-    val yStepPx = size.height / (shownLevels + 1)
+    val relativeDepth = node.code.length
+    val extraLastRowGapPx = LAST_ROW_EXTRA_SPACING.toPx()
+    // Reserve LAST_ROW_EXTRA_SPACING out of the total height, then hand it out
+    // as one extra gap right before the leaf row.
+    val yStepPx = (size.height - extraLastRowGapPx) / (shownLevels + 1)
     val nodeRadiusPx = NODE_RADIUS.toPx()
-
-    val slotSize = size.width / (1 shl relativeDepth)
-    val x = (position + 0.5f) * slotSize
-    val y = relativeDepth * yStepPx + yStepPx * 0.5f
-
+    val x = xPositionFor(node.code, position, relativeDepth, shownLevels, leafXFractions)
+    val y = relativeDepth * yStepPx + yStepPx * 0.5f +
+            if (relativeDepth == shownLevels) extraLastRowGapPx else 0f
     val onPath = currentCode.startsWith(node.code)
     val isCurrent = node.code.isNotEmpty() && node.code == currentCode
 
     if (relativeDepth < shownLevels) {
-        val childSlotSize = size.width / (1 shl (relativeDepth + 1))
-        val childY = (relativeDepth + 1) * yStepPx + yStepPx * 0.5f
+        val childRelativeDepth = relativeDepth + 1
+        val childY = childRelativeDepth * yStepPx + yStepPx * 0.5f +
+                if (childRelativeDepth == shownLevels) extraLastRowGapPx else 0f
+
         // The two edges directly under the displayed root are the live choices,
         // draw them thicker.
         val baseStrokePx = if (relativeDepth == 0) 2.5f.dp.toPx() else 1.5f.dp.toPx()
-
         node.dot?.let { dotChild ->
-            val childX = (position * 2 + 0.5f) * childSlotSize
+            val childPosition = position * 2
+            val childX = xPositionFor(dotChild.code, childPosition, childRelativeDepth, shownLevels, leafXFractions)
             val onDotPath = currentCode.startsWith(dotChild.code)
             drawLine(
                 color = if (onDotPath) dotEdgeColor else dotEdgeColor.copy(alpha = 0.4f),
@@ -127,17 +148,18 @@ private fun DrawScope.drawMorseNode(
                 strokeWidth = if (onDotPath) 3.dp.toPx() else baseStrokePx
             )
             drawMorseNode(
-                node = dotChild, rootDepth = rootDepth, shownLevels = shownLevels,
-                position = position * 2, currentCode = currentCode,
+                node = dotChild, shownLevels = shownLevels,
+                position = childPosition, currentCode = currentCode,
+                leafXFractions = leafXFractions,
                 textMeasurer = textMeasurer,
                 activeColor = activeColor, activeOnColor = activeOnColor,
                 inactiveColor = inactiveColor, inactiveOnColor = inactiveOnColor,
                 dotEdgeColor = dotEdgeColor, dashEdgeColor = dashEdgeColor,
             )
         }
-
         node.dash?.let { dashChild ->
-            val childX = (position * 2 + 1 + 0.5f) * childSlotSize
+            val childPosition = position * 2 + 1
+            val childX = xPositionFor(dashChild.code, childPosition, childRelativeDepth, shownLevels, leafXFractions)
             val onDashPath = currentCode.startsWith(dashChild.code)
             drawLine(
                 color = if (onDashPath) dashEdgeColor else dashEdgeColor.copy(alpha = 0.4f),
@@ -146,8 +168,9 @@ private fun DrawScope.drawMorseNode(
                 strokeWidth = if (onDashPath) 3.dp.toPx() else baseStrokePx
             )
             drawMorseNode(
-                node = dashChild, rootDepth = rootDepth, shownLevels = shownLevels,
-                position = position * 2 + 1, currentCode = currentCode,
+                node = dashChild, shownLevels = shownLevels,
+                position = childPosition, currentCode = currentCode,
+                leafXFractions = leafXFractions,
                 textMeasurer = textMeasurer,
                 activeColor = activeColor, activeOnColor = activeOnColor,
                 inactiveColor = inactiveColor, inactiveOnColor = inactiveOnColor,
@@ -167,14 +190,12 @@ private fun DrawScope.drawMorseNode(
         isCurrent || onPath -> activeOnColor
         else -> inactiveOnColor
     }
-
     drawCircle(color = circleColor, radius = nodeRadiusPx, center = Offset(x, y))
-
     val label = node.char?.toString() ?: ""
     if (label.isNotEmpty()) {
         val measured = textMeasurer.measure(
             label,
-            TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Bold, color = textColor)
+            TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Bold, color = textColor)
         )
         drawText(
             measured,
