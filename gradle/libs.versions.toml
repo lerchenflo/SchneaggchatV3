@@ -23,8 +23,8 @@ githubImagepickerkmp = "1.0.43"
 
 moko = "0.20.1"
 
-jwtKt = "1.2.1"
-kotlin = "2.4.0"
+jwtKt = "1.3.0"
+kotlin = "2.4.10"
 ksp = "2.3.9"
 
 kotlinx-coroutines = "1.11.0"
@@ -59,7 +59,7 @@ appcompat = "1.7.1"
 material = "1.14.0"
 composeBom = "2026.06.01"
 
-ksafe = "2.1.3"
+ksafe = "2.2.1"
 
 #Schneaggmap
 map = "0.13.0"
