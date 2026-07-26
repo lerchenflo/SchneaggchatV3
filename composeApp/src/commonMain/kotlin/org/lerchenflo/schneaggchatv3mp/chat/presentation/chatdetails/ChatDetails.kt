@@ -84,8 +84,6 @@ import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.description_info_group
 import schneaggchatv3mp.composeapp.generated.resources.description_info_user
-import schneaggchatv3mp.composeapp.generated.resources.edit_group_name
-import schneaggchatv3mp.composeapp.generated.resources.edit_nickname
 import schneaggchatv3mp.composeapp.generated.resources.enter_nickname
 import schneaggchatv3mp.composeapp.generated.resources.gallery
 import schneaggchatv3mp.composeapp.generated.resources.group_description
@@ -240,7 +238,7 @@ fun ChatDetails(
                         )
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = stringResource(Res.string.edit_group_name),
+                            contentDescription = null,
                             modifier = Modifier.padding(start = 8.dp)
                         )
 
@@ -294,7 +292,7 @@ fun ChatDetails(
 
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = stringResource(Res.string.edit_nickname),
+                            contentDescription = null,
                             modifier = Modifier.padding(start = 8.dp)
                         )
                     }
@@ -505,6 +503,7 @@ fun ChatDetails(
                 text = stringResource(Res.string.wake_button),
                 onClick = { showWakeReasonDialog = true },
                 primary = false,
+                showOutline = true,
                 modifier = Modifier
                     .fillMaxWidth()
             )

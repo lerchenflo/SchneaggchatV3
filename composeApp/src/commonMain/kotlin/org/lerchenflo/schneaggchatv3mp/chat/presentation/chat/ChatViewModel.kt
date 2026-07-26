@@ -716,7 +716,7 @@ class ChatViewModel(
                 hasNextNeighbor -> MessageMinimal.FIRST
                 else -> MessageMinimal.NONE
             }
-            println("Messageminimal Status viewmodel: " + minimalState)
+            //println("Messageminimal Status viewmodel: " + minimalState)
 
             displayItems.add(
                 MessageDisplayItem.MessageItem(

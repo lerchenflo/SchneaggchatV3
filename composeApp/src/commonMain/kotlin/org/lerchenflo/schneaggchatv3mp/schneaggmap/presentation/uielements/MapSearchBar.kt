@@ -14,8 +14,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,6 +22,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
@@ -34,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
@@ -87,7 +85,7 @@ fun MapSearchBar(
             },
             leadingIcon = {
 
-                if (state.searchTerm.isNotEmpty()) {
+                if (state.searchTerm.isNotEmpty() or (searchbarstate.currentValue == SearchBarValue.Expanded)) {
                     //User is searching, show back icon from google maps for ios users to go back
                     IconButton(onClick = {
                         onAction(SchneaggmapAction.OnSearchTermChange(""))
@@ -99,39 +97,16 @@ fun MapSearchBar(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-
-                } else {
-                    //Settingsbutton
-                    IconButton(onClick = { onAction(SchneaggmapAction.OnSettingsClick) }) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
+                } else null
 
 
             },
             trailingIcon = {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    //Clear search
-                    if (state.searchTerm.isNotEmpty()) {
-                        IconButton(onClick = { onAction(SchneaggmapAction.OnSearchTermChange("")) }) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                    //Own user detail button
-                    IconButton(onClick = { onAction(SchneaggmapAction.OnOwnUserClick) }) {
+                //Clear search
+                if (state.searchTerm.isNotEmpty()) {
+                    IconButton(onClick = { onAction(SchneaggmapAction.OnSearchTermChange("")) }) {
                         Icon(
-                            imageVector = Icons.Default.Info,
+                            imageVector = Icons.Default.Close,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

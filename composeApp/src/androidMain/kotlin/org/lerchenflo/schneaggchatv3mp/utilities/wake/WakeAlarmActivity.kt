@@ -26,7 +26,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Alarm
-import androidx.compose.material.icons.filled.AlarmOff
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,11 +45,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ConfirmSlider
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.wake_notification_title
 import schneaggchatv3mp.composeapp.generated.resources.wake_notification_title_group
-import schneaggchatv3mp.composeapp.generated.resources.wake_swipe_to_stop
 import schneaggchatv3mp.composeapp.generated.resources.wake_woken_alongside
 
 /**

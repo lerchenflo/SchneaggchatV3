@@ -311,8 +311,11 @@
     <string name="pin_chat">Chat apinna</string>
     <string name="unpin_chat">Pin entferna</string>
     <string name="mark_as_unread">als ungleasa markiera</string>
+    <string name="mark_as_read">als gleasa markiera</string>
     <string name="more_info">Meh Informationa</string>
     <string name="edit_profile_picture">Profilbild bearbeita</string>
+    
+    
 
     <string name="admin">Admin</string>
 
@@ -818,6 +821,7 @@ Mealds, egal wie klenn.</string>
     <string name="schneaggmap_user_distance_label">Entfernung</string>
     <string name="schneaggmap_user_online">Online</string>
     <string name="schneaggmap_entry_last_changed_label">Zuletzt gändert</string>
+    <string name="schneaggmap_entry_last_changed_by">Zuletzt gändert vo %1$s am %2$s</string>
 
     <!-- Game highscores -->
     <string name="highscores_title">Highscores</string>
@@ -859,6 +863,8 @@ Mealds, egal wie klenn.</string>
     <string name="location_group_food">Essen</string>
 
     <!-- Location Types -->
+    <string name="location_type_user">Freunde</string>
+
     <string name="location_type_radar">Radar</string>
     <string name="location_type_police">Polizei</string>
     <string name="location_type_mountain_street">Bergstroß</string>
@@ -867,6 +873,7 @@ Mealds, egal wie klenn.</string>
     <string name="location_type_viewpoint">Aussichtspunkt</string>
     <string name="location_type_camping">Camping</string>
     <string name="location_type_swimming">Bada</string>
+    <string name="location_type_climbingspot">Kletterort</string>
     <string name="location_type_volleyball">Volleyball</string>
     <string name="location_type_bicycle">MTB Strecke</string>
     <string name="location_type_outdoor_fitness">Stangen</string>
@@ -880,6 +887,7 @@ Mealds, egal wie klenn.</string>
     <string name="location_type_food_beer">Bier</string>
     <string name="location_type_food_asian">Asiatisch</string>
     <string name="location_type_food_greek">Griechisch</string>
+    <string name="location_type_food_cafe_bakery">Cafe / Bäckerei</string>
     <string name="location_type_food_other">Andres Eassa</string>
 
     <!-- Radar -->
@@ -913,6 +921,12 @@ Mealds, egal wie klenn.</string>
     <!-- Swimming -->
     <string name="location_swimming_indoor">Dinna</string>
     <string name="location_swimming_jump_spot">Kama Springa</string>
+    <string name="location_swimming_price">Preis</string>
+
+    <!-- Climbingspot -->
+    <string name="location_climbingspot_via_ferrata">Kleattasteig</string>
+    <string name="location_climbingspot_outdoor">dussa</string>
+    <string name="location_climbingspot_price">Preis</string>
 
     <!-- Volleyball -->
     <string name="location_volleyball_good_net">Guats Netz</string>
@@ -938,4 +952,37 @@ Mealds, egal wie klenn.</string>
     <string name="location_food_cheeseburger_price">Cheeseburgerpreis</string>
     <string name="location_food_beer_price">Bierpreis</string>
     <string name="location_food_cuisine">Essenstyp</string>
+    <string name="location_food_cafe_bakery_outdoor_seating">Outdoorsitzplätz</string>
+    <string name="location_food_cafe_bakery_alcohol">Alk</string>
+    <string name="location_food_cafe_bakery_coffee">Kaffee</string>
+    <string name="location_food_cafe_bakery_breakfast">Frühstück</string>
+
+    <!-- Wake -->
+    <string name="wake_settings">Weckerfeature</string>
+    <string name="wake_settings_info">Üswähla wer di wecka darf</string>
+    <string name="wake_allow_global">Ufwecka erlauba</string>
+    <string name="wake_allow_global_info">Lass dine Freunde di wecka wenn du schlofsch</string>
+    <string name="wake_allow_friends_title">Dürfand mi wecka</string>
+    <string name="wake_button">Ufwecka</string>
+    <string name="wake_reason_title">Warum willsch du wecka?</string>
+    <string name="wake_reason_placeholder">Grund</string>
+    <string name="wake_sent_users">%1$d Freunde uf %2$d Geräten gweckt</string>
+    <string name="wake_sent_user">%1$s uf %2$d Geräten gweckt</string>
+    <string name="wake_sent_skipped">%1$s (%2$d übersprunga)</string>
+    <string name="wake_not_allowed_user">%1$s hot Wecker vo dir usgschalta</string>
+    <string name="wake_not_allowed_group">Niemand in derra gruppa hot Wecker vo dir igschalta</string>
+    <string name="wake_no_devices">%1$s hot kua Android - Handy</string>
+    <string name="wake_not_friends">Du kannsch nur Freunde ufwecka</string>
+    
+    <string name="wake_notification_title">%1$s weckt di</string>
+    <string name="wake_notification_title_group">%1$s weckt %2$s</string>
+    
+    
+    <string name="wake_woken_alongside">%1$d User uf %2$d Geräten gweckt</string>
+    
+
+
+    <string name="schneaggmap_search_label">suacha ...</string>
+
+
 </resources>

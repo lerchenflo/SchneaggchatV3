@@ -4,7 +4,6 @@ import org.jetbrains.compose.resources.getString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.wake_notification_title
 import schneaggchatv3mp.composeapp.generated.resources.wake_notification_title_group
-import schneaggchatv3mp.composeapp.generated.resources.wake_stop
 import schneaggchatv3mp.composeapp.generated.resources.wake_woken_alongside
 
 /**
@@ -42,7 +41,7 @@ data class WakeNotificationStrings(
             return WakeNotificationStrings(
                 title = title,
                 body = body,
-                stopLabel = getString(Res.string.wake_stop),
+                stopLabel = "stop",
             )
         }
     }

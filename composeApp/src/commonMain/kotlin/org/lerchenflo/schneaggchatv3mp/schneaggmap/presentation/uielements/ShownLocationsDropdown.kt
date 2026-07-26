@@ -16,7 +16,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TriStateCheckbox
 import androidx.compose.runtime.Composable
@@ -43,7 +42,7 @@ fun ShownLocationsDropdown(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.End) {
-        SmallFloatingActionButton(
+        FloatingActionButton(
             onClick = { onAction(SchneaggmapAction.ToggleFilterDropdown) },
         ) {
             if (state.isLoading) {
