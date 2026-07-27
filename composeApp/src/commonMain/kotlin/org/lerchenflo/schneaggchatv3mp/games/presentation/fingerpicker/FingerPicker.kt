@@ -37,7 +37,6 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_fingerpicker_hint
 import schneaggchatv3mp.composeapp.generated.resources.games_fingerpicker_holding
-import schneaggchatv3mp.composeapp.generated.resources.games_fingerpicker_lift_hint
 import schneaggchatv3mp.composeapp.generated.resources.games_fingerpicker_result
 import schneaggchatv3mp.composeapp.generated.resources.games_fingerpicker_title
 import schneaggchatv3mp.composeapp.generated.resources.games_fingerpicker_winner_count
@@ -120,12 +119,6 @@ fun FingerPickerScreen(
                             style = MaterialTheme.typography.titleMedium,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = stringResource(Res.string.games_fingerpicker_lift_hint),
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     state.phase == FingerPickerPhase.HOLDING -> {

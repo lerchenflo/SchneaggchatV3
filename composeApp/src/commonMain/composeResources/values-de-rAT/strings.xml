@@ -389,7 +389,6 @@
     <string name="games_fingerpicker_hint">Alle legand ihren Finger ufan Bildschirm</string>
     <string name="games_fingerpicker_holding">Ruhig heba...</string>
     <string name="games_fingerpicker_result">%1$d Finger usgwählt!</string>
-    <string name="games_fingerpicker_lift_hint">Alle Finger lupfa zum nomml spiela</string>
     <string name="games_fingerpicker_winner_count">Anzahl Gewinner</string>
     <string name="games_morse_invalid">Kuan Buchstab für dean Code</string>
 

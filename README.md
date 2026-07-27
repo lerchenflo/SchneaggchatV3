@@ -56,6 +56,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Bugfixes
 - Tägliche Spiele Timer + Änderung um Mitternacht
+- Fingerpicker fix
 
 ### 3.0.14
 

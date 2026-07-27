@@ -389,7 +389,6 @@
     <string name="games_fingerpicker_hint">Alle legen einen Finger auf den Bildschirm</string>
     <string name="games_fingerpicker_holding">Ruhig halten…</string>
     <string name="games_fingerpicker_result">%1$d Finger ausgewählt!</string>
-    <string name="games_fingerpicker_lift_hint">Alle Finger heben, um erneut zu spielen</string>
     <string name="games_fingerpicker_winner_count">Anzahl Gewinner</string>
     <string name="games_morse_invalid">Kein Buchstabe für diesen Code</string>
 

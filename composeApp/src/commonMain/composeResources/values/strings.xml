@@ -389,7 +389,6 @@
     <string name="games_fingerpicker_hint">Everyone place a finger on the screen</string>
     <string name="games_fingerpicker_holding">Hold still…</string>
     <string name="games_fingerpicker_result">%1$d fingers picked!</string>
-    <string name="games_fingerpicker_lift_hint">Lift all fingers to play again</string>
     <string name="games_fingerpicker_winner_count">Number of winners</string>
     <string name="games_morse_invalid">No character for this code</string>
 
