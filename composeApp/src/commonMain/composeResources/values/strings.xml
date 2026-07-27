@@ -630,6 +630,8 @@
     <string name="game_tap_anywhere_to_start">Tap anywhere to start</string>
     <string name="game_stop">Stop game</string>
     <string name="game_exit">Exit</string>
+    <string name="games_daily_expires_in">Daily board expires in: %1$s</string>
+
 
     <!-- Games: Tetris -->
     <string name="games_tetris_title">Tetris</string>
@@ -654,6 +656,7 @@
     <string name="games_gridrush_title">Grid Rush</string>
     <string name="games_gridrush_instructions">Drag a line through neighboring tiles of the same color — releasing on 2 or more tiles clears them and the tiles above fall down. Clear the whole board to win!\n\nLonger chains score more points and finishing under par earns a bonus. If no two matching tiles touch anymore, the run is over. Everyone plays the same board each day — the timer only starts with your first move, so plan ahead!</string>
     <string name="games_gridrush_moves">Moves: %1$d / Par %2$d</string>
+
 
     <!-- Games: Odd One Out -->
     <string name="games_oddoneout_title">Odd One Out</string>

@@ -13,10 +13,11 @@ import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlin.math.max
 import kotlin.time.Clock
-
-private const val MILLIS_PER_DAY = 86_400_000L
+import kotlin.time.Duration.Companion.milliseconds
 
 class GridRushViewmodel(
     private val gameHighscoreRepository: GameHighscoreRepository,
@@ -40,9 +41,10 @@ class GridRushViewmodel(
         }
     }
 
-    /** Today's UTC daily board — restarting on the same day reproduces the same board. */
+    /** Today's local daily board — restarting on the same day reproduces the same board. */
     private fun baseState(difficulty: GameDifficulty): GridRushState {
-        val epochDay = Clock.System.now().toEpochMilliseconds() / MILLIS_PER_DAY
+        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+        val epochDay = today.toEpochDays()
         val generated = generateDailyBoard(epochDay, difficulty)
         return GridRushState(
             rows = generated.board.size,
@@ -78,7 +80,7 @@ class GridRushViewmodel(
         runStartTime = Clock.System.now().toEpochMilliseconds()
         timerJob = viewModelScope.launch {
             while (isActive) {
-                delay(100L)
+                delay(100L.milliseconds)
                 _state.update { it.copy(elapsedMillis = Clock.System.now().toEpochMilliseconds() - runStartTime) }
             }
         }

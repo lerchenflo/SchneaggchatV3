@@ -31,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +41,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -47,11 +54,44 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.difficulty
+import schneaggchatv3mp.composeapp.generated.resources.games_daily_expires_in
 import schneaggchatv3mp.composeapp.generated.resources.games_daily_section
 import schneaggchatv3mp.composeapp.generated.resources.games_without_highscores
 import schneaggchatv3mp.composeapp.generated.resources.show_global_ranking
 import schneaggchatv3mp.composeapp.generated.resources.show_highscores
 import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
+
+@Composable
+private fun DailyChallengeTimer(modifier: Modifier = Modifier) {
+    var timeRemaining by remember { mutableStateOf(0L) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            val tz = TimeZone.currentSystemDefault()
+            val now = Clock.System.now()
+            val today = now.toLocalDateTime(tz).date
+            val tomorrow = today.plus(DatePeriod(days = 1))
+            val nextMidnight = tomorrow.atStartOfDayIn(tz)
+            timeRemaining = (nextMidnight.toEpochMilliseconds() - now.toEpochMilliseconds()).coerceAtLeast(0L)
+            delay(1000L.milliseconds)
+        }
+    }
+
+    if (timeRemaining > 0) {
+        val h = (timeRemaining / (60 * 60 * 1000)).toString().padStart(2, '0')
+        val m = ((timeRemaining / (60 * 1000)) % 60).toString().padStart(2, '0')
+        val s = ((timeRemaining / 1000) % 60).toString().padStart(2, '0')
+
+        Text(
+            text = stringResource(Res.string.games_daily_expires_in, "$h:$m:$s"),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = modifier
+        )
+    }
+}
 
 @Composable
 fun GameSelectorScreen(
@@ -108,12 +148,18 @@ fun GameSelectorScreen(
         ) {
             if (dailyGames.isNotEmpty()) {
                 item {
-                    Text(
-                        text = stringResource(Res.string.games_daily_section),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.games_daily_section),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        DailyChallengeTimer()
+                    }
                 }
 
                 items(dailyGames) { game ->
