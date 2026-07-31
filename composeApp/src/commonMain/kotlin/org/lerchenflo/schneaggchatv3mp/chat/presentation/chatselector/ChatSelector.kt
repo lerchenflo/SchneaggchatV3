@@ -83,6 +83,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.BugReportDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
@@ -203,7 +204,8 @@ fun Chatauswahlscreen(
                 }
             ) {
                 FloatingActionButton(
-                    onClick = { viewModel.onNewChatClick() }
+                    onClick = { viewModel.onNewChatClick() },
+                    modifier = Modifier.tapTarget("chatselector_new_chat_button")
                 ) {
                     Icon(
                         imageVector = vectorResource(Res.drawable.chat_add_on_24px),
@@ -357,7 +359,8 @@ fun Chatauswahlscreen(
                         modifier = Modifier
                             .size(touchSize)
                             .clip(CircleShape)
-                            .clickable { viewModel.onMapClick() },
+                            .clickable { viewModel.onMapClick() }
+                            .tapTarget("chatselector_map_button"),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(

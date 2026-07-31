@@ -986,4 +986,30 @@
     <string name="schneaggmap_search_label">search ...</string>
 
 
+
+    <string name="ttt_initscreen">Lets explore some features!</string>
+    <string name="ttt_initscreen_description">As always, if something feels off / is not working, you want a new feature or something changed, feel free to request it in the settings</string>
+
+    <string name="ttt_start_chatting">Start chatting</string>
+    <string name="ttt_start_chatting_description">Tap here to add friends</string>
+
+    <string name="ttt_new_chat_search_friends">Search for your friends</string>
+    <string name="ttt_new_chat_search_friends_description">If you have at least one friend, mutual friends will show up</string>
+
+    <string name="ttt_new_chat_create_group">Tap here to create a new group</string>
+
+    <string name="ttt_new_chat_go_back">Let's go back to the Chatselection</string>
+
+    <string name="ttt_chatselector_map">Here you can access the Schneaggmap</string>
+    <string name="ttt_chatselector_map_description">You can share your location, show public locations and add them yourself</string>
+
+
+    <string name="ttt_schneaggmap_locations">Public locations</string>
+    <string name="ttt_schneaggmap_locations_description">Here you can see all locations created by other users. \nFeel free to add some yourself by long pressing on the map.\nATTENTION: Please do not abuse this feature, otherwise we will have to remove your permission to add/edit entries.</string>
+
+    <string name="ttt_schneaggmap_settings">Mapsettings</string>
+    <string name="ttt_schneaggmap_settings_description">Here you have a shortcut to the map settings. Edit if you want to share your location and some other options</string>
+
+
+
 </resources>

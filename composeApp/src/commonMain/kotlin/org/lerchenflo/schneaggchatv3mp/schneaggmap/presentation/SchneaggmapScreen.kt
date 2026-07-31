@@ -69,6 +69,7 @@ import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
+import org.lerchenflo.schneaggchatv3mp.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.entries
@@ -330,7 +331,8 @@ fun SchneaggmapScreen(
                     onClick = { onAction(SchneaggmapAction.OnSettingsClick) },
                     colors = IconButtonDefaults.iconButtonColors().copy(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer
-                    )
+                    ),
+                    modifier = Modifier.tapTarget("schneaggmap_settings_button")
                 ) {
                     Icon(
                         imageVector = Icons.Default.Settings,
@@ -359,7 +361,8 @@ fun SchneaggmapScreen(
                 //Shown locations dropdown menu
                 ShownLocationsDropdown(
                     state = state,
-                    onAction = onAction
+                    onAction = onAction,
+                    modifier = Modifier.tapTarget("schneaggmap_location_dropdown")
                 )
             }
         }
