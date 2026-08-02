@@ -326,8 +326,29 @@ fun App() {
                 }
 
                 is NavigationAction.NavigateBack -> {
-                    if (rootBackStack.size > 1) {
-                        rootBackStack.removeAt(rootBackStack.size - 1)
+                    val currentRoot = rootBackStack.lastOrNull()
+
+                    val subBackStack = when (currentRoot) {
+                        Route.Games -> gamesBackStack
+                        Route.Settings -> settingsBackStack
+                        else -> null
+                    }
+
+                    if (!subBackStack.isNullOrEmpty()) {
+                        // We're inside a subroute graph
+                        subBackStack.removeAt(subBackStack.size - 1)
+
+                        val subNowEmpty = subBackStack.isEmpty()
+                        if (navigationOptions.exitRootWithSubRoute || subNowEmpty) {
+                            if (rootBackStack.size > 1) {
+                                rootBackStack.removeAt(rootBackStack.size - 1)
+                            }
+                        }
+                    } else {
+                        // Normal top-level back navigation
+                        if (rootBackStack.size > 1) {
+                            rootBackStack.removeAt(rootBackStack.size - 1)
+                        }
                     }
                 }
             }

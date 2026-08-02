@@ -102,3 +102,30 @@ sealed interface Route : NavKey {
     }
 }
 
+
+fun Route.parentRootOrNull(): Route? = when (this) {
+    is Route.Settings.SettingsScreen,
+    is Route.Settings.DeveloperSettings,
+    is Route.Settings.UserSettings,
+    is Route.Settings.AppearanceSettings,
+    is Route.Settings.MiscSettings,
+    is Route.Settings.SchneaggmapSettings,
+    is Route.Settings.Roadmap -> Route.Settings
+
+    is Route.Games.GamesSelector,
+    is Route.Games.DartCounter,
+    is Route.Games.Undercover,
+    is Route.Games.TowerStack,
+    is Route.Games.Yatzi,
+    is Route.Games.Tetris,
+    is Route.Games.Morse,
+    is Route.Games.SchneaggaHus,
+    is Route.Games.GridRush,
+    is Route.Games.OddOneOut,
+    is Route.Games.Recap,
+    is Route.Games.CoinFlip,
+    is Route.Games.FingerPicker -> Route.Games
+
+    else -> null
+}
+
