@@ -26,6 +26,7 @@ import org.koin.compose.koinInject
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.PLAYSTORE_TESTER_URI
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
+import org.lerchenflo.schneaggchatv3mp.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
@@ -111,7 +112,8 @@ fun MiscSettings(
                 Icons.Default.BugReport,
                 text = stringResource(Res.string.bugreport_request),
                 subtext = stringResource(Res.string.bugreport_request_info),
-                onClick = { showBugFeaturePopup = true }
+                onClick = { showBugFeaturePopup = true },
+                modifier = Modifier.tapTarget("settings_misc_bugreport")
             )
             if (showBugFeaturePopup) {
                 BugReportDialog(
@@ -130,7 +132,8 @@ fun MiscSettings(
                 Icons.Default.Delete,
                 stringResource(Res.string.app_broken),
                 stringResource(Res.string.app_broken_desc),
-                onClick = { showAppBrokenDialog = true }
+                onClick = { showAppBrokenDialog = true },
+                modifier = Modifier.tapTarget("settings_misc_app_broken")
             )
             // app kaputt dialog
             if (showAppBrokenDialog) {

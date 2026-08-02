@@ -506,7 +506,9 @@ fun SchneaggmapScreen(
 
                 // Right: Snail trails toggle
                 Card(
-                    modifier = Modifier.align(Alignment.CenterEnd)
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .tapTarget("schneaggmap_snailtrail_switch")
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

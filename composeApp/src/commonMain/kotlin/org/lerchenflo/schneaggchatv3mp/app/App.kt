@@ -74,6 +74,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
+import org.lerchenflo.schneaggchatv3mp.onboarding.FreeRoamBarPosition
 import org.lerchenflo.schneaggchatv3mp.onboarding.LocalTapTargetController
 import org.lerchenflo.schneaggchatv3mp.onboarding.TapTargetController
 import org.lerchenflo.schneaggchatv3mp.onboarding.TapTargetOverlay
@@ -85,6 +86,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewm
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
 import org.lerchenflo.schneaggchatv3mp.roadmap.presentation.RoadmapScreen
+import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
@@ -100,16 +102,31 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_continue
 import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen
 import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_create_group
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_go_back
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_freeroam
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_freeroam
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_settings
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_settings_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_snailtrail_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_appearance
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_appearance_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_app_broken
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_app_broken_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_bugreport
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_user
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_user_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_wake
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_wake_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_start_chatting
 import schneaggchatv3mp.composeapp.generated.resources.ttt_start_chatting_description
 import kotlin.time.Duration.Companion.milliseconds
@@ -301,7 +318,7 @@ fun App() {
                             settingsBackStack.add(action.destination)
                         }
                         else -> {
-                            CoroutineScope(Dispatchers.IO).launch {
+                            scope.launch {
                                 loggingRepository.logWarning("rootRoute has no configured backstack")
                             }
                         }
@@ -412,6 +429,13 @@ fun App() {
                     description = Res.string.ttt_new_chat_search_friends_description,
                     route = Route.NewChat,
                 )
+
+                freeRoamStep(
+                    title = Res.string.ttt_new_chat_search_friends_freeroam,
+                    position = FreeRoamBarPosition.Bottom,
+                    continueButtonText = Res.string.ttt_continue
+                )
+
                 tapStep(
                     id = "new_chat_create_group",
                     title = Res.string.ttt_new_chat_create_group,
@@ -421,7 +445,65 @@ fun App() {
                     title = Res.string.ttt_new_chat_go_back
                 )
 
-                //Chatselector again, go to map
+
+                //Show the settings
+                tapStep(
+                    id = "chatselector_settings_button",
+                    title = Res.string.ttt_settings,
+                    route = Route.ChatSelector
+                )
+
+                tapStep(
+                    id = "settings_user",
+                    title = Res.string.ttt_settings_user,
+                    description = Res.string.ttt_settings_user_description,
+                    route = Route.Settings
+                )
+
+                //Go into detail for wakeup feature only for android
+                if (appRepository.appVersion.isAndroid()){
+                    tapStep(
+                        id = "settings_user_wakeup",
+                        title = Res.string.ttt_settings_wake,
+                        description = Res.string.ttt_settings_wake_description,
+                        route = Route.Settings.UserSettings
+                    )
+                }
+
+                tapStep(
+                    id = "settings_appearance",
+                    title = Res.string.ttt_settings_appearance,
+                    description = Res.string.ttt_settings_appearance_description,
+                    route = Route.Settings
+                )
+
+                tapStep(
+                    id = "settings_misc",
+                    title = Res.string.ttt_settings_misc,
+                    route = Route.Settings
+                )
+
+                tapStep(
+                    id = "settings_misc_bugreport",
+                    description = Res.string.ttt_settings_misc_bugreport,
+                    route = Route.Settings.MiscSettings
+                )
+
+                tapStep(
+                    id = "settings_misc_app_broken",
+                    title = Res.string.ttt_settings_misc_app_broken,
+                    description = Res.string.ttt_settings_misc_app_broken_description
+                )
+
+
+                infoStep(
+                    title = Res.string.ttt_new_chat_go_back,
+                    route = Route.Settings
+                )
+
+
+
+                //Go to Chatselector again, go to map
                 tapStep(
                     id = "chatselector_map_button",
                     title = Res.string.ttt_chatselector_map,
@@ -436,10 +518,21 @@ fun App() {
                     route = Route.Schneaggmap()
                 )
 
+                freeRoamStep(
+                    title = Res.string.ttt_schneaggmap_locations_freeroam,
+                    position = FreeRoamBarPosition.Bottom,
+                    continueButtonText = Res.string.ttt_continue
+                )
+
                 tapStep(
                     id = "schneaggmap_settings_button",
                     title = Res.string.ttt_schneaggmap_settings,
                     description = Res.string.ttt_schneaggmap_settings_description
+                )
+
+                tapStep(
+                    id = "schneaggmap_snailtrail_switch",
+                    description = Res.string.ttt_schneaggmap_snailtrail_description
                 )
 
                 // step(id = "settings",  title = "Settings",       description = "Adjust your preferences here")

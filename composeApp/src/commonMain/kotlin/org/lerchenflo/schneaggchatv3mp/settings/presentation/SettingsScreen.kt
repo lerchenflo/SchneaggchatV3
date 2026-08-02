@@ -42,6 +42,7 @@ import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
@@ -165,7 +166,8 @@ fun SettingsScreen(
             icon = Icons.Default.Boy,
             text = stringResource(Res.string.user_settings),
             subtext = stringResource(Res.string.user_settingsinfo),
-            onClick = navigateUserSettings
+            onClick = navigateUserSettings,
+            modifier = Modifier.tapTarget("settings_user")
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -174,7 +176,8 @@ fun SettingsScreen(
             Icons.Default.Palette,
             stringResource(Res.string.appearance_settings),
             stringResource(Res.string.appearance_settings_info),
-            onClick = navigateAppearanceSettings
+            onClick = navigateAppearanceSettings,
+            modifier = Modifier.tapTarget("settings_appearance")
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -206,7 +209,8 @@ fun SettingsScreen(
             icon = Icons.Outlined.Hexagon,
             text = stringResource(Res.string.misc_settings),
             subtext = stringResource(Res.string.misc_setting_info),
-            onClick = navigateMiscSettings
+            onClick = navigateMiscSettings,
+            modifier = Modifier.tapTarget("settings_misc")
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)

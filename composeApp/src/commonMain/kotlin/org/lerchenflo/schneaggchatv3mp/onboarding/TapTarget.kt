@@ -7,11 +7,13 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -23,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.CornerRadius
@@ -48,6 +51,9 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import kotlin.reflect.KClass
 import kotlin.time.Duration.Companion.milliseconds
 
+
+enum class FreeRoamBarPosition { Top, Center, Bottom }
+
 // ─────────────────────────────────────────────────────────────────
 // Step 1 — Tour DSL
 // ─────────────────────────────────────────────────────────────────
@@ -69,6 +75,12 @@ data class TourStep(
     val description: StringResource? = null,
     val route: Route? = null,
     val backgroundColor: Color = Color.Black.copy(alpha = 0.75f),
+    /** Non-null marks this a free-roam step: shows a non-blocking hint bar at this
+     *  position instead of a spotlight or blocking dialog. Everything else on screen
+     *  stays fully interactive; only the bar's Continue button advances the tour. */
+    val freeRoamPosition: FreeRoamBarPosition? = null,
+    /** Continue button label. Falls back to plain "Continue" text if null. */
+    val continueButtonText: StringResource? = null,
 )
 
 /** Immutable tour description produced by [tapTargetTour]. */
@@ -106,6 +118,38 @@ class TourBuilder {
         backgroundColor: Color = Color.Black.copy(alpha = 0.75f),
     ) {
         steps += TourStep(null, title, description, route, backgroundColor)
+    }
+
+    /**
+     * Adds a step that lets the user freely explore the app while a small, non-blocking
+     * hint bar stays anchored at [position]. Unlike [tapStep]/[infoStep], tapping
+     * elsewhere on screen does nothing — the tour only advances when the user presses
+     * the bar's Continue button.
+     *
+     * Example:
+     * ```kotlin
+     * freeRoamStep(
+     *     title = Res.string.ttt_explore_title,
+     *     description = Res.string.ttt_explore_description,
+     *     position = FreeRoamBarPosition.Bottom,
+     * )
+     * ```
+     */
+    fun freeRoamStep(
+        title: StringResource? = null,
+        description: StringResource? = null,
+        route: Route? = null,
+        position: FreeRoamBarPosition = FreeRoamBarPosition.Bottom,
+        continueButtonText: StringResource? = null,
+    ) {
+        steps += TourStep(
+            id = null,
+            title = title,
+            description = description,
+            route = route,
+            freeRoamPosition = position,
+            continueButtonText = continueButtonText,
+        )
     }
 }
 
@@ -319,7 +363,17 @@ fun TapTargetOverlay(controller: TapTargetController) {
 
     val step = controller.currentStep ?: return
 
-    // Centered steps have no spotlight target — handle them in a separate branch.
+    // Free-roam: non-blocking hint bar, user explores freely, advances via button only.
+    if (step.freeRoamPosition != null) {
+        FreeRoamTourBar(
+            step = step,
+            position = step.freeRoamPosition,
+            onContinue = { controller.next() },
+        )
+        return
+    }
+
+    // Centered: no spotlight target, full block, tap-anywhere advances.
     if (step.id == null) {
         CenteredTourStep(step, onTap = { controller.next() })
         return
@@ -439,6 +493,62 @@ private fun CenteredTourStep(step: TourStep, onTap: () -> Unit) {
                         if (step.title != null) Spacer(Modifier.height(8.dp))
                         Text(text = stringResource(it), style = MaterialTheme.typography.bodyMedium, color = Color.Black)
                     }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Non-blocking hint bar for free-roam steps. Anchored at [position]; everything outside
+ * the bar itself remains fully interactive so the user can explore the real app. Only
+ * the Continue button advances — there's no tap-anywhere-to-advance here, since a stray
+ * tap during free exploration shouldn't accidentally skip the step.
+ */
+@Composable
+private fun FreeRoamTourBar(
+    step: TourStep,
+    position: FreeRoamBarPosition,
+    onContinue: () -> Unit,
+) {
+    val alignment = when (position) {
+        FreeRoamBarPosition.Top    -> Alignment.TopCenter
+        FreeRoamBarPosition.Center -> Alignment.Center
+        FreeRoamBarPosition.Bottom -> Alignment.BottomCenter
+    }
+    // Top/Bottom read as a spanning banner; Center reads as a compact card.
+    val widthModifier = if (position == FreeRoamBarPosition.Center) {
+        Modifier.widthIn(max = 320.dp)
+    } else {
+        Modifier.fillMaxWidth()
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = alignment,
+    ) {
+        Surface(
+            modifier = widthModifier,
+            shape = RoundedCornerShape(12.dp),
+            color = Color.White,
+            shadowElevation = 6.dp,
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                step.title?.let {
+                    Text(stringResource(it), style = MaterialTheme.typography.titleMedium, color = Color.Black)
+                }
+                step.description?.let {
+                    if (step.title != null) Spacer(Modifier.height(4.dp))
+                    Text(stringResource(it), style = MaterialTheme.typography.bodyMedium, color = Color.Black)
+                }
+                Spacer(Modifier.height(12.dp))
+                Button(onClick = onContinue) {
+                    Text(step.continueButtonText?.let { stringResource(it) } ?: "Continue")
                 }
             }
         }

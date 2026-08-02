@@ -381,7 +381,8 @@ fun Chatauswahlscreen(
                         .padding(2.dp)
                         .size(touchSize)
                         .clip(CircleShape)
-                        .clickable { viewModel.onSettingsClick() },
+                        .clickable { viewModel.onSettingsClick() }
+                        .tapTarget("chatselector_settings_button"),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
