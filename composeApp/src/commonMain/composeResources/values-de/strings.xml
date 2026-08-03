@@ -161,6 +161,7 @@
     <string name="variant1">Dunkel Variante 1</string>
     <string name="variant2">Hell Variante 2</string>
     <string name="neon_pulse_theme">Neon Pulse (Dunkel)</string>
+    <string name="anna_theme">Annas Theme</string>
 
     <string name="common_friends">gemeinsame Freunde: %1$s</string>
     <string name="create_group">Gruppe erstellen</string>

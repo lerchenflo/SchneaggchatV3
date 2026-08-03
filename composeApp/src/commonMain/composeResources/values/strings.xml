@@ -161,6 +161,7 @@
     <string name="variant1">Dark Variant 1</string>
     <string name="variant2">Light Variant 2</string>
     <string name="neon_pulse_theme">Neon Pulse (Dark)</string>
+    <string name="anna_theme">Annas theme</string>
 
     <string name="common_friends">common friends: %1$s</string>
     <string name="create_group">Create Group</string>
@@ -986,6 +987,11 @@
     <string name="schneaggmap_search_label">search ...</string>
 
 
+    <string name="ttt_popup">Explore schneaggchat</string>
+    <string name="ttt_popup_description">Take a tour and get to know how the app works and some exciting features, even if you have used the app before.</string>
+    <string name="ttt_popup_start">Let's go</string>
+
+
 
     <string name="ttt_initscreen">Lets explore some features!</string>
     <string name="ttt_initscreen_description">As always, if something feels off / is not working, you want a new feature or something changed, feel free to request it in the settings.</string>
@@ -1037,8 +1043,12 @@
     <string name="ttt_schneaggmap_settings">Mapsettings</string>
     <string name="ttt_schneaggmap_settings_description">Here you have a shortcut to the map settings. Edit if you want to share your location and some other options.</string>
 
-    <string name="ttt_schneaggmap_snailtrail_description">Here you can show the snailtrail of your friends.</string>
+    <string name="ttt_schneaggmap_snailtrail_description">Here you can show the snailtrail (where they have been in the last 24h) of your friends, if they enabled it for you.</string>
 
+    <string name="ttt_schneaggmap_go_back">Let's go back once again.</string>
+
+
+    <string name="ttt_chatselector_games">Now lets have a look at the tools and games</string>
 
 
 </resources>

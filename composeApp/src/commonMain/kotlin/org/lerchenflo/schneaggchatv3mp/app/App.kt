@@ -29,9 +29,6 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.modules.SerializersModule
@@ -74,19 +71,19 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
-import org.lerchenflo.schneaggchatv3mp.onboarding.FreeRoamBarPosition
-import org.lerchenflo.schneaggchatv3mp.onboarding.LocalTapTargetController
-import org.lerchenflo.schneaggchatv3mp.onboarding.TapTargetController
-import org.lerchenflo.schneaggchatv3mp.onboarding.TapTargetOverlay
-import org.lerchenflo.schneaggchatv3mp.onboarding.TourSettings
-import org.lerchenflo.schneaggchatv3mp.onboarding.tapTargetTour
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.FreeRoamBarPosition
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.LocalTapTargetController
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetController
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetOverlay
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.TourSettings
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.rememberOnboardingTour
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTargetTour
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
 import org.lerchenflo.schneaggchatv3mp.roadmap.presentation.RoadmapScreen
-import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
@@ -426,142 +423,11 @@ fun App() {
             )
         }
 
+        val tour = rememberOnboardingTour(appRepository.appVersion.isAndroid())
 
-        val onboardingTour = remember {
-            tapTargetTour {
-
-                //Show chatselector first
-                infoStep(
-                    title = Res.string.ttt_initscreen,
-                    description = Res.string.ttt_initscreen_description
-                )
-
-                //New chat button
-                tapStep(
-                    id = "chatselector_new_chat_button",
-                    title = Res.string.ttt_start_chatting,
-                    description = Res.string.ttt_start_chatting_description
-                )
-
-                //Navigate to new chat screen to show features
-                tapStep(
-                    id = "new_chat_search_friends",
-                    title = Res.string.ttt_new_chat_search_friends,
-                    description = Res.string.ttt_new_chat_search_friends_description,
-                    route = Route.NewChat,
-                )
-
-                freeRoamStep(
-                    title = Res.string.ttt_new_chat_search_friends_freeroam,
-                    position = FreeRoamBarPosition.Bottom,
-                    continueButtonText = Res.string.ttt_continue
-                )
-
-                tapStep(
-                    id = "new_chat_create_group",
-                    title = Res.string.ttt_new_chat_create_group,
-                )
-
-                infoStep(
-                    title = Res.string.ttt_new_chat_go_back
-                )
-
-
-                //Show the settings
-                tapStep(
-                    id = "chatselector_settings_button",
-                    title = Res.string.ttt_settings,
-                    route = Route.ChatSelector
-                )
-
-                tapStep(
-                    id = "settings_user",
-                    title = Res.string.ttt_settings_user,
-                    description = Res.string.ttt_settings_user_description,
-                    route = Route.Settings
-                )
-
-                //Go into detail for wakeup feature only for android
-                if (appRepository.appVersion.isAndroid()){
-                    tapStep(
-                        id = "settings_user_wakeup",
-                        title = Res.string.ttt_settings_wake,
-                        description = Res.string.ttt_settings_wake_description,
-                        route = Route.Settings.UserSettings
-                    )
-                }
-
-                tapStep(
-                    id = "settings_appearance",
-                    title = Res.string.ttt_settings_appearance,
-                    description = Res.string.ttt_settings_appearance_description,
-                    route = Route.Settings
-                )
-
-                tapStep(
-                    id = "settings_misc",
-                    title = Res.string.ttt_settings_misc,
-                    route = Route.Settings
-                )
-
-                tapStep(
-                    id = "settings_misc_bugreport",
-                    description = Res.string.ttt_settings_misc_bugreport,
-                    route = Route.Settings.MiscSettings
-                )
-
-                tapStep(
-                    id = "settings_misc_app_broken",
-                    title = Res.string.ttt_settings_misc_app_broken,
-                    description = Res.string.ttt_settings_misc_app_broken_description
-                )
-
-
-                infoStep(
-                    title = Res.string.ttt_new_chat_go_back,
-                    route = Route.Settings
-                )
-
-
-
-                //Go to Chatselector again, go to map
-                tapStep(
-                    id = "chatselector_map_button",
-                    title = Res.string.ttt_chatselector_map,
-                    description = Res.string.ttt_chatselector_map_description,
-                    route = Route.ChatSelector
-                )
-
-                tapStep(
-                    id = "schneaggmap_location_dropdown",
-                    title = Res.string.ttt_schneaggmap_locations,
-                    description = Res.string.ttt_schneaggmap_locations_description,
-                    route = Route.Schneaggmap()
-                )
-
-                freeRoamStep(
-                    title = Res.string.ttt_schneaggmap_locations_freeroam,
-                    position = FreeRoamBarPosition.Bottom,
-                    continueButtonText = Res.string.ttt_continue
-                )
-
-                tapStep(
-                    id = "schneaggmap_settings_button",
-                    title = Res.string.ttt_schneaggmap_settings,
-                    description = Res.string.ttt_schneaggmap_settings_description
-                )
-
-                tapStep(
-                    id = "schneaggmap_snailtrail_switch",
-                    description = Res.string.ttt_schneaggmap_snailtrail_description
-                )
-
-                // step(id = "settings",  title = "Settings",       description = "Adjust your preferences here")
-            }
-        }
         val tourController = remember {
             TapTargetController(
-                tour = onboardingTour,
+                tour = tour,
                 onNavigateToRoute = {
                     scope.launch {
                         navigator.navigate(it)
@@ -570,7 +436,11 @@ fun App() {
                 currentRoute = {
                     (rootBackStack.lastOrNull() as? Route)?.let { it::class }
                 },
-                onFinished = { /*TODO preferenceManager.setOnboardingSeen(true) */ },
+                onFinished = {
+                    scope.launch {
+                        preferenceManager.setOnboardingSeen(true)
+                    }
+                },
                 tourSettings = TourSettings(
                     iconPadding = 12.dp
                 )

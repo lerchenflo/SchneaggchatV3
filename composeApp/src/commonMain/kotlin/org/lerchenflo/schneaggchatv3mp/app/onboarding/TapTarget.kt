@@ -1,4 +1,4 @@
-package org.lerchenflo.schneaggchatv3mp.onboarding
+package org.lerchenflo.schneaggchatv3mp.app.onboarding
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -48,6 +48,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import kotlin.collections.get
 import kotlin.reflect.KClass
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -61,7 +62,7 @@ enum class FreeRoamBarPosition { Top, Center, Bottom }
 /**
  * Describes a single step in an onboarding tour.
  *
- * @param id            Unique identifier; must match the id passed to [Modifier.tapTarget].
+ * @param id            Unique identifier; must match the id passed to [tapTarget].
  * @param title         Optional headline shown in the info bubble.
  * @param description   Optional body text shown in the info bubble.
  * @param route         Optional screen class. When set, the controller will navigate
@@ -183,7 +184,7 @@ data class TourSettings(
  *
  * Create exactly one instance with [remember] at the root of your composition, then
  * provide it via [LocalTapTargetController]. Do **not** pass it around manually —
- * call sites only need [Modifier.tapTarget].
+ * call sites only need [tapTarget].
  *
  * @param tour                The tour definition produced by [tapTargetTour].
  * @param onNavigateToRoute   Called when the current step lives on a different screen.
@@ -207,28 +208,38 @@ class TapTargetController(
     var currentIndex by mutableStateOf(0)
         private set
 
+    /** Whether the tour is currently active. Defaults to false. */
+    var active by mutableStateOf(false)
+        private set
+
     /** The [TourStep] being spotlighted right now, or null when the tour is over. */
-    val currentStep: TourStep? get() = tour.steps.getOrNull(currentIndex)
+    val currentStep: TourStep? get() = if (isActive) tour.steps.getOrNull(currentIndex) else null
 
     /** The bounds of the currently spotlighted composable, or null if not yet laid out. */
     val currentTarget: TargetInfo? get() = currentStep?.let { targets[it.id] }
 
-    /** True while there are still steps left to show. */
-    val isActive: Boolean get() = currentIndex < tour.steps.size
+    /** True while tour is active and there are still steps left to show. */
+    val isActive: Boolean get() = active && currentIndex < tour.steps.size
 
     // ── Target registration ──────────────────────────────────────
 
-    /** Called automatically by [Modifier.tapTarget] on every layout pass. */
+    /** Called automatically by [tapTarget] on every layout pass. */
     fun register(id: String, bounds: Rect) {
         targets[id] = TargetInfo(bounds)
     }
 
-    /** Called automatically by [Modifier.tapTarget] when the composable leaves the composition. */
+    /** Called automatically by [tapTarget] when the composable leaves the composition. */
     fun unregister(id: String) {
         targets.remove(id)
     }
 
-    // ── Navigation ───────────────────────────────────────────────
+    /**
+     * Resets the tour to the first step and activates it.
+     */
+    fun start() {
+        currentIndex = 0
+        active = true
+    }
 
     /**
      * Advances to the next step, or finishes the tour if all steps have been shown.
@@ -236,7 +247,10 @@ class TapTargetController(
      */
     fun next() {
         if (currentIndex < tour.steps.size) currentIndex++
-        if (currentIndex >= tour.steps.size) onFinished()
+        if (currentIndex >= tour.steps.size) {
+            active = false
+            onFinished()
+        }
     }
 
     /**
@@ -245,6 +259,7 @@ class TapTargetController(
      */
     fun skip() {
         currentIndex = tour.steps.size
+        active = false
         onFinished()
     }
 
@@ -284,7 +299,7 @@ class TapTargetController(
 /**
  * Provides the active [TapTargetController] to every composable in the subtree.
  *
- * Defaults to `null` so that [Modifier.tapTarget] is a no-op in previews, tests,
+ * Defaults to `null` so that [tapTarget] is a no-op in previews, tests,
  * or screens not part of any tour. Swap the default to `error(…)` if you prefer
  * a hard crash when the controller is accidentally missing in production.
  *
@@ -351,7 +366,7 @@ fun Modifier.tapTarget(id: String): Modifier = composed {
  *   (e.g. while navigation is in progress).
  * - Punches an oval hole in the scrim around the target bounds.
  * - Shows an optional title/description bubble just below the spotlight hole.
- * - Advances to the next step on any tap.
+ * - Advances to the next step only when the highlighted box is clicked.
  */
 @Composable
 fun TapTargetOverlay(controller: TapTargetController) {
@@ -390,19 +405,25 @@ fun TapTargetOverlay(controller: TapTargetController) {
         val edgePaddingPx = with(density) { 16.dp.toPx() }
         val iconPaddingPx = with(density) { controller.tourSettings.iconPadding.toPx() }
         val cornerRadiusPx = with(density) { controller.tourSettings.cornerRadius.toPx() }
+        val highlightedBounds = target.bounds.inflate(iconPaddingPx)
+
         // ── Scrim with punched-out spotlight ─────────────────────────
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
                 .pointerInput(step.id) {
-                    detectTapGestures { controller.next() }
+                    detectTapGestures { offset ->
+                        if (highlightedBounds.contains(offset)) {
+                            controller.next()
+                        }
+                    }
                 }
         ) {
             val scrim = Path().apply { addRect(size.toRect()) }
             val hole = Path().apply {
                 addRoundRect(
                     RoundRect(
-                        rect = target.bounds.inflate(iconPaddingPx),
+                        rect = highlightedBounds,
                         cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx)
                     )
                 )
@@ -478,7 +499,7 @@ private fun CenteredTourStep(step: TourStep, onTap: () -> Unit) {
         if (step.title != null || step.description != null) {
             Surface(
                 modifier = Modifier
-                    .align(androidx.compose.ui.Alignment.Center)
+                    .align(Alignment.Center)
                     .widthIn(max = 280.dp)
                     .padding(24.dp),
                 shape = RoundedCornerShape(12.dp),

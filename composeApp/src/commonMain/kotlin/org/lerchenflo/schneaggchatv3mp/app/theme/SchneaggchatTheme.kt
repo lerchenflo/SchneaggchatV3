@@ -195,6 +195,38 @@ private val neonPulseScheme = darkColorScheme(
     outlineVariant = neonGhostBorder // Critical accessibility containment
 )
 
+private val annaScheme = darkColorScheme(
+    primary = annaPrimary,
+    onPrimary = annaOnPrimary,
+    primaryContainer = annaPrimaryContainer,
+    onPrimaryContainer = annaOnPrimaryContainer,
+
+    secondary = annaSecondary,
+    onSecondary = annaOnSecondary,
+    secondaryContainer = annaSecondaryContainer,
+    onSecondaryContainer = annaOnSecondaryContainer,
+
+    tertiary = annaTertiary,
+    onTertiary = annaOnTertiary,
+
+    background = annaBackground,
+    onBackground = annaOnBackground,
+
+    surface = annaSurface,
+    onSurface = annaOnSurface,
+    surfaceVariant = annaSurfaceVariant,
+    onSurfaceVariant = annaOnSurfaceVariant,
+
+    surfaceContainerLowest = annaSurfaceContainerLowest,
+    surfaceContainerLow = annaSurfaceContainerLow,
+    surfaceContainer = annaSurfaceContainer,
+    surfaceContainerHigh = annaSurfaceContainerHigh,
+    surfaceContainerHighest = annaSurfaceContainerHighest,
+
+    outline = annaOutline,
+    outlineVariant = annaOutlineVariant
+)
+
 @Composable
 fun SchneaggchatTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -216,6 +248,9 @@ fun SchneaggchatTheme(
   }
   else if(themeSetting == ThemeSetting.NEONPULSE){
       neonPulseScheme
+  }
+  else if(themeSetting == ThemeSetting.ANNATHEME){
+      annaScheme
   }
   /*else if(themeSetting == ThemeSetting.PHTHEME){
       phTheme

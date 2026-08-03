@@ -1,0 +1,184 @@
+package org.lerchenflo.schneaggchatv3mp.app.onboarding
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_games
+import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map
+import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_continue
+import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen
+import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_create_group
+import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_go_back
+import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends
+import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_freeroam
+import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_go_back
+import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations
+import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_freeroam
+import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_settings
+import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_settings_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_snailtrail_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_appearance
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_appearance_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_app_broken
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_app_broken_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_bugreport
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_user
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_user_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_wake
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_wake_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_start_chatting
+import schneaggchatv3mp.composeapp.generated.resources.ttt_start_chatting_description
+
+@Composable
+fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
+    return remember {
+        tapTargetTour {
+
+            //Show chatselector first
+            infoStep(
+                title = Res.string.ttt_initscreen,
+                description = Res.string.ttt_initscreen_description
+            )
+
+            //New chat button
+            tapStep(
+                id = "chatselector_new_chat_button",
+                title = Res.string.ttt_start_chatting,
+                description = Res.string.ttt_start_chatting_description
+            )
+
+            //Navigate to new chat screen to show features
+            tapStep(
+                id = "new_chat_search_friends",
+                title = Res.string.ttt_new_chat_search_friends,
+                description = Res.string.ttt_new_chat_search_friends_description,
+                route = Route.NewChat,
+            )
+
+            freeRoamStep(
+                title = Res.string.ttt_new_chat_search_friends_freeroam,
+                position = FreeRoamBarPosition.Bottom,
+                continueButtonText = Res.string.ttt_continue
+            )
+
+            tapStep(
+                id = "new_chat_create_group",
+                title = Res.string.ttt_new_chat_create_group,
+                route = Route.NewChat //Set route in case the user navigated from the screen in the free roam
+            )
+
+            infoStep(
+                title = Res.string.ttt_new_chat_go_back
+            )
+
+
+            //Show the settings
+            tapStep(
+                id = "chatselector_settings_button",
+                title = Res.string.ttt_settings,
+                route = Route.ChatSelector
+            )
+
+            tapStep(
+                id = "settings_user",
+                title = Res.string.ttt_settings_user,
+                description = Res.string.ttt_settings_user_description,
+                route = Route.Settings
+            )
+
+            //Go into detail for wakeup feature only for android
+            if (isAndroid){
+                tapStep(
+                    id = "settings_user_wakeup",
+                    title = Res.string.ttt_settings_wake,
+                    description = Res.string.ttt_settings_wake_description,
+                    route = Route.Settings.UserSettings
+                )
+            }
+
+            tapStep(
+                id = "settings_appearance",
+                title = Res.string.ttt_settings_appearance,
+                description = Res.string.ttt_settings_appearance_description,
+                route = Route.Settings
+            )
+
+            tapStep(
+                id = "settings_misc",
+                title = Res.string.ttt_settings_misc,
+                route = Route.Settings
+            )
+
+            tapStep(
+                id = "settings_misc_bugreport",
+                description = Res.string.ttt_settings_misc_bugreport,
+                route = Route.Settings.MiscSettings
+            )
+
+            tapStep(
+                id = "settings_misc_app_broken",
+                title = Res.string.ttt_settings_misc_app_broken,
+                description = Res.string.ttt_settings_misc_app_broken_description
+            )
+
+
+            infoStep(
+                title = Res.string.ttt_new_chat_go_back,
+                route = Route.Settings
+            )
+
+
+
+            //Go to Chatselector again, go to map
+            tapStep(
+                id = "chatselector_map_button",
+                title = Res.string.ttt_chatselector_map,
+                description = Res.string.ttt_chatselector_map_description,
+                route = Route.ChatSelector
+            )
+
+            tapStep(
+                id = "schneaggmap_location_dropdown",
+                title = Res.string.ttt_schneaggmap_locations,
+                description = Res.string.ttt_schneaggmap_locations_description,
+                route = Route.Schneaggmap()
+            )
+
+            freeRoamStep(
+                title = Res.string.ttt_schneaggmap_locations_freeroam,
+                position = FreeRoamBarPosition.Bottom,
+                continueButtonText = Res.string.ttt_continue
+            )
+
+            tapStep(
+                id = "schneaggmap_settings_button",
+                title = Res.string.ttt_schneaggmap_settings,
+                description = Res.string.ttt_schneaggmap_settings_description,
+                route = Route.Schneaggmap() //Navigate to map in case the user navigated back while freeroaming
+            )
+
+            tapStep(
+                id = "schneaggmap_snailtrail_switch",
+                description = Res.string.ttt_schneaggmap_snailtrail_description
+            )
+
+            infoStep(
+                title = Res.string.ttt_schneaggmap_go_back
+            )
+
+            tapStep(
+                id = "chatselector_games_button",
+                title = Res.string.ttt_chatselector_games
+            )
+
+            // step(id = "settings",  title = "Settings",       description = "Adjust your preferences here")
+        }
+    }
+}

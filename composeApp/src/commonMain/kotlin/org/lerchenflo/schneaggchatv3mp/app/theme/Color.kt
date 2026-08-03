@@ -280,3 +280,35 @@ val neonSurfaceHighest = Color(0xFF262626)   // Active bubbles/modals
 
 val neonOnSurfaceVariant = Color(0xFFADAAAA) // Secondary body text
 val neonGhostBorder = Color(0x26494847)      // Outline-variant at 15% opacity
+
+
+// Anna Theme - SchneaggchatV2Android Colors
+val annaPrimary = Color(0xFF7E1030)           // annablau (Deep Wine/Burgundy)
+val annaOnPrimary = Color(0xFFFFFFFF)
+val annaPrimaryContainer = Color(0xFF816965)  // annaschwarz (Warm Dusty Rose / Muted Pink-Brown)
+val annaOnPrimaryContainer = Color(0xFFFFFFFF)
+
+val annaSecondary = Color(0xFF7E1030)         // annablau
+val annaOnSecondary = Color(0xFFFFFFFF)
+val annaSecondaryContainer = Color(0xFF560B20)
+val annaOnSecondaryContainer = Color(0xFFFFFFFF)
+
+val annaTertiary = Color(0xFF816965)          // annaschwarz
+val annaOnTertiary = Color(0xFFFFFFFF)
+
+val annaBackground = Color(0xFF141615)        // Deep dark background
+val annaOnBackground = Color(0xFFF0EAE8)
+
+val annaSurface = Color(0xFF222625)           // annapink (Dark Charcoal Surface)
+val annaOnSurface = Color(0xFFFFFFFF)
+val annaSurfaceVariant = Color(0xFF2E3332)
+val annaOnSurfaceVariant = Color(0xFFD6C8C5)
+
+val annaSurfaceContainerLowest = Color(0xFF181B1A)
+val annaSurfaceContainerLow = Color(0xFF1E2120)
+val annaSurfaceContainer = Color(0xFF222625)    // annapink
+val annaSurfaceContainerHigh = Color(0xFF3B302E)
+val annaSurfaceContainerHighest = Color(0xFF541426) // Soft burgundy incoming bubble
+
+val annaOutline = Color(0xFF816965)           // annaschwarz
+val annaOutlineVariant = Color(0xFF4A3B39)

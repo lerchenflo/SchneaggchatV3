@@ -68,7 +68,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.Confirmatio
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.getDeleteAccountUrl
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.BirthdatePickerPopup
-import org.lerchenflo.schneaggchatv3mp.onboarding.tapTarget
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ChangeDialog
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
