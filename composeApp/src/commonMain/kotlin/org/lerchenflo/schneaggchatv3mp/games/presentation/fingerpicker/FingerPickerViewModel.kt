@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val MIN_FINGERS = 2
 private const val HOLD_DURATION_MILLIS = 2500L
@@ -37,6 +38,7 @@ class FingerPickerViewModel : ViewModel() {
     val state: StateFlow<FingerPickerState> = _state.asStateFlow()
 
     private var holdJob: Job? = null
+    private var previousPhysicalPointers: Set<PointerId> = emptySet()
 
     fun onAction(action: FingerPickerAction) {
         when (action) {
@@ -48,20 +50,24 @@ class FingerPickerViewModel : ViewModel() {
     }
 
     private fun onTouchesChanged(touches: Map<PointerId, Offset>) {
+        val currentPhysicalPointers = touches.keys
+        val fingerPutDown = (currentPhysicalPointers - previousPhysicalPointers).isNotEmpty()
+        previousPhysicalPointers = currentPhysicalPointers
+
         val current = _state.value
 
         if (current.phase == FingerPickerPhase.RESULT) {
-            // Wait for every finger to lift before a new round can start
-            if (touches.isEmpty()) {
-                _state.value = FingerPickerState(winnerCount = current.winnerCount)
+            if (!fingerPutDown) {
+                // Keep showing the result until a new finger is put down
+                return
             }
-            return
+            holdJob?.cancel()
         }
 
         if (touches.size < MIN_FINGERS) {
             holdJob?.cancel()
             _state.update {
-                it.copy(phase = FingerPickerPhase.WAITING, touches = touches, holdProgress = 0f)
+                it.copy(phase = FingerPickerPhase.WAITING, touches = touches, holdProgress = 0f, winners = emptySet())
             }
             return
         }
@@ -82,7 +88,7 @@ class FingerPickerViewModel : ViewModel() {
         }
         holdJob = viewModelScope.launch {
             repeat(HOLD_STEPS) { step ->
-                delay(HOLD_DURATION_MILLIS / HOLD_STEPS)
+                delay((HOLD_DURATION_MILLIS / HOLD_STEPS).milliseconds)
                 _state.update { it.copy(holdProgress = (step + 1) / HOLD_STEPS.toFloat()) }
             }
             pickWinners()

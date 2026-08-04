@@ -122,6 +122,7 @@ class Preferencemanager(
         val DRAFTS = stringPreferencesKey("drafts")
         val LAST_STARTED_VERSION = stringPreferencesKey("last_started_version")
         val LAST_CONTRIBUTE_POPUP_SHOWN = longPreferencesKey("last_contribute_popup_shown")
+        val ONBOARDING_SEEN = booleanPreferencesKey("onboarding_seen")
     }
 
     // Markdown Format
@@ -258,6 +259,19 @@ class Preferencemanager(
      */
     suspend fun getLastContributePopupShown(): Long? {
         return prefs.data.first()[PrefsKeys.LAST_CONTRIBUTE_POPUP_SHOWN]
+    }
+
+    // Onboarding Seen
+    suspend fun setOnboardingSeen(value: Boolean) {
+        prefs.edit { it[PrefsKeys.ONBOARDING_SEEN] = value }
+    }
+
+    suspend fun getOnboardingSeen(): Boolean {
+        return prefs.data.first()[PrefsKeys.ONBOARDING_SEEN] ?: false
+    }
+
+    fun getOnboardingSeenFlow(): Flow<Boolean> = prefs.data.map { prefs ->
+        prefs[PrefsKeys.ONBOARDING_SEEN] ?: false
     }
 
 

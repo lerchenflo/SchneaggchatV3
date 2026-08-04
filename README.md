@@ -46,6 +46,17 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Map Popup scroll fix
 - Mose code tree voll angezeigt
 
+### 3.0.15
+
+#### Highlights
+- 
+
+#### Features
+- 
+
+#### Bugfixes
+- Tägliche Spiele Timer + Änderung um Mitternacht
+- Fingerpicker fix
 
 ### 3.0.14
 

@@ -50,6 +50,7 @@ import org.jetbrains.compose.resources.InternalResourceApi
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -111,6 +112,7 @@ fun NewChat(
                     icon = Icons.Default.GroupAdd,
                     onClick = { viewModel.onGroupCreatorClick() },
                     modifier = Modifier.weight(1f)
+                        .tapTarget("new_chat_create_group")
                 )
 
                 Spacer(modifier = Modifier.width(12.dp))
@@ -121,7 +123,8 @@ fun NewChat(
                     onClick = {
                         viewModel.onInviteFriendClick()
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1f)
                 )
             }
 
@@ -148,7 +151,10 @@ fun NewChat(
                     value = searchterm,
                     maxLines = 1,
                     onValueChange = { viewModel.updateSearchterm(it) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .tapTarget("new_chat_search_friends")
+                    ,
                     placeholder = { Text(stringResource(Res.string.enter_username)) },
                     leadingIcon = {
                         Icon(

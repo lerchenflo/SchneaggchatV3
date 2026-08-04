@@ -68,6 +68,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.Confirmatio
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.getDeleteAccountUrl
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.BirthdatePickerPopup
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ChangeDialog
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
@@ -428,7 +429,8 @@ fun UserSettings(
                     icon = Icons.Default.Alarm,
                     text = stringResource(Res.string.wake_settings),
                     subtext = stringResource(Res.string.wake_settings_info),
-                    onClick = { showWakeSettingsDialog = true }
+                    onClick = { showWakeSettingsDialog = true },
+                    modifier = Modifier.tapTarget("settings_user_wakeup")
                 )
 
                 if (showWakeSettingsDialog) {

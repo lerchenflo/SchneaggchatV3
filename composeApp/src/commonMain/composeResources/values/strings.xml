@@ -161,6 +161,7 @@
     <string name="variant1">Dark Variant 1</string>
     <string name="variant2">Light Variant 2</string>
     <string name="neon_pulse_theme">Neon Pulse (Dark)</string>
+    <string name="anna_theme">Annas theme</string>
 
     <string name="common_friends">common friends: %1$s</string>
     <string name="create_group">Create Group</string>
@@ -389,7 +390,6 @@
     <string name="games_fingerpicker_hint">Everyone place a finger on the screen</string>
     <string name="games_fingerpicker_holding">Hold still…</string>
     <string name="games_fingerpicker_result">%1$d fingers picked!</string>
-    <string name="games_fingerpicker_lift_hint">Lift all fingers to play again</string>
     <string name="games_fingerpicker_winner_count">Number of winners</string>
     <string name="games_morse_invalid">No character for this code</string>
 
@@ -630,6 +630,8 @@
     <string name="game_tap_anywhere_to_start">Tap anywhere to start</string>
     <string name="game_stop">Stop game</string>
     <string name="game_exit">Exit</string>
+    <string name="games_daily_expires_in">Daily board expires in: %1$s</string>
+
 
     <!-- Games: Tetris -->
     <string name="games_tetris_title">Tetris</string>
@@ -654,6 +656,7 @@
     <string name="games_gridrush_title">Grid Rush</string>
     <string name="games_gridrush_instructions">Drag a line through neighboring tiles of the same color — releasing on 2 or more tiles clears them and the tiles above fall down. Clear the whole board to win!\n\nLonger chains score more points and finishing under par earns a bonus. If no two matching tiles touch anymore, the run is over. Everyone plays the same board each day — the timer only starts with your first move, so plan ahead!</string>
     <string name="games_gridrush_moves">Moves: %1$d / Par %2$d</string>
+
 
     <!-- Games: Odd One Out -->
     <string name="games_oddoneout_title">Odd One Out</string>
@@ -982,6 +985,70 @@
 
 
     <string name="schneaggmap_search_label">search ...</string>
+
+
+    <string name="ttt_popup">Explore schneaggchat</string>
+    <string name="ttt_popup_description">Take a tour and get to know how the app works and some exciting features, even if you have used the app before.</string>
+    <string name="ttt_popup_start">Let's go</string>
+
+
+
+    <string name="ttt_initscreen">Lets explore some features!</string>
+    <string name="ttt_initscreen_description">As always, if something feels off / is not working, you want a new feature or something changed, feel free to request it in the settings.</string>
+
+    <string name="ttt_start_chatting">Start chatting</string>
+    <string name="ttt_start_chatting_description">Tap here to add friends.</string>
+
+    <string name="ttt_new_chat_search_friends">Search for your friends</string>
+    <string name="ttt_new_chat_search_friends_description">If you have at least one friend, mutual friends will show up.</string>
+
+    <string name="ttt_new_chat_search_friends_freeroam">Try to add a new friend. If you don't know anyone yet, just add 'flo'</string>
+
+
+    <string name="ttt_new_chat_create_group">Tap here to create a new group</string>
+
+    <string name="ttt_new_chat_go_back">Let's go back to the Chatselection</string>
+
+
+
+    <string name="ttt_settings">Here are the settings</string>
+    <string name="ttt_settings_user">user settings</string>
+    <string name="ttt_settings_user_description">Here you can change stuff about your account.</string>
+
+    <string name="ttt_settings_wake">Wake up feature (Android only)</string>
+    <string name="ttt_settings_wake_description">You can enable this feature to allow your friends to wake you up. Your phone will ring like with your alarm. If your friends have enabled this for you, you can wake them in the chat details.</string>
+
+    <string name="ttt_settings_appearance">appearance settings</string>
+    <string name="ttt_settings_appearance_description">Here you can change your language (Austrian, German, English) and your theme.</string>
+
+    <string name="ttt_settings_misc">misc settings</string>
+
+    <string name="ttt_settings_misc_bugreport">Here you can file a bug reports and feature requests.</string>
+
+    <string name="ttt_settings_misc_app_broken">app broken</string>
+    <string name="ttt_settings_misc_app_broken_description">If something is not working as intended, try to press this button. It will delete all app data and refetch from the server.</string>
+
+
+
+    <string name="ttt_chatselector_map">Here you can access the Schneaggmap</string>
+    <string name="ttt_chatselector_map_description">You can share your location, show public locations and add them yourself.</string>
+
+
+    <string name="ttt_schneaggmap_locations">Public locations</string>
+    <string name="ttt_schneaggmap_locations_description">Here you can see all locations created by other users. \nFeel free to add some yourself by long pressing on the map.\nATTENTION: Please do not abuse this feature, otherwise we will have to remove your permission to add/edit entries.</string>
+
+    <string name="ttt_schneaggmap_locations_freeroam">Look at some entries!</string>
+    <string name="ttt_continue">Continue tour</string>
+
+    <string name="ttt_schneaggmap_settings">Mapsettings</string>
+    <string name="ttt_schneaggmap_settings_description">Here you have a shortcut to the map settings. Edit if you want to share your location and some other options.</string>
+
+    <string name="ttt_schneaggmap_snailtrail_description">Here you can show the snailtrail (where they have been in the last 24h) of your friends, if they enabled it for you.</string>
+
+    <string name="ttt_schneaggmap_go_back">Let's go back once again.</string>
+
+
+    <string name="ttt_chatselector_games">Now lets have a look at the tools and games</string>
 
 
 </resources>

@@ -62,6 +62,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
@@ -69,6 +70,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.runBlocking
 import kotlin.time.Clock
@@ -79,11 +81,14 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.LocalTapTargetController
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.BugReportDialog
+import org.lerchenflo.schneaggchatv3mp.sharedUi.ChatSelectorDismissableInfo
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
@@ -106,6 +111,9 @@ import schneaggchatv3mp.composeapp.generated.resources.search_friend
 import schneaggchatv3mp.composeapp.generated.resources.search_section_chats
 import schneaggchatv3mp.composeapp.generated.resources.search_section_messages
 import schneaggchatv3mp.composeapp.generated.resources.settings
+import schneaggchatv3mp.composeapp.generated.resources.ttt_popup
+import schneaggchatv3mp.composeapp.generated.resources.ttt_popup_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_popup_start
 import schneaggchatv3mp.composeapp.generated.resources.unpin_chat
 
 /** How long the contribute popup stays away between two appearances. */
@@ -140,6 +148,8 @@ fun Chatauswahlscreen(
 
     val connectionToServer = SessionCache.onlineFlow.collectAsStateWithLifecycle()
     val dataSyncState by appRepository.dataSyncState.collectAsStateWithLifecycle()
+
+    val onboardingCompleted by preferencemanager.getOnboardingSeenFlow().collectAsStateWithLifecycle(initialValue = false)
 
     /*
     //Clear chat when this screen comes to the foreground (Navigation breaks and with the preview the chat can be not selected
@@ -203,7 +213,8 @@ fun Chatauswahlscreen(
                 }
             ) {
                 FloatingActionButton(
-                    onClick = { viewModel.onNewChatClick() }
+                    onClick = { viewModel.onNewChatClick() },
+                    modifier = Modifier.tapTarget("chatselector_new_chat_button")
                 ) {
                     Icon(
                         imageVector = vectorResource(Res.drawable.chat_add_on_24px),
@@ -339,7 +350,8 @@ fun Chatauswahlscreen(
                     modifier = Modifier
                         .size(touchSize)
                         .clip(CircleShape)
-                        .clickable { viewModel.onToolsAndGamesClick() },
+                        .clickable { viewModel.onToolsAndGamesClick() }
+                        .tapTarget("chatselector_games_button"),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -357,7 +369,8 @@ fun Chatauswahlscreen(
                         modifier = Modifier
                             .size(touchSize)
                             .clip(CircleShape)
-                            .clickable { viewModel.onMapClick() },
+                            .clickable { viewModel.onMapClick() }
+                            .tapTarget("chatselector_map_button"),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -378,7 +391,8 @@ fun Chatauswahlscreen(
                         .padding(2.dp)
                         .size(touchSize)
                         .clip(CircleShape)
-                        .clickable { viewModel.onSettingsClick() },
+                        .clickable { viewModel.onSettingsClick() }
+                        .tapTarget("chatselector_settings_button"),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -610,7 +624,9 @@ fun Chatauswahlscreen(
                         liststate.animateScrollToItem(0)
                     }
 
-                    LazyColumn(
+                val tapTargetController = LocalTapTargetController.current
+
+                LazyColumn(
                         modifier = Modifier
                             .fillMaxSize(),
                         contentPadding = PaddingValues(
@@ -620,6 +636,22 @@ fun Chatauswahlscreen(
                         ),
                         state = liststate
                     ) {
+
+                        if (!onboardingCompleted) {
+                            item {
+                                ChatSelectorDismissableInfo(
+                                    title = stringResource(Res.string.ttt_popup),
+                                    description = stringResource(Res.string.ttt_popup_description),
+                                    onClick = {
+                                        tapTargetController?.start()
+                                    },
+                                    onDismiss = null,
+                                    activateText = stringResource(Res.string.ttt_popup_start),
+                                )
+                            }
+                        }
+
+
                         //Chats and messages are only split into labelled sections while a search
                         //actually matched messages - otherwise the list looks exactly as before.
                         val showSearchSections = messageSearchResults.isNotEmpty()

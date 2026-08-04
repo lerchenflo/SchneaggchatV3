@@ -29,11 +29,12 @@ fun SettingsOption(
     text: String,
     subtext: String? = null,
     onClick: () -> Unit,
-    rightSideIcon: @Composable () -> Unit = {}
+    rightSideIcon: @Composable () -> Unit = {},
+    modifier: Modifier = Modifier
 ){
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .clickable{
                 onClick()
             }

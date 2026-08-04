@@ -4,12 +4,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.ElectricBolt
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.ShieldMoon
 import androidx.compose.ui.graphics.vector.ImageVector
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.anna_theme
 import schneaggchatv3mp.composeapp.generated.resources.dark_theme
 import schneaggchatv3mp.composeapp.generated.resources.light_theme
 import schneaggchatv3mp.composeapp.generated.resources.neon_pulse_theme
@@ -23,7 +25,8 @@ enum class ThemeSetting {
     DARK,       // Always dark
     VARIANT1,   // dark Variant 1
     VARIANT2,   // dark Variant 1
-    NEONPULSE;  // dark Neon Colors
+    NEONPULSE,  // dark Neon Colors
+    ANNATHEME;  // Anna Theme from SchneaggchatV2
     //PHTHEME;    // Anderes Theme ganz sicher ned klaut
     fun toUiText(): UiText = when (this) {
         SYSTEM -> UiText.StringResourceText(Res.string.system_theme)
@@ -32,6 +35,7 @@ enum class ThemeSetting {
         VARIANT1   -> UiText.StringResourceText(Res.string.variant1)
         VARIANT2   -> UiText.StringResourceText(Res.string.variant2)
         NEONPULSE   -> UiText.StringResourceText(Res.string.neon_pulse_theme)
+        ANNATHEME   -> UiText.StringResourceText(Res.string.anna_theme)
         //PHTHEME -> UiText.StringResourceText(Res.string.ph_theme)
     }
     fun getIcon(): ImageVector = when (this) {
@@ -41,6 +45,7 @@ enum class ThemeSetting {
         VARIANT1 -> Icons.Default.ShieldMoon
         VARIANT2 -> Icons.Default.Lightbulb
         NEONPULSE -> Icons.Default.ElectricBolt
+        ANNATHEME -> Icons.Default.Favorite
         //PHTHEME -> Icons.Default.Male
     }
 }

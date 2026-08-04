@@ -217,8 +217,7 @@ class SchneaggmapViewModel(
 
             SchneaggmapAction.OnSettingsClick -> {
                 viewModelScope.launch {
-                    navigator.navigateToSubRoute(
-                        rootRoute = Settings,
+                    navigator.navigate(
                         destination = Settings.SchneaggmapSettings
                     )
                 }
