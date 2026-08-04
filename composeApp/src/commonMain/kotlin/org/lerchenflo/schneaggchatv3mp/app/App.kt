@@ -332,11 +332,13 @@ fun App() {
                     }
 
                     if (!subBackStack.isNullOrEmpty()) {
-                        // We're inside a subroute graph
-                        subBackStack.removeAt(subBackStack.size - 1)
-
-                        val subNowEmpty = subBackStack.isEmpty()
-                        if (navigationOptions.exitRootWithSubRoute || subNowEmpty) {
+                        if (subBackStack.size > 1 && !navigationOptions.exitRootWithSubRoute) {
+                            // Navigate back within the sub-graph
+                            subBackStack.removeAt(subBackStack.size - 1)
+                        } else {
+                            // At the root of the sub-graph (or forced exit) — pop the root
+                            // route instead. Never empty the sub-backstack; NavDisplay
+                            // requires at least one entry or it throws IllegalArgumentException.
                             if (rootBackStack.size > 1) {
                                 rootBackStack.removeAt(rootBackStack.size - 1)
                             }
