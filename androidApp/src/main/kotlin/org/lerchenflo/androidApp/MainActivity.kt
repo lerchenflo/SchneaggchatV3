@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.content.IntentCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
@@ -76,7 +77,7 @@ class MainActivity : ComponentActivity() {
                 IncomingDataManager.updateText(sharedText)
             }
             intent?.action == Intent.ACTION_SEND && intent.type?.startsWith("image/") == true -> {
-                val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+                val imageUri = IntentCompat.getParcelableExtra(intent, Intent.EXTRA_STREAM, Uri::class.java)
                 imageUri?.let { uri ->
                     readBytesFromUri(uri)?.let { bytes ->
                         IncomingDataManager.updateImages(listOf(bytes))
@@ -84,7 +85,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
             intent?.action == Intent.ACTION_SEND_MULTIPLE && intent.type?.startsWith("image/") == true -> {
-                val imageUris = intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
+                val imageUris = IntentCompat.getParcelableArrayListExtra(intent, Intent.EXTRA_STREAM, Uri::class.java)
                 imageUris?.let { uris ->
                     val bytesList = uris.mapNotNull { readBytesFromUri(it) }
                     if (bytesList.isNotEmpty()) {
