@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.DividerDefaults
@@ -42,6 +43,8 @@ import schneaggchatv3mp.composeapp.generated.resources.bugreport_request
 import schneaggchatv3mp.composeapp.generated.resources.bugreport_request_info
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings_logs
+import schneaggchatv3mp.composeapp.generated.resources.misc_settings_reset_tour
+import schneaggchatv3mp.composeapp.generated.resources.misc_settings_reset_tour_desc
 import schneaggchatv3mp.composeapp.generated.resources.roadmap
 import schneaggchatv3mp.composeapp.generated.resources.roadmap_info
 import schneaggchatv3mp.composeapp.generated.resources.show_logs
@@ -174,6 +177,28 @@ fun MiscSettings(
 
                 HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
             }
+
+            var showResetTourDialog by rememberSaveable { mutableStateOf(false) }
+            SettingsOption(
+                icon = Icons.Default.Replay,
+                text = stringResource(Res.string.misc_settings_reset_tour),
+                subtext = stringResource(Res.string.misc_settings_reset_tour_desc),
+                onClick = { showResetTourDialog = true }
+            )
+            if (showResetTourDialog) {
+                ConfirmationDialog(
+                    message = stringResource(Res.string.misc_settings_reset_tour),
+                    onConfirm = {
+                        miscSettingsViewModel.resetOnboardingTour()
+                        showResetTourDialog = false
+                    },
+                    onDismiss = {
+                        showResetTourDialog = false
+                    }
+                )
+            }
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
         }

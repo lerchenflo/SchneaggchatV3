@@ -8,6 +8,10 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_games
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_continue
+import schneaggchatv3mp.composeapp.generated.resources.ttt_games_difficulty
+import schneaggchatv3mp.composeapp.generated.resources.ttt_games_difficulty_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_games_global_highscore
+import schneaggchatv3mp.composeapp.generated.resources.ttt_games_global_highscore_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_games_info
 import schneaggchatv3mp.composeapp.generated.resources.ttt_games_info_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen
@@ -37,6 +41,8 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_wake
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_wake_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_start_chatting
 import schneaggchatv3mp.composeapp.generated.resources.ttt_start_chatting_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_thank_you
+import schneaggchatv3mp.composeapp.generated.resources.ttt_thank_you_description
 
 @Composable
 fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
@@ -184,10 +190,29 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
 
             infoStep(
                 title = Res.string.ttt_games_info,
-                description = Res.string.ttt_games_info_description
+                description = Res.string.ttt_games_info_description,
+                route = Route.Games.GamesSelector
             )
 
-            //TODO: show difficultyselector, show global highscore, navigate to chatselector, show thankyou for taking the tour
+            tapStep(
+                id = "games_difficulty_selector",
+                title = Res.string.ttt_games_difficulty,
+                description = Res.string.ttt_games_difficulty_description,
+                route = Route.Games.GamesSelector
+            )
+
+            tapStep(
+                id = "games_global_ranking_button",
+                title = Res.string.ttt_games_global_highscore,
+                description = Res.string.ttt_games_global_highscore_description,
+                route = Route.Games.GamesSelector
+            )
+
+            infoStep(
+                title = Res.string.ttt_thank_you,
+                description = Res.string.ttt_thank_you_description,
+                route = Route.ChatSelector
+            )
 
             // step(id = "settings",  title = "Settings",       description = "Adjust your preferences here")
         }

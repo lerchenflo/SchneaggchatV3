@@ -19,6 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 
@@ -28,7 +29,8 @@ class MiscSettingsViewModel(
     private val navigator: Navigator,
     private val loggingRepository: LoggingRepository,
     private val shareUtils: ShareUtils,
-    private val applicationScope: ApplicationScope
+    private val applicationScope: ApplicationScope,
+    private val preferencemanager: Preferencemanager
 ): ViewModel() {
 
     var logs by mutableStateOf<List<LogEntry>>(emptyList())
@@ -58,6 +60,12 @@ class MiscSettingsViewModel(
             }
             navigator.navigate(Route.AutoLoginCredChecker, navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true))
 
+        }
+    }
+
+    fun resetOnboardingTour() {
+        viewModelScope.launch {
+            preferencemanager.setOnboardingSeen(false)
         }
     }
 
