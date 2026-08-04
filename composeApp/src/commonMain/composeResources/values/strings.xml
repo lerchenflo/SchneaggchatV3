@@ -1050,5 +1050,8 @@
 
     <string name="ttt_chatselector_games">Now lets have a look at the tools and games</string>
 
+    <string name="ttt_games_info">Tools and games</string>
+    <string name="ttt_games_info_description">Now lets have a look at the tools and games</string>
+
 
 </resources>

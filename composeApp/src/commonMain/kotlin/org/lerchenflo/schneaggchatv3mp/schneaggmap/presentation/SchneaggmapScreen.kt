@@ -349,22 +349,16 @@ fun SchneaggmapScreen(
                     onAction = onAction,
                     modifier = Modifier.weight(1f)
                 )
-            }
 
+                Spacer(modifier = Modifier.width(4.dp))
 
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                //Shown locations dropdown menu
                 ShownLocationsDropdown(
                     state = state,
                     onAction = onAction,
                     modifier = Modifier.tapTarget("schneaggmap_location_dropdown")
                 )
             }
+
         }
 
 

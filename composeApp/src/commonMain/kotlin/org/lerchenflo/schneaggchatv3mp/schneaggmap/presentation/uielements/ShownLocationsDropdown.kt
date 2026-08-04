@@ -2,8 +2,10 @@ package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
@@ -101,8 +103,11 @@ fun LocationDropdownContent(
             leadingIcon = {
                 Checkbox(
                     checked = showUsers,
-                    onCheckedChange = null,
+                    onCheckedChange = { onToggleShowUsersClick() },
                 )
+            },
+            trailingIcon = {
+                Box(modifier = Modifier.size(24.dp))
             },
         )
 

@@ -8,6 +8,8 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_games
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_continue
+import schneaggchatv3mp.composeapp.generated.resources.ttt_games_info
+import schneaggchatv3mp.composeapp.generated.resources.ttt_games_info_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen
 import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_create_group
@@ -90,7 +92,7 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
                 id = "settings_user",
                 title = Res.string.ttt_settings_user,
                 description = Res.string.ttt_settings_user_description,
-                route = Route.Settings
+                route = Route.Settings.SettingsScreen
             )
 
             //Go into detail for wakeup feature only for android
@@ -107,13 +109,13 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
                 id = "settings_appearance",
                 title = Res.string.ttt_settings_appearance,
                 description = Res.string.ttt_settings_appearance_description,
-                route = Route.Settings
+                route = Route.Settings.SettingsScreen
             )
 
             tapStep(
                 id = "settings_misc",
                 title = Res.string.ttt_settings_misc,
-                route = Route.Settings
+                route = Route.Settings.SettingsScreen
             )
 
             tapStep(
@@ -125,13 +127,14 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
             tapStep(
                 id = "settings_misc_app_broken",
                 title = Res.string.ttt_settings_misc_app_broken,
-                description = Res.string.ttt_settings_misc_app_broken_description
+                description = Res.string.ttt_settings_misc_app_broken_description,
+                route = Route.Settings.MiscSettings
             )
 
 
             infoStep(
                 title = Res.string.ttt_new_chat_go_back,
-                route = Route.Settings
+                route = Route.Settings.MiscSettings
             )
 
 
@@ -175,8 +178,16 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
 
             tapStep(
                 id = "chatselector_games_button",
-                title = Res.string.ttt_chatselector_games
+                title = Res.string.ttt_chatselector_games,
+                route = Route.ChatSelector
             )
+
+            infoStep(
+                title = Res.string.ttt_games_info,
+                description = Res.string.ttt_games_info_description
+            )
+
+            //TODO: show difficultyselector, show global highscore, navigate to chatselector, show thankyou for taking the tour
 
             // step(id = "settings",  title = "Settings",       description = "Adjust your preferences here")
         }

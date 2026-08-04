@@ -428,13 +428,38 @@ fun App() {
         val tourController = remember {
             TapTargetController(
                 tour = tour,
-                onNavigateToRoute = {
+                onNavigateToRoute = { targetRoute ->
+                    println("Onboarding: Navigating $targetRoute")
                     scope.launch {
-                        navigator.navigate(it)
+                        val currentRoot = rootBackStack.lastOrNull() as? Route
+                        if (currentRoot == Route.Settings) {
+                            if (targetRoute == Route.Settings || targetRoute == Route.Settings.SettingsScreen) {
+                                while (settingsBackStack.size > 1) {
+                                    settingsBackStack.removeAt(settingsBackStack.size - 1)
+                                }
+                                return@launch
+                            }
+                        }
+                        if (currentRoot == Route.Games) {
+                            if (targetRoute == Route.Games || targetRoute == Route.Games.GamesSelector) {
+                                while (gamesBackStack.size > 1) {
+                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                }
+                                return@launch
+                            }
+                        }
+                        navigator.navigate(targetRoute)
                     }
                 },
                 currentRoute = {
-                    (rootBackStack.lastOrNull() as? Route)?.let { it::class }
+                    val root = rootBackStack.lastOrNull() as? Route
+                    val activeRoute = when (root) {
+                        Route.Settings -> settingsBackStack.lastOrNull() as? Route ?: root
+                        Route.Games -> gamesBackStack.lastOrNull() as? Route ?: root
+                        else -> root
+                    }
+                    println("Onboarding: Currentroute ${activeRoute?.let { it::class }}")
+                    activeRoute
                 },
                 onFinished = {
                     scope.launch {
