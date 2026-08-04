@@ -97,7 +97,7 @@ fun MapSearchBar(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                } else null
+                }
 
 
             },

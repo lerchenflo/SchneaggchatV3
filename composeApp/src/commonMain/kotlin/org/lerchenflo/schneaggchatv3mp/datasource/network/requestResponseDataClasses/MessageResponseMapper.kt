@@ -37,5 +37,5 @@ fun NetworkUtils.MessageResponse.toDomainMessage(
             readDate = it.readAt.toString()
         )
     },
-    reactions = reactions.map { Reaction(userId = it.userId, content = it.content) }
+    reactions = reactions.map { Reaction(userId = it.userId, content = it.content, reactedAt = it.reactedAt) }
 )

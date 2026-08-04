@@ -310,6 +310,7 @@
     <string name="reactions">Reactions</string>
     <string name="no_reactions">No reactions yet</string>
     <string name="sent_at">Sent %1$s</string>
+    <string name="reacted_at">reacted %1$s</string>
 
     <string name="pin_chat">Pin Chat</string>
     <string name="unpin_chat">unpin Chat</string>

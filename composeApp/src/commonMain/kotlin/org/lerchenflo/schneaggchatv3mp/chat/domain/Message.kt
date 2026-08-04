@@ -10,7 +10,7 @@ import kotlin.time.Clock
 import kotlin.time.Instant
 
 @Serializable
-data class Reaction(val userId: String, val content: String)
+data class Reaction(val userId: String, val content: String, val reactedAt: Long = 0L)
 
 enum class MessageType {
     TEXT,

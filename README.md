@@ -26,6 +26,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Morse Code Wörter je nach Sprache
 - Kurz den richtigen tile anzeige bei odd one out
 - Annas Theme
+- Reaktionszeitpunkt in Nachrichtendetails anzeigen
 
 #### Bugfixes
 - Fingerpicker resetet nicht direkt
