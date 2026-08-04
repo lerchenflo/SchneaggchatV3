@@ -48,6 +48,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.app.navigation.parentRootOrNull
 import kotlin.collections.get
 import kotlin.reflect.KClass
 import kotlin.time.Duration.Companion.milliseconds
@@ -197,7 +198,7 @@ data class TourSettings(
 class TapTargetController(
     private val tour: TapTargetTour,
     private val onNavigateToRoute: suspend (Route) -> Unit = {},
-    private val currentRoute: () -> KClass<out Route>? = { null },
+    private val currentRoute: () -> Route? = { null },
     private val onFinished: () -> Unit = {},
     val tourSettings: TourSettings = TourSettings()
 ) {
@@ -263,6 +264,14 @@ class TapTargetController(
         onFinished()
     }
 
+    private fun isMatchingRoute(targetRoute: Route, activeRoute: Route?): Boolean {
+        if (activeRoute == null) return false
+        if (targetRoute::class == activeRoute::class) return true
+        if (targetRoute == Route.Settings && activeRoute.parentRootOrNull() == Route.Settings) return true
+        if (targetRoute == Route.Games && activeRoute.parentRootOrNull() == Route.Games) return true
+        return false
+    }
+
     /**
      * Internal: called by [TapTargetOverlay] inside a [LaunchedEffect] to guarantee
      * the target composable is visible before the overlay draws it.
@@ -279,7 +288,8 @@ class TapTargetController(
         val step = currentStep ?: return
 
         val route = step.route
-        if (route != null && route::class != currentRoute()) {
+        val activeRoute = currentRoute()
+        if (route != null && !isMatchingRoute(route, activeRoute)) {
             onNavigateToRoute(route)
         }
 

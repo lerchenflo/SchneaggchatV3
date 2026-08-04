@@ -63,6 +63,7 @@ import schneaggchatv3mp.composeapp.generated.resources.message_delete_info
 import schneaggchatv3mp.composeapp.generated.resources.message_details
 import schneaggchatv3mp.composeapp.generated.resources.no_reactions
 import schneaggchatv3mp.composeapp.generated.resources.no_readers
+import schneaggchatv3mp.composeapp.generated.resources.reacted_at
 import schneaggchatv3mp.composeapp.generated.resources.reactions
 import schneaggchatv3mp.composeapp.generated.resources.readers
 import schneaggchatv3mp.composeapp.generated.resources.reply
@@ -481,11 +482,20 @@ fun MessageDetailsDialog(
                                 Spacer(Modifier.size(10.dp))
                                 Column {
                                     reactors.forEach { reaction ->
-                                        Text(
-                                            text = resolvedReactions[reaction.userId] ?: reaction.userId,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
+                                        Column(modifier = Modifier.padding(vertical = 2.dp)) {
+                                            Text(
+                                                text = resolvedReactions[reaction.userId] ?: reaction.userId,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                            if (reaction.reactedAt > 0L) {
+                                                Text(
+                                                    text = stringResource(Res.string.reacted_at, millisToTimeDateOrYesterday(reaction.reactedAt)),
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }

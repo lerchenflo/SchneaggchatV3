@@ -4,15 +4,6 @@ https://schneaggchatv3.lerchenflo.eu/
 # Schneaggchat V3
 CMP Multiplatform Chat - App für Android, iOS und Desktop
 
-### 3.0.16
-##### Highlights
-
-#### Features
-- Morse Code Wörter je nach Sprache
-- Kurz den richtigen tile anzeige bei odd one out
-
-#### Bugfixes
-
 ## Was macht Schneaggchat besonders
 - Vorarlbergerisch als Sprachoption
 - Umfragen mit custom Antworten
@@ -26,6 +17,19 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 
 # Changelog
+
+### 3.0.16
+##### Highlights
+
+#### Features
+- Einführung in die Features
+- Morse Code Wörter je nach Sprache
+- Kurz den richtigen tile anzeige bei odd one out
+- Annas Theme
+- Reaktionszeitpunkt in Nachrichtendetails anzeigen
+
+#### Bugfixes
+- Fingerpicker resetet nicht direkt
 
 ### 3.0.15
 ##### Highlights

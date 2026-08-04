@@ -8,6 +8,12 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_games
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_continue
+import schneaggchatv3mp.composeapp.generated.resources.ttt_games_difficulty
+import schneaggchatv3mp.composeapp.generated.resources.ttt_games_difficulty_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_games_global_highscore
+import schneaggchatv3mp.composeapp.generated.resources.ttt_games_global_highscore_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_games_info
+import schneaggchatv3mp.composeapp.generated.resources.ttt_games_info_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen
 import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_create_group
@@ -35,6 +41,8 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_wake
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_wake_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_start_chatting
 import schneaggchatv3mp.composeapp.generated.resources.ttt_start_chatting_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_thank_you
+import schneaggchatv3mp.composeapp.generated.resources.ttt_thank_you_description
 
 @Composable
 fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
@@ -90,7 +98,7 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
                 id = "settings_user",
                 title = Res.string.ttt_settings_user,
                 description = Res.string.ttt_settings_user_description,
-                route = Route.Settings
+                route = Route.Settings.SettingsScreen
             )
 
             //Go into detail for wakeup feature only for android
@@ -107,13 +115,13 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
                 id = "settings_appearance",
                 title = Res.string.ttt_settings_appearance,
                 description = Res.string.ttt_settings_appearance_description,
-                route = Route.Settings
+                route = Route.Settings.SettingsScreen
             )
 
             tapStep(
                 id = "settings_misc",
                 title = Res.string.ttt_settings_misc,
-                route = Route.Settings
+                route = Route.Settings.SettingsScreen
             )
 
             tapStep(
@@ -125,13 +133,14 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
             tapStep(
                 id = "settings_misc_app_broken",
                 title = Res.string.ttt_settings_misc_app_broken,
-                description = Res.string.ttt_settings_misc_app_broken_description
+                description = Res.string.ttt_settings_misc_app_broken_description,
+                route = Route.Settings.MiscSettings
             )
 
 
             infoStep(
                 title = Res.string.ttt_new_chat_go_back,
-                route = Route.Settings
+                route = Route.Settings.MiscSettings
             )
 
 
@@ -175,7 +184,34 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
 
             tapStep(
                 id = "chatselector_games_button",
-                title = Res.string.ttt_chatselector_games
+                title = Res.string.ttt_chatselector_games,
+                route = Route.ChatSelector
+            )
+
+            infoStep(
+                title = Res.string.ttt_games_info,
+                description = Res.string.ttt_games_info_description,
+                route = Route.Games.GamesSelector
+            )
+
+            tapStep(
+                id = "games_difficulty_selector",
+                title = Res.string.ttt_games_difficulty,
+                description = Res.string.ttt_games_difficulty_description,
+                route = Route.Games.GamesSelector
+            )
+
+            tapStep(
+                id = "games_global_ranking_button",
+                title = Res.string.ttt_games_global_highscore,
+                description = Res.string.ttt_games_global_highscore_description,
+                route = Route.Games.GamesSelector
+            )
+
+            infoStep(
+                title = Res.string.ttt_thank_you,
+                description = Res.string.ttt_thank_you_description,
+                route = Route.ChatSelector
             )
 
             // step(id = "settings",  title = "Settings",       description = "Adjust your preferences here")

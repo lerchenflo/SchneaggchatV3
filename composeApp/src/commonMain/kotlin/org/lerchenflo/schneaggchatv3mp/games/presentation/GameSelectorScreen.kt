@@ -50,6 +50,7 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -126,10 +127,13 @@ fun GameSelectorScreen(
             DifficultySelector(
                 selected = GameDifficultySelection.selected,
                 onSelect = { GameDifficultySelection.selected = it },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f).tapTarget("games_difficulty_selector")
             )
 
-            IconButton(onClick = { showGlobalRanking = true }) {
+            IconButton(
+                onClick = { showGlobalRanking = true },
+                modifier = Modifier.tapTarget("games_global_ranking_button")
+            ) {
                 Icon(
                     imageVector = Icons.Default.Leaderboard,
                     contentDescription = stringResource(Res.string.show_global_ranking),

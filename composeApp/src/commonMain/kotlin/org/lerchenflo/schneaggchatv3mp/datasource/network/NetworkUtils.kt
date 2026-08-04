@@ -989,7 +989,8 @@ class NetworkUtils(
     @Serializable
     data class ReactionResponse(
         val userId: String,
-        val content: String
+        val content: String,
+        val reactedAt: Long = 0L,
     )
 
     suspend fun sendTextMessageToServer(messageId: String?, empfaenger: String, gruppe: Boolean, content: String, answerid: String?) : NetworkResult<MessageResponse, NetworkError> {

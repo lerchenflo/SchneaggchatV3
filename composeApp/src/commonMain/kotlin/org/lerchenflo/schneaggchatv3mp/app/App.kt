@@ -332,11 +332,13 @@ fun App() {
                     }
 
                     if (!subBackStack.isNullOrEmpty()) {
-                        // We're inside a subroute graph
-                        subBackStack.removeAt(subBackStack.size - 1)
-
-                        val subNowEmpty = subBackStack.isEmpty()
-                        if (navigationOptions.exitRootWithSubRoute || subNowEmpty) {
+                        if (subBackStack.size > 1 && !navigationOptions.exitRootWithSubRoute) {
+                            // Navigate back within the sub-graph
+                            subBackStack.removeAt(subBackStack.size - 1)
+                        } else {
+                            // At the root of the sub-graph (or forced exit) — pop the root
+                            // route instead. Never empty the sub-backstack; NavDisplay
+                            // requires at least one entry or it throws IllegalArgumentException.
                             if (rootBackStack.size > 1) {
                                 rootBackStack.removeAt(rootBackStack.size - 1)
                             }
@@ -428,13 +430,38 @@ fun App() {
         val tourController = remember {
             TapTargetController(
                 tour = tour,
-                onNavigateToRoute = {
+                onNavigateToRoute = { targetRoute ->
+                    println("Onboarding: Navigating $targetRoute")
                     scope.launch {
-                        navigator.navigate(it)
+                        val currentRoot = rootBackStack.lastOrNull() as? Route
+                        if (currentRoot == Route.Settings) {
+                            if (targetRoute == Route.Settings || targetRoute == Route.Settings.SettingsScreen) {
+                                while (settingsBackStack.size > 1) {
+                                    settingsBackStack.removeAt(settingsBackStack.size - 1)
+                                }
+                                return@launch
+                            }
+                        }
+                        if (currentRoot == Route.Games) {
+                            if (targetRoute == Route.Games || targetRoute == Route.Games.GamesSelector) {
+                                while (gamesBackStack.size > 1) {
+                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                }
+                                return@launch
+                            }
+                        }
+                        navigator.navigate(targetRoute)
                     }
                 },
                 currentRoute = {
-                    (rootBackStack.lastOrNull() as? Route)?.let { it::class }
+                    val root = rootBackStack.lastOrNull() as? Route
+                    val activeRoute = when (root) {
+                        Route.Settings -> settingsBackStack.lastOrNull() as? Route ?: root
+                        Route.Games -> gamesBackStack.lastOrNull() as? Route ?: root
+                        else -> root
+                    }
+                    println("Onboarding: Currentroute ${activeRoute?.let { it::class }}")
+                    activeRoute
                 },
                 onFinished = {
                     scope.launch {

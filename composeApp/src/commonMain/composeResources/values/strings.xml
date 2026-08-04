@@ -201,6 +201,8 @@
     <string name="misc_settings">Misc</string>
     <string name="misc_setting_info">Other settings which might be useful if the app does not work correctly.</string>
     <string name="misc_settings_logs">Logs</string>
+    <string name="misc_settings_reset_tour">Reset Tour</string>
+    <string name="misc_settings_reset_tour_desc">Resets the onboarding tour so it shows again on next launch</string>
 
     <string name="friend_request_title">Do you want to accept this friend request?</string>
     <string name="friend_request_cancel_title">Do you want to cancel this friend request?</string>
@@ -308,6 +310,7 @@
     <string name="reactions">Reactions</string>
     <string name="no_reactions">No reactions yet</string>
     <string name="sent_at">Sent %1$s</string>
+    <string name="reacted_at">reacted %1$s</string>
 
     <string name="pin_chat">Pin Chat</string>
     <string name="unpin_chat">unpin Chat</string>
@@ -1050,5 +1053,15 @@
 
     <string name="ttt_chatselector_games">Now lets have a look at the tools and games</string>
 
+    <string name="ttt_games_info">Tools and games</string>
+    <string name="ttt_games_info_description">Now lets have a look at the tools and games</string>
 
+    <string name="ttt_games_difficulty">Difficulty selection</string>
+    <string name="ttt_games_difficulty_description">Select the difficulty for games here.</string>
+
+    <string name="ttt_games_global_highscore">Global highscores</string>
+    <string name="ttt_games_global_highscore_description">Tap here to view your global rankings across all games.</string>
+
+    <string name="ttt_thank_you">Thank you!</string>
+    <string name="ttt_thank_you_description">Thank you for taking the tour! Enjoy using Schneaggchat.</string>
 </resources>
