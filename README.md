@@ -12,7 +12,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Geburtstagsanzeige + Benachrichtigungen
 - App kaputt Button
 - Standort mit Verlauf teilen
-- @Annotations für Standorte + User
+- @Annotations für Standorte + User + Spiele
 - Weckerfeature (Wecker-ton bei Freunden abspielen, auch wenn das Gerät auf lautlos ist)
 
 
@@ -24,9 +24,12 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 #### Features
 - Einführung in die Features
 - Morse Code Wörter je nach Sprache
-- Kurz den richtigen tile anzeige bei odd one out
+- Kurz den richtigen Tile anzeige bei odd one out
 - Annas Theme
 - Reaktionszeitpunkt in Nachrichtendetails anzeigen
+- @game Annotations
+- Schneaggmap: Anzahl zusammengefasster Freunde im Hock-Marker in der Mitte anzeigen
+- Schneaggmap: Eigenen Standort im Hock-Marker anzeigen (wenn im Radius) und eigenen Standort-Marker ausblenden
 
 #### Bugfixes
 - Fingerpicker resetet nicht direkt
