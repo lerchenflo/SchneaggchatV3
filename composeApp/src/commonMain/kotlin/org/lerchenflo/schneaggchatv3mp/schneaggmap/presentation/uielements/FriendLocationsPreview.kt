@@ -77,7 +77,7 @@ private fun FriendChip(user: User, isOnline: Boolean, onUserClick: (User) -> Uni
     }
 
     val onlineColor = MaterialTheme.colorScheme.primary
-    val surfaceColor = MaterialTheme.colorScheme.surfaceContainer
+    val surfaceColor = MaterialTheme.colorScheme.background
 
     Row(
         verticalAlignment = Alignment.CenterVertically,

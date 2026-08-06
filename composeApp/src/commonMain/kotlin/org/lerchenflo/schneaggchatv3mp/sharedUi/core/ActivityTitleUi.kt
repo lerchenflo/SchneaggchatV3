@@ -35,16 +35,9 @@ fun ActivityTitle(
         verticalAlignment = Alignment.CenterVertically
     ){
         // Backbutton
-        IconButton(
-            onClick = onBackClick,
-            modifier = Modifier
-                .padding(top = 5.dp, start = 5.dp)
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(Res.string.go_back),
-            )
-        }
+        BackButton(
+            onBackClick = onBackClick
+        )
 
         if(alternativeTitleComposable != null){
             alternativeTitleComposable()

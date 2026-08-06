@@ -114,6 +114,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.MessageOptionPopup
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.ReplyPreview
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.BackButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboInputField
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
@@ -292,18 +293,9 @@ fun ChatScreen(
             ){
 
                 // Backbutton
-                IconButton(
-                    onClick = {
-                        viewModel.onBackClick()
-                    },
-                    modifier = Modifier
-                        .padding(start = 5.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(Res.string.go_back),
-                    )
-                }
+                BackButton(
+                    onBackClick = { viewModel.onBackClick() }
+                )
 
 
                 chatPartner?.let { partner ->

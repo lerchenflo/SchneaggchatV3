@@ -7,11 +7,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 import org.koin.mp.KoinPlatformTools
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_title
+import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
+import schneaggchatv3mp.composeapp.generated.resources.games_fingerpicker_title
+import schneaggchatv3mp.composeapp.generated.resources.games_gridrush_title
+import schneaggchatv3mp.composeapp.generated.resources.games_morse_title
+import schneaggchatv3mp.composeapp.generated.resources.games_oddoneout_title
+import schneaggchatv3mp.composeapp.generated.resources.games_schneaggahus_title
+import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
+import schneaggchatv3mp.composeapp.generated.resources.games_tetris_title
+import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
+import schneaggchatv3mp.composeapp.generated.resources.games_yahtzee_title
 
 /**
  * Default [ComboAnnotationSource]s, self-contained: names are looked up through the injected
@@ -40,7 +53,39 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
             .map { entries -> entries.associate { it.id to it.name } }
     }.collectAsState(initial = emptyMap())
 
-    return remember(locationNames) {
+    val gameTetrisTitle = stringResource(Res.string.games_tetris_title)
+    val gameTowerstackTitle = stringResource(Res.string.games_stack_tower)
+    val gameMorseTitle = stringResource(Res.string.games_morse_title)
+    val gameSchneaggaHusTitle = stringResource(Res.string.games_schneaggahus_title)
+    val gameGridRushTitle = stringResource(Res.string.games_gridrush_title)
+    val gameOddOneOutTitle = stringResource(Res.string.games_oddoneout_title)
+    val gameCoinFlipTitle = stringResource(Res.string.games_coinflip_title)
+    val gameFingerPickerTitle = stringResource(Res.string.games_fingerpicker_title)
+    val gameDartCounterTitle = stringResource(Res.string.games_dartcounter_title)
+    val gameUndercoverTitle = stringResource(Res.string.games_undercover_title)
+    val gameYatziTitle = stringResource(Res.string.games_yahtzee_title)
+
+    val gameNames = remember(
+        gameTetrisTitle, gameTowerstackTitle, gameMorseTitle, gameSchneaggaHusTitle,
+        gameGridRushTitle, gameOddOneOutTitle, gameCoinFlipTitle, gameFingerPickerTitle,
+        gameDartCounterTitle, gameUndercoverTitle, gameYatziTitle
+    ) {
+        mapOf(
+            "tetris" to gameTetrisTitle,
+            "towerstack" to gameTowerstackTitle,
+            "morse" to gameMorseTitle,
+            "schneaggahus" to gameSchneaggaHusTitle,
+            "gridrush" to gameGridRushTitle,
+            "oddoneout" to gameOddOneOutTitle,
+            "coinflip" to gameCoinFlipTitle,
+            "fingerpicker" to gameFingerPickerTitle,
+            "dartcounter" to gameDartCounterTitle,
+            "undercover" to gameUndercoverTitle,
+            "yatzi" to gameYatziTitle,
+        )
+    }
+
+    return remember(locationNames, userNames, gameNames) {
         listOf(
             ComboAnnotationSource(
                 type = ComboAnnotationTypes.MAP_LOCATION,
@@ -54,6 +99,27 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
                 names = userNames,
                 onClick = { entryId ->
                     scope.launch { navigator.navigate(Route.Chat(entryId, false)) }
+                }
+            ),
+            ComboAnnotationSource(
+                type = ComboAnnotationTypes.GAME,
+                names = gameNames,
+                onClick = { gameKey ->
+                    val route = when (gameKey) {
+                        "tetris" -> Route.Games.Tetris
+                        "towerstack" -> Route.Games.TowerStack
+                        "morse" -> Route.Games.Morse
+                        "schneaggahus" -> Route.Games.SchneaggaHus
+                        "gridrush" -> Route.Games.GridRush
+                        "oddoneout" -> Route.Games.OddOneOut
+                        "coinflip" -> Route.Games.CoinFlip
+                        "fingerpicker" -> Route.Games.FingerPicker
+                        "dartcounter" -> Route.Games.DartCounter
+                        "undercover" -> Route.Games.Undercover
+                        "yatzi" -> Route.Games.Yatzi
+                        else -> Route.Games.GamesSelector
+                    }
+                    scope.launch { navigator.navigate(route) }
                 }
             )
         )

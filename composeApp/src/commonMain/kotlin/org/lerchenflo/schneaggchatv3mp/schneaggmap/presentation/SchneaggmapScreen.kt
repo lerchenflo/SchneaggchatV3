@@ -83,6 +83,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.Shown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.mergeClusterAvatarsIcon
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.mergeProfilePictureWithStatusText
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.BackButton
 import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import org.maplibre.compose.camera.CameraMoveReason
@@ -326,11 +327,17 @@ fun SchneaggmapScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
             ) {
+
+                BackButton(
+                    onBackClick = {onAction(SchneaggmapAction.OnBackClicked)}
+                )
+
+
                 //Settingsbutton
                 IconButton(
                     onClick = { onAction(SchneaggmapAction.OnSettingsClick) },
                     colors = IconButtonDefaults.iconButtonColors().copy(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        containerColor = MaterialTheme.colorScheme.background
                     ),
                     modifier = Modifier.tapTarget("schneaggmap_settings_button")
                 ) {
@@ -471,7 +478,7 @@ fun SchneaggmapScreen(
                 DisappearingScaleBar(
                     metersPerDp = cameraState.metersPerDpAtTarget,
                     zoom = cameraState.position.zoom,
-                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    color = MaterialTheme.colorScheme.background,
                     modifier = Modifier.align(Alignment.CenterStart)
                 )
 
@@ -628,22 +635,50 @@ private fun SchneaggmapMapContent(
     //background as the "table", a beer for the center/decorations, and a generic person icon for
     //cluster members whose profile picture hasn't loaded (so the ring still shows every member).
     val clusterBackgroundColor = pillColor.copy(alpha = 0.85f)
+    val clusterCountBackgroundColor = MaterialTheme.colorScheme.primary
+    val clusterCountTextColor = MaterialTheme.colorScheme.onPrimary
     val beerIcon = imageResource(Res.drawable.icon_beer)
     val defaultAvatarBitmap = imageResource(Res.drawable.icon_nutzer)
 
+    val batteryService = koinInject<BatteryService>()
+    val ownUserWithLocation = remember(state.ownUser, ownLocation, batteryService) {
+        state.ownUser?.copy(
+            location = ownLocation?.let { location ->
+                UserLocation(
+                    lat = location.position.value.latitude,
+                    long = location.position.value.longitude,
+                    date = Clock.System.now().toEpochMilliseconds(),
+                    speed = location.speed?.distancePerSecond?.inMeters,
+                    heading = location.course?.value?.let { bearing -> (bearing - Bearing.North).inDegrees },
+                    altitude = location.position.value.altitude,
+                    batteryLevel = batteryService.getBatteryLevel(),
+                )
+            }
+        )
+    }
+
+    val allUsersWithLocation = remember(state.usersWithLocation, ownUserWithLocation) {
+        if (ownUserWithLocation != null && ownUserWithLocation.location != null) {
+            listOf(ownUserWithLocation) + state.usersWithLocation.filter { it.id != ownUserWithLocation.id }
+        } else {
+            state.usersWithLocation
+        }
+    }
+
     //Live presence: a friend counts as "online" if the server currently has them connected,
     //otherwise we show their last-seen time instead.
-    val userMarkerData = state.usersWithLocation.associate { user ->
-        val isOnline = user.id in state.onlineFriendIds
+    val userMarkerData = allUsersWithLocation.associate { user ->
+        val isOwnUser = user.id == ownId
+        val isOnline = isOwnUser || user.id in state.onlineFriendIds
         val statusText = if (isOnline) onlineLabel else user.lastSeen?.let { millisToTimeDateOrYesterday(it) } ?: "-"
         val username = user.displayName
         user.id to UserMarkerData(username = username, statusText = statusText, isOnline = isOnline, speed = user.location?.speed, heading = user.location?.heading)
     }
 
-    val userPicturePaths = state.usersWithLocation.map { it.profilePictureUrl }
+    val userPicturePaths = allUsersWithLocation.map { it.profilePictureUrl }
     LaunchedEffect(userPicturePaths, userMarkerData, pillColor, onlineColor, offlineColor) {
         val rawBitmaps = mutableMapOf<String, ImageBitmap>()
-        userIcons = state.usersWithLocation.mapNotNull { user ->
+        userIcons = allUsersWithLocation.mapNotNull { user ->
             if (user.profilePictureUrl.isBlank()) return@mapNotNull null
             val markerData = userMarkerData[user.id] ?: return@mapNotNull null
             runCatching {
@@ -677,11 +712,11 @@ private fun SchneaggmapMapContent(
     //so a continuous pinch/pan gesture doesn't re-cluster (and churn the GL layers) every frame.
     val rawClusterRadiusMeters = USER_CLUSTER_RADIUS_DP * cameraState.metersPerDpAtTarget
     val clusterRadiusMeters = (rawClusterRadiusMeters / 5.0).roundToInt() * 5.0
-    val userClusters = remember(state.usersWithLocation, clusterRadiusMeters, state.mergeUsers) {
+    val userClusters = remember(allUsersWithLocation, clusterRadiusMeters, state.mergeUsers) {
         if (state.mergeUsers) {
-            clusterUsersByProximity(state.usersWithLocation, clusterRadiusMeters)
+            clusterUsersByProximity(allUsersWithLocation, clusterRadiusMeters)
         } else {
-            state.usersWithLocation.filter { it.location != null }.map { user ->
+            allUsersWithLocation.filter { it.location != null }.map { user ->
                 UserCluster(
                     users = listOf(user),
                     centroid = Position(longitude = user.location!!.long, latitude = user.location.lat)
@@ -690,8 +725,14 @@ private fun SchneaggmapMapContent(
         }
     }
 
+    val isOwnUserInHock = remember(userClusters, ownId) {
+        ownId != null && userClusters.any { cluster ->
+            cluster.users.size >= 2 && cluster.users.any { user -> user.id == ownId }
+        }
+    }
+
     val clusterIcons: Map<String, UserMarkerIcon> = remember(
-        userClusters, rawAvatarBitmaps, clusterBackgroundColor, beerIcon, defaultAvatarBitmap
+        userClusters, rawAvatarBitmaps, clusterBackgroundColor, beerIcon, defaultAvatarBitmap, textMeasurer, clusterCountBackgroundColor, clusterCountTextColor
     ) {
         userClusters.filter { it.users.size >= 2 }.associate { cluster ->
             //Always one avatar per member (falling back to the generic icon) so the ring
@@ -702,6 +743,9 @@ private fun SchneaggmapMapContent(
                 beerIcon = beerIcon,
                 backgroundColor = clusterBackgroundColor,
                 density = density,
+                textMeasurer = textMeasurer,
+                countBackgroundColor = clusterCountBackgroundColor,
+                countTextColor = clusterCountTextColor,
             )
             val size = with(density) { DpSize(bitmap.width.toDp(), bitmap.height.toDp()) }
             clusterKey(cluster) to UserMarkerIcon(bitmap = bitmap, size = size)
@@ -905,50 +949,52 @@ private fun SchneaggmapMapContent(
 
         //Show user locations - friends close enough together at the current zoom are merged into
         //a single "stacked avatars" marker (see userClusters) instead of overlapping pins.
-        if (state.usersWithLocation.isNotEmpty() && state.showUsers) {
+        if (allUsersWithLocation.isNotEmpty() && state.showUsers) {
             userClusters.forEach { cluster ->
                 if (cluster.users.size == 1) {
                     val user = cluster.users.first()
-                    key(user.id) {
-                        safeAdd(layerId = "user-${user.id}") {
-                            val mapLocationSource = rememberGeoJsonSource(
-                                data = GeoJsonData.Features(
-                                    FeatureCollection(
-                                        features = listOf(Feature(
-                                            geometry = Point(
-                                                coordinates = Position(
-                                                    longitude = user.location!!.long,
-                                                    latitude = user.location.lat,
-                                                )
-                                            ),
-                                            properties = buildJsonObject {
-                                                put("type", JsonPrimitive(user.name))
-                                            },
-                                            id = JsonPrimitive(user.id)
-                                        ))
+                    if (user.id != ownId) {
+                        key(user.id) {
+                            safeAdd(layerId = "user-${user.id}") {
+                                val mapLocationSource = rememberGeoJsonSource(
+                                    data = GeoJsonData.Features(
+                                        FeatureCollection(
+                                            features = listOf(Feature(
+                                                geometry = Point(
+                                                    coordinates = Position(
+                                                        longitude = user.location!!.long,
+                                                        latitude = user.location.lat,
+                                                    )
+                                                ),
+                                                properties = buildJsonObject {
+                                                    put("type", JsonPrimitive(user.name))
+                                                },
+                                                id = JsonPrimitive(user.id)
+                                            ))
+                                        )
                                     )
                                 )
-                            )
 
-                            val markerIcon = userIcons[user.id]
-                            val profilePicturePainter = markerIcon?.let { BitmapPainter(it.bitmap) }
-                                ?: painterResource(Res.drawable.icon_nutzer)
-                            val markerSize = markerIcon?.size ?: DpSize(33.dp, 33.dp)
+                                val markerIcon = userIcons[user.id]
+                                val profilePicturePainter = markerIcon?.let { BitmapPainter(it.bitmap) }
+                                    ?: painterResource(Res.drawable.icon_nutzer)
+                                val markerSize = markerIcon?.size ?: DpSize(33.dp, 33.dp)
 
-                            //Note: rotate this marker using user.location?.heading once we have a directional
-                            // marker design - heading is already stored/synced per friend but unused for rendering.
-                            SymbolLayer(
-                                id = "user-${user.id}",
-                                source = mapLocationSource,
-                                onClick = { clickedItems ->
-                                    if (clickedItems.isNotEmpty()) {
-                                        onAction(SchneaggmapAction.OnUserClick(clickedItems.first().id!!.content))
-                                        ClickResult.Consume
-                                    } else ClickResult.Pass
-                                },
-                                iconImage = image(profilePicturePainter, size = markerSize),
-                                iconAllowOverlap = const(true)
-                            )
+                                //Note: rotate this marker using user.location?.heading once we have a directional
+                                // marker design - heading is already stored/synced per friend but unused for rendering.
+                                SymbolLayer(
+                                    id = "user-${user.id}",
+                                    source = mapLocationSource,
+                                    onClick = { clickedItems ->
+                                        if (clickedItems.isNotEmpty()) {
+                                            onAction(SchneaggmapAction.OnUserClick(clickedItems.first().id!!.content))
+                                            ClickResult.Consume
+                                        } else ClickResult.Pass
+                                    },
+                                    iconImage = image(profilePicturePainter, size = markerSize),
+                                    iconAllowOverlap = const(true)
+                                )
+                            }
                         }
                     }
                 } else {
@@ -995,8 +1041,9 @@ private fun SchneaggmapMapContent(
             }
         }
 
-        //Own position: a dot, or a heading-rotated arrow while moving (no profile picture needed for yourself)
-        ownLocation?.let { location ->
+        //Own position: a dot, or a heading-rotated arrow while moving (no profile picture needed for yourself).
+        //Hidden if the logged in user is currently merged into a group hock.
+        ownLocation?.takeIf { !isOwnUserInHock }?.let { location ->
             val ownLocationSource = rememberGeoJsonSource(
                 data = GeoJsonData.Features(
                     FeatureCollection(features = listOf(Feature(

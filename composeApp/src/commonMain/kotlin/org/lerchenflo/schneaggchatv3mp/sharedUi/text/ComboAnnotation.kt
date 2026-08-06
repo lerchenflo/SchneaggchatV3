@@ -16,9 +16,8 @@ class ComboAnnotationType(
     /** What the user has to type before autocomplete opens, e.g. "@map". */
     val trigger: String = "@" + key.substringBefore('/')
 ) {
-    // Lookahead so the id can't silently match the first 24 chars of a longer hex string
-    /** Matches one raw annotation of this type; group 1 is the entity id (MongoDB ObjectId). */
-    val regex = Regex("@${Regex.escape(key)}/([0-9a-fA-F]{24})(?![0-9a-fA-F])")
+    /** Matches one raw annotation of this type; group 1 is the entity id (ObjectId or slug key). */
+    val regex = Regex("@${Regex.escape(key)}/([a-zA-Z0-9_-]{1,64})(?![a-zA-Z0-9_-])")
 
     /** Fake uri scheme used to route markdown link clicks back to the app. */
     val linkScheme = "schneaggchat://$key/"
@@ -30,7 +29,8 @@ class ComboAnnotationType(
 
 object ComboAnnotationTypes {
     val MAP_LOCATION = ComboAnnotationType(key = "map/location", displayPrefix = "📍")
-    val USER = ComboAnnotationType(key = "user", displayPrefix = "@")
+    val USER = ComboAnnotationType(key = "user", displayPrefix = "👤")
+    val GAME = ComboAnnotationType(key = "game", displayPrefix = "🎮")
 }
 
 /**

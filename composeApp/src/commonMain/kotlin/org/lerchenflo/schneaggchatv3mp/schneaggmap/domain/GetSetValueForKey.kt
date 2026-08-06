@@ -94,6 +94,11 @@ fun LocationData.getValueByKey(key: String): AttributeValue? = when (this) {
         "entryFee"         -> entryFee
         else               -> null
     }
+    is LocationData.Wifi             -> when (key) {
+        "ssid"             -> ssid
+        "password"         -> password
+        else               -> null
+    }
 
     // Fast Food & Snacks
     is LocationData.FoodKebab        -> when (key) {
@@ -110,6 +115,10 @@ fun LocationData.getValueByKey(key: String): AttributeValue? = when (this) {
     }
     is LocationData.FoodBeer         -> when (key) {
         "beerPrice"        -> beerPrice
+        else               -> null
+    }
+    is LocationData.FoodIce          -> when (key) {
+        "iceScoopPrice"    -> iceScoopPrice
         else               -> null
     }
     is LocationData.FoodCafeBakery   -> when (key) {
@@ -226,6 +235,11 @@ fun LocationData.withValueForKey(key: String, value: AttributeValue): LocationDa
         "entryFee"          -> copy(entryFee = value)
         else                -> this
     }
+    is LocationData.Wifi             -> when (key) {
+        "ssid"              -> copy(ssid = value)
+        "password"          -> copy(password = value)
+        else                -> this
+    }
 
     // Fast Food & Snacks
     is LocationData.FoodKebab        -> when (key) {
@@ -242,6 +256,10 @@ fun LocationData.withValueForKey(key: String, value: AttributeValue): LocationDa
     }
     is LocationData.FoodBeer         -> when (key) {
         "beerPrice"         -> copy(beerPrice = value)
+        else                -> this
+    }
+    is LocationData.FoodIce          -> when (key) {
+        "iceScoopPrice"     -> copy(iceScoopPrice = value)
         else                -> this
     }
     is LocationData.FoodCafeBakery   -> when (key) {

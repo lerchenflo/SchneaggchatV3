@@ -79,8 +79,7 @@ fun ComboInputField(
                         ) {
                             Text(
                                 text = when (suggestion) {
-                                    is AnnotationSuggestion.Type ->
-                                        suggestion.source.type.displayPrefix + suggestion.source.type.trigger
+                                    is AnnotationSuggestion.Type -> suggestion.source.type.trigger
                                     is AnnotationSuggestion.Name -> suggestion.name
                                 },
                                 style = MaterialTheme.typography.bodyMedium

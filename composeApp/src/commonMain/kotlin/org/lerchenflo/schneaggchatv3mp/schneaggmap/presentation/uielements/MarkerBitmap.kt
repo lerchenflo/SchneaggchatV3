@@ -162,6 +162,9 @@ fun mergeClusterAvatarsIcon(
     beerIcon: ImageBitmap,
     backgroundColor: Color,
     density: Density,
+    textMeasurer: TextMeasurer,
+    countBackgroundColor: Color,
+    countTextColor: Color,
     avatarSize: Dp = 24.dp,
 ): ImageBitmap {
     val avatarSizePx = with(density) { avatarSize.toPx() }
@@ -190,6 +193,19 @@ fun mergeClusterAvatarsIcon(
         )
     }
 
+    val count = profilePictures.size
+    val countText = count.toString()
+    val countStyle = TextStyle(
+        color = countTextColor,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center,
+    )
+    val countLayout = textMeasurer.measure(
+        text = AnnotatedString(countText),
+        style = countStyle,
+    )
+
     CanvasDrawScope().draw(
         density = density,
         layoutDirection = LayoutDirection.Ltr,
@@ -201,7 +217,6 @@ fun mergeClusterAvatarsIcon(
         //Translucent disc, like a table seen from above.
         drawCircle(color = backgroundColor, radius = canvasRadiusPx, center = center)
 
-        val count = profilePictures.size
         if (count > 0) {
             val angleStep = (2 * PI / count).toFloat()
             profilePictures.forEachIndexed { index, avatar ->
@@ -222,6 +237,25 @@ fun mergeClusterAvatarsIcon(
                 )
                 drawCenteredImage(beerIcon, beerCenter, smallBeerSizePx)
             }
+
+            // Draw count badge in the center of the circle disc
+            val badgePaddingPx = with(density) { 3.dp.toPx() }
+            val textMaxDim = maxOf(countLayout.size.width, countLayout.size.height).toFloat()
+            val badgeRadiusPx = maxOf(textMaxDim / 2f + badgePaddingPx, with(density) { 10.dp.toPx() })
+
+            drawCircle(
+                color = countBackgroundColor,
+                radius = badgeRadiusPx,
+                center = center,
+            )
+
+            drawText(
+                textLayoutResult = countLayout,
+                topLeft = Offset(
+                    center.x - countLayout.size.width / 2f,
+                    center.y - countLayout.size.height / 2f,
+                ),
+            )
         }
     }
 

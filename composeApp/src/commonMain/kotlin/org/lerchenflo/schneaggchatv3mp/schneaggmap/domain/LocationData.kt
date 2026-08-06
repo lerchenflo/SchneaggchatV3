@@ -75,12 +75,14 @@ enum class LocationType {
 
     // Social & Entertainment
     PARTY,
+    WIFI,
 
     // Food
     FOOD_KEBAB,
     FOOD_PIZZA,
     FOOD_BURGER,
     FOOD_BEER,
+    FOOD_ICE,
     FOOD_ASIAN,
     FOOD_GREEK,
     FOOD_CAFE_BAKERY,
@@ -92,8 +94,8 @@ enum class LocationGroup(val types: List<LocationType>) {
     DRIVING(listOf(RADAR, POLICE, MOUNTAIN_STREET, WHEELIESPOT, OFFROAD_MOTORCYCLE)),
     NATURE_ACTIVITIES(listOf(SIGHTSEEING, VIEWPOINT, CAMPING, SWIMMING, CLIMBINGSPOT)),
     SPORT(listOf(VOLLEYBALL, BICYCLE, OUTDOOR_FITNESS, TABLE_TENNIS, TENNIS)),
-    SOCIAL_ENTERTAINMENT(listOf(PARTY)),
-    FOOD(listOf(FOOD_KEBAB, FOOD_PIZZA, FOOD_BURGER, FOOD_BEER, FOOD_ASIAN, FOOD_GREEK, FOOD_CAFE_BAKERY, FOOD_OTHER)),
+    SOCIAL_ENTERTAINMENT(listOf(PARTY, WIFI)),
+    FOOD(listOf(FOOD_KEBAB, FOOD_PIZZA, FOOD_BURGER, FOOD_BEER, FOOD_ICE, FOOD_ASIAN, FOOD_GREEK, FOOD_CAFE_BAKERY, FOOD_OTHER)),
 }
 
 
@@ -397,6 +399,23 @@ sealed class LocationData {
         )
     }
 
+    @Serializable
+    @SerialName("wifi")
+    data class Wifi(
+        val ssid: AttributeValue? = null,
+        val password: AttributeValue? = null,
+    ) : LocationData() {
+        override val locationtype = WIFI
+
+        val ssidValue     get() = ssid?.asString
+        val passwordValue get() = password?.asString
+
+        override fun schema() = listOf(
+            AttributeDefinition.StringDef(key = "ssid",     required = false),
+            AttributeDefinition.StringDef(key = "password", required = false),
+        )
+    }
+
 
     // Fast Food & Snacks
 
@@ -453,6 +472,20 @@ sealed class LocationData {
 
         override fun schema() = listOf(
             AttributeDefinition.DoubleDef(key = "beerPrice", required = false, min = 0.0),
+        )
+    }
+
+    @Serializable
+    @SerialName("food_ice")
+    data class FoodIce(
+        val iceScoopPrice: AttributeValue?,
+    ) : LocationData() {
+        override val locationtype = FOOD_ICE
+
+        val iceScoopPriceValue get() = iceScoopPrice?.asDouble
+
+        override fun schema() = listOf(
+            AttributeDefinition.DoubleDef(key = "iceScoopPrice", required = false, min = 0.0),
         )
     }
 
@@ -538,10 +571,12 @@ fun LocationType.toSimpleLocationData(): LocationData = when (this) {
     TENNIS          -> LocationData.Tennis(paddle = null)
     SIGHTSEEING     -> LocationData.SightSeeing(entryFee = null)
     PARTY           -> LocationData.PartyLocation(entryFee = null)
+    WIFI            -> LocationData.Wifi(ssid = null, password = null)
     FOOD_KEBAB      -> LocationData.FoodKebab(kebabPrice = null)
     FOOD_PIZZA      -> LocationData.FoodPizza(margaritaPrice = null)
     FOOD_BURGER     -> LocationData.FoodBurger(cheeseburgerPrice = null)
     FOOD_BEER       -> LocationData.FoodBeer(beerPrice = null)
+    FOOD_ICE        -> LocationData.FoodIce(iceScoopPrice = null)
     FOOD_ASIAN      -> LocationData.FoodAsian(allYouCanEat = null)
     FOOD_GREEK      -> LocationData.FoodGreek()
     FOOD_CAFE_BAKERY -> LocationData.FoodCafeBakery(outdoorSeating = null, alcohol = null, coffee = null, breakfast = null)
@@ -618,11 +653,16 @@ fun AttributeDefinition.label(): String {
         "margaritaPrice"    -> stringResource(Res.string.location_food_margarita_price)
         "cheeseburgerPrice" -> stringResource(Res.string.location_food_cheeseburger_price)
         "beerPrice"         -> stringResource(Res.string.location_food_beer_price)
+        "iceScoopPrice"     -> stringResource(Res.string.location_food_ice_scoop_price)
         "cuisine"           -> stringResource(Res.string.location_food_cuisine)
         "outdoorSeating"    -> stringResource(Res.string.location_food_cafe_bakery_outdoor_seating)
         "alcohol"           -> stringResource(Res.string.location_food_cafe_bakery_alcohol)
         "coffee"            -> stringResource(Res.string.location_food_cafe_bakery_coffee)
         "breakfast"         -> stringResource(Res.string.location_food_cafe_bakery_breakfast)
+
+        // WiFi
+        "ssid"              -> stringResource(Res.string.location_wifi_ssid)
+        "password"          -> stringResource(Res.string.location_wifi_password)
 
         else -> {
             println("ERROR: SCHNEAGGMAP: KEY NOT RESOLVED: $key")
@@ -650,10 +690,12 @@ fun LocationType.stringRes(): StringResource = when (this) {
     TENNIS          -> Res.string.location_type_tennis
     SIGHTSEEING     -> Res.string.location_type_sightseeing
     PARTY           -> Res.string.location_type_party
+    WIFI            -> Res.string.location_type_wifi
     FOOD_KEBAB      -> Res.string.location_type_food_kebab
     FOOD_PIZZA      -> Res.string.location_type_food_pizza
     FOOD_BURGER     -> Res.string.location_type_food_burger
     FOOD_BEER       -> Res.string.location_type_food_beer
+    FOOD_ICE        -> Res.string.location_type_food_ice
     FOOD_ASIAN      -> Res.string.location_type_food_asian
     FOOD_GREEK      -> Res.string.location_type_food_greek
     FOOD_CAFE_BAKERY -> Res.string.location_type_food_cafe_bakery
@@ -668,6 +710,7 @@ fun LocationType.drawableRes(): DrawableResource = when (this) {
     SWIMMING -> Res.drawable.icon_badespot
     CLIMBINGSPOT -> Res.drawable.icon_badespot // TODO: Add proper icon for climbingspot
     PARTY -> Res.drawable.icon_partylocation
+    WIFI -> Res.drawable.icon_wifi
 
     POLICE -> Res.drawable.icon_police
     MOUNTAIN_STREET -> Res.drawable.icon_street
@@ -678,6 +721,7 @@ fun LocationType.drawableRes(): DrawableResource = when (this) {
     FOOD_PIZZA -> Res.drawable.icon_pizza
     FOOD_BURGER -> Res.drawable.icon_burger
     FOOD_BEER -> Res.drawable.icon_beer
+    FOOD_ICE -> Res.drawable.icon_ice
     FOOD_ASIAN -> Res.drawable.icon_chinese_food
     FOOD_GREEK -> Res.drawable.icon_food_greek
     FOOD_CAFE_BAKERY -> Res.drawable.icon_food // TODO: Add proper icon for cafe_bakery
