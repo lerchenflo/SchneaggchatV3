@@ -628,6 +628,8 @@ private fun SchneaggmapMapContent(
     //background as the "table", a beer for the center/decorations, and a generic person icon for
     //cluster members whose profile picture hasn't loaded (so the ring still shows every member).
     val clusterBackgroundColor = pillColor.copy(alpha = 0.85f)
+    val clusterCountBackgroundColor = MaterialTheme.colorScheme.primary
+    val clusterCountTextColor = MaterialTheme.colorScheme.onPrimary
     val beerIcon = imageResource(Res.drawable.icon_beer)
     val defaultAvatarBitmap = imageResource(Res.drawable.icon_nutzer)
 
@@ -691,7 +693,7 @@ private fun SchneaggmapMapContent(
     }
 
     val clusterIcons: Map<String, UserMarkerIcon> = remember(
-        userClusters, rawAvatarBitmaps, clusterBackgroundColor, beerIcon, defaultAvatarBitmap
+        userClusters, rawAvatarBitmaps, clusterBackgroundColor, beerIcon, defaultAvatarBitmap, textMeasurer, clusterCountBackgroundColor, clusterCountTextColor
     ) {
         userClusters.filter { it.users.size >= 2 }.associate { cluster ->
             //Always one avatar per member (falling back to the generic icon) so the ring
@@ -702,6 +704,9 @@ private fun SchneaggmapMapContent(
                 beerIcon = beerIcon,
                 backgroundColor = clusterBackgroundColor,
                 density = density,
+                textMeasurer = textMeasurer,
+                countBackgroundColor = clusterCountBackgroundColor,
+                countTextColor = clusterCountTextColor,
             )
             val size = with(density) { DpSize(bitmap.width.toDp(), bitmap.height.toDp()) }
             clusterKey(cluster) to UserMarkerIcon(bitmap = bitmap, size = size)
