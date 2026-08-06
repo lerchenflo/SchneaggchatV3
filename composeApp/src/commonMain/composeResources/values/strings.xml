@@ -886,10 +886,12 @@
     <string name="location_type_tennis">Tennis</string>
     <string name="location_type_sightseeing">Sightseeing</string>
     <string name="location_type_party">Party</string>
+    <string name="location_type_wifi">WiFi</string>
     <string name="location_type_food_kebab">Kebab</string>
     <string name="location_type_food_pizza">Pizza</string>
     <string name="location_type_food_burger">Burger</string>
     <string name="location_type_food_beer">Beer</string>
+    <string name="location_type_food_ice">Ice Cream</string>
     <string name="location_type_food_asian">Asian Food</string>
     <string name="location_type_food_greek">Greek Food</string>
     <string name="location_type_food_cafe_bakery">Cafe / Bakery</string>
@@ -956,11 +958,16 @@
     <string name="location_food_margarita_price">Margherita Price</string>
     <string name="location_food_cheeseburger_price">Cheeseburger Price</string>
     <string name="location_food_beer_price">Beer Price</string>
+    <string name="location_food_ice_scoop_price">Scoop Price</string>
     <string name="location_food_cuisine">Cuisine</string>
     <string name="location_food_cafe_bakery_outdoor_seating">Outdoor Seating</string>
     <string name="location_food_cafe_bakery_alcohol">Alcohol</string>
     <string name="location_food_cafe_bakery_coffee">Coffee</string>
     <string name="location_food_cafe_bakery_breakfast">Breakfast</string>
+
+    <!-- WiFi -->
+    <string name="location_wifi_ssid">SSID</string>
+    <string name="location_wifi_password">Password</string>
 
     <!-- Wake -->
     <string name="wake_settings">Wake-ups</string>
