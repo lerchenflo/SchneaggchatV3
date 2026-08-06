@@ -30,6 +30,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - @game Annotations
 - Schneaggmap: Anzahl zusammengefasster Freunde im Hock-Marker in der Mitte anzeigen
 - Schneaggmap: Eigenen Standort im Hock-Marker anzeigen (wenn im Radius) und eigenen Standort-Marker ausblenden
+- Zurückknopf auf IOS verwendet nun das IOS - Icon
 
 #### Bugfixes
 - Fingerpicker resetet nicht direkt

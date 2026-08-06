@@ -83,6 +83,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.Shown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.mergeClusterAvatarsIcon
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.mergeProfilePictureWithStatusText
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.BackButton
 import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import org.maplibre.compose.camera.CameraMoveReason
@@ -326,11 +327,17 @@ fun SchneaggmapScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
             ) {
+
+                BackButton(
+                    onBackClick = {onAction(SchneaggmapAction.OnBackClicked)}
+                )
+
+
                 //Settingsbutton
                 IconButton(
                     onClick = { onAction(SchneaggmapAction.OnSettingsClick) },
                     colors = IconButtonDefaults.iconButtonColors().copy(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        containerColor = MaterialTheme.colorScheme.background
                     ),
                     modifier = Modifier.tapTarget("schneaggmap_settings_button")
                 ) {
@@ -471,7 +478,7 @@ fun SchneaggmapScreen(
                 DisappearingScaleBar(
                     metersPerDp = cameraState.metersPerDpAtTarget,
                     zoom = cameraState.position.zoom,
-                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    color = MaterialTheme.colorScheme.background,
                     modifier = Modifier.align(Alignment.CenterStart)
                 )
 

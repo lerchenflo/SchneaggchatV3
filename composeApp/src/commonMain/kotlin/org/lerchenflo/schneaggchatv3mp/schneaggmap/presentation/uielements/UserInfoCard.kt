@@ -86,7 +86,7 @@ fun UserInfoCard(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surfaceContainer
+        containerColor = MaterialTheme.colorScheme.background
     ) {
         Column(modifier = modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp)) {
 
