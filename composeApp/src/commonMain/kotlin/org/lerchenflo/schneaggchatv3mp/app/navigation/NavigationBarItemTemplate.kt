@@ -22,6 +22,7 @@ data class NavigationBarItemTemplate(
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector,
     val route: Route,
+    val mobileOnly: Boolean = false
 )
 
 val navigationbaritems = listOf(
@@ -30,7 +31,8 @@ val navigationbaritems = listOf(
         title = Res.string.navbar_map,
         selectedIcon = Icons.Filled.Map,
         unselectedIcon = Icons.Outlined.Map,
-        route = Route.Schneaggmap()
+        route = Route.Schneaggmap(),
+        mobileOnly = true
     ),
     NavigationBarItemTemplate(
         id = "chatselector",

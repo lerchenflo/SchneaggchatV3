@@ -346,6 +346,7 @@ fun Chatauswahlscreen(
 
 
                 //tools and games
+                /*
                 Box(
                     modifier = Modifier
                         .size(touchSize)
@@ -362,7 +363,10 @@ fun Chatauswahlscreen(
                     )
                 }
 
+                 */
 
+
+                /*
                 //Map
                 if (appRepository.appVersion.isMobile()) {
                     Box(
@@ -380,8 +384,9 @@ fun Chatauswahlscreen(
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
-
                 }
+
+                 */
 
 
 

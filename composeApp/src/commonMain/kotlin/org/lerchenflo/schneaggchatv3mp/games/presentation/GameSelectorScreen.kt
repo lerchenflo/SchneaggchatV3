@@ -110,7 +110,8 @@ fun GameSelectorScreen(
     Column{
         ActivityTitle(
             title = stringResource(Res.string.tools_and_games),
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            showBackButton = false
         )
 
         Text(

@@ -27,6 +27,7 @@ fun ActivityTitle(
     title: String = "ActivityTitle",
     alternativeTitleComposable: (@Composable () -> Unit)? = null,
     onBackClick: () -> Unit = {},
+    showBackButton: Boolean = true
 ){
     Row(
         modifier = Modifier
@@ -34,10 +35,12 @@ fun ActivityTitle(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ){
-        // Backbutton
-        BackButton(
-            onBackClick = onBackClick
-        )
+        if (showBackButton) {
+            // Backbutton
+            BackButton(
+                onBackClick = onBackClick
+            )
+        }
 
         if(alternativeTitleComposable != null){
             alternativeTitleComposable()

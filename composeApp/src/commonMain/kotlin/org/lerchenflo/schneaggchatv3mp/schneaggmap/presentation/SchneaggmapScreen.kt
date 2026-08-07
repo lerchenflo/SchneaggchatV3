@@ -328,10 +328,6 @@ fun SchneaggmapScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
 
-                BackButton(
-                    onBackClick = {onAction(SchneaggmapAction.OnBackClicked)}
-                )
-
 
                 //Settingsbutton
                 IconButton(

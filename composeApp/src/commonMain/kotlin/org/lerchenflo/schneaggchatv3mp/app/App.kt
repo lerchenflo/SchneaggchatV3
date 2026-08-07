@@ -469,36 +469,40 @@ fun App() {
                             else -> root
                         }
 
-                        NavigationBar(
-                            containerColor = MaterialTheme.colorScheme.background,
-                            contentColor = MaterialTheme.colorScheme.onBackground,
-                            tonalElevation = 0.dp
-                        ) {
-                            navigationbaritems.forEach { template ->
-                                val selected = activeRoute == template.route
+                        if (root is Route.ChatSelector || root is Route.Schneaggmap || (root is Route.Games && activeRoute == Route.Games.GamesSelector)) {
+                            NavigationBar(
+                                containerColor = MaterialTheme.colorScheme.background,
+                                contentColor = MaterialTheme.colorScheme.onBackground,
+                                tonalElevation = 0.dp
+                            ) {
+                                navigationbaritems.forEach { template ->
+                                    val selected = activeRoute == template.route || (template.route is Route.Games && root is Route.Games)
 
-                                NavigationBarItem(
-                                    selected = selected,
-                                    colors = NavigationBarItemDefaults.colors(
-                                        indicatorColor = MaterialTheme.colorScheme.surfaceVariant
-                                    ),
-                                    onClick = {
-                                        scope.launch {
-                                            navigator.navigate(template.route)
-                                        }
-                                    },
-                                    icon = {
-                                        Icon(
-                                            imageVector = if (selected) template.selectedIcon else template.unselectedIcon,
-                                            contentDescription = null
-                                        )
-                                    },
-                                    label = {
-                                        Text(
-                                            text = stringResource(template.title)
-                                        )
-                                    },
-                                )
+                                    if (template.mobileOnly && !appRepository.appVersion.isMobile()) return@forEach
+
+                                    NavigationBarItem(
+                                        selected = selected,
+                                        colors = NavigationBarItemDefaults.colors(
+                                            indicatorColor = MaterialTheme.colorScheme.surfaceVariant
+                                        ),
+                                        onClick = {
+                                            scope.launch {
+                                                navigator.navigate(template.route)
+                                            }
+                                        },
+                                        icon = {
+                                            Icon(
+                                                imageVector = if (selected) template.selectedIcon else template.unselectedIcon,
+                                                contentDescription = null
+                                            )
+                                        },
+                                        label = {
+                                            Text(
+                                                text = stringResource(template.title)
+                                            )
+                                        },
+                                    )
+                                }
                             }
                         }
                     }
