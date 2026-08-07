@@ -27,7 +27,7 @@ data class NavigationBarItemTemplate(
 
 val navigationbaritems = listOf(
     NavigationBarItemTemplate(
-        id = "map",
+        id = "chatselector_map_button",
         title = Res.string.navbar_map,
         selectedIcon = Icons.Filled.Map,
         unselectedIcon = Icons.Outlined.Map,
@@ -42,7 +42,7 @@ val navigationbaritems = listOf(
         route = Route.ChatSelector
     ),
     NavigationBarItemTemplate(
-        id = "spiele",
+        id = "chatselector_games_button",
         title = Res.string.navbar_games,
         selectedIcon = Icons.Filled.Games,
         unselectedIcon = Icons.Outlined.Games,

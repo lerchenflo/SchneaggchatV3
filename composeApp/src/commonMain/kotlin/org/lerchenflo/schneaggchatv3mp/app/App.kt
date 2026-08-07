@@ -53,6 +53,7 @@ import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetController
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetOverlay
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TourSettings
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.rememberOnboardingTour
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
@@ -481,6 +482,7 @@ fun App() {
                                     if (template.mobileOnly && !appRepository.appVersion.isMobile()) return@forEach
 
                                     NavigationBarItem(
+                                        modifier = Modifier.tapTarget(template.id),
                                         selected = selected,
                                         colors = NavigationBarItemDefaults.colors(
                                             indicatorColor = MaterialTheme.colorScheme.surfaceVariant

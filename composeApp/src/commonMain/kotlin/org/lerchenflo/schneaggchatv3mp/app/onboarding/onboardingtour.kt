@@ -17,11 +17,9 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_games_info_descriptio
 import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen
 import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_create_group
-import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_go_back
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_freeroam
-import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_go_back
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_freeroam
@@ -52,14 +50,16 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
             //Show chatselector first
             infoStep(
                 title = Res.string.ttt_initscreen,
-                description = Res.string.ttt_initscreen_description
+                description = Res.string.ttt_initscreen_description,
+                route = Route.ChatSelector
             )
 
             //New chat button
             tapStep(
                 id = "chatselector_new_chat_button",
                 title = Res.string.ttt_start_chatting,
-                description = Res.string.ttt_start_chatting_description
+                description = Res.string.ttt_start_chatting_description,
+                route = Route.ChatSelector
             )
 
             //Navigate to new chat screen to show features
@@ -73,7 +73,8 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
             freeRoamStep(
                 title = Res.string.ttt_new_chat_search_friends_freeroam,
                 position = FreeRoamBarPosition.Bottom,
-                continueButtonText = Res.string.ttt_continue
+                continueButtonText = Res.string.ttt_continue,
+                route = Route.NewChat
             )
 
             tapStep(
@@ -82,9 +83,6 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
                 route = Route.NewChat //Set route in case the user navigated from the screen in the free roam
             )
 
-            infoStep(
-                title = Res.string.ttt_new_chat_go_back
-            )
 
 
             //Show the settings
@@ -138,14 +136,9 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
             )
 
 
-            infoStep(
-                title = Res.string.ttt_new_chat_go_back,
-                route = Route.Settings.MiscSettings
-            )
 
 
-
-            //Go to Chatselector again, go to map
+            //Go to map via bottom nav
             tapStep(
                 id = "chatselector_map_button",
                 title = Res.string.ttt_chatselector_map,
@@ -163,7 +156,8 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
             freeRoamStep(
                 title = Res.string.ttt_schneaggmap_locations_freeroam,
                 position = FreeRoamBarPosition.Bottom,
-                continueButtonText = Res.string.ttt_continue
+                continueButtonText = Res.string.ttt_continue,
+                route = Route.Schneaggmap()
             )
 
             tapStep(
@@ -175,17 +169,15 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
 
             tapStep(
                 id = "schneaggmap_snailtrail_switch",
-                description = Res.string.ttt_schneaggmap_snailtrail_description
+                description = Res.string.ttt_schneaggmap_snailtrail_description,
+                route = Route.Schneaggmap()
             )
 
-            infoStep(
-                title = Res.string.ttt_schneaggmap_go_back
-            )
 
             tapStep(
                 id = "chatselector_games_button",
                 title = Res.string.ttt_chatselector_games,
-                route = Route.ChatSelector
+                route = Route.Schneaggmap()
             )
 
             infoStep(

@@ -1016,7 +1016,7 @@
     <string name="ttt_new_chat_search_friends">Search for your friends</string>
     <string name="ttt_new_chat_search_friends_description">If you have at least one friend, mutual friends will show up.</string>
 
-    <string name="ttt_new_chat_search_friends_freeroam">Try to add a new friend. If you don't know anyone yet, just add 'flo'</string>
+    <string name="ttt_new_chat_search_friends_freeroam">Try to add a new friend.</string>
 
 
     <string name="ttt_new_chat_create_group">Tap here to create a new group</string>

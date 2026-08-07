@@ -149,7 +149,8 @@ fun Chatauswahlscreen(
     val connectionToServer = SessionCache.onlineFlow.collectAsStateWithLifecycle()
     val dataSyncState by appRepository.dataSyncState.collectAsStateWithLifecycle()
 
-    val onboardingCompleted by preferencemanager.getOnboardingSeenFlow().collectAsStateWithLifecycle(initialValue = false)
+    val onboardingCompleted by preferencemanager.getOnboardingSeenFlow()
+        .collectAsStateWithLifecycle(initialValue = false)
 
     /*
     //Clear chat when this screen comes to the foreground (Navigation breaks and with the preview the chat can be not selected
@@ -205,7 +206,7 @@ fun Chatauswahlscreen(
         floatingActionButton = {
             BadgedBox(
                 badge = {
-                    if (pendingFriendCount != 0){
+                    if (pendingFriendCount != 0) {
                         Badge {
                             Text(text = pendingFriendCount.toString())
                         }
@@ -224,9 +225,9 @@ fun Chatauswahlscreen(
             }
         },
         floatingActionButtonPosition = FabPosition.End
-    ){
+    ) {
         //Hauptlayout
-        Column{
+        Column {
             //Obere Zeile für Buttons
             Row(
                 modifier = Modifier
@@ -302,7 +303,6 @@ fun Chatauswahlscreen(
                 }
 
 
-
                 /*
 
                 Box(
@@ -342,7 +342,6 @@ fun Chatauswahlscreen(
                 }
 
                  */
-
 
 
                 //tools and games
@@ -387,7 +386,6 @@ fun Chatauswahlscreen(
                 }
 
                  */
-
 
 
                 //settings
@@ -435,7 +433,8 @@ fun Chatauswahlscreen(
                     textStyle = LocalTextStyle.current.copy(
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurface
-                    ),                    singleLine = true,
+                    ),
+                    singleLine = true,
                     decorationBox = { innerTextField ->
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -504,11 +503,11 @@ fun Chatauswahlscreen(
                         ChatFilter.entries.forEach { filter ->
                             DropdownMenuItem(
                                 text = {
-                                    Row{
+                                    Row {
                                         Icon(
                                             imageVector = filter.getIcon(),
                                             contentDescription = filter.toUiText().asString(),
-                                            tint = if(viewModel.filter.value == filter)
+                                            tint = if (viewModel.filter.value == filter)
                                                 MaterialTheme.colorScheme.primary
                                             else
                                                 MaterialTheme.colorScheme.onSurface
@@ -578,178 +577,182 @@ fun Chatauswahlscreen(
                 isRefreshing = false,
                 onRefresh = { viewModel.refresh() }, // Trigger refresh
                 indicator = {}
-                ) {
+            ) {
 
-                    //Refresh loading indicator
-                    var showProgress by remember { mutableStateOf(false) }
-                    var progress by remember { mutableFloatStateOf(0f) }
-                    var animationTrigger by remember { mutableIntStateOf(0) }
-                    LaunchedEffect(dataSyncState.isSyncing) {
-                        if (dataSyncState.isSyncing && !showProgress) {
-                            animationTrigger++
+                //Refresh loading indicator
+                var showProgress by remember { mutableStateOf(false) }
+                var progress by remember { mutableFloatStateOf(0f) }
+                var animationTrigger by remember { mutableIntStateOf(0) }
+                LaunchedEffect(dataSyncState.isSyncing) {
+                    if (dataSyncState.isSyncing && !showProgress) {
+                        animationTrigger++
+                    }
+                }
+                LaunchedEffect(animationTrigger) {
+                    if (animationTrigger > 0) {
+                        showProgress = true
+                        progress = 0f
+                        animate(
+                            initialValue = 0f,
+                            targetValue = 1f,
+                            animationSpec = tween(durationMillis = 300, easing = LinearEasing)
+                        ) { value, _ ->
+                            progress = value
                         }
+
+                        showProgress = false
                     }
-                    LaunchedEffect(animationTrigger) {
-                        if (animationTrigger > 0) {
-                            showProgress = true
-                            progress = 0f
-                            animate(
-                                initialValue = 0f,
-                                targetValue = 1f,
-                                animationSpec = tween(durationMillis = 300, easing = LinearEasing)
-                            ) { value, _ ->
-                                progress = value
-                            }
+                }
 
-                            showProgress = false
-                        }
-                    }
-
-                    if (showProgress) {
-                        LinearProgressIndicator(
-                            progress = {progress},
-                            modifier = Modifier.fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            drawStopIndicator = {}
-                        )
-                    }
+                if (showProgress) {
+                    LinearProgressIndicator(
+                        progress = { progress },
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        drawStopIndicator = {}
+                    )
+                }
 
 
-                    val liststate = rememberLazyListState()
+                val liststate = rememberLazyListState()
 
 
 
-                    LaunchedEffect(availablegegners) {
-                        if (liststate.firstVisibleItemIndex < 3) { //Only when the user is nearly at the top
-                            liststate.animateScrollToItem(0)
-                        }
-                    }
-
-                    LaunchedEffect(searchterm) {
+                LaunchedEffect(availablegegners) {
+                    if (liststate.firstVisibleItemIndex < 3) { //Only when the user is nearly at the top
                         liststate.animateScrollToItem(0)
                     }
+                }
+
+                LaunchedEffect(searchterm) {
+                    liststate.animateScrollToItem(0)
+                }
 
                 val tapTargetController = LocalTapTargetController.current
 
                 LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        contentPadding = PaddingValues(
-                            start = 16.dp,
-                            end = 16.dp,
-                        ),
-                        state = liststate
-                    ) {
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        start = 16.dp,
+                        end = 16.dp,
+                    ),
+                    state = liststate
+                ) {
 
-                        if (!onboardingCompleted) {
-                            item {
-                                ChatSelectorDismissableInfo(
-                                    title = stringResource(Res.string.ttt_popup),
-                                    description = stringResource(Res.string.ttt_popup_description),
-                                    onClick = {
-                                        tapTargetController?.start()
-                                    },
-                                    onDismiss = null,
-                                    activateText = stringResource(Res.string.ttt_popup_start),
-                                )
-                            }
-                        }
-
-
-                        //Chats and messages are only split into labelled sections while a search
-                        //actually matched messages - otherwise the list looks exactly as before.
-                        val showSearchSections = messageSearchResults.isNotEmpty()
-
-                        if (showSearchSections && availablegegners.isNotEmpty()) {
-                            item(key = "search_header_chats") {
-                                SearchSectionHeader(
-                                    text = stringResource(Res.string.search_section_chats)
-                                )
-                            }
-                        }
-
-                        items(
-                            items = availablegegners,
-                            key = {"${it.id}_${it.isGroup}"}
-                        ) { gegner ->
-                            var userOptionDropdownExpanded by remember{mutableStateOf(false)}
-
-                            UserButton(
-                                chat = gegner,
-                                useOnClickGes = false,
-                                lastMessage = gegner.lastMessage,
-                                onClickText = { viewModel.onChatSelected(gegner) },
-                                onLongClickText = {
-                                    userOptionDropdownExpanded = true
+                    if (!onboardingCompleted) {
+                        item {
+                            ChatSelectorDismissableInfo(
+                                title = stringResource(Res.string.ttt_popup),
+                                description = stringResource(Res.string.ttt_popup_description),
+                                onClick = {
+                                    tapTargetController?.start()
                                 },
-                                onClickImage = {
-                                    profilePictureDialogShown = true
-                                    profilePictureFilePathTemp = gegner.profilePictureUrl
-                                },
-                                showPin = true,
-                                ownId = ownId
-
-                            )
-                            HorizontalDivider(
-                                thickness = 0.5.dp
-                            )
-
-                            if (userOptionDropdownExpanded) UserOptionDropdown(
-                                expanded = userOptionDropdownExpanded,
-                                selectedChat = gegner,
-                                onDismissRequest = { userOptionDropdownExpanded = false },
-                                onPin = { viewModel.pinUnpinChat(gegner) },
-                                onMarkAsUnread = {
-
-                                },
-                                onOpenChatDetails = { viewModel.onOpenChatDetails(gegner) },
+                                onDismiss = null,
+                                activateText = stringResource(Res.string.ttt_popup_start),
                             )
                         }
+                    }
 
-                        if (showSearchSections) {
-                            item(key = "search_header_messages") {
-                                SearchSectionHeader(
-                                    text = stringResource(
-                                        Res.string.search_section_messages,
-                                        messageSearchResults.size
-                                    )
-                                )
-                            }
 
-                            items(
-                                items = messageSearchResults,
-                                key = { "message_${it.messageId}" }
-                            ) { result ->
-                                MessageSearchResultRow(
-                                    result = result,
-                                    onClick = { viewModel.onMessageSearchResultSelected(result) }
-                                )
-                                HorizontalDivider(
-                                    thickness = 0.5.dp
+                    if (availablegegners.isEmpty() && messageSearchResults.isEmpty()) {
+                        //Add friend if list is empty
+
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                            ) {
+                                Text(
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                        .clickable {
+                                            viewModel.onNewChatClick()
+                                        }
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    text = stringResource(Res.string.no_friends_found_search),
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.secondary
                                 )
                             }
                         }
                     }
 
-                if (availablegegners.isEmpty() && messageSearchResults.isEmpty()){
-                    //Add friend if list is empty
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        Text(
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .clickable{
-                                    viewModel.onNewChatClick()
-                                }
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            text = stringResource(Res.string.no_friends_found_search),
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.secondary
+
+                    //Chats and messages are only split into labelled sections while a search
+                    //actually matched messages - otherwise the list looks exactly as before.
+                    val showSearchSections = messageSearchResults.isNotEmpty()
+
+                    if (showSearchSections && availablegegners.isNotEmpty()) {
+                        item(key = "search_header_chats") {
+                            SearchSectionHeader(
+                                text = stringResource(Res.string.search_section_chats)
+                            )
+                        }
+                    }
+
+                    items(
+                        items = availablegegners,
+                        key = { "${it.id}_${it.isGroup}" }
+                    ) { gegner ->
+                        var userOptionDropdownExpanded by remember { mutableStateOf(false) }
+
+                        UserButton(
+                            chat = gegner,
+                            useOnClickGes = false,
+                            lastMessage = gegner.lastMessage,
+                            onClickText = { viewModel.onChatSelected(gegner) },
+                            onLongClickText = {
+                                userOptionDropdownExpanded = true
+                            },
+                            onClickImage = {
+                                profilePictureDialogShown = true
+                                profilePictureFilePathTemp = gegner.profilePictureUrl
+                            },
+                            showPin = true,
+                            ownId = ownId
+
                         )
+                        HorizontalDivider(
+                            thickness = 0.5.dp
+                        )
+
+                        if (userOptionDropdownExpanded) UserOptionDropdown(
+                            expanded = userOptionDropdownExpanded,
+                            selectedChat = gegner,
+                            onDismissRequest = { userOptionDropdownExpanded = false },
+                            onPin = { viewModel.pinUnpinChat(gegner) },
+                            onMarkAsUnread = {
+
+                            },
+                            onOpenChatDetails = { viewModel.onOpenChatDetails(gegner) },
+                        )
+                    }
+
+                    if (showSearchSections) {
+                        item(key = "search_header_messages") {
+                            SearchSectionHeader(
+                                text = stringResource(
+                                    Res.string.search_section_messages,
+                                    messageSearchResults.size
+                                )
+                            )
+                        }
+
+                        items(
+                            items = messageSearchResults,
+                            key = { "message_${it.messageId}" }
+                        ) { result ->
+                            MessageSearchResultRow(
+                                result = result,
+                                onClick = { viewModel.onMessageSearchResultSelected(result) }
+                            )
+                            HorizontalDivider(
+                                thickness = 0.5.dp
+                            )
+                        }
                     }
                 }
 
@@ -802,7 +805,6 @@ fun Chatauswahlscreen(
 
 
     }
-
 
 
 }
@@ -903,22 +905,21 @@ fun UserOptionDropdown(
         ) {
             DropdownMenuItem(
                 text = {
-                    if(selectedChat.pinned > 0L)
+                    if (selectedChat.pinned > 0L)
                         Text(stringResource(Res.string.unpin_chat))
-                        else Text(stringResource(Res.string.pin_chat))
-                       },
+                    else Text(stringResource(Res.string.pin_chat))
+                },
                 onClick = {
                     onPin()
                     onDismissRequest()
                 },
                 leadingIcon = {
-                    if(selectedChat.pinned > 0L)
-                    {
+                    if (selectedChat.pinned > 0L) {
                         Icon(
                             imageVector = Icons.Outlined.PushPin,
                             contentDescription = null
                         )
-                    }else{
+                    } else {
                         Icon(
                             imageVector = Icons.Filled.PushPin,
                             contentDescription = null
@@ -927,22 +928,22 @@ fun UserOptionDropdown(
 
                 }
             )
-/*
-            DropdownMenuItem(
-                text = { Text(stringResource(Res.string.mark_as_unread)) },
-                onClick = {
-                    onMarkAsUnread()
-                    onDismissRequest()
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.MarkAsUnread,
-                        contentDescription = null
-                    )
-                }
-            )
+            /*
+                        DropdownMenuItem(
+                            text = { Text(stringResource(Res.string.mark_as_unread)) },
+                            onClick = {
+                                onMarkAsUnread()
+                                onDismissRequest()
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.MarkAsUnread,
+                                    contentDescription = null
+                                )
+                            }
+                        )
 
- */
+             */
 
             DropdownMenuItem(
                 text = { Text(stringResource(Res.string.more_info)) },
