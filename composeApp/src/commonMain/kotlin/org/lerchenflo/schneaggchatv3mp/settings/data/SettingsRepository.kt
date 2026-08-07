@@ -12,6 +12,14 @@ class SettingsRepository(
         return preferencemanager.getUseMdFlow()
     }
 
+    fun getHighlightTodaysMessageTimestamp(): Flow<Boolean> {
+        return preferencemanager.getHighlightTodaysMessageTimestampFlow()
+    }
+
+    suspend fun saveHighlightTodaysMessageTimestamp(value: Boolean) {
+        preferencemanager.saveHighlightTodaysMessageTimestamp(value)
+    }
+
     fun getDraft(chatId: String, group: Boolean) : Flow<String?> {
         return preferencemanager.getDraftsFlow(
             chatId = chatId,

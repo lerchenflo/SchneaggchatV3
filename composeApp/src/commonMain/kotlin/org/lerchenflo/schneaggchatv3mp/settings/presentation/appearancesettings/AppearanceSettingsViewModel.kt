@@ -26,6 +26,9 @@ class AppearanceSettingsViewModel(
     var markdownEnabeled by mutableStateOf(false)
         private set
 
+    var highlightTodaysMessageTimestamp by mutableStateOf(true)
+        private set
+
     var selectedTheme by mutableStateOf(ThemeSetting.SYSTEM)
         private set
 
@@ -42,6 +45,15 @@ class AppearanceSettingsViewModel(
                     markdownEnabeled = value
                 }
 
+        }
+        viewModelScope.launch { // Highlight Today's Message Timestamp
+            preferenceManager.getHighlightTodaysMessageTimestampFlow()
+                .catch { exception ->
+                    loggingRepository.logWarning("Problem getting Highlight Today's Message Timestamp preference: ${exception.message}")
+                }
+                .collect { value ->
+                    highlightTodaysMessageTimestamp = value
+                }
         }
         viewModelScope.launch { // Theme
             preferenceManager.getThemeFlow()
@@ -68,6 +80,12 @@ class AppearanceSettingsViewModel(
     fun updateMarkdownSwitch(newValue: Boolean){
         CoroutineScope(Dispatchers.IO).launch {
             preferenceManager.saveUseMd(newValue)
+        }
+    }
+
+    fun updateHighlightTodaysMessageTimestamp(newValue: Boolean){
+        CoroutineScope(Dispatchers.IO).launch {
+            preferenceManager.saveHighlightTodaysMessageTimestamp(newValue)
         }
     }
 

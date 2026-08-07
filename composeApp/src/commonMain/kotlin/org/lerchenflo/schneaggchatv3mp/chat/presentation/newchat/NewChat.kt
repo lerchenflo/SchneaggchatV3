@@ -97,7 +97,8 @@ fun NewChat(
                 title = stringResource(Res.string.new_chat),
                 onBackClick = {
                     viewModel.onBackClick()
-                }
+                },
+                backButtonModifier = Modifier.tapTarget("new_chat_back_button")
             )
 
 

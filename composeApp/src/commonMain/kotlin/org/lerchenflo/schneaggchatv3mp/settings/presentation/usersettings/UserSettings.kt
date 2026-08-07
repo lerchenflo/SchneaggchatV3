@@ -62,13 +62,13 @@ import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
-import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.getDeleteAccountUrl
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.BirthdatePickerPopup
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
+import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ChangeDialog
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
@@ -250,7 +250,8 @@ fun UserSettings(
 
         ActivityTitle(
             title = stringResource(Res.string.user_settings),
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            backButtonModifier = Modifier.tapTarget("user_settings_back_button")
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)

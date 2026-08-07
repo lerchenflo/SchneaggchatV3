@@ -110,6 +110,7 @@ class Preferencemanager(
 
     private object PrefsKeys {
         val MD_FORMAT = booleanPreferencesKey("md_format")
+        val HIGHLIGHT_TODAYS_MESSAGE_TIMESTAMP = booleanPreferencesKey("highlight_todays_message_timestamp")
         val THEME = intPreferencesKey("theme")
         val LANGUAGE = intPreferencesKey("language")
         val SERVER_URL = stringPreferencesKey("server_url")
@@ -132,6 +133,19 @@ class Preferencemanager(
 
     fun getUseMdFlow(): Flow<Boolean> = prefs.data.map { prefs ->
         prefs[PrefsKeys.MD_FORMAT] ?: true //Default to true
+    }
+
+    // Highlight Today's Message Timestamp
+    suspend fun saveHighlightTodaysMessageTimestamp(value: Boolean) {
+        prefs.edit { it[PrefsKeys.HIGHLIGHT_TODAYS_MESSAGE_TIMESTAMP] = value }
+    }
+
+    fun getHighlightTodaysMessageTimestampFlow(): Flow<Boolean> = prefs.data.map { prefs ->
+        prefs[PrefsKeys.HIGHLIGHT_TODAYS_MESSAGE_TIMESTAMP] ?: false
+    }
+
+    suspend fun getHighlightTodaysMessageTimestamp(): Boolean {
+        return prefs.data.first()[PrefsKeys.HIGHLIGHT_TODAYS_MESSAGE_TIMESTAMP] ?: false
     }
 
     // Theme methods

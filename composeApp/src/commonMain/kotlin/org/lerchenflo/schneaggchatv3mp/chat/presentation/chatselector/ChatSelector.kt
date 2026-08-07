@@ -25,12 +25,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -62,7 +60,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
@@ -70,11 +67,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.runBlocking
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.days
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
@@ -82,11 +76,11 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.LocalTapTargetController
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.BugReportDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.ChatSelectorDismissableInfo
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
@@ -106,7 +100,6 @@ import schneaggchatv3mp.composeapp.generated.resources.filter
 import schneaggchatv3mp.composeapp.generated.resources.more_info
 import schneaggchatv3mp.composeapp.generated.resources.no_friends_found_search
 import schneaggchatv3mp.composeapp.generated.resources.pin_chat
-import schneaggchatv3mp.composeapp.generated.resources.schneaggmap
 import schneaggchatv3mp.composeapp.generated.resources.search_friend
 import schneaggchatv3mp.composeapp.generated.resources.search_section_chats
 import schneaggchatv3mp.composeapp.generated.resources.search_section_messages
@@ -115,6 +108,8 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_popup
 import schneaggchatv3mp.composeapp.generated.resources.ttt_popup_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_popup_start
 import schneaggchatv3mp.composeapp.generated.resources.unpin_chat
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 
 /** How long the contribute popup stays away between two appearances. */
 private val CONTRIBUTE_POPUP_INTERVAL_MILLIS = 19.days.inWholeMilliseconds
@@ -151,6 +146,9 @@ fun Chatauswahlscreen(
 
     val onboardingCompleted by preferencemanager.getOnboardingSeenFlow()
         .collectAsStateWithLifecycle(initialValue = false)
+
+    val highlightTodaysTimestamp by preferencemanager.getHighlightTodaysMessageTimestampFlow()
+        .collectAsStateWithLifecycle(initialValue = true)
 
     /*
     //Clear chat when this screen comes to the foreground (Navigation breaks and with the preview the chat can be not selected
@@ -712,6 +710,7 @@ fun Chatauswahlscreen(
                                 profilePictureFilePathTemp = gegner.profilePictureUrl
                             },
                             showPin = true,
+                            highlightTodaysTimestamp = highlightTodaysTimestamp,
                             ownId = ownId
 
                         )

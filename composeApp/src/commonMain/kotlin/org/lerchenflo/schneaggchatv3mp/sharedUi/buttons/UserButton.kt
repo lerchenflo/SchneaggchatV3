@@ -75,6 +75,7 @@ fun UserButton(
     selected: Boolean? = null,
     showNotiIcons: Boolean = true,
     showPin: Boolean = false,
+    highlightTodaysTimestamp: Boolean = true,
     onClickGes: () -> Unit = {},  // Add click for everything
     onClickText: () -> Unit = {},  // Add click for name ...
     onLongClickText: () -> Unit = {}, // Add long click for name ...
@@ -277,7 +278,7 @@ fun UserButton(
                         style = MaterialTheme.typography.labelSmall,
                         maxLines = 1,
                         modifier = Modifier.padding(start = 4.dp),
-                        color = if (lastMessage.wasSentToday()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        color = if (highlightTodaysTimestamp && lastMessage.wasSentToday()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

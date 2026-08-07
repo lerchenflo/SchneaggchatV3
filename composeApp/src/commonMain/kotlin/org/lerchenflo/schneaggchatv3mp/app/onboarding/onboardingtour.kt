@@ -12,14 +12,14 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_games_difficulty
 import schneaggchatv3mp.composeapp.generated.resources.ttt_games_difficulty_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_games_global_highscore
 import schneaggchatv3mp.composeapp.generated.resources.ttt_games_global_highscore_description
-import schneaggchatv3mp.composeapp.generated.resources.ttt_games_info
-import schneaggchatv3mp.composeapp.generated.resources.ttt_games_info_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen
 import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_create_group
+import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_go_back
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_freeroam
+import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_go_back
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_freeroam
@@ -85,7 +85,12 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
                 requireExactTap = false
             )
 
-            //TODO: Point to the back button to navigate back
+            //Point to the back button to navigate back
+            tapStep(
+                id = "new_chat_back_button",
+                title = Res.string.ttt_new_chat_go_back,
+                route = Route.NewChat
+            )
 
 
             //Show the settings
@@ -112,7 +117,12 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
                 )
             }
 
-            //TODO: Point to back button
+            //Point to back button
+            tapStep(
+                id = "user_settings_back_button",
+                title = Res.string.ttt_schneaggmap_go_back,
+                route = Route.Settings.UserSettings
+            )
 
             tapStep(
                 id = "settings_appearance",

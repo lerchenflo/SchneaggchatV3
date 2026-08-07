@@ -7,6 +7,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
@@ -27,6 +28,8 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ThemeSel
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.appearance_settings
+import schneaggchatv3mp.composeapp.generated.resources.highlight_todays_message_timestamp
+import schneaggchatv3mp.composeapp.generated.resources.highlight_todays_message_timestamp_info
 import schneaggchatv3mp.composeapp.generated.resources.language
 import schneaggchatv3mp.composeapp.generated.resources.language_sel_desc
 import schneaggchatv3mp.composeapp.generated.resources.markdownInfo
@@ -64,6 +67,17 @@ fun AppearanceSettings(
                 switchchecked = appearanceSettingsViewModel.markdownEnabeled,
                 onSwitchChange = { appearanceSettingsViewModel.updateMarkdownSwitch(it) },
                 icon = vectorResource(Res.drawable.markdown_24px) //Gibts uf da icons no ned aber uf da website scho
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            // Highlight Today's Message Timestamp
+            SettingsSwitch(
+                titletext = stringResource(Res.string.highlight_todays_message_timestamp),
+                infotext = stringResource(Res.string.highlight_todays_message_timestamp_info),
+                switchchecked = appearanceSettingsViewModel.highlightTodaysMessageTimestamp,
+                onSwitchChange = { appearanceSettingsViewModel.updateHighlightTodaysMessageTimestamp(it) },
+                icon = Icons.Default.Schedule
             )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
