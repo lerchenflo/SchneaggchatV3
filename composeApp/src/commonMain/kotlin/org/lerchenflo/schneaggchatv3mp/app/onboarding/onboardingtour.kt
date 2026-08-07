@@ -68,6 +68,7 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
                 title = Res.string.ttt_new_chat_search_friends,
                 description = Res.string.ttt_new_chat_search_friends_description,
                 route = Route.NewChat,
+                requireExactTap = false
             )
 
             freeRoamStep(
@@ -80,9 +81,11 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
             tapStep(
                 id = "new_chat_create_group",
                 title = Res.string.ttt_new_chat_create_group,
-                route = Route.NewChat //Set route in case the user navigated from the screen in the free roam
+                route = Route.NewChat, //Set route in case the user navigated from the screen in the free roam
+                requireExactTap = false
             )
 
+            //TODO: Point to the back button to navigate back
 
 
             //Show the settings
@@ -99,15 +102,17 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
                 route = Route.Settings.SettingsScreen
             )
 
-            //Go into detail for wakeup feature only for android
             if (isAndroid){
                 tapStep(
                     id = "settings_user_wakeup",
                     title = Res.string.ttt_settings_wake,
                     description = Res.string.ttt_settings_wake_description,
-                    route = Route.Settings.UserSettings
+                    route = Route.Settings.UserSettings,
+                    requireExactTap = false
                 )
             }
+
+            //TODO: Point to back button
 
             tapStep(
                 id = "settings_appearance",
@@ -125,14 +130,16 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
             tapStep(
                 id = "settings_misc_bugreport",
                 description = Res.string.ttt_settings_misc_bugreport,
-                route = Route.Settings.MiscSettings
+                route = Route.Settings.MiscSettings,
+                requireExactTap = false
             )
 
             tapStep(
                 id = "settings_misc_app_broken",
                 title = Res.string.ttt_settings_misc_app_broken,
                 description = Res.string.ttt_settings_misc_app_broken_description,
-                route = Route.Settings.MiscSettings
+                route = Route.Settings.MiscSettings,
+                requireExactTap = false
             )
 
 
@@ -164,13 +171,15 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
                 id = "schneaggmap_settings_button",
                 title = Res.string.ttt_schneaggmap_settings,
                 description = Res.string.ttt_schneaggmap_settings_description,
-                route = Route.Schneaggmap() //Navigate to map in case the user navigated back while freeroaming
+                route = Route.Schneaggmap(), //Navigate to map in case the user navigated back while freeroaming
+                requireExactTap = false
             )
 
             tapStep(
                 id = "schneaggmap_snailtrail_switch",
                 description = Res.string.ttt_schneaggmap_snailtrail_description,
-                route = Route.Schneaggmap()
+                route = Route.Schneaggmap(),
+                requireExactTap = false
             )
 
 
@@ -180,24 +189,20 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
                 route = Route.Schneaggmap()
             )
 
-            infoStep(
-                title = Res.string.ttt_games_info,
-                description = Res.string.ttt_games_info_description,
-                route = Route.Games.GamesSelector
-            )
-
             tapStep(
                 id = "games_difficulty_selector",
                 title = Res.string.ttt_games_difficulty,
                 description = Res.string.ttt_games_difficulty_description,
-                route = Route.Games.GamesSelector
+                route = Route.Games.GamesSelector,
+                requireExactTap = false
             )
 
             tapStep(
                 id = "games_global_ranking_button",
                 title = Res.string.ttt_games_global_highscore,
                 description = Res.string.ttt_games_global_highscore_description,
-                route = Route.Games.GamesSelector
+                route = Route.Games.GamesSelector,
+                requireExactTap = false
             )
 
             infoStep(

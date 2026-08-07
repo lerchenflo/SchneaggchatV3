@@ -267,13 +267,20 @@ fun App() {
                 }
             }
 
-
             when(action){
                 is NavigationAction.Navigate -> {
                     if (navigationOptions.exitAllPreviousScreens){
                         rootBackStack.clear()
                     }
 
+                    // Ensure max 1 item per route type: if the route already exists,
+                    // remove it and everything above it on the backstack
+                    val existingIndex = rootBackStack.indexOfFirst { it::class == action.destination::class }
+                    if (existingIndex >= 0) {
+                        while (rootBackStack.size > existingIndex) {
+                            rootBackStack.removeAt(rootBackStack.size - 1)
+                        }
+                    }
                     rootBackStack.add(action.destination)
                 }
 
@@ -289,9 +296,21 @@ fun App() {
                     when(action.rootRoute)
                     {
                         Route.Games -> {
+                            val existingIndex = gamesBackStack.indexOfFirst { it::class == action.destination::class }
+                            if (existingIndex >= 0) {
+                                while (gamesBackStack.size > existingIndex) {
+                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                }
+                            }
                             gamesBackStack.add(action.destination)
                         }
                         Route.Settings -> {
+                            val existingIndex = settingsBackStack.indexOfFirst { it::class == action.destination::class }
+                            if (existingIndex >= 0) {
+                                while (settingsBackStack.size > existingIndex) {
+                                    settingsBackStack.removeAt(settingsBackStack.size - 1)
+                                }
+                            }
                             settingsBackStack.add(action.destination)
                         }
                         else -> {

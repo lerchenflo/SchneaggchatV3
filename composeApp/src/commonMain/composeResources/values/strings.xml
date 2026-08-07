@@ -1014,12 +1014,12 @@
     <string name="ttt_start_chatting_description">Tap here to add friends.</string>
 
     <string name="ttt_new_chat_search_friends">Search for your friends</string>
-    <string name="ttt_new_chat_search_friends_description">If you have at least one friend, mutual friends will show up.</string>
+    <string name="ttt_new_chat_search_friends_description">You can search for friends here. If you have at least one friend, mutual friends will show up.</string>
 
     <string name="ttt_new_chat_search_friends_freeroam">Try to add a new friend.</string>
 
 
-    <string name="ttt_new_chat_create_group">Tap here to create a new group</string>
+    <string name="ttt_new_chat_create_group">You can tap here to create a new group</string>
 
     <string name="ttt_new_chat_go_back">Let's go back to the Chatselection</string>
 
@@ -1039,8 +1039,8 @@
 
     <string name="ttt_settings_misc_bugreport">Here you can file a bug reports and feature requests.</string>
 
-    <string name="ttt_settings_misc_app_broken">app broken</string>
-    <string name="ttt_settings_misc_app_broken_description">If something is not working as intended, try to press this button. It will delete all app data and refetch from the server.</string>
+    <string name="ttt_settings_misc_app_broken">App broken?</string>
+    <string name="ttt_settings_misc_app_broken_description">If something is not working as intended, you can press this button. It will delete all app data and refetch from the server.</string>
 
 
 
@@ -1054,24 +1054,24 @@
     <string name="ttt_schneaggmap_locations_freeroam">Look at some entries!</string>
     <string name="ttt_continue">Continue tour</string>
 
-    <string name="ttt_schneaggmap_settings">Mapsettings</string>
-    <string name="ttt_schneaggmap_settings_description">Here you have a shortcut to the map settings. Edit if you want to share your location and some other options.</string>
+    <string name="ttt_schneaggmap_settings">Map settings</string>
+    <string name="ttt_schneaggmap_settings_description">You can tap here to access the map settings. Edit if you want to share your location and some other options.</string>
 
-    <string name="ttt_schneaggmap_snailtrail_description">Here you can show the snailtrail (where they have been in the last 24h) of your friends, if they enabled it for you.</string>
+    <string name="ttt_schneaggmap_snailtrail_description">You can show the snailtrail (where they have been in the last 24h) of your friends here, if they enabled it for you.</string>
 
     <string name="ttt_schneaggmap_go_back">Let's go back once again.</string>
 
 
-    <string name="ttt_chatselector_games">Now lets have a look at the tools and games</string>
+    <string name="ttt_chatselector_games">Now lets have a look at the games</string>
 
     <string name="ttt_games_info">Tools and games</string>
     <string name="ttt_games_info_description">Now lets have a look at the tools and games</string>
 
     <string name="ttt_games_difficulty">Difficulty selection</string>
-    <string name="ttt_games_difficulty_description">Select the difficulty for games here.</string>
+    <string name="ttt_games_difficulty_description">You can select the difficulty for games here.</string>
 
     <string name="ttt_games_global_highscore">Global highscores</string>
-    <string name="ttt_games_global_highscore_description">Tap here to view your global rankings across all games.</string>
+    <string name="ttt_games_global_highscore_description">You can tap here to view your global rankings across all games.</string>
 
     <string name="ttt_thank_you">Thank you!</string>
     <string name="ttt_thank_you_description">Thank you for taking the tour! Enjoy using Schneaggchat.</string>

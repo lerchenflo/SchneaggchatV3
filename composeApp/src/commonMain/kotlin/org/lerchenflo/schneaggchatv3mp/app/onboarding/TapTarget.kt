@@ -83,6 +83,10 @@ data class TourStep(
     val freeRoamPosition: FreeRoamBarPosition? = null,
     /** Continue button label. Falls back to plain "Continue" text if null. */
     val continueButtonText: StringResource? = null,
+    /** When true the user must tap exactly on the highlighted target to advance.
+     *  When false the user can tap anywhere on the overlay to advance — useful for
+     *  steps that just show a button without requiring the user to press it. */
+    val requireExactTap: Boolean = true,
 )
 
 /** Immutable tour description produced by [tapTargetTour]. */
@@ -109,8 +113,9 @@ class TourBuilder {
         description: StringResource? = null,
         route: Route? = null,
         backgroundColor: Color = Color.Black.copy(alpha = 0.75f),
+        requireExactTap: Boolean = true,
     ) {
-        steps += TourStep(id, title, description, route, backgroundColor)
+        steps += TourStep(id, title, description, route, backgroundColor, requireExactTap = requireExactTap)
     }
 
     fun infoStep(
@@ -423,7 +428,7 @@ fun TapTargetOverlay(controller: TapTargetController) {
                 .fillMaxSize()
                 .pointerInput(step.id) {
                     detectTapGestures { offset ->
-                        if (highlightedBounds.contains(offset)) {
+                        if (!step.requireExactTap || highlightedBounds.contains(offset)) {
                             controller.next()
                         }
                     }

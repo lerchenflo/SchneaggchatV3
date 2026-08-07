@@ -19,14 +19,15 @@ import schneaggchatv3mp.composeapp.generated.resources.go_back
 
 @Composable
 fun BackButton(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
 
     val appVersion = koinInject<AppVersion>()
 
     IconButton(
         onClick = onBackClick,
-        modifier = Modifier
+        modifier = modifier
             .padding(top = 5.dp, start = 5.dp),
         colors = IconButtonDefaults.iconButtonColors().copy(
             containerColor = MaterialTheme.colorScheme.background
