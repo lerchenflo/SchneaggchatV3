@@ -632,7 +632,6 @@ fun Chatauswahlscreen(
                         contentPadding = PaddingValues(
                             start = 16.dp,
                             end = 16.dp,
-                            bottom = 16.dp
                         ),
                         state = liststate
                     ) {

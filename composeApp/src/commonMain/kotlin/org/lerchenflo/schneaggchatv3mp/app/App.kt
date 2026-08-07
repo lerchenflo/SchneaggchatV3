@@ -7,7 +7,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -33,6 +39,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
@@ -40,6 +47,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.ObserveAsEvents
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.app.navigation.navigationbaritems
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.LocalTapTargetController
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetController
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetOverlay
@@ -452,7 +460,48 @@ fun App() {
                     modifier = Modifier
                         .clearFocusOnTap()
                         .imePadding(),
-                    //contentWindowInsets = WindowInsets.c
+                    bottomBar = {
+
+                        val root = rootBackStack.lastOrNull() as? Route
+                        val activeRoute = when (root) {
+                            Route.Settings -> settingsBackStack.lastOrNull() as? Route ?: root
+                            Route.Games -> gamesBackStack.lastOrNull() as? Route ?: root
+                            else -> root
+                        }
+
+                        NavigationBar(
+                            containerColor = MaterialTheme.colorScheme.background,
+                            contentColor = MaterialTheme.colorScheme.onBackground,
+                            tonalElevation = 0.dp
+                        ) {
+                            navigationbaritems.forEach { template ->
+                                val selected = activeRoute == template.route
+
+                                NavigationBarItem(
+                                    selected = selected,
+                                    colors = NavigationBarItemDefaults.colors(
+                                        indicatorColor = MaterialTheme.colorScheme.surfaceVariant
+                                    ),
+                                    onClick = {
+                                        scope.launch {
+                                            navigator.navigate(template.route)
+                                        }
+                                    },
+                                    icon = {
+                                        Icon(
+                                            imageVector = if (selected) template.selectedIcon else template.unselectedIcon,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    label = {
+                                        Text(
+                                            text = stringResource(template.title)
+                                        )
+                                    },
+                                )
+                            }
+                        }
+                    }
 
                 ) { innerpadding ->
 
@@ -870,7 +919,7 @@ fun App() {
                             }
 
                         )
-
+                        
 
                     }
                 }

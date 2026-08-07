@@ -1075,4 +1075,12 @@
 
     <string name="ttt_thank_you">Thank you!</string>
     <string name="ttt_thank_you_description">Thank you for taking the tour! Enjoy using Schneaggchat.</string>
+
+    <string name="navbar_chats">chats</string>
+    <string name="navbar_settings">settings</string>
+    <string name="navbar_map">map</string>
+    <string name="navbar_games">games</string>
+
+
+
 </resources>
