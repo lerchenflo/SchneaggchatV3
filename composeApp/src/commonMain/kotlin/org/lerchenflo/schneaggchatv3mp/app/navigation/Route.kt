@@ -99,6 +99,9 @@ sealed interface Route : NavKey {
 
         @Serializable
         data object FingerPicker: Route
+
+        @Serializable
+        data object FlappyBird: Route
     }
 }
 
@@ -124,7 +127,8 @@ fun Route.parentRootOrNull(): Route? = when (this) {
     is Route.Games.OddOneOut,
     is Route.Games.Recap,
     is Route.Games.CoinFlip,
-    is Route.Games.FingerPicker -> Route.Games
+    is Route.Games.FingerPicker,
+    is Route.Games.FlappyBird -> Route.Games
 
     else -> null
 }

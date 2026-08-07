@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.games.presentation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.Blind
+import androidx.compose.material.icons.filled.FlightTakeoff
 import androidx.compose.material.icons.filled.GraphicEq
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.House
@@ -18,6 +19,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_title
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
 import schneaggchatv3mp.composeapp.generated.resources.games_fingerpicker_title
+import schneaggchatv3mp.composeapp.generated.resources.games_flappybird_title
 import schneaggchatv3mp.composeapp.generated.resources.games_gridrush_title
 import schneaggchatv3mp.composeapp.generated.resources.games_morse_title
 import schneaggchatv3mp.composeapp.generated.resources.games_oddoneout_title
@@ -73,6 +75,13 @@ class GameSelectorViewModel : ViewModel() {
             route = Route.Games.OddOneOut,
             inDev = false,
             gameId = GameId.ODDONEOUT
+        ),
+        GameScreenElement(
+            title = Res.string.games_flappybird_title,
+            icon = Icons.Default.FlightTakeoff,
+            route = Route.Games.FlappyBird,
+            inDev = false,
+            gameId = GameId.FLAPPYBIRD
         ),
         GameScreenElement(
             title = Res.string.games_coinflip_title,
