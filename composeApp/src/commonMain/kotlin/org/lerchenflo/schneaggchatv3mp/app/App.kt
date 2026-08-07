@@ -40,6 +40,11 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.ObserveAsEvents
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.LocalTapTargetController
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetController
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetOverlay
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.TourSettings
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.rememberOnboardingTour
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
@@ -57,10 +62,11 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
 import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerScreen
+import org.lerchenflo.schneaggchatv3mp.games.presentation.flappybird.FlappyBirdScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushScreenRoot
-import org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout.OddOneOutScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout.OddOneOutScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.SchneaggaHusScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
@@ -71,19 +77,12 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.FreeRoamBarPosition
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.LocalTapTargetController
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetController
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetOverlay
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.TourSettings
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.rememberOnboardingTour
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTargetTour
+import org.lerchenflo.schneaggchatv3mp.roadmap.presentation.RoadmapScreen
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
-import org.lerchenflo.schneaggchatv3mp.roadmap.presentation.RoadmapScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
@@ -97,35 +96,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
-import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map
-import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map_description
-import schneaggchatv3mp.composeapp.generated.resources.ttt_continue
-import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen
-import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen_description
-import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_create_group
-import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_go_back
-import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends
-import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_description
-import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_freeroam
-import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations
-import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_description
-import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_freeroam
-import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_settings
-import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_settings_description
-import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_snailtrail_description
-import schneaggchatv3mp.composeapp.generated.resources.ttt_settings
-import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_appearance
-import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_appearance_description
-import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc
-import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_app_broken
-import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_app_broken_description
-import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_bugreport
-import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_user
-import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_user_description
-import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_wake
-import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_wake_description
-import schneaggchatv3mp.composeapp.generated.resources.ttt_start_chatting
-import schneaggchatv3mp.composeapp.generated.resources.ttt_start_chatting_description
 import kotlin.time.Duration.Companion.milliseconds
 
 
@@ -225,6 +195,7 @@ fun App() {
                         subclass(Route.Games.Recap::class, Route.Games.Recap.serializer())
                         subclass(Route.Games.CoinFlip::class, Route.Games.CoinFlip.serializer())
                         subclass(Route.Games.FingerPicker::class, Route.Games.FingerPicker.serializer())
+                        subclass(Route.Games.FlappyBird::class, Route.Games.FlappyBird.serializer())
 
 
                     }
@@ -875,6 +846,16 @@ fun App() {
 
                                             entry <Route.Games.FingerPicker> {
                                                 FingerPickerScreen(
+                                                    onBackClick = {
+                                                        if (gamesBackStack.size > 1){
+                                                            gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                                        }
+                                                    }
+                                                )
+                                            }
+
+                                            entry <Route.Games.FlappyBird> {
+                                                FlappyBirdScreenRoot(
                                                     onBackClick = {
                                                         if (gamesBackStack.size > 1){
                                                             gamesBackStack.removeAt(gamesBackStack.size - 1)

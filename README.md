@@ -23,18 +23,19 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Features
 - Einführung in die Features
-- Morse Code Wörter je nach Sprache
-- Kurz den richtigen Tile anzeige bei odd one out
 - Annas Theme
 - Reaktionszeitpunkt in Nachrichtendetails anzeigen
 - @game Annotations
+- Flappy Schneagg Spiel
 - Schneaggmap: Anzahl zusammengefasster Freunde im Hock-Marker in der Mitte anzeigen
-- Schneaggmap: Eigenen Standort im Hock-Marker anzeigen (wenn im Radius) und eigenen Standort-Marker ausblenden
-- Zurückknopf auf IOS verwendet nun das IOS - Icon
+- Schneaggmap: Eigenen Standort im Hock-Marker anzeigen (wenn im Radius) und eigenen Standort-Marker ausblenden 
 - Neue Schneaggmap-Standorttypen: Eis (Preis pro Kugel) und WiFi (SSID und Passwort)
+- Zurückknopf auf IOS verwendet nun das IOS - Icon
 
 #### Bugfixes
 - Fingerpicker resetet nicht direkt
+- Morse Code Wörter je nach Sprache
+- Kurz den richtigen Tile anzeige bei odd one out
 
 ### 3.0.15
 ##### Highlights
