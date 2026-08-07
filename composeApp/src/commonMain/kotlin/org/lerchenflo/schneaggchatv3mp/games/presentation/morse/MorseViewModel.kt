@@ -10,8 +10,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
@@ -42,11 +40,13 @@ data class MorseChallengeState(
     val errors: Int = 0,
     val score: Int = 0,
     val isGameOver: Boolean = false,
-    val elapsedMillis: Long = 0L
+    val elapsedMillis: Long = 0L,
+    val charTimeLimitMs: Long = 5000L,
+    val charTimeRemainingMs: Long = 5000L
 )
 
 private const val HISTORY_LIMIT = 10
-private const val INVALID_CLEAR_DELAY_MS = 800L
+private const val INVALID_CLEAR_DELAY_MS = 350L
 private const val MAX_CODE_DEPTH = 5
 
 const val CHALLENGE_MAX_ERRORS = 3
@@ -75,12 +75,13 @@ class MorseViewModel(
         }
     }
 
-    var wordsList = when (selectedLanguage){
-        LanguageSetting.ENGLISH -> ENGLISH_WORDS
-        LanguageSetting.GERMAN -> GERMAN_WORDS
-        LanguageSetting.VORI -> VORI_WORDS
-        else -> ENGLISH_WORDS
-    }
+    val wordsList: List<String>
+        get() = when (selectedLanguage) {
+            LanguageSetting.ENGLISH -> ENGLISH_WORDS
+            LanguageSetting.GERMAN -> GERMAN_WORDS
+            LanguageSetting.VORI -> VORI_WORDS
+            else -> ENGLISH_WORDS
+        }
 
 
     fun addDot() = addSymbol(".")
@@ -108,17 +109,41 @@ class MorseViewModel(
         }
     }
 
-    /** Time before an entered character is committed — easier modes give more time. */
-    private fun autoCommitDelayMs(): Long {
-        val difficulty = if (_state.value.challenge != null) {
-            challengeDifficulty
-        } else {
-            GameDifficultySelection.selected
+    /** Initial character time limit by difficulty. */
+    private fun getInitialCharTimeLimitMs(difficulty: GameDifficulty): Long = when (difficulty) {
+        GameDifficulty.LOW -> 10000L
+        GameDifficulty.MEDIUM -> 7000L
+        GameDifficulty.HIGH -> 2500L
+    }
+
+    /** Calculate character time limit based on number of correctly typed characters.
+     *  Ramps up gradually ("not that fast") and caps at WW2 military speed (300-650 ms/char).
+     */
+    private fun calculateCharTimeLimitMs(charsTyped: Int, difficulty: GameDifficulty): Long {
+        val (initial, decay, minLimit) = when (difficulty) {
+            GameDifficulty.LOW -> Triple(10000L, 25L, 650L)       // ~18 WPM cap
+            GameDifficulty.MEDIUM -> Triple(7000L, 20L, 450L)     // ~27 WPM WW2 operator cap
+            GameDifficulty.HIGH -> Triple(2500L, 10L, 300L)       // ~40 WPM WW2 elite military speed
         }
-        return when (difficulty) {
-            GameDifficulty.LOW -> 2400L
-            GameDifficulty.MEDIUM -> 1800L
-            GameDifficulty.HIGH -> 1000L
+        return (initial - charsTyped * decay).coerceAtLeast(minLimit)
+    }
+
+    /** Time before an entered character is committed — lower in all modes and shrinks proportionally in challenge. */
+    private fun autoCommitDelayMs(): Long {
+        val challenge = _state.value.challenge
+        if (challenge != null) {
+            val ratio = when (challengeDifficulty) {
+                GameDifficulty.LOW -> 1200.0 / 10000.0
+                GameDifficulty.MEDIUM -> 800.0 / 7000.0
+                GameDifficulty.HIGH -> 500.0 / 2500.0
+            }
+            return (challenge.charTimeLimitMs * ratio).toLong().coerceAtLeast(80L)
+        } else {
+            return when (GameDifficultySelection.selected) {
+                GameDifficulty.LOW -> 1200L
+                GameDifficulty.MEDIUM -> 800L
+                GameDifficulty.HIGH -> 500L
+            }
         }
     }
 
@@ -144,15 +169,20 @@ class MorseViewModel(
         _state.update { it.copy(currentCode = "", currentChar = null, invalid = false) }
     }
 
+    private fun ensureInfiniteText(targetText: String, currentIndex: Int): String {
+        var text = targetText
+        if (text.length - currentIndex < 30) {
+            val newWords = wordsList.shuffled().take(6).joinToString(" ")
+            text = if (text.isEmpty()) newWords else "$text $newWords"
+        }
+        return text
+    }
+
     fun startChallenge() {
         autoCommitJob?.cancel()
         challengeDifficulty = GameDifficultySelection.selected
-        val wordCount = when (challengeDifficulty) {
-            GameDifficulty.LOW -> 3
-            GameDifficulty.MEDIUM -> 4
-            GameDifficulty.HIGH -> 6
-        }
-        val targetText = wordsList.shuffled().take(wordCount).joinToString(" ")
+        val initialText = ensureInfiniteText("", 0)
+        val initialTimeLimit = getInitialCharTimeLimitMs(challengeDifficulty)
         challengeStartTime = Clock.System.now().toEpochMilliseconds()
 
         _state.update {
@@ -160,7 +190,11 @@ class MorseViewModel(
                 currentCode = "",
                 currentChar = null,
                 invalid = false,
-                challenge = MorseChallengeState(targetText = targetText)
+                challenge = MorseChallengeState(
+                    targetText = initialText,
+                    charTimeLimitMs = initialTimeLimit,
+                    charTimeRemainingMs = initialTimeLimit
+                )
             )
         }
 
@@ -170,20 +204,72 @@ class MorseViewModel(
     private fun startChallengeTimer() {
         challengeTimerJob?.cancel()
         challengeTimerJob = viewModelScope.launch {
+            val tickMs = 50L
             while (true) {
+                delay(tickMs.milliseconds)
+                var submitScoreNeeded = false
+                var scoreToSubmit = 0
+
                 _state.update { state ->
                     val challenge = state.challenge
                     if (challenge == null || challenge.isGameOver) {
                         state
                     } else {
-                        state.copy(
-                            challenge = challenge.copy(
-                                elapsedMillis = Clock.System.now().toEpochMilliseconds() - challengeStartTime
+                        val elapsed = Clock.System.now().toEpochMilliseconds() - challengeStartTime
+                        val remaining = challenge.charTimeRemainingMs - tickMs
+
+                        if (remaining <= 0) {
+                            if (state.currentCode.isNotEmpty()) {
+                                // User is actively inputting morse code symbols! Keep timer at 0ms without resetting input
+                                state.copy(
+                                    challenge = challenge.copy(
+                                        elapsedMillis = elapsed,
+                                        charTimeRemainingMs = 0L
+                                    )
+                                )
+                            } else {
+                                // User is idle and timer ran out: penalize error & reset timer for retry
+                                autoCommitJob?.cancel()
+                                val newErrors = challenge.errors + 1
+                                val failed = newErrors >= CHALLENGE_MAX_ERRORS
+
+                                if (failed) {
+                                    submitScoreNeeded = true
+                                    scoreToSubmit = challenge.score
+                                }
+
+                                val charsTyped = challenge.score / CHALLENGE_POINTS_PER_CHAR
+                                val nextTimeLimit = calculateCharTimeLimitMs(charsTyped, challengeDifficulty)
+
+                                state.copy(
+                                    currentCode = "",
+                                    currentChar = null,
+                                    invalid = true,
+                                    challenge = challenge.copy(
+                                        errors = newErrors,
+                                        isGameOver = failed,
+                                        elapsedMillis = elapsed,
+                                        charTimeLimitMs = nextTimeLimit,
+                                        charTimeRemainingMs = nextTimeLimit
+                                    )
+                                )
+                            }
+                        } else {
+                            state.copy(
+                                challenge = challenge.copy(
+                                    elapsedMillis = elapsed,
+                                    charTimeRemainingMs = remaining
+                                )
                             )
-                        )
+                        }
                     }
                 }
-                delay(1000.milliseconds)
+
+                if (submitScoreNeeded) {
+                    challengeTimerJob?.cancel()
+                    submitChallengeScore(scoreToSubmit)
+                    break
+                }
             }
         }
     }
@@ -197,27 +283,43 @@ class MorseViewModel(
     private fun evaluateChallengeChar(char: Char, challenge: MorseChallengeState) {
         val target = challenge.targetText
 
-        var updated = if (char == target[challenge.currentIndex]) {
-            // Spaces cannot be typed in morse, skip them
+        if (char == target[challenge.currentIndex]) {
             var nextIndex = challenge.currentIndex + 1
             while (nextIndex < target.length && target[nextIndex] == ' ') nextIndex++
-            challenge.copy(
+            val updatedText = ensureInfiniteText(target, nextIndex)
+
+            val newScore = challenge.score + CHALLENGE_POINTS_PER_CHAR
+            val charsTyped = newScore / CHALLENGE_POINTS_PER_CHAR
+            val nextTimeLimit = calculateCharTimeLimitMs(charsTyped, challengeDifficulty)
+
+            val updated = challenge.copy(
+                targetText = updatedText,
                 currentIndex = nextIndex,
-                score = challenge.score + CHALLENGE_POINTS_PER_CHAR
+                score = newScore,
+                charTimeLimitMs = nextTimeLimit,
+                charTimeRemainingMs = nextTimeLimit
             )
+            _state.update { it.copy(challenge = updated) }
         } else {
-            challenge.copy(errors = challenge.errors + 1)
-        }
+            val newErrors = challenge.errors + 1
+            val failed = newErrors >= CHALLENGE_MAX_ERRORS
 
-        val completed = updated.currentIndex >= target.length
-        val failed = updated.errors >= CHALLENGE_MAX_ERRORS
-        if (completed || failed) {
-            updated = updated.copy(isGameOver = true)
-            challengeTimerJob?.cancel()
-            submitChallengeScore(updated.score)
-        }
+            val charsTyped = challenge.score / CHALLENGE_POINTS_PER_CHAR
+            val nextTimeLimit = calculateCharTimeLimitMs(charsTyped, challengeDifficulty)
 
-        _state.update { it.copy(challenge = updated) }
+            val updated = challenge.copy(
+                errors = newErrors,
+                isGameOver = failed,
+                charTimeLimitMs = nextTimeLimit,
+                charTimeRemainingMs = nextTimeLimit
+            )
+            triggerInvalid()
+            if (failed) {
+                challengeTimerJob?.cancel()
+                submitChallengeScore(updated.score)
+            }
+            _state.update { it.copy(challenge = updated) }
+        }
     }
 
     private fun submitChallengeScore(score: Int) {

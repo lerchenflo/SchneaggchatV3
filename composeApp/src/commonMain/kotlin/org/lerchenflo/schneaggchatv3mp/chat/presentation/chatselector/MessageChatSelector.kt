@@ -43,8 +43,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -60,9 +62,12 @@ fun MessageChatSelector(
     modifier: Modifier = Modifier
 ) {
     val chatSelectorViewModel = koinViewModel<ChatSelectorViewModel>()
+    val preferencemanager = koinInject<Preferencemanager>()
 
     val availablegegners by chatSelectorViewModel.chatSelectorState.collectAsStateWithLifecycle(emptyList())
     val searchterm by chatSelectorViewModel.searchTerm.collectAsStateWithLifecycle()
+    val highlightTodaysTimestamp by preferencemanager.getHighlightTodaysMessageTimestampFlow()
+        .collectAsStateWithLifecycle(initialValue = true)
 
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
@@ -218,6 +223,7 @@ fun MessageChatSelector(
                     lastMessage = gegner.lastMessage,
                     onClickGes = { chatSelectorViewModel.onChatSelectedWithMessage(gegner) },
                     showPin = true,
+                    highlightTodaysTimestamp = highlightTodaysTimestamp,
                     ownId = ownId
 
                 )

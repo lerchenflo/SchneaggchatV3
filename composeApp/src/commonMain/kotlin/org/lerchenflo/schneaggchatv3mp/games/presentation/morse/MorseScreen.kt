@@ -18,6 +18,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -200,11 +202,28 @@ private fun ChallengeHeader(
                 )
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            val timerProgress = (challenge.charTimeRemainingMs.toFloat() / challenge.charTimeLimitMs.coerceAtLeast(1L))
+                .coerceIn(0f, 1f)
+            val timerColor = if (timerProgress < 0.25f) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+
+            LinearProgressIndicator(
+                progress = { timerProgress },
+                modifier = Modifier.fillMaxWidth().height(6.dp),
+                color = timerColor,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            val startIndex = (challenge.currentIndex - 8).coerceAtLeast(0)
+            val endIndex = (challenge.currentIndex + 16).coerceAtMost(challenge.targetText.length)
 
             Text(
                 text = buildAnnotatedString {
-                    challenge.targetText.forEachIndexed { index, char ->
+                    for (index in startIndex until endIndex) {
+                        val char = challenge.targetText[index]
                         when {
                             index < challenge.currentIndex -> withStyle(
                                 SpanStyle(
@@ -215,8 +234,9 @@ private fun ChallengeHeader(
 
                             index == challenge.currentIndex -> withStyle(
                                 SpanStyle(
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    background = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.ExtraBold,
                                     textDecoration = TextDecoration.Underline
                                 )
                             ) { append(char) }
@@ -227,8 +247,11 @@ private fun ChallengeHeader(
                         }
                     }
                 },
-                fontSize = 20.sp,
-                letterSpacing = 2.sp
+                fontSize = 22.sp,
+                letterSpacing = 3.sp,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Clip
             )
         }
     }

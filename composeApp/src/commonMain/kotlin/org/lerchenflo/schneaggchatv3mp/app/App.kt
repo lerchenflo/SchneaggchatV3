@@ -7,7 +7,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -33,6 +39,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
@@ -40,11 +47,13 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.ObserveAsEvents
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.app.navigation.navigationbaritems
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.LocalTapTargetController
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetController
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetOverlay
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TourSettings
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.rememberOnboardingTour
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
@@ -258,13 +267,20 @@ fun App() {
                 }
             }
 
-
             when(action){
                 is NavigationAction.Navigate -> {
                     if (navigationOptions.exitAllPreviousScreens){
                         rootBackStack.clear()
                     }
 
+                    // Ensure max 1 item per route type: if the route already exists,
+                    // remove it and everything above it on the backstack
+                    val existingIndex = rootBackStack.indexOfFirst { it::class == action.destination::class }
+                    if (existingIndex >= 0) {
+                        while (rootBackStack.size > existingIndex) {
+                            rootBackStack.removeAt(rootBackStack.size - 1)
+                        }
+                    }
                     rootBackStack.add(action.destination)
                 }
 
@@ -280,9 +296,21 @@ fun App() {
                     when(action.rootRoute)
                     {
                         Route.Games -> {
+                            val existingIndex = gamesBackStack.indexOfFirst { it::class == action.destination::class }
+                            if (existingIndex >= 0) {
+                                while (gamesBackStack.size > existingIndex) {
+                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
+                                }
+                            }
                             gamesBackStack.add(action.destination)
                         }
                         Route.Settings -> {
+                            val existingIndex = settingsBackStack.indexOfFirst { it::class == action.destination::class }
+                            if (existingIndex >= 0) {
+                                while (settingsBackStack.size > existingIndex) {
+                                    settingsBackStack.removeAt(settingsBackStack.size - 1)
+                                }
+                            }
                             settingsBackStack.add(action.destination)
                         }
                         else -> {
@@ -452,7 +480,53 @@ fun App() {
                     modifier = Modifier
                         .clearFocusOnTap()
                         .imePadding(),
-                    //contentWindowInsets = WindowInsets.c
+                    bottomBar = {
+
+                        val root = rootBackStack.lastOrNull() as? Route
+                        val activeRoute = when (root) {
+                            Route.Settings -> settingsBackStack.lastOrNull() as? Route ?: root
+                            Route.Games -> gamesBackStack.lastOrNull() as? Route ?: root
+                            else -> root
+                        }
+
+                        if (root is Route.ChatSelector || root is Route.Schneaggmap || (root is Route.Games && activeRoute == Route.Games.GamesSelector)) {
+                            NavigationBar(
+                                containerColor = MaterialTheme.colorScheme.background,
+                                contentColor = MaterialTheme.colorScheme.onBackground,
+                                tonalElevation = 0.dp
+                            ) {
+                                navigationbaritems.forEach { template ->
+                                    val selected = activeRoute == template.route || (template.route is Route.Games && root is Route.Games)
+
+                                    if (template.mobileOnly && !appRepository.appVersion.isMobile()) return@forEach
+
+                                    NavigationBarItem(
+                                        modifier = Modifier.tapTarget(template.id),
+                                        selected = selected,
+                                        colors = NavigationBarItemDefaults.colors(
+                                            indicatorColor = MaterialTheme.colorScheme.surfaceVariant
+                                        ),
+                                        onClick = {
+                                            scope.launch {
+                                                navigator.navigate(template.route)
+                                            }
+                                        },
+                                        icon = {
+                                            Icon(
+                                                imageVector = if (selected) template.selectedIcon else template.unselectedIcon,
+                                                contentDescription = null
+                                            )
+                                        },
+                                        label = {
+                                            Text(
+                                                text = stringResource(template.title)
+                                            )
+                                        },
+                                    )
+                                }
+                            }
+                        }
+                    }
 
                 ) { innerpadding ->
 
@@ -870,7 +944,7 @@ fun App() {
                             }
 
                         )
-
+                        
 
                     }
                 }
