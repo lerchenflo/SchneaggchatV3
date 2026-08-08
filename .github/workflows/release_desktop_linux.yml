@@ -1,0 +1,44 @@
+name: Desktop DEB and RPM artifact CI
+
+on:
+  push:
+    branches: [ "main"]
+
+jobs:
+  build-linux-packages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21' 
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+         run: chmod +x gradlew
+
+      # 1. Install the tools for BOTH formats
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fakeroot rpm
+
+      # 2. Build the .deb file
+      - name: Build DEB
+        run: ./gradlew packageReleaseDeb
+
+      # 3. Build the .rpm file
+      - name: Build RPM
+        run: ./gradlew packageReleaseRpm
+
+      # 4. Upload both as artifacts
+      - name: Upload Linux Binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-packages
+          path: |
+            composeApp/build/compose/binaries/main-release/deb/*.deb
+            composeApp/build/compose/binaries/main-release/rpm/*.rpm
