@@ -311,6 +311,9 @@ compose.desktop {
 
             }
         }
+        buildTypes.release.proguard {
+            isEnabled.set(false) // disable ProGuard
+        }
     }
 }
 
