@@ -21,6 +21,8 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import io.ktor.util.network.UnresolvedAddressException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.io.IOException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -117,8 +119,8 @@ class NetworkUtils(
             NetworkResult.Error(NetworkError.RequestTimeout())
         } catch (e: IOException) {
             // Covers SocketTimeoutException, UnknownHostException, etc. on JVM/Android
-            println("Going offline: IO exception - ${e.message}")
-            e.printStackTrace()
+            //println("Going offline: IO exception - ${e.message}")
+            //e.printStackTrace()
             setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: SerializationException) {
@@ -126,6 +128,8 @@ class NetworkUtils(
             loggingRepository.logWarning("SerializationException: ${e.message}")
             NetworkResult.Error(NetworkError.Serialization(message = e.message))
         } catch (e: Exception) {
+            currentCoroutineContext().ensureActive() //Check for cancellation exceptions
+
             // ✅ Detect platform-specific network errors by message/type name
             // on iOS, NSURLErrorDomain errors land here as they don't extend IOException
             val isNetworkError = isNetworkException(e)
