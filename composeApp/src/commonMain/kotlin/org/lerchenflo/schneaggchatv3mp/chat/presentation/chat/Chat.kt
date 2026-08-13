@@ -522,218 +522,117 @@ fun ChatScreen(
                 }
             }
 
-            // Reply view
-            viewModel.replyMessage?.let { replyMessage ->
-                ReplyPreview(
-                    ownId = ownId,
-                    message = replyMessage,
-                    useMD = viewModel.markdownEnabled,
-                    selectedChatId = viewModel.chatId,
-                    onDismiss = { viewModel.updateReplyMessage(null) }
-                )
-            }
-
-            //Inputrow for sending messages
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                verticalAlignment = Alignment.Bottom
-            ) {
-                // button zum züg addden
-
-                val currentContent by viewModel.currentSendContent.collectAsState()
-                val currentContentNotEmpty = currentContent !is SendMessageContent.TextContent
-                        || (currentContent as? SendMessageContent.TextContent)?.textMessage?.text?.isNotEmpty() == true
+            Column() { //Column that the reply preview does not take the remaining space
 
 
-                if(!currentContentNotEmpty){
-                    IconButton(
-                        onClick = { addMediaDropdownExpanded = true },
-                        modifier = Modifier
-                            .padding(5.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AttachFile,
-                            contentDescription = stringResource(Res.string.add)
-                        )
-                    }
-
-                }
-
-
-                if (addMediaDropdownExpanded) {
-                    DropdownMenu(
-                        expanded = addMediaDropdownExpanded,
-                        onDismissRequest = { addMediaDropdownExpanded = false }
-                    ) {
-                        AddMediaOptions.entries.forEach { option ->
-
-                            /*
-                            val dev = SessionCache.requireLoggedIn()?.developer ?: return@DropdownMenu
-                            if(!dev) {
-                                if (option == AddMediaOptions.AUDIO) return@forEach //Removes audio if no dev
-                            }
-
-                             */
-
-
-                            DropdownMenuItem(
-                                text = {
-                                    Row {
-                                        Icon(
-                                            imageVector = option.getIcon(),
-                                            contentDescription = option.toUiText().asString(),
-                                        )
-                                        Spacer(Modifier.width(5.dp))
-                                        Text(
-                                            text = option.toUiText().asString()
-                                        )
-                                    }
-                                },
-                                onClick = {
-                                    addMediaDropdownExpanded = false
-                                    option.getAction(
-                                        onPollAction = { showPollDialog = true },
-                                        onImageAction = { showImagePickerDialog = true }, // todo actions übergeaba
-                                    )
-                                }
-                            )
-                        }
-                    }
-                }
-
-                if(showPollDialog){
-                    PollDialog(
-                        onDismiss = { showPollDialog = false },
-                        onCreatePoll = {
-                            println("Poll created: $it")
-                            viewModel.createPollMessage(it)
-                        }
+                // Reply view
+                viewModel.replyMessage?.let { replyMessage ->
+                    ReplyPreview(
+                        ownId = ownId,
+                        message = replyMessage,
+                        useMD = viewModel.markdownEnabled,
+                        selectedChatId = viewModel.chatId,
+                        onDismiss = { viewModel.updateReplyMessage(null) },
                     )
                 }
 
-                //sendinput (This is a rowscope)
-                when (val content = currentContent) {
-                    is SendMessageContent.TextContent -> {
-                        ComboInputField(
-                            value = content.textMessage,
-                            onValueChange = { newValue ->
-                                viewModel.updateSendContent(SendMessageContent.TextContent(newValue))
-                            },
-                            shape = RoundedCornerShape(12.dp),
+
+                //Inputrow for sending messages
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    // button zum züg addden
+
+                    val currentContent by viewModel.currentSendContent.collectAsState()
+                    val currentContentNotEmpty = currentContent !is SendMessageContent.TextContent
+                            || (currentContent as? SendMessageContent.TextContent)?.textMessage?.text?.isNotEmpty() == true
+
+
+                    if(!currentContentNotEmpty){
+                        IconButton(
+                            onClick = { addMediaDropdownExpanded = true },
                             modifier = Modifier
-                                .weight(1f)
-                                .onPreviewKeyEvent { event ->
-                                    if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
-                                        if (event.isShiftPressed) {
-                                            val text = content.textMessage.text
-                                            val selection = content.textMessage.selection  // requires TextFieldValue in state
-                                            val cursorPos = selection.start
-                                            val newText = text.substring(0, cursorPos) + "\n" + text.substring(cursorPos)
-                                            val newCursorPos = cursorPos + 1
+                                .padding(5.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AttachFile,
+                                contentDescription = stringResource(Res.string.add)
+                            )
+                        }
 
-                                            viewModel.updateSendContent(
-                                                SendMessageContent.TextContent(
-                                                    textMessage = TextFieldValue(
-                                                        text = newText,
-                                                        selection = TextRange(newCursorPos)
-                                                    )
-                                                )
+                    }
+
+
+                    if (addMediaDropdownExpanded) {
+                        DropdownMenu(
+                            expanded = addMediaDropdownExpanded,
+                            onDismissRequest = { addMediaDropdownExpanded = false }
+                        ) {
+                            AddMediaOptions.entries.forEach { option ->
+
+                                /*
+                                val dev = SessionCache.requireLoggedIn()?.developer ?: return@DropdownMenu
+                                if(!dev) {
+                                    if (option == AddMediaOptions.AUDIO) return@forEach //Removes audio if no dev
+                                }
+
+                                 */
+
+
+                                DropdownMenuItem(
+                                    text = {
+                                        Row {
+                                            Icon(
+                                                imageVector = option.getIcon(),
+                                                contentDescription = option.toUiText().asString(),
                                             )
-
-
-                                            return@onPreviewKeyEvent true  // true to consume and prevent double newline
-                                        } else {
-                                            viewModel.sendMessage(
-                                                message = viewModel.currentSendContent.value,
-                                                replyTo = viewModel.replyMessage
+                                            Spacer(Modifier.width(5.dp))
+                                            Text(
+                                                text = option.toUiText().asString()
                                             )
-                                            return@onPreviewKeyEvent true
                                         }
+                                    },
+                                    onClick = {
+                                        addMediaDropdownExpanded = false
+                                        option.getAction(
+                                            onPollAction = { showPollDialog = true },
+                                            onImageAction = { showImagePickerDialog = true }, // todo actions übergeaba
+                                        )
                                     }
-                                    false
-                                },
-                            placeholder = { Text(stringResource(Res.string.message) + " ...") }
+                                )
+                            }
+                        }
+                    }
+
+                    if(showPollDialog){
+                        PollDialog(
+                            onDismiss = { showPollDialog = false },
+                            onCreatePoll = {
+                                println("Poll created: $it")
+                                viewModel.createPollMessage(it)
+                            }
                         )
                     }
 
-                    is SendMessageContent.ImageContent -> {
-                        Column(
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            // Multi-image preview row
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                content.images.forEach { imageBytes ->
-                                    Box(
-                                        modifier = Modifier
-                                            .size(80.dp) // fixed thumbnail size
-                                            .border(
-                                                width = 1.dp,
-                                                color = MaterialTheme.colorScheme.outline,
-                                                shape = RoundedCornerShape(12.dp)
-                                            )
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
-                                    ) {
-                                        Image(
-                                            painter = BitmapPainter(imageBytes.decodeToImageBitmap()),
-                                            contentDescription = "image to send",
-                                            contentScale = ContentScale.Crop,
-                                            modifier = Modifier.fillMaxSize()
-                                        )
-                                        // Close button per image
-                                        Box(
-                                            modifier = Modifier
-                                                .align(Alignment.TopEnd)
-                                                .padding(2.dp)
-                                                .size(20.dp)
-                                                .clip(CircleShape)
-                                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
-                                                .clickable {
-                                                    val remaining = content.images - imageBytes
-                                                    viewModel.updateSendContent(
-                                                        if (remaining.isEmpty())
-                                                            SendMessageContent.TextContent(
-                                                                content.text)
-                                                        else
-                                                            content.copy(images = remaining)
-                                                    )
-                                                },
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Close,
-                                                contentDescription = "Remove image",
-                                                modifier = Modifier.size(14.dp),
-                                                tint = MaterialTheme.colorScheme.onSurface
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-
+                    //sendinput (This is a rowscope)
+                    when (val content = currentContent) {
+                        is SendMessageContent.TextContent -> {
                             ComboInputField(
-                                value = content.text,
+                                value = content.textMessage,
                                 onValueChange = { newValue ->
-                                    viewModel.updateSendContent(
-                                        content.copy(text = newValue)
-                                    )
+                                    viewModel.updateSendContent(SendMessageContent.TextContent(newValue))
                                 },
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier
-                                    .fillMaxWidth()
+                                    .weight(1f)
                                     .onPreviewKeyEvent { event ->
-
                                         if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
                                             if (event.isShiftPressed) {
-                                                val text = content.text.text
-                                                val selection = content.text.selection  // requires TextFieldValue in state
+                                                val text = content.textMessage.text
+                                                val selection = content.textMessage.selection  // requires TextFieldValue in state
                                                 val cursorPos = selection.start
                                                 val newText = text.substring(0, cursorPos) + "\n" + text.substring(cursorPos)
                                                 val newCursorPos = cursorPos + 1
@@ -762,222 +661,331 @@ fun ChatScreen(
                                 placeholder = { Text(stringResource(Res.string.message) + " ...") }
                             )
                         }
-                    }
-                    is SendMessageContent.AudioContent -> {
-                        Row(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(56.dp) // Match standard TextField height
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
-                                .padding(horizontal = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            if(content.isRecording){
-                                // Recording Dot (You could add an InfiniteTransition animation here for pulsing)
-                                Box(
-                                    modifier = Modifier
-                                        .size(8.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.Red)
-                                )
 
-                                Spacer(Modifier.width(8.dp))
-
-                                // Timer
-                                Text(
-                                    text = formatMillis(content.duration),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-
-                                // Visualizer Placeholder
-                                // todo actual visualizer
+                        is SendMessageContent.ImageContent -> {
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                // Multi-image preview row
                                 Row(
                                     modifier = Modifier
-                                        .weight(1f)
-                                        .padding(horizontal = 12.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(2.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                                        .fillMaxWidth()
+                                        .horizontalScroll(rememberScrollState()),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    // Simple static bars to represent audio levels
-                                    repeat(15) { index ->
+                                    content.images.forEach { imageBytes ->
                                         Box(
                                             modifier = Modifier
-                                                .width(3.dp)
-                                                .height((10..24).random().dp)
-                                                .clip(CircleShape)
-                                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.6f))
-                                        )
-                                    }
-                                }
-
-                                val maxVoiceMsgTime = viewModel.getMAX_VOICE_MSG_TIME()
-
-                                if(content.duration > maxVoiceMsgTime*0.8){
-                                    Text(
-                                        text = formatMillis(maxVoiceMsgTime - content.duration),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.error
-                                    )
-                                }
-
-
-                            }else{
-                                val tmpMsgId = "audio_record_tmp"
-                                val progress by viewModel.getPlaybackProgress().collectAsState()
-                                val isThisMessagePlaying = progress.messageId == tmpMsgId
-                                val currentPosition = if (isThisMessagePlaying) progress.currentPosition else 0L
-
-                                // Pre-fetch the audio duration for the recorded file
-                                var prefetchedDuration by remember { mutableLongStateOf(0L) }
-                                val audioPath = content.audioPath
-
-                                LaunchedEffect(audioPath) {
-                                    if (audioPath.isNotEmpty()) {
-                                        try {
-                                            prefetchedDuration = viewModel.getAudioDuration(audioPath)
-                                        } catch (e: Exception) {
-                                            // Silently fail - duration will remain 0
+                                                .size(80.dp) // fixed thumbnail size
+                                                .border(
+                                                    width = 1.dp,
+                                                    color = MaterialTheme.colorScheme.outline,
+                                                    shape = RoundedCornerShape(12.dp)
+                                                )
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                                        ) {
+                                            Image(
+                                                painter = BitmapPainter(imageBytes.decodeToImageBitmap()),
+                                                contentDescription = "image to send",
+                                                contentScale = ContentScale.Crop,
+                                                modifier = Modifier.fillMaxSize()
+                                            )
+                                            // Close button per image
+                                            Box(
+                                                modifier = Modifier
+                                                    .align(Alignment.TopEnd)
+                                                    .padding(2.dp)
+                                                    .size(20.dp)
+                                                    .clip(CircleShape)
+                                                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                                                    .clickable {
+                                                        val remaining = content.images - imageBytes
+                                                        viewModel.updateSendContent(
+                                                            if (remaining.isEmpty())
+                                                                SendMessageContent.TextContent(
+                                                                    content.text)
+                                                            else
+                                                                content.copy(images = remaining)
+                                                        )
+                                                    },
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Close,
+                                                    contentDescription = "Remove image",
+                                                    modifier = Modifier.size(14.dp),
+                                                    tint = MaterialTheme.colorScheme.onSurface
+                                                )
+                                            }
                                         }
                                     }
                                 }
 
-                                val duration = if (isThisMessagePlaying) progress.duration else prefetchedDuration
-                                val isPlaying = isThisMessagePlaying && progress.isPlaying
-                                AudioPlayerView(
-                                    isPlaying = isPlaying,
-                                    currentPosition = currentPosition,
-                                    duration = duration,
-                                    onPlay = {
-                                        viewModel.playAudio(
-                                            messageId = tmpMsgId,
-                                            path = (viewModel.currentSendContent.value as SendMessageContent.AudioContent).audioPath
+                                ComboInputField(
+                                    value = content.text,
+                                    onValueChange = { newValue ->
+                                        viewModel.updateSendContent(
+                                            content.copy(text = newValue)
                                         )
                                     },
-                                    onPause = {
-                                        viewModel.pauseAudio()
-                                    },
-                                    onSeek = {
-                                        viewModel.seekAudio(it)
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                )
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .onPreviewKeyEvent { event ->
 
-                            }
+                                            if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
+                                                if (event.isShiftPressed) {
+                                                    val text = content.text.text
+                                                    val selection = content.text.selection  // requires TextFieldValue in state
+                                                    val cursorPos = selection.start
+                                                    val newText = text.substring(0, cursorPos) + "\n" + text.substring(cursorPos)
+                                                    val newCursorPos = cursorPos + 1
+
+                                                    viewModel.updateSendContent(
+                                                        SendMessageContent.TextContent(
+                                                            textMessage = TextFieldValue(
+                                                                text = newText,
+                                                                selection = TextRange(newCursorPos)
+                                                            )
+                                                        )
+                                                    )
 
 
-                            // Delete/Discard Button
-                            IconButton(
-                                onClick = {
-                                    // Reset to empty text or previous state
-                                    viewModel.stopRecording()
-                                    viewModel.updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Discard recording",
-                                    tint = MaterialTheme.colorScheme.error
+                                                    return@onPreviewKeyEvent true  // true to consume and prevent double newline
+                                                } else {
+                                                    viewModel.sendMessage(
+                                                        message = viewModel.currentSendContent.value,
+                                                        replyTo = viewModel.replyMessage
+                                                    )
+                                                    return@onPreviewKeyEvent true
+                                                }
+                                            }
+                                            false
+                                        },
+                                    placeholder = { Text(stringResource(Res.string.message) + " ...") }
                                 )
                             }
                         }
-                    }
-                }
-
-
-
-                if(viewModel.editMessage == null){ // schoua ob mir gad a nachricht bearbeitend
-
-                    // show send when content is not empty or on desktop (no microphone implementation for desktop)
-                    if(currentContentNotEmpty || viewModel.isDesktop()){
-                        if((currentContent as? SendMessageContent.AudioContent)?.isRecording ?: false){
-                            IconButton(
-                                onClick = {
-                                    // Reset to empty text or previous state
-                                    viewModel.stopRecording()
-                                }
+                        is SendMessageContent.AudioContent -> {
+                            Row(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(56.dp) // Match standard TextField height
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+                                    .padding(horizontal = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.StopCircle,
-                                    contentDescription = "Discard recording",
-                                    //tint = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        }else {
+                                if(content.isRecording){
+                                    // Recording Dot (You could add an InfiniteTransition animation here for pulsing)
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(Color.Red)
+                                    )
 
-                            // send button
+                                    Spacer(Modifier.width(8.dp))
+
+                                    // Timer
+                                    Text(
+                                        text = formatMillis(content.duration),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+
+                                    // Visualizer Placeholder
+                                    // todo actual visualizer
+                                    Row(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(horizontal = 12.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        // Simple static bars to represent audio levels
+                                        repeat(15) { index ->
+                                            Box(
+                                                modifier = Modifier
+                                                    .width(3.dp)
+                                                    .height((10..24).random().dp)
+                                                    .clip(CircleShape)
+                                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.6f))
+                                            )
+                                        }
+                                    }
+
+                                    val maxVoiceMsgTime = viewModel.getMAX_VOICE_MSG_TIME()
+
+                                    if(content.duration > maxVoiceMsgTime*0.8){
+                                        Text(
+                                            text = formatMillis(maxVoiceMsgTime - content.duration),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+
+
+                                }else{
+                                    val tmpMsgId = "audio_record_tmp"
+                                    val progress by viewModel.getPlaybackProgress().collectAsState()
+                                    val isThisMessagePlaying = progress.messageId == tmpMsgId
+                                    val currentPosition = if (isThisMessagePlaying) progress.currentPosition else 0L
+
+                                    // Pre-fetch the audio duration for the recorded file
+                                    var prefetchedDuration by remember { mutableLongStateOf(0L) }
+                                    val audioPath = content.audioPath
+
+                                    LaunchedEffect(audioPath) {
+                                        if (audioPath.isNotEmpty()) {
+                                            try {
+                                                prefetchedDuration = viewModel.getAudioDuration(audioPath)
+                                            } catch (e: Exception) {
+                                                // Silently fail - duration will remain 0
+                                            }
+                                        }
+                                    }
+
+                                    val duration = if (isThisMessagePlaying) progress.duration else prefetchedDuration
+                                    val isPlaying = isThisMessagePlaying && progress.isPlaying
+                                    AudioPlayerView(
+                                        isPlaying = isPlaying,
+                                        currentPosition = currentPosition,
+                                        duration = duration,
+                                        onPlay = {
+                                            viewModel.playAudio(
+                                                messageId = tmpMsgId,
+                                                path = (viewModel.currentSendContent.value as SendMessageContent.AudioContent).audioPath
+                                            )
+                                        },
+                                        onPause = {
+                                            viewModel.pauseAudio()
+                                        },
+                                        onSeek = {
+                                            viewModel.seekAudio(it)
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    )
+
+                                }
+
+
+                                // Delete/Discard Button
+                                IconButton(
+                                    onClick = {
+                                        // Reset to empty text or previous state
+                                        viewModel.stopRecording()
+                                        viewModel.updateSendContent(SendMessageContent.TextContent(TextFieldValue("")))
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Discard recording",
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+
+
+                    if(viewModel.editMessage == null){ // schoua ob mir gad a nachricht bearbeitend
+
+                        // show send when content is not empty or on desktop (no microphone implementation for desktop)
+                        if(currentContentNotEmpty || viewModel.isDesktop()){
+                            if((currentContent as? SendMessageContent.AudioContent)?.isRecording ?: false){
+                                IconButton(
+                                    onClick = {
+                                        // Reset to empty text or previous state
+                                        viewModel.stopRecording()
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.StopCircle,
+                                        contentDescription = "Discard recording",
+                                        //tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
+                            }else {
+
+                                // send button
+                                IconButton(
+                                    onClick = {
+                                        viewModel.sendMessage(
+                                            message = viewModel.currentSendContent.value,
+                                            replyTo = viewModel.replyMessage
+                                        )
+                                    },
+                                    modifier = Modifier
+                                        .padding(5.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.Send,
+                                        contentDescription = null,
+                                    )
+                                }
+                            }
+                        }else{
                             IconButton(
                                 onClick = {
-                                    viewModel.sendMessage(
-                                        message = viewModel.currentSendContent.value,
-                                        replyTo = viewModel.replyMessage
-                                    )
+                                    viewModel.startRecording()
                                 },
                                 modifier = Modifier
                                     .padding(5.dp)
+
                             ) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.Send,
+                                    imageVector = Icons.Default.Mic,
                                     contentDescription = null,
                                 )
                             }
                         }
+
+
                     }else{
+
+                        //Cancel reply button
                         IconButton(
                             onClick = {
-                                viewModel.startRecording()
+                                viewModel.onAction(MessageAction.CancelEditMessage)
                             },
                             modifier = Modifier
                                 .padding(5.dp)
-
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Mic,
-                                contentDescription = null,
+                                imageVector = Icons.Default.Cancel,
+                                contentDescription = stringResource(Res.string.cancel),
                             )
                         }
-                    }
 
-
-                }else{
-
-                    //Cancel reply button
-                    IconButton(
-                        onClick = {
-                            viewModel.onAction(MessageAction.CancelEditMessage)
-                        },
-                        modifier = Modifier
-                            .padding(5.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Cancel,
-                            contentDescription = stringResource(Res.string.cancel),
-                        )
-                    }
-
-                    //edit message button
-                    IconButton(
-                        onClick = {
-                            viewModel.editMessage(
-                                message = viewModel.editMessage,
-                                content = viewModel.currentSendContent.value
+                        //edit message button
+                        IconButton(
+                            onClick = {
+                                viewModel.editMessage(
+                                    message = viewModel.editMessage,
+                                    content = viewModel.currentSendContent.value
+                                )
+                            },
+                            modifier = Modifier
+                                .padding(5.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = stringResource(Res.string.edit),
                             )
-                        },
-                        modifier = Modifier
-                            .padding(5.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = stringResource(Res.string.edit),
-                        )
+                        }
+                        // mdtodo
                     }
-                    // mdtodo
+
+
+
                 }
 
-
-
             }
+
+
 
         }
     }

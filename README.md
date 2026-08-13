@@ -40,6 +40,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Kurz den richtigen Tile anzeige bei odd one out
 - Einstellung für farbige Zeit bei heutigen Nachrichten (Standard aus)
 - Umfragen Titelformatierung
+- Antworten auf große Nachrichten
 
 ### 3.0.15
 ##### Highlights
