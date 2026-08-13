@@ -38,7 +38,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Infinite loading screen beim Öffnen der App über Benachrichtigungen behoben
 - Morse Code verbessert
 - Kurz den richtigen Tile anzeige bei odd one out
-- Einstellung für farbige Zeit bei heutigen Nachrichten
+- Einstellung für farbige Zeit bei heutigen Nachrichten (Standard aus)
+- Umfragen Titelformatierung
 
 ### 3.0.15
 ##### Highlights

@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withLink
 import com.mikepenz.markdown.m3.Markdown
+import com.mikepenz.markdown.m3.markdownTypography
 import com.mikepenz.markdown.model.DefaultMarkdownColors
 
 /**
@@ -77,6 +78,7 @@ fun ComboText(
             Markdown(
                 content = markdownContent,
                 modifier = modifier,
+                typography = markdownTypography(paragraph = style),
 
                 colors = DefaultMarkdownColors(
                     text = textColor,
