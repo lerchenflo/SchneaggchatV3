@@ -23,6 +23,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Features
 - Einführung in die Features
+- Bottom Navigation Bar
 - Annas Theme
 - Reaktionszeitpunkt in Nachrichtendetails anzeigen
 - @game Annotations
@@ -34,8 +35,10 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Bugfixes
 - Fingerpicker resetet nicht direkt
-- Morse Code Wörter je nach Sprache
+- Infinite loading screen beim Öffnen der App über Benachrichtigungen behoben
+- Morse Code verbessert
 - Kurz den richtigen Tile anzeige bei odd one out
+- Einstellung für farbige Zeit bei heutigen Nachrichten
 
 ### 3.0.15
 ##### Highlights

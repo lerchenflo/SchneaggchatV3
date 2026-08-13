@@ -83,6 +83,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziScreenRoot
+import org.lerchenflo.schneaggchatv3mp.login.presentation.autologincredchecker.AutoLoginCredCheckerRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
@@ -214,6 +215,14 @@ fun App() {
         )
 
 
+
+        LaunchedEffect(Unit) {
+            while (true) {
+                delay(2000)
+
+                println("DEBUG: ROOTBACKSTACK: ${rootBackStack.toList()}")
+            }
+        }
 
         //Initialize navigator (TO navigate from viewmodels)
         val navigator = koinInject<Navigator>()
@@ -557,74 +566,7 @@ fun App() {
 
                                 //Authentication
                                 entry<Route.AutoLoginCredChecker> {
-                                    val globalViewModel = koinInject<GlobalViewModel>()
-
-                                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                        CircularProgressIndicator()
-                                    }
-                                    /*
-                                 (already logged in? [app open])
-                                     True                       false
-                                        /                            \
-                                      /                                       \
-                                 Incoming Data?                             Tokens saved?
-                                  /       \                                     /       \
-                                 true       false                          true      false
-                                 /                \                           /          \
-                                chatselector    sendDataSelector    Incoming Data?      Login Screen
-                                                                    /        \
-                                                                   True     false
-                                                                    /          \
-                                                              chatselector     sendDataSelector
-                                     */
-
-                                    LaunchedEffect(Unit) {
-
-                                        val savedCreds = appRepository.loadSavedLoginConfig()
-
-                                        if (SessionCache.isLoggedIn()) {
-                                            //User got logged in when loading the saved config
-
-                                            if (savedCreds.emailVerified) {
-                                                //Email is verified, rerouting
-
-                                                println("AUTOLOGINCHECKER: Logged in and Email verified, routing to chatselector")
-
-                                                if(IncomingDataManager.isNewDataAvailable()){
-
-                                                    scope.launch {
-                                                        // manually navigate to messageChatselecotor to add Chatselector to backstack
-                                                        rootBackStack.clear()
-                                                        rootBackStack.add(Route.ChatSelector)
-                                                        rootBackStack.add(Route.MessageChatSelector)
-                                                    }
-                                                }else{
-
-                                                    scope.launch {
-                                                        navigator.navigate(
-                                                            Route.ChatSelector,
-                                                            navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
-                                                        )
-                                                    }
-                                                }
-                                            } else {
-                                                //Email not verified, navigate to email verify checker
-                                                navigator.navigate(
-                                                    Route.EmailVerifiedCheck,
-                                                    navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
-                                                )
-                                            }
-
-                                        } else {
-
-                                            //User not logged in, reroute to login
-
-                                            navigator.navigate(
-                                                Route.Login,
-                                                navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
-                                            )
-                                        }
-                                    }
+                                    AutoLoginCredCheckerRoot()
                                 }
 
                                 entry<Route.Login> {
