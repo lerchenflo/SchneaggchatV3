@@ -55,14 +55,14 @@ coreKtx = "1.19.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
-appcompat = "1.7.1"
+appcompat = "1.8.0"
 material = "1.14.0"
-composeBom = "2026.06.01"
+composeBom = "2026.08.00"
 
 ksafe = "3.0.0"
 
 #Schneaggmap
-map = "0.13.1"
+map = "0.14.0"
 
 swipeableKmp = "1.0.7"
 reorderable = "3.1.0"
