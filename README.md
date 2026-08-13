@@ -41,6 +41,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Einstellung für farbige Zeit bei heutigen Nachrichten (Standard aus)
 - Umfragen Titelformatierung
 - Antworten auf große Nachrichten
+- Umfragen mit leeren optionen wenn eigene Antworten erlaubt sind
 
 ### 3.0.15
 ##### Highlights
