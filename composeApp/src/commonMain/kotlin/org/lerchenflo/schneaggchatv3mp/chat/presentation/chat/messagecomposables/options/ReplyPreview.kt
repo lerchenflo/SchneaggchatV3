@@ -4,8 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
@@ -27,19 +30,22 @@ fun ReplyPreview(
     message: Message,
     useMD: Boolean,
     selectedChatId: String,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
 ){
 
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
+            .heightIn(max = 480.dp) //Max height for all reply popups
             .padding(8.dp),
         verticalAlignment = Alignment.Bottom
     ) {
         Column(
             modifier = Modifier
                 .weight(1f)
+                .verticalScroll(rememberScrollState()) //COntent can be scrolled if height is too high
         ) {
             val alphaValue = 0.8f
             MessageContent(

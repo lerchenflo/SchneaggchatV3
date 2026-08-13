@@ -14,12 +14,12 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_games_global_highscor
 import schneaggchatv3mp.composeapp.generated.resources.ttt_games_global_highscore_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen
 import schneaggchatv3mp.composeapp.generated.resources.ttt_initscreen_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_misc_settings_go_back
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_create_group
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_go_back
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_freeroam
-import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_go_back
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_freeroam
@@ -41,6 +41,7 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_start_chatting
 import schneaggchatv3mp.composeapp.generated.resources.ttt_start_chatting_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_thank_you
 import schneaggchatv3mp.composeapp.generated.resources.ttt_thank_you_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_user_settings_go_back
 
 @Composable
 fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
@@ -120,7 +121,7 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
             //Point to back button
             tapStep(
                 id = "user_settings_back_button",
-                title = Res.string.ttt_schneaggmap_go_back,
+                title = Res.string.ttt_user_settings_go_back,
                 route = Route.Settings.UserSettings
             )
 
@@ -152,8 +153,12 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
                 requireExactTap = false
             )
 
-
-
+            //Point to back button
+            tapStep(
+                id = "misc_settings_back_button",
+                title = Res.string.ttt_misc_settings_go_back,
+                route = Route.Settings.MiscSettings
+            )
 
             //Go to map via bottom nav
             tapStep(

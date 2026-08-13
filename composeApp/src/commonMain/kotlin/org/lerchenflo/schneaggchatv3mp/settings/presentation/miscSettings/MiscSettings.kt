@@ -65,7 +65,8 @@ fun MiscSettings(
 
         ActivityTitle(
             title = stringResource(Res.string.misc_settings),
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            backButtonModifier = Modifier.tapTarget("misc_settings_back_button")
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)

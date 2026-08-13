@@ -1033,6 +1033,7 @@
 
     <string name="ttt_settings_wake">Wake up feature (Android only)</string>
     <string name="ttt_settings_wake_description">You can enable this feature to allow your friends to wake you up. Your phone will ring like with your alarm. If your friends have enabled this for you, you can wake them in the chat details.</string>
+    <string name="ttt_user_settings_go_back">Let's go back to the settings</string>
 
     <string name="ttt_settings_appearance">appearance settings</string>
     <string name="ttt_settings_appearance_description">Here you can change your language (Austrian, German, English) and your theme.</string>
@@ -1043,6 +1044,7 @@
 
     <string name="ttt_settings_misc_app_broken">App broken?</string>
     <string name="ttt_settings_misc_app_broken_description">If something is not working as intended, you can press this button. It will delete all app data and refetch from the server.</string>
+    <string name="ttt_misc_settings_go_back">Let's go back to the settings</string>
 
 
 
@@ -1053,16 +1055,13 @@
     <string name="ttt_schneaggmap_locations">Public locations</string>
     <string name="ttt_schneaggmap_locations_description">Here you can see all locations created by other users. \nFeel free to add some yourself by long pressing on the map.\nATTENTION: Please do not abuse this feature, otherwise we will have to remove your permission to add/edit entries.</string>
 
-    <string name="ttt_schneaggmap_locations_freeroam">Look at some entries!</string>
+    <string name="ttt_schneaggmap_locations_freeroam">Take a look at some entrys other users created!</string>
     <string name="ttt_continue">Continue tour</string>
 
     <string name="ttt_schneaggmap_settings">Map settings</string>
     <string name="ttt_schneaggmap_settings_description">You can tap here to access the map settings. Edit if you want to share your location and some other options.</string>
 
-    <string name="ttt_schneaggmap_snailtrail_description">You can show the snailtrail (where they have been in the last 24h) of your friends here, if they enabled it for you.</string>
-
-    <string name="ttt_schneaggmap_go_back">Let's go back once again.</string>
-
+    <string name="ttt_schneaggmap_snailtrail_description">You can show the snailtrail (where your friends have been in the last 24h) if they enabled it for you.</string>
 
     <string name="ttt_chatselector_games">Now lets have a look at the games</string>
 
