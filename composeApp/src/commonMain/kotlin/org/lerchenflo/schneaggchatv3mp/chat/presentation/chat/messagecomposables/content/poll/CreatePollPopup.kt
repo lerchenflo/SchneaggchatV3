@@ -135,9 +135,11 @@ fun PollDialog(
             return false
         }
 
-        if (options.filter { it.text.text.isNotEmpty() }.size < 2) {
-            optionsError = true
-            return false
+        if (!allowCustomAnswers) { //Only check for min input of two answers if no custom answers allowed
+            if (options.filter { it.text.text.isNotEmpty() }.size < 2) {
+                optionsError = true
+                return false
+            }
         }
 
         return true
