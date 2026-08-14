@@ -1,0 +1,47 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    # This permission is required for the workflow to create a release in your repository
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract Changelog from README
+        id: changelog
+        run: |
+          # Remove the 'v' prefix from the tag name (e.g., 'v3.0.16' becomes '3.0.16')
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "Extracting changelog for version: $VERSION"
+          
+          # Use awk to parse the README.md
+          # It looks for lines starting with "### " followed by a number.
+          # Once it finds the matching version, it prints all lines until it hits the next version header.
+          awk -v ver="$VERSION" '
+            /^### [0-9]/ {
+              if ($2 == ver) { capturing = 1; next }
+              else if (capturing) { exit }
+            }
+            capturing { print }
+          ' README.md > release_notes.md
+          
+          # Print the extracted notes to the GitHub Actions log for debugging
+          echo "--- Extracted Notes ---"
+          cat release_notes.md
+          echo "-----------------------"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body_path: release_notes.md

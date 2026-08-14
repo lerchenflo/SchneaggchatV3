@@ -27,8 +27,7 @@ jobs:
       - name: Install packaging tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y fakeroot rpm ruby ruby-dev rubygems build-essential libarchive-tools
-          sudo gem install --no-document fpm
+          sudo apt-get install -y fakeroot rpm
 
       # Build the .deb file
       - name: Build DEB
@@ -38,44 +37,48 @@ jobs:
       - name: Build RPM
         run: ./gradlew packageReleaseRpm
 
-      # Build the Arch Linux package using fpm to convert the DEB
-      # Build the Arch Linux package using fpm to convert the DEB
-      - name: Build Arch (Pacman)
+      #Build the Arch Linux package natively using a PKGBUILD inside Docker
+      - name: Build Arch (Native PKGBUILD)
         run: |
-          mkdir -p composeApp/build/compose/binaries/main-release/arch
+          # Create a working directory for the Arch build
+          mkdir -p arch-build
           
-          # -s deb: Source is DEB
-          # -t pacman: Target is Arch
-          # --no-depends: Strip the Debian-specific dependency names
-          # -d: Inject the correct Arch Linux package names
-          fpm -s deb -t pacman \
-            --no-depends \
-            -d "alsa-lib" \
-            -d "brotli" \
-            -d "libbsd" \
-            -d "bzip2" \
-            -d "glibc" \
-            -d "expat" \
-            -d "libffi" \
-            -d "fontconfig" \
-            -d "freetype2" \
-            -d "gcc-libs" \
-            -d "libglvnd" \
-            -d "libmd" \
-            -d "libpng" \
-            -d "wayland" \
-            -d "libx11" \
-            -d "libxau" \
-            -d "libxcb" \
-            -d "libxdmcp" \
-            -d "libxext" \
-            -d "libxi" \
-            -d "libxrender" \
-            -d "libxtst" \
-            -d "xdg-utils" \
-            -d "zlib" \
-            -p composeApp/build/compose/binaries/main-release/arch/ \
-            composeApp/build/compose/binaries/main-release/deb/*.deb
+          # Grab the DEB file we just built
+          DEB_FILE=$(ls composeApp/build/compose/binaries/main-release/deb/*.deb | head -n 1)
+          cp "$DEB_FILE" arch-build/app.deb
+          
+          # Remove the 'v' from the version tag (Arch pacman doesn't like letters in the version)
+          VERSION=${GITHUB_REF_NAME#v}
+          
+          # Generate the PKGBUILD file
+          cat << EOF > arch-build/PKGBUILD
+          pkgname=schneaggchat-v3
+          pkgver=$VERSION
+          pkgrel=1
+          pkgdesc="Schneaggchat Compose App"
+          arch=('x86_64')
+          depends=('alsa-lib' 'brotli' 'libbsd' 'bzip2' 'glibc' 'expat' 'libffi' 'fontconfig' 'freetype2' 'gcc-libs' 'libglvnd' 'libmd' 'libpng' 'wayland' 'libx11' 'libxau' 'libxcb' 'libxdmcp' 'libxext' 'libxi' 'libxrender' 'libxtst' 'xdg-utils' 'zlib')
+          source=("local-app.deb::file://app.deb")
+          md5sums=('SKIP')
+
+          prepare() {
+              # Extract the outer DEB wrapper
+              bsdtar -xf local-app.deb
+          }
+
+          package() {
+              # Extract the actual app data directly into the Arch pacman folder structure
+              bsdtar -xf data.tar.* -C "\$pkgdir/"
+          }
+          EOF
+
+          # Run makepkg inside an official Arch Linux Docker container
+          docker run --rm -v $(pwd)/arch-build:/build -w /build archlinux:base-devel \
+            bash -c "useradd -m builduser && chown -R builduser:builduser /build && su - builduser -c 'makepkg -sf'"
+
+          # Move the resulting .pkg.tar.zst back to the Compose binaries folder
+          mkdir -p composeApp/build/compose/binaries/main-release/arch
+          cp arch-build/*.pkg.tar.zst composeApp/build/compose/binaries/main-release/arch/
 
       # Upload both as artifacts
       - name: Publish to GitHub Releases
