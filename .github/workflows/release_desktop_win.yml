@@ -1,0 +1,30 @@
+name: Desktop MSI artifact CI
+on:
+  push:
+    branches: [ "main" ]
+jobs:
+  build-msi:
+    runs-on: windows-latest
+    # fixmw: try java 23
+    steps:
+      - uses: actions/checkout@v4
+      - name: set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+        # Build the MSI file using the custom Gradle task
+      - name: Package MSI
+        run: ./gradlew packageReleaseMsi
+
+        # Upload MSI as an artifact
+      - name: Upload MSI as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Oasis_Shoreditch.msi
+          path: composeApp/build/compose/binaries/main-release/msi/*.msi
