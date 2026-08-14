@@ -44,7 +44,7 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_thank_you_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_user_settings_go_back
 
 @Composable
-fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
+fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTour {
     return remember {
         tapTargetTour {
 
@@ -160,49 +160,53 @@ fun rememberOnboardingTour(isAndroid: Boolean): TapTargetTour {
                 route = Route.Settings.MiscSettings
             )
 
-            //Go to map via bottom nav
-            tapStep(
-                id = "chatselector_map_button",
-                title = Res.string.ttt_chatselector_map,
-                description = Res.string.ttt_chatselector_map_description,
-                route = Route.ChatSelector
-            )
+            //Mobile only
+            if (!isDesktop) {
+                //Go to map via bottom nav
+                tapStep(
+                    id = "chatselector_map_button",
+                    title = Res.string.ttt_chatselector_map,
+                    description = Res.string.ttt_chatselector_map_description,
+                    route = Route.ChatSelector
+                )
 
-            tapStep(
-                id = "schneaggmap_location_dropdown",
-                title = Res.string.ttt_schneaggmap_locations,
-                description = Res.string.ttt_schneaggmap_locations_description,
-                route = Route.Schneaggmap()
-            )
+                tapStep(
+                    id = "schneaggmap_location_dropdown",
+                    title = Res.string.ttt_schneaggmap_locations,
+                    description = Res.string.ttt_schneaggmap_locations_description,
+                    route = Route.Schneaggmap()
+                )
 
-            freeRoamStep(
-                title = Res.string.ttt_schneaggmap_locations_freeroam,
-                position = FreeRoamBarPosition.Bottom,
-                continueButtonText = Res.string.ttt_continue,
-                route = Route.Schneaggmap()
-            )
+                freeRoamStep(
+                    title = Res.string.ttt_schneaggmap_locations_freeroam,
+                    position = FreeRoamBarPosition.Bottom,
+                    continueButtonText = Res.string.ttt_continue,
+                    route = Route.Schneaggmap()
+                )
 
-            tapStep(
-                id = "schneaggmap_settings_button",
-                title = Res.string.ttt_schneaggmap_settings,
-                description = Res.string.ttt_schneaggmap_settings_description,
-                route = Route.Schneaggmap(), //Navigate to map in case the user navigated back while freeroaming
-                requireExactTap = false
-            )
+                tapStep(
+                    id = "schneaggmap_settings_button",
+                    title = Res.string.ttt_schneaggmap_settings,
+                    description = Res.string.ttt_schneaggmap_settings_description,
+                    route = Route.Schneaggmap(), //Navigate to map in case the user navigated back while freeroaming
+                    requireExactTap = false
+                )
 
-            tapStep(
-                id = "schneaggmap_snailtrail_switch",
-                description = Res.string.ttt_schneaggmap_snailtrail_description,
-                route = Route.Schneaggmap(),
-                requireExactTap = false
-            )
+                tapStep(
+                    id = "schneaggmap_snailtrail_switch",
+                    description = Res.string.ttt_schneaggmap_snailtrail_description,
+                    route = Route.Schneaggmap(),
+                    requireExactTap = false
+                )
 
 
-            tapStep(
-                id = "chatselector_games_button",
-                title = Res.string.ttt_chatselector_games,
-                route = Route.Schneaggmap()
-            )
+                tapStep(
+                    id = "chatselector_games_button",
+                    title = Res.string.ttt_chatselector_games,
+                    route = Route.Schneaggmap()
+                )
+            }
+
 
             tapStep(
                 id = "games_difficulty_selector",

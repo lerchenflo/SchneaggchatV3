@@ -24,7 +24,7 @@ actual class AudioManager {
     }
 
     actual fun getRecordingPath(filename: String): String {
-        TODO("Not yet implemented")
+        return getPath(filename)
     }
 
     actual suspend fun saveAudioToStorage(audioBytes: ByteArray, filename: String): String {

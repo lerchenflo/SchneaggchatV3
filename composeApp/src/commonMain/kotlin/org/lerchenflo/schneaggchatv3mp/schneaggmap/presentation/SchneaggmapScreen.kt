@@ -107,8 +107,8 @@ import org.maplibre.compose.location.rememberNullLocationProvider
 import org.maplibre.compose.map.MapOptions
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.OrnamentOptions
-import org.maplibre.compose.material3.CompassButton
-import org.maplibre.compose.material3.ScaleBar
+import org.maplibre.compose.material3.DisappearingCompassButton
+import org.maplibre.compose.material3.DisappearingScaleBar
 import org.maplibre.compose.sources.GeoJsonData
 import org.maplibre.compose.sources.GeoJsonOptions
 import org.maplibre.compose.sources.rememberGeoJsonSource
@@ -513,14 +513,15 @@ fun SchneaggmapScreen(
                 contentAlignment = Alignment.Center
             ) {
                 // Left: Scale bar
-                ScaleBar(
+                DisappearingScaleBar(
                     metersPerDp = cameraState.metersPerDpAtTarget,
                     color = MaterialTheme.colorScheme.background,
-                    modifier = Modifier.align(Alignment.CenterStart)
+                    modifier = Modifier.align(Alignment.CenterStart),
+                    zoom = cameraState.position.zoom
                 )
 
                 //compass
-                CompassButton(
+                DisappearingCompassButton(
                     cameraState = cameraState,
                     size = 32.dp
                 )

@@ -52,8 +52,9 @@ fun ChatSelectorDismissableInfo(
     }
 
     Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
+        modifier = modifier
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(6.dp),
         color = backgroundColor,
         shadowElevation = 1.dp,
         border = BorderStroke(1.dp, contentColor.copy(alpha = 0.12f))
