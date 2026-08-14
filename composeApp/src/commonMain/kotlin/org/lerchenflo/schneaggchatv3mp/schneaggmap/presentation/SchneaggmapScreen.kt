@@ -40,9 +40,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -67,9 +71,9 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.entries
@@ -83,7 +87,6 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.Shown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.mergeClusterAvatarsIcon
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.mergeProfilePictureWithStatusText
-import org.lerchenflo.schneaggchatv3mp.sharedUi.core.BackButton
 import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import org.maplibre.compose.camera.CameraMoveReason
@@ -104,8 +107,8 @@ import org.maplibre.compose.location.rememberNullLocationProvider
 import org.maplibre.compose.map.MapOptions
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.OrnamentOptions
-import org.maplibre.compose.material3.DisappearingCompassButton
-import org.maplibre.compose.material3.DisappearingScaleBar
+import org.maplibre.compose.material3.CompassButton
+import org.maplibre.compose.material3.ScaleBar
 import org.maplibre.compose.sources.GeoJsonData
 import org.maplibre.compose.sources.GeoJsonOptions
 import org.maplibre.compose.sources.rememberGeoJsonSource
@@ -138,6 +141,8 @@ private const val ENTRY_FOCUS_ZOOM = 16.0
 //Radius, in dp, within which nearby friends get merged into one marker - converted to meters via
 //the camera's current scale so it stays a constant on-screen size regardless of zoom level.
 private const val USER_CLUSTER_RADIUS_DP = 40.0
+
+private const val ZOOM_SNAP_RADIUS_DP = 64.0
 private const val EARTH_RADIUS_METERS = 6371000.0
 
 private data class UserMarkerIcon(val bitmap: ImageBitmap, val size: DpSize)
@@ -253,6 +258,19 @@ fun SchneaggmapScreen(
     }
     val ownLocation by locationProvider.location.collectAsState()
 
+
+
+    //Candidates for zoom-snapping: every friend with a known location plus our own live fix.
+    //Own location comes from GPS directly (not state.ownUser.location, which is never synced back).
+    val zoomSnapCandidates = remember(state.usersWithLocation, ownLocation) {
+        buildList {
+            state.usersWithLocation.forEach { user ->
+                user.location?.let { loc -> add(Position(longitude = loc.long, latitude = loc.lat)) }
+            }
+            ownLocation?.position?.value?.let { add(it) }
+        }
+    }
+
     //Center on our own location once, on start, but only if we actually share it - otherwise
     //the user has no reason to expect the map to jump there.
     var hasAutoCentered by remember { mutableStateOf(false) }
@@ -362,6 +380,39 @@ fun SchneaggmapScreen(
                 )
             }
 
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    //Map style dropdown menu
+                    MapStyleDropdown(
+                        state = state,
+                        onAction = onAction,
+                    )
+
+
+                    //Own user detail button
+                    SmallFloatingActionButton(
+                        onClick = { onAction(SchneaggmapAction.OnOwnUserClick) },
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null
+                        )
+                    }
+                }
+
+
+            }
+
         }
 
 
@@ -373,14 +424,28 @@ fun SchneaggmapScreen(
         MapZoomSlider(
             zoom = cameraState.position.zoom,
             onZoomChange = { newZoom ->
-                //Like Snap Map's slider, which always zooms in on a person - here that's the
-                //user's own location, if we currently have a fix on it.
-                val ownPosition = ownLocation?.position?.value
-                cameraState.position = if (ownPosition != null) {
-                    cameraState.position.copy(target = ownPosition, zoom = newZoom)
-                } else {
-                    cameraState.position.copy(zoom = newZoom)
+                val currentTarget = cameraState.position.target
+                val snapRadiusMeters = ZOOM_SNAP_RADIUS_DP * cameraState.metersPerDpAtTarget
+
+                //If a user is sitting near the current screen center, zoom onto them (like Snap Map);
+                //otherwise just zoom in/out around the current map center.
+                val nearestCandidate = zoomSnapCandidates.minByOrNull { position ->
+                    approximateDistanceMeters(
+                        currentTarget.latitude, currentTarget.longitude,
+                        position.latitude, position.longitude
+                    )
                 }
+                val snapTarget = nearestCandidate?.takeIf { position ->
+                    approximateDistanceMeters(
+                        currentTarget.latitude, currentTarget.longitude,
+                        position.latitude, position.longitude
+                    ) <= snapRadiusMeters
+                }
+
+                cameraState.position = cameraState.position.copy(
+                    target = snapTarget ?: currentTarget,
+                    zoom = newZoom
+                )
             },
             modifier = Modifier
                 .align(Alignment.CenterEnd)
@@ -400,31 +465,8 @@ fun SchneaggmapScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
-                    //compass
-                    DisappearingCompassButton(
-                        cameraState = cameraState,
-                        size = 32.dp
-                    )
-
-                    //Own user detail button
-                    SmallFloatingActionButton(
-                        onClick = { onAction(SchneaggmapAction.OnOwnUserClick) },
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = MaterialTheme.colorScheme.onSurface,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = null
-                        )
-                    }
-
-                    //Map style dropdown menu
-                    MapStyleDropdown(
-                        state = state,
-                        onAction = onAction,
-                    )
 
                     //Center to own location button
                     ownLocation?.let {
@@ -471,11 +513,16 @@ fun SchneaggmapScreen(
                 contentAlignment = Alignment.Center
             ) {
                 // Left: Scale bar
-                DisappearingScaleBar(
+                ScaleBar(
                     metersPerDp = cameraState.metersPerDpAtTarget,
-                    zoom = cameraState.position.zoom,
                     color = MaterialTheme.colorScheme.background,
                     modifier = Modifier.align(Alignment.CenterStart)
+                )
+
+                //compass
+                CompassButton(
+                    cameraState = cameraState,
+                    size = 32.dp
                 )
 
                 //Round speed indicator
@@ -727,13 +774,48 @@ private fun SchneaggmapMapContent(
         }
     }
 
+    val ownLocationDotColor = Color(0xFF4285F4)
+
+//Own-avatar stand-in for cluster icons: a blue dot (matching the standalone "own location"
+//marker) instead of the profile picture, so it's still recognizably "you" inside a hock.
+    val ownDotAvatarBitmap = remember(defaultAvatarBitmap, ownLocationDotColor) {
+        val size = defaultAvatarBitmap.width.coerceAtLeast(defaultAvatarBitmap.height)
+        val bitmap = ImageBitmap(size, size)
+        val canvas = Canvas(bitmap)
+        val center = Offset(size / 2f, size / 2f)
+        val radius = size / 2f * 0.85f
+
+        canvas.drawCircle(
+            center = center,
+            radius = radius,
+            paint = Paint().apply { color = ownLocationDotColor }
+        )
+        canvas.drawCircle(
+            center = center,
+            radius = radius,
+            paint = Paint().apply {
+                color = Color.White
+                style = PaintingStyle.Stroke
+                strokeWidth = size * 0.08f
+            }
+        )
+        bitmap
+    }
+
     val clusterIcons: Map<String, UserMarkerIcon> = remember(
         userClusters, rawAvatarBitmaps, clusterBackgroundColor, beerIcon, defaultAvatarBitmap, textMeasurer, clusterCountBackgroundColor, clusterCountTextColor
     ) {
+
         userClusters.filter { it.users.size >= 2 }.associate { cluster ->
             //Always one avatar per member (falling back to the generic icon) so the ring
             //accurately reflects how many people are in the cluster.
-            val avatarBitmaps = cluster.users.map { rawAvatarBitmaps[it.id] ?: defaultAvatarBitmap }
+            val avatarBitmaps = cluster.users.map { user ->
+                if (user.id == ownId) {
+                    ownDotAvatarBitmap
+                } else {
+                    rawAvatarBitmaps[user.id] ?: defaultAvatarBitmap
+                }
+            }
             val bitmap = mergeClusterAvatarsIcon(
                 profilePictures = avatarBitmaps,
                 beerIcon = beerIcon,
