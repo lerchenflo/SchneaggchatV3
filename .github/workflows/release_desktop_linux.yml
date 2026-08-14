@@ -39,12 +39,41 @@ jobs:
         run: ./gradlew packageReleaseRpm
 
       # Build the Arch Linux package using fpm to convert the DEB
+      # Build the Arch Linux package using fpm to convert the DEB
       - name: Build Arch (Pacman)
         run: |
           mkdir -p composeApp/build/compose/binaries/main-release/arch
-          # -s deb: Source is the deb we just built
-          # -t pacman: Target is an Arch Linux package
+          
+          # -s deb: Source is DEB
+          # -t pacman: Target is Arch
+          # --no-depends: Strip the Debian-specific dependency names
+          # -d: Inject the correct Arch Linux package names
           fpm -s deb -t pacman \
+            --no-depends \
+            -d "alsa-lib" \
+            -d "brotli" \
+            -d "libbsd" \
+            -d "bzip2" \
+            -d "glibc" \
+            -d "expat" \
+            -d "libffi" \
+            -d "fontconfig" \
+            -d "freetype2" \
+            -d "gcc-libs" \
+            -d "libglvnd" \
+            -d "libmd" \
+            -d "libpng" \
+            -d "wayland" \
+            -d "libx11" \
+            -d "libxau" \
+            -d "libxcb" \
+            -d "libxdmcp" \
+            -d "libxext" \
+            -d "libxi" \
+            -d "libxrender" \
+            -d "libxtst" \
+            -d "xdg-utils" \
+            -d "zlib" \
             -p composeApp/build/compose/binaries/main-release/arch/ \
             composeApp/build/compose/binaries/main-release/deb/*.deb
 
