@@ -37,7 +37,7 @@ jobs:
       - name: Build RPM
         run: ./gradlew packageReleaseRpm
 
-      #Build the Arch Linux package natively using a PKGBUILD inside Docker
+      # 4. Build the Arch Linux package natively using a PKGBUILD inside Docker
       - name: Build Arch (Native PKGBUILD)
         run: |
           # Create a working directory for the Arch build
@@ -58,12 +58,12 @@ jobs:
           pkgdesc="Schneaggchat Compose App"
           arch=('x86_64')
           depends=('alsa-lib' 'brotli' 'libbsd' 'bzip2' 'glibc' 'expat' 'libffi' 'fontconfig' 'freetype2' 'gcc-libs' 'libglvnd' 'libmd' 'libpng' 'wayland' 'libx11' 'libxau' 'libxcb' 'libxdmcp' 'libxext' 'libxi' 'libxrender' 'libxtst' 'xdg-utils' 'zlib')
-          source=("local-app.deb::file://app.deb")
+          source=("app.deb")
           md5sums=('SKIP')
 
           prepare() {
               # Extract the outer DEB wrapper
-              bsdtar -xf local-app.deb
+              bsdtar -xf app.deb
           }
 
           package() {
@@ -73,8 +73,9 @@ jobs:
           EOF
 
           # Run makepkg inside an official Arch Linux Docker container
-          docker run --rm -v $(pwd)/arch-build:/build -w /build archlinux:base-devel \
-            bash -c "useradd -m builduser && chown -R builduser:builduser /build && su - builduser -c 'makepkg -sf'"
+          # FIX: Added 'cd /build' so it runs in the correct folder after switching users
+          docker run --rm -v $(pwd)/arch-build:/build archlinux:base-devel \
+            bash -c "useradd -m builduser && chown -R builduser:builduser /build && su - builduser -c 'cd /build && makepkg -sf'"
 
           # Move the resulting .pkg.tar.zst back to the Compose binaries folder
           mkdir -p composeApp/build/compose/binaries/main-release/arch
