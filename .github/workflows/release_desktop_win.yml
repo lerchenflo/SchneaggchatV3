@@ -1,10 +1,16 @@
 name: Desktop MSI / EXE artifact CI
 on:
   push:
-    branches: [ "main" ]
+    tags:
+      - 'v*' # This workflow will ONLY run when you push a tag starting with 'v', like v1.0.0
+
 jobs:
   build-msi:
     runs-on: windows-latest
+
+    permissions:
+      contents: write
+
     # fixmw: try java 23
     steps:
       - uses: actions/checkout@v4
@@ -23,19 +29,12 @@ jobs:
         run: ./gradlew packageReleaseMsi
 
         # Upload MSI as an artifact
-      - name: Upload MSI as artifact
-        uses: actions/upload-artifact@v4
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
         with:
-          name: SchneaggchatV3_Windows_MSI.msi
-          path: composeApp/build/compose/binaries/main-release/msi/*.msi
+          # This automatically uses the tag you just pushed (e.g., v1.0.0)
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          files: |
+            composeApp/build/compose/binaries/main-release/msi/*.msi
 
-        # Build the EXE file using the Compose Desktop Gradle task
-      - name: Package EXE
-        run: ./gradlew packageReleaseExe
-
-        # Upload EXE as an artifact
-      - name: Upload EXE as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: SchneaggchatV3_Windows_EXE
-          path: composeApp/build/compose/binaries/main-release/exe/*.exe
