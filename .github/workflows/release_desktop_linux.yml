@@ -47,8 +47,9 @@ jobs:
           DEB_FILE=$(ls composeApp/build/compose/binaries/main-release/deb/*.deb | head -n 1)
           cp "$DEB_FILE" arch-build/app.deb
           
-          # Remove the 'v' from the version tag (Arch pacman doesn't like letters in the version)
+          # Remove the 'v' from the tag, then replace hyphens with underscores
           VERSION=${GITHUB_REF_NAME#v}
+          VERSION=${VERSION//-/_}
           
           # Generate the PKGBUILD file
           cat << EOF > arch-build/PKGBUILD
@@ -73,7 +74,6 @@ jobs:
           EOF
 
           # Run makepkg inside an official Arch Linux Docker container
-          # FIX: Added 'cd /build' so it runs in the correct folder after switching users
           docker run --rm -v $(pwd)/arch-build:/build archlinux:base-devel \
             bash -c "useradd -m builduser && chown -R builduser:builduser /build && su - builduser -c 'cd /build && makepkg -sf'"
 
