@@ -1,4 +1,4 @@
-name: Desktop MSI artifact CI
+name: Desktop MSI / EXE artifact CI
 on:
   push:
     branches: [ "main" ]
@@ -26,7 +26,7 @@ jobs:
       - name: Upload MSI as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Oasis_Shoreditch.msi
+          name: SchneaggchatV3_Windows_MSI.msi
           path: composeApp/build/compose/binaries/main-release/msi/*.msi
 
         # Build the EXE file using the Compose Desktop Gradle task
