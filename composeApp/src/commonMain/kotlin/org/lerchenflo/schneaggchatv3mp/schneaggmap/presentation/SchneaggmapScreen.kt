@@ -380,6 +380,39 @@ fun SchneaggmapScreen(
                 )
             }
 
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    //Map style dropdown menu
+                    MapStyleDropdown(
+                        state = state,
+                        onAction = onAction,
+                    )
+
+
+                    //Own user detail button
+                    SmallFloatingActionButton(
+                        onClick = { onAction(SchneaggmapAction.OnOwnUserClick) },
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null
+                        )
+                    }
+                }
+
+
+            }
+
         }
 
 
@@ -434,25 +467,6 @@ fun SchneaggmapScreen(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
-
-
-                    //Own user detail button
-                    SmallFloatingActionButton(
-                        onClick = { onAction(SchneaggmapAction.OnOwnUserClick) },
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = MaterialTheme.colorScheme.onSurface,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = null
-                        )
-                    }
-
-                    //Map style dropdown menu
-                    MapStyleDropdown(
-                        state = state,
-                        onAction = onAction,
-                    )
 
                     //Center to own location button
                     ownLocation?.let {
