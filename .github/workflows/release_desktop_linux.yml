@@ -1,4 +1,4 @@
-name: Desktop DEB and and Arch release
+name: Desktop DEB and RPM and Arch release
 
 on:
   push:
