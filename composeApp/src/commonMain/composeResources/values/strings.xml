@@ -92,7 +92,7 @@
     <string name="read">read</string>
     <string name="useMarkdown">use Markdown formatting</string>
     <string name="markdownInfo">This will add Markdown formatting to messages, but slow down Message loading in chat.</string>
-    <string name="highlight_todays_message_timestamp">Highlight today\'s timestamp</string>
+    <string name="highlight_todays_message_timestamp">Highlight today's timestamp</string>
     <string name="highlight_todays_message_timestamp_info">Highlight the timestamp of messages received today in green in the chat selector.</string>
     <string name="something_wrong_message">Something went wrong with this message</string>
     <string name="message_too_long">Message is too long!</string>
@@ -674,7 +674,7 @@
 
     <!-- Games: Flappy Snail -->
     <string name="games_flappybird_title">Flappy Snail</string>
-    <string name="games_flappybird_instructions">Tap the screen to flap the Schneagg\'s shell and navigate through pipe gaps!\n\nYou can land on top of towers or the ground safely — only crashing into a tower wall from the side ends the run. Enjoy gentle falling speed as game speed increases over time!</string>
+    <string name="games_flappybird_instructions">Tap the screen to flap the Schneagg's shell and navigate through pipe gaps!\n\nYou can land on top of towers or the ground safely — only crashing into a tower wall from the side ends the run.</string>
 
     <!-- Recap -->
     <string name="recap_your_year">Your year</string>
@@ -1032,7 +1032,7 @@
     <string name="ttt_settings_user_description">Here you can change stuff about your account.</string>
 
     <string name="ttt_settings_wake">Wake up feature (Android only)</string>
-    <string name="ttt_settings_wake_description">You can enable this feature to allow your friends to wake you up. Your phone will ring like with your alarm. If your friends have enabled this for you, you can wake them in the chat details.</string>
+    <string name="ttt_settings_wake_description">You can enable this feature to allow your friends to wake you up. Your phone will ring like with your alarm, even if silenced. If your friends have enabled this for you, you can wake them in the chat details.</string>
     <string name="ttt_user_settings_go_back">Let's go back to the settings</string>
 
     <string name="ttt_settings_appearance">appearance settings</string>
@@ -1049,7 +1049,7 @@
 
 
     <string name="ttt_chatselector_map">Here you can access the Schneaggmap</string>
-    <string name="ttt_chatselector_map_description">You can share your location, show public locations and add them yourself.</string>
+    <string name="ttt_chatselector_map_description">You can share your location, show public locations and edit and add them yourself.</string>
 
 
     <string name="ttt_schneaggmap_locations">Public locations</string>
@@ -1066,7 +1066,7 @@
     <string name="ttt_chatselector_games">Now lets have a look at the games</string>
 
     <string name="ttt_games_info">Tools and games</string>
-    <string name="ttt_games_info_description">Now lets have a look at the tools and games</string>
+    <string name="ttt_games_info_description">Now lets have a look at the games. If you scroll down, you can access all kinds of tools requested by the users.</string>
 
     <string name="ttt_games_difficulty">Difficulty selection</string>
     <string name="ttt_games_difficulty_description">You can select the difficulty for games here.</string>
@@ -1078,7 +1078,7 @@
     <string name="ttt_thank_you_description">Thank you for taking the tour! Enjoy using Schneaggchat.</string>
 
     <string name="navbar_chats">chats</string>
-    <string name="navbar_settings">settings</string>
+    
     <string name="navbar_map">map</string>
     <string name="navbar_games">games</string>
 

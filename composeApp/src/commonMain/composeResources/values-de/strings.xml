@@ -92,6 +92,8 @@
     <string name="read">gelesen</string>
     <string name="useMarkdown">Markdown-formatierung verwenden</string>
     <string name="markdownInfo">Damit wird die Markdown-formatierung von Nachrichten aktiviert. Dies kann jedoch das Scrollen im Chat verlangsamen</string>
+    <string name="highlight_todays_message_timestamp">Heutigen Zeitstempel hervorheben</string>
+    <string name="highlight_todays_message_timestamp_info">Hebt den Zeitstempel von heute empfangenen Nachrichten in der Chat-Auswahl grün hervor.</string>
     <string name="something_wrong_message">Bei dieser Nachricht stimmt etwas nicht.</string>
     <string name="message_too_long">Nachricht ist zu lang!</string>
     <string name="log_out_successfully">Erfolgreich ausgeloggt</string>
@@ -201,6 +203,8 @@
     <string name="misc_settings">Miscellaneous</string>
     <string name="misc_setting_info">Andere Einstellungen die nützlich sind wenn die App nicht funktioniert.</string>
     <string name="misc_settings_logs">Logs</string>
+    <string name="misc_settings_reset_tour">Tour zurücksetzen</string>
+    <string name="misc_settings_reset_tour_desc">Setzt die Einführungstour zurück, sodass sie beim nächsten Start erneut angezeigt wird</string>
 
     <string name="friend_request_title">Willst du diese Freundschaftsanfrage akzeptieren?</string>
     <string name="friend_request_cancel_title">Willst du diese Freundschafstanfrage abbrechen?</string>
@@ -308,6 +312,7 @@
     <string name="reactions">Reaktionen</string>
     <string name="no_reactions">Keine Reaktionen bis jetzt</string>
     <string name="sent_at">Gesendet %1$s</string>
+    <string name="reacted_at">reagiert %1$s</string>
 
     <string name="pin_chat">Chat anpinnen</string>
     <string name="unpin_chat">Pin entfernen</string>
@@ -632,6 +637,8 @@
     <string name="game_tap_anywhere_to_start">Tippe irgendwo, um zu starten</string>
     <string name="game_stop">Spiel stoppen</string>
     <string name="game_exit">Verlassen</string>
+    <string name="games_daily_expires_in">Tägliches Board läuft ab in: %1$s</string>
+
 
     <!-- Games: Tetris -->
     <string name="games_tetris_title">Tetris</string>
@@ -657,6 +664,7 @@
     <string name="games_gridrush_instructions">Ziehe eine Linie durch benachbarte Felder derselben Farbe — lässt du bei 2 oder mehr Feldern los, verschwinden sie und die Felder darüber rutschen nach unten. Räume das ganze Feld leer, um zu gewinnen!\n\nLängere Ketten bringen mehr Punkte, und wer unter dem Par bleibt, bekommt einen Bonus. Berühren sich keine zwei gleichfarbigen Felder mehr, ist der Versuch vorbei. Jeder spielt jeden Tag dasselbe Feld — der Timer startet erst mit deinem ersten Zug, also plane voraus!</string>
     <string name="games_gridrush_moves">Züge: %1$d / Par %2$d</string>
 
+
     <!-- Games: Odd One Out -->
     <string name="games_oddoneout_title">Odd One Out</string>
     <string name="games_oddoneout_instructions">Ein Raster aus Feldern erscheint — alle Felder sind identisch bis auf eins. Tippe das andersartige Feld an, bevor die Zeit abläuft!\n\nJe schneller du es findest, desto mehr Punkte gibt es. Ein falscher Tipp oder eine abgelaufene Zeit kostet eines deiner 3 Leben — sind alle aufgebraucht, ist der Versuch vorbei. Die Runden werden schneller und das andersartige Feld schwerer zu erkennen, je länger du durchhältst!</string>
@@ -665,6 +673,10 @@
     <!-- Games: Morse -->
     <string name="games_morse_clear">Löschen</string>
     <string name="games_morse_instructions">Drücke den großen Knopf, um Morsesignale zu senden: ein kurzer Druck ist ein Punkt (·), ein langer Druck ein Strich (−). Der Baum zeigt, zu welchem Buchstaben dein Code führt.\n\nTippe den angezeigten Text in Morsecode — jeder richtige Buchstabe bringt Punkte, nach 3 Fehlern ist das Spiel vorbei.</string>
+
+    <!-- Games: Flappy Snail -->
+    <string name="games_flappybird_title">Flappy Schneagg</string>
+    <string name="games_flappybird_instructions">Tippe auf den Bildschirm, um das Schneagga-Haus flattern zu lassen und durch die Lücken zwischen den Röhren zu navigieren!\n\nDu kannst sicher auf Türmen oder dem Boden landen — nur ein seitlicher Zusammenstoß mit einer Wand beendet den Versuch.</string>
 
     <!-- Recap -->
     <string name="recap_your_year">Dein Jahr</string>
@@ -882,10 +894,12 @@
     <string name="location_type_tennis">Tennis</string>
     <string name="location_type_sightseeing">Sightseeing</string>
     <string name="location_type_party">Party</string>
+    <string name="location_type_wifi">WLAN</string>
     <string name="location_type_food_kebab">Döner</string>
     <string name="location_type_food_pizza">Pizza</string>
     <string name="location_type_food_burger">Burger</string>
     <string name="location_type_food_beer">Bier</string>
+    <string name="location_type_food_ice">Eis</string>
     <string name="location_type_food_asian">Asiatisch</string>
     <string name="location_type_food_greek">Griechisch</string>
     <string name="location_type_food_cafe_bakery">Cafe / Bäckerei</string>
@@ -894,7 +908,7 @@
     <!-- Radar -->
     <string name="location_radar_speed_limit">Geschwindigkeitsbegrenzung</string>
     <string name="location_radar_mobile">Mobil</string>
-    <string name="location_radar_red_light">Rotlicht</string>
+    <string name="location_radar_red_light">Ampelblitzer</string>
 
     <!-- Police -->
     <string name="location_police_last_seen">Zuletzt gesehen</string>
@@ -952,11 +966,16 @@
     <string name="location_food_margarita_price">Margheritapreis</string>
     <string name="location_food_cheeseburger_price">Cheeseburgerpreis</string>
     <string name="location_food_beer_price">Bierpreis</string>
+    <string name="location_food_ice_scoop_price">Kugelpreis</string>
     <string name="location_food_cuisine">Essenstyp</string>
     <string name="location_food_cafe_bakery_outdoor_seating">Outdoorsitzplätze</string>
     <string name="location_food_cafe_bakery_alcohol">Alkohol</string>
     <string name="location_food_cafe_bakery_coffee">Kaffee</string>
     <string name="location_food_cafe_bakery_breakfast">Frühstück</string>
+
+    <!-- WiFi -->
+    <string name="location_wifi_ssid">SSID</string>
+    <string name="location_wifi_password">Passwort</string>
 
     <!-- Wake -->
     <string name="wake_settings">Wecker</string>
@@ -984,6 +1003,87 @@
 
 
     <string name="schneaggmap_search_label">suchen ...</string>
+
+
+    <string name="ttt_popup">Schneaggchat entdecken</string>
+    <string name="ttt_popup_description">Mach eine Tour und lerne, wie die App funktioniert und welche spannenden Features es gibt, auch wenn du die App schon einmal benutzt hast.</string>
+    <string name="ttt_popup_start">Los geht's</string>
+
+
+
+    <string name="ttt_initscreen">Lass uns ein paar Features entdecken!</string>
+    <string name="ttt_initscreen_description">Wie immer: Wenn sich etwas komisch anfühlt / nicht funktioniert, du ein neues Feature möchtest oder etwas geändert haben willst, kannst du das gerne in den Einstellungen anfragen.</string>
+
+    <string name="ttt_start_chatting">Neuen Chat starten</string>
+    <string name="ttt_start_chatting_description">Tippe hier, um Freunde hinzuzufügen.</string>
+
+    <string name="ttt_new_chat_search_friends">Suche nach deinen Freunden</string>
+    <string name="ttt_new_chat_search_friends_description">Hier kannst du nach Freunden suchen. Wenn du mindestens einen Freund hast, werden gemeinsame Freunde angezeigt.</string>
+
+    <string name="ttt_new_chat_search_friends_freeroam">Versuche, einen neuen Freund hinzuzufügen.</string>
+
+
+    <string name="ttt_new_chat_create_group">Tippe hier, um eine neue Gruppe zu erstellen</string>
+
+    <string name="ttt_new_chat_go_back">Lass uns zurück zur Chat-Auswahl gehen</string>
+
+
+
+    <string name="ttt_settings">Hier sind die Einstellungen</string>
+    <string name="ttt_settings_user">Account-Einstellungen</string>
+    <string name="ttt_settings_user_description">Hier kannst du Angaben zu deinem Account ändern.</string>
+
+    <string name="ttt_settings_wake">Wecker-Funktion (nur Android)</string>
+    <string name="ttt_settings_wake_description">Du kannst diese Funktion aktivieren, damit deine Freunde dich aufwecken können. Dein Handy klingelt dann wie mit dem Handywecker auch im Lautlosmodus. Wenn deine Freunde dies für dich aktiviert haben, kannst du sie in den Chat-Details wecken.</string>
+    <string name="ttt_user_settings_go_back">Lass uns zurück zu den Einstellungen gehen</string>
+
+    <string name="ttt_settings_appearance">Darstellungs-Einstellungen</string>
+    <string name="ttt_settings_appearance_description">Hier kannst du deine Sprache (Österreichisch, Deutsch, Englisch) und dein Design ändern.</string>
+
+    <string name="ttt_settings_misc">Sonstige Einstellungen</string>
+
+    <string name="ttt_settings_misc_bugreport">Hier kannst du Fehler melden und Feature-Anfragen einreichen.</string>
+
+    <string name="ttt_settings_misc_app_broken">App kaputt?</string>
+    <string name="ttt_settings_misc_app_broken_description">Wenn etwas nicht wie vorgesehen funktioniert, kannst du diesen Button drücken. Dadurch werden alle App-Daten gelöscht und neu vom Server geladen.</string>
+    <string name="ttt_misc_settings_go_back">Lass uns zurück zu den Einstellungen gehen</string>
+
+
+
+    <string name="ttt_chatselector_map">Hier kommst du zur Schneaggmap</string>
+    <string name="ttt_chatselector_map_description">Du kannst deinen Standort teilen, öffentliche Orte anzeigen und selbst welche hinzufügen und bearbeiten.</string>
+
+
+    <string name="ttt_schneaggmap_locations">Öffentliche Orte</string>
+    <string name="ttt_schneaggmap_locations_description">Hier siehst du alle Orte, die von anderen Nutzern erstellt wurden.\nFüge gerne selbst welche hinzu, indem du lange auf die Karte drückst.\nACHTUNG: Bitte missbrauche diese Funktion nicht, da wir dir sonst die Berechtigung zum Hinzufügen/Bearbeiten von Einträgen entziehen müssen.</string>
+
+    <string name="ttt_schneaggmap_locations_freeroam">Sieh dir einige Einträge an, die andere Nutzer erstellt haben!</string>
+    <string name="ttt_continue">Tour fortsetzen</string>
+
+    <string name="ttt_schneaggmap_settings">Karteneinstellungen</string>
+    <string name="ttt_schneaggmap_settings_description">Hier kannst du auf die Karteneinstellungen zugreifen. Lege fest, ob du deinen Standort teilen möchtest, und passe weitere Optionen an.</string>
+
+    <string name="ttt_schneaggmap_snailtrail_description">Du kannst die Schleimspur anzeigen (wo deine Freunde in den letzten 24 Stunden waren), wenn sie dies für dich aktiviert haben.</string>
+
+    <string name="ttt_chatselector_games">Jetzt schauen wir uns die Spiele an</string>
+
+    <string name="ttt_games_info">Tools und Spiele</string>
+    <string name="ttt_games_info_description">Jetzt werfen wir einen Blick auf die Spiele. Weiter unten gibt es noch verschiedene Tools die von Usern angefragt wurden.</string>
+
+    <string name="ttt_games_difficulty">Schwierigkeitsauswahl</string>
+    <string name="ttt_games_difficulty_description">Hier kannst du den Schwierigkeitsgrad für Spiele auswählen.</string>
+
+    <string name="ttt_games_global_highscore">Globale Bestenliste</string>
+    <string name="ttt_games_global_highscore_description">Hier kannst du deine globale Platzierung über alle Spiele hinweg ansehen.</string>
+
+    <string name="ttt_thank_you">Vielen Dank!</string>
+    <string name="ttt_thank_you_description">Vielen Dank, dass du an der Tour teilgenommen hast! Viel Spaß mit Schneaggchat.</string>
+
+    <string name="navbar_chats">Chats</string>
+    
+    <string name="navbar_map">Karte</string>
+    <string name="navbar_games">Spiele</string>
+
 
 
 </resources>
