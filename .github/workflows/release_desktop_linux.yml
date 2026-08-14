@@ -74,8 +74,9 @@ jobs:
           EOF
 
           # Run makepkg inside an official Arch Linux Docker container
+          # FIX: Changed 'makepkg -sf' to 'makepkg -fd' to skip installing dependencies during the build
           docker run --rm -v $(pwd)/arch-build:/build archlinux:base-devel \
-            bash -c "useradd -m builduser && chown -R builduser:builduser /build && su - builduser -c 'cd /build && makepkg -sf'"
+            bash -c "useradd -m builduser && chown -R builduser:builduser /build && su - builduser -c 'cd /build && makepkg -fd'"
 
           # Move the resulting .pkg.tar.zst back to the Compose binaries folder
           mkdir -p composeApp/build/compose/binaries/main-release/arch
