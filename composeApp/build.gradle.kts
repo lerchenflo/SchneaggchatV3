@@ -284,7 +284,7 @@ compose.desktop {
         mainClass = "org.lerchenflo.schneaggchatv3mp.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Exe, TargetFormat.Deb, TargetFormat.Rpm)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
             packageName = "Schneaggchat v3"
             packageVersion = desktopVersion
             copyright = "© 2026"
