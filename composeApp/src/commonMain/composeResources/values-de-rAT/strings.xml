@@ -92,6 +92,8 @@
     <string name="read">gleasa</string>
     <string name="useMarkdown">Markdown-formatierung verwenda</string>
     <string name="markdownInfo">Des aktiviert Markdown im Chat, es kann aber si dassas denn kle laggt</string>
+    <string name="highlight_todays_message_timestamp">Hütige Zeitstempel hervorheba</string>
+    <string name="highlight_todays_message_timestamp_info">Markiert da Zitstempel vo hüt empfangana Nochrichta in da Chat-Uswahl grün</string>
     <string name="something_wrong_message">Irgendwas isch falsch glofa</string>
     <string name="message_too_long">Nachricht zlang!</string>
     <string name="log_out_successfully">Usgloggt</string>
@@ -181,7 +183,7 @@
     <string name="group_description">Gruppenbeschreibung</string>
     <string name="user_description">Userbeschreibung</string>
     <string name="leave_group">Abhaua</string>
-    <string name="add_users_to_group">Meh lüt sölland her</string>
+    <string name="add_users_to_group">Mitglied hinzufüga</string>
     <string name="member_since">Dabei sit %1$s</string>
     <string name="change_group_name">Änder da Gruppanama</string>
 
@@ -201,6 +203,8 @@
     <string name="misc_settings">Alles andre</string>
     <string name="misc_setting_info">Alles andre des ma brucht wenn dia App kaputt isch.</string>
     <string name="misc_settings_logs">Logs</string>
+    <string name="misc_settings_reset_tour">Tour zrucksetza</string>
+    <string name="misc_settings_reset_tour_desc">Setzt d Einführungstour zruck, damit du se nomml starta kannsch</string>
 
     <string name="friend_request_title">Magsch die Freundschaftsanfrog ania?</string>
     <string name="friend_request_cancel_title">Magsch die Freundschaftsanfrog abbreacha</string>
@@ -308,12 +312,13 @@
     <string name="reactions">Reaktiona</string>
     <string name="no_reactions">Bis jetzt no kua Reaktiona</string>
     <string name="sent_at">Gschickt %1$s</string>
+    <string name="reacted_at">reagiert %1$s</string>
 
     <string name="pin_chat">Chat apinna</string>
     <string name="unpin_chat">Pin entferna</string>
     <string name="mark_as_unread">als ungleasa markiera</string>
     <string name="mark_as_read">als gleasa markiera</string>
-    <string name="more_info">Meh Informationa</string>
+    <string name="more_info">Mieh Informationa</string>
     <string name="edit_profile_picture">Profilbild bearbeita</string>
     
     
@@ -621,7 +626,7 @@
     <string name="yatzi_no_active_game">Du Bimbo hosch koa Spiel igstelt.</string>
     <string name="yatzi_category">Kategorie</string>
     <string name="yatzi_upper_sum">Alls fo oba</string>
-    <string name="yatzi_bonus">Dine Muatta</string>
+    <string name="yatzi_bonus">Bonus</string>
     <string name="yatzi_total">Alls zem</string>
     <string name="yatzi_roll_dice">Uf was wartesch, %1$d left</string>
     <string name="yatzi_roll_again">Jo nomml, %1$d left</string>
@@ -630,6 +635,8 @@
     <string name="game_tap_anywhere_to_start">Irgendwo tippa zum starta</string>
     <string name="game_stop">Spiel stoppa</string>
     <string name="game_exit">Verlo</string>
+    <string name="games_daily_expires_in">Tägliches Board louft ab in: %1$s</string>
+
 
     <!-- Games: Tetris -->
     <string name="games_tetris_title">Tetris</string>
@@ -655,6 +662,7 @@
     <string name="games_gridrush_instructions">Züh a Linie durch benachbarte Felder mit da glicha Farb — wenn  du loslosch verschwindand die Fealda und die drübat rutschand abe.\n\nDin Highscore zellt nur wenn du alle Blöck wekkriagsch. Jeden Tag ändert sich s Spielfeld, jeder kriagt s gliche.</string>
     <string name="games_gridrush_moves">Züge: %1$d / Par %2$d</string>
 
+
     <!-- Games: Odd One Out -->
     <string name="games_oddoneout_title">Odd One Out</string>
     <string name="games_oddoneout_instructions">A Raster us Fealda kut, alle luagand glich us außer uans. Druck druf und es kut a neues Feald. Umso schnealla umso besser.</string>
@@ -663,6 +671,10 @@
     <!-- Games: Morse -->
     <string name="games_morse_clear">Löscha</string>
     <string name="games_morse_instructions">Druck da große Knopf zum Morsesignale senda. Kurza Druck isch an Punkt (·), an langer Druck an Strich (−). Da Bom zoagt wo du grad anenavigiersch, zu wellam Buchstabe.\n\nTipp ab was oba stoht, jeder richtige Buchstabe git Punkte.</string>
+
+    <!-- Games: Flappy Snail -->
+    <string name="games_flappybird_title">Flappy Schneagg</string>
+    <string name="games_flappybird_instructions">Tipp aufan Bildschirm, um s Schneaggahaus flattern zum lo und durch die Lücka zwüschat da Röhra zum navigiera!\n\nDu kannsch sicher uf Türm oder am Boda landa — nur an seitlicher Zemmstoß mit uana Wand beendet din Versuach.</string>
 
     <!-- Recap -->
     <string name="recap_your_year">Din Joar</string>
@@ -881,10 +893,12 @@ Mealds, egal wie klenn.</string>
     <string name="location_type_tennis">Tennis</string>
     <string name="location_type_sightseeing">Sightseeing</string>
     <string name="location_type_party">Party</string>
+    <string name="location_type_wifi">WLAN</string>
     <string name="location_type_food_kebab">Döner</string>
     <string name="location_type_food_pizza">Pizza</string>
     <string name="location_type_food_burger">Burger</string>
     <string name="location_type_food_beer">Bier</string>
+    <string name="location_type_food_ice">Eis</string>
     <string name="location_type_food_asian">Asiatisch</string>
     <string name="location_type_food_greek">Griechisch</string>
     <string name="location_type_food_cafe_bakery">Cafe / Bäckerei</string>
@@ -893,7 +907,7 @@ Mealds, egal wie klenn.</string>
     <!-- Radar -->
     <string name="location_radar_speed_limit">Geschwindigkeitsbegrenzung</string>
     <string name="location_radar_mobile">Mobil</string>
-    <string name="location_radar_red_light">Rotlicht</string>
+    <string name="location_radar_red_light">Ampelblitzer</string>
 
     <!-- Police -->
     <string name="location_police_last_seen">Zletzt gseaha</string>
@@ -951,11 +965,16 @@ Mealds, egal wie klenn.</string>
     <string name="location_food_margarita_price">Margheritapreis</string>
     <string name="location_food_cheeseburger_price">Cheeseburgerpreis</string>
     <string name="location_food_beer_price">Bierpreis</string>
+    <string name="location_food_ice_scoop_price">Kugelpreis</string>
     <string name="location_food_cuisine">Essenstyp</string>
     <string name="location_food_cafe_bakery_outdoor_seating">Outdoorsitzplätz</string>
     <string name="location_food_cafe_bakery_alcohol">Alk</string>
     <string name="location_food_cafe_bakery_coffee">Kaffee</string>
     <string name="location_food_cafe_bakery_breakfast">Frühstück</string>
+
+    <!-- WiFi -->
+    <string name="location_wifi_ssid">SSID</string>
+    <string name="location_wifi_password">Passwort</string>
 
     <!-- Wake -->
     <string name="wake_settings">Weckerfeature</string>
@@ -983,6 +1002,87 @@ Mealds, egal wie klenn.</string>
 
 
     <string name="schneaggmap_search_label">suacha ...</string>
+
+
+    <string name="ttt_popup">Schneaggchat entdecka</string>
+    <string name="ttt_popup_description">Mach a Tour und lern, wie die App funktioniert und welche spannenda Features es git, o wenn du dia App scho mol verwendet hosch.</string>
+    <string name="ttt_popup_start">Los goht's</string>
+
+
+
+    <string name="ttt_initscreen">Schouama üs a paar Features a!</string>
+    <string name="ttt_initscreen_description">Wie immer: Wenn sich eapas komisch afühlt / ned funktioniert, du a neues Feature willsch oda irgendwas istella magsch, kannsch des gern in da Einstellunga afroga.</string>
+
+    <string name="ttt_start_chatting">Neua Chat starta</string>
+    <string name="ttt_start_chatting_description">Tipp do zum neue Freunde hinzufüga</string>
+
+    <string name="ttt_new_chat_search_friends">Suach nach dina Freunde</string>
+    <string name="ttt_new_chat_search_friends_description">Do kannsch du nach Freunden suacha. Wenn du mindestens uan Freund hosch, werrand gemeinsame Freunde azoagt.</string>
+
+    <string name="ttt_new_chat_search_friends_freeroam">Versuach, an neua Freund hinzufüga</string>
+
+
+    <string name="ttt_new_chat_create_group">Tipp do zum a neue Gruppe erstella</string>
+
+    <string name="ttt_new_chat_go_back">Gomma zruck zur Chatuswahl</string>
+
+
+
+    <string name="ttt_settings">Do sind die Einstellunga</string>
+    <string name="ttt_settings_user">Account-Einstellunga</string>
+    <string name="ttt_settings_user_description">Do kannsch du Angaben zu dinam Account ändra.</string>
+
+    <string name="ttt_settings_wake">Weckerfeature (nur Android)</string>
+    <string name="ttt_settings_wake_description">Du kannsch dia Funktion aktiviera, damit dine Freunde di ufwecka künnand. Din Handy klingelt denn wie bei nam Wecker, o im Lautlosmodus. Wenn dine Freunde des aktiviert hond, kannsch du se in da Chat-Details wecka.</string>
+    <string name="ttt_user_settings_go_back">Gomma zruck zu da Einstellunga</string>
+
+    <string name="ttt_settings_appearance">Darstellungs-Einstellunga</string>
+    <string name="ttt_settings_appearance_description">Do kannsch du dine Sproch (Österreichisch, Deutsch, Englisch) und s Design ändra.</string>
+
+    <string name="ttt_settings_misc">Sonstige Einstellunga</string>
+
+    <string name="ttt_settings_misc_bugreport">Do kannsch du Fehler mealda und Features requesten.</string>
+
+    <string name="ttt_settings_misc_app_broken">App kaputt?</string>
+    <string name="ttt_settings_misc_app_broken_description">Wenn eapas ned wie erwartet funktioniert, kannsch mit deam Knopf alle dine App - Daten löscha und neu vom Server abalada.</string>
+    <string name="ttt_misc_settings_go_back">Gomma zruck zu da Einstellunga</string>
+
+
+
+    <string name="ttt_chatselector_map">Do kummsch du zur Schneaggmap</string>
+    <string name="ttt_chatselector_map_description">Do kannsch du din Standort teila, öffentliche Orte azoaga, neue Orte hinzufüga und bearbeita.</string>
+
+
+    <string name="ttt_schneaggmap_locations">Öffentliche Orte</string>
+    <string name="ttt_schneaggmap_locations_description">Do siahsch du alle Orte, die vo andra Nutzern erstellt worra sind.\nFüg gern sealba neue dazua, indeam du lang uf d Karta drucksch.\nACHTUNG: Bitte missbrauch dia Funktion ned, sunsch müssama dir die Rechte zum Hinzufüga / Bearbeita vo Einträg weknia.</string>
+
+    <string name="ttt_schneaggmap_locations_freeroam">Schou da a paar Einträg a, die vo andra Nutzer erstellt worra sind!</string>
+    <string name="ttt_continue">Tour wittamacha</string>
+
+    <string name="ttt_schneaggmap_settings">Kartaeinstellunga</string>
+    <string name="ttt_schneaggmap_settings_description">Do kannsch du uf die Kartaeinstellunga zuagriefa. Leg fest, ob du dinen Standort teila willsch, und stell no andere sacha i.</string>
+
+    <string name="ttt_schneaggmap_snailtrail_description">Du kannsch Schleimspura azoaga (wo dine Freunde in da letzta 24h warand), wenn se des für di aktiviert hond.</string>
+
+    <string name="ttt_chatselector_games">Jetzt schouama üs die Spiele a</string>
+
+    <string name="ttt_games_info">Tools und Spiele</string>
+    <string name="ttt_games_info_description">Jetzt werfama an Blick uf die Spiele. Wennd abescrollsch gits no a paar Tools die irgendwelche lüt wella hond.</string>
+
+    <string name="ttt_games_difficulty">Schwierigkeitsuswahl</string>
+    <string name="ttt_games_difficulty_description">Do kannsch d Schwierigkeit für Spiele uswähla.</string>
+
+    <string name="ttt_games_global_highscore">Globales Ranking</string>
+    <string name="ttt_games_global_highscore_description">Do kannsch du dine Platzierung in allna Spiele gemeinsam aluaga.</string>
+
+    <string name="ttt_thank_you">Danke dir!</string>
+    <string name="ttt_thank_you_description">Vielen Dank dass du die Tour abgschlossa hosch. Viel Spaß mit Schneaggchat.</string>
+
+    <string name="navbar_chats">Chats</string>
+    
+    <string name="navbar_map">Karta</string>
+    <string name="navbar_games">Spiele</string>
+
 
 
 </resources>

@@ -124,6 +124,20 @@ fun BugReportDialog(
 
                 HorizontalDivider()
 
+                // --- Feature-specific fields ---
+                AnimatedVisibility(visible = reportType == ReportType.FEATURE) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+
+                        OutlinedTextField(
+                            value = title,
+                            onValueChange = { title = it },
+                            label = { Text(stringResource(Res.string.bugreportdialog_field_title)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+
                 // --- Shared description ---
                 OutlinedTextField(
                     value = description,
@@ -164,77 +178,68 @@ fun BugReportDialog(
                             modifier = Modifier.fillMaxWidth()
                         )
 
-                        Text(
-                            text = stringResource(Res.string.bugreportdialog_label_severity),
-                            fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            modifier = Modifier.horizontalScroll(rememberScrollState())
-                        ) {
-                            Severity.entries.forEach { s ->
-                                FilterChip(
-                                    selected = severity == s,
-                                    onClick = { severity = s },
-                                    label = {
-                                        Text(
-                                            text = stringResource(
-                                                when (s) {
-                                                    Severity.LOW -> Res.string.bugreportdialog_severity_low
-                                                    Severity.MEDIUM -> Res.string.bugreportdialog_severity_medium
-                                                    Severity.HIGH -> Res.string.bugreportdialog_severity_high
-                                                    Severity.CRITICAL -> Res.string.bugreportdialog_severity_critical
-                                                }
-                                            ),
-                                            fontSize = 11.sp
-                                        )
-                                    }
-                                )
-                            }
+                    }
+                }
+
+                // --- Priority/Severity, always at the bottom ---
+                if (reportType == ReportType.BUG) {
+                    Text(
+                        text = stringResource(Res.string.bugreportdialog_label_severity),
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                    ) {
+                        Severity.entries.forEach { s ->
+                            FilterChip(
+                                selected = severity == s,
+                                onClick = { severity = s },
+                                label = {
+                                    Text(
+                                        text = stringResource(
+                                            when (s) {
+                                                Severity.LOW -> Res.string.bugreportdialog_severity_low
+                                                Severity.MEDIUM -> Res.string.bugreportdialog_severity_medium
+                                                Severity.HIGH -> Res.string.bugreportdialog_severity_high
+                                                Severity.CRITICAL -> Res.string.bugreportdialog_severity_critical
+                                            }
+                                        ),
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            )
+                        }
+                    }
+                } else {
+                    Text(
+                        text = stringResource(Res.string.bugreportdialog_label_priority),
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Priority.entries.forEach { p ->
+                            FilterChip(
+                                selected = priority == p,
+                                onClick = { priority = p },
+                                label = {
+                                    Text(
+                                        text = stringResource(
+                                            when (p) {
+                                                Priority.LOW -> Res.string.bugreportdialog_priority_low
+                                                Priority.MEDIUM -> Res.string.bugreportdialog_priority_medium
+                                                Priority.HIGH -> Res.string.bugreportdialog_priority_high
+                                            }
+                                        ),
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            )
                         }
                     }
                 }
 
-                // --- Feature-specific fields ---
-                AnimatedVisibility(visible = reportType == ReportType.FEATURE) {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-
-                        OutlinedTextField(
-                            value = title,
-                            onValueChange = { title = it },
-                            label = { Text(stringResource(Res.string.bugreportdialog_field_title)) },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        Text(
-                            text = stringResource(Res.string.bugreportdialog_label_priority),
-                            fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Priority.entries.forEach { p ->
-                                FilterChip(
-                                    selected = priority == p,
-                                    onClick = { priority = p },
-                                    label = {
-                                        Text(
-                                            text = stringResource(
-                                                when (p) {
-                                                    Priority.LOW -> Res.string.bugreportdialog_priority_low
-                                                    Priority.MEDIUM -> Res.string.bugreportdialog_priority_medium
-                                                    Priority.HIGH -> Res.string.bugreportdialog_priority_high
-                                                }
-                                            ),
-                                            fontSize = 11.sp
-                                        )
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
             }
         },
         confirmButton = {
