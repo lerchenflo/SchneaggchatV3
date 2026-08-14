@@ -40,9 +40,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.decodeToImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -727,13 +731,48 @@ private fun SchneaggmapMapContent(
         }
     }
 
+    val ownLocationDotColor = Color(0xFF4285F4)
+
+//Own-avatar stand-in for cluster icons: a blue dot (matching the standalone "own location"
+//marker) instead of the profile picture, so it's still recognizably "you" inside a hock.
+    val ownDotAvatarBitmap = remember(defaultAvatarBitmap, ownLocationDotColor) {
+        val size = defaultAvatarBitmap.width.coerceAtLeast(defaultAvatarBitmap.height)
+        val bitmap = ImageBitmap(size, size)
+        val canvas = Canvas(bitmap)
+        val center = Offset(size / 2f, size / 2f)
+        val radius = size / 2f * 0.85f
+
+        canvas.drawCircle(
+            center = center,
+            radius = radius,
+            paint = Paint().apply { color = ownLocationDotColor }
+        )
+        canvas.drawCircle(
+            center = center,
+            radius = radius,
+            paint = Paint().apply {
+                color = Color.White
+                style = PaintingStyle.Stroke
+                strokeWidth = size * 0.08f
+            }
+        )
+        bitmap
+    }
+
     val clusterIcons: Map<String, UserMarkerIcon> = remember(
         userClusters, rawAvatarBitmaps, clusterBackgroundColor, beerIcon, defaultAvatarBitmap, textMeasurer, clusterCountBackgroundColor, clusterCountTextColor
     ) {
+
         userClusters.filter { it.users.size >= 2 }.associate { cluster ->
             //Always one avatar per member (falling back to the generic icon) so the ring
             //accurately reflects how many people are in the cluster.
-            val avatarBitmaps = cluster.users.map { rawAvatarBitmaps[it.id] ?: defaultAvatarBitmap }
+            val avatarBitmaps = cluster.users.map { user ->
+                if (user.id == ownId) {
+                    ownDotAvatarBitmap
+                } else {
+                    rawAvatarBitmaps[user.id] ?: defaultAvatarBitmap
+                }
+            }
             val bitmap = mergeClusterAvatarsIcon(
                 profilePictures = avatarBitmaps,
                 beerIcon = beerIcon,
