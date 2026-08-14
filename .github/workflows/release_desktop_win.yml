@@ -28,3 +28,14 @@ jobs:
         with:
           name: Oasis_Shoreditch.msi
           path: composeApp/build/compose/binaries/main-release/msi/*.msi
+
+        # Build the EXE file using the Compose Desktop Gradle task
+      - name: Package EXE
+        run: ./gradlew packageReleaseExe
+
+        # Upload EXE as an artifact
+      - name: Upload EXE as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SchneaggchatV3_Windows_EXE
+          path: composeApp/build/compose/binaries/main-release/exe/*.exe
