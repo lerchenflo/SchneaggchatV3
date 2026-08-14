@@ -15,11 +15,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '21' 
+          java-version: '21'
           distribution: 'temurin'
           cache: gradle
 
@@ -37,7 +37,7 @@ jobs:
       - name: Build RPM
         run: ./gradlew packageReleaseRpm
 
-      # 4. Build the Arch Linux package natively using a PKGBUILD inside Docker
+      # Build the Arch Linux package natively using a PKGBUILD inside Docker
       - name: Build Arch (Native PKGBUILD)
         run: |
           # Create a working directory for the Arch build
@@ -70,11 +70,28 @@ jobs:
           package() {
               # Extract the actual app data directly into the Arch pacman folder structure
               bsdtar -xf data.tar.* -C "\$pkgdir/"
+
+              # 1. Create standard Linux system directories
+              install -d "\$pkgdir/usr/bin"
+              install -d "\$pkgdir/usr/share/applications"
+              install -d "\$pkgdir/usr/share/pixmaps"
+
+              # 2. Symlink the executable to /usr/bin so it can be launched easily
+              ln -s "/opt/schneaggchat-v3/bin/Schneaggchat v3" "\$pkgdir/usr/bin/schneaggchat"
+
+              # 3. Move the .desktop file to the correct system location and rename it
+              mv "\$pkgdir/opt/schneaggchat-v3/lib/schneaggchat-v3-Schneaggchat_v3.desktop" "\$pkgdir/usr/share/applications/schneaggchat.desktop"
+
+              # 4. Move the icon to the standard pixmaps folder
+              mv "\$pkgdir/opt/schneaggchat-v3/lib/Schneaggchat_v3.png" "\$pkgdir/usr/share/pixmaps/schneaggchat.png"
+
+              # 5. Fix the paths inside the .desktop file using sed
+              sed -i 's|^Exec=.*|Exec=/usr/bin/schneaggchat|' "\$pkgdir/usr/share/applications/schneaggchat.desktop"
+              sed -i 's|^Icon=.*|Icon=schneaggchat|' "\$pkgdir/usr/share/applications/schneaggchat.desktop"
           }
           EOF
 
           # Run makepkg inside an official Arch Linux Docker container
-          # FIX: Changed 'makepkg -sf' to 'makepkg -fd' to skip installing dependencies during the build
           docker run --rm -v $(pwd)/arch-build:/build archlinux:base-devel \
             bash -c "useradd -m builduser && chown -R builduser:builduser /build && su - builduser -c 'cd /build && makepkg -fd'"
 
@@ -82,11 +99,10 @@ jobs:
           mkdir -p composeApp/build/compose/binaries/main-release/arch
           cp arch-build/*.pkg.tar.zst composeApp/build/compose/binaries/main-release/arch/
 
-      # Upload both as artifacts
+      # Upload all formats as artifacts
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
-          # This automatically uses the tag you just pushed (e.g., v1.0.0)
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           files: |

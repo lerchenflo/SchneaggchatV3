@@ -292,6 +292,9 @@ compose.desktop {
             modules("jdk.unsupported")
 
             linux {
+                // Linux override. Keep this strictly lowercase with no spaces.
+                packageName = "schneaggchat-v3"
+
                 shortcut = true
                 menuGroup = "Chat"
                 iconFile.set(project.file("src/commonMain/composeResources/files/schneaggchat_logo_v3.png"))
@@ -309,6 +312,12 @@ compose.desktop {
 
                 // ./gradlew packageDistributionForCurrentOS
 
+            }
+
+            macOS {
+                // Pro-tip: If you target macOS, set a bundleID without spaces here.
+                // Otherwise, macOS might try to generate one from the spaced packageName and fail.
+                bundleID = "org.lerchenflo.schneaggchatv3"
             }
         }
         buildTypes.release.proguard {
