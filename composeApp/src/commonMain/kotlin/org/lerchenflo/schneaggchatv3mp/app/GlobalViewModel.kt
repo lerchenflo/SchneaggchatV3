@@ -176,12 +176,17 @@ class GlobalViewModel(
         }
 
         viewModelScope.launch {
-            AppLifecycleManager.notificationOpenedEvent.collectLatest {
+            AppLifecycleManager.notificationOpenedEvent.collectLatest { data ->
                 println("App started from notification, synching data")
                 val ownId = SessionCache.requireLoggedIn()?.userId ?: return@collectLatest
                 if (SessionCache.isLoggedIn()) {
                     appRepository.sendOfflineMessages(ownId)
                     appRepository.dataSync(reason = "notificationOpened")
+
+                    // Navigate to the chat that the notification belongs to
+                    data.chatId?.let { chatId ->
+                        navigator.navigate(Route.Chat(chatId = chatId, isGroup = data.isGroup))
+                    }
                 }
             }
         }

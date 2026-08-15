@@ -46,10 +46,14 @@ actual class Notifier(private val context: Context, private val permissionManage
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra(EXTRA_FROM_NOTIFICATION, true)
+            content.chatId?.let { putExtra(EXTRA_CHAT_ID, it) }
+            putExtra(EXTRA_GROUP_CHAT, content.groupChat)
         } ?: Intent().apply {
             setClassName(context, "org.lerchenflo.androidApp.MainActivity")
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra(EXTRA_FROM_NOTIFICATION, true)
+            content.chatId?.let { putExtra(EXTRA_CHAT_ID, it) }
+            putExtra(EXTRA_GROUP_CHAT, content.groupChat)
         }
         
         val pendingIntent = PendingIntent.getActivity(

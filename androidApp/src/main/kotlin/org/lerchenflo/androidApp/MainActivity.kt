@@ -21,7 +21,9 @@ import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ActivityHolder
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_CHAT_ID
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_FROM_NOTIFICATION
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.EXTRA_GROUP_CHAT
 
 class MainActivity : ComponentActivity() {
 
@@ -95,7 +97,9 @@ class MainActivity : ComponentActivity() {
             }
         }
         if (intent?.getBooleanExtra(EXTRA_FROM_NOTIFICATION, false) == true) {
-            AppLifecycleManager.notifyNotificationOpened()
+            val chatId = intent.getStringExtra(EXTRA_CHAT_ID)
+            val isGroup = intent.getBooleanExtra(EXTRA_GROUP_CHAT, false)
+            AppLifecycleManager.notifyNotificationOpened(chatId = chatId, isGroup = isGroup)
         }
     }
 
