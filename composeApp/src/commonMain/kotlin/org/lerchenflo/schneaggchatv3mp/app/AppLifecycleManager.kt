@@ -49,11 +49,19 @@ object AppLifecycleManager {
         _appBackgroundedEvent.tryEmit(Unit)
     }
 
-    private val _notificationOpenedEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    val notificationOpenedEvent: SharedFlow<Unit> = _notificationOpenedEvent.asSharedFlow()
+    data class NotificationOpenData(
+        val chatId: String? = null,
+        val isGroup: Boolean = false
+    )
 
-    fun notifyNotificationOpened() {
-        _notificationOpenedEvent.tryEmit(Unit)
+    private val _notificationOpenedEvent = MutableSharedFlow<NotificationOpenData>(extraBufferCapacity = 1)
+    val notificationOpenedEvent: SharedFlow<NotificationOpenData> = _notificationOpenedEvent.asSharedFlow()
+
+    fun notifyNotificationOpened(
+        chatId: String? = null,
+        isGroup: Boolean = false
+    ) {
+        _notificationOpenedEvent.tryEmit(NotificationOpenData(chatId = chatId, isGroup = isGroup))
     }
     
     /**
