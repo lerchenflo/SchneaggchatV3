@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.mp.KoinPlatformTools
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
@@ -98,7 +99,9 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
                 type = ComboAnnotationTypes.USER,
                 names = userNames,
                 onClick = { entryId ->
-                    scope.launch { navigator.navigate(Route.Chat(entryId, false)) }
+                    if (entryId != SessionCache.requireLoggedIn()?.userId) { //Dont allow to open own chat
+                        scope.launch { navigator.navigate(Route.Chat(entryId, false)) }
+                    }
                 }
             ),
             ComboAnnotationSource(

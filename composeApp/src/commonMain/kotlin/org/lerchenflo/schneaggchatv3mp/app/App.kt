@@ -420,7 +420,7 @@ fun App() {
             )
         }
 
-        val tour = rememberOnboardingTour(appRepository.appVersion.isAndroid())
+        val tour = rememberOnboardingTour(appRepository.appVersion.isAndroid(), appRepository.appVersion.isDesktop())
 
         val tourController = remember {
             TapTargetController(
