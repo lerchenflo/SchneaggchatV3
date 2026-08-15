@@ -34,7 +34,15 @@ class IosPushDelegateBridge {
     }
 
     fun onNotificationTap(data: Map<String, String>) {
-        AppLifecycleManager.notifyNotificationOpened()
+        // Extract chat info from the push payload for deep-navigation.
+        // For message notifications: group messages use receiverId (the group),
+        // single messages use senderId (the other person).
+        val isGroup = data["groupMessage"]?.toBoolean() ?: false
+        val chatId = if (data["_class"] == "message") {
+            if (isGroup) data["receiverId"] else data["senderId"]
+        } else null
+
+        AppLifecycleManager.notifyNotificationOpened(chatId = chatId, isGroup = isGroup)
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
