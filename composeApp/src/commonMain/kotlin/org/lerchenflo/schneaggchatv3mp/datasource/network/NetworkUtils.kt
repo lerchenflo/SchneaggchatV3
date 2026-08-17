@@ -270,6 +270,13 @@ class NetworkUtils(
         )
     }
 
+    suspend fun getGitHubVersionJson(url: String) : NetworkResult<String, NetworkError> {
+        return safeAuthGet(
+            endpoint = "",
+            url = url
+        )
+    }
+
     suspend fun getOpenGithubIssues(githubIssuesApiUrl: String) : NetworkResult<List<GithubIssueDto>, NetworkError> {
         return safeAuthGet(
             endpoint = "",

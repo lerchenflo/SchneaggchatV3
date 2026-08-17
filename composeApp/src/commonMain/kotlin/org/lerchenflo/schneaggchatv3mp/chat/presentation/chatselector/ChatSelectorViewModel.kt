@@ -35,12 +35,15 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.GitHubRelease
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
+import org.lerchenflo.schneaggchatv3mp.chat.domain.getTagName
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
+import org.lerchenflo.schneaggchatv3mp.utilities.isNewVersionHigher
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.groups
@@ -205,6 +208,29 @@ class ChatSelectorViewModel(
         val appversion = appRepository.appVersion.getVersionName()
         val changelogEntry = appRepository.getChangeLog(appversion)
         return changelogEntry
+    }
+
+    suspend fun checkNewGitHubRelease(): String?{
+        // get the github release name
+        val releaseJson = appRepository.getLatestGitHubVersionAsString()
+        println("github json: ${releaseJson}")
+        val tagName = getTagName(releaseJson?:"") ?:"v0.0.0"
+        println("github tag name: ${tagName}")
+
+        // get the current app name
+        val appversion = appRepository.appVersion.getVersionName()
+        println("app version: ${appversion}")
+
+        // check if the GitHub version is newer than your version
+        try {
+            if(isNewVersionHigher(appversion, tagName))
+                return tagName
+        } catch (e: IllegalArgumentException) {
+            // Handle the bad data safely without crashing the app
+            println("Error checking version: ${e.message}")
+            return null
+        }
+        return null
     }
 
 
