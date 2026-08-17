@@ -34,6 +34,7 @@ fun isNewVersionHigher(currentVersion: String, newVersion: String): Boolean {
         if (nPart < cPart) return false
     }
 
+    /*
     // 6. Handle pre-release tags (beta, alpha, rc, etc.)
     if (preCurrent == null && preNew != null) return false
     if (preCurrent != null && preNew == null) return true
@@ -41,6 +42,8 @@ fun isNewVersionHigher(currentVersion: String, newVersion: String): Boolean {
     if (preCurrent != null && preNew != null) {
         return preNew > preCurrent
     }
+
+     */
 
     return false
 }
