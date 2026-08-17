@@ -4,7 +4,10 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
@@ -37,10 +40,19 @@ class PlayerSelectorViewModel(
         }
 
         viewModelScope.launch {
-            // Load friends
-            appRepository.getFriendsFlow("").collectLatest { friendsList ->
+            // Load friends and current user
+            val ownId = SessionCache.requireLoggedIn()?.userId
+            val ownUserFlow = if (ownId != null) appRepository.getUserByIdFlow(ownId) else flowOf(null)
+            val friendsFlow = appRepository.getFriendsFlow("")
+
+            ownUserFlow.combine(friendsFlow) { ownUser, friendsList ->
+                val list = mutableListOf<User>()
+                ownUser?.let { list.add(it) }
+                list.addAll(friendsList)
+                list
+            }.collectLatest { combinedList ->
                 _friends.clear()
-                _friends.addAll(friendsList)
+                _friends.addAll(combinedList)
             }
         }
     }
