@@ -73,6 +73,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.lerchenflo.schneaggchatv3mp.GITHUB_LATEST_RELEASE_URL
 import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.LocalTapTargetController
@@ -96,8 +97,11 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.app_name
 import schneaggchatv3mp.composeapp.generated.resources.chat_add_on_24px
+import schneaggchatv3mp.composeapp.generated.resources.download
+import schneaggchatv3mp.composeapp.generated.resources.download_from_github
 import schneaggchatv3mp.composeapp.generated.resources.filter
 import schneaggchatv3mp.composeapp.generated.resources.more_info
+import schneaggchatv3mp.composeapp.generated.resources.new_version_available
 import schneaggchatv3mp.composeapp.generated.resources.no_friends_found_search
 import schneaggchatv3mp.composeapp.generated.resources.pin_chat
 import schneaggchatv3mp.composeapp.generated.resources.search_friend
@@ -136,6 +140,7 @@ fun Chatauswahlscreen(
     var changeLogDialogContent by remember { mutableStateOf<ChangelogEntry?>(null) }
     var contributePopupShown by remember { mutableStateOf(false) }
     var bugReportDialogShown by remember { mutableStateOf(false) }
+    var newVersionAvailable by remember { mutableStateOf<String?>(null) }
 
     var profilePictureFilePathTemp by remember { mutableStateOf("") }
 
@@ -149,6 +154,8 @@ fun Chatauswahlscreen(
 
     val highlightTodaysTimestamp by preferencemanager.getHighlightTodaysMessageTimestampFlow()
         .collectAsStateWithLifecycle(initialValue = true)
+
+    val uriHandler = LocalUriHandler.current
 
     /*
     //Clear chat when this screen comes to the foreground (Navigation breaks and with the preview the chat can be not selected
@@ -194,6 +201,10 @@ fun Chatauswahlscreen(
             }
         }
 
+        if(appRepository.appVersion.isDesktop()) {
+            newVersionAvailable = viewModel.checkNewGitHubRelease()
+        }
+
     }
 
 
@@ -237,7 +248,6 @@ fun Chatauswahlscreen(
                 val touchSize = 40.dp
                 val iconSize = 28.dp
 
-                val uriHandler = LocalUriHandler.current
                 Text(
                     text = stringResource(Res.string.app_name),
                     modifier = Modifier
@@ -648,6 +658,22 @@ fun Chatauswahlscreen(
                                 },
                                 onDismiss = null,
                                 activateText = stringResource(Res.string.ttt_popup_start),
+                            )
+                        }
+                    }
+
+                    if(newVersionAvailable != null){
+                        item {
+                            ChatSelectorDismissableInfo(
+                                title = stringResource(Res.string.new_version_available, newVersionAvailable?:"error"),
+                                description = stringResource(Res.string.download_from_github),
+                                onClick = {
+                                    uriHandler.openUri(GITHUB_LATEST_RELEASE_URL)
+                                },
+                                onDismiss = {
+                                    newVersionAvailable = null
+                                },
+                                activateText = stringResource(Res.string.download),
                             )
                         }
                     }

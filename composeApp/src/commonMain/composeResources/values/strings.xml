@@ -1082,6 +1082,9 @@
     <string name="navbar_map">map</string>
     <string name="navbar_games">games</string>
 
+    <string name="new_version_available">New version available: %1$s</string>
+    <string name="download_from_github">Download the new version from GitHub</string>
+    <string name="download">Download</string>
 
 
 </resources>
