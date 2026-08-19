@@ -5,13 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -25,32 +19,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import androidx.savedstate.serialization.SavedStateConfiguration
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
-import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
+import org.lerchenflo.schneaggchatv3mp.app.navigation.BottomAppBarSwipable
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.ObserveAsEvents
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
-import org.lerchenflo.schneaggchatv3mp.app.navigation.navigationbaritems
+import org.lerchenflo.schneaggchatv3mp.app.navigation.TOP_LEVEL_DESTINATIONS
+import org.lerchenflo.schneaggchatv3mp.app.navigation.rememberNavigationState
+import org.lerchenflo.schneaggchatv3mp.app.navigation.toEntries
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.LocalTapTargetController
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetController
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetOverlay
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TourSettings
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.rememberOnboardingTour
-import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
@@ -87,11 +74,9 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoo
 import org.lerchenflo.schneaggchatv3mp.roadmap.presentation.RoadmapScreen
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettings
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
@@ -134,218 +119,21 @@ fun App() {
         val scope = rememberCoroutineScope()
 
 
-        //Setup of backstack(All available routes)
-        val rootBackStack = rememberNavBackStack(
-            configuration = SavedStateConfiguration{
-                serializersModule = SerializersModule {
-                    polymorphic(NavKey::class) {
-                        subclass(Route.Login::class, Route.Login.serializer())
-                        subclass(Route.AutoLoginCredChecker::class, Route.AutoLoginCredChecker.serializer())
-                        subclass(Route.ChatSelector::class, Route.ChatSelector.serializer())
-                        subclass(Route.Chat::class, Route.Chat.serializer())
-                        subclass(Route.NewChat::class, Route.NewChat.serializer())
-                        subclass(Route.MessageChatSelector::class, Route.MessageChatSelector.serializer())
-                        subclass(Route.GroupCreator::class, Route.GroupCreator.serializer())
-                        subclass(Route.SignUp::class, Route.SignUp.serializer())
-                        subclass(Route.EmailVerifiedCheck::class, Route.EmailVerifiedCheck.serializer())
-                        subclass(Route.ChatDetails::class, Route.ChatDetails.serializer())
-                        subclass(Route.Schneaggmap::class, Route.Schneaggmap.serializer())
-
-                        //Subgraph for settings
-                        subclass(Route.Settings::class, Route.Settings.serializer())
-
-                        //sugraph for games
-                        subclass(Route.Games::class, Route.Games.serializer())
-
-                    }
-                }
-            },
-            Route.AutoLoginCredChecker //Initial activity: Autologinchecker
-        )
-
-        //Backstack for settings
-        val settingsBackStack = rememberNavBackStack(
-            configuration = SavedStateConfiguration{
-                serializersModule = SerializersModule {
-                    polymorphic(NavKey::class) {
-                        subclass(Route.Settings.SettingsScreen::class, Route.Settings.SettingsScreen.serializer())
-                        subclass(Route.Settings.DeveloperSettings::class, Route.Settings.DeveloperSettings.serializer())
-                        subclass(Route.Settings.UserSettings::class, Route.Settings.UserSettings.serializer())
-                        subclass(Route.Settings.AppearanceSettings::class, Route.Settings.AppearanceSettings.serializer())
-                        subclass(Route.Settings.MiscSettings::class, Route.Settings.MiscSettings.serializer())
-                        subclass(Route.Settings.SchneaggmapSettings::class, Route.Settings.SchneaggmapSettings.serializer())
-                        subclass(Route.Settings.Roadmap::class, Route.Settings.Roadmap.serializer())
-                    }
-                }
-            },
-            Route.Settings.SettingsScreen
-        )
-
-        //Backstack for games
-        val gamesBackStack = rememberNavBackStack(
-            configuration = SavedStateConfiguration{
-                serializersModule = SerializersModule {
-                    polymorphic(NavKey::class) {
-                        subclass(Route.Games.GamesSelector::class, Route.Games.GamesSelector.serializer())
-                        subclass(Route.Games.DartCounter::class, Route.Games.DartCounter.serializer())
-
-                        subclass(Route.Games.Undercover::class, Route.Games.Undercover.serializer())
-                        subclass(Route.Games.TowerStack::class, Route.Games.TowerStack.serializer())
-                        subclass(Route.Games.Yatzi::class, Route.Games.Yatzi.serializer())
-                        subclass(Route.Games.Tetris::class, Route.Games.Tetris.serializer())
-                        subclass(Route.Games.Morse::class, Route.Games.Morse.serializer())
-                        subclass(Route.Games.SchneaggaHus::class, Route.Games.SchneaggaHus.serializer())
-                        subclass(Route.Games.GridRush::class, Route.Games.GridRush.serializer())
-                        subclass(Route.Games.OddOneOut::class, Route.Games.OddOneOut.serializer())
-
-                        subclass(Route.Games.Recap::class, Route.Games.Recap.serializer())
-                        subclass(Route.Games.CoinFlip::class, Route.Games.CoinFlip.serializer())
-                        subclass(Route.Games.FingerPicker::class, Route.Games.FingerPicker.serializer())
-                        subclass(Route.Games.Game2048::class, Route.Games.Game2048.serializer())
-
-
-                    }
-                }
-            },
-            Route.Games.GamesSelector
-        )
-
-
-        //Initialize navigator (TO navigate from viewmodels)
-        val navigator = koinInject<Navigator>()
-
         //Initialize global repository
         val appRepository = koinInject<AppRepository>()
+
+        val navigationState = rememberNavigationState(
+            startRoute = Route.AutoLoginCredChecker,
+            topLevelRoutes = TOP_LEVEL_DESTINATIONS.keys
+        )
+        val navigator = remember {
+            Navigator(navigationState)
+        }
 
 
         //Init snackbarmanager
         LaunchedEffect(Unit) {
             SnackbarManager.init(scope)
-        }
-
-        //Observe what the navigator sends to change screens etc
-        ObserveAsEvents(
-            flow = navigator.navigationActions
-        ) { action ->
-
-            /*
-            println("NAVIGATION: Navigating ${when (action) {
-                is NavigationAction.Navigate -> {
-                    "to " + action.destination
-                }
-                is NavigationAction.NavigateBack -> {
-                    "back"
-                }
-            }
-            } \n${rootBackStack.toFormattedString()}")
-
-             */
-
-            val navigationOptions = action.navigationOptions
-
-            if (navigationOptions.exitPreviousScreen){
-                if (rootBackStack.size > 1){
-                    rootBackStack.removeAt(rootBackStack.size - 1) //Removelast not working on older android
-                }
-            }
-
-            //Remove all routes of the given types from the backstack (class-based so routes with
-            //arguments match regardless of their argument values)
-            if (navigationOptions.removeAllScreensByClass.isNotEmpty()) {
-                navigationOptions.removeAllScreensByClass.forEach { routeClass ->
-                    rootBackStack.removeAll { navKey -> navKey::class == routeClass }
-                }
-            }
-
-            if (navigationOptions.removeAllExceptByRoute != null) {
-                rootBackStack.removeAll { navKey ->
-                    navKey != navigationOptions.removeAllExceptByRoute
-                }
-            }
-
-            when(action){
-                is NavigationAction.Navigate -> {
-                    if (navigationOptions.exitAllPreviousScreens){
-                        rootBackStack.clear()
-                    }
-
-                    // Ensure max 1 item per route type: if the route already exists,
-                    // remove it and everything above it on the backstack
-                    val existingIndex = rootBackStack.indexOfFirst { it::class == action.destination::class }
-                    if (existingIndex >= 0) {
-                        while (rootBackStack.size > existingIndex) {
-                            rootBackStack.removeAt(rootBackStack.size - 1)
-                        }
-                    }
-                    rootBackStack.add(action.destination)
-                }
-
-                is NavigationAction.NavigateSubRoute -> {
-                    if (navigationOptions.exitAllPreviousScreens) {
-                        rootBackStack.clear()
-                    }
-
-                    // add root route if not already in backstack
-                    if(!rootBackStack.contains(action.rootRoute)){
-                        rootBackStack.add(action.rootRoute)
-                    }
-                    when(action.rootRoute)
-                    {
-                        Route.Games -> {
-                            val existingIndex = gamesBackStack.indexOfFirst { it::class == action.destination::class }
-                            if (existingIndex >= 0) {
-                                while (gamesBackStack.size > existingIndex) {
-                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
-                                }
-                            }
-                            gamesBackStack.add(action.destination)
-                        }
-                        Route.Settings -> {
-                            val existingIndex = settingsBackStack.indexOfFirst { it::class == action.destination::class }
-                            if (existingIndex >= 0) {
-                                while (settingsBackStack.size > existingIndex) {
-                                    settingsBackStack.removeAt(settingsBackStack.size - 1)
-                                }
-                            }
-                            settingsBackStack.add(action.destination)
-                        }
-                        else -> {
-                            scope.launch {
-                                loggingRepository.logWarning("rootRoute has no configured backstack")
-                            }
-                        }
-                    }
-                }
-
-                is NavigationAction.NavigateBack -> {
-                    val currentRoot = rootBackStack.lastOrNull()
-
-                    val subBackStack = when (currentRoot) {
-                        Route.Games -> gamesBackStack
-                        Route.Settings -> settingsBackStack
-                        else -> null
-                    }
-
-                    if (!subBackStack.isNullOrEmpty()) {
-                        if (subBackStack.size > 1 && !navigationOptions.exitRootWithSubRoute) {
-                            // Navigate back within the sub-graph
-                            subBackStack.removeAt(subBackStack.size - 1)
-                        } else {
-                            // At the root of the sub-graph (or forced exit) — pop the root
-                            // route instead. Never empty the sub-backstack; NavDisplay
-                            // requires at least one entry or it throws IllegalArgumentException.
-                            if (rootBackStack.size > 1) {
-                                rootBackStack.removeAt(rootBackStack.size - 1)
-                            }
-                        }
-                    } else {
-                        // Normal top-level back navigation
-                        if (rootBackStack.size > 1) {
-                            rootBackStack.removeAt(rootBackStack.size - 1)
-                        }
-                    }
-                }
-            }
         }
 
 
@@ -356,12 +144,13 @@ fun App() {
                 when (action) {
                     AppRepository.ActionChannel.ActionEvent.Login -> {
                         // Login action handled automatically by HTTP client refresh
-                        if (rootBackStack.contains(Route.ChatSelector)){
-                            val error = tokenManager.refreshTokens(preferenceManager.getTokens().refreshToken)
+                        //if (rootBackStack.contains(Route.ChatSelector)){
 
-                            if (error != null && !error.isConnectionError()){
-                                AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
-                            }
+                        //}
+                        val error = tokenManager.refreshTokens(preferenceManager.getTokens().refreshToken)
+
+                        if (error != null && !error.isConnectionError()){
+                            AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
                         }
                     }
 
@@ -377,7 +166,6 @@ fun App() {
                         appRepository.logout()
                         navigator.navigate(
                             Route.Login,
-                            navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
                         )
                     }
                 }
@@ -404,14 +192,14 @@ fun App() {
         }
 
 
+
+
         //Snackbar popup handling
         var currentSnackbarEvent by remember { mutableStateOf<SnackbarManager.SnackbarEvent?>(null) }
         LaunchedEffect(Unit) {
-
             SnackbarManager.snackbars.collect {
                 currentSnackbarEvent = it
             }
-
         }
         currentSnackbarEvent?.let { snackbar ->
             SnackbarPopup(
@@ -420,6 +208,9 @@ fun App() {
             )
         }
 
+
+
+
         val tour = rememberOnboardingTour(appRepository.appVersion.isAndroid(), appRepository.appVersion.isDesktop())
 
         val tourController = remember {
@@ -427,37 +218,9 @@ fun App() {
                 tour = tour,
                 onNavigateToRoute = { targetRoute ->
                     println("Onboarding: Navigating $targetRoute")
-                    scope.launch {
-                        val currentRoot = rootBackStack.lastOrNull() as? Route
-                        if (currentRoot == Route.Settings) {
-                            if (targetRoute == Route.Settings || targetRoute == Route.Settings.SettingsScreen) {
-                                while (settingsBackStack.size > 1) {
-                                    settingsBackStack.removeAt(settingsBackStack.size - 1)
-                                }
-                                return@launch
-                            }
-                        }
-                        if (currentRoot == Route.Games) {
-                            if (targetRoute == Route.Games || targetRoute == Route.Games.GamesSelector) {
-                                while (gamesBackStack.size > 1) {
-                                    gamesBackStack.removeAt(gamesBackStack.size - 1)
-                                }
-                                return@launch
-                            }
-                        }
-                        navigator.navigate(targetRoute)
-                    }
+                    navigator.navigate(targetRoute)
                 },
-                currentRoute = {
-                    val root = rootBackStack.lastOrNull() as? Route
-                    val activeRoute = when (root) {
-                        Route.Settings -> settingsBackStack.lastOrNull() as? Route ?: root
-                        Route.Games -> gamesBackStack.lastOrNull() as? Route ?: root
-                        else -> root
-                    }
-                    println("Onboarding: Currentroute ${activeRoute?.let { it::class }}")
-                    activeRoute
-                },
+                currentRoute = { navigationState.topLevelRoute },
                 onFinished = {
                     scope.launch {
                         preferenceManager.setOnboardingSeen(true)
@@ -478,50 +241,17 @@ fun App() {
                         .imePadding(),
                     bottomBar = {
 
-                        val root = rootBackStack.lastOrNull() as? Route
-                        val activeRoute = when (root) {
-                            Route.Settings -> settingsBackStack.lastOrNull() as? Route ?: root
-                            Route.Games -> gamesBackStack.lastOrNull() as? Route ?: root
-                            else -> root
-                        }
+                        BottomAppBarSwipable(
+                            selectedKey = navigationState.topLevelRoute,
+                            onSelectKey = {
+                                navigator.navigate(
+                                    route = it,
+                                )
+                            },
+                            mobile = appRepository.appVersion.isMobile(),
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
-                        if (root is Route.ChatSelector || root is Route.Schneaggmap || (root is Route.Games && activeRoute == Route.Games.GamesSelector)) {
-                            NavigationBar(
-                                containerColor = MaterialTheme.colorScheme.background,
-                                contentColor = MaterialTheme.colorScheme.onBackground,
-                                tonalElevation = 0.dp
-                            ) {
-                                navigationbaritems.forEach { template ->
-                                    val selected = activeRoute == template.route || (template.route is Route.Games && root is Route.Games)
-
-                                    if (template.mobileOnly && !appRepository.appVersion.isMobile()) return@forEach
-
-                                    NavigationBarItem(
-                                        modifier = Modifier.tapTarget(template.id),
-                                        selected = selected,
-                                        colors = NavigationBarItemDefaults.colors(
-                                            indicatorColor = MaterialTheme.colorScheme.surfaceVariant
-                                        ),
-                                        onClick = {
-                                            scope.launch {
-                                                navigator.navigate(template.route)
-                                            }
-                                        },
-                                        icon = {
-                                            Icon(
-                                                imageVector = if (selected) template.selectedIcon else template.unselectedIcon,
-                                                contentDescription = null
-                                            )
-                                        },
-                                        label = {
-                                            Text(
-                                                text = stringResource(template.title)
-                                            )
-                                        },
-                                    )
-                                }
-                            }
-                        }
                     }
 
                 ) { innerpadding ->
@@ -542,338 +272,227 @@ fun App() {
                         }
 
 
-                        //Main content
                         NavDisplay(
-                            backStack = rootBackStack,
-                            entryDecorators = listOf(
-                                rememberSaveableStateHolderNavEntryDecorator(),
-                                rememberViewModelStoreNavEntryDecorator()
+                            entries = navigationState.toEntries(
+                                entryProvider = entryProvider {
+
+                                    //Authentication
+                                    entry<Route.AutoLoginCredChecker> {
+                                        AutoLoginCredCheckerRoot()
+                                    }
+
+                                    entry<Route.Login> {
+                                        LoginScreen()
+                                    }
+
+                                    entry<Route.SignUp> {
+                                        SignUpScreenRoot()
+                                    }
+
+                                    entry<Route.EmailVerifiedCheck> {
+                                        EmailVerifiedCheckScreenRoot()
+                                    }
+
+
+
+                                    //Chat
+                                    entry<Route.ChatSelector> {
+                                        Chatauswahlscreen()
+                                    }
+
+                                    entry<Route.Chat> { route ->
+                                        ChatScreen(
+                                            chatId = route.chatId,
+                                            isGroup = route.isGroup,
+                                            highlightMessageId = route.highlightMessageId
+                                        )
+                                    }
+                                    entry<Route.ChatDetails> { route ->
+                                        ChatDetails(
+                                            chatId = route.chatId,
+                                            isGroup = route.isGroup
+                                        )
+                                    }
+                                    entry<Route.MessageChatSelector> {
+                                        MessageChatSelector()
+                                    }
+
+
+                                    //New chat
+                                    entry<Route.NewChat> {
+                                        NewChat()
+                                    }
+
+                                    entry<Route.GroupCreator> {
+                                        GroupCreatorScreenRoot()
+                                    }
+
+                                    entry<Route.Schneaggmap> { route ->
+                                        SchneaggmapScreenRoot(
+                                            initialEntryId = route.initialEntryId
+                                        )
+                                    }
+
+
+
+                                    //Settings
+                                    entry<Route.Settings.SettingsScreen> {
+                                        SettingsScreen(
+                                            settingsViewmodel = koinInject(),
+                                            sharedSettingsViewmodel = koinInject(), // see note below on scoping
+                                            onBackClick = {
+                                                scope.launch { navigator.navigateBack() }
+                                            },
+                                            navigateUserSettings = { navigator.navigate(Route.Settings.UserSettings) },
+                                            navigateDevSettings = { navigator.navigate(Route.Settings.DeveloperSettings) },
+                                            navigateAppearanceSettings = { navigator.navigate(Route.Settings.AppearanceSettings) },
+                                            navigateMiscSettings = { navigator.navigate(Route.Settings.MiscSettings) },
+                                            navigateSchneaggmapSettings = { navigator.navigate(Route.Settings.SchneaggmapSettings) }
+                                        )
+                                    }
+
+                                    entry<Route.Settings.DeveloperSettings> {
+                                        DeveloperSettings(
+                                            devSettingsViewModel = koinInject(),
+                                            sharedSettingsViewmodel = koinInject(),
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.Settings.UserSettings> {
+                                        UserSettings(
+                                            userSettingsViewModel = koinInject(),
+                                            sharedSettingsViewmodel = koinInject(),
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.Settings.AppearanceSettings> {
+                                        AppearanceSettings(
+                                            appearanceSettingsViewModel = koinInject(),
+                                            sharedSettingsViewmodel = koinInject(),
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.Settings.MiscSettings> {
+                                        MiscSettings(
+                                            miscSettingsViewModel = koinInject(),
+                                            sharedSettingsViewmodel = koinInject(),
+                                            onBackClick = { scope.launch { navigator.navigateBack() } },
+                                            navigateRoadmap = { navigator.navigate(Route.Settings.Roadmap) }
+                                        )
+                                    }
+
+                                    entry<Route.Settings.Roadmap> {
+                                        RoadmapScreen(
+                                            roadmapViewModel = koinInject(),
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+
+
+
+                                    entry<Route.Games.GamesSelector> {
+                                        val gameSelectorViewModel = koinViewModel<GameSelectorViewModel>()
+                                        GameSelectorScreen(
+                                            onBackClick = {
+                                                scope.launch { navigator.navigateBack() }
+                                            },
+                                            onGameSelection = {
+                                                navigator.navigate(it)
+                                            },
+                                            viewModel = gameSelectorViewModel
+                                        )
+                                    }
+
+                                    entry<Route.Games.DartCounter> {
+                                        DartCounter(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.Games.Undercover> {
+                                        Undercover(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.Games.TowerStack> {
+                                        TowerStackScreen(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.Games.Yatzi> {
+                                        YatziScreenRoot(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.Games.Tetris> {
+                                        val tetrisViewModel: TetrisViewModel = koinViewModel<TetrisViewModel>()
+                                        TetrisScreen(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } },
+                                            viewModel = tetrisViewModel
+                                        )
+                                    }
+
+                                    entry<Route.Games.Morse> {
+                                        val morseViewModel: MorseViewModel = koinViewModel()
+                                        MorseScreen(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } },
+                                            viewModel = morseViewModel
+                                        )
+                                    }
+
+                                    entry<Route.Games.SchneaggaHus> {
+                                        SchneaggaHusScreenRoot(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.Games.GridRush> {
+                                        GridRushScreenRoot(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.Games.OddOneOut> {
+                                        OddOneOutScreenRoot(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.Games.Recap> {
+                                        RecapScreenRoot(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.Games.CoinFlip> {
+                                        CoinFlipScreen(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.Games.FingerPicker> {
+                                        FingerPickerScreen(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.Games.Game2048> {
+                                        Game2048ScreenRoot(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+                                }
                             ),
-                            entryProvider = entryProvider {
-
-                                //Authentication
-                                entry<Route.AutoLoginCredChecker> {
-                                    AutoLoginCredCheckerRoot()
-                                }
-
-                                entry<Route.Login> {
-                                    LoginScreen()
-                                }
-
-                                entry<Route.SignUp> {
-                                    SignUpScreenRoot()
-                                }
-
-                                entry<Route.EmailVerifiedCheck> {
-                                    EmailVerifiedCheckScreenRoot()
-                                }
-
-
-
-                                //Chat
-                                entry<Route.ChatSelector> {
-                                    Chatauswahlscreen()
-                                }
-
-                                entry<Route.Chat> { route ->
-                                    ChatScreen(
-                                        chatId = route.chatId,
-                                        isGroup = route.isGroup,
-                                        highlightMessageId = route.highlightMessageId
-                                    )
-                                }
-                                entry<Route.ChatDetails> { route ->
-                                    ChatDetails(
-                                        chatId = route.chatId,
-                                        isGroup = route.isGroup
-                                    )
-                                }
-                                entry<Route.MessageChatSelector> {
-                                    MessageChatSelector()
-                                }
-
-
-                                //New chat
-                                entry<Route.NewChat> {
-                                    NewChat()
-                                }
-
-                                entry<Route.GroupCreator> {
-                                    GroupCreatorScreenRoot()
-                                }
-
-
-
-                                //Settings
-                                entry<Route.Settings> {
-
-                                    //Initialize global settingsviewmodel which will survive as long as the settings are open
-                                    val sharedSettingsViewmodel = koinViewModel<SharedSettingsViewmodel>()
-
-                                    NavDisplay(
-                                        backStack = settingsBackStack,
-                                        entryProvider = entryProvider {
-                                            entry<Route.Settings.SettingsScreen> {
-                                                SettingsScreen(
-                                                    settingsViewmodel = koinInject(),
-                                                    sharedSettingsViewmodel = sharedSettingsViewmodel,
-                                                    onBackClick = {
-                                                        scope.launch {
-                                                            navigator.navigateBack() //Settings backstack gets cleared automatically
-                                                        }
-                                                    },
-                                                    navigateUserSettings = {settingsBackStack.add(Route.Settings.UserSettings)},
-                                                    navigateDevSettings = {settingsBackStack.add(Route.Settings.DeveloperSettings)},
-                                                    navigateAppearanceSettings = {settingsBackStack.add(Route.Settings.AppearanceSettings)},
-                                                    navigateMiscSettings = {settingsBackStack.add(Route.Settings.MiscSettings)},
-                                                    navigateSchneaggmapSettings = {settingsBackStack.add(Route.Settings.SchneaggmapSettings)}
-                                                )
-                                            }
-
-                                            entry<Route.Settings.DeveloperSettings> {
-                                                DeveloperSettings(
-                                                    devSettingsViewModel = koinInject(),
-                                                    sharedSettingsViewmodel = sharedSettingsViewmodel,
-                                                    onBackClick = {
-                                                        if (settingsBackStack.size > 1){
-                                                            settingsBackStack.removeAt(settingsBackStack.size - 1)
-                                                        }
-                                                    }
-                                                )
-                                            }
-
-                                            entry<Route.Settings.UserSettings> {
-                                                UserSettings(
-                                                    userSettingsViewModel = koinInject(),
-                                                    sharedSettingsViewmodel = sharedSettingsViewmodel,
-                                                    onBackClick = {
-                                                        if (settingsBackStack.size > 1){
-                                                            settingsBackStack.removeAt(settingsBackStack.size - 1)
-                                                        }
-                                                    }
-                                                )
-                                            }
-
-                                            entry<Route.Settings.AppearanceSettings> {
-                                                AppearanceSettings(
-                                                    appearanceSettingsViewModel = koinInject(),
-                                                    sharedSettingsViewmodel = sharedSettingsViewmodel,
-                                                    onBackClick = {
-                                                        if (settingsBackStack.size > 1){
-                                                            settingsBackStack.removeAt(settingsBackStack.size - 1)
-                                                        }
-                                                    }
-                                                )
-                                            }
-
-                                            entry<Route.Settings.MiscSettings> {
-                                                MiscSettings(
-                                                    miscSettingsViewModel = koinInject(),
-                                                    sharedSettingsViewmodel = sharedSettingsViewmodel,
-                                                    onBackClick = {
-                                                        if (settingsBackStack.size > 1){
-                                                            settingsBackStack.removeAt(settingsBackStack.size - 1)
-                                                        }
-                                                    },
-                                                    navigateRoadmap = {settingsBackStack.add(Route.Settings.Roadmap)}
-                                                )
-                                            }
-
-                                            entry<Route.Settings.SchneaggmapSettings> {
-                                                SchneaggmapSettings(
-                                                    schneaggmapSettingsViewModel = koinInject(),
-                                                    sharedSettingsViewmodel = sharedSettingsViewmodel,
-                                                    onBackClick = {
-                                                        if (settingsBackStack.size > 1){
-                                                            settingsBackStack.removeAt(settingsBackStack.size - 1)
-                                                        }
-                                                    }
-                                                )
-                                            }
-
-                                            entry<Route.Settings.Roadmap> {
-                                                RoadmapScreen(
-                                                    roadmapViewModel = koinInject(),
-                                                    onBackClick = {
-                                                        if (settingsBackStack.size > 1){
-                                                            settingsBackStack.removeAt(settingsBackStack.size - 1)
-                                                        }
-                                                    }
-                                                )
-                                            }
-                                        }
-                                    )
-                                }
-
-
-                                entry<Route.Schneaggmap> { route ->
-                                    SchneaggmapScreenRoot(
-                                        initialEntryId = route.initialEntryId
-                                    )
-                                }
-
-                                entry<Route.Games> {
-                                    //Shared over the games nav graph, owns the selectable games list
-                                    val gameSelectorViewModel = koinViewModel<GameSelectorViewModel>()
-                                    NavDisplay(
-                                        backStack = gamesBackStack,
-                                        entryProvider = entryProvider {
-                                            entry <Route.Games.GamesSelector> {
-                                                GameSelectorScreen(
-                                                    onBackClick = {
-                                                        scope.launch {
-                                                            navigator.navigateBack() //Settings backstack gets cleared automatically
-                                                        }
-                                                    },
-                                                    onGameSelection = {
-                                                        scope.launch {
-                                                            gamesBackStack.add(it)
-                                                        }
-                                                    },
-                                                    viewModel = gameSelectorViewModel
-                                                )
-
-                                            }
-
-                                            entry <Route.Games.DartCounter> {
-                                                DartCounter(
-                                                    onBackClick = {
-                                                        if (gamesBackStack.size > 1){
-                                                            gamesBackStack.removeAt(gamesBackStack.size - 1)
-                                                        }
-                                                    }
-                                                )
-                                            }
-
-                                            entry <Route.Games.Undercover> {
-                                                Undercover(
-                                                    onBackClick = {
-                                                        if (gamesBackStack.size > 1){
-                                                            gamesBackStack.removeAt(gamesBackStack.size - 1)
-                                                        }
-                                                    }
-                                                )
-                                            }
-
-                                            entry <Route.Games.TowerStack> {
-                                                TowerStackScreen(
-                                                    onBackClick = {
-                                                        if (gamesBackStack.size > 1){
-                                                            gamesBackStack.removeAt(gamesBackStack.size - 1)
-                                                        }
-                                                    }
-                                                )
-                                            }
-
-                                            entry <Route.Games.Yatzi> {
-                                                YatziScreenRoot(
-                                                    onBackClick = {
-                                                        if (gamesBackStack.size > 1){
-                                                            gamesBackStack.removeAt(gamesBackStack.size - 1)
-                                                        }
-                                                    }
-                                                )
-                                            }
-
-                                            entry <Route.Games.Tetris> {
-                                                val tetrisViewModel: TetrisViewModel = koinViewModel<TetrisViewModel>()
-                                                TetrisScreen(
-                                                    onBackClick = {
-                                                        if (gamesBackStack.size > 1){
-                                                            gamesBackStack.removeAt(gamesBackStack.size - 1)
-                                                        }
-                                                    },
-                                                    viewModel = tetrisViewModel
-                                                )
-                                            }
-
-                                            entry <Route.Games.Morse> {
-                                                val morseViewModel: MorseViewModel = koinViewModel()
-                                                MorseScreen(
-                                                    onBackClick = {
-                                                        if (gamesBackStack.size > 1){
-                                                            gamesBackStack.removeAt(gamesBackStack.size - 1)
-                                                        }
-                                                    },
-                                                    viewModel = morseViewModel
-                                                )
-                                            }
-
-                                            entry <Route.Games.SchneaggaHus> {
-                                                SchneaggaHusScreenRoot(
-                                                    onBackClick = {
-                                                        if (gamesBackStack.size > 1){
-                                                            gamesBackStack.removeAt(gamesBackStack.size - 1)
-                                                        }
-                                                    }
-                                                )
-                                            }
-
-                                            entry <Route.Games.GridRush> {
-                                                GridRushScreenRoot(
-                                                    onBackClick = {
-                                                        if (gamesBackStack.size > 1){
-                                                            gamesBackStack.removeAt(gamesBackStack.size - 1)
-                                                        }
-                                                    }
-                                                )
-                                            }
-                                            entry <Route.Games.OddOneOut> {
-                                                OddOneOutScreenRoot(
-                                                    onBackClick = {
-                                                        if (gamesBackStack.size > 1){
-                                                            gamesBackStack.removeAt(gamesBackStack.size - 1)
-                                                        }
-                                                    }
-                                                )
-                                            }
-                                            entry <Route.Games.Recap> {
-                                                RecapScreenRoot(
-                                                    onBackClick = {
-                                                        if (gamesBackStack.size > 1){
-                                                            gamesBackStack.removeAt(gamesBackStack.size - 1)
-                                                        }
-                                                    }
-                                                )
-                                            }
-
-                                            entry <Route.Games.CoinFlip> {
-                                                CoinFlipScreen(
-                                                    onBackClick = {
-                                                        if (gamesBackStack.size > 1){
-                                                            gamesBackStack.removeAt(gamesBackStack.size - 1)
-                                                        }
-                                                    }
-                                                )
-                                            }
-
-                                            entry <Route.Games.FingerPicker> {
-                                                FingerPickerScreen(
-                                                    onBackClick = {
-                                                        if (gamesBackStack.size > 1){
-                                                            gamesBackStack.removeAt(gamesBackStack.size - 1)
-                                                        }
-                                                    }
-                                                )
-                                            }
-
-                                            entry <Route.Games.Game2048> {
-                                                Game2048ScreenRoot(
-                                                    onBackClick = {
-                                                        if (gamesBackStack.size > 1){
-                                                            gamesBackStack.removeAt(gamesBackStack.size - 1)
-                                                        }
-                                                    }
-                                                )
-                                            }
-                                        }
-                                    )
-
-                                }
-                            }
-
+                            onBack = navigator::navigateBack
                         )
-                        
+
 
                     }
                 }

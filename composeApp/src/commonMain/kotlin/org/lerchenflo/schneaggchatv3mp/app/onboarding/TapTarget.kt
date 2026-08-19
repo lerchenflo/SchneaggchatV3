@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.NavKey
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.StringResource
@@ -202,8 +203,8 @@ data class TourSettings(
  */
 class TapTargetController(
     private val tour: TapTargetTour,
-    private val onNavigateToRoute: suspend (Route) -> Unit = {},
-    private val currentRoute: () -> Route? = { null },
+    private val onNavigateToRoute: suspend (NavKey) -> Unit = {},
+    private val currentRoute: () -> NavKey? = { null },
     private val onFinished: () -> Unit = {},
     val tourSettings: TourSettings = TourSettings()
 ) {
@@ -269,11 +270,9 @@ class TapTargetController(
         onFinished()
     }
 
-    private fun isMatchingRoute(targetRoute: Route, activeRoute: Route?): Boolean {
+    private fun isMatchingRoute(targetRoute: NavKey, activeRoute: NavKey?): Boolean {
         if (activeRoute == null) return false
         if (targetRoute::class == activeRoute::class) return true
-        if (targetRoute == Route.Settings && activeRoute.parentRootOrNull() == Route.Settings) return true
-        if (targetRoute == Route.Games && activeRoute.parentRootOrNull() == Route.Games) return true
         return false
     }
 
