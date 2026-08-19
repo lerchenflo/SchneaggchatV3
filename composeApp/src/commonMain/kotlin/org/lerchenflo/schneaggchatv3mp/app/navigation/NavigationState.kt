@@ -55,9 +55,12 @@ fun rememberNavigationState(
     }
 
     val backStacks = topLevelRoutes.associateWith { key ->
+        // The home tab's backstack starts with startRoute (e.g. AutoLoginCredChecker)
+        // so it is shown first. All other tab backstacks start with their own key as usual.
+        val initialEntry = if (key == homeRoute) startRoute else key
         rememberNavBackStack(
             configuration = backStackConfiguration,
-            key
+            initialEntry
         )
     }
 

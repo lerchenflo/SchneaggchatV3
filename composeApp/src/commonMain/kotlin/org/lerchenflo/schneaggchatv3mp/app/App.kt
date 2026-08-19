@@ -167,16 +167,23 @@ fun App() {
 
                     // Top-level or flat route — navigate within current tab or switch tab
                     if (destination in navigationState.backStacks.keys) {
-                        // It's a top-level tab key
-                        if (navigationOptions.exitAllPreviousScreens) {
-                            navigationState.backStacks[navigationState.topLevelRoute]?.clear()
+                        // It's a top-level tab key: reset that tab's backstack if requested,
+                        // then switch to it. Always ensure at least the tab root is present.
+                        val stack = navigationState.backStacks[destination]
+                        if (stack != null && navigationOptions.exitAllPreviousScreens) {
+                            stack.clear()
+                            stack.add(destination) // tab root must always be present
                         }
                         navigationState.topLevelRoute = destination
                     } else {
                         // Flat sub-route on current tab's backstack
                         val stack = navigationState.backStacks[navigationState.topLevelRoute]
                         if (stack != null) {
-                            if (navigationOptions.exitAllPreviousScreens) stack.clear()
+                            if (navigationOptions.exitAllPreviousScreens) {
+                                val tabRoot = navigationState.topLevelRoute
+                                stack.clear()
+                                stack.add(tabRoot) // keep tab root so the stack is never empty
+                            }
                             val existingIndex = stack.indexOfFirst { it::class == destination::class }
                             if (existingIndex >= 0) {
                                 while (stack.size > existingIndex) stack.removeAt(stack.size - 1)
