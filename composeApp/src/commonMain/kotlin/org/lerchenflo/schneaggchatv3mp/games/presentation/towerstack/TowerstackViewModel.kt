@@ -31,7 +31,8 @@ data class GameState(
     val isGameOver: Boolean = false,
     val isGameStarted: Boolean = false,
     val gameSpeed: Float = 2f,
-    val elapsedMillis: Long = 0L
+    val elapsedMillis: Long = 0L,
+    val perfectStreak: Int = 0
 )
 
 sealed class GameAction {
@@ -162,12 +163,25 @@ class TowerstackViewModel(
             gameOver()
             return
         }
+
+        val accuracy = if (topPlatform.width > 0f) overlapWidth / topPlatform.width else 0f
+        val isNearPerfect = accuracy >= 0.99f
+        val updatedStreak = if (isNearPerfect) currentState.perfectStreak + 1 else 0
+
+        val (finalX, finalWidth, remainingStreak) = if (updatedStreak >= 3) {
+            val bonusWidth = overlapWidth * 0.05f
+            val expandedWidth = minOf(overlapWidth + bonusWidth, SCREEN_WIDTH)
+            val centeredX = (overlapStart - bonusWidth / 2f).coerceIn(0f, SCREEN_WIDTH - expandedWidth)
+            Triple(centeredX, expandedWidth, 0)
+        } else {
+            Triple(overlapStart, overlapWidth, updatedStreak)
+        }
         
-        // Create the placed platform (only the overlapping part)
+        // Create the placed platform (only the overlapping part, expanded if bonus awarded)
         val placedPlatform = Platform(
-            x = overlapStart,
+            x = finalX,
             y = topPlatform.y - PLATFORM_HEIGHT,
-            width = overlapWidth,
+            width = finalWidth,
             height = PLATFORM_HEIGHT,
             isMoving = false
         )
@@ -180,7 +194,7 @@ class TowerstackViewModel(
         val newMovingPlatform = Platform(
             x = 0f,
             y = newY,
-            width = overlapWidth, // New platform has width of the overlap
+            width = finalWidth, // New platform has width of the placed platform
             height = PLATFORM_HEIGHT,
             isMoving = true,
             direction = 1f
@@ -197,7 +211,8 @@ class TowerstackViewModel(
             platforms = newPlatforms,
             currentPlatform = newMovingPlatform,
             score = newScore,
-            gameSpeed = newSpeed
+            gameSpeed = newSpeed,
+            perfectStreak = remainingStreak
         )
     }
     

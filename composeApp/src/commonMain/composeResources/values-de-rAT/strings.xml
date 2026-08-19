@@ -649,7 +649,6 @@
     <string name="games_tower_stack_tap_to_start">Zum Starta tippa</string>
     <string name="games_tower_stack_instructions">Stapl die Plattforma so hoch wie du kannsch!\n\nTippa um a Plattform zum platziera.\nWenns perfekt platziert hosch kriagsch Extrapunkte. \nAlle 5 Punkte wirds schnealla!</string>
     <string name="games_tower_stack_score">Punkte</string>
-    <string name="games_tower_stack_speed_up">⚡ Schnealla!</string>
     <string name="games_tower_stack_tap_to_place">&#128070; Zum Platziera tippa!</string>
 
     <!-- Games: Schneaggahus -->
@@ -672,9 +671,6 @@
     <string name="games_morse_clear">Löscha</string>
     <string name="games_morse_instructions">Druck da große Knopf zum Morsesignale senda. Kurza Druck isch an Punkt (·), an langer Druck an Strich (−). Da Bom zoagt wo du grad anenavigiersch, zu wellam Buchstabe.\n\nTipp ab was oba stoht, jeder richtige Buchstabe git Punkte.</string>
 
-    <!-- Games: Flappy Snail -->
-    <string name="games_flappybird_title">Flappy Schneagg</string>
-    <string name="games_flappybird_instructions">Tipp aufan Bildschirm, um s Schneaggahaus flattern zum lo und durch die Lücka zwüschat da Röhra zum navigiera!\n\nDu kannsch sicher uf Türm oder am Boda landa — nur an seitlicher Zemmstoß mit uana Wand beendet din Versuach.</string>
 
     <!-- Recap -->
     <string name="recap_your_year">Din Joar</string>

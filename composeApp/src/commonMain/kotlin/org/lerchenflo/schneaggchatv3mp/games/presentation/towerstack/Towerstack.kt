@@ -1,5 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,7 +45,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameStartOverlay
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_tower_stack_instructions
-import schneaggchatv3mp.composeapp.generated.resources.games_tower_stack_speed_up
 import schneaggchatv3mp.composeapp.generated.resources.games_tower_stack_tap_to_place
 import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
 
@@ -130,6 +132,13 @@ private fun GameContent(
     onExit: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
+    val currentPlatformY = gameState.currentPlatform?.y ?: (gameState.platforms.lastOrNull()?.y ?: 450f)
+    val targetCameraOffsetY = (250f - currentPlatformY).coerceAtLeast(0f)
+    val cameraOffsetY by animateFloatAsState(
+        targetValue = targetCameraOffsetY,
+        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
+        label = "towerCameraOffset"
+    )
     
     Box(
         modifier = Modifier.fillMaxSize()
@@ -154,7 +163,8 @@ private fun GameContent(
                     platform = platform,
                     color = color,
                     scaleX = scaleX,
-                    scaleY = scaleY
+                    scaleY = scaleY,
+                    cameraOffsetY = cameraOffsetY
                 )
             }
             
@@ -168,7 +178,8 @@ private fun GameContent(
                     platform = platform,
                     color = color,
                     scaleX = scaleX,
-                    scaleY = scaleY
+                    scaleY = scaleY,
+                    cameraOffsetY = cameraOffsetY
                 )
             }
         }
@@ -185,27 +196,6 @@ private fun GameContent(
             )
         }
 
-        // Speed increase indicator
-        if (gameState.score > 0 && gameState.score % 5 == 0) {
-            Card(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 64.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                colors = CardDefaults.cardColors(
-                    containerColor = colors.tertiary.copy(alpha = 0.9f)
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-                Text(
-                    text = stringResource(Res.string.games_tower_stack_speed_up),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = colors.onTertiary,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
-        }
         
         // Unified game over overlay with restart, difficulty selection and highscores
         if (gameState.isGameOver) {
@@ -246,10 +236,11 @@ private fun DrawScope.drawRoundedPlatform(
     platform: Platform,
     color: Color,
     scaleX: Float,
-    scaleY: Float
+    scaleY: Float,
+    cameraOffsetY: Float = 0f
 ) {
     val scaledX = platform.x * scaleX
-    val scaledY = platform.y * scaleY
+    val scaledY = (platform.y + cameraOffsetY) * scaleY
     val scaledWidth = platform.width * scaleX
     val scaledHeight = maxOf(platform.height * scaleY, 4f) // Minimum thickness for visibility
     
@@ -265,11 +256,8 @@ private fun getRainbowColor(index: Int): Color {
     val colors = listOf(
         Color(0xFFFF0000), // Red
         Color(0xFFFF7F00), // Orange
-        Color(0xFFFFFF00), // Yellow
         Color(0xFF00FF00), // Green
-        Color(0xFF0000FF), // Blue
-        Color(0xFF4B0082), // Indigo
-        Color(0xFF9400D3)  // Violet
+        Color(0xFF0000FF)  // Blue
     )
     return colors[index % colors.size]
 }

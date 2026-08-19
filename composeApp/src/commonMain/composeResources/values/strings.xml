@@ -649,7 +649,6 @@
     <string name="games_tower_stack_tap_to_start">Tap to Start</string>
     <string name="games_tower_stack_instructions">Stack the platforms as high as you can!\n\nTap to place each platform.\nPerfect alignment increases your score.\nSpeed increases every 5 points!</string>
     <string name="games_tower_stack_score">Score</string>
-    <string name="games_tower_stack_speed_up">⚡ Speed Up!</string>
     <string name="games_tower_stack_tap_to_place">&#128070; Tap to place!</string>
 
     <!-- Games: Schneaggahus -->
@@ -672,9 +671,9 @@
     <string name="games_morse_clear">Clear</string>
     <string name="games_morse_instructions">Press the big button to send morse signals: a short press is a dot (·), a long press is a dash (−). The tree shows which letter your code leads to.\n\nInfinite Typewriter: Type the stream of text in morse code! You have a limited time per character which speeds up as your score grows. The accept delay shrinks proportionally. 3 mistakes and the game is over.</string>
 
-    <!-- Games: Flappy Snail -->
-    <string name="games_flappybird_title">Flappy Snail</string>
-    <string name="games_flappybird_instructions">Tap the screen to flap the Schneagg's shell and navigate through pipe gaps!\n\nYou can land on top of towers or the ground safely — only crashing into a tower wall from the side ends the run.</string>
+    <!-- Games: 2048 -->
+    <string name="games_2048_title">2048</string>
+    <string name="games_2048_instructions">Swipe (up, down, left, right) or use arrow keys to move the tiles. When two tiles with the same number touch, they merge into one!\n\nJoin the numbers and reach the 2048 tile to win, and keep going for the highest score!</string>
 
     <!-- Recap -->
     <string name="recap_your_year">Your year</string>

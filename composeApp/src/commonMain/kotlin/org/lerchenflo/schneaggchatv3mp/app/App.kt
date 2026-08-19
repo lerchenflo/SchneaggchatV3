@@ -68,7 +68,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
 import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerScreen
-import org.lerchenflo.schneaggchatv3mp.games.presentation.flappybird.FlappyBirdScreenRoot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
@@ -201,7 +201,7 @@ fun App() {
                         subclass(Route.Games.Recap::class, Route.Games.Recap.serializer())
                         subclass(Route.Games.CoinFlip::class, Route.Games.CoinFlip.serializer())
                         subclass(Route.Games.FingerPicker::class, Route.Games.FingerPicker.serializer())
-                        subclass(Route.Games.FlappyBird::class, Route.Games.FlappyBird.serializer())
+                        subclass(Route.Games.Game2048::class, Route.Games.Game2048.serializer())
 
 
                     }
@@ -857,8 +857,8 @@ fun App() {
                                                 )
                                             }
 
-                                            entry <Route.Games.FlappyBird> {
-                                                FlappyBirdScreenRoot(
+                                            entry <Route.Games.Game2048> {
+                                                Game2048ScreenRoot(
                                                     onBackClick = {
                                                         if (gamesBackStack.size > 1){
                                                             gamesBackStack.removeAt(gamesBackStack.size - 1)
