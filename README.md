@@ -32,6 +32,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Schneaggmap: Eigenen Standort im Hock-Marker anzeigen (wenn im Radius) und eigenen Standort-Marker ausblenden 
 - Neue Schneaggmap-Standorttypen: Eis (Preis pro Kugel) und WiFi (SSID und Passwort)
 - Zurückknopf auf IOS verwendet nun das IOS - Icon
+- Versionsabfrage Desktop
 
 #### Bugfixes
 - Fingerpicker resetet nicht direkt
@@ -43,6 +44,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Antworten auf große Nachrichten
 - Umfragen mit leeren optionen wenn eigene Antworten erlaubt sind
 - Bilder Zoom fix
+- Nachricht bearbeiten, neue Nachricht bei Enter (Desktop)
 
 ### 3.0.15
 ##### Highlights

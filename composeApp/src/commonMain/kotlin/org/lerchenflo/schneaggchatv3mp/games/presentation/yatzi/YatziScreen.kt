@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,7 +24,21 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.times
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -276,13 +291,12 @@ fun Scorecard(
     // Header Row
     Row(
         modifier = modifier
-            .verticalScroll(scrollState)
             .horizontalScroll(horizontalScrollState)
     ) {
-        Column {
+        Column(modifier = Modifier.fillMaxHeight()) {
             // Header
-            Row(modifier = Modifier.height(50.dp).background(MaterialTheme.colorScheme.surface)) {
-                Box(modifier = Modifier.width(120.dp).padding(8.dp), contentAlignment = Alignment.CenterStart) {
+            Row(modifier = Modifier.weight(1.2f).background(MaterialTheme.colorScheme.surface)) {
+                Box(modifier = Modifier.width(120.dp).padding(horizontal = 4.dp), contentAlignment = Alignment.CenterStart) {
                     Text(stringResource(Res.string.yatzi_category), fontWeight = FontWeight.Bold)
                 }
                 players.forEachIndexed { index, player ->
@@ -290,8 +304,9 @@ fun Scorecard(
                     Box(
                         modifier = Modifier
                             .width(80.dp)
+                            .fillMaxHeight()
                             .background(if (isCurrent) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
-                            .padding(8.dp),
+                            .padding(horizontal = 4.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -305,9 +320,9 @@ fun Scorecard(
             
             // Categories
             YatziCategory.entries.forEach { category ->
-                Row(modifier = Modifier.height(35.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
+                Row(modifier = Modifier.weight(1f).background(MaterialTheme.colorScheme.surface)) {
                     // Category Name
-                    Box(modifier = Modifier.width(120.dp).padding(8.dp), contentAlignment = Alignment.CenterStart) {
+                    Box(modifier = Modifier.width(120.dp).padding(horizontal = 4.dp), contentAlignment = Alignment.CenterStart) {
                         Text(category.displayName, style = MaterialTheme.typography.bodyMedium)
                     }
                     
@@ -320,7 +335,7 @@ fun Scorecard(
                         Box(
                             modifier = Modifier
                                 .width(80.dp)
-                                .height(50.dp)
+                                .fillMaxHeight()
                                 .background(if (isCurrent) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f) else Color.Transparent)
                                 .clickable(enabled = isSelectable && canScore) {
                                      if (isSelectable) onCategorySelect(category)
@@ -370,8 +385,8 @@ fun Scorecard(
                 // Add boundary and sum after upper section (after SIXES)
                 if (category == YatziCategory.SIXES) {
                     // Upper Section Sum Row
-                    Row(modifier = Modifier.height(35.dp).border(2.dp, MaterialTheme.colorScheme.outlineVariant)) {
-                        Box(modifier = Modifier.width(120.dp).padding(8.dp), contentAlignment = Alignment.CenterStart) {
+                    Row(modifier = Modifier.weight(1f).background(MaterialTheme.colorScheme.surfaceVariant)) {
+                        Box(modifier = Modifier.width(120.dp).padding(horizontal = 4.dp), contentAlignment = Alignment.CenterStart) {
                             Text(stringResource(Res.string.yatzi_upper_sum), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
                         }
                         players.forEachIndexed { index, player ->
@@ -379,7 +394,7 @@ fun Scorecard(
                             Box(
                                 modifier = Modifier
                                     .width(80.dp)
-                                    .height(35.dp)
+                                    .fillMaxHeight()
                                     .background(if (isCurrent) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f) else Color.Transparent),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -393,8 +408,8 @@ fun Scorecard(
                     }
                     
                     // Bonus Row
-                    Row(modifier = Modifier.height(35.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
-                        Box(modifier = Modifier.width(120.dp).padding(8.dp), contentAlignment = Alignment.CenterStart) {
+                    Row(modifier = Modifier.weight(1f).background(MaterialTheme.colorScheme.surfaceVariant)) {
+                        Box(modifier = Modifier.width(120.dp).padding(horizontal = 4.dp), contentAlignment = Alignment.CenterStart) {
                             Text(stringResource(Res.string.yatzi_bonus), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
                         }
                         players.forEachIndexed { index, player ->
@@ -402,7 +417,7 @@ fun Scorecard(
                             Box(
                                 modifier = Modifier
                                     .width(80.dp)
-                                    .height(35.dp)
+                                    .fillMaxHeight()
                                     .background(if (isCurrent) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f) else Color.Transparent),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -423,12 +438,12 @@ fun Scorecard(
             }
             
             // Totals
-            Row(modifier = Modifier.height(50.dp).background(MaterialTheme.colorScheme.secondaryContainer)) {
-                 Box(modifier = Modifier.width(120.dp).padding(8.dp), contentAlignment = Alignment.CenterStart) {
+            Row(modifier = Modifier.weight(1.2f).background(MaterialTheme.colorScheme.secondaryContainer)) {
+                 Box(modifier = Modifier.width(120.dp).padding(horizontal = 4.dp), contentAlignment = Alignment.CenterStart) {
                     Text(stringResource(Res.string.yatzi_total), fontWeight = FontWeight.Bold)
                  }
                  players.forEach { player ->
-                     Box(modifier = Modifier.width(80.dp).padding(8.dp), contentAlignment = Alignment.Center) {
+                     Box(modifier = Modifier.width(80.dp).fillMaxHeight().padding(horizontal = 4.dp), contentAlignment = Alignment.Center) {
                          Text(player.totalScore.toString(), fontWeight = FontWeight.Bold)
                      }
                  }
@@ -452,7 +467,7 @@ fun DiceArea(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             dice.forEachIndexed { index, die ->
-                DieView(die, onClick = { onToggleDie(index) })
+                DieView(die, onClick = { onToggleDie(index) }, rollCount = rollCount)
             }
         }
         Spacer(modifier = Modifier.height(10.dp))
@@ -467,13 +482,19 @@ fun DiceArea(
 }
 
 @Composable
-fun DieView(die: YatziDie, onClick: () -> Unit) {
+fun DieView(die: YatziDie, onClick: () -> Unit, rollCount: Int) {
     val backgroundColor = if (die.isKept) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
     val contentColor = if (die.isKept) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+    
+    val rotation by animateFloatAsState(
+        targetValue = if (die.isKept) 0f else rollCount * 360f,
+        animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing)
+    )
 
     Box(
         modifier = Modifier
             .size(60.dp)
+            .graphicsLayer(rotationZ = rotation)
             .clip(RoundedCornerShape(8.dp))
             .background(backgroundColor)
             .clickable(onClick = onClick)

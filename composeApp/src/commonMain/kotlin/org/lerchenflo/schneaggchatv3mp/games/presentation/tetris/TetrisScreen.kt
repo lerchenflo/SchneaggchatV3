@@ -235,12 +235,14 @@ fun TetrisBoard(
                 var horizontalAccumulator = 0f
                 var verticalAccumulator = 0f
                 var axis = DragAxis.Undecided
+                var hasHardDroppedInCurrentDrag = false
 
                 detectDragGestures(
                     onDragStart = {
                         horizontalAccumulator = 0f
                         verticalAccumulator = 0f
                         axis = DragAxis.Undecided
+                        hasHardDroppedInCurrentDrag = false
                     },
                     onDragEnd = {
                         onSoftDropEnd()
@@ -280,7 +282,21 @@ fun TetrisBoard(
                             }
                             // Dragging back up above the start point releases the soft drop again
                             DragAxis.Vertical -> {
-                                if (verticalAccumulator > 0f) onSoftDropStart() else onSoftDropEnd()
+                                if (hasHardDroppedInCurrentDrag) return@detectDragGestures
+
+                                val timeDelta = change.uptimeMillis - change.previousUptimeMillis
+                                val yVelocity = if (timeDelta > 0) dragAmount.y / timeDelta else 0f
+                                val fastSwipeThreshold = cellWidth * 0.025f
+
+                                if (yVelocity > fastSwipeThreshold) {
+                                    onSoftDropEnd()
+                                    onDrop()
+                                    hasHardDroppedInCurrentDrag = true
+                                } else if (verticalAccumulator > 0f) {
+                                    onSoftDropStart()
+                                } else {
+                                    onSoftDropEnd()
+                                }
                             }
                             DragAxis.Undecided -> Unit
                         }

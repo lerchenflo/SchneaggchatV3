@@ -28,11 +28,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 import org.jetbrains.compose.resources.getString
 import org.koin.core.qualifier.named
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.GITHUB_ISSUES_API_URL
+import org.lerchenflo.schneaggchatv3mp.GITHUB_LATEST_RELEASE_API_URL
 import org.lerchenflo.schneaggchatv3mp.GITHUB_URL
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
@@ -671,6 +675,21 @@ class AppRepository(
             }
             is NetworkResult.Success<*> -> {
                 ChangelogParser.getFullChangelog(networkResult.data.toString())
+            }
+        }
+    }
+
+    /**
+     * Fetches the name of the current GitHub release
+     */
+    suspend fun getLatestGitHubVersionAsString(): String? {
+        return when (val networkResult = networkUtils.getGitHubVersionJson(GITHUB_LATEST_RELEASE_API_URL)) {
+            is NetworkResult.Error<*> -> {
+                println("get release json network error: ${networkResult.error.message}")
+                null
+            }
+            is NetworkResult.Success<*> -> {
+                networkResult.data.toString()
             }
         }
     }

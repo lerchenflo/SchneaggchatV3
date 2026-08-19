@@ -649,10 +649,18 @@ fun ChatScreen(
 
                                                 return@onPreviewKeyEvent true  // true to consume and prevent double newline
                                             } else {
-                                                viewModel.sendMessage(
-                                                    message = viewModel.currentSendContent.value,
-                                                    replyTo = viewModel.replyMessage
-                                                )
+                                                if(viewModel.editMessage == null){
+
+                                                    viewModel.sendMessage(
+                                                        message = viewModel.currentSendContent.value,
+                                                        replyTo = viewModel.replyMessage
+                                                    )
+                                                }else{
+                                                    viewModel.editMessage(
+                                                        message = viewModel.editMessage,
+                                                        content = viewModel.currentSendContent.value
+                                                    )
+                                                }
                                                 return@onPreviewKeyEvent true
                                             }
                                         }
@@ -754,10 +762,18 @@ fun ChatScreen(
 
                                                     return@onPreviewKeyEvent true  // true to consume and prevent double newline
                                                 } else {
-                                                    viewModel.sendMessage(
-                                                        message = viewModel.currentSendContent.value,
-                                                        replyTo = viewModel.replyMessage
-                                                    )
+                                                    if(viewModel.editMessage == null){
+
+                                                        viewModel.sendMessage(
+                                                            message = viewModel.currentSendContent.value,
+                                                            replyTo = viewModel.replyMessage
+                                                        )
+                                                    }else{
+                                                        viewModel.editMessage(
+                                                            message = viewModel.editMessage,
+                                                            content = viewModel.currentSendContent.value
+                                                        )
+                                                    }
                                                     return@onPreviewKeyEvent true
                                                 }
                                             }
