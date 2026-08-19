@@ -19,14 +19,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EditNote
-import androidx.compose.material.icons.filled.Mail
-import androidx.compose.material.icons.outlined.Verified
-import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -42,13 +37,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
 import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
@@ -56,7 +48,6 @@ import io.github.ismoy.imagepickerkmp.domain.models.MimeType
 import io.github.ismoy.imagepickerkmp.features.imagepicker.config.ImagePickerKMPConfig
 import io.github.ismoy.imagepickerkmp.features.imagepicker.model.ImagePickerResult
 import io.github.ismoy.imagepickerkmp.features.imagepicker.ui.rememberImagePickerKMP
-import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
@@ -64,25 +55,18 @@ import org.jetbrains.compose.resources.vectorResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
-import org.lerchenflo.schneaggchatv3mp.getDeleteAccountUrl
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.BirthdatePickerPopup
-import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ChangeDialog
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsDivider
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
-import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
-import org.lerchenflo.schneaggchatv3mp.sharedUi.emailProviderWarning
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
-import org.lerchenflo.schneaggchatv3mp.utilities.isEmailValid
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.are_you_sure_you_want_to_logout
 import schneaggchatv3mp.composeapp.generated.resources.camera
 import schneaggchatv3mp.composeapp.generated.resources.change
-import schneaggchatv3mp.composeapp.generated.resources.change_email
 import schneaggchatv3mp.composeapp.generated.resources.change_gebi_date
 import schneaggchatv3mp.composeapp.generated.resources.change_status
 import schneaggchatv3mp.composeapp.generated.resources.change_username
@@ -90,22 +74,14 @@ import schneaggchatv3mp.composeapp.generated.resources.change_username_descripti
 import schneaggchatv3mp.composeapp.generated.resources.change_username_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
 import schneaggchatv3mp.composeapp.generated.resources.currentstatus
-import schneaggchatv3mp.composeapp.generated.resources.delete_account
 import schneaggchatv3mp.composeapp.generated.resources.edit_profile_picture
-import schneaggchatv3mp.composeapp.generated.resources.email
-import schneaggchatv3mp.composeapp.generated.resources.email_provider_warning
-import schneaggchatv3mp.composeapp.generated.resources.emailinfo
-import schneaggchatv3mp.composeapp.generated.resources.emailinfo_unverified
 import schneaggchatv3mp.composeapp.generated.resources.error_cannot_be_the_same_username
 import schneaggchatv3mp.composeapp.generated.resources.gallery
-import schneaggchatv3mp.composeapp.generated.resources.invalid_email
-import schneaggchatv3mp.composeapp.generated.resources.logout
 import schneaggchatv3mp.composeapp.generated.resources.status_infotext
 import schneaggchatv3mp.composeapp.generated.resources.status_nosemicolon
 import schneaggchatv3mp.composeapp.generated.resources.user_attributes_24px
 import schneaggchatv3mp.composeapp.generated.resources.user_settings
-import schneaggchatv3mp.composeapp.generated.resources.wake_settings
-import schneaggchatv3mp.composeapp.generated.resources.wake_settings_info
+import schneaggchatv3mp.composeapp.generated.resources.user_settings_group_profile
 import schneaggchatv3mp.composeapp.generated.resources.your_friends_wrote_this
 
 @Composable
@@ -123,10 +99,8 @@ fun UserSettings(
     val dev = SessionCache.requireLoggedIn()?.developer ?: return
 
     var showChangeUsernamePopup by remember { mutableStateOf(false) }
-
     var showChangeStatusPopup by remember { mutableStateOf(false) }
     var showChangeBirthDatePopup by remember { mutableStateOf(false) }
-    var showChangeEmailPopup by remember { mutableStateOf(false) }
 
 
 
@@ -311,6 +285,11 @@ fun UserSettings(
                 HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
             }
 
+            SettingsDivider(
+                title = stringResource(Res.string.user_settings_group_profile),
+                showTopDivider = false
+            )
+
             //Username
             SettingsOption(
                 icon = Icons.Default.EditNote,
@@ -357,142 +336,9 @@ fun UserSettings(
                 }
             )
 
-
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            /*
-            //TODO: Change passwort
-            //passwort
-            SettingsOption(
-                icon = Icons.Default.Key,
-                text = "mehr Settings",
-                subtext = "es gibt ned mehr dev settings",
-                onClick = {
-                    SnackbarManager.showMessage("joo muasch da was usdenka")
-                }
-            )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-             */
-
-            if (dev) {
-
-                SettingsOption(
-                    icon = Icons.Default.Mail,
-                    text = stringResource(Res.string.email),
-                    subtext = (if (ownuser?.isEmailVerified() == true) stringResource(Res.string.emailinfo) else stringResource(
-                        Res.string.emailinfo_unverified
-                    )) + "\n" + ownuser?.email,
-                    onClick = {
-                        showChangeEmailPopup = true
-                        /*
-                    if (ownuser?.isEmailVerified() == true){
-                    }else {
-                        userSettingsViewModel.sendEmailVerify()
-                    }
-
-                     */
-                    },
-                    rightSideIcon = {
-                        if (ownuser != null) {
-                            if (ownuser.isEmailVerified()) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Verified,
-                                    contentDescription = "Email is verified",
-                                    modifier = Modifier.size(30.dp),
-                                    tint = Color(red = 0, green = 255, blue = 0)
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Rounded.Warning,
-                                    contentDescription = "Email not verified",
-                                    tint = Color(red = 255, green = 165, blue = 0), //orange
-                                    modifier = Modifier
-                                        .size(30.dp)
-                                        .clickable {
-                                            userSettingsViewModel.sendEmailVerify()
-                                        }
-                                )
-                            }
-                        }
-                    },
-                )
-
-                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-            }
-
-            //Waking is Android only - the alarm service has no counterpart on iOS/Desktop.
-            if (koinInject<AppVersion>().isAndroid()) {
-                var showWakeSettingsDialog by rememberSaveable { mutableStateOf(false) }
-
-                SettingsOption(
-                    icon = Icons.Default.Alarm,
-                    text = stringResource(Res.string.wake_settings),
-                    subtext = stringResource(Res.string.wake_settings_info),
-                    onClick = { showWakeSettingsDialog = true },
-                    modifier = Modifier.tapTarget("settings_user_wakeup")
-                )
-
-                if (showWakeSettingsDialog) {
-                    WakeSettingsDialog(
-                        wakeEnabledGlobal = userSettingsViewModel.wakeEnabledGlobal,
-                        friends = userSettingsViewModel.friends,
-                        onSave = { global, friendDrafts ->
-                            userSettingsViewModel.saveWakeSettings(global, friendDrafts)
-                        },
-                        onDismiss = { showWakeSettingsDialog = false }
-                    )
-                }
-
-                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-            }
-
-            var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
-            SettingsOption(
-                icon = Icons.AutoMirrored.Default.ExitToApp,
-                text = stringResource(Res.string.logout),
-                onClick = {
-                    showLogoutDialog = true
-                }
-            )
-
-            //Logoutdialog
-            if (showLogoutDialog) {
-                ConfirmationDialog(
-                    message = stringResource(Res.string.are_you_sure_you_want_to_logout),
-                    onConfirm = {
-                        userSettingsViewModel.logout()
-                    },
-                    onDismiss = {
-                        showLogoutDialog = false
-                    }
-                )
-            }
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            val uriHandler = LocalUriHandler.current
-
-            DeleteButton(
-                text = stringResource(Res.string.delete_account),
-                onClick = {
-                    val serverUrl = runBlocking { preferencemanager.getServerUrl() }
-                    uriHandler.openUri(getDeleteAccountUrl(serverUrl))
-                },
-                modifier = Modifier
-                    .padding(top = 8.dp,
-                        bottom = 4.dp,
-                        start = 4.dp,
-                        end = 4.dp)
-
-                    .fillMaxWidth(),
-            )
-
         }
     }
-
-
 
     if(showChangeUsernamePopup){
         val cannot_be_same_username_text = stringResource(Res.string.error_cannot_be_the_same_username)
@@ -523,27 +369,6 @@ fun UserSettings(
                 userSettingsViewModel.changeStatus(it)
             },
             confirmButtonText = stringResource(Res.string.change)
-        )
-    }
-
-    if (showChangeEmailPopup) {
-        val invalidEmailString = stringResource(Res.string.invalid_email)
-        val providerWarningString = stringResource(Res.string.email_provider_warning)
-        ChangeDialog(
-            title = stringResource(Res.string.change_email),
-            initialValue = ownuser?.email ?: "",
-            onDismiss = { showChangeEmailPopup = false },
-            onConfirm = {
-                userSettingsViewModel.changeEmail(it)
-            },
-            keyboardType = KeyboardType.Email,
-            confirmButtonText = stringResource(Res.string.change),
-            validator = { newValue ->
-                if (!isEmailValid(newValue)) invalidEmailString else null
-            },
-            warningValidator = { newValue ->
-                emailProviderWarning(newValue, providerWarningString)
-            }
         )
     }
 

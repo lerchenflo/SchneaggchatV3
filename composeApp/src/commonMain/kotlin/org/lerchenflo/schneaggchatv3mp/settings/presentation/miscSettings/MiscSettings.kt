@@ -30,6 +30,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.Confirmatio
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsDivider
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
@@ -41,6 +42,9 @@ import schneaggchatv3mp.composeapp.generated.resources.become_beta_tester
 import schneaggchatv3mp.composeapp.generated.resources.become_beta_tester_desc
 import schneaggchatv3mp.composeapp.generated.resources.bugreport_request
 import schneaggchatv3mp.composeapp.generated.resources.bugreport_request_info
+import schneaggchatv3mp.composeapp.generated.resources.misc_group_data_reset
+import schneaggchatv3mp.composeapp.generated.resources.misc_group_diagnostics
+import schneaggchatv3mp.composeapp.generated.resources.misc_group_feedback
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings_logs
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings_reset_tour
@@ -77,8 +81,57 @@ fun MiscSettings(
                 .verticalScroll(rememberScrollState())
         ) {
 
+            SettingsDivider(
+                title = stringResource(Res.string.misc_group_feedback),
+                showTopDivider = false
+            )
 
+            SettingsOption(
+                icon = Icons.Default.Timeline,
+                text = stringResource(Res.string.roadmap),
+                subtext = stringResource(Res.string.roadmap_info),
+                onClick = navigateRoadmap
+            )
 
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            var showBugFeaturePopup by rememberSaveable { mutableStateOf(false) }
+            SettingsOption(
+                Icons.Default.BugReport,
+                text = stringResource(Res.string.bugreport_request),
+                subtext = stringResource(Res.string.bugreport_request_info),
+                onClick = { showBugFeaturePopup = true },
+                modifier = Modifier.tapTarget("settings_misc_bugreport")
+            )
+            if (showBugFeaturePopup) {
+                BugReportDialog(
+                    onDismiss = { showBugFeaturePopup = false },
+                    onSubmit = {
+                        miscSettingsViewModel.onSendBugReportEmail(it)
+                        showBugFeaturePopup = false
+                    }
+                )
+            }
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            //Show beta test uri only on android
+            if (currentAppVersion.isAndroid()) {
+                val localUriHandler = LocalUriHandler.current
+
+                SettingsOption(
+                    icon = Icons.Default.Science,
+                    text = stringResource(Res.string.become_beta_tester),
+                    subtext = stringResource(Res.string.become_beta_tester_desc),
+                    onClick = { localUriHandler.openUri(PLAYSTORE_TESTER_URI) }
+                )
+
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+            }
+
+            SettingsDivider(
+                title = stringResource(Res.string.misc_group_diagnostics)
+            )
 
             var showLogsDialog by remember { mutableStateOf(false) }
             SettingsOption(
@@ -111,25 +164,29 @@ fun MiscSettings(
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-            var showBugFeaturePopup by rememberSaveable { mutableStateOf(false) }
+            var showResetTourDialog by rememberSaveable { mutableStateOf(false) }
             SettingsOption(
-                Icons.Default.BugReport,
-                text = stringResource(Res.string.bugreport_request),
-                subtext = stringResource(Res.string.bugreport_request_info),
-                onClick = { showBugFeaturePopup = true },
-                modifier = Modifier.tapTarget("settings_misc_bugreport")
+                icon = Icons.Default.Replay,
+                text = stringResource(Res.string.misc_settings_reset_tour),
+                subtext = stringResource(Res.string.misc_settings_reset_tour_desc),
+                onClick = { showResetTourDialog = true }
             )
-            if (showBugFeaturePopup) {
-                BugReportDialog(
-                    onDismiss = { showBugFeaturePopup = false },
-                    onSubmit = {
-                        miscSettingsViewModel.onSendBugReportEmail(it)
-                        showBugFeaturePopup = false
+            if (showResetTourDialog) {
+                ConfirmationDialog(
+                    message = stringResource(Res.string.misc_settings_reset_tour),
+                    onConfirm = {
+                        miscSettingsViewModel.resetOnboardingTour()
+                        showResetTourDialog = false
+                    },
+                    onDismiss = {
+                        showResetTourDialog = false
                     }
                 )
             }
 
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+            SettingsDivider(
+                title = stringResource(Res.string.misc_group_data_reset)
+            )
 
             var showAppBrokenDialog by rememberSaveable { mutableStateOf(false) }
             SettingsOption(
@@ -149,52 +206,6 @@ fun MiscSettings(
                     },
                     onDismiss = {
                         showAppBrokenDialog = false
-                    }
-                )
-            }
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            SettingsOption(
-                icon = Icons.Default.Timeline,
-                text = stringResource(Res.string.roadmap),
-                subtext = stringResource(Res.string.roadmap_info),
-                onClick = navigateRoadmap
-            )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-
-            //Show beta test uri only on android
-            if (currentAppVersion.isAndroid()) {
-                val localUriHandler = LocalUriHandler.current
-
-                SettingsOption(
-                    icon = Icons.Default.Science,
-                    text = stringResource(Res.string.become_beta_tester),
-                    subtext = stringResource(Res.string.become_beta_tester_desc),
-                    onClick = { localUriHandler.openUri(PLAYSTORE_TESTER_URI) }
-                )
-
-                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-            }
-
-            var showResetTourDialog by rememberSaveable { mutableStateOf(false) }
-            SettingsOption(
-                icon = Icons.Default.Replay,
-                text = stringResource(Res.string.misc_settings_reset_tour),
-                subtext = stringResource(Res.string.misc_settings_reset_tour_desc),
-                onClick = { showResetTourDialog = true }
-            )
-            if (showResetTourDialog) {
-                ConfirmationDialog(
-                    message = stringResource(Res.string.misc_settings_reset_tour),
-                    onConfirm = {
-                        miscSettingsViewModel.resetOnboardingTour()
-                        showResetTourDialog = false
-                    },
-                    onDismiss = {
-                        showResetTourDialog = false
                     }
                 )
             }

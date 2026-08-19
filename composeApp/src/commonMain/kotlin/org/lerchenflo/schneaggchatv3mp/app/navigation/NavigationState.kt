@@ -165,6 +165,7 @@ val backStackConfiguration = SavedStateConfiguration {
             subclass(Route.SettingsScreen::class, Route.SettingsScreen.serializer())
             subclass(Route.DeveloperSettings::class, Route.DeveloperSettings.serializer())
             subclass(Route.UserSettings::class, Route.UserSettings.serializer())
+            subclass(Route.PrivacyAndSecuritySettings::class, Route.PrivacyAndSecuritySettings.serializer())
             subclass(Route.AppearanceSettings::class, Route.AppearanceSettings.serializer())
             subclass(Route.MiscSettings::class, Route.MiscSettings.serializer())
             subclass(Route.SchneaggmapSettings::class, Route.SchneaggmapSettings.serializer())

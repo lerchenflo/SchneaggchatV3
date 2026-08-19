@@ -78,6 +78,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettings
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.privacyandsecurity.PrivacyAndSecuritySettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
@@ -439,6 +440,7 @@ fun App() {
                                                 scope.launch { navigator.navigateBack() }
                                             },
                                             navigateUserSettings = { scope.launch { navigator.navigate(Route.UserSettings) } },
+                                            navigatePrivacyAndSecurity = { scope.launch { navigator.navigate(Route.PrivacyAndSecuritySettings) } },
                                             navigateDevSettings = { scope.launch { navigator.navigate(Route.DeveloperSettings) } },
                                             navigateAppearanceSettings = { scope.launch { navigator.navigate(Route.AppearanceSettings) } },
                                             navigateMiscSettings = { scope.launch { navigator.navigate(Route.MiscSettings) } },
@@ -457,6 +459,14 @@ fun App() {
                                     entry<Route.UserSettings> {
                                         UserSettings(
                                             userSettingsViewModel = koinInject(),
+                                            sharedSettingsViewmodel = koinInject(),
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.PrivacyAndSecuritySettings> {
+                                        PrivacyAndSecuritySettings(
+                                            viewModel = koinInject(),
                                             sharedSettingsViewmodel = koinInject(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )

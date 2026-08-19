@@ -6,7 +6,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.Games
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material3.DividerDefaults
@@ -19,15 +18,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsDivider
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChangeDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.change_server_url
+import schneaggchatv3mp.composeapp.generated.resources.dev_group_general
+import schneaggchatv3mp.composeapp.generated.resources.dev_group_network
+import schneaggchatv3mp.composeapp.generated.resources.dev_group_tools
 import schneaggchatv3mp.composeapp.generated.resources.developer_setting_info
 import schneaggchatv3mp.composeapp.generated.resources.developer_settings
-import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 
 @Composable
 fun DeveloperSettings(
@@ -56,6 +58,10 @@ fun DeveloperSettings(
                 .verticalScroll(rememberScrollState())
         ) {
 
+            SettingsDivider(
+                title = stringResource(Res.string.dev_group_general),
+                showTopDivider = false
+            )
 
             SettingsSwitch(
                 titletext = stringResource(Res.string.developer_settings),
@@ -65,8 +71,9 @@ fun DeveloperSettings(
                 icon = Icons.Default.Code
             )
 
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
+            SettingsDivider(
+                title = stringResource(Res.string.dev_group_network)
+            )
 
             SettingsOption(
                 icon = Icons.Default.Link,
@@ -77,22 +84,9 @@ fun DeveloperSettings(
                 }
             )
 
-
-            //HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            SettingsOption(
-                icon = Icons.Default.Games,
-                text = stringResource(Res.string.tools_and_games),
-                subtext = null,
-                onClick = {
-                    devSettingsViewModel.navigateGames()
-                }
+            SettingsDivider(
+                title = stringResource(Res.string.dev_group_tools)
             )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
             SettingsOption(
                 icon = Icons.Default.Replay,

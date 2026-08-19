@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Boy
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.outlined.Hexagon
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -56,6 +57,8 @@ import schneaggchatv3mp.composeapp.generated.resources.developer_setting_info
 import schneaggchatv3mp.composeapp.generated.resources.developer_settings
 import schneaggchatv3mp.composeapp.generated.resources.misc_setting_info
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings
+import schneaggchatv3mp.composeapp.generated.resources.privacy_and_security
+import schneaggchatv3mp.composeapp.generated.resources.privacy_and_security_info
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_settings
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_settings_info
 import schneaggchatv3mp.composeapp.generated.resources.settings
@@ -75,6 +78,7 @@ fun SettingsScreen(
     sharedSettingsViewmodel: SharedSettingsViewmodel,
     onBackClick: () -> Unit,
     navigateUserSettings: () -> Unit,
+    navigatePrivacyAndSecurity: () -> Unit,
     navigateDevSettings: () -> Unit,
     navigateMiscSettings: () -> Unit,
     navigateAppearanceSettings: () -> Unit,
@@ -173,6 +177,15 @@ fun SettingsScreen(
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
         SettingsOption(
+            icon = Icons.Default.Security,
+            text = stringResource(Res.string.privacy_and_security),
+            subtext = stringResource(Res.string.privacy_and_security_info),
+            onClick = navigatePrivacyAndSecurity
+        )
+
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+        SettingsOption(
             Icons.Default.Palette,
             stringResource(Res.string.appearance_settings),
             stringResource(Res.string.appearance_settings_info),
@@ -189,7 +202,15 @@ fun SettingsScreen(
             onClick = navigateSchneaggmapSettings
         )
 
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
+        SettingsOption(
+            icon = Icons.Outlined.Hexagon,
+            text = stringResource(Res.string.misc_settings),
+            subtext = stringResource(Res.string.misc_setting_info),
+            onClick = navigateMiscSettings,
+            modifier = Modifier.tapTarget("settings_misc")
+        )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
@@ -203,17 +224,6 @@ fun SettingsScreen(
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
         }
-
-
-        SettingsOption(
-            icon = Icons.Outlined.Hexagon,
-            text = stringResource(Res.string.misc_settings),
-            subtext = stringResource(Res.string.misc_setting_info),
-            onClick = navigateMiscSettings,
-            modifier = Modifier.tapTarget("settings_misc")
-        )
-
-        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
 
         var openDevSettingsCounter by remember { mutableIntStateOf(0) }
