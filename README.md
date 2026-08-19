@@ -43,6 +43,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Umfragen Titelformatierung
 - Antworten auf große Nachrichten
 - Umfragen mit leeren optionen wenn eigene Antworten erlaubt sind
+- Bilder Zoom fix
 - Nachricht bearbeiten, neue Nachricht bei Enter (Desktop)
 
 ### 3.0.15

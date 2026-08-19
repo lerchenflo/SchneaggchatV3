@@ -1,8 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.image
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.transformable
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -44,16 +44,28 @@ fun FullscreenImageDialog(
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
 
-    @Suppress("DEPRECATION")
-    val transformableState = rememberTransformableState { zoomChange, panChange, _ ->
+    // Applies a zoom change centered on `centroid` (in the AsyncImage's own,
+    // pre-transform local coordinates), plus an optional pan delta.
+    // This is what keeps the point under your fingers/cursor stationary while zooming,
+    // instead of the image always zooming around its own center.
+    fun applyZoom(centroid: Offset, zoomChange: Float, panChange: Offset = Offset.Zero) {
         val newScale = (scale * zoomChange).coerceIn(1f, 5f)
+
+        // Vector from container center to the zoom centroid.
+        val centroidX = centroid.x - containerWidth / 2f
+        val centroidY = centroid.y - containerHeight / 2f
+
+        if (scale != 0f) {
+            offsetX = centroidX - newScale * (centroidX - offsetX) / scale + panChange.x
+            offsetY = centroidY - newScale * (centroidY - offsetY) / scale + panChange.y
+        }
         scale = newScale
 
         if (newScale > 1f) {
             val maxOffsetX = containerWidth * (newScale - 1f) / 2f
             val maxOffsetY = containerHeight * (newScale - 1f) / 2f
-            offsetX = (offsetX + panChange.x).coerceIn(-maxOffsetX, maxOffsetX)
-            offsetY = (offsetY + panChange.y).coerceIn(-maxOffsetY, maxOffsetY)
+            offsetX = offsetX.coerceIn(-maxOffsetX, maxOffsetX)
+            offsetY = offsetY.coerceIn(-maxOffsetY, maxOffsetY)
         } else {
             offsetX = 0f
             offsetY = 0f
@@ -80,26 +92,23 @@ fun FullscreenImageDialog(
                         containerWidth = it.width.toFloat()
                         containerHeight = it.height.toFloat()
                     }
-                    .transformable(transformableState)       // touch pinch-to-zoom
+                    .pointerInput(Unit) {                    // touch pinch-to-zoom + pan
+                        detectTransformGestures { centroid, pan, zoom, _ ->
+                            applyZoom(centroid, zoom, pan)
+                        }
+                    }
                     .pointerInput(Unit) {                    // desktop scroll wheel zoom
                         awaitPointerEventScope {
                             while (true) {
                                 val event = awaitPointerEvent()
                                 if (event.type == PointerEventType.Scroll) {
-                                    val scrollDelta = event.changes.firstOrNull()?.scrollDelta?.y ?: 0f
+                                    val change = event.changes.firstOrNull()
+                                    val scrollDelta = change?.scrollDelta?.y ?: 0f
                                     val zoomFactor = if (scrollDelta < 0) 1.1f else 0.9f
-                                    val newScale = (scale * zoomFactor).coerceIn(1f, 5f)
-                                    scale = newScale
+                                    val centroid = change?.position
+                                        ?: Offset(containerWidth / 2f, containerHeight / 2f)
 
-                                    if (newScale > 1f) {
-                                        val maxOffsetX = containerWidth * (newScale - 1f) / 2f
-                                        val maxOffsetY = containerHeight * (newScale - 1f) / 2f
-                                        offsetX = offsetX.coerceIn(-maxOffsetX, maxOffsetX)
-                                        offsetY = offsetY.coerceIn(-maxOffsetY, maxOffsetY)
-                                    } else {
-                                        offsetX = 0f
-                                        offsetY = 0f
-                                    }
+                                    applyZoom(centroid, zoomFactor)
 
                                     event.changes.forEach { it.consume() }
                                 }
@@ -123,7 +132,7 @@ fun FullscreenImageDialog(
                 // Download button
                 IconButton(
                     onClick = onDownload,
-                    modifier = Modifier.padding(end = 8.dp) // Adjust padding as needed
+                    modifier = Modifier.padding(end = 8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Download,
@@ -146,10 +155,3 @@ fun FullscreenImageDialog(
         }
     }
 }
-
-
-/*
-
-w: file:///C:/Users/Flo/Desktop/SchneaggchatV3/composeApp/src/commonMain/kotlin/org/lerchenflo/schneaggchatv3mp/chat/presentation/chat/messagecomposables/content/image/FullScreenImageDialog.kt:46:30 'fun rememberTransformableState(onTransformation: (Float, Offset, Float) -> Unit): TransformableState' is deprecated. Prefer remembering a TransformableState with a onTransformation lambda that takes the centroid. This centroid (if specified) is the point at which zooming or rotation should happen around which allows for more natural transformations.
-
- */
