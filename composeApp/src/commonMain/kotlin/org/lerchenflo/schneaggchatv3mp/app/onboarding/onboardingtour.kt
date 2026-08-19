@@ -164,7 +164,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
             if (!isDesktop) {
                 //Go to map via bottom nav
                 tapStep(
-                    id = "chatselector_map_button",
+                    id = "bottombar_map_button",
                     title = Res.string.ttt_chatselector_map,
                     description = Res.string.ttt_chatselector_map_description,
                     route = Route.ChatSelector
@@ -201,7 +201,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
 
 
                 tapStep(
-                    id = "chatselector_games_button",
+                    id = "bottombar_games_button",
                     title = Res.string.ttt_chatselector_games,
                     route = Route.Schneaggmap()
                 )

@@ -25,7 +25,8 @@ data class NavigationBarItemTemplate(
     val title: StringResource,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector,
-    val mobileOnly: Boolean = false
+    val mobileOnly: Boolean = false,
+    val showOnlyWhenSelected: Boolean = false
 )
 
 val TOP_LEVEL_DESTINATIONS = mapOf<NavKey, NavigationBarItemTemplate>(
@@ -53,5 +54,6 @@ val TOP_LEVEL_DESTINATIONS = mapOf<NavKey, NavigationBarItemTemplate>(
         title = Res.string.settings,
         selectedIcon = Icons.Filled.Settings,
         unselectedIcon = Icons.Outlined.Settings,
+        showOnlyWhenSelected = true
     )
 )

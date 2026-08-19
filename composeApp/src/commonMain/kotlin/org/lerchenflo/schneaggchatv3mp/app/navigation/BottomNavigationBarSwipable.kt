@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavKey
 import org.jetbrains.compose.resources.stringResource
-import org.koin.viewmodel.lazyResolveViewModel
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 
 @Composable
 fun BottomAppBarSwipable(
@@ -22,10 +22,14 @@ fun BottomAppBarSwipable(
     ) {
         TOP_LEVEL_DESTINATIONS.forEach { (key, data) ->
 
-            if (data.mobileOnly && !mobile) return@forEach
-
             val selected = key == selectedKey
+
+            if (data.mobileOnly && !mobile) return@forEach //Return if this bottom nav entry is only for mobile and the user is on pc
+
+            if (data.showOnlyWhenSelected && !selected) return@forEach //Settings are only shown when the user has opened them, do not show otherwise
+
             NavigationBarItem(
+                modifier = Modifier.tapTarget(data.id),
                 selected = selected,
                 onClick = {
                     onSelectKey(key)

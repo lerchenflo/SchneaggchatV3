@@ -78,6 +78,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettings
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.AutoFadePopup
@@ -291,9 +292,28 @@ fun App() {
                 tour = tour,
                 onNavigateToRoute = { targetRoute ->
                     println("Onboarding: Navigating $targetRoute")
-                    scope.launch { navigator.navigate(targetRoute) }
+                    val activeTab = navigationState.topLevelRoute
+                    val activeStack = navigationState.backStacks[activeTab]
+
+                    // If already on the correct tab and the target is that tab's root screen,
+                    // just reset the sub-backstack instead of pushing a duplicate.
+                    if (targetRoute == activeStack?.firstOrNull()) {
+                        while ((activeStack.size ?: 0) > 1) {
+                            activeStack.removeAt(activeStack.size - 1)
+                        }
+                    } else {
+                        navigator.navigate(targetRoute as Route)
+                    }
                 },
-                currentRoute = { navigationState.topLevelRoute },
+                currentRoute = {
+                    // Return the last visible entry in the active tab's backstack —
+                    // this is what tour step `route` values are compared against.
+                    val activeTab = navigationState.topLevelRoute
+                    val activeRoute = navigationState.backStacks[activeTab]?.lastOrNull() as? Route
+                        ?: activeTab as? Route
+                    println("Onboarding: Currentroute $activeRoute")
+                    activeRoute
+                },
                 onFinished = {
                     scope.launch {
                         preferenceManager.setOnboardingSeen(true)
@@ -454,6 +474,14 @@ fun App() {
                                             sharedSettingsViewmodel = koinInject(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } },
                                             navigateRoadmap = { scope.launch { navigator.navigate(Route.Roadmap) } }
+                                        )
+                                    }
+
+                                    entry<Route.SchneaggmapSettings> {
+                                        SchneaggmapSettings(
+                                            schneaggmapSettingsViewModel = koinInject(),
+                                            sharedSettingsViewmodel = koinInject(),
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
