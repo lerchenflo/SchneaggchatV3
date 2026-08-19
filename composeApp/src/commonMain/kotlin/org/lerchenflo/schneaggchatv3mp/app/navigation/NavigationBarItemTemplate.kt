@@ -3,49 +3,57 @@ package org.lerchenflo.schneaggchatv3mp.app.navigation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.outlined.Chat
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Games
 import androidx.compose.material.icons.filled.Map
-import androidx.compose.material.icons.outlined.Chat
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Games
 import androidx.compose.material.icons.outlined.Map
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
+import kotlinx.coroutines.selects.select
 import org.jetbrains.compose.resources.StringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.navbar_chats
 import schneaggchatv3mp.composeapp.generated.resources.navbar_games
 import schneaggchatv3mp.composeapp.generated.resources.navbar_map
+import schneaggchatv3mp.composeapp.generated.resources.settings
 
 data class NavigationBarItemTemplate(
     val id: String,
     val title: StringResource,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector,
-    val route: Route,
-    val mobileOnly: Boolean = false
+    val mobileOnly: Boolean = false,
+    val showOnlyWhenSelected: Boolean = false
 )
 
-val navigationbaritems = listOf(
-    NavigationBarItemTemplate(
-        id = "chatselector_map_button",
+val TOP_LEVEL_DESTINATIONS = mapOf<NavKey, NavigationBarItemTemplate>(
+    Route.Schneaggmap() to NavigationBarItemTemplate(
+        id = "bottombar_map_button",
         title = Res.string.navbar_map,
         selectedIcon = Icons.Filled.Map,
         unselectedIcon = Icons.Outlined.Map,
-        route = Route.Schneaggmap(),
         mobileOnly = true
     ),
-    NavigationBarItemTemplate(
-        id = "chatselector",
+    Route.ChatSelector to NavigationBarItemTemplate(
+        id = "bottombar_chatselector_button",
         title = Res.string.navbar_chats,
         selectedIcon = Icons.AutoMirrored.Filled.Chat,
         unselectedIcon = Icons.AutoMirrored.Outlined.Chat,
-        route = Route.ChatSelector
     ),
-    NavigationBarItemTemplate(
-        id = "chatselector_games_button",
+    Route.GamesSelector to NavigationBarItemTemplate(
+        id = "bottombar_games_button",
         title = Res.string.navbar_games,
         selectedIcon = Icons.Filled.Games,
         unselectedIcon = Icons.Outlined.Games,
-        route = Route.Games
     ),
+    Route.SettingsScreen to NavigationBarItemTemplate(
+        id = "bottombar_settings_button",
+        title = Res.string.settings,
+        selectedIcon = Icons.Filled.Settings,
+        unselectedIcon = Icons.Outlined.Settings,
+        showOnlyWhenSelected = true
+    )
 )

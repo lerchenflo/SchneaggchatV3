@@ -6,8 +6,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -21,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsDivider
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
@@ -29,6 +32,8 @@ import schneaggchatv3mp.composeapp.generated.resources.merge_map_locations
 import schneaggchatv3mp.composeapp.generated.resources.merge_map_locations_info
 import schneaggchatv3mp.composeapp.generated.resources.merge_map_users
 import schneaggchatv3mp.composeapp.generated.resources.merge_map_users_info
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_group_display
+import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_group_sharing
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_settings
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global_info
@@ -55,27 +60,10 @@ fun SchneaggmapSettings(
                 .verticalScroll(rememberScrollState())
         ) {
 
-            // Merge map locations when zooming (local preference only)
-            SettingsSwitch(
-                titletext = stringResource(Res.string.merge_map_locations),
-                infotext = stringResource(Res.string.merge_map_locations_info),
-                switchchecked = schneaggmapSettingsViewModel.mergeMapLocations,
-                onSwitchChange = { schneaggmapSettingsViewModel.updateMergeMapLocations(it) },
-                icon = null
+            SettingsDivider(
+                title = stringResource(Res.string.schneaggmap_group_sharing),
+                showTopDivider = false
             )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            // Merge nearby friend markers when zooming (local preference only)
-            SettingsSwitch(
-                titletext = stringResource(Res.string.merge_map_users),
-                infotext = stringResource(Res.string.merge_map_users_info),
-                switchchecked = schneaggmapSettingsViewModel.mergeMapUsers,
-                onSwitchChange = { schneaggmapSettingsViewModel.updateMergeMapUsers(it) },
-                icon = null
-            )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
             // Opens a popup with the global switch + a per-friend toggle for each friend,
             // instead of toggling instantly on tap.
@@ -96,6 +84,30 @@ fun SchneaggmapSettings(
                 }
             )
 
+            SettingsDivider(
+                title = stringResource(Res.string.schneaggmap_group_display)
+            )
+
+            // Merge map locations when zooming (local preference only)
+            SettingsSwitch(
+                titletext = stringResource(Res.string.merge_map_locations),
+                infotext = stringResource(Res.string.merge_map_locations_info),
+                switchchecked = schneaggmapSettingsViewModel.mergeMapLocations,
+                onSwitchChange = { schneaggmapSettingsViewModel.updateMergeMapLocations(it) },
+                icon = Icons.Default.Place
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            // Merge nearby friend markers when zooming (local preference only)
+            SettingsSwitch(
+                titletext = stringResource(Res.string.merge_map_users),
+                infotext = stringResource(Res.string.merge_map_users_info),
+                switchchecked = schneaggmapSettingsViewModel.mergeMapUsers,
+                onSwitchChange = { schneaggmapSettingsViewModel.updateMergeMapUsers(it) },
+                icon = Icons.Default.Group
+            )
+
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
         }
     }
@@ -103,8 +115,6 @@ fun SchneaggmapSettings(
     if (locationSharingDialogShown) {
         LocationSharingDialog(
             shareLocationGlobal = schneaggmapSettingsViewModel.shareLocationGlobal,
-            advancedLocationSharing = schneaggmapSettingsViewModel.advancedLocationSharing,
-            onAdvancedLocationSharingChange = { schneaggmapSettingsViewModel.updateAdvancedLocationSharing(it) },
             friends = schneaggmapSettingsViewModel.friends,
             onSave = { global, friendDrafts -> schneaggmapSettingsViewModel.saveLocationSharing(global, friendDrafts) },
             onDismiss = { locationSharingDialogShown = false }

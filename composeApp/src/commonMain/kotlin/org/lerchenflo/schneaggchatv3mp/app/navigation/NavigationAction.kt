@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.app.navigation
 
+import androidx.navigation3.runtime.NavKey
+
 sealed interface NavigationAction{
 
     val navigationOptions: Navigator.NavigationOptions
@@ -9,13 +11,7 @@ sealed interface NavigationAction{
     ): NavigationAction
 
     data class Navigate(
-        val destination: Route,
-        override val navigationOptions: Navigator.NavigationOptions = Navigator.NavigationOptions()
-    ) : NavigationAction
-
-    data class NavigateSubRoute(
-        val rootRoute: Route,
-        val destination: Route,
+        val destination: NavKey,
         override val navigationOptions: Navigator.NavigationOptions = Navigator.NavigationOptions()
     ) : NavigationAction
 }

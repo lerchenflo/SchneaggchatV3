@@ -37,6 +37,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 #### Bugfixes
 - Fingerpicker resetet nicht direkt
 - Infinite loading screen beim Öffnen der App über Benachrichtigungen behoben
+- Navigation Rebuild (Viele Bugs behoben)
+- Einstellungen neu Strukturiert
 - Morse Code verbessert
 - Kurz den richtigen Tile anzeige bei odd one out
 - Einstellung für farbige Zeit bei heutigen Nachrichten (Standard aus)

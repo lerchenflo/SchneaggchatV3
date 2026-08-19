@@ -19,8 +19,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route.Chat
-import org.lerchenflo.schneaggchatv3mp.app.navigation.Route.Settings
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -218,7 +218,7 @@ class SchneaggmapViewModel(
             SchneaggmapAction.OnSettingsClick -> {
                 viewModelScope.launch {
                     navigator.navigate(
-                        destination = Settings.SchneaggmapSettings
+                        destination = Route.SchneaggmapSettings
                     )
                 }
             }

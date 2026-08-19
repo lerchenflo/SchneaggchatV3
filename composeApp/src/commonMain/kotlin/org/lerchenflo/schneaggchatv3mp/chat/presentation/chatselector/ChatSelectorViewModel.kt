@@ -159,12 +159,12 @@ class ChatSelectorViewModel(
     }
     fun onSettingsClick() {
         viewModelScope.launch {
-            navigator.navigate(Route.Settings)
+            navigator.navigate(Route.SettingsScreen)
         }
     }
     fun onToolsAndGamesClick() {
         viewModelScope.launch {
-            navigator.navigate(Route.Games)
+            navigator.navigate(Route.GamesSelector)
         }
     }
     fun onMapClick(){

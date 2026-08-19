@@ -15,14 +15,14 @@ class DevSettingsViewModel(
 
     fun navigateGames() {
         viewModelScope.launch {
-            navigator.navigate(Route.Games)
+            navigator.navigate(Route.GamesSelector)
         }
     }
 
     fun navigateRecap() {
         viewModelScope.launch {
             navigator.navigate(
-                destination = Route.Games.Recap,
+                destination = Route.Recap,
                 //navigationOptions =
             )
         }

@@ -22,11 +22,14 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.LanguageSelector
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsDivider
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ThemeSelector
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.appearance_group_chat
+import schneaggchatv3mp.composeapp.generated.resources.appearance_group_general
 import schneaggchatv3mp.composeapp.generated.resources.appearance_settings
 import schneaggchatv3mp.composeapp.generated.resources.highlight_todays_message_timestamp
 import schneaggchatv3mp.composeapp.generated.resources.highlight_todays_message_timestamp_info
@@ -59,28 +62,10 @@ fun AppearanceSettings(
                 .verticalScroll(rememberScrollState())
         ) {
 
-
-            // Markdown Formatting
-            SettingsSwitch(
-                titletext = stringResource(Res.string.useMarkdown),
-                infotext = stringResource(Res.string.markdownInfo),
-                switchchecked = appearanceSettingsViewModel.markdownEnabeled,
-                onSwitchChange = { appearanceSettingsViewModel.updateMarkdownSwitch(it) },
-                icon = vectorResource(Res.drawable.markdown_24px) //Gibts uf da icons no ned aber uf da website scho
+            SettingsDivider(
+                title = stringResource(Res.string.appearance_group_general),
+                showTopDivider = false
             )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            // Highlight Today's Message Timestamp
-            SettingsSwitch(
-                titletext = stringResource(Res.string.highlight_todays_message_timestamp),
-                infotext = stringResource(Res.string.highlight_todays_message_timestamp_info),
-                switchchecked = appearanceSettingsViewModel.highlightTodaysMessageTimestamp,
-                onSwitchChange = { appearanceSettingsViewModel.updateHighlightTodaysMessageTimestamp(it) },
-                icon = Icons.Default.Schedule
-            )
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
             var themeSelDialog by remember { mutableStateOf(false) }
             var previousTheme by remember { mutableStateOf(ThemeSetting.SYSTEM) }
@@ -137,6 +122,30 @@ fun AppearanceSettings(
                     onLanguageSelected = { appearanceSettingsViewModel.saveLanguageSetting(it) }
                 )
             }
+
+            SettingsDivider(
+                title = stringResource(Res.string.appearance_group_chat)
+            )
+
+            // Markdown Formatting
+            SettingsSwitch(
+                titletext = stringResource(Res.string.useMarkdown),
+                infotext = stringResource(Res.string.markdownInfo),
+                switchchecked = appearanceSettingsViewModel.markdownEnabeled,
+                onSwitchChange = { appearanceSettingsViewModel.updateMarkdownSwitch(it) },
+                icon = vectorResource(Res.drawable.markdown_24px) //Gibts uf da icons no ned aber uf da website scho
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            // Highlight Today's Message Timestamp
+            SettingsSwitch(
+                titletext = stringResource(Res.string.highlight_todays_message_timestamp),
+                infotext = stringResource(Res.string.highlight_todays_message_timestamp_info),
+                switchchecked = appearanceSettingsViewModel.highlightTodaysMessageTimestamp,
+                onSwitchChange = { appearanceSettingsViewModel.updateHighlightTodaysMessageTimestamp(it) },
+                icon = Icons.Default.Schedule
+            )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 

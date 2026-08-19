@@ -34,102 +34,80 @@ sealed interface Route : NavKey {
     data class Schneaggmap(val initialEntryId: String? = null): Route
 
 
+
+
+    //SETTINGS
     @Serializable
-    data object Settings: Route {
-        @Serializable
-        data object SettingsScreen: Route
-
-        @Serializable
-        data object DeveloperSettings: Route
-
-        @Serializable
-        data object UserSettings: Route
-
-        @Serializable
-        data object AppearanceSettings: Route
-
-        @Serializable
-        data object MiscSettings: Route
-
-        @Serializable
-        data object SchneaggmapSettings: Route
-
-        @Serializable
-        data object Roadmap: Route
-    }
-
+    data object SettingsScreen: Route
 
     @Serializable
-    data object Games: Route {
-        @Serializable
-        data object GamesSelector: Route
+    data object DeveloperSettings: Route
 
-        @Serializable
-        data object DartCounter: Route
+    @Serializable
+    data object UserSettings: Route
 
-        @Serializable
-        data object Undercover: Route
+    @Serializable
+    data object PrivacyAndSecuritySettings: Route
 
-        @Serializable
-        data object TowerStack: Route
+    @Serializable
+    data object AppearanceSettings: Route
 
-        @Serializable
-        data object Yatzi: Route
+    @Serializable
+    data object MiscSettings: Route
 
-        @Serializable
-        data object Tetris: Route
+    @Serializable
+    data object SchneaggmapSettings: Route
 
-        @Serializable
-        data object Morse: Route
+    @Serializable
+    data object Roadmap: Route
 
-        @Serializable
-        data object SchneaggaHus: Route
 
-        @Serializable
-        data object GridRush: Route
 
-        @Serializable
-        data object OddOneOut: Route
 
-        @Serializable
-        data object Recap: Route
 
-        @Serializable
-        data object CoinFlip: Route
 
-        @Serializable
-        data object FingerPicker: Route
 
-        @Serializable
-        data object Game2048: Route
-    }
+    //GAMES
+    @Serializable
+    data object GamesSelector: Route
+
+    @Serializable
+    data object DartCounter: Route
+
+    @Serializable
+    data object Undercover: Route
+
+    @Serializable
+    data object TowerStack: Route
+
+    @Serializable
+    data object Yatzi: Route
+
+    @Serializable
+    data object Tetris: Route
+
+    @Serializable
+    data object Morse: Route
+
+    @Serializable
+    data object SchneaggaHus: Route
+
+    @Serializable
+    data object GridRush: Route
+
+    @Serializable
+    data object OddOneOut: Route
+
+    @Serializable
+    data object Recap: Route
+
+    @Serializable
+    data object CoinFlip: Route
+
+    @Serializable
+    data object FingerPicker: Route
+
+    @Serializable
+    data object Game2048: Route
+
 }
-
-
-fun Route.parentRootOrNull(): Route? = when (this) {
-    is Route.Settings.SettingsScreen,
-    is Route.Settings.DeveloperSettings,
-    is Route.Settings.UserSettings,
-    is Route.Settings.AppearanceSettings,
-    is Route.Settings.MiscSettings,
-    is Route.Settings.SchneaggmapSettings,
-    is Route.Settings.Roadmap -> Route.Settings
-
-    is Route.Games.GamesSelector,
-    is Route.Games.DartCounter,
-    is Route.Games.Undercover,
-    is Route.Games.TowerStack,
-    is Route.Games.Yatzi,
-    is Route.Games.Tetris,
-    is Route.Games.Morse,
-    is Route.Games.SchneaggaHus,
-    is Route.Games.GridRush,
-    is Route.Games.OddOneOut,
-    is Route.Games.Recap,
-    is Route.Games.CoinFlip,
-    is Route.Games.FingerPicker,
-    is Route.Games.Game2048 -> Route.Games
-
-    else -> null
-}
-

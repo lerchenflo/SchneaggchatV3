@@ -1085,5 +1085,44 @@
     <string name="download_from_github">Download the new version from GitHub</string>
     <string name="download">Download</string>
 
+    <!-- Settings Group Headers -->
+    <string name="settings_group_personalization">Preferences</string>
+    <string name="settings_group_about">About &amp; Support</string>
+    <string name="settings_group_developer">Advanced</string>
+
+    <string name="appearance_group_general">Display &amp; Language</string>
+    <string name="appearance_group_chat">Chat Appearance</string>
+
+    <string name="schneaggmap_group_sharing">Location Sharing</string>
+    <string name="schneaggmap_group_display">Map Display</string>
+
+    <string name="user_settings_group_profile">Profile</string>
+    <string name="user_settings_group_account">Account &amp; Security</string>
+    <string name="user_settings_group_features">Features</string>
+    <string name="user_settings_group_danger_zone">Account Actions</string>
+
+    <string name="misc_group_feedback">Feedback &amp; Roadmap</string>
+    <string name="misc_group_diagnostics">Diagnostics &amp; Troubleshooting</string>
+    <string name="misc_group_data_reset">Reset &amp; Repair</string>
+
+    <string name="dev_group_general">General</string>
+    <string name="dev_group_network">Server Configuration</string>
+    <string name="dev_group_tools">Tools &amp; Experiments</string>
+
+    <!-- Privacy & Security -->
+    <string name="privacy_and_security">Privacy &amp; Security</string>
+    <string name="privacy_and_security_info">Password, email, location sharing, and account privacy</string>
+    <string name="privacy_group_security">Security &amp; Authentication</string>
+    <string name="privacy_group_location">Location &amp; Privacy</string>
+    <string name="privacy_group_legal">Data &amp; Legal</string>
+    <string name="change_password">Change Password</string>
+    <string name="change_password_description">Update your account login password</string>
+    <string name="current_password">Current password</string>
+    <string name="new_password">New password</string>
+    <string name="confirm_new_password">Confirm new password</string>
+    <string name="password_changed_successfully">Password changed successfully</string>
+    <string name="password_change_failed">Failed to change password. Please verify your current password.</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="privacy_policy_info">Read our data privacy terms and policy</string>
 
 </resources>

@@ -118,7 +118,6 @@ class Preferencemanager(
         val MERGE_MAP_LOCATIONS = booleanPreferencesKey("merge_map_locations")
         val MERGE_MAP_USERS = booleanPreferencesKey("merge_map_users")
         val MAP_STYLE = intPreferencesKey("map_style")
-        val ADVANCED_LOCATION_SHARING = booleanPreferencesKey("advanced_location_sharing")
         val PINNED_CHATS = stringPreferencesKey("pinned_chats")
         val DRAFTS = stringPreferencesKey("drafts")
         val LAST_STARTED_VERSION = stringPreferencesKey("last_started_version")
@@ -238,21 +237,6 @@ class Preferencemanager(
         val ordinal = prefs[PrefsKeys.MAP_STYLE] ?: MapStyleSetting.LIBERTY.ordinal
         MapStyleSetting.entries.getOrNull(ordinal) ?: MapStyleSetting.LIBERTY
     }
-
-    // Advanced location sharing: send our own speed/heading/altitude/battery telemetry, and
-    // reveals the per-friend speed/heading + snail-trail controls in the sharing dialog.
-    suspend fun saveAdvancedLocationSharing(value: Boolean) {
-        prefs.edit { it[PrefsKeys.ADVANCED_LOCATION_SHARING] = value }
-    }
-
-    fun getAdvancedLocationSharingFlow(): Flow<Boolean> = prefs.data.map { prefs ->
-        prefs[PrefsKeys.ADVANCED_LOCATION_SHARING] ?: false //Default to off
-    }
-
-    suspend fun getAdvancedLocationSharing(): Boolean {
-        return prefs.data.first()[PrefsKeys.ADVANCED_LOCATION_SHARING] ?: false
-    }
-
 
     suspend fun saveLastStartedVersion(value: String) {
         prefs.edit { it[PrefsKeys.LAST_STARTED_VERSION] = value }

@@ -43,9 +43,6 @@ class SchneaggmapSettingsViewModel(
     var shareLocationGlobal by mutableStateOf(false)
         private set
 
-    var advancedLocationSharing by mutableStateOf(false)
-        private set
-
     var friends by mutableStateOf<List<User>>(emptyList())
         private set
 
@@ -91,16 +88,6 @@ class SchneaggmapSettingsViewModel(
                     friends = value
                 }
         }
-
-        viewModelScope.launch { // "Advanced location sharing" - sends our own telemetry + reveals per-friend advanced controls
-            preferenceManager.getAdvancedLocationSharingFlow()
-                .catch { exception ->
-                    loggingRepository.logWarning("Problem getting advanced location sharing preference: ${exception.message}")
-                }
-                .collect { value ->
-                    advancedLocationSharing = value
-                }
-        }
     }
 
     fun updateMergeMapLocations(newValue: Boolean) {
@@ -112,12 +99,6 @@ class SchneaggmapSettingsViewModel(
     fun updateMergeMapUsers(newValue: Boolean) {
         viewModelScope.launch {
             preferenceManager.saveMergeMapUsers(newValue)
-        }
-    }
-
-    fun updateAdvancedLocationSharing(newValue: Boolean) {
-        viewModelScope.launch {
-            preferenceManager.saveAdvancedLocationSharing(newValue)
         }
     }
 
