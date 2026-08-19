@@ -20,6 +20,7 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_go_back
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_freeroam
+import schneaggchatv3mp.composeapp.generated.resources.ttt_privacy_settings_go_back
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_freeroam
@@ -33,6 +34,8 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_app_broken
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_app_broken_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_bugreport
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_privacy
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_privacy_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_user
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_user_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_wake
@@ -41,7 +44,6 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_start_chatting
 import schneaggchatv3mp.composeapp.generated.resources.ttt_start_chatting_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_thank_you
 import schneaggchatv3mp.composeapp.generated.resources.ttt_thank_you_description
-import schneaggchatv3mp.composeapp.generated.resources.ttt_user_settings_go_back
 
 @Composable
 fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTour {
@@ -108,28 +110,44 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 route = Route.SettingsScreen
             )
 
-            if (isAndroid){
+            if (isAndroid) {
                 tapStep(
-                    id = "settings_user_wakeup",
+                    id = "settings_privacy",
+                    title = Res.string.ttt_settings_privacy,
+                    description = Res.string.ttt_settings_privacy_description,
+                    route = Route.SettingsScreen
+                )
+
+                tapStep(
+                    id = "settings_privacy_wake",
                     title = Res.string.ttt_settings_wake,
                     description = Res.string.ttt_settings_wake_description,
-                    route = Route.UserSettings,
+                    route = Route.PrivacyAndSecuritySettings,
+                    requireExactTap = false
+                )
+
+                //Point to back button
+                tapStep(
+                    id = "privacy_settings_back_button",
+                    title = Res.string.ttt_privacy_settings_go_back,
+                    route = Route.PrivacyAndSecuritySettings
+                )
+            } else {
+                tapStep(
+                    id = "settings_privacy",
+                    title = Res.string.ttt_settings_privacy,
+                    description = Res.string.ttt_settings_privacy_description,
+                    route = Route.SettingsScreen,
                     requireExactTap = false
                 )
             }
-
-            //Point to back button
-            tapStep(
-                id = "user_settings_back_button",
-                title = Res.string.ttt_user_settings_go_back,
-                route = Route.UserSettings
-            )
 
             tapStep(
                 id = "settings_appearance",
                 title = Res.string.ttt_settings_appearance,
                 description = Res.string.ttt_settings_appearance_description,
-                route = Route.SettingsScreen
+                route = Route.SettingsScreen,
+                requireExactTap = false
             )
 
             tapStep(

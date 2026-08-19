@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
 import org.lerchenflo.schneaggchatv3mp.getDeleteAccountUrl
 import org.lerchenflo.schneaggchatv3mp.getPrivacyPolicyUrl
@@ -93,7 +94,8 @@ fun PrivacyAndSecuritySettings(
     Column {
         ActivityTitle(
             title = stringResource(Res.string.privacy_and_security),
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            backButtonModifier = Modifier.tapTarget("privacy_settings_back_button")
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -191,7 +193,8 @@ fun PrivacyAndSecuritySettings(
                     icon = Icons.Default.Alarm,
                     text = stringResource(Res.string.wake_settings),
                     subtext = stringResource(Res.string.wake_settings_info),
-                    onClick = { showWakeSettingsDialog = true }
+                    onClick = { showWakeSettingsDialog = true },
+                    modifier = Modifier.tapTarget("settings_privacy_wake")
                 )
             }
 

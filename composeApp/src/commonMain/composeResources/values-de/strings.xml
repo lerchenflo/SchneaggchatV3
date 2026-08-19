@@ -673,6 +673,9 @@
     <string name="games_morse_clear">Löschen</string>
     <string name="games_morse_instructions">Drücke den großen Knopf, um Morsesignale zu senden: ein kurzer Druck ist ein Punkt (·), ein langer Druck ein Strich (−). Der Baum zeigt, zu welchem Buchstaben dein Code führt.\n\nTippe den angezeigten Text in Morsecode — jeder richtige Buchstabe bringt Punkte, nach 3 Fehlern ist das Spiel vorbei.</string>
 
+    <!-- Games: 2048 -->
+    <string name="games_2048_title">2048</string>
+    <string name="games_2048_instructions">Wische (nach oben, unten, links, rechts) oder benutze die Pfeiltasten, um die Kacheln zu bewegen. Wenn sich zwei Kacheln mit derselben Zahl berühren, verschmelzen sie zu einer!\n\nKombiniere die Zahlen und erreiche die 2048-Kachel, um zu gewinnen, und spiele weiter für den Highscore!</string>
 
     <!-- Recap -->
     <string name="recap_your_year">Dein Jahr</string>
@@ -1031,7 +1034,10 @@
 
     <string name="ttt_settings_wake">Wecker-Funktion (nur Android)</string>
     <string name="ttt_settings_wake_description">Du kannst diese Funktion aktivieren, damit deine Freunde dich aufwecken können. Dein Handy klingelt dann wie mit dem Handywecker auch im Lautlosmodus. Wenn deine Freunde dies für dich aktiviert haben, kannst du sie in den Chat-Details wecken.</string>
-    <string name="ttt_user_settings_go_back">Lass uns zurück zu den Einstellungen gehen</string>
+
+    <string name="ttt_settings_privacy">Datenschutz &amp; Sicherheit</string>
+    <string name="ttt_settings_privacy_description">Hier kannst du dein Passwort, deine E-Mail-Adresse, das Teilen des Standorts und Weckeinstellungen verwalten.</string>
+    <string name="ttt_privacy_settings_go_back">Lass uns zurück zu den Einstellungen gehen</string>
 
     <string name="ttt_settings_appearance">Darstellungs-Einstellungen</string>
     <string name="ttt_settings_appearance_description">Hier kannst du deine Sprache (Österreichisch, Deutsch, Englisch) und dein Design ändern.</string>
@@ -1080,6 +1086,48 @@
     <string name="navbar_map">Karte</string>
     <string name="navbar_games">Spiele</string>
 
+    <string name="new_version_available">Neue Version verfügbar: %1$s</string>
+    <string name="download_from_github">Lade die neue Version von GitHub herunter</string>
+    <string name="download">Herunterladen</string>
 
+    <!-- Settings Group Headers -->
+    
+    
+    
+
+    <string name="appearance_group_general">Darstellung &amp; Sprache</string>
+    <string name="appearance_group_chat">Chat-Darstellung</string>
+
+    <string name="schneaggmap_group_sharing">Standortfreigabe</string>
+    <string name="schneaggmap_group_display">Kartenanzeige</string>
+
+    <string name="user_settings_group_profile">Profil</string>
+    <string name="user_settings_group_account">Konto &amp; Sicherheit</string>
+    <string name="user_settings_group_features">Funktionen</string>
+    <string name="user_settings_group_danger_zone">Konto-Aktionen</string>
+
+    <string name="misc_group_feedback">Feedback &amp; Roadmap</string>
+    <string name="misc_group_diagnostics">Diagnose &amp; Fehlerbehebung</string>
+    <string name="misc_group_data_reset">Zurücksetzen &amp; Reparieren</string>
+
+    <string name="dev_group_general">Allgemein</string>
+    <string name="dev_group_network">Server-Konfiguration</string>
+    <string name="dev_group_tools">Tools &amp; Experimente</string>
+
+    <!-- Privacy & Security -->
+    <string name="privacy_and_security">Datenschutz &amp; Sicherheit</string>
+    <string name="privacy_and_security_info">Passwort, E-Mail, Standortfreigabe und Kontodatenschutz</string>
+    <string name="privacy_group_security">Sicherheit &amp; Authentifizierung</string>
+    <string name="privacy_group_location">Standort &amp; Privatsphäre</string>
+    <string name="privacy_group_legal">Daten &amp; Rechtliches</string>
+    <string name="change_password">Passwort ändern</string>
+    <string name="change_password_description">Aktualisiere dein Konto-Login-Passwort</string>
+    <string name="current_password">Aktuelles Passwort</string>
+    <string name="new_password">Neues Passwort</string>
+    <string name="confirm_new_password">Neues Passwort bestätigen</string>
+    <string name="password_changed_successfully">Passwort erfolgreich geändert</string>
+    <string name="password_change_failed">Passwort konnte nicht geändert werden. Bitte überprüfe dein aktuelles Passwort.</string>
+    <string name="privacy_policy">Datenschutzerklärung</string>
+    <string name="privacy_policy_info">Lies unsere Datenschutzbestimmungen und Richtlinien</string>
 
 </resources>

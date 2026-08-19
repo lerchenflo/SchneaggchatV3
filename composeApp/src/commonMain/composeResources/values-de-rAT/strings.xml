@@ -671,6 +671,9 @@
     <string name="games_morse_clear">Löscha</string>
     <string name="games_morse_instructions">Druck da große Knopf zum Morsesignale senda. Kurza Druck isch an Punkt (·), an langer Druck an Strich (−). Da Bom zoagt wo du grad anenavigiersch, zu wellam Buchstabe.\n\nTipp ab was oba stoht, jeder richtige Buchstabe git Punkte.</string>
 
+    <!-- Games: 2048 -->
+    <string name="games_2048_title">2048</string>
+    <string name="games_2048_instructions">Wüscha oda mit Pfeiltasta ummadrucka. Wenn sich zwoa Fealda mit da glicha Zahl berührand, werrand se zu uana großa. Mehr groß mehr Punkte</string>
 
     <!-- Recap -->
     <string name="recap_your_year">Din Joar</string>
@@ -1030,7 +1033,10 @@ Mealds, egal wie klenn.</string>
 
     <string name="ttt_settings_wake">Weckerfeature (nur Android)</string>
     <string name="ttt_settings_wake_description">Du kannsch dia Funktion aktiviera, damit dine Freunde di ufwecka künnand. Din Handy klingelt denn wie bei nam Wecker, o im Lautlosmodus. Wenn dine Freunde des aktiviert hond, kannsch du se in da Chat-Details wecka.</string>
-    <string name="ttt_user_settings_go_back">Gomma zruck zu da Einstellunga</string>
+
+    <string name="ttt_settings_privacy">Datenschutz &amp; Sicherheit</string>
+    <string name="ttt_settings_privacy_description">Do kannsch du din Passwort, dine E-Mail-Adress, Standort Teila und Weckeinstellunga macha.</string>
+    <string name="ttt_privacy_settings_go_back">Gomma zruck zu da Einstellunga</string>
 
     <string name="ttt_settings_appearance">Darstellungs-Einstellunga</string>
     <string name="ttt_settings_appearance_description">Do kannsch du dine Sproch (Österreichisch, Deutsch, Englisch) und s Design ändra.</string>
@@ -1079,6 +1085,48 @@ Mealds, egal wie klenn.</string>
     <string name="navbar_map">Karta</string>
     <string name="navbar_games">Spiele</string>
 
+    <string name="new_version_available">Neue Version verfügbar: %1$s</string>
+    <string name="download_from_github">Lad da die neue Version vo GitHub aba</string>
+    <string name="download">Abalada</string>
 
+    <!-- Settings Group Headers -->
+    
+    
+    
+
+    <string name="appearance_group_general">Darstellung &amp; Sproch</string>
+    <string name="appearance_group_chat">Chat - Darstellung</string>
+
+    <string name="schneaggmap_group_sharing">Standortfreigabe</string>
+    <string name="schneaggmap_group_display">Kartenanzeige</string>
+
+    <string name="user_settings_group_profile">Profil</string>
+    <string name="user_settings_group_account">Konto &amp; Sicherheit</string>
+    <string name="user_settings_group_features">Funktiona</string>
+    <string name="user_settings_group_danger_zone">Konto-Aktiona</string>
+
+    <string name="misc_group_feedback">Feedback &amp; Roadmap</string>
+    <string name="misc_group_diagnostics">Diagnose &amp; Fehlerbehebung</string>
+    <string name="misc_group_data_reset">Zrucksetza &amp; Repariera</string>
+
+    <string name="dev_group_general">Allgemein</string>
+    <string name="dev_group_network">Serverconfig</string>
+    <string name="dev_group_tools">Tools &amp; Experimente</string>
+
+    <!-- Privacy & Security -->
+    <string name="privacy_and_security">Datenschutz &amp; Sicherheit</string>
+    <string name="privacy_and_security_info">Passwort, E-Mail. Standortfreigab und Kontodatenschutz</string>
+    <string name="privacy_group_security">Sicherheit &amp; Authentifizierung</string>
+    <string name="privacy_group_location">Standort &amp; Privatsphäre</string>
+    <string name="privacy_group_legal">Daten &amp; Rechtliches</string>
+    <string name="change_password">Passwort ändra</string>
+    <string name="change_password_description">Aktualisier din Konto-Login-Passwort</string>
+    <string name="current_password">Aktuells Passwort</string>
+    <string name="new_password">Neues Passwort</string>
+    <string name="confirm_new_password">Neus Passwort bestätiga</string>
+    <string name="password_changed_successfully">Passwort erfolgreich gändert</string>
+    <string name="password_change_failed">Passwort hot ned gändert werra künna. Bitte prüf din aktuells Passwort.</string>
+    <string name="privacy_policy">Datenschutzerklärung</string>
+    <string name="privacy_policy_info">Leas üsre Datenschutzbestimmunga und Richtlinia</string>
 
 </resources>
