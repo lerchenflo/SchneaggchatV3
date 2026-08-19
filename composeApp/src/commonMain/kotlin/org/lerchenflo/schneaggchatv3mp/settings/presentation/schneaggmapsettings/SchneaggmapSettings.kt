@@ -115,8 +115,6 @@ fun SchneaggmapSettings(
     if (locationSharingDialogShown) {
         LocationSharingDialog(
             shareLocationGlobal = schneaggmapSettingsViewModel.shareLocationGlobal,
-            advancedLocationSharing = schneaggmapSettingsViewModel.advancedLocationSharing,
-            onAdvancedLocationSharingChange = { schneaggmapSettingsViewModel.updateAdvancedLocationSharing(it) },
             friends = schneaggmapSettingsViewModel.friends,
             onSave = { global, friendDrafts -> schneaggmapSettingsViewModel.saveLocationSharing(global, friendDrafts) },
             onDismiss = { locationSharingDialogShown = false }

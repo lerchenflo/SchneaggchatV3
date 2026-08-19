@@ -289,16 +289,13 @@ class GlobalViewModel(
                     .filterNotNull() //filter for connected
                     .collect { location ->
 
-                        // Altitude/battery are sent by default whenever location sharing is on at
-                        // all - the server already always shares them once a friend can see your
-                        // location. Speed/heading are more revealing (live driving telemetry), so
-                        // those only go out when "Advanced location sharing" is on.
-                        val advanced = preferenceManager.getAdvancedLocationSharing()
+                        // Speed and heading are sent if any user in the friends list has shareSpeedHeading enabled
+                        val shareSpeedHeading = appRepository.getFriends("").any { it.shareSpeedHeading }
                         val update = SocketConnectionMessage.LocationUpdate(
                             lat = location.coordinates.lat,
                             long = location.coordinates.long,
-                            speed = if (advanced) location.speed else null,
-                            heading = if (advanced) location.heading?.toDouble() else null,
+                            speed = if (shareSpeedHeading) location.speed else null,
+                            heading = if (shareSpeedHeading) location.heading?.toDouble() else null,
                             altitude = location.altitude?.toDouble(),
                             batteryLevel = batteryService.getBatteryLevel(),
                         )

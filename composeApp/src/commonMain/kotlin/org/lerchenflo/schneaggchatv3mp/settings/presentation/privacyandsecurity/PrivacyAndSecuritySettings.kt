@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.LocationOn
@@ -45,15 +44,12 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ChangeDialog
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsDivider
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.WakeSettingsDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.emailProviderWarning
 import org.lerchenflo.schneaggchatv3mp.utilities.isEmailValid
 import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.advanced_location_sharing
-import schneaggchatv3mp.composeapp.generated.resources.advanced_location_sharing_info
 import schneaggchatv3mp.composeapp.generated.resources.are_you_sure_you_want_to_logout
 import schneaggchatv3mp.composeapp.generated.resources.change
 import schneaggchatv3mp.composeapp.generated.resources.change_email
@@ -187,17 +183,6 @@ fun PrivacyAndSecuritySettings(
                 }
             )
 
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            // Advanced Location Telemetry switch
-            SettingsSwitch(
-                titletext = stringResource(Res.string.advanced_location_sharing),
-                infotext = stringResource(Res.string.advanced_location_sharing_info),
-                switchchecked = viewModel.advancedLocationSharing,
-                onSwitchChange = { viewModel.updateAdvancedLocationSharing(it) },
-                icon = Icons.Default.Explore
-            )
-
             // Waking is Android only - the alarm service has no counterpart on iOS/Desktop.
             if (koinInject<AppVersion>().isAndroid()) {
                 HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
@@ -300,8 +285,6 @@ fun PrivacyAndSecuritySettings(
     if (locationSharingDialogShown) {
         LocationSharingDialog(
             shareLocationGlobal = viewModel.shareLocationGlobal,
-            advancedLocationSharing = viewModel.advancedLocationSharing,
-            onAdvancedLocationSharingChange = { viewModel.updateAdvancedLocationSharing(it) },
             friends = viewModel.friends,
             onSave = { global, friendDrafts -> viewModel.saveLocationSharing(global, friendDrafts) },
             onDismiss = { locationSharingDialogShown = false }

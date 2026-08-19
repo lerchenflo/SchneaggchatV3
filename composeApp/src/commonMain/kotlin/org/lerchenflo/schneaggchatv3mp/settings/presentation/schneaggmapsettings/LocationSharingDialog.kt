@@ -48,13 +48,15 @@ private data class FriendShareDraftState(
 @Composable
 fun LocationSharingDialog(
     shareLocationGlobal: Boolean,
-    advancedLocationSharing: Boolean,
-    onAdvancedLocationSharingChange: (Boolean) -> Unit,
     friends: List<User>,
     onSave: (globalShare: Boolean, friendDrafts: List<FriendShareDraft>) -> Unit,
     onDismiss: () -> Unit,
 ) {
     var draftGlobalShare by remember { mutableStateOf(shareLocationGlobal) }
+    // Autopopulate advanced sharing initial switch state from db (friends list)
+    var draftAdvancedShare by remember {
+        mutableStateOf(friends.any { it.shareSpeedHeading || it.snailTrail })
+    }
 
     val draftFriendShares = remember {
         friends.associate { friend ->
@@ -89,8 +91,8 @@ fun LocationSharingDialog(
                             draftFriendShares.values.forEach { state ->
                                 state.value = state.value.copy(
                                     share = true,
-                                    shareSpeedHeading = true,
-                                    snailTrail = true,
+                                    shareSpeedHeading = draftAdvancedShare,
+                                    snailTrail = draftAdvancedShare,
                                 )
                             }
                         }
@@ -98,13 +100,31 @@ fun LocationSharingDialog(
                     icon = null
                 )
 
-                // Sends our own speed/heading, and reveals the per-friend advanced controls
-                // below. Only meaningful once basic sharing is on. Saved immediately (local pref).
+                // Advanced location sharing switch (autopopulated from database state)
                 SettingsSwitch(
                     titletext = stringResource(Res.string.advanced_location_sharing),
                     infotext = stringResource(Res.string.advanced_location_sharing_info),
-                    switchchecked = advancedLocationSharing,
-                    onSwitchChange = onAdvancedLocationSharingChange,
+                    switchchecked = draftAdvancedShare,
+                    onSwitchChange = { newValue ->
+                        draftAdvancedShare = newValue
+                        if (newValue) {
+                            draftFriendShares.values.forEach { state ->
+                                if (state.value.share) {
+                                    state.value = state.value.copy(
+                                        shareSpeedHeading = true,
+                                        snailTrail = true,
+                                    )
+                                }
+                            }
+                        } else {
+                            draftFriendShares.values.forEach { state ->
+                                state.value = state.value.copy(
+                                    shareSpeedHeading = false,
+                                    snailTrail = false,
+                                )
+                            }
+                        }
+                    },
                     icon = null,
                     enabled = draftGlobalShare
                 )
@@ -144,7 +164,7 @@ fun LocationSharingDialog(
                             )
                         }
 
-                        if (advancedLocationSharing && draft.share) {
+                        if (draftAdvancedShare && draft.share) {
                             val subColor = MaterialTheme.colorScheme.secondary
                             Column {
                                 Row(

@@ -44,9 +44,6 @@ class PrivacyAndSecurityViewModel(
     var shareLocationGlobal by mutableStateOf(false)
         private set
 
-    var advancedLocationSharing by mutableStateOf(false)
-        private set
-
     var wakeEnabledGlobal by mutableStateOf(false)
         private set
 
@@ -74,16 +71,6 @@ class PrivacyAndSecurityViewModel(
                 }
                 .collect { value ->
                     friends = value
-                }
-        }
-
-        viewModelScope.launch { // Advanced location sharing preference
-            preferenceManager.getAdvancedLocationSharingFlow()
-                .catch { exception ->
-                    loggingRepository.logWarning("Problem getting advanced location sharing preference: ${exception.message}")
-                }
-                .collect { value ->
-                    advancedLocationSharing = value
                 }
         }
     }
@@ -146,12 +133,6 @@ class PrivacyAndSecurityViewModel(
         viewModelScope.launch {
             appRepository.changeUserDetails(newEmail = newEmail, userId = userId)
             appRepository.dataSync(reason = "emailChanged")
-        }
-    }
-
-    fun updateAdvancedLocationSharing(newValue: Boolean) {
-        viewModelScope.launch {
-            preferenceManager.saveAdvancedLocationSharing(newValue)
         }
     }
 
