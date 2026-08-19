@@ -105,7 +105,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 id = "settings_user",
                 title = Res.string.ttt_settings_user,
                 description = Res.string.ttt_settings_user_description,
-                route = Route.Settings.SettingsScreen
+                route = Route.SettingsScreen
             )
 
             if (isAndroid){
@@ -113,7 +113,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                     id = "settings_user_wakeup",
                     title = Res.string.ttt_settings_wake,
                     description = Res.string.ttt_settings_wake_description,
-                    route = Route.Settings.UserSettings,
+                    route = Route.UserSettings,
                     requireExactTap = false
                 )
             }
@@ -122,26 +122,26 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
             tapStep(
                 id = "user_settings_back_button",
                 title = Res.string.ttt_user_settings_go_back,
-                route = Route.Settings.UserSettings
+                route = Route.UserSettings
             )
 
             tapStep(
                 id = "settings_appearance",
                 title = Res.string.ttt_settings_appearance,
                 description = Res.string.ttt_settings_appearance_description,
-                route = Route.Settings.SettingsScreen
+                route = Route.SettingsScreen
             )
 
             tapStep(
                 id = "settings_misc",
                 title = Res.string.ttt_settings_misc,
-                route = Route.Settings.SettingsScreen
+                route = Route.SettingsScreen
             )
 
             tapStep(
                 id = "settings_misc_bugreport",
                 description = Res.string.ttt_settings_misc_bugreport,
-                route = Route.Settings.MiscSettings,
+                route = Route.MiscSettings,
                 requireExactTap = false
             )
 
@@ -149,7 +149,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 id = "settings_misc_app_broken",
                 title = Res.string.ttt_settings_misc_app_broken,
                 description = Res.string.ttt_settings_misc_app_broken_description,
-                route = Route.Settings.MiscSettings,
+                route = Route.MiscSettings,
                 requireExactTap = false
             )
 
@@ -157,7 +157,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
             tapStep(
                 id = "misc_settings_back_button",
                 title = Res.string.ttt_misc_settings_go_back,
-                route = Route.Settings.MiscSettings
+                route = Route.MiscSettings
             )
 
             //Mobile only
@@ -212,7 +212,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 id = "games_difficulty_selector",
                 title = Res.string.ttt_games_difficulty,
                 description = Res.string.ttt_games_difficulty_description,
-                route = Route.Games.GamesSelector,
+                route = Route.GamesSelector,
                 requireExactTap = false
             )
 
@@ -220,7 +220,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 id = "games_global_ranking_button",
                 title = Res.string.ttt_games_global_highscore,
                 description = Res.string.ttt_games_global_highscore_description,
-                route = Route.Games.GamesSelector,
+                route = Route.GamesSelector,
                 requireExactTap = false
             )
 

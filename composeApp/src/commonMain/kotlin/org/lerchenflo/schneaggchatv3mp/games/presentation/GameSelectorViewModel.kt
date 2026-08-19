@@ -35,35 +35,35 @@ class GameSelectorViewModel : ViewModel() {
         GameScreenElement(
             title = Res.string.games_tetris_title,
             icon = Icons.Default.Menu, // Placeholder
-            route = Route.Games.Tetris,
+            route = Route.Tetris,
             inDev = false,
             gameId = GameId.TETRIS
         ),
         GameScreenElement(
             title = Res.string.games_stack_tower,
             icon = Icons.Default.Menu,
-            route = Route.Games.TowerStack,
+            route = Route.TowerStack,
             inDev = false,
             gameId = GameId.TOWERSTACK
         ),
         GameScreenElement(
             title = Res.string.games_morse_title,
             icon = Icons.Default.GraphicEq,
-            route = Route.Games.Morse,
+            route = Route.Morse,
             inDev = false,
             gameId = GameId.MORSE
         ),
         GameScreenElement(
             title = Res.string.games_schneaggahus_title,
             icon = Icons.Default.House,
-            route = Route.Games.SchneaggaHus,
+            route = Route.SchneaggaHus,
             inDev = true,
             gameId = GameId.SCHNEAGGAHUS
         ),
         GameScreenElement(
             title = Res.string.games_gridrush_title,
             icon = Icons.Default.GridOn,
-            route = Route.Games.GridRush,
+            route = Route.GridRush,
             inDev = false,
             gameId = GameId.GRIDRUSH,
             daily = true
@@ -71,45 +71,45 @@ class GameSelectorViewModel : ViewModel() {
         GameScreenElement(
             title = Res.string.games_oddoneout_title,
             icon = Icons.Default.Search,
-            route = Route.Games.OddOneOut,
+            route = Route.OddOneOut,
             inDev = false,
             gameId = GameId.ODDONEOUT
         ),
         GameScreenElement(
             title = Res.string.games_2048_title,
             icon = Icons.Default.GridOn,
-            route = Route.Games.Game2048,
+            route = Route.Game2048,
             inDev = false,
             gameId = GameId.GAME_2048
         ),
         GameScreenElement(
             title = Res.string.games_coinflip_title,
             icon = Icons.Default.MonetizationOn,
-            route = Route.Games.CoinFlip,
+            route = Route.CoinFlip,
             inDev = false
         ),
         GameScreenElement(
             title = Res.string.games_fingerpicker_title,
             icon = Icons.Default.TouchApp,
-            route = Route.Games.FingerPicker,
+            route = Route.FingerPicker,
             inDev = false
         ),
         GameScreenElement(
             title = Res.string.games_dartcounter_title,
             icon = Icons.Default.AdsClick, // ma darf sich gern was besseres usdenka
-            route = Route.Games.DartCounter,
+            route = Route.DartCounter,
             inDev = false
         ),
         GameScreenElement(
             title = Res.string.games_undercover_title,
             icon = Icons.Default.Blind,
-            route = Route.Games.Undercover,
+            route = Route.Undercover,
             inDev = false
         ),
         GameScreenElement(
             title = Res.string.games_yahtzee_title,
             icon = Icons.Default.Star,
-            route = Route.Games.Yatzi,
+            route = Route.Yatzi,
             inDev = false
         ),
     )

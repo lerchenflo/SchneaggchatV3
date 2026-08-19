@@ -27,6 +27,7 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.BottomAppBarSwipable
+import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.ObserveAsEvents
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -124,10 +125,76 @@ fun App() {
 
         val navigationState = rememberNavigationState(
             startRoute = Route.AutoLoginCredChecker,
+            homeRoute = Route.ChatSelector,
             topLevelRoutes = TOP_LEVEL_DESTINATIONS.keys
         )
-        val navigator = remember {
-            Navigator(navigationState)
+
+        // Koin-injected Navigator singleton used by ViewModels — its channel events are
+        // translated into NavigationState mutations below
+        val navigator = koinInject<Navigator>()
+
+        //Observe what the navigator sends to change screens etc
+        ObserveAsEvents(
+            flow = navigator.navigationActions
+        ) { action ->
+            val navigationOptions = action.navigationOptions
+
+            if (navigationOptions.exitPreviousScreen) {
+                navigationState.backStacks[navigationState.topLevelRoute]?.let { stack ->
+                    if (stack.size > 1) stack.removeAt(stack.size - 1)
+                }
+            }
+
+            //Remove all routes of the given types from the backstack (class-based so routes with
+            //arguments match regardless of their argument values)
+            if (navigationOptions.removeAllScreensByClass.isNotEmpty()) {
+                navigationOptions.removeAllScreensByClass.forEach { routeClass ->
+                    navigationState.backStacks.values.forEach { stack ->
+                        stack.removeAll { navKey -> navKey::class == routeClass }
+                    }
+                }
+            }
+
+            if (navigationOptions.removeAllExceptByRoute != null) {
+                navigationState.backStacks[navigationState.topLevelRoute]?.removeAll { navKey ->
+                    navKey != navigationOptions.removeAllExceptByRoute
+                }
+            }
+
+            when (action) {
+                is NavigationAction.Navigate -> {
+                    val destination = action.destination
+
+                    // Top-level or flat route — navigate within current tab or switch tab
+                    if (destination in navigationState.backStacks.keys) {
+                        // It's a top-level tab key
+                        if (navigationOptions.exitAllPreviousScreens) {
+                            navigationState.backStacks[navigationState.topLevelRoute]?.clear()
+                        }
+                        navigationState.topLevelRoute = destination
+                    } else {
+                        // Flat sub-route on current tab's backstack
+                        val stack = navigationState.backStacks[navigationState.topLevelRoute]
+                        if (stack != null) {
+                            if (navigationOptions.exitAllPreviousScreens) stack.clear()
+                            val existingIndex = stack.indexOfFirst { it::class == destination::class }
+                            if (existingIndex >= 0) {
+                                while (stack.size > existingIndex) stack.removeAt(stack.size - 1)
+                            }
+                            stack.add(destination)
+                        }
+                    }
+                }
+
+                is NavigationAction.NavigateBack -> {
+                    val stack = navigationState.backStacks[navigationState.topLevelRoute]
+                    if (stack != null && stack.size > 1 && !navigationOptions.exitRootWithSubRoute) {
+                        stack.removeAt(stack.size - 1)
+                    } else {
+                        navigationState.topLevelRoute = navigationState.homeRoute
+                    }
+                }
+            }
         }
 
 
@@ -144,9 +211,6 @@ fun App() {
                 when (action) {
                     AppRepository.ActionChannel.ActionEvent.Login -> {
                         // Login action handled automatically by HTTP client refresh
-                        //if (rootBackStack.contains(Route.ChatSelector)){
-
-                        //}
                         val error = tokenManager.refreshTokens(preferenceManager.getTokens().refreshToken)
 
                         if (error != null && !error.isConnectionError()){
@@ -166,11 +230,13 @@ fun App() {
                         appRepository.logout()
                         navigator.navigate(
                             Route.Login,
+                            navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
                         )
                     }
                 }
             }
         }
+
 
 
         //Error popup handling
@@ -218,7 +284,7 @@ fun App() {
                 tour = tour,
                 onNavigateToRoute = { targetRoute ->
                     println("Onboarding: Navigating $targetRoute")
-                    navigator.navigate(targetRoute)
+                    scope.launch { navigator.navigate(targetRoute) }
                 },
                 currentRoute = { navigationState.topLevelRoute },
                 onFinished = {
@@ -244,9 +310,9 @@ fun App() {
                         BottomAppBarSwipable(
                             selectedKey = navigationState.topLevelRoute,
                             onSelectKey = {
-                                navigator.navigate(
-                                    route = it,
-                                )
+                                scope.launch {
+                                    navigator.navigate(it)
+                                }
                             },
                             mobile = appRepository.appVersion.isMobile(),
                             modifier = Modifier.fillMaxWidth()
@@ -336,22 +402,22 @@ fun App() {
 
 
                                     //Settings
-                                    entry<Route.Settings.SettingsScreen> {
+                                    entry<Route.SettingsScreen> {
                                         SettingsScreen(
                                             settingsViewmodel = koinInject(),
                                             sharedSettingsViewmodel = koinInject(), // see note below on scoping
                                             onBackClick = {
                                                 scope.launch { navigator.navigateBack() }
                                             },
-                                            navigateUserSettings = { navigator.navigate(Route.Settings.UserSettings) },
-                                            navigateDevSettings = { navigator.navigate(Route.Settings.DeveloperSettings) },
-                                            navigateAppearanceSettings = { navigator.navigate(Route.Settings.AppearanceSettings) },
-                                            navigateMiscSettings = { navigator.navigate(Route.Settings.MiscSettings) },
-                                            navigateSchneaggmapSettings = { navigator.navigate(Route.Settings.SchneaggmapSettings) }
+                                            navigateUserSettings = { scope.launch { navigator.navigate(Route.UserSettings) } },
+                                            navigateDevSettings = { scope.launch { navigator.navigate(Route.DeveloperSettings) } },
+                                            navigateAppearanceSettings = { scope.launch { navigator.navigate(Route.AppearanceSettings) } },
+                                            navigateMiscSettings = { scope.launch { navigator.navigate(Route.MiscSettings) } },
+                                            navigateSchneaggmapSettings = { scope.launch { navigator.navigate(Route.SchneaggmapSettings) } }
                                         )
                                     }
 
-                                    entry<Route.Settings.DeveloperSettings> {
+                                    entry<Route.DeveloperSettings> {
                                         DeveloperSettings(
                                             devSettingsViewModel = koinInject(),
                                             sharedSettingsViewmodel = koinInject(),
@@ -359,7 +425,7 @@ fun App() {
                                         )
                                     }
 
-                                    entry<Route.Settings.UserSettings> {
+                                    entry<Route.UserSettings> {
                                         UserSettings(
                                             userSettingsViewModel = koinInject(),
                                             sharedSettingsViewmodel = koinInject(),
@@ -367,7 +433,7 @@ fun App() {
                                         )
                                     }
 
-                                    entry<Route.Settings.AppearanceSettings> {
+                                    entry<Route.AppearanceSettings> {
                                         AppearanceSettings(
                                             appearanceSettingsViewModel = koinInject(),
                                             sharedSettingsViewmodel = koinInject(),
@@ -375,16 +441,16 @@ fun App() {
                                         )
                                     }
 
-                                    entry<Route.Settings.MiscSettings> {
+                                    entry<Route.MiscSettings> {
                                         MiscSettings(
                                             miscSettingsViewModel = koinInject(),
                                             sharedSettingsViewmodel = koinInject(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } },
-                                            navigateRoadmap = { navigator.navigate(Route.Settings.Roadmap) }
+                                            navigateRoadmap = { scope.launch { navigator.navigate(Route.Roadmap) } }
                                         )
                                     }
 
-                                    entry<Route.Settings.Roadmap> {
+                                    entry<Route.Roadmap> {
                                         RoadmapScreen(
                                             roadmapViewModel = koinInject(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
@@ -394,44 +460,44 @@ fun App() {
 
 
 
-                                    entry<Route.Games.GamesSelector> {
+                                    entry<Route.GamesSelector> {
                                         val gameSelectorViewModel = koinViewModel<GameSelectorViewModel>()
                                         GameSelectorScreen(
                                             onBackClick = {
                                                 scope.launch { navigator.navigateBack() }
                                             },
                                             onGameSelection = {
-                                                navigator.navigate(it)
+                                                scope.launch { navigator.navigate(it) }
                                             },
                                             viewModel = gameSelectorViewModel
                                         )
                                     }
 
-                                    entry<Route.Games.DartCounter> {
+                                    entry<Route.DartCounter> {
                                         DartCounter(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
-                                    entry<Route.Games.Undercover> {
+                                    entry<Route.Undercover> {
                                         Undercover(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
-                                    entry<Route.Games.TowerStack> {
+                                    entry<Route.TowerStack> {
                                         TowerStackScreen(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
-                                    entry<Route.Games.Yatzi> {
+                                    entry<Route.Yatzi> {
                                         YatziScreenRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
-                                    entry<Route.Games.Tetris> {
+                                    entry<Route.Tetris> {
                                         val tetrisViewModel: TetrisViewModel = koinViewModel<TetrisViewModel>()
                                         TetrisScreen(
                                             onBackClick = { scope.launch { navigator.navigateBack() } },
@@ -439,7 +505,7 @@ fun App() {
                                         )
                                     }
 
-                                    entry<Route.Games.Morse> {
+                                    entry<Route.Morse> {
                                         val morseViewModel: MorseViewModel = koinViewModel()
                                         MorseScreen(
                                             onBackClick = { scope.launch { navigator.navigateBack() } },
@@ -447,50 +513,50 @@ fun App() {
                                         )
                                     }
 
-                                    entry<Route.Games.SchneaggaHus> {
+                                    entry<Route.SchneaggaHus> {
                                         SchneaggaHusScreenRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
-                                    entry<Route.Games.GridRush> {
+                                    entry<Route.GridRush> {
                                         GridRushScreenRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
-                                    entry<Route.Games.OddOneOut> {
+                                    entry<Route.OddOneOut> {
                                         OddOneOutScreenRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
-                                    entry<Route.Games.Recap> {
+                                    entry<Route.Recap> {
                                         RecapScreenRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
-                                    entry<Route.Games.CoinFlip> {
+                                    entry<Route.CoinFlip> {
                                         CoinFlipScreen(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
-                                    entry<Route.Games.FingerPicker> {
+                                    entry<Route.FingerPicker> {
                                         FingerPickerScreen(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
 
-                                    entry<Route.Games.Game2048> {
+                                    entry<Route.Game2048> {
                                         Game2048ScreenRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }
                                 }
                             ),
-                            onBack = navigator::navigateBack
+                            onBack = { scope.launch { navigator.navigateBack() } }
                         )
 
 

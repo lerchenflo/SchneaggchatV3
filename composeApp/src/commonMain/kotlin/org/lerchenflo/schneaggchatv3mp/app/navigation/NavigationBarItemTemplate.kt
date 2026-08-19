@@ -42,13 +42,13 @@ val TOP_LEVEL_DESTINATIONS = mapOf<NavKey, NavigationBarItemTemplate>(
         selectedIcon = Icons.AutoMirrored.Filled.Chat,
         unselectedIcon = Icons.AutoMirrored.Outlined.Chat,
     ),
-    Route.Games to NavigationBarItemTemplate(
+    Route.GamesSelector to NavigationBarItemTemplate(
         id = "bottombar_games_button",
         title = Res.string.navbar_games,
         selectedIcon = Icons.Filled.Games,
         unselectedIcon = Icons.Outlined.Games,
     ),
-    Route.Settings to NavigationBarItemTemplate(
+    Route.SettingsScreen to NavigationBarItemTemplate(
         id = "bottombar_settings_button",
         title = Res.string.settings,
         selectedIcon = Icons.Filled.Settings,

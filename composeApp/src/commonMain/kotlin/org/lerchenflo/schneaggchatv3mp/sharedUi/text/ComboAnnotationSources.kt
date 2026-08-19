@@ -112,19 +112,19 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
                 names = gameNames,
                 onClick = { gameKey ->
                     val route = when (gameKey) {
-                        "tetris" -> Route.Games.Tetris
-                        "towerstack" -> Route.Games.TowerStack
-                        "morse" -> Route.Games.Morse
-                        "schneaggahus" -> Route.Games.SchneaggaHus
-                        "gridrush" -> Route.Games.GridRush
-                        "oddoneout" -> Route.Games.OddOneOut
-                        "coinflip" -> Route.Games.CoinFlip
-                        "fingerpicker" -> Route.Games.FingerPicker
-                        "dartcounter" -> Route.Games.DartCounter
-                        "undercover" -> Route.Games.Undercover
-                        "yatzi" -> Route.Games.Yatzi
-                        "2048" -> Route.Games.Game2048
-                        else -> Route.Games.GamesSelector
+                        "tetris" -> Route.Tetris
+                        "towerstack" -> Route.TowerStack
+                        "morse" -> Route.Morse
+                        "schneaggahus" -> Route.SchneaggaHus
+                        "gridrush" -> Route.GridRush
+                        "oddoneout" -> Route.OddOneOut
+                        "coinflip" -> Route.CoinFlip
+                        "fingerpicker" -> Route.FingerPicker
+                        "dartcounter" -> Route.DartCounter
+                        "undercover" -> Route.Undercover
+                        "yatzi" -> Route.Yatzi
+                        "2048" -> Route.Game2048
+                        else -> Route.GamesSelector
                     }
                     scope.launch { navigator.navigate(route) }
                 }

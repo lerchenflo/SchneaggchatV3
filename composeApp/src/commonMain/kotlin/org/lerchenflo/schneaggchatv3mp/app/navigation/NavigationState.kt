@@ -21,10 +21,10 @@ import androidx.savedstate.serialization.SavedStateConfiguration
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.serializer
 
 class NavigationState(
     val startRoute: NavKey,
+    val homeRoute: NavKey,
     topLevelRoute: MutableState<NavKey>,
     val backStacks: Map<NavKey, NavBackStack<NavKey>>
 ) {
@@ -32,10 +32,10 @@ class NavigationState(
 
     val stacksInUse: List<NavKey>
         //When navigating back always go to home destination
-        get() = if (topLevelRoute == startRoute) {
-            listOf(startRoute)
+        get() = if (topLevelRoute == homeRoute) {
+            listOf(homeRoute)
         } else {
-            listOf(startRoute, topLevelRoute)
+            listOf(homeRoute, topLevelRoute)
         }
 }
 
@@ -43,14 +43,15 @@ class NavigationState(
 @Composable
 fun rememberNavigationState(
     startRoute: NavKey,
+    homeRoute: NavKey,
     topLevelRoutes: Set<NavKey>
 ): NavigationState {
     val topLevelRoute = rememberSerializable(
-        startRoute, topLevelRoutes,
+        homeRoute, topLevelRoutes,
         configuration = backStackConfiguration,
         serializer = MutableStateSerializer(PolymorphicSerializer(NavKey::class))
     ) {
-        mutableStateOf(startRoute)
+        mutableStateOf(homeRoute)
     }
 
     val backStacks = topLevelRoutes.associateWith { key ->
@@ -60,9 +61,10 @@ fun rememberNavigationState(
         )
     }
 
-    return remember(startRoute, topLevelRoute) {
+    return remember(startRoute, homeRoute, topLevelRoute) {
         NavigationState(
             startRoute = startRoute,
+            homeRoute = homeRoute,
             topLevelRoute = topLevelRoute,
             backStacks = backStacks
         )
@@ -109,39 +111,30 @@ val backStackConfiguration = SavedStateConfiguration {
 
 
             //Games
-            subclass(Route.Games.GamesSelector::class, Route.Games.GamesSelector.serializer())
-            subclass(Route.Games.DartCounter::class, Route.Games.DartCounter.serializer())
-            subclass(Route.Games.Undercover::class, Route.Games.Undercover.serializer())
-            subclass(Route.Games.TowerStack::class, Route.Games.TowerStack.serializer())
-            subclass(Route.Games.Yatzi::class, Route.Games.Yatzi.serializer())
-            subclass(Route.Games.Tetris::class, Route.Games.Tetris.serializer())
-            subclass(Route.Games.Morse::class, Route.Games.Morse.serializer())
-            subclass(Route.Games.SchneaggaHus::class, Route.Games.SchneaggaHus.serializer())
-            subclass(Route.Games.GridRush::class, Route.Games.GridRush.serializer())
-            subclass(Route.Games.OddOneOut::class, Route.Games.OddOneOut.serializer())
-            subclass(Route.Games.Recap::class, Route.Games.Recap.serializer())
-            subclass(Route.Games.CoinFlip::class, Route.Games.CoinFlip.serializer())
-            subclass(Route.Games.FingerPicker::class, Route.Games.FingerPicker.serializer())
-            subclass(Route.Games.Game2048::class, Route.Games.Game2048.serializer())
+            subclass(Route.GamesSelector::class, Route.GamesSelector.serializer())
+            subclass(Route.DartCounter::class, Route.DartCounter.serializer())
+            subclass(Route.Undercover::class, Route.Undercover.serializer())
+            subclass(Route.TowerStack::class, Route.TowerStack.serializer())
+            subclass(Route.Yatzi::class, Route.Yatzi.serializer())
+            subclass(Route.Tetris::class, Route.Tetris.serializer())
+            subclass(Route.Morse::class, Route.Morse.serializer())
+            subclass(Route.SchneaggaHus::class, Route.SchneaggaHus.serializer())
+            subclass(Route.GridRush::class, Route.GridRush.serializer())
+            subclass(Route.OddOneOut::class, Route.OddOneOut.serializer())
+            subclass(Route.Recap::class, Route.Recap.serializer())
+            subclass(Route.CoinFlip::class, Route.CoinFlip.serializer())
+            subclass(Route.FingerPicker::class, Route.FingerPicker.serializer())
+            subclass(Route.Game2048::class, Route.Game2048.serializer())
 
 
             //Settings
-            subclass(Route.Settings.SettingsScreen::class, Route.Settings.SettingsScreen.serializer())
-            subclass(
-                Route.Settings.DeveloperSettings::class,
-                Route.Settings.DeveloperSettings.serializer()
-            )
-            subclass(Route.Settings.UserSettings::class, Route.Settings.UserSettings.serializer())
-            subclass(
-                Route.Settings.AppearanceSettings::class,
-                Route.Settings.AppearanceSettings.serializer()
-            )
-            subclass(Route.Settings.MiscSettings::class, Route.Settings.MiscSettings.serializer())
-            subclass(
-                Route.Settings.SchneaggmapSettings::class,
-                Route.Settings.SchneaggmapSettings.serializer()
-            )
-            subclass(Route.Settings.Roadmap::class, Route.Settings.Roadmap.serializer())
+            subclass(Route.SettingsScreen::class, Route.SettingsScreen.serializer())
+            subclass(Route.DeveloperSettings::class, Route.DeveloperSettings.serializer())
+            subclass(Route.UserSettings::class, Route.UserSettings.serializer())
+            subclass(Route.AppearanceSettings::class, Route.AppearanceSettings.serializer())
+            subclass(Route.MiscSettings::class, Route.MiscSettings.serializer())
+            subclass(Route.SchneaggmapSettings::class, Route.SchneaggmapSettings.serializer())
+            subclass(Route.Roadmap::class, Route.Roadmap.serializer())
         }
     }
 }
