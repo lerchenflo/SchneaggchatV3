@@ -334,16 +334,18 @@ fun App() {
                         .imePadding(),
                     bottomBar = {
 
-                        BottomAppBarSwipable(
-                            selectedKey = navigationState.topLevelRoute,
-                            onSelectKey = {
-                                scope.launch {
-                                    navigator.navigate(it)
-                                }
-                            },
-                            mobile = appRepository.appVersion.isMobile(),
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        if (navigationState.showNavBar) {
+                            BottomAppBarSwipable(
+                                selectedKey = navigationState.topLevelRoute,
+                                onSelectKey = {
+                                    scope.launch {
+                                        navigator.navigate(it)
+                                    }
+                                },
+                                mobile = appRepository.appVersion.isMobile(),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
 
                     }
 

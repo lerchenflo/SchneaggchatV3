@@ -23,7 +23,6 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 
 class NavigationState(
-    val startRoute: NavKey,
     val homeRoute: NavKey,
     topLevelRoute: MutableState<NavKey>,
     val backStacks: Map<NavKey, NavBackStack<NavKey>>
@@ -37,6 +36,12 @@ class NavigationState(
         } else {
             listOf(homeRoute, topLevelRoute)
         }
+
+    val currentRoute: NavKey
+        get() = backStacks[topLevelRoute]?.lastOrNull() ?: topLevelRoute
+
+    val showNavBar: Boolean
+        get() = currentRoute !in hiddenNavBarRoutes
 }
 
 
@@ -66,7 +71,6 @@ fun rememberNavigationState(
 
     return remember(startRoute, homeRoute, topLevelRoute) {
         NavigationState(
-            startRoute = startRoute,
             homeRoute = homeRoute,
             topLevelRoute = topLevelRoute,
             backStacks = backStacks
@@ -96,6 +100,33 @@ fun NavigationState.toEntries(
         .toMutableStateList()
 
 }
+
+
+private val authFlowRoutes: Set<NavKey> = setOf(
+    Route.AutoLoginCredChecker,
+    Route.Login,
+    Route.SignUp,
+    Route.EmailVerifiedCheck
+)
+
+private val gameRoutes: Set<NavKey> = setOf(
+    Route.DartCounter,
+    Route.Undercover,
+    Route.TowerStack,
+    Route.Yatzi,
+    Route.Tetris,
+    Route.Morse,
+    Route.SchneaggaHus,
+    Route.GridRush,
+    Route.OddOneOut,
+    Route.Recap,
+    Route.CoinFlip,
+    Route.FingerPicker,
+    Route.Game2048
+    // Note: Route.GamesSelector intentionally NOT included — navbar stays visible there
+)
+
+private val hiddenNavBarRoutes: Set<NavKey> = authFlowRoutes + gameRoutes
 
 val backStackConfiguration = SavedStateConfiguration {
     serializersModule = SerializersModule {
