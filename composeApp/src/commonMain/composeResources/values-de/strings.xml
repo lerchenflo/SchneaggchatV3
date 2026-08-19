@@ -651,7 +651,6 @@
     <string name="games_tower_stack_tap_to_start">Zum Starten tippen</string>
     <string name="games_tower_stack_instructions">Staple die Plattformen so hoch du kannst!\n\nTippe, um jede Plattform zu platzieren.\nPerfekte Ausrichtung erhöht deinen Punktestand.\nAlle 5 Punkte wird es schneller!</string>
     <string name="games_tower_stack_score">Punkte</string>
-    <string name="games_tower_stack_speed_up">⚡ Schneller!</string>
     <string name="games_tower_stack_tap_to_place">&#128070; Zum Platzieren tippen!</string>
 
     <!-- Games: Schneaggahus -->
@@ -674,9 +673,6 @@
     <string name="games_morse_clear">Löschen</string>
     <string name="games_morse_instructions">Drücke den großen Knopf, um Morsesignale zu senden: ein kurzer Druck ist ein Punkt (·), ein langer Druck ein Strich (−). Der Baum zeigt, zu welchem Buchstaben dein Code führt.\n\nTippe den angezeigten Text in Morsecode — jeder richtige Buchstabe bringt Punkte, nach 3 Fehlern ist das Spiel vorbei.</string>
 
-    <!-- Games: Flappy Snail -->
-    <string name="games_flappybird_title">Flappy Schneagg</string>
-    <string name="games_flappybird_instructions">Tippe auf den Bildschirm, um das Schneagga-Haus flattern zu lassen und durch die Lücken zwischen den Röhren zu navigieren!\n\nDu kannst sicher auf Türmen oder dem Boden landen — nur ein seitlicher Zusammenstoß mit einer Wand beendet den Versuch.</string>
 
     <!-- Recap -->
     <string name="recap_your_year">Dein Jahr</string>
