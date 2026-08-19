@@ -32,7 +32,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerS
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerViewModel
-import org.lerchenflo.schneaggchatv3mp.games.presentation.flappybird.FlappyBirdViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushViewmodel
@@ -178,7 +178,7 @@ val sharedmodule = module{
     viewModelOf(::MorseViewModel)
     viewModelOf(::CoinFlipViewModel)
     viewModelOf(::FingerPickerViewModel)
-    viewModelOf(::FlappyBirdViewModel)
+    viewModelOf(::Game2048ViewModel)
 
     viewModelOf(::SchneaggaHusViewmodel)
 

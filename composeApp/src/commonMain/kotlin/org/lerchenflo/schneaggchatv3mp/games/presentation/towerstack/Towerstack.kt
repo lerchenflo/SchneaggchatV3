@@ -1,5 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -129,6 +132,13 @@ private fun GameContent(
     onExit: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
+    val currentPlatformY = gameState.currentPlatform?.y ?: (gameState.platforms.lastOrNull()?.y ?: 450f)
+    val targetCameraOffsetY = (250f - currentPlatformY).coerceAtLeast(0f)
+    val cameraOffsetY by animateFloatAsState(
+        targetValue = targetCameraOffsetY,
+        animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
+        label = "towerCameraOffset"
+    )
     
     Box(
         modifier = Modifier.fillMaxSize()
@@ -153,7 +163,8 @@ private fun GameContent(
                     platform = platform,
                     color = color,
                     scaleX = scaleX,
-                    scaleY = scaleY
+                    scaleY = scaleY,
+                    cameraOffsetY = cameraOffsetY
                 )
             }
             
@@ -167,7 +178,8 @@ private fun GameContent(
                     platform = platform,
                     color = color,
                     scaleX = scaleX,
-                    scaleY = scaleY
+                    scaleY = scaleY,
+                    cameraOffsetY = cameraOffsetY
                 )
             }
         }
@@ -224,10 +236,11 @@ private fun DrawScope.drawRoundedPlatform(
     platform: Platform,
     color: Color,
     scaleX: Float,
-    scaleY: Float
+    scaleY: Float,
+    cameraOffsetY: Float = 0f
 ) {
     val scaledX = platform.x * scaleX
-    val scaledY = platform.y * scaleY
+    val scaledY = (platform.y + cameraOffsetY) * scaleY
     val scaledWidth = platform.width * scaleX
     val scaledHeight = maxOf(platform.height * scaleY, 4f) // Minimum thickness for visibility
     

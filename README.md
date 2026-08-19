@@ -27,7 +27,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Annas Theme
 - Reaktionszeitpunkt in Nachrichtendetails anzeigen
 - @game Annotations
-- Flappy Schneagg Spiel
+- 2048 Spiel
 - Schneaggmap: Anzahl zusammengefasster Freunde im Hock-Marker in der Mitte anzeigen
 - Schneaggmap: Eigenen Standort im Hock-Marker anzeigen (wenn im Radius) und eigenen Standort-Marker ausblenden 
 - Neue Schneaggmap-Standorttypen: Eis (Preis pro Kugel) und WiFi (SSID und Passwort)

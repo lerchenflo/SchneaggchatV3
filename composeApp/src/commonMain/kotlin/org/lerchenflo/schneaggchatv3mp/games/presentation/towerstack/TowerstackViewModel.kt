@@ -165,7 +165,7 @@ class TowerstackViewModel(
         }
 
         val accuracy = if (topPlatform.width > 0f) overlapWidth / topPlatform.width else 0f
-        val isNearPerfect = accuracy >= 0.97f
+        val isNearPerfect = accuracy >= 0.99f
         val updatedStreak = if (isNearPerfect) currentState.perfectStreak + 1 else 0
 
         val (finalX, finalWidth, remainingStreak) = if (updatedStreak >= 3) {
