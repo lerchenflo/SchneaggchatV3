@@ -1032,7 +1032,10 @@
 
     <string name="ttt_settings_wake">Wake up feature (Android only)</string>
     <string name="ttt_settings_wake_description">You can enable this feature to allow your friends to wake you up. Your phone will ring like with your alarm, even if silenced. If your friends have enabled this for you, you can wake them in the chat details.</string>
-    <string name="ttt_user_settings_go_back">Let's go back to the settings</string>
+
+    <string name="ttt_settings_privacy">privacy and security</string>
+    <string name="ttt_settings_privacy_description">Here you can manage your password, email, location sharing and wake settings.</string>
+    <string name="ttt_privacy_settings_go_back">Let's go back to the settings</string>
 
     <string name="ttt_settings_appearance">appearance settings</string>
     <string name="ttt_settings_appearance_description">Here you can change your language (Austrian, German, English) and your theme.</string>
@@ -1086,9 +1089,9 @@
     <string name="download">Download</string>
 
     <!-- Settings Group Headers -->
-    <string name="settings_group_personalization">Preferences</string>
-    <string name="settings_group_about">About &amp; Support</string>
-    <string name="settings_group_developer">Advanced</string>
+    
+    
+    
 
     <string name="appearance_group_general">Display &amp; Language</string>
     <string name="appearance_group_chat">Chat Appearance</string>

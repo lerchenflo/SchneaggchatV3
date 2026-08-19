@@ -180,7 +180,8 @@ fun SettingsScreen(
             icon = Icons.Default.Security,
             text = stringResource(Res.string.privacy_and_security),
             subtext = stringResource(Res.string.privacy_and_security_info),
-            onClick = navigatePrivacyAndSecurity
+            onClick = navigatePrivacyAndSecurity,
+            modifier = Modifier.tapTarget("settings_privacy")
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
