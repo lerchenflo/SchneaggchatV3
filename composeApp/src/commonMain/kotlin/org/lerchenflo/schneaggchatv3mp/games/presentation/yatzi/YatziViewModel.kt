@@ -171,10 +171,10 @@ class YatziViewModel : ViewModel() {
             YatziCategory.SIXES -> counts.getOrElse(6) { 0 } * 6
             
             YatziCategory.ONE_PAIR -> {
-                10
+                if (counts.any { it.value >= 2 }) 10 else 0
             }
             YatziCategory.TWO_PAIRS -> {
-                20
+                if (counts.filter { it.value >= 2 }.size >= 2) 20 else 0
             }
             YatziCategory.THREE_OF_A_KIND -> {
                 val three = counts.filter { it.value >= 3 }.keys.firstOrNull()

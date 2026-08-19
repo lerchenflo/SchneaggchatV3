@@ -280,8 +280,17 @@ class TetrisViewModel(
         return _state.value.canPlace(piece, row, col)
     }
 
+    private var ignoreSoftDropUntilReset = false
+
     fun setSoftDropping(isSoftDropping: Boolean) {
-        _state.update { it.copy(isSoftDropping = isSoftDropping) }
+        if (isSoftDropping) {
+            if (!ignoreSoftDropUntilReset) {
+                _state.update { it.copy(isSoftDropping = true) }
+            }
+        } else {
+            ignoreSoftDropUntilReset = false
+            _state.update { it.copy(isSoftDropping = false) }
+        }
     }
 
     private fun lockPiece() {
@@ -291,6 +300,7 @@ class TetrisViewModel(
         
         // Reset soft dropping when piece lands
         if (currentState.isSoftDropping) {
+            ignoreSoftDropUntilReset = true
             _state.update { it.copy(isSoftDropping = false) }
         }
         
