@@ -39,10 +39,9 @@ class EventsViewModel(
     fun onAction(action: EventsAction) {
         when (action) {
             is EventsAction.OnEventClick -> {
+                val clickedEvent = state.value.events.firstOrNull { it.id == action.eventId }
                 _state.update { currentState ->
-                    currentState.copy(
-                        selectedEvent = currentState.events.firstOrNull { it.id == action.eventId }
-                    )
+                    currentState.copy(selectedEvent = clickedEvent)
                 }
             }
 

@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventBottomPopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 
 @Composable
@@ -67,11 +68,11 @@ fun EventsScreen(
                 )
             }
         }
-    ) { _ ->
+    ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(
@@ -96,25 +97,7 @@ fun EventsScreen(
     }
 }
 
-@Composable
-fun EventBottomPopup(
-    event: Event,
-    onSave: (Event) -> Unit,
-    onDismiss: () -> Unit,
-    onJoin: (String) -> Unit,
-) {
-    ModalBottomSheet(
-        onDismissRequest = {
-            onDismiss()
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) {
-        //Entry details
-        Text(text = "TODO")
 
-        //TODO: On save entry
-    }
-}
 
 @Composable
 private fun EventItem(

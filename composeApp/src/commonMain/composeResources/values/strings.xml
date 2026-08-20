@@ -278,6 +278,7 @@
     <string name="friend_birthday_noti_title">%1$s has birthday today! &#127874;</string>
     <string name="friend_birthday_noti_body">Don't forget to congratulate them!</string>
 
+    <string name="new_event_noti_title">%1$s created a new event</string>
 
     <string name="tooltip_username">Choose a unique username others will see</string>
     <string name="tooltip_email">Used for account recovery and deletion</string>
