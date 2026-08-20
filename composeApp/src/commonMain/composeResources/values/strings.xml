@@ -18,6 +18,7 @@
     <string name="groupsync">groupdata</string>
     <string name="messagesync">messages</string>
     <string name="mapsync">map entrys</string>
+    <string name="eventssync">events</string>
     <string name="mediasync">media</string>
 
     <string name="status_infotext">This status is available to all your friends. Currently, it is not set.</string>

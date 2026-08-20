@@ -12,14 +12,15 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.SnailTrailPointDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
+import org.lerchenflo.schneaggchatv3mp.events.data.dtos.EventDto
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MapEntryDto
 
 
 @Database(
-    entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, LogEntry::class, PlayerEntity::class, MapEntryDto::class, SnailTrailPointDto::class],
+    entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, LogEntry::class, PlayerEntity::class, MapEntryDto::class, SnailTrailPointDto::class, EventDto::class],
     exportSchema = true,
-    version = 67
+    version = 68
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -38,6 +39,8 @@ abstract class AppDatabase: RoomDatabase() {
     abstract fun playerDao(): PlayerDao
 
     abstract fun mapEntryDao(): MapEntryDao
+
+    abstract fun eventDao(): EventDao
 
     abstract fun snailTrailDao(): SnailTrailDao
 

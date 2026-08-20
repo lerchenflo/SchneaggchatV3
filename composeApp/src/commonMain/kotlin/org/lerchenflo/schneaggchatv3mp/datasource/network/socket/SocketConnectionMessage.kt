@@ -16,9 +16,12 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
+import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
@@ -61,6 +64,14 @@ sealed interface SocketConnectionMessage {
     @SerialName("mapchange")
     data class MapChange(
         val mapEntry: MapEntryResponse,
+        val newEntry: Boolean,
+        val deleted: Boolean,
+    ) : SocketConnectionMessage
+
+    @Serializable
+    @SerialName("eventchange")
+    data class EventChange(
+        val event: EventResponse,
         val newEntry: Boolean,
         val deleted: Boolean,
     ) : SocketConnectionMessage
@@ -149,6 +160,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
     val messageRepository = KoinPlatform.getKoin().get<MessageRepository>()
     val groupRepository = KoinPlatform.getKoin().get<GroupRepository>()
     val mapRepository = KoinPlatform.getKoin().get<MapRepository>()
+    val eventRepository = KoinPlatform.getKoin().get<EventRepository>()
 
     try {
         val socketMessage = AppJson.instance.decodeFromString<SocketConnectionMessage>(message)
@@ -390,6 +402,14 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     mapRepository.deleteMapEntry(socketMessage.mapEntry.id)
                 } else {
                     mapRepository.upsertMapEntry(socketMessage.mapEntry.toMapEntry())
+                }
+            }
+
+            is SocketConnectionMessage.EventChange -> {
+                if (socketMessage.deleted) {
+                    eventRepository.deleteEvent(socketMessage.event.id)
+                } else {
+                    eventRepository.upsertEvent(socketMessage.event.toEvent())
                 }
             }
 

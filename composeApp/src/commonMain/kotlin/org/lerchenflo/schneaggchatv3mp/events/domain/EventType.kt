@@ -1,5 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.events.domain
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class EventType {
     // Existing
     SPORT,

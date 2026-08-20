@@ -28,9 +28,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonObject
 import org.jetbrains.compose.resources.getString
 import org.koin.core.qualifier.named
 import org.koin.mp.KoinPlatform
@@ -65,6 +62,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toUser
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.ChatFilter
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.EVENTS
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.GROUPS
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.MAP
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.DataSyncJobType.MESSAGES
@@ -91,10 +89,13 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteR
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GithubIssueDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toDomainMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toEvent
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
@@ -104,6 +105,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
+import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
@@ -122,6 +125,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
 import schneaggchatv3mp.composeapp.generated.resources.error_invalid_credentials
+import schneaggchatv3mp.composeapp.generated.resources.eventssync
 import schneaggchatv3mp.composeapp.generated.resources.groupsync
 import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
 import schneaggchatv3mp.composeapp.generated.resources.mapsync
@@ -150,6 +154,7 @@ class AppRepository(
     val appVersion: AppVersion,
     private val loggingRepository: LoggingRepository,
     private val mapRepository: MapRepository,
+    private val eventRepository: EventRepository,
 ) {
     //Errorchannel for global error events (Show in every screen)
     object ErrorChannel {
@@ -307,6 +312,7 @@ class AppRepository(
         GROUPS,
         MESSAGES,
         MAP,
+        EVENTS,
 
         MEDIA;
 
@@ -316,6 +322,7 @@ class AppRepository(
                 GROUPS -> UiText.StringResourceText(Res.string.groupsync)
                 MESSAGES -> UiText.StringResourceText(Res.string.messagesync)
                 MAP -> UiText.StringResourceText(Res.string.mapsync)
+                EVENTS -> UiText.StringResourceText(Res.string.eventssync)
                 MEDIA -> UiText.StringResourceText(Res.string.mediasync)
             }
         }
@@ -333,6 +340,7 @@ class AppRepository(
         val jobs: List<DataSyncJobState> = listOf(
             DataSyncJobState(type = USERS), DataSyncJobState(type = GROUPS),
             DataSyncJobState(type = MESSAGES), DataSyncJobState(type = MAP),
+            DataSyncJobState(type = EVENTS),
             DataSyncJobState(type = DataSyncJobType.MEDIA)
         )
     )
@@ -483,8 +491,31 @@ class AppRepository(
                         }
                     }
 
+                    val eventJob = async {
+                        try {
+                            updateSyncJob(
+                                type = EVENTS,
+                                status = DataSyncJobStatus.RUNNING,
+                                error = null
+                            )
+                            eventIdSync()
+                            updateSyncJob(
+                                type = EVENTS,
+                                status = DataSyncJobStatus.SUCCESS,
+                                error = null
+                            )
+                        } catch (e: Exception) {
+                            updateSyncJob(
+                                type = EVENTS,
+                                status = DataSyncJobStatus.FAILED,
+                                error = e.message
+                            )
+                            loggingRepository.logWarning("Event sync failed: ${e.message}")
+                        }
+                    }
+
                     // Wait for all to complete (errors are already handled)
-                    awaitAll(userJob, messageJob, groupJob, mapJob)
+                    awaitAll(userJob, messageJob, groupJob, mapJob, eventJob)
 
                     try {
                         updateSyncJob(
@@ -590,6 +621,83 @@ class AppRepository(
             is NetworkResult.Error<*> -> false
             is NetworkResult.Success<*> -> {
                 mapRepository.deleteMapEntry(entryId)
+                true
+            }
+        }
+    }
+
+    // ─── Event sync ───────────────────────────────────────────────────────────
+
+    private suspend fun eventIdSync() {
+        val userId = SessionCache.requireLoggedIn() ?: return
+
+        val localEntries = eventRepository.getEventChangeIds()
+        var currentPage = 0
+        var moreEntries = true
+        while (moreEntries) {
+            val response = networkUtils.eventSync(
+                entries = localEntries.map { IdTimeStamp(it.id, it.updatedAt) },
+                page = currentPage,
+            )
+            when (response) {
+                is NetworkResult.Error<*> -> { println("Event sync error: ${response.error}"); break }
+                is NetworkResult.Success -> {
+                    response.data.updatedEvents.forEach { eventRepository.upsertEvent(it.toEvent()) }
+                    response.data.deletedEvents.forEach { eventRepository.deleteEvent(it) }
+                    moreEntries = response.data.moreEntries
+                }
+            }
+            currentPage++
+        }
+    }
+
+    // ─── Event CRUD ───────────────────────────────────────────────────────────
+    // WS broadcast handles local DB upsert/delete automatically after server write.
+
+    suspend fun upsertEvent(
+        eventId: String?,
+        type: EventType,
+        title: String,
+        description: String,
+        groupId: String,
+        location: LatLong?,
+        startDate: Long,
+        closeDate: Long,
+        invitedUsers: List<String>,
+        acceptedUsers: List<String>,
+        public: Boolean,
+    ) {
+        val result = networkUtils.upsertEvent(
+            EventRequest(
+                eventId = eventId,
+                type = type,
+                title = title,
+                description = description,
+                groupId = groupId,
+                location = location,
+                startDate = startDate,
+                closeDate = closeDate,
+                invitedUsers = invitedUsers,
+                acceptedUsers = acceptedUsers,
+                public = public,
+            )
+        )
+
+        when (result) {
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+            }
+            is NetworkResult.Success<EventResponse> -> {
+                eventRepository.upsertEvent(result.data.toEvent())
+            }
+        }
+    }
+
+    suspend fun deleteEvent(eventId: String): Boolean {
+        return when (networkUtils.deleteEvent(eventId)) {
+            is NetworkResult.Error<*> -> false
+            is NetworkResult.Success<*> -> {
+                eventRepository.deleteEvent(eventId)
                 true
             }
         }
