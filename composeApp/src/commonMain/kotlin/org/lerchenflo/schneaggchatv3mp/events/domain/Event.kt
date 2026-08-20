@@ -13,7 +13,7 @@ data class Event(
 
     val groupId: String, //Group connected to this event
     val location: LatLong?, //Optional Location
-    val startDate: Long?,
+    val startDate: Long,
     val closeDate: Long?,
 
     val invitedUsers: List<String>,

@@ -14,7 +14,7 @@ data class EventDto(
     val description: String,
     val groupId: String,
     val location: LatLong?,
-    val startDate: Long?,
+    val startDate: Long,
     val closeDate: Long?,
     val invitedUsers: List<String>,
     val public: Boolean,
