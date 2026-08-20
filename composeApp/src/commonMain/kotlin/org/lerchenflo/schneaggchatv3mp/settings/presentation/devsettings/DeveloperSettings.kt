@@ -6,6 +6,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material3.DividerDefaults
@@ -94,6 +95,15 @@ fun DeveloperSettings(
                 subtext = null,
                 onClick = {
                     devSettingsViewModel.navigateRecap()
+                }
+            )
+
+            SettingsOption(
+                icon = Icons.Default.DateRange,
+                text = "Events",
+                subtext = null,
+                onClick = {
+                    devSettingsViewModel.navigateEvents()
                 }
             )
 

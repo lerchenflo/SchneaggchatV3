@@ -59,6 +59,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSe
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.privacyandsecurity.PrivacyAndSecurityViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettingsViewModel
+import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsViewModel
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 
 enum class HTTPCLIENTTYPE {
@@ -203,4 +204,5 @@ val sharedmodule = module{
     viewModelOf(::SchneaggmapSettingsViewModel)
 
     viewModelOf(::RoadmapViewModel)
+    viewModelOf(::EventsViewModel)
 }

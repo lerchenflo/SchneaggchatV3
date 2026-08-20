@@ -1082,6 +1082,7 @@
     <string name="navbar_chats">chats</string>
     
     <string name="navbar_map">map</string>
+    <string name="navbar_events">events</string>
     <string name="navbar_games">games</string>
 
     <string name="new_version_available">New version available: %1$s</string>

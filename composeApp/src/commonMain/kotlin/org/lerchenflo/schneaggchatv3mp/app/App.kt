@@ -72,6 +72,7 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.autologincredchecker.A
 import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginScreen
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoot
+import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsRoot
 import org.lerchenflo.schneaggchatv3mp.roadmap.presentation.RoadmapScreen
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
@@ -105,6 +106,7 @@ fun App() {
 
     val globalViewModel = koinInject<GlobalViewModel>() //Init instantly for flow collections to start correctly
 
+    val isDeveloper by preferenceManager.getDevSettingsFlow().collectAsStateWithLifecycle(false)
 
     // Apply saved language on app startup
     LaunchedEffect(Unit) {
@@ -346,6 +348,7 @@ fun App() {
                                     }
                                 },
                                 mobile = appRepository.appVersion.isMobile(),
+                                developer = isDeveloper,
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
@@ -504,6 +507,10 @@ fun App() {
                                             roadmapViewModel = koinInject(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
+                                    }
+
+                                    entry<Route.Events> {
+                                        EventsRoot()
                                     }
 
 

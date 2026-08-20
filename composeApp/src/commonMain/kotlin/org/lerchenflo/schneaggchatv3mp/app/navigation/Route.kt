@@ -33,6 +33,10 @@ sealed interface Route : NavKey {
     @Serializable
     data class Schneaggmap(val initialEntryId: String? = null): Route
 
+    // EVENTS
+    @Serializable
+    data object Events: Route
+
 
 
 
