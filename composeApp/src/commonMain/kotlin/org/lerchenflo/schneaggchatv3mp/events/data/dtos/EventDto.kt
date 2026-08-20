@@ -20,6 +20,7 @@ data class EventDto(
     val public: Boolean,
     val createdAt: Long,
     val updatedAt: Long,
-    val updatedBy: String = "",
-    val updatedByName: String = "",
+    val updatedBy: String,
+    val creatorName: String
+
 )

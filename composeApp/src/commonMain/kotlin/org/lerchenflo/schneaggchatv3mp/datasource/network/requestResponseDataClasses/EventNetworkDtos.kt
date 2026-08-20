@@ -19,8 +19,9 @@ data class EventResponse(
     val public: Boolean,
     val createdAt: Long = 0L,
     val updatedAt: Long = 0L,
-    val updatedBy: String = "",
-    val updatedByName: String = "",
+    val updatedBy: String,
+    val creatorName: String
+
 )
 
 @Serializable

@@ -20,7 +20,7 @@ fun EventResponse.toEvent(): Event = Event(
     createdAt = createdAt,
     updatedAt = updatedAt,
     updatedBy = updatedBy,
-    updatedByName = updatedByName,
+    creatorName = creatorName
 )
 
 fun Event.toDto(): EventDto = EventDto(
@@ -38,7 +38,7 @@ fun Event.toDto(): EventDto = EventDto(
     createdAt = createdAt,
     updatedAt = updatedAt,
     updatedBy = updatedBy,
-    updatedByName = updatedByName,
+    creatorName = creatorName
 )
 
 fun EventDto.toEvent(): Event = Event(
@@ -56,7 +56,7 @@ fun EventDto.toEvent(): Event = Event(
     createdAt = createdAt,
     updatedAt = updatedAt,
     updatedBy = updatedBy,
-    updatedByName = updatedByName,
+    creatorName = creatorName
 )
 
 fun EventResponse.toDto(): EventDto = toEvent().toDto()
