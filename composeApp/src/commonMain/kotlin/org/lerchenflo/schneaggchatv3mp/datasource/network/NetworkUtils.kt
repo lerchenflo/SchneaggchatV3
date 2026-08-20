@@ -32,15 +32,19 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventJoinRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GameScoreResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GithubIssueDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GlobalRankingResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.HighscoresResponse
-import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoreRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoreRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
@@ -1211,6 +1215,42 @@ class NetworkUtils(
 
     suspend fun deleteMapEntry(entryId: String): NetworkResult<Unit, NetworkError> {
         return safeDelete(endpoint = "/map/delete?entryid=$entryId")
+    }
+
+    // ─── Events ───────────────────────────────────────────────────────────────
+
+    suspend fun eventSync(
+        entries: List<IdTimeStamp>,
+        page: Int,
+    ): NetworkResult<EventSyncResponse, NetworkError> {
+        return safePost(
+            endpoint = "/events/sync?page=$page&page_size=400",
+            body = entries,
+        )
+    }
+
+    suspend fun upsertEvent(
+        request: EventRequest,
+    ): NetworkResult<EventResponse, NetworkError> {
+        return safePost(
+            endpoint = "/events/upsert",
+            body = request,
+        )
+    }
+
+    suspend fun joinEvent(
+        eventId: String
+    ): NetworkResult<Boolean, NetworkError> {
+        return safePost(
+            endpoint = "/events/join",
+            body = EventJoinRequest(
+                eventId = eventId
+            ),
+        )
+    }
+
+    suspend fun deleteEvent(eventId: String): NetworkResult<Unit, NetworkError> {
+        return safeDelete(endpoint = "/events/delete?eventid=$eventId")
     }
 
     // Location data itself is now pushed/pulled over the WebSocket (see SocketConnectionMessage:

@@ -17,6 +17,7 @@ enum NotificationStringKey: String {
     case ownBirthdayBody
     case friendBirthdayTitle
     case friendBirthdayBody
+    case newEventTitle
 }
 
 enum NotificationStrings {
@@ -54,6 +55,7 @@ enum NotificationStrings {
         .ownBirthdayBody: "Wishing you a wonderful day!",
         .friendBirthdayTitle: "%1$@ has birthday today! 🎂",
         .friendBirthdayBody: "Don't forget to congratulate them!",
+        .newEventTitle: "%1$@ created a new event",
     ]
 
     private static let germanStrings: [NotificationStringKey: String] = [
@@ -73,6 +75,7 @@ enum NotificationStrings {
         .ownBirthdayBody: "Alles Liebe und einen schönen Tag!",
         .friendBirthdayTitle: "%1$@ hat heute Geburtstag! 🎂",
         .friendBirthdayBody: "Vergiss nicht zu gratulieren!",
+        .newEventTitle: "%1$@ hat ein neues Event erstellt",
     ]
 
     private static let austrianGermanStrings: [NotificationStringKey: String] = [
@@ -92,5 +95,6 @@ enum NotificationStrings {
         .ownBirthdayBody: "Viel Spaß und an schöna Tag!",
         .friendBirthdayTitle: "%1$@ hot hüt Geburtstag! 🎂",
         .friendBirthdayBody: "Vergiss ned zum gratuliera!",
+        .newEventTitle: "%1$@ hot a neus Event erstellt",
     ]
 }

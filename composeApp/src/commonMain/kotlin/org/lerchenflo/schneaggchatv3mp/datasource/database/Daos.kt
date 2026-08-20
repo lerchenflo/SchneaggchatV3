@@ -19,6 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.events.data.dtos.EventDto
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MapEntryDto
 
@@ -264,6 +265,9 @@ interface AllDatabaseDao {
     @Query("DELETE FROM map_entries")
     suspend fun clearMapEntries()
 
+    @Query("DELETE FROM events")
+    suspend fun clearEvents()
+
 
     @Transaction
     suspend fun clearAll() {
@@ -275,6 +279,7 @@ interface AllDatabaseDao {
         clearGroupMembers()
         clearGroups()
         clearMapEntries()
+        clearEvents()
     }
 }
 
@@ -291,6 +296,22 @@ interface MapEntryDao {
     fun getAllFlow(): Flow<List<MapEntryDto>>
 
     @Query("DELETE FROM map_entries WHERE id = :id")
+    suspend fun delete(id: String)
+}
+
+@Dao
+interface EventDao {
+
+    @Upsert
+    suspend fun upsert(dto: EventDto)
+
+    @Query("SELECT id, updatedAt FROM events")
+    suspend fun getEventIdsWithChangeDates(): List<IdChangeDate>
+
+    @Query("SELECT * FROM events")
+    fun getAllFlow(): Flow<List<EventDto>>
+
+    @Query("DELETE FROM events WHERE id = :id")
     suspend fun delete(id: String)
 }
 

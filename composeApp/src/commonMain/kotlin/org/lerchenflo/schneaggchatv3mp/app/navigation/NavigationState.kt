@@ -150,6 +150,7 @@ val backStackConfiguration = SavedStateConfiguration {
             subclass(Route.EmailVerifiedCheck::class, Route.EmailVerifiedCheck.serializer())
             subclass(Route.ChatDetails::class, Route.ChatDetails.serializer())
             subclass(Route.Schneaggmap::class, Route.Schneaggmap.serializer())
+            subclass(Route.Events::class, Route.Events.serializer())
 
 
             //Games

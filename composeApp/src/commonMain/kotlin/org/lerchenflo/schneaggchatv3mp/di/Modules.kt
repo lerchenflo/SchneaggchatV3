@@ -47,6 +47,8 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.autologincredchecker.A
 import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.EmailVerifiedCheckViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
+import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsViewModel
 import org.lerchenflo.schneaggchatv3mp.roadmap.presentation.RoadmapViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewModel
@@ -92,7 +94,7 @@ val sharedmodule = module{
 
     //Repository
     single {
-        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
+        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     singleOf(::SettingsRepository)
     singleOf(::GroupRepository)
@@ -100,6 +102,7 @@ val sharedmodule = module{
     singleOf(::MessageRepository)
     singleOf(::LoggingRepository)
     singleOf(::MapRepository)
+    singleOf(::EventRepository)
     singleOf(::GameHighscoreRepository)
     singleOf(::PlayerRepository)
 
@@ -203,4 +206,5 @@ val sharedmodule = module{
     viewModelOf(::SchneaggmapSettingsViewModel)
 
     viewModelOf(::RoadmapViewModel)
+    viewModelOf(::EventsViewModel)
 }

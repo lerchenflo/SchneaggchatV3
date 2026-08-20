@@ -5,6 +5,7 @@ enum DecodedNotification {
     case friendRequest(requesterName: String, accepted: Bool)
     case system(title: String, message: String)
     case birthday(birthdayUserName: String, ownBirthday: Bool)
+    case event(eventTitle: String, creatorName: String)
 }
 
 enum MessageType: String {
@@ -47,6 +48,11 @@ enum NotificationPayloadDecoder {
             return .birthday(
                 birthdayUserName: payload["birthdayUserName"] ?? "",
                 ownBirthday: parseBool(payload["ownBirthday"])
+            )
+        case "event":
+            return .event(
+                eventTitle: payload["eventTitle"] ?? "",
+                creatorName: payload["creatorName"] ?? ""
             )
         default:
             return nil

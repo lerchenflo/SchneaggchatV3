@@ -15,6 +15,7 @@ fun BottomAppBarSwipable(
     selectedKey: NavKey,
     onSelectKey: (NavKey) -> Unit,
     mobile: Boolean,
+    developer: Boolean,
     modifier: Modifier = Modifier
 ) {
     BottomAppBar(
@@ -26,7 +27,7 @@ fun BottomAppBarSwipable(
 
             if (data.mobileOnly && !mobile) return@forEach //Return if this bottom nav entry is only for mobile and the user is on pc
 
-            if (data.showOnlyWhenSelected && !selected) return@forEach //Settings are only shown when the user has opened them, do not show otherwise
+            if (data.showOnlyWhenSelected && !selected && !developer) return@forEach //Settings are only shown when the user has opened them, do not show otherwise
 
             NavigationBarItem(
                 modifier = Modifier.tapTarget(data.id),

@@ -126,6 +126,12 @@ class NotificationService: UNNotificationServiceExtension {
                 NotificationStrings.get(.friendBirthdayTitle, language: language, birthdayUserName),
                 NotificationStrings.get(.friendBirthdayBody, language: language)
             )
+
+        case let .event(eventTitle, creatorName):
+            return (
+                NotificationStrings.get(.newEventTitle, language: language, creatorName),
+                eventTitle
+            )
         }
     }
 }

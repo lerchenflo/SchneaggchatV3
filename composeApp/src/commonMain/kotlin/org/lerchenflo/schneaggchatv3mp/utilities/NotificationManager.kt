@@ -34,7 +34,8 @@ object NotificationManager {
         ERROR(1),
         SERVERMESSAGE(2),
         FRIEND_REQUEST(3),
-        BIRTHDAY(4)
+        BIRTHDAY(4),
+        EVENT(5),
     }
 
     fun showNotification(titletext: String, bodytext: String, notiId: NotiId) {

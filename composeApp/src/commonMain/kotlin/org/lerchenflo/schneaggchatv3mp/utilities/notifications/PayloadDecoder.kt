@@ -45,6 +45,14 @@ sealed interface DecodedNotification {
     ) : DecodedNotification {
         val isGroupWake: Boolean get() = groupId.isNotEmpty()
     }
+
+    /** A new event was created that this user is invited to. */
+    data class Event(
+        val eventId: String,
+        val eventTitle: String,
+        val creatorId: String,
+        val creatorName: String,
+    ) : DecodedNotification
 }
 
 object PayloadDecoder {
@@ -84,6 +92,12 @@ object PayloadDecoder {
                 groupName = data["groupName"] ?: "",
                 wokenUserCount = data["wokenUserCount"]?.toIntOrNull() ?: 1,
                 wokenDeviceCount = data["wokenDeviceCount"]?.toIntOrNull() ?: 1,
+            )
+            "event" -> DecodedNotification.Event(
+                eventId = data["eventId"] ?: return null,
+                eventTitle = data["eventTitle"] ?: "",
+                creatorId = data["creatorId"] ?: "",
+                creatorName = data["creatorName"] ?: "",
             )
             else -> null
         }

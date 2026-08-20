@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 
@@ -52,10 +53,25 @@ class RoomTypeConverters {
         json.decodeFromString(value)
 
     @TypeConverter
-    fun latLongToString(latLong: LatLong): String =
-        json.encodeToString(LatLong.serializer(), latLong)
+    fun latLongToString(latLong: LatLong?): String? =
+        latLong?.let { json.encodeToString(LatLong.serializer(), it) }
 
     @TypeConverter
-    fun stringToLatLong(value: String): LatLong =
-        json.decodeFromString(LatLong.serializer(), value)
+    fun stringToLatLong(value: String?): LatLong? =
+        value?.let { json.decodeFromString(LatLong.serializer(), it) }
+
+    @TypeConverter
+    fun eventTypeToString(type: EventType): String = type.name
+
+    @TypeConverter
+    fun stringToEventType(value: String): EventType =
+        runCatching { EventType.valueOf(value) }.getOrDefault(EventType.OTHER)
+
+    @TypeConverter
+    fun stringListToString(list: List<String>): String =
+        json.encodeToString(list)
+
+    @TypeConverter
+    fun stringToStringList(value: String): List<String> =
+        runCatching { json.decodeFromString<List<String>>(value) }.getOrDefault(emptyList())
 }

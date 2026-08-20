@@ -16,6 +16,7 @@ import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti_
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.new_message_reaction
+import schneaggchatv3mp.composeapp.generated.resources.new_event_noti_title
 import schneaggchatv3mp.composeapp.generated.resources.own_birthday_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.own_birthday_noti_title
 import schneaggchatv3mp.composeapp.generated.resources.poll
@@ -33,6 +34,7 @@ suspend fun resolveLocalizedContent(
     //Wakes never go through the normal notification path - the alarm service owns its own
     //foreground notification, so there is nothing for the Notifier to show.
     is DecodedNotification.Wake          -> null
+    is DecodedNotification.Event         -> resolveEvent(decoded)
 }
 
 private suspend fun resolveMessage(
@@ -142,5 +144,16 @@ private suspend fun resolveBirthday(
         id = NotificationManager.NotiIdType.BIRTHDAY.baseId,
         title = title,
         body = body,
+    )
+}
+
+private suspend fun resolveEvent(
+    decoded: DecodedNotification.Event,
+): NotificationContent {
+    val title = getString(Res.string.new_event_noti_title, decoded.creatorName)
+    return NotificationContent(
+        id = NotificationManager.NotiIdType.EVENT.baseId,
+        title = title,
+        body = decoded.eventTitle,
     )
 }
