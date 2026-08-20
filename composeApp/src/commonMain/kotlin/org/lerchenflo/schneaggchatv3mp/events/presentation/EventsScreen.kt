@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package org.lerchenflo.schneaggchatv3mp.events.presentation
 
 import androidx.compose.foundation.clickable
@@ -84,18 +86,33 @@ fun EventsScreen(
         }
         
         state.selectedEvent?.let {
-            ModalBottomSheet(
-                onDismissRequest = {
-                    onAction(EventsAction.OnEventPopupDismiss)
-                },
-                containerColor = MaterialTheme.colorScheme.background
-            ) {
-                //Entry details
-                Text(text = "TODO")
-
-                //TODO: On save entry
-            }
+            EventBottomPopup(
+                event = state.selectedEvent,
+                onSave = {onAction(EventsAction.OnCreateNewEventSave(it))},
+                onDismiss = { onAction(EventsAction.OnEventPopupDismiss) },
+                onJoin = {onAction(EventsAction.OnJoinEvent(it))}
+            )
         }
+    }
+}
+
+@Composable
+fun EventBottomPopup(
+    event: Event,
+    onSave: (Event) -> Unit,
+    onDismiss: () -> Unit,
+    onJoin: (String) -> Unit,
+) {
+    ModalBottomSheet(
+        onDismissRequest = {
+            onDismiss()
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) {
+        //Entry details
+        Text(text = "TODO")
+
+        //TODO: On save entry
     }
 }
 

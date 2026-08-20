@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -61,7 +62,6 @@ class EventsViewModel(
                             startDate = null,
                             closeDate = null,
                             invitedUsers = emptyList(),
-                            acceptedUsers = emptyList(),
                             public = false,
                             createdAt = now,
                             updatedAt = now,
@@ -74,6 +74,31 @@ class EventsViewModel(
                 _state.update { currentState ->
                     currentState.copy(
                         selectedEvent = null
+                    )
+                }
+            }
+
+            is EventsAction.OnCreateNewEventSave -> {
+                val event = action.event
+                viewModelScope.launch {
+                    appRepository.upsertEvent(
+                        eventId = null,
+                        type = event.type,
+                        title = event.title,
+                        description = event.description,
+                        groupId = "",
+                        location = event.location,
+                        startDate = event.startDate,
+                        closeDate = event.closeDate,
+                        invitedUsers = event.invitedUsers,
+                        public = event.public
+                    )
+                }
+            }
+            is EventsAction.OnJoinEvent -> {
+                viewModelScope.launch {
+                    appRepository.joinEvent(
+                        action.eventId
                     )
                 }
             }

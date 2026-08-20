@@ -13,10 +13,9 @@ data class EventResponse(
     val description: String,
     val groupId: String,
     val location: LatLong?,
-    val startDate: Long,
-    val closeDate: Long,
+    val startDate: Long?,
+    val closeDate: Long?,
     val invitedUsers: List<String>,
-    val acceptedUsers: List<String>,
     val public: Boolean,
     val createdAt: Long = 0L,
     val updatedAt: Long = 0L,
@@ -31,6 +30,11 @@ data class EventSyncResponse(
     val moreEntries: Boolean,
 )
 
+
+data class EventJoinRequest(
+    val eventId: String,
+)
+
 @Serializable
 data class EventRequest(
     val eventId: String?,
@@ -39,9 +43,8 @@ data class EventRequest(
     val description: String,
     val groupId: String,
     val location: LatLong?,
-    val startDate: Long,
-    val closeDate: Long,
+    val startDate: Long?,
+    val closeDate: Long?,
     val invitedUsers: List<String>,
-    val acceptedUsers: List<String>,
     val public: Boolean,
 )

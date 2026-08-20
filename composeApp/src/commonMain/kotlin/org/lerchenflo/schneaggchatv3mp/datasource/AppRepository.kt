@@ -661,10 +661,9 @@ class AppRepository(
         description: String,
         groupId: String,
         location: LatLong?,
-        startDate: Long,
-        closeDate: Long,
+        startDate: Long?,
+        closeDate: Long?,
         invitedUsers: List<String>,
-        acceptedUsers: List<String>,
         public: Boolean,
     ) {
         val result = networkUtils.upsertEvent(
@@ -678,7 +677,6 @@ class AppRepository(
                 startDate = startDate,
                 closeDate = closeDate,
                 invitedUsers = invitedUsers,
-                acceptedUsers = acceptedUsers,
                 public = public,
             )
         )
@@ -689,6 +687,15 @@ class AppRepository(
             }
             is NetworkResult.Success<EventResponse> -> {
                 eventRepository.upsertEvent(result.data.toEvent())
+            }
+        }
+    }
+
+    suspend fun joinEvent(eventId: String): Boolean {
+        return when (networkUtils.joinEvent(eventId)) {
+            is NetworkResult.Error<*> -> false
+            is NetworkResult.Success<*> -> {
+                true
             }
         }
     }

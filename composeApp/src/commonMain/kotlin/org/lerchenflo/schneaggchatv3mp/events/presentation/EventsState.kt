@@ -15,4 +15,8 @@ sealed interface EventsAction {
     data object OnCreateNewEventButtonClick: EventsAction
 
     data object OnEventPopupDismiss: EventsAction
+
+    data class OnCreateNewEventSave(val event: Event): EventsAction
+
+    data class OnJoinEvent(val eventId: String): EventsAction
 }

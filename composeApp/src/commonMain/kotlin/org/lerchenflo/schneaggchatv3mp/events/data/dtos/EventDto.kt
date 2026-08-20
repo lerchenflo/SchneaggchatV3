@@ -17,7 +17,6 @@ data class EventDto(
     val startDate: Long?,
     val closeDate: Long?,
     val invitedUsers: List<String>,
-    val acceptedUsers: List<String>,
     val public: Boolean,
     val createdAt: Long,
     val updatedAt: Long,
