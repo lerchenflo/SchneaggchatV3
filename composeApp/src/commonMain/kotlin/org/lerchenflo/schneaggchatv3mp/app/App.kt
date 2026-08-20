@@ -165,6 +165,8 @@ fun App() {
 
             when (action) {
                 is NavigationAction.Navigate -> {
+
+                    //Navigate
                     val destination = action.destination
 
                     // Top-level or flat route — navigate within current tab or switch tab
@@ -172,7 +174,7 @@ fun App() {
                         // It's a top-level tab key: reset that tab's backstack if requested,
                         // then switch to it. Always ensure at least the tab root is present.
                         val stack = navigationState.backStacks[destination]
-                        if (stack != null && navigationOptions.exitAllPreviousScreens) {
+                        if (stack != null && (navigationOptions.exitAllPreviousScreens || destination == Route.SettingsScreen)) { //Remove backstack for settings
                             stack.clear()
                             stack.add(destination) // tab root must always be present
                         }

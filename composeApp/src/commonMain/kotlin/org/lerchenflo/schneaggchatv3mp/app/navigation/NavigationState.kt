@@ -21,6 +21,7 @@ import androidx.savedstate.serialization.SavedStateConfiguration
 import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
+import kotlin.reflect.KClass
 
 class NavigationState(
     val homeRoute: NavKey,
@@ -41,7 +42,7 @@ class NavigationState(
         get() = backStacks[topLevelRoute]?.lastOrNull() ?: topLevelRoute
 
     val showNavBar: Boolean
-        get() = currentRoute !in hiddenNavBarRoutes
+        get() = currentRoute::class !in hiddenNavBarRoutes
 }
 
 
@@ -102,31 +103,38 @@ fun NavigationState.toEntries(
 }
 
 
-private val authFlowRoutes: Set<NavKey> = setOf(
-    Route.AutoLoginCredChecker,
-    Route.Login,
-    Route.SignUp,
-    Route.EmailVerifiedCheck
+private val authFlowRoutes: Set<KClass<out NavKey>> = setOf(
+    Route.AutoLoginCredChecker::class,
+    Route.Login::class,
+    Route.SignUp::class,
+    Route.EmailVerifiedCheck::class
 )
 
-private val gameRoutes: Set<NavKey> = setOf(
-    Route.DartCounter,
-    Route.Undercover,
-    Route.TowerStack,
-    Route.Yatzi,
-    Route.Tetris,
-    Route.Morse,
-    Route.SchneaggaHus,
-    Route.GridRush,
-    Route.OddOneOut,
-    Route.Recap,
-    Route.CoinFlip,
-    Route.FingerPicker,
-    Route.Game2048
-    // Note: Route.GamesSelector intentionally NOT included — navbar stays visible there
+private val gameRoutes: Set<KClass<out NavKey>> = setOf(
+    Route.DartCounter::class,
+    Route.Undercover::class,
+    Route.TowerStack::class,
+    Route.Yatzi::class,
+    Route.Tetris::class,
+    Route.Morse::class,
+    Route.SchneaggaHus::class,
+    Route.GridRush::class,
+    Route.OddOneOut::class,
+    Route.Recap::class,
+    Route.CoinFlip::class,
+    Route.FingerPicker::class,
+    Route.Game2048::class
 )
 
-private val hiddenNavBarRoutes: Set<NavKey> = authFlowRoutes + gameRoutes
+private val chatRoutes: Set<KClass<out NavKey>> = setOf(
+    Route.Chat::class,
+    Route.ChatDetails::class,
+    Route.NewChat::class,
+    Route.MessageChatSelector::class,
+    Route.GroupCreator::class
+)
+
+private val hiddenNavBarRoutes: Set<KClass<out NavKey>> = authFlowRoutes + gameRoutes + chatRoutes
 
 val backStackConfiguration = SavedStateConfiguration {
     serializersModule = SerializersModule {
