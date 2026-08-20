@@ -59,7 +59,7 @@ class EventsViewModel(
                             description = "",
                             groupId = "",
                             location = null,
-                            startDate = null,
+                            startDate = now,
                             closeDate = null,
                             invitedUsers = emptyList(),
                             public = false,

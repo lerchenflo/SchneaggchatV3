@@ -661,7 +661,7 @@ class AppRepository(
         description: String,
         groupId: String,
         location: LatLong?,
-        startDate: Long?,
+        startDate: Long,
         closeDate: Long?,
         invitedUsers: List<String>,
         public: Boolean,
