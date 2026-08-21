@@ -23,7 +23,8 @@ data class Event(
     val createdAt: Long,
     val updatedAt: Long,
     val updatedBy: String = "",
-    val updatedByName: String = "",
+    val creatorName: String
+
 ) {
     /*
     fun getDuration(): Long {

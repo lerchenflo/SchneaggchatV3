@@ -18,9 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.FriendShareDraft
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.WakePermissionDraft
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
-import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.password_change_failed
@@ -44,9 +42,6 @@ class PrivacyAndSecurityViewModel(
     var shareLocationGlobal by mutableStateOf(false)
         private set
 
-    var wakeEnabledGlobal by mutableStateOf(false)
-        private set
-
     var friends by mutableStateOf<List<User>>(emptyList())
         private set
 
@@ -60,11 +55,10 @@ class PrivacyAndSecurityViewModel(
                 }
                 .collect { value ->
                     shareLocationGlobal = value?.locationShared ?: false
-                    wakeEnabledGlobal = value?.wakeupEnabled ?: false
                 }
         }
 
-        viewModelScope.launch { // Friends for per-friend location & wake sharing
+        viewModelScope.launch { // Friends for per-friend location sharing
             appRepository.getFriendsFlow("")
                 .catch { exception ->
                     loggingRepository.logWarning("Problem getting friends for privacy settings: ${exception.message}")
@@ -72,33 +66,6 @@ class PrivacyAndSecurityViewModel(
                 .collect { value ->
                     friends = value
                 }
-        }
-    }
-
-    fun saveWakeSettings(newGlobal: Boolean, friendDrafts: List<WakePermissionDraft>) {
-        val wasGlobal = wakeEnabledGlobal
-        val currentByFriendId = friends.associate { it.id to it.wakeupEnabled }
-
-        viewModelScope.launch {
-            if (newGlobal != wasGlobal) {
-                appRepository.setWakeGlobal(newGlobal)
-            }
-
-            friendDrafts.forEach { draft ->
-                if (currentByFriendId[draft.friendId] != draft.allowWake) {
-                    appRepository.setWakePermission(draft.friendId, draft.allowWake)
-                }
-            }
-
-            if (newGlobal && !wasGlobal) {
-                requestFullScreenIntentPermissionIfNeeded()
-            }
-        }
-    }
-
-    private suspend fun requestFullScreenIntentPermissionIfNeeded() {
-        if (permissionManager.checkFullScreenIntentPermission() != PermissionState.GRANTED) {
-            permissionManager.requestFullScreenIntentPermission()
         }
     }
 

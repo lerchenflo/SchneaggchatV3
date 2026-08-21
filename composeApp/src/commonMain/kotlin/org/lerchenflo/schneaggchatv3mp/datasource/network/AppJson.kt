@@ -34,6 +34,7 @@ object AppJson {
             polymorphic(SocketConnectionMessage::class) {
                 subclass(SocketConnectionMessage.MessageChange::class)
                 subclass(SocketConnectionMessage.UserChange::class)
+                subclass(SocketConnectionMessage.EventChange::class)
                 subclass(SocketConnectionMessage.FriendRequest::class)
                 subclass(SocketConnectionMessage.MapChange::class)
                 subclass(SocketConnectionMessage.LocationUpdate::class)

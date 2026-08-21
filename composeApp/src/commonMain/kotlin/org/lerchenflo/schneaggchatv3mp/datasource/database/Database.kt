@@ -20,7 +20,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MapEntryDto
 @Database(
     entities = [UserDto::class, MessageDto::class, MessageReaderDto::class, GroupDto::class, GroupMemberDto::class, LogEntry::class, PlayerEntity::class, MapEntryDto::class, SnailTrailPointDto::class, EventDto::class],
     exportSchema = true,
-    version = 70
+    version = 71
 )
 
 @ConstructedBy(AppDatabaseConstructor::class)
@@ -53,6 +53,7 @@ abstract class AppDatabase: RoomDatabase() {
 }
 
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase>{
     override fun initialize(): AppDatabase
 }

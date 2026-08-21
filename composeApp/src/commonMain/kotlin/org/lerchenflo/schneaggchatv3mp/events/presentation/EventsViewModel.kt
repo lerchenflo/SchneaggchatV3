@@ -64,6 +64,7 @@ class EventsViewModel(
                             public = false,
                             createdAt = now,
                             updatedAt = now,
+                            creatorName = "",
                         )
                     )
                 }
@@ -77,11 +78,11 @@ class EventsViewModel(
                 }
             }
 
-            is EventsAction.OnCreateNewEventSave -> {
+            is EventsAction.OnSaveEvent -> {
                 val event = action.event
                 viewModelScope.launch {
                     appRepository.upsertEvent(
-                        eventId = null,
+                        eventId = if (event.id == "") null else event.id,
                         type = event.type,
                         title = event.title,
                         description = event.description,
@@ -91,6 +92,11 @@ class EventsViewModel(
                         closeDate = event.closeDate,
                         invitedUsers = event.invitedUsers,
                         public = event.public
+                    )
+                }
+                _state.update {
+                    it.copy(
+                        selectedEvent = null
                     )
                 }
             }

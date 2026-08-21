@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
 import android.Manifest
+import android.annotation.SuppressLint
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,7 +22,9 @@ object ActivityHolder {
     // Notification
     private var notificationPermissionLauncher: ActivityResultLauncher<String>? = null
     private var notificationPermissionDeferred: CompletableDeferred<PermissionState>? = null
+    private var notificationRationaleBeforeRequest = false
 
+    @SuppressLint("InlinedApi")
     fun set(activity: ComponentActivity) {
         currentActivity = activity
 
@@ -43,9 +46,18 @@ object ActivityHolder {
 
         notificationPermissionLauncher =
             activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-                notificationPermissionDeferred?.complete(
-                    if (granted) PermissionState.GRANTED else PermissionState.DENIED
+                val rationaleAfterRequest = activity.shouldShowRequestPermissionRationale(
+                    Manifest.permission.POST_NOTIFICATIONS
                 )
+
+                val result = when {
+                    granted -> PermissionState.GRANTED
+                    rationaleAfterRequest -> PermissionState.DENIED
+                    notificationRationaleBeforeRequest -> PermissionState.PERMANENTLY_DENIED
+                    else -> PermissionState.DENIED // very first-ever ask
+                }
+
+                notificationPermissionDeferred?.complete(result)
             }
     }
 
@@ -69,9 +81,28 @@ object ActivityHolder {
     }
 
     fun requestNotificationPermission(): CompletableDeferred<PermissionState> {
-        notificationPermissionDeferred = CompletableDeferred()
-        notificationPermissionLauncher?.launch(Manifest.permission.POST_NOTIFICATIONS)
-        return notificationPermissionDeferred!!
+        val deferred = CompletableDeferred<PermissionState>()
+        notificationPermissionDeferred = deferred
+
+        val launcher = notificationPermissionLauncher
+        if (launcher == null) {
+            deferred.completeExceptionally(
+                IllegalStateException("Notification permission launcher not registered")
+            )
+            return deferred
+        }
+
+        notificationRationaleBeforeRequest = currentActivity?.shouldShowRequestPermissionRationale(
+            Manifest.permission.POST_NOTIFICATIONS
+        ) ?: false
+
+        try {
+            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } catch (e: Exception) {
+            deferred.completeExceptionally(e)
+        }
+
+        return deferred
     }
 
     fun clear() {
@@ -82,6 +113,6 @@ object ActivityHolder {
         locationPermissionDeferred = null
         notificationPermissionLauncher = null
         notificationPermissionDeferred = null
+        notificationRationaleBeforeRequest = false
     }
 }
-

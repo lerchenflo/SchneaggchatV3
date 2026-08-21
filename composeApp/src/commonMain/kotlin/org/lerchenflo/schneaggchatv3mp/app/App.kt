@@ -79,6 +79,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.MiscSettings
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.notificationsettings.NotificationSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.privacyandsecurity.PrivacyAndSecuritySettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.SchneaggmapSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.UserSettings
@@ -303,7 +304,7 @@ fun App() {
                     // If already on the correct tab and the target is that tab's root screen,
                     // just reset the sub-backstack instead of pushing a duplicate.
                     if (targetRoute == activeStack?.firstOrNull()) {
-                        while ((activeStack.size ?: 0) > 1) {
+                        while ((activeStack.size) > 1) {
                             activeStack.removeAt(activeStack.size - 1)
                         }
                     } else {
@@ -442,10 +443,11 @@ fun App() {
                                             settingsViewmodel = koinInject(),
                                             sharedSettingsViewmodel = koinInject(), // see note below on scoping
                                             onBackClick = {
-                                                scope.launch { navigator.navigateBack() }
+                                                 scope.launch { navigator.navigateBack() }
                                             },
                                             navigateUserSettings = { scope.launch { navigator.navigate(Route.UserSettings) } },
                                             navigatePrivacyAndSecurity = { scope.launch { navigator.navigate(Route.PrivacyAndSecuritySettings) } },
+                                            navigateNotificationSettings = { scope.launch { navigator.navigate(Route.NotificationSettings) } },
                                             navigateDevSettings = { scope.launch { navigator.navigate(Route.DeveloperSettings) } },
                                             navigateAppearanceSettings = { scope.launch { navigator.navigate(Route.AppearanceSettings) } },
                                             navigateMiscSettings = { scope.launch { navigator.navigate(Route.MiscSettings) } },
@@ -473,6 +475,13 @@ fun App() {
                                         PrivacyAndSecuritySettings(
                                             viewModel = koinInject(),
                                             sharedSettingsViewmodel = koinInject(),
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.NotificationSettings> {
+                                        NotificationSettings(
+                                            viewModel = koinInject(),
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }

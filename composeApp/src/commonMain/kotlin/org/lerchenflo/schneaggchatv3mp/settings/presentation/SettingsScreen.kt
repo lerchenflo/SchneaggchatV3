@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Boy
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.outlined.Hexagon
@@ -57,6 +58,8 @@ import schneaggchatv3mp.composeapp.generated.resources.developer_setting_info
 import schneaggchatv3mp.composeapp.generated.resources.developer_settings
 import schneaggchatv3mp.composeapp.generated.resources.misc_setting_info
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings
+import schneaggchatv3mp.composeapp.generated.resources.notification_settings
+import schneaggchatv3mp.composeapp.generated.resources.notification_settings_info
 import schneaggchatv3mp.composeapp.generated.resources.privacy_and_security
 import schneaggchatv3mp.composeapp.generated.resources.privacy_and_security_info
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_settings
@@ -79,6 +82,7 @@ fun SettingsScreen(
     onBackClick: () -> Unit,
     navigateUserSettings: () -> Unit,
     navigatePrivacyAndSecurity: () -> Unit,
+    navigateNotificationSettings: () -> Unit,
     navigateDevSettings: () -> Unit,
     navigateMiscSettings: () -> Unit,
     navigateAppearanceSettings: () -> Unit,
@@ -182,6 +186,16 @@ fun SettingsScreen(
             subtext = stringResource(Res.string.privacy_and_security_info),
             onClick = navigatePrivacyAndSecurity,
             modifier = Modifier.tapTarget("settings_privacy")
+        )
+
+        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+        SettingsOption(
+            icon = Icons.Default.Notifications,
+            text = stringResource(Res.string.notification_settings),
+            subtext = stringResource(Res.string.notification_settings_info),
+            onClick = navigateNotificationSettings,
+            modifier = Modifier.tapTarget("settings_notifications")
         )
 
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
