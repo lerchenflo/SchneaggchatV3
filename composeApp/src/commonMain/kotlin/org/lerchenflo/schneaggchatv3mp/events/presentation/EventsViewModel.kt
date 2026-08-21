@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
@@ -111,10 +112,14 @@ class EventsViewModel(
             }
             is EventsAction.OnJoinEvent -> {
                 viewModelScope.launch {
-                    appRepository.joinEvent(
+                    val groupId = appRepository.joinEvent(
                         action.eventId
                     )
-                    //TODO: Datasync and join into
+
+                    if (groupId != null) {
+                        appRepository.dataSync("Started after joining event to get messages")
+                        navigator.navigate(Route.Chat(chatId = groupId, isGroup = true))
+                    }
                 }
             }
         }

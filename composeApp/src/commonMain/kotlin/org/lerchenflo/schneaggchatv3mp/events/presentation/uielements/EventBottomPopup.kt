@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.PublicOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -62,6 +64,8 @@ import schneaggchatv3mp.composeapp.generated.resources.event_created_by
 import schneaggchatv3mp.composeapp.generated.resources.event_description_label
 import schneaggchatv3mp.composeapp.generated.resources.event_has_end_time
 import schneaggchatv3mp.composeapp.generated.resources.event_join
+import schneaggchatv3mp.composeapp.generated.resources.event_private
+import schneaggchatv3mp.composeapp.generated.resources.event_public
 import schneaggchatv3mp.composeapp.generated.resources.event_starts_label
 import schneaggchatv3mp.composeapp.generated.resources.event_starts_with_date
 import schneaggchatv3mp.composeapp.generated.resources.event_title_label
@@ -302,6 +306,53 @@ fun EventBottomPopup(
                         text = stringResource(Res.string.event_closes_with_date, millisToString(closeDate, "dd.MM.yyyy HH:mm")),
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Public event
+            if (myEvent) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = if (currentEvent.public) Icons.Default.Public else Icons.Default.PublicOff,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(Res.string.event_public),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                        checked = currentEvent.public,
+                        onCheckedChange = { isPublic ->
+                            currentEvent = currentEvent.copy(public = isPublic)
+                        }
+                    )
+                }
+            } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = if (currentEvent.public) Icons.Default.Public else Icons.Default.PublicOff,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(if (currentEvent.public) Res.string.event_public else Res.string.event_private),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
             }

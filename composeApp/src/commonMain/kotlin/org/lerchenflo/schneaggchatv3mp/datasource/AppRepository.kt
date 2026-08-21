@@ -89,6 +89,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteR
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventJoinResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GithubIssueDto
@@ -132,6 +133,7 @@ import schneaggchatv3mp.composeapp.generated.resources.mapsync
 import schneaggchatv3mp.composeapp.generated.resources.mediasync
 import schneaggchatv3mp.composeapp.generated.resources.messagesync
 import schneaggchatv3mp.composeapp.generated.resources.usersync
+import kotlin.collections.map
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
 
@@ -691,11 +693,40 @@ class AppRepository(
         }
     }
 
-    suspend fun joinEvent(eventId: String): Boolean {
-        return when (networkUtils.joinEvent(eventId)) {
-            is NetworkResult.Error<*> -> false
-            is NetworkResult.Success<*> -> {
-                true
+    /**
+     * Joins the event, upserts the group belonging to the event and returns the group id
+     * @return The id of the group belonging to the event
+     */
+    suspend fun joinEvent(eventId: String): String? {
+        return when (val response = networkUtils.joinEvent(eventId)) {
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = response.error))
+                null
+            }
+            is NetworkResult.Success<EventJoinResponse> -> {
+                val groupResponse = response.data.groupResponse
+
+                groupRepository.upsertGroup(Group(
+                    id = groupResponse.id,
+                    name = groupResponse.name,
+                    profilePictureUrl = "",
+                    description = groupResponse.description,
+                    createDate = groupResponse.createdAt,
+                    updatedAt = groupResponse.updatedAt,
+                    profilePicUpdatedAt = groupResponse.profilePicUpdatedAt,
+                    notisMuted = false,
+                    members = groupResponse.members.map { groupMemberresp ->
+                        GroupMember(
+                            groupId = groupResponse.id,
+                            userId = groupMemberresp.userid,
+                            joinDate = groupMemberresp.joinedAt,
+                            admin = groupMemberresp.admin,
+                            color = groupMemberresp.color,
+                            memberName = groupMemberresp.memberName
+                        )
+                    }
+                ))
+                groupResponse.id
             }
         }
     }

@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.PublicOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +38,8 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.event_ended
+import schneaggchatv3mp.composeapp.generated.resources.event_private
+import schneaggchatv3mp.composeapp.generated.resources.event_public
 import schneaggchatv3mp.composeapp.generated.resources.event_started
 import schneaggchatv3mp.composeapp.generated.resources.event_starts_in
 import kotlin.time.Clock
@@ -89,6 +94,13 @@ fun EventItem(
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.weight(1f)
+                    )
+
+                    Icon(
+                        imageVector = if (event.public) Icons.Default.Public else Icons.Default.PublicOff,
+                        contentDescription = stringResource(if (event.public) Res.string.event_public else Res.string.event_private),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp)
                     )
 
                     if (!creatorProfilePictureUrl.isNullOrBlank()) {
