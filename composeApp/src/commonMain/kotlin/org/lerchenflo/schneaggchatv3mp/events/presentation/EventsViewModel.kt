@@ -105,6 +105,7 @@ class EventsViewModel(
                     appRepository.joinEvent(
                         action.eventId
                     )
+                    //TODO: Datasync and join into
                 }
             }
         }

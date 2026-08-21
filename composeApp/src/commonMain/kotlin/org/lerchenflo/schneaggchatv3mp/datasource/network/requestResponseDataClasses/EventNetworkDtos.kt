@@ -31,7 +31,7 @@ data class EventSyncResponse(
     val moreEntries: Boolean,
 )
 
-
+@Serializable
 data class EventJoinRequest(
     val eventId: String,
 )

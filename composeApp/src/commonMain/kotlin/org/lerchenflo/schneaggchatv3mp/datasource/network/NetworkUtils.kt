@@ -1240,7 +1240,7 @@ class NetworkUtils(
 
     suspend fun joinEvent(
         eventId: String
-    ): NetworkResult<Boolean, NetworkError> {
+    ): NetworkResult<Any, NetworkError> {
         return safePost(
             endpoint = "/events/join",
             body = EventJoinRequest(
