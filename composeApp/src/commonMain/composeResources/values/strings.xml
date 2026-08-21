@@ -1149,5 +1149,8 @@
     <string name="notification_permission_permanently_denied_message">Notifications are disabled for Schneaggchat in your system settings. Please open settings and allow notifications to receive message alerts.</string>
     <string name="open_settings">Open Settings</string>
     <string name="notification_permission_press_again">Press again if no permission request showed up</string>
+    <string name="notification_banner_title">Notifications Disabled</string>
+    <string name="notification_banner_description">Enable notifications to receive alerts for new messages</string>
+    <string name="notification_banner_enable">Enable</string>
 
 </resources>

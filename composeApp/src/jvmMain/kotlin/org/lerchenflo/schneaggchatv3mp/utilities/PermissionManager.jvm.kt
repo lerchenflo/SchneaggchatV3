@@ -21,7 +21,7 @@ actual class PermissionManager {
     }
 
     actual suspend fun checkNotificationPermission(): PermissionState {
-        return PermissionState.NOT_DETERMINED
+        return PermissionState.GRANTED
     }
 
     actual suspend fun requestNotificationPermission(openSettings: Boolean): PermissionState {
@@ -29,7 +29,7 @@ actual class PermissionManager {
             openAppSettings()
             return checkNotificationPermission()
         }
-        return PermissionState.NOT_DETERMINED
+        return PermissionState.GRANTED
     }
 
     // Desktop has no lock screen full screen intents - the wake feature is Android only anyway.

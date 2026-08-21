@@ -42,6 +42,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.isNewVersionHigher
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
@@ -58,13 +60,17 @@ class ChatSelectorViewModel(
     private val navigator: Navigator,
     private val loggingRepository: LoggingRepository,
     private val preferenceManager: Preferencemanager,
+    private val permissionManager: PermissionManager,
 ): ViewModel() {
 
+    private val _notificationPermissionState = MutableStateFlow(PermissionState.GRANTED)
+    val notificationPermissionState: StateFlow<PermissionState> = _notificationPermissionState.asStateFlow()
 
     private val _pendingFriendCount = MutableStateFlow(0)
     val pendingFriendCount: StateFlow<Int> = _pendingFriendCount.asStateFlow()
 
     init {
+        checkNotificationPermission()
 
         viewModelScope.launch {
             val token = KoinPlatform.getKoin().get<Notifier>().getToken()
@@ -301,6 +307,22 @@ class ChatSelectorViewModel(
                     highlightMessageId = result.messageId
                 )
             )
+        }
+    }
+
+    fun checkNotificationPermission() {
+        viewModelScope.launch {
+            _notificationPermissionState.value = permissionManager.checkNotificationPermission()
+        }
+    }
+
+    fun requestNotificationPermission() {
+        viewModelScope.launch {
+            val result = permissionManager.requestNotificationPermission(openSettings = false)
+            _notificationPermissionState.value = result
+            if (result != PermissionState.GRANTED) {
+                permissionManager.requestNotificationPermission(openSettings = true)
+            }
         }
     }
 }

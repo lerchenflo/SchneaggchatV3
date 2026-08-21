@@ -50,6 +50,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -67,6 +68,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.stringResource
@@ -91,6 +95,8 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangelogPopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ContributePopup
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
+import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -103,6 +109,9 @@ import schneaggchatv3mp.composeapp.generated.resources.filter
 import schneaggchatv3mp.composeapp.generated.resources.more_info
 import schneaggchatv3mp.composeapp.generated.resources.new_version_available
 import schneaggchatv3mp.composeapp.generated.resources.no_friends_found_search
+import schneaggchatv3mp.composeapp.generated.resources.notification_banner_description
+import schneaggchatv3mp.composeapp.generated.resources.notification_banner_enable
+import schneaggchatv3mp.composeapp.generated.resources.notification_banner_title
 import schneaggchatv3mp.composeapp.generated.resources.pin_chat
 import schneaggchatv3mp.composeapp.generated.resources.search_friend
 import schneaggchatv3mp.composeapp.generated.resources.search_section_chats
@@ -151,9 +160,11 @@ fun Chatauswahlscreen(
 
     val onboardingCompleted by preferencemanager.getOnboardingSeenFlow()
         .collectAsStateWithLifecycle(initialValue = false)
-
+    
     val highlightTodaysTimestamp by preferencemanager.getHighlightTodaysMessageTimestampFlow()
         .collectAsStateWithLifecycle(initialValue = true)
+
+    val notificationPermissionState by viewModel.notificationPermissionState.collectAsStateWithLifecycle()
 
     val uriHandler = LocalUriHandler.current
 
@@ -647,6 +658,21 @@ fun Chatauswahlscreen(
                     ),
                     state = liststate
                 ) {
+
+                    if (notificationPermissionState != PermissionState.GRANTED && !appRepository.appVersion.isDesktop()) {
+                        item {
+                            ChatSelectorDismissableInfo(
+                                title = stringResource(Res.string.notification_banner_title),
+                                description = stringResource(Res.string.notification_banner_description),
+                                activateText = stringResource(Res.string.notification_banner_enable),
+                                onClick = {
+                                    viewModel.requestNotificationPermission()
+                                },
+                                onDismiss = null,
+                                backgroundColor = MaterialTheme.colorScheme.errorContainer
+                            )
+                        }
+                    }
 
                     if (!onboardingCompleted) {
                         item {
