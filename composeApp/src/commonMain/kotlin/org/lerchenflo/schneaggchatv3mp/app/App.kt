@@ -303,7 +303,7 @@ fun App() {
                     // If already on the correct tab and the target is that tab's root screen,
                     // just reset the sub-backstack instead of pushing a duplicate.
                     if (targetRoute == activeStack?.firstOrNull()) {
-                        while ((activeStack.size ?: 0) > 1) {
+                        while ((activeStack.size) > 1) {
                             activeStack.removeAt(activeStack.size - 1)
                         }
                     } else {
