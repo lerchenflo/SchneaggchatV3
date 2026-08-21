@@ -279,6 +279,30 @@
     <string name="friend_birthday_noti_body">Don't forget to congratulate them!</string>
 
     <string name="new_event_noti_title">%1$s created a new event</string>
+    <string name="events_screen_title">Events</string>
+    <string name="event_starts_in">Starts in: %1$s</string>
+    <string name="event_started">Started</string>
+    <string name="event_ended">Ended</string>
+    <string name="event_title_label">Title</string>
+    <string name="event_description_label">Description</string>
+    <string name="event_starts_label">Starts:</string>
+    <string name="event_starts_with_date">Starts: %1$s</string>
+    <string name="event_has_end_time">Has end time</string>
+    <string name="event_closes_with_date">Closes: %1$s</string>
+    <string name="event_created_by">Created by %1$s</string>
+    <string name="event_join">Join</string>
+    <string name="event_type_sport">Sport</string>
+    <string name="event_type_food">Food</string>
+    <string name="event_type_cooking">Cooking</string>
+    <string name="event_type_shopping">Shopping</string>
+    <string name="event_type_driving">Driving</string>
+    <string name="event_type_party">Party</string>
+    <string name="event_type_gaming">Gaming</string>
+    <string name="event_type_movie">Movie</string>
+    <string name="event_type_trip">Trip</string>
+    <string name="event_type_meetup">Meetup</string>
+    <string name="event_type_outdoor">Outdoor</string>
+    <string name="event_type_other">Other</string>
 
     <string name="tooltip_username">Choose a unique username others will see</string>
     <string name="tooltip_email">Used for account recovery and deletion</string>

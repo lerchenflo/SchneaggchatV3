@@ -308,7 +308,7 @@ interface EventDao {
     @Query("SELECT id, updatedAt FROM events")
     suspend fun getEventIdsWithChangeDates(): List<IdChangeDate>
 
-    @Query("SELECT * FROM events")
+    @Query("SELECT * FROM events ORDER BY startDate ASC")
     fun getAllFlow(): Flow<List<EventDto>>
 
     @Query("DELETE FROM events WHERE id = :id")

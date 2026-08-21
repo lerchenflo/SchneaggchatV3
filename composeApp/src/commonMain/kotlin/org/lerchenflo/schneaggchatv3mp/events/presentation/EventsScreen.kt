@@ -1,14 +1,13 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package org.lerchenflo.schneaggchatv3mp.events.presentation
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,16 +21,29 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.delay
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventBottomPopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.event_ended
+import schneaggchatv3mp.composeapp.generated.resources.events_screen_title
+import schneaggchatv3mp.composeapp.generated.resources.event_started
+import schneaggchatv3mp.composeapp.generated.resources.event_starts_in
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun EventsRoot(
@@ -55,7 +67,7 @@ fun EventsScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             ActivityTitle(
-                title = "Events",
+                title = stringResource(Res.string.events_screen_title),
                 showBackButton = false
             )
         },
@@ -75,7 +87,8 @@ fun EventsScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(innerPadding)
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(
@@ -101,8 +114,6 @@ fun EventsScreen(
     }
 }
 
-
-
 @Composable
 private fun EventItem(
     event: Event,
@@ -123,12 +134,79 @@ private fun EventItem(
                 color = MaterialTheme.colorScheme.onSurface
             )
             if (event.description.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = event.description,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = millisToString(event.startDate, "dd.MM.yyyy HH:mm"),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                EventStartCountdownTimer(
+                    startDate = event.startDate,
+                    closeDate = event.closeDate
+                )
+            }
         }
     }
 }
+
+@Composable
+private fun EventStartCountdownTimer(
+    startDate: Long,
+    closeDate: Long?,
+    modifier: Modifier = Modifier
+) {
+    var nowMillis by remember { mutableStateOf(Clock.System.now().toEpochMilliseconds()) }
+
+    LaunchedEffect(startDate, closeDate) {
+        while (true) {
+            nowMillis = Clock.System.now().toEpochMilliseconds()
+            delay(1000L.milliseconds)
+        }
+    }
+
+    val timeRemaining = (startDate - nowMillis).coerceAtLeast(0L)
+
+    val text = when {
+        timeRemaining > 0 -> {
+            val d = timeRemaining / (24 * 60 * 60 * 1000)
+            val h = ((timeRemaining / (60 * 60 * 1000)) % 24).toString().padStart(2, '0')
+            val m = ((timeRemaining / (60 * 1000)) % 60).toString().padStart(2, '0')
+            val s = ((timeRemaining / 1000) % 60).toString().padStart(2, '0')
+
+            val formattedTime = if (d > 0) {
+                "${d}d $h:$m:$s"
+            } else {
+                "$h:$m:$s"
+            }
+            stringResource(Res.string.event_starts_in, formattedTime)
+        }
+        closeDate != null && nowMillis >= closeDate -> {
+            stringResource(Res.string.event_ended)
+        }
+        else -> {
+            stringResource(Res.string.event_started)
+        }
+    }
+
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier
+    )
+}
+

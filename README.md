@@ -65,9 +65,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 #### Bugfixes
 - Profilbilder neu laden repariert
 - Map Popup scroll fix
-- Mose code tree voll angezeigt
-
-#### Bugfixes
+- Morse code tree voll angezeigt
 - Tägliche Spiele Timer + Änderung um Mitternacht
 - Fingerpicker fix
 
