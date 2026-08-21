@@ -40,14 +40,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
-import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
-import io.github.ismoy.imagepickerkmp.domain.models.MimeType
-import io.github.ismoy.imagepickerkmp.features.imagepicker.config.ImagePickerKMPConfig
-import io.github.ismoy.imagepickerkmp.features.imagepicker.model.ImagePickerResult
-import io.github.ismoy.imagepickerkmp.features.imagepicker.ui.rememberImagePickerKMP
+import io.github.ismoy.imagepickerkmp.config.CropConfig
+import io.github.ismoy.imagepickerkmp.config.GalleryConfig
+import io.github.ismoy.imagepickerkmp.picker.ImagePickerKMPConfig
+import io.github.ismoy.imagepickerkmp.picker.ImagePickerResult
+import io.github.ismoy.imagepickerkmp.picker.MimeType
+import io.github.ismoy.imagepickerkmp.picker.rememberImagePickerKMP
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
@@ -142,7 +141,9 @@ fun UserSettings(
                     showImagePickerDialog = false
                 }
 
-                else -> Unit
+                else -> {
+                    Unit
+                }
             }
         }
 
