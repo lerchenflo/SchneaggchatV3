@@ -297,11 +297,11 @@ compose.desktop {
 
                 shortcut = true
                 menuGroup = "Chat"
-                iconFile.set(project.file("src/commonMain/composeResources/files/schneaggchat_logo_v3.png"))
+                iconFile.set(project.file("src/commonMain/composeResources/files/schneaggchat_logo_v3_transparent.png"))
             }
 
             windows {
-                iconFile.set(project.file("\\src\\commonMain\\composeResources\\files\\schneaggchat_logo_v3.ico"))
+                iconFile.set(project.file("\\src\\commonMain\\composeResources\\files\\schneaggchat_logo_v3_transparent.ico"))
 
                 perUserInstall = true
 
