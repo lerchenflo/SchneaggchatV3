@@ -1118,6 +1118,9 @@
     <string name="dev_group_general">General</string>
     <string name="dev_group_network">Server Configuration</string>
     <string name="dev_group_tools">Tools &amp; Experiments</string>
+    <string name="dev_settings_skip_tour">Skip Onboarding Tour</string>
+    <string name="dev_settings_skip_tour_desc">Marks the onboarding tour as completed</string>
+    <string name="dev_settings_tour_skipped">Onboarding tour skipped</string>
 
     <!-- Privacy & Security -->
     <string name="privacy_and_security">Privacy &amp; Security</string>
@@ -1146,5 +1149,8 @@
     <string name="notification_permission_permanently_denied_message">Notifications are disabled for Schneaggchat in your system settings. Please open settings and allow notifications to receive message alerts.</string>
     <string name="open_settings">Open Settings</string>
     <string name="notification_permission_press_again">Press again if no permission request showed up</string>
+    <string name="notification_banner_title">Notifications Disabled</string>
+    <string name="notification_banner_description">Enable notifications to receive alerts for new messages</string>
+    <string name="notification_banner_enable">Enable</string>
 
 </resources>
