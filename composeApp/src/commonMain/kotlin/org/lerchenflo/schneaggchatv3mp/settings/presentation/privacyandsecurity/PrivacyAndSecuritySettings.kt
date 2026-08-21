@@ -9,7 +9,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.LocationOff
@@ -34,18 +33,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
 import org.lerchenflo.schneaggchatv3mp.getDeleteAccountUrl
 import org.lerchenflo.schneaggchatv3mp.getPrivacyPolicyUrl
-import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.schneaggmapsettings.LocationSharingDialog
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ChangeDialog
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsDivider
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
-import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.WakeSettingsDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.emailProviderWarning
@@ -71,8 +67,6 @@ import schneaggchatv3mp.composeapp.generated.resources.privacy_policy
 import schneaggchatv3mp.composeapp.generated.resources.privacy_policy_info
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global
 import schneaggchatv3mp.composeapp.generated.resources.share_location_global_info
-import schneaggchatv3mp.composeapp.generated.resources.wake_settings
-import schneaggchatv3mp.composeapp.generated.resources.wake_settings_info
 
 @Composable
 fun PrivacyAndSecuritySettings(
@@ -89,7 +83,6 @@ fun PrivacyAndSecuritySettings(
     var showChangeEmailPopup by remember { mutableStateOf(false) }
     var showLogoutDialog by rememberSaveable { mutableStateOf(false) }
     var locationSharingDialogShown by remember { mutableStateOf(false) }
-    var showWakeSettingsDialog by rememberSaveable { mutableStateOf(false) }
 
     Column {
         ActivityTitle(
@@ -185,19 +178,6 @@ fun PrivacyAndSecuritySettings(
                 }
             )
 
-            // Waking is Android only - the alarm service has no counterpart on iOS/Desktop.
-            if (koinInject<AppVersion>().isAndroid()) {
-                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-                SettingsOption(
-                    icon = Icons.Default.Alarm,
-                    text = stringResource(Res.string.wake_settings),
-                    subtext = stringResource(Res.string.wake_settings_info),
-                    onClick = { showWakeSettingsDialog = true },
-                    modifier = Modifier.tapTarget("settings_privacy_wake")
-                )
-            }
-
             // Group 3: Data & Legal
             SettingsDivider(
                 title = stringResource(Res.string.privacy_group_legal)
@@ -291,17 +271,6 @@ fun PrivacyAndSecuritySettings(
             friends = viewModel.friends,
             onSave = { global, friendDrafts -> viewModel.saveLocationSharing(global, friendDrafts) },
             onDismiss = { locationSharingDialogShown = false }
-        )
-    }
-
-    if (showWakeSettingsDialog) {
-        WakeSettingsDialog(
-            wakeEnabledGlobal = viewModel.wakeEnabledGlobal,
-            friends = viewModel.friends,
-            onSave = { global, friendDrafts ->
-                viewModel.saveWakeSettings(global, friendDrafts)
-            },
-            onDismiss = { showWakeSettingsDialog = false }
         )
     }
 }

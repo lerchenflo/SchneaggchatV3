@@ -32,9 +32,10 @@ expect class PermissionManager {
 
     /**
      * Requests notification permission if not yet granted.
+     * If [openSettings] is true, opens the system settings directly.
      * Returns the resulting [PermissionState].
      */
-    suspend fun requestNotificationPermission(): PermissionState
+    suspend fun requestNotificationPermission(openSettings: Boolean = false): PermissionState
 
     /**
      * Whether this platform may show a full screen UI over the lock screen (used by the wake
@@ -48,11 +49,17 @@ expect class PermissionManager {
      * leaving the app - re-check it once the user comes back.
      */
     suspend fun requestFullScreenIntentPermission(): PermissionState
+
+    /**
+     * Opens the app's settings screen in the system settings so the user can manually grant permissions.
+     */
+    fun openAppSettings()
 }
 
 // commonMain
 enum class PermissionState {
     GRANTED,
     DENIED,
+    PERMANENTLY_DENIED,
     NOT_DETERMINED
 }

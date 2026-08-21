@@ -20,6 +20,7 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_go_back
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_freeroam
+import schneaggchatv3mp.composeapp.generated.resources.ttt_notification_settings_go_back
 import schneaggchatv3mp.composeapp.generated.resources.ttt_privacy_settings_go_back
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_description
@@ -34,6 +35,8 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_app_broken
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_app_broken_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_bugreport
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_notifications
+import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_notifications_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_privacy
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_privacy_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_user
@@ -110,33 +113,41 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 route = Route.SettingsScreen
             )
 
+            tapStep(
+                id = "settings_privacy",
+                title = Res.string.ttt_settings_privacy,
+                description = Res.string.ttt_settings_privacy_description,
+                route = Route.SettingsScreen,
+                requireExactTap = false
+            )
+
             if (isAndroid) {
                 tapStep(
-                    id = "settings_privacy",
-                    title = Res.string.ttt_settings_privacy,
-                    description = Res.string.ttt_settings_privacy_description,
+                    id = "settings_notifications",
+                    title = Res.string.ttt_settings_notifications,
+                    description = Res.string.ttt_settings_notifications_description,
                     route = Route.SettingsScreen
                 )
 
                 tapStep(
-                    id = "settings_privacy_wake",
+                    id = "settings_notifications_wake",
                     title = Res.string.ttt_settings_wake,
                     description = Res.string.ttt_settings_wake_description,
-                    route = Route.PrivacyAndSecuritySettings,
+                    route = Route.NotificationSettings,
                     requireExactTap = false
                 )
 
                 //Point to back button
                 tapStep(
-                    id = "privacy_settings_back_button",
-                    title = Res.string.ttt_privacy_settings_go_back,
-                    route = Route.PrivacyAndSecuritySettings
+                    id = "notification_settings_back_button",
+                    title = Res.string.ttt_notification_settings_go_back,
+                    route = Route.NotificationSettings
                 )
             } else {
                 tapStep(
-                    id = "settings_privacy",
-                    title = Res.string.ttt_settings_privacy,
-                    description = Res.string.ttt_settings_privacy_description,
+                    id = "settings_notifications",
+                    title = Res.string.ttt_settings_notifications,
+                    description = Res.string.ttt_settings_notifications_description,
                     route = Route.SettingsScreen,
                     requireExactTap = false
                 )

@@ -12,6 +12,9 @@ import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
 import platform.CoreLocation.kCLAuthorizationStatusDenied
 import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
 import platform.CoreLocation.kCLAuthorizationStatusRestricted
+import platform.Foundation.NSURL
+import platform.UIKit.UIApplication
+import platform.UIKit.UIApplicationOpenSettingsURLString
 import platform.UserNotifications.UNAuthorizationOptionAlert
 import platform.UserNotifications.UNAuthorizationOptionBadge
 import platform.UserNotifications.UNAuthorizationOptionSound
@@ -75,22 +78,28 @@ actual class PermissionManager {
                 .getNotificationSettingsWithCompletionHandler { settings ->
                     val state = when (settings?.authorizationStatus) {
                         UNAuthorizationStatusAuthorized, UNAuthorizationStatusProvisional -> PermissionState.GRANTED
-                        UNAuthorizationStatusDenied -> PermissionState.DENIED
+                        UNAuthorizationStatusDenied -> PermissionState.PERMANENTLY_DENIED
                         else -> PermissionState.NOT_DETERMINED
                     }
                     continuation.resume(state)
                 }
         }
 
-    actual suspend fun requestNotificationPermission(): PermissionState {
+    actual suspend fun requestNotificationPermission(openSettings: Boolean): PermissionState {
+        if (openSettings) {
+            openAppSettings()
+            return checkNotificationPermission()
+        }
+
         val current = checkNotificationPermission()
         if (current == PermissionState.GRANTED) return current
+        if (current == PermissionState.PERMANENTLY_DENIED) return current
 
         return suspendCancellableCoroutine { continuation ->
             UNUserNotificationCenter.currentNotificationCenter().requestAuthorizationWithOptions(
                 options = UNAuthorizationOptionAlert or UNAuthorizationOptionBadge or UNAuthorizationOptionSound
             ) { granted, _ ->
-                continuation.resume(if (granted) PermissionState.GRANTED else PermissionState.DENIED)
+                continuation.resume(if (granted) PermissionState.GRANTED else PermissionState.PERMANENTLY_DENIED)
             }
         }
     }
@@ -99,6 +108,17 @@ actual class PermissionManager {
     actual suspend fun checkFullScreenIntentPermission(): PermissionState = PermissionState.GRANTED
 
     actual suspend fun requestFullScreenIntentPermission(): PermissionState = PermissionState.GRANTED
+
+    actual fun openAppSettings() {
+        val url = NSURL.URLWithString(URLString = UIApplicationOpenSettingsURLString)
+        if (url != null && UIApplication.sharedApplication.canOpenURL(url)) {
+            UIApplication.sharedApplication.openURL(
+                url,
+                options = emptyMap<Any?, Any>(),
+                completionHandler = null
+            )
+        }
+    }
 
     private fun clStatusToState(status: CLAuthorizationStatus): PermissionState = when (status) {
         kCLAuthorizationStatusAuthorizedWhenInUse,

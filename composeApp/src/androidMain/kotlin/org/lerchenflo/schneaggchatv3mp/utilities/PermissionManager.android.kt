@@ -2,6 +2,7 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
@@ -13,7 +14,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.lang.ref.WeakReference
+import kotlin.coroutines.cancellation.CancellationException
 
 actual class PermissionManager(private val context: Context) {
 
@@ -67,23 +71,51 @@ actual class PermissionManager(private val context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             return PermissionState.GRANTED
         }
+
         val status = ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
-        return if (status == PackageManager.PERMISSION_GRANTED) {
-            PermissionState.GRANTED
-        } else {
-            PermissionState.NOT_DETERMINED
+        if (status == PackageManager.PERMISSION_GRANTED) {
+            return PermissionState.GRANTED
+        }
+
+        val activity = ActivityHolder.getActivity() ?: context.findActivity() as? ComponentActivity
+
+        // Without persisted "have we asked before" state, we can't distinguish
+        // NOT_DETERMINED from PERMANENTLY_DENIED here — shouldShowRequestPermissionRationale()
+        // is false for both. Only requestNotificationPermission() (via ActivityHolder's
+        // before/after comparison at request time) can resolve that distinction.
+        return when {
+            activity != null && activity.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) ->
+                PermissionState.DENIED
+            else -> PermissionState.NOT_DETERMINED
         }
     }
 
-    actual suspend fun requestNotificationPermission(): PermissionState {
+    private val requestMutex = Mutex()
+
+    actual suspend fun requestNotificationPermission(openSettings: Boolean): PermissionState {
+        if (openSettings) {
+            openAppSettings()
+            return checkNotificationPermission()
+        }
+
         if (checkNotificationPermission() == PermissionState.GRANTED)
             return PermissionState.GRANTED
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
             return PermissionState.GRANTED
 
-        val deferred = ActivityHolder.requestNotificationPermission()
-        return deferred.await()
+        return requestMutex.withLock {
+            if (checkNotificationPermission() == PermissionState.GRANTED)
+                return@withLock PermissionState.GRANTED
+
+            try {
+                ActivityHolder.requestNotificationPermission().await()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                PermissionState.DENIED
+            }
+        }
     }
 
     actual suspend fun checkFullScreenIntentPermission(): PermissionState {
@@ -99,6 +131,7 @@ actual class PermissionManager(private val context: Context) {
         }
     }
 
+    @SuppressLint("InlinedApi")
     actual suspend fun requestFullScreenIntentPermission(): PermissionState {
         val current = checkFullScreenIntentPermission()
         if (current == PermissionState.GRANTED) return current
@@ -115,6 +148,16 @@ actual class PermissionManager(private val context: Context) {
         }
 
         return current
+    }
+
+    actual fun openAppSettings() {
+        runCatching {
+            val intent = Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.fromParts("package", context.packageName, null)
+            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        }
     }
 
     private fun Context.findActivity(): android.app.Activity? {

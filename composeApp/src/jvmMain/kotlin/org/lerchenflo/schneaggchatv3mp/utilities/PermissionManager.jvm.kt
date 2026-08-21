@@ -24,7 +24,11 @@ actual class PermissionManager {
         return PermissionState.NOT_DETERMINED
     }
 
-    actual suspend fun requestNotificationPermission(): PermissionState {
+    actual suspend fun requestNotificationPermission(openSettings: Boolean): PermissionState {
+        if (openSettings) {
+            openAppSettings()
+            return checkNotificationPermission()
+        }
         return PermissionState.NOT_DETERMINED
     }
 
@@ -35,5 +39,9 @@ actual class PermissionManager {
 
     actual suspend fun requestFullScreenIntentPermission(): PermissionState {
         return PermissionState.GRANTED
+    }
+
+    actual fun openAppSettings() {
+        // Desktop has no standard app settings screen
     }
 }

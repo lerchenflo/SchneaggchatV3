@@ -1036,7 +1036,6 @@
     <string name="ttt_settings_wake_description">Du kannst diese Funktion aktivieren, damit deine Freunde dich aufwecken können. Dein Handy klingelt dann wie mit dem Handywecker auch im Lautlosmodus. Wenn deine Freunde dies für dich aktiviert haben, kannst du sie in den Chat-Details wecken.</string>
 
     <string name="ttt_settings_privacy">Datenschutz &amp; Sicherheit</string>
-    <string name="ttt_settings_privacy_description">Hier kannst du dein Passwort, deine E-Mail-Adresse, das Teilen des Standorts und Weckeinstellungen verwalten.</string>
     <string name="ttt_privacy_settings_go_back">Lass uns zurück zu den Einstellungen gehen</string>
 
     <string name="ttt_settings_appearance">Darstellungs-Einstellungen</string>
