@@ -53,12 +53,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.ismoy.imagepickerkmp.domain.config.CropConfig
-import io.github.ismoy.imagepickerkmp.domain.config.GalleryConfig
-import io.github.ismoy.imagepickerkmp.domain.models.MimeType
-import io.github.ismoy.imagepickerkmp.features.imagepicker.config.ImagePickerKMPConfig
-import io.github.ismoy.imagepickerkmp.features.imagepicker.model.ImagePickerResult
-import io.github.ismoy.imagepickerkmp.features.imagepicker.ui.rememberImagePickerKMP
+import io.github.ismoy.imagepickerkmp.config.CropConfig
+import io.github.ismoy.imagepickerkmp.config.GalleryConfig
+import io.github.ismoy.imagepickerkmp.picker.ImagePickerKMPConfig
+import io.github.ismoy.imagepickerkmp.picker.ImagePickerResult
+import io.github.ismoy.imagepickerkmp.picker.MimeType
+import io.github.ismoy.imagepickerkmp.picker.rememberImagePickerKMP
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -637,7 +637,9 @@ fun ChatDetails(
                     showImagePickerDialog = false
                 }
 
-                else -> Unit
+                else -> {
+                    Unit
+                }
             }
         }
 
