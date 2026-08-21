@@ -519,7 +519,7 @@ fun App() {
                                     }
 
                                     entry<Route.Events> {
-                                        EventsRoot()
+                                        EventsRoot(initialEntryId = it.selectedEvent)
                                     }
 
 

@@ -43,7 +43,7 @@ class DevSettingsViewModel(
 
     fun navigateEvents() {
         viewModelScope.launch {
-            navigator.navigate(Route.Events)
+            navigator.navigate(Route.Events())
         }
     }
 

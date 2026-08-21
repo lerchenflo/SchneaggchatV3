@@ -31,7 +31,7 @@ data class NavigationBarItemTemplate(
 )
 
 val TOP_LEVEL_DESTINATIONS = mapOf<NavKey, NavigationBarItemTemplate>(
-    Route.Events to NavigationBarItemTemplate(
+    Route.Events() to NavigationBarItemTemplate(
         id = "bottombar_events_button",
         title = Res.string.navbar_events,
         selectedIcon = Icons.Filled.Event,

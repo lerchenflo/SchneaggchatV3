@@ -165,6 +165,17 @@ val sharedmodule = module{
         )
     }
 
+    viewModel { (initialEntryId: String?) ->
+        EventsViewModel(
+            navigator = get(),
+            appRepository = get(),
+            eventRepository = get(),
+            initialEntryId = initialEntryId,
+        )
+    }
+
+
+
 
 
     //Settings
@@ -209,5 +220,4 @@ val sharedmodule = module{
     viewModelOf(::SchneaggmapSettingsViewModel)
 
     viewModelOf(::RoadmapViewModel)
-    viewModelOf(::EventsViewModel)
 }

@@ -20,6 +20,8 @@ class EventsViewModel(
     private val navigator: Navigator,
     private val eventRepository: EventRepository,
     private val appRepository: AppRepository,
+
+    private val initialEntryId: String?
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(EventsState())
@@ -108,6 +110,13 @@ class EventsViewModel(
                     //TODO: Datasync and join into
                 }
             }
+        }
+    }
+
+
+    init {
+        if (initialEntryId != null) {
+            onAction(EventsAction.OnEventClick(initialEntryId))
         }
     }
 }

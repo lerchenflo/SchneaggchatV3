@@ -35,7 +35,7 @@ sealed interface Route : NavKey {
 
     // EVENTS
     @Serializable
-    data object Events: Route
+    data class Events(val selectedEvent: String? = null): Route
 
 
 
