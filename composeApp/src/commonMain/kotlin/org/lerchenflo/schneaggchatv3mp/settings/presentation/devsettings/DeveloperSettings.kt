@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Forward
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Link
@@ -18,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.LocalTapTargetController
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsDivider
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
@@ -29,6 +31,8 @@ import schneaggchatv3mp.composeapp.generated.resources.change_server_url
 import schneaggchatv3mp.composeapp.generated.resources.dev_group_general
 import schneaggchatv3mp.composeapp.generated.resources.dev_group_network
 import schneaggchatv3mp.composeapp.generated.resources.dev_group_tools
+import schneaggchatv3mp.composeapp.generated.resources.dev_settings_skip_tour
+import schneaggchatv3mp.composeapp.generated.resources.dev_settings_skip_tour_desc
 import schneaggchatv3mp.composeapp.generated.resources.developer_setting_info
 import schneaggchatv3mp.composeapp.generated.resources.developer_settings
 
@@ -42,6 +46,7 @@ fun DeveloperSettings(
 ) {
 
     var showChangeServerUrlPopup by remember { mutableStateOf(false) }
+    val tapTargetController = LocalTapTargetController.current
 
     Column {
 
@@ -104,6 +109,16 @@ fun DeveloperSettings(
                 subtext = null,
                 onClick = {
                     devSettingsViewModel.navigateEvents()
+                }
+            )
+
+            SettingsOption(
+                icon = Icons.AutoMirrored.Filled.Forward,
+                text = stringResource(Res.string.dev_settings_skip_tour),
+                subtext = stringResource(Res.string.dev_settings_skip_tour_desc),
+                onClick = {
+                    tapTargetController?.skip()
+                    devSettingsViewModel.skipOnboardingTour()
                 }
             )
 

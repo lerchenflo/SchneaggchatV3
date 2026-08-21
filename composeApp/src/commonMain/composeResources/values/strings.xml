@@ -1118,6 +1118,9 @@
     <string name="dev_group_general">General</string>
     <string name="dev_group_network">Server Configuration</string>
     <string name="dev_group_tools">Tools &amp; Experiments</string>
+    <string name="dev_settings_skip_tour">Skip Onboarding Tour</string>
+    <string name="dev_settings_skip_tour_desc">Marks the onboarding tour as completed</string>
+    <string name="dev_settings_tour_skipped">Onboarding tour skipped</string>
 
     <!-- Privacy & Security -->
     <string name="privacy_and_security">Privacy &amp; Security</string>
