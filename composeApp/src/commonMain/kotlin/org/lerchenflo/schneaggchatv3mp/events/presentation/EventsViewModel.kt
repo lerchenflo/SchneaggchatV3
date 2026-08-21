@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
@@ -20,17 +22,22 @@ class EventsViewModel(
     private val navigator: Navigator,
     private val eventRepository: EventRepository,
     private val appRepository: AppRepository,
-
-    private val initialEntryId: String?
+    private val userRepository: UserRepository,
+    private val initialEntryId: String? = null
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(EventsState())
     val state = combine(
         _state,
         eventRepository.getAllEventsFlow(),
-    ) { currentState, events ->
+        userRepository.getAllUsersFlow(),
+    ) { currentState, events, users ->
+        val friendsMap = users
+            .filter { it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED }
+            .associateBy { it.id }
         currentState.copy(
-            events = events
+            events = events,
+            friendsById = friendsMap
         )
     }.stateIn(
         scope = viewModelScope,
