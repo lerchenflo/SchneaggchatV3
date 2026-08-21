@@ -95,7 +95,6 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangelogPopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ContributePopup
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
-import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
@@ -177,6 +176,20 @@ fun Chatauswahlscreen(
 
      */
 
+    val lifecycleOwner = LocalLifecycleOwner.current
+    //Reload notifications warning when comming back to the screen
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.checkNotificationPermission()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     LaunchedEffect(Unit) {
         val lastStartedVersion = preferencemanager.getLastStartedVersion()

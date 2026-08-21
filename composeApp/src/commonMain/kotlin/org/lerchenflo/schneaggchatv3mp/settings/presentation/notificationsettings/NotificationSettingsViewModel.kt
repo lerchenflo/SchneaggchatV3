@@ -9,7 +9,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -19,9 +18,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.usersettings.WakePermissionDraft
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
-import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
-import schneaggchatv3mp.composeapp.generated.resources.Res
-import schneaggchatv3mp.composeapp.generated.resources.notification_permission_press_again
 import kotlin.time.ExperimentalTime
 
 class NotificationSettingsViewModel(
@@ -40,8 +36,6 @@ class NotificationSettingsViewModel(
 
     var friends by mutableStateOf<List<User>>(emptyList())
         private set
-
-    private var openSettingsOnNextRequest = false
 
     init {
         checkNotificationPermission()
@@ -75,20 +69,11 @@ class NotificationSettingsViewModel(
     fun checkNotificationPermission() {
         viewModelScope.launch {
             notificationPermissionState = permissionManager.checkNotificationPermission()
-            if (notificationPermissionState == PermissionState.GRANTED) {
-                openSettingsOnNextRequest = false
-            }
         }
     }
 
     fun requestNotificationPermission() {
         viewModelScope.launch {
-            if (openSettingsOnNextRequest) {
-                openSettingsOnNextRequest = false
-                showOpenSettingsDialog = true
-                return@launch
-            }
-
             if (notificationPermissionState == PermissionState.GRANTED) {
                 return@launch
             }
@@ -96,8 +81,7 @@ class NotificationSettingsViewModel(
             val result = permissionManager.requestNotificationPermission(openSettings = false)
             notificationPermissionState = result
             if (result != PermissionState.GRANTED) {
-                openSettingsOnNextRequest = true
-                SnackbarManager.showMessage(getString(Res.string.notification_permission_press_again))
+                showOpenSettingsDialog = true
             }
         }
     }
