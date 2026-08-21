@@ -6,6 +6,7 @@ agp = "9.3.1"
 kotlinx-datetime = "0.8.0" #Check for voice message crash when updating
 material3 = "1.11.0-alpha07" #Test for ios input crashes when updating (IRLinkage error crash when clicking on any textfield)
 cryptographyProviderOptimal = "0.6.0" #update same as material3
+composeBom = "2026.06.01" #Check for popup crashes when updating
 
 
 
@@ -19,11 +20,11 @@ composeMultiplatform = "1.11.1"
 coreSplashscreen = "1.2.0"
 encoding = "2.6.0"
 foundation = "1.11.1"
-githubImagepickerkmp = "1.0.43"
+githubImagepickerkmp = "1.1.5"
 
 moko = "0.20.1"
 
-jwtKt = "1.3.0"
+jwtKt = "1.3.1"
 kotlin = "2.4.10"
 ksp = "2.3.9"
 
@@ -43,7 +44,7 @@ ktor = "3.5.2"
 adaptive = "1.2.0"
 datastore = "1.2.1"
 
-mikepenz-markdown = "0.43.0"
+mikepenz-markdown = "0.44.0"
 firebase-messaging-version = "24.1.2"
 google-services = "4.5.0"
 play-services-location = "21.4.0"
@@ -57,7 +58,6 @@ junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 appcompat = "1.8.0"
 material = "1.14.0"
-composeBom = "2026.06.01"
 
 ksafe = "3.0.0"
 
