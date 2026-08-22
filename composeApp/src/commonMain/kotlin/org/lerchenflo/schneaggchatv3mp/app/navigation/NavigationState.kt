@@ -133,7 +133,8 @@ private val gameRoutes: Set<KClass<out NavKey>> = setOf(
     Route.Recap::class,
     Route.CoinFlip::class,
     Route.FingerPicker::class,
-    Route.Game2048::class
+    Route.Game2048::class,
+    Route.Stanislaus::class
 )
 
 private val chatRoutes: Set<KClass<out NavKey>> = setOf(
@@ -178,6 +179,7 @@ val backStackConfiguration = SavedStateConfiguration {
             subclass(Route.CoinFlip::class, Route.CoinFlip.serializer())
             subclass(Route.FingerPicker::class, Route.FingerPicker.serializer())
             subclass(Route.Game2048::class, Route.Game2048.serializer())
+            subclass(Route.Stanislaus::class, Route.Stanislaus.serializer())
 
 
             //Settings

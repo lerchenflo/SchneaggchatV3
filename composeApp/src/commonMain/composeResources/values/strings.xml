@@ -704,6 +704,17 @@
     <string name="games_2048_title">2048</string>
     <string name="games_2048_instructions">Swipe (up, down, left, right) or use arrow keys to move the tiles. When two tiles with the same number touch, they merge into one!\n\nJoin the numbers and reach the 2048 tile to win, and keep going for the highest score!</string>
 
+    <!-- Games: Stanislaus -->
+    <string name="games_stanislaus_title">Stanislaus and the Fish</string>
+    <string name="games_stanislaus_instructions">Light bends when it crosses from water into air, so the fish is never quite where it looks like it is!\n\nDrag from Stanislaus to aim the spear, then release to throw. The spear flies in a perfectly straight line — if you aim at the fish you see, you\'ll miss. Aim deeper and further out to actually hit it.\n\nCatch as many fish as you can before time runs out. A hit deep in the water scores extra, misses cost you time, and fish far out on the pond hide behind the mirror-like glare of the surface.</string>
+    <string name="games_stanislaus_caught">Caught!</string>
+    <string name="games_stanislaus_missed">Missed!</string>
+    <string name="games_stanislaus_streak">Streak: %1$d</string>
+    <string name="games_stanislaus_label_apparent">Where it looked like it was</string>
+    <string name="games_stanislaus_label_real">Where it really was</string>
+    <string name="games_stanislaus_glare_hint">Too far out — the glare hides it</string>
+    <string name="games_stanislaus_sprite_description">Stanislaus</string>
+
     <!-- Recap -->
     <string name="recap_your_year">Your year</string>
     <string name="recap_using_schneaggchat_in_numbers">using Schneaggchat in numbers</string>
