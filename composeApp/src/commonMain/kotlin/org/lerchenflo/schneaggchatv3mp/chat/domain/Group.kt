@@ -13,6 +13,8 @@ data class Group(
     val updatedAt: Long,
     val profilePicUpdatedAt: Long,
 
+    val expiresAt: Long? = null,
+
     val notisMuted: Boolean = false,
     val members: List<GroupMember>
 )
@@ -26,6 +28,7 @@ fun GroupWithMembersDto.toGroup(): Group = Group(
     updatedAt = this.group.updatedAt,
     notisMuted = this.group.notisMuted,
     profilePicUpdatedAt = this.group.profilePicUpdatedAt,
+    expiresAt = this.group.expiresAt,
     members = this.members.map { groupMemberDto ->
         groupMemberDto.toGroupMember()
     }
@@ -41,6 +44,7 @@ fun Group.toDto(): GroupWithMembersDto = GroupWithMembersDto(
         createDate = this.createDate,
         updatedAt = this.updatedAt,
         profilePicUpdatedAt = this.profilePicUpdatedAt,
+        expiresAt = this.expiresAt,
         notisMuted = this.notisMuted
     ),
     members = this.members.map { member ->

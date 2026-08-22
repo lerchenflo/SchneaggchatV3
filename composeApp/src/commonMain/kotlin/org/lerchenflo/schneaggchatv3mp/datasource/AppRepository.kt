@@ -714,6 +714,7 @@ class AppRepository(
                     createDate = groupResponse.createdAt,
                     updatedAt = groupResponse.updatedAt,
                     profilePicUpdatedAt = groupResponse.profilePicUpdatedAt,
+                    expiresAt = groupResponse.expiresAt,
                     notisMuted = false,
                     members = groupResponse.members.map { groupMemberresp ->
                         GroupMember(
@@ -2226,6 +2227,7 @@ class AppRepository(
                     createDate = groupResponse.createdAt,
                     updatedAt = groupResponse.updatedAt,
                     profilePicUpdatedAt = groupResponse.profilePicUpdatedAt,
+                    expiresAt = groupResponse.expiresAt,
                     notisMuted = false,
                     members = groupResponse.members.map { groupMemberresp ->
                         GroupMember(
@@ -2278,6 +2280,7 @@ class AppRepository(
                         createDate = groupResponse.createdAt,
                         updatedAt = groupResponse.updatedAt,
                         profilePicUpdatedAt = groupResponse.profilePicUpdatedAt,
+                        expiresAt = groupResponse.expiresAt,
                         notisMuted = existing?.notisMuted ?: false,
                         members = groupResponse.members.map { groupMemberresp ->
                             GroupMember(
