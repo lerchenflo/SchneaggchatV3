@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
+@file:OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
 
 package org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck
 
@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
@@ -20,6 +21,13 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.support_email_verification_body
+import schneaggchatv3mp.composeapp.generated.resources.support_email_verification_subject
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 class EmailVerifiedCheckViewModel(
     private val appRepository: AppRepository,
@@ -30,6 +38,8 @@ class EmailVerifiedCheckViewModel(
 
     private val _state = MutableStateFlow(EmailVerifiedCheckState())
     val state = _state.asStateFlow()
+
+    private var lastEmailVerificationTime: Instant = Instant.DISTANT_PAST
 
     fun onAction(action: EmailVerifiedCheckAction) {
         when (action) {
@@ -45,11 +55,15 @@ class EmailVerifiedCheckViewModel(
 
 
     private fun sendSupportEmail() {
-        shareUtils.openMailClient(
-            recipient = SUPPORT_EMAIL,
-            subject = "Email Verification not working",
-            body = "Es tuat ned (Bitte mehr infos)"
-        )
+        viewModelScope.launch {
+            val subject = getString(Res.string.support_email_verification_subject)
+            val body = getString(Res.string.support_email_verification_body)
+            shareUtils.openMailClient(
+                recipient = SUPPORT_EMAIL,
+                subject = subject,
+                body = body
+            )
+        }
     }
 
 
@@ -73,13 +87,23 @@ class EmailVerifiedCheckViewModel(
     }
 
     private fun resendEmail() {
+        if (lastEmailVerificationTime.plus(2.minutes) > Clock.System.now()) {
+            println("Email sending is throttled")
+            return //If last email was sent in the last 2 mins
+        }
+
         viewModelScope.launch {
-            if (!appRepository.sendEmailVerify()) {
-                _state.update {
-                    it.copy(
-                        resendEmailButtonDisabled = true
-                    )
-                }
+            // Guard set synchronously, before any suspend call, so a second
+            // near-simultaneous tap can't slip through while this coroutine is
+            // still suspended inside sendEmailVerify() below.
+            if (_state.value.isResendingEmail) return@launch
+            _state.update { it.copy(isResendingEmail = true) }
+
+            try {
+                lastEmailVerificationTime = Clock.System.now()
+                appRepository.sendEmailVerify()
+            } finally {
+                _state.update { it.copy(isResendingEmail = false) }
             }
         }
     }

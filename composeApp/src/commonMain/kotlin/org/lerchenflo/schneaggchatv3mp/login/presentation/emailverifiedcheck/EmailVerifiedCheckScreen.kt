@@ -58,6 +58,7 @@ import schneaggchatv3mp.composeapp.generated.resources.change_email
 import schneaggchatv3mp.composeapp.generated.resources.email_check_loading_data
 import schneaggchatv3mp.composeapp.generated.resources.email_check_problem
 import schneaggchatv3mp.composeapp.generated.resources.email_check_verified
+import schneaggchatv3mp.composeapp.generated.resources.email_icon_description
 import schneaggchatv3mp.composeapp.generated.resources.email_not_verified_email_has_been_sent1
 import schneaggchatv3mp.composeapp.generated.resources.email_not_verified_email_has_been_sent2
 import schneaggchatv3mp.composeapp.generated.resources.email_not_verified_screen_title
@@ -130,7 +131,7 @@ fun EmailNotVerifiedScreen(
         //Top Email icon
         Icon(
             imageVector = Icons.Outlined.Email,
-            contentDescription = "Email icon",
+            contentDescription = stringResource(Res.string.email_icon_description),
             modifier = Modifier
                 .size(120.dp)
         )
@@ -202,6 +203,7 @@ fun EmailNotVerifiedScreen(
                     onAction(EmailVerifiedCheckAction.OnResendEmailClick)
                 },
                 primary = false,
+                isLoading = state.isResendingEmail,
                 text = stringResource(Res.string.resend_verification),
                 leadingIcon = {
                     Icon(

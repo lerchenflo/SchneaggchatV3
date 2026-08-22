@@ -92,7 +92,8 @@ fun EventsScreen(
                 event = state.selectedEvent,
                 onSave = {onAction(EventsAction.OnSaveEvent(it))},
                 onDismiss = { onAction(EventsAction.OnEventPopupDismiss) },
-                onJoin = {onAction(EventsAction.OnJoinEvent(it))}
+                onJoin = {onAction(EventsAction.OnJoinEvent(it))},
+                isJoining = state.isJoiningEvent
             )
         }
     }

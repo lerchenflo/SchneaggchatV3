@@ -8,7 +8,8 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 data class EventsState(
     val events: List<Event> = emptyList(),
     val selectedEvent: Event? = null,
-    val friendsById: Map<String, User> = emptyMap()
+    val friendsById: Map<String, User> = emptyMap(),
+    val isJoiningEvent: Boolean = false
 )
 
 sealed interface EventsAction {

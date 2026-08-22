@@ -108,8 +108,8 @@ private fun GroupCreatorScreen(
             contentAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxSize(),
             onBack = { onAction(GroupCreatorAction.navigateBack) },
-            finishEnabled = state.creationPermitted,
-            backEnabled = true,
+            finishEnabled = state.creationPermitted && !state.isLoading,
+            backEnabled = !state.isLoading, //disable back navigation when the group create request is in progress
             canContinue = { pageIndex ->
                 when (pageIndex) {
                     0 -> state.selectedUsers.size >= 2

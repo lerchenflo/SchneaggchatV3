@@ -1180,4 +1180,13 @@
     <string name="notification_banner_description">Enable notifications to receive alerts for new messages</string>
     <string name="notification_banner_enable">Enable</string>
 
+    <!-- Email Verification Support -->
+    <string name="support_email_verification_subject">Email Verification not working</string>
+    <string name="support_email_verification_body">Es tuat ned (Bitte mehr infos)</string>
+
+    <!-- Email Accessibility Descriptions -->
+    <string name="email_icon_description">Email icon</string>
+    <string name="email_verified_icon_description">Email is verified</string>
+    <string name="email_not_verified_icon_description">Email not verified</string>
+
 </resources>

@@ -80,6 +80,7 @@ fun EventBottomPopup(
     onSave: (Event) -> Unit,
     onDismiss: () -> Unit,
     onJoin: (String) -> Unit,
+    isJoining: Boolean = false,
     modifier: Modifier = Modifier
 ) {
 
@@ -402,7 +403,8 @@ fun EventBottomPopup(
                     NormalButton(
                         text = stringResource(Res.string.event_join),
                         onClick = { onJoin(currentEvent.id) },
-                        primary = true
+                        primary = true,
+                        isLoading = isJoining
                     )
                 }
             }

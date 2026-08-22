@@ -45,7 +45,9 @@ data class GroupCreatorState(
     val availableUsers: List<ChatListItem>,
     val selectedUsers: List<ChatListItem>,
 
-    val creationPermitted : Boolean
+    val creationPermitted : Boolean,
+
+    val isLoading: Boolean = false
 
 ) {
     fun valid() : Boolean {
@@ -62,6 +64,7 @@ data class GroupCreatorState(
         other as GroupCreatorState
 
         if (creationPermitted != other.creationPermitted) return false
+        if (isLoading != other.isLoading) return false
         if (searchterm != other.searchterm) return false
         if (groupname != other.groupname) return false
         if (groupdescription != other.groupdescription) return false
@@ -74,6 +77,7 @@ data class GroupCreatorState(
 
     override fun hashCode(): Int {
         var result = creationPermitted.hashCode()
+        result = 31 * result + isLoading.hashCode()
         result = 31 * result + searchterm.hashCode()
         result = 31 * result + groupname.hashCode()
         result = 31 * result + groupdescription.hashCode()
@@ -114,7 +118,8 @@ class GroupCreatorViewModel (
         profilepic = null,
         availableUsers = emptyList(),
         selectedUsers = emptyList(),
-        creationPermitted = false
+        creationPermitted = false,
+        isLoading = false
     ))
         private set
 
@@ -223,32 +228,40 @@ class GroupCreatorViewModel (
         if (!state.valid()) return
 
         viewModelScope.launch {
-            val groupId = appRepository.createGroup(
-                name = state.groupname.text,
-                description = state.groupdescription.text,
-                memberIds = state.selectedUsers.map { member ->
-                    member.id
-                },
-                profilePic = state.profilepic!!
-            )
+            // Guard set synchronously, before any suspend call, so a second
+            // near-simultaneous tap can't slip through while this coroutine is
+            // still suspended inside createGroup() below.
+            if (state.isLoading) return@launch
+            state = state.copy(isLoading = true)
 
-            //Group creation not failed
-            if (groupId != null) {
-                println("Group created: groupid: $groupId")
-
-                //Launch sync
-                CoroutineScope(Dispatchers.IO).launch {
-                    appRepository.dataSync(reason = "groupCreated")
-                }
-
-                //Navigate directly into the new group chat, keeping only the chat selector below it
-                navigator.navigate(
-                    Route.Chat(chatId = groupId, isGroup = true),
-                    navigationOptions = Navigator.NavigationOptions(removeAllExceptByRoute = Route.ChatSelector)
+            try {
+                val groupId = appRepository.createGroup(
+                    name = state.groupname.text,
+                    description = state.groupdescription.text,
+                    memberIds = state.selectedUsers.map { member ->
+                        member.id
+                    },
+                    profilePic = state.profilepic!!
                 )
+
+                //Group creation not failed
+                if (groupId != null) {
+                    println("Group created: groupid: $groupId")
+
+                    //Launch sync
+                    CoroutineScope(Dispatchers.IO).launch {
+                        appRepository.dataSync(reason = "groupCreated")
+                    }
+
+                    //Navigate directly into the new group chat, keeping only the chat selector below it
+                    navigator.navigate(
+                        Route.Chat(chatId = groupId, isGroup = true),
+                        navigationOptions = Navigator.NavigationOptions(removeAllExceptByRoute = Route.ChatSelector)
+                    )
+                }
+            } finally {
+                state = state.copy(isLoading = false)
             }
-
-
         }
     }
 

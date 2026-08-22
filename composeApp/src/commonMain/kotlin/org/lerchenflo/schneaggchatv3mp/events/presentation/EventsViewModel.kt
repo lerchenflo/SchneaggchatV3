@@ -112,13 +112,24 @@ class EventsViewModel(
             }
             is EventsAction.OnJoinEvent -> {
                 viewModelScope.launch {
-                    val groupId = appRepository.joinEvent(
-                        action.eventId
-                    )
+                    // Guard set synchronously, before any suspend call, so a second
+                    // near-simultaneous tap can't slip through while this coroutine is
+                    // still suspended inside joinEvent() below.
+                    if (_state.value.isJoiningEvent) return@launch
+                    _state.update { it.copy(isJoiningEvent = true) }
 
-                    if (groupId != null) {
-                        appRepository.dataSync("Started after joining event to get messages")
-                        navigator.navigate(Route.Chat(chatId = groupId, isGroup = true))
+                    try {
+                        val groupId = appRepository.joinEvent(
+                            action.eventId
+                        )
+
+                        if (groupId != null) {
+                            appRepository.dataSync("Started after joining event to get messages")
+                            _state.update { it.copy(selectedEvent = null) }
+                            navigator.navigate(Route.Chat(chatId = groupId, isGroup = true))
+                        }
+                    } finally {
+                        _state.update { it.copy(isJoiningEvent = false) }
                     }
                 }
             }
