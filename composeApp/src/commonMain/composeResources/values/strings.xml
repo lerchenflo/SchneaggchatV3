@@ -165,6 +165,7 @@
     <string name="variant2">Light Variant 2</string>
     <string name="neon_pulse_theme">Neon Pulse (Dark)</string>
     <string name="anna_theme">Annas theme</string>
+    <string name="flos_theme">Flos theme</string>
 
     <string name="common_friends">common friends: %1$s</string>
     <string name="create_group">Create Group</string>
