@@ -46,11 +46,18 @@ import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
 
 @Composable
 fun FriendLocationsPreview(friends: List<User>, onlineFriendIds: Set<String>, onUserClick: (User) -> Unit) {
+    val sortedFriends = remember(friends, onlineFriendIds) {
+        friends.sortedWith(
+            compareByDescending<User> { it.id in onlineFriendIds }
+                .thenByDescending { it.lastSeen ?: Long.MIN_VALUE }
+        )
+    }
+
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.horizontalScroll(rememberScrollState())
     ) {
-        friends.forEach { user ->
+        sortedFriends.forEach { user ->
             FriendChip(user, isOnline = user.id in onlineFriendIds, onUserClick)
         }
     }
