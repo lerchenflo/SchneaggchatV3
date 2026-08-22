@@ -12,8 +12,14 @@ sealed interface DecodedNotification {
         val encodedContent: String,
         val senderId: String,
         val receiverId: String,
-        val reaction: Boolean = false
-    ) : DecodedNotification
+        val reaction: Boolean = false,
+        //The chat this notification belongs to when it is a group message. Empty for 1:1
+        //messages, where the chat is identified by senderId instead.
+        val groupId: String = ""
+    ) : DecodedNotification {
+        /** Chat id this message notification points at: the group for group messages, the sender for 1:1. */
+        val chatTargetId: String? get() = (if (groupMessage) groupId else senderId).ifBlank { null }
+    }
 
     data class FriendRequest(
         val requesterId: String,
@@ -69,6 +75,7 @@ object PayloadDecoder {
                 senderId = data["senderId"] ?: "",
                 receiverId = data["receiverId"] ?: "",
                 reaction = data["reaction"]?.toBoolean() ?: false,
+                groupId = data["groupId"] ?: "",
             )
             "friend_request" -> DecodedNotification.FriendRequest(
                 requesterId = data["requesterId"] ?: "",

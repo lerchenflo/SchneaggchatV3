@@ -2,7 +2,6 @@
 
 package org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck
 
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -14,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
+import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -146,6 +146,9 @@ class EmailVerifiedCheckViewModel(
                                 )
                             )
                         }
+                        // ChatSelector reached - safe from here on for a pending notification
+                        // tap to navigate to its chat.
+                        AppLifecycleManager.notifyStartupRoutingDone()
                     }
 
                     _state.update { cstate ->

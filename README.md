@@ -25,6 +25,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 #### Features
 - Einführung in die Features
 - Bottom Navigation Bar mit Swipen
+- Chat öffnen aus Benachrichtigungen
 - Annas Theme
 - Reaktionszeitpunkt in Nachrichtendetails anzeigen
 - @game Annotations

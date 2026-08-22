@@ -100,6 +100,11 @@ class MainActivity : ComponentActivity() {
             val chatId = intent.getStringExtra(EXTRA_CHAT_ID)
             val isGroup = intent.getBooleanExtra(EXTRA_GROUP_CHAT, false)
             AppLifecycleManager.notifyNotificationOpened(chatId = chatId, isGroup = isGroup)
+
+            // Clear the marker so an activity recreation (rotation, process restore) that
+            // replays this same Intent does not re-trigger the chat navigation.
+            intent.removeExtra(EXTRA_FROM_NOTIFICATION)
+            setIntent(intent)
         }
     }
 

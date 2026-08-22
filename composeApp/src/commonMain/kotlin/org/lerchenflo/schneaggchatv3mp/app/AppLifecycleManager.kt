@@ -10,8 +10,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.getAndUpdate
 
 /**
  * Manages app lifecycle state to determine if the app is in foreground/background
@@ -54,16 +58,35 @@ object AppLifecycleManager {
         val isGroup: Boolean = false
     )
 
-    private val _notificationOpenedEvent = MutableSharedFlow<NotificationOpenData>(extraBufferCapacity = 1)
-    val notificationOpenedEvent: SharedFlow<NotificationOpenData> = _notificationOpenedEvent.asSharedFlow()
+    // A StateFlow (not a SharedFlow) on purpose: notification taps can arrive before any
+    // collector exists yet (cold app start), and a SharedFlow with no subscribers just drops
+    // the emission. Holding the latest value until it is explicitly consumed makes the request
+    // durable across that startup race.
+    private val _pendingNotificationOpen = MutableStateFlow<NotificationOpenData?>(null)
+    val pendingNotificationOpen: StateFlow<NotificationOpenData?> = _pendingNotificationOpen.asStateFlow()
 
     fun notifyNotificationOpened(
         chatId: String? = null,
         isGroup: Boolean = false
     ) {
-        _notificationOpenedEvent.tryEmit(NotificationOpenData(chatId = chatId, isGroup = isGroup))
+        _pendingNotificationOpen.value = NotificationOpenData(chatId = chatId, isGroup = isGroup)
     }
-    
+
+    /** Atomically reads and clears the pending request so it is only acted on once. */
+    fun consumePendingNotificationOpen(): NotificationOpenData? {
+        return _pendingNotificationOpen.getAndUpdate { null }
+    }
+
+    // Flips once the auth-gated startup navigation (auto-login / email-verify check) has run,
+    // so a pending notification-open request is not wiped out by that navigation resetting the
+    // backstack afterwards.
+    private val _startupRoutingDone = MutableStateFlow(false)
+    val startupRoutingDone: StateFlow<Boolean> = _startupRoutingDone.asStateFlow()
+
+    fun notifyStartupRoutingDone() {
+        _startupRoutingDone.value = true
+    }
+
     /**
      * Check if app is open (in foreground) when receiving notifications
      * @return true if app is in foreground, false if app is in background

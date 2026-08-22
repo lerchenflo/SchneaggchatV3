@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -58,15 +59,21 @@ class AutoLoginCredCheckerViewModel(
                             navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
                         )
                     }
+                    // ChatSelector reached - no more backstack-clearing navigation will follow,
+                    // safe from here on for a pending notification tap to navigate to its chat.
+                    AppLifecycleManager.notifyStartupRoutingDone()
                 } else {
-                    // Email not verified, navigate to email verify checker
+                    // Email not verified, navigate to email verify checker. Startup routing is
+                    // NOT done yet - EmailVerifiedCheckViewModel still has to navigate to
+                    // ChatSelector itself (clearing the backstack again) once verified.
                     navigator.navigate(
                         Route.EmailVerifiedCheck,
                         navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)
                     )
                 }
             } else {
-                // User not logged in, reroute to login
+                // User not logged in, reroute to login. Not marking routing as done: nothing to
+                // navigate to yet anyway since a pending chat requires a logged-in user.
                 navigator.navigate(
                     Route.Login,
                     navigationOptions = Navigator.NavigationOptions(exitAllPreviousScreens = true)

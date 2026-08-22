@@ -34,15 +34,14 @@ class IosPushDelegateBridge {
     }
 
     fun onNotificationTap(data: Map<String, String>) {
-        // Extract chat info from the push payload for deep-navigation.
-        // For message notifications: group messages use receiverId (the group),
-        // single messages use senderId (the other person).
-        val isGroup = data["groupMessage"]?.toBoolean() ?: false
-        val chatId = if (data["_class"] == "message") {
-            if (isGroup) data["receiverId"] else data["senderId"]
-        } else null
+        // Extract chat info from the push payload for deep-navigation, reusing the same
+        // decoder + chat-target logic the Android FCM service uses.
+        val decoded = PayloadDecoder.decode(data) as? DecodedNotification.Message
 
-        AppLifecycleManager.notifyNotificationOpened(chatId = chatId, isGroup = isGroup)
+        AppLifecycleManager.notifyNotificationOpened(
+            chatId = decoded?.chatTargetId,
+            isGroup = decoded?.groupMessage ?: false
+        )
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()

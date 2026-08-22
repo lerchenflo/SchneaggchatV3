@@ -43,14 +43,18 @@ actual class Notifier(private val context: Context, private val permissionManage
     actual fun showLocalNotification(content: NotificationContent) {
         createChannelIfNeeded()
         
+        //NEW_TASK to launch from a service context, CLEAR_TOP|SINGLE_TOP (with MainActivity's
+        //launchMode="singleTop") to resume an already-running app via onNewIntent instead of
+        //tearing it down and restarting it (CLEAR_TASK did that on every tap).
+        val intentFlags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)?.apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            flags = intentFlags
             putExtra(EXTRA_FROM_NOTIFICATION, true)
             content.chatId?.let { putExtra(EXTRA_CHAT_ID, it) }
             putExtra(EXTRA_GROUP_CHAT, content.groupChat)
         } ?: Intent().apply {
             setClassName(context, "org.lerchenflo.androidApp.MainActivity")
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            flags = intentFlags
             putExtra(EXTRA_FROM_NOTIFICATION, true)
             content.chatId?.let { putExtra(EXTRA_CHAT_ID, it) }
             putExtra(EXTRA_GROUP_CHAT, content.groupChat)
