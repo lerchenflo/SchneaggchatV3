@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -272,8 +273,7 @@ fun Chatauswahlscreen(
                 val touchSize = 40.dp
                 val iconSize = 28.dp
 
-                Text(
-                    text = stringResource(Res.string.app_name),
+                Row(
                     modifier = Modifier
                         .clickable {
                             val serverUrl = runBlocking { preferencemanager.getServerUrl() }
@@ -281,14 +281,26 @@ fun Chatauswahlscreen(
                         }
                         .weight(1f)
                         .padding(start = 5.dp),
-
-                    autoSize = TextAutoSize.StepBased(
-                        minFontSize = 10.sp,
-                        maxFontSize = 25.sp
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = stringResource(Res.string.app_name),
+                        modifier = Modifier.weight(1f, fill = false),
+                        autoSize = TextAutoSize.StepBased(
+                            minFontSize = 10.sp,
+                            maxFontSize = 25.sp
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Icon(
+                        imageVector = Icons.Default.Language,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
 
 
                 //Data sync icon

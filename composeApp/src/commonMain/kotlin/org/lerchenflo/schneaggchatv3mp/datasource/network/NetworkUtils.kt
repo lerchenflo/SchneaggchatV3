@@ -1251,8 +1251,8 @@ class NetworkUtils(
         )
     }
 
-    suspend fun deleteEvent(eventId: String): NetworkResult<Unit, NetworkError> {
-        return safeDelete(endpoint = "/events/delete?eventid=$eventId")
+    suspend fun deleteEvent(eventId: String, deleteConnectedGroup: Boolean = false): NetworkResult<Unit, NetworkError> {
+        return safeDelete(endpoint = "/events/delete?eventid=$eventId&deleteconnectedgroup=$deleteConnectedGroup")
     }
 
     // Location data itself is now pushed/pulled over the WebSocket (see SocketConnectionMessage:

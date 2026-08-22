@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.HelpOutline
@@ -302,7 +303,7 @@ fun EmailNotVerifiedScreen(
             }
         ) {
             Icon(
-                imageVector = Icons.Filled.HelpOutline,
+                imageVector = Icons.AutoMirrored.Filled.HelpOutline,
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )
