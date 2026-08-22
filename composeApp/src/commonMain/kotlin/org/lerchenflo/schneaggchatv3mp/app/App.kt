@@ -705,7 +705,11 @@ fun App() {
                             if (!entries.isNullOrEmpty()) {
                                 NavDisplay(
                                     entries = entries,
-                                    onBack = { scope.launch { navigator.navigateBack() } }
+                                    onBack = { scope.launch { navigator.navigateBack() } },
+                                    // HorizontalPager centers pages vertically by default; without an explicit
+                                    // fillMaxSize, screens shorter than the viewport wrap-size and get centered,
+                                    // showing a top gap instead of just filling down to the bottom nav bar.
+                                    modifier = Modifier.fillMaxSize()
                                 )
                             }
                         }

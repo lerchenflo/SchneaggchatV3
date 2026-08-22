@@ -191,14 +191,16 @@ class SignUpViewModel(
     fun signup() {
 
         viewModelScope.launch {
-            if (!checkenableCreateButton()) return@launch
+            // Set the guard synchronously, before any suspend call, so a second
+            // near-simultaneous tap can't slip through while this coroutine is
+            // still suspended inside checkenableCreateButton() below.
+            if (state.isLoading) return@launch
+            state = state.copy(isLoading = true)
 
-            if (state.isInputComplete() && !state.isLoading) {
-                try {
-                    state = state.copy(
-                        isLoading = true
-                    )
+            try {
+                if (!checkenableCreateButton()) return@launch
 
+                if (state.isInputComplete()) {
                     var accCreationSuccessful = false
                     appRepository.createAccount(state.usernameState.text, state.emailState.text, state.passwordState.text, state.gebiDate.toString(), state.profilePic!!) { success ->
                         if (success) {
@@ -219,15 +221,14 @@ class SignUpViewModel(
                             }
                         }
                     }
-
-
-                } catch (e: Exception) {
-                    loggingRepository.logWarning("Signup failed: ${e.message}")
-                } finally {
-                    state = state.copy(
-                        isLoading = false
-                    )
                 }
+
+            } catch (e: Exception) {
+                loggingRepository.logWarning("Signup failed: ${e.message}")
+            } finally {
+                state = state.copy(
+                    isLoading = false
+                )
             }
         }
 

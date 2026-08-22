@@ -46,6 +46,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import io.github.ismoy.imagepickerkmp.config.CropConfig
@@ -127,8 +128,8 @@ fun SignUpScreen(
                     onAction(SignupAction.OnSignUpButtonPress)
                 },
                 onBack = { onAction(SignupAction.OnBackClicked) },
-                finishEnabled = state.isInputComplete(),
-                backEnabled = true,
+                finishEnabled = state.isInputComplete() && !state.isLoading,
+                backEnabled = !state.isLoading, //disable back navigation when the account create request is in progress
                 modifier = Modifier.fillMaxSize(),
                 canContinue = { pageIndex ->
                     when (pageIndex) {
@@ -348,10 +349,8 @@ fun SignUpScreen(
                                     append(text1)
                                 }
 
-                                val startIndex = length
-                                append(text2)
-                                addLink(
-                                    url = LinkAnnotation.Url(
+                                withLink(
+                                    LinkAnnotation.Url(
                                         url = getPrivacyPolicyUrl(runBlocking { preferencemanager.getServerUrl() }),
                                         styles = TextLinkStyles(
                                             style = SpanStyle(
@@ -359,10 +358,10 @@ fun SignUpScreen(
                                                 textDecoration = TextDecoration.Underline
                                             )
                                         )
-                                    ),
-                                    start = startIndex,
-                                    end = length
-                                )
+                                    )
+                                ) {
+                                    append(text2)
+                                }
                             }
 
                             Text(text = annotatedString)

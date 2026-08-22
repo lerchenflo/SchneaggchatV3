@@ -48,6 +48,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Umfragen mit leeren optionen wenn eigene Antworten erlaubt sind
 - Bilder Zoom fix
 - Nachricht bearbeiten, neue Nachricht bei Enter (Desktop)
+- Register Bug bei schlechtem Internet behoben
 
 ### 3.0.15
 ##### Highlights
