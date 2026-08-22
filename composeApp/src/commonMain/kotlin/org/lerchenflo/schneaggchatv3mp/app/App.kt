@@ -66,6 +66,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.Schneagga
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
+import org.lerchenflo.schneaggchatv3mp.games.presentation.stanislaus.StanislausScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.autologincredchecker.AutoLoginCredCheckerRoot
@@ -616,6 +617,12 @@ fun App() {
 
                                     entry<Route.Game2048> {
                                         Game2048ScreenRoot(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.Stanislaus> {
+                                        StanislausScreenRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }

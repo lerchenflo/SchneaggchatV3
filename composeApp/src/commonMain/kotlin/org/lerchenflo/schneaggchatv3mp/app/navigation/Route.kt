@@ -117,4 +117,7 @@ sealed interface Route : NavKey {
     @Serializable
     data object Game2048: Route
 
+    @Serializable
+    data object Stanislaus: Route
+
 }
