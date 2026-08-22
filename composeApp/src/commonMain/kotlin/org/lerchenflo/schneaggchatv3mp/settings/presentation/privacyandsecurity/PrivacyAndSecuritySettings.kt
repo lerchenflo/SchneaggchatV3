@@ -126,14 +126,14 @@ fun PrivacyAndSecuritySettings(
                         if (ownuser.isEmailVerified()) {
                             Icon(
                                 imageVector = Icons.Outlined.Verified,
-                                contentDescription = "Email is verified",
+                                contentDescription = null,
                                 modifier = Modifier.size(30.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         } else {
                             Icon(
                                 imageVector = Icons.Rounded.Warning,
-                                contentDescription = "Email not verified",
+                                contentDescription = null,
                                 tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier
                                     .size(30.dp)
@@ -228,7 +228,8 @@ fun PrivacyAndSecuritySettings(
                         showChangePasswordDialog = false
                     }
                 }
-            }
+            },
+            isLoading = viewModel.isChangingPassword
         )
     }
 

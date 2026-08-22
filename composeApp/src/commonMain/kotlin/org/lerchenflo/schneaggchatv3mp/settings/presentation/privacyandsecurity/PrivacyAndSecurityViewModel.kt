@@ -45,6 +45,9 @@ class PrivacyAndSecurityViewModel(
     var friends by mutableStateOf<List<User>>(emptyList())
         private set
 
+    var isChangingPassword by mutableStateOf(false)
+        private set
+
     init {
         viewModelScope.launch { // Global location sharing status
             val ownId = SessionCache.requireLoggedIn()?.userId ?: return@launch
@@ -71,13 +74,23 @@ class PrivacyAndSecurityViewModel(
 
     fun changePassword(oldPassword: String, newPassword: String, onFinished: (Boolean) -> Unit) {
         viewModelScope.launch {
-            val success = appRepository.changePassword(oldPassword, newPassword)
-            if (success) {
-                SnackbarManager.showMessage(getString(Res.string.password_changed_successfully))
-                onFinished(true)
-            } else {
-                SnackbarManager.showMessage(getString(Res.string.password_change_failed))
-                onFinished(false)
+            // Guard set synchronously, before any suspend call, so a second
+            // near-simultaneous tap can't slip through while this coroutine is
+            // still suspended inside changePassword() below.
+            if (isChangingPassword) return@launch
+            isChangingPassword = true
+
+            try {
+                val success = appRepository.changePassword(oldPassword, newPassword)
+                if (success) {
+                    SnackbarManager.showMessage(getString(Res.string.password_changed_successfully))
+                    onFinished(true)
+                } else {
+                    SnackbarManager.showMessage(getString(Res.string.password_change_failed))
+                    onFinished(false)
+                }
+            } finally {
+                isChangingPassword = false
             }
         }
     }

@@ -48,12 +48,8 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
 
                 val suppressNotification = AppLifecycleManager.isAppInForeground
                     && decoded is DecodedNotification.Message //Suppress only messages
-                    && decoded.senderId.isNotEmpty() && decoded.receiverId.isNotEmpty()
-                    && run {
-                        //Suppress only when the chat is currently open on screen
-                        OpenChatTracker.isChatOpen(chatId = decoded.senderId, isGroup = decoded.groupMessage) //Single messages
-                                || OpenChatTracker.isChatOpen(chatId = decoded.receiverId, isGroup = decoded.groupMessage) //Group messages
-                    }
+                    //Suppress only when the chat this notification belongs to is currently open on screen
+                    && decoded.chatTargetId?.let { OpenChatTracker.isChatOpen(chatId = it, isGroup = decoded.groupMessage) } == true
 
                 if (!suppressNotification) {
                     notifier.showLocalNotification(content)

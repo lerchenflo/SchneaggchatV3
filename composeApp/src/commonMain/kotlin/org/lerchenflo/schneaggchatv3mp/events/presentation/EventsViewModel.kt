@@ -10,7 +10,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
+import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
@@ -20,15 +23,22 @@ class EventsViewModel(
     private val navigator: Navigator,
     private val eventRepository: EventRepository,
     private val appRepository: AppRepository,
+    private val userRepository: UserRepository,
+    private val initialEntryId: String? = null
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(EventsState())
     val state = combine(
         _state,
         eventRepository.getAllEventsFlow(),
-    ) { currentState, events ->
+        userRepository.getAllUsersFlow(),
+    ) { currentState, events, users ->
+        val friendsMap = users
+            .filter { it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED }
+            .associateBy { it.id }
         currentState.copy(
-            events = events
+            events = events,
+            friendsById = friendsMap
         )
     }.stateIn(
         scope = viewModelScope,
@@ -102,11 +112,34 @@ class EventsViewModel(
             }
             is EventsAction.OnJoinEvent -> {
                 viewModelScope.launch {
-                    appRepository.joinEvent(
-                        action.eventId
-                    )
+                    // Guard set synchronously, before any suspend call, so a second
+                    // near-simultaneous tap can't slip through while this coroutine is
+                    // still suspended inside joinEvent() below.
+                    if (_state.value.isJoiningEvent) return@launch
+                    _state.update { it.copy(isJoiningEvent = true) }
+
+                    try {
+                        val groupId = appRepository.joinEvent(
+                            action.eventId
+                        )
+
+                        if (groupId != null) {
+                            appRepository.dataSync("Started after joining event to get messages")
+                            _state.update { it.copy(selectedEvent = null) }
+                            navigator.navigate(Route.Chat(chatId = groupId, isGroup = true))
+                        }
+                    } finally {
+                        _state.update { it.copy(isJoiningEvent = false) }
+                    }
                 }
             }
+        }
+    }
+
+
+    init {
+        if (initialEntryId != null) {
+            onAction(EventsAction.OnEventClick(initialEntryId))
         }
     }
 }

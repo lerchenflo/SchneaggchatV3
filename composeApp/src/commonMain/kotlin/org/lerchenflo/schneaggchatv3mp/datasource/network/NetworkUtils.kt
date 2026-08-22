@@ -33,6 +33,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventJoinRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventJoinResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GameScoreResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GithubIssueDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GlobalRankingResponse
@@ -727,6 +728,7 @@ class NetworkUtils(
 
         val createdAt: Long,
         val creatorId: String,
+        val expiresAt: Long?,
         val members: List<GroupMemberResponse>
     )
 
@@ -1240,7 +1242,7 @@ class NetworkUtils(
 
     suspend fun joinEvent(
         eventId: String
-    ): NetworkResult<Boolean, NetworkError> {
+    ): NetworkResult<EventJoinResponse, NetworkError> {
         return safePost(
             endpoint = "/events/join",
             body = EventJoinRequest(
@@ -1249,8 +1251,8 @@ class NetworkUtils(
         )
     }
 
-    suspend fun deleteEvent(eventId: String): NetworkResult<Unit, NetworkError> {
-        return safeDelete(endpoint = "/events/delete?eventid=$eventId")
+    suspend fun deleteEvent(eventId: String, deleteConnectedGroup: Boolean = false): NetworkResult<Unit, NetworkError> {
+        return safeDelete(endpoint = "/events/delete?eventid=$eventId&deleteconnectedgroup=$deleteConnectedGroup")
     }
 
     // Location data itself is now pushed/pulled over the WebSocket (see SocketConnectionMessage:

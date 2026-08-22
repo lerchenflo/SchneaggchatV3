@@ -21,5 +21,7 @@ data class GroupDto(
     val updatedAt: Long,
     val profilePicUpdatedAt: Long,
 
+    val expiresAt: Long? = null,
+
     val notisMuted: Boolean = false
 )

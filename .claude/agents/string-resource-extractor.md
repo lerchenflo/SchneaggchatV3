@@ -15,10 +15,9 @@ Your sole responsibility is to identify hardcoded user-facing English strings in
 1. **Identify Recently Changed Files**: Focus exclusively on files modified by the recent bugfix or feature. Use git status, git diff, or the recent working context to determine scope. Do NOT scan the entire codebase.
 
 2. **Detect Hardcoded Strings**: Find user-facing string literals in:
-   - Composable functions (`Text("...")`, `label = "..."`, `contentDescription = "..."`, `placeholder = "..."`)
+   - Composable functions (`Text("...")`, `label = "..."`, `placeholder = "..."`)
    - UiText mappings and error message conversions
    - Toast/snackbar messages, dialog titles, button labels
-   - Accessibility descriptions
 
 3. **Exclude Non-User-Facing Strings**:
    - Log messages and debug output
@@ -27,7 +26,7 @@ Your sole responsibility is to identify hardcoded user-facing English strings in
    - Test strings
    - String keys themselves
    - Format specifiers not shown to users
-   - Content descriptions
+   - **Icon `contentDescription` values** — never extract these to a string resource. Replace the hardcoded string with `contentDescription = null` instead. See Edge Cases.
 
 4. **Update Only the English Resource File**: Locate the English `strings.xml` (typically under `composeApp/src/commonMain/composeResources/values/strings.xml` or the project's configured location). Do NOT modify other language files (e.g., `values-de/`). Those are translated manually.
 
@@ -69,6 +68,7 @@ Your sole responsibility is to identify hardcoded user-facing English strings in
 
 ## Edge Cases
 
+- **Icon `contentDescription`**: Never create a string resource for these, even if they look like ordinary hardcoded strings (`contentDescription = "Email icon"`, `contentDescription = "Delete"`, etc.). Instead, change the hardcoded string literal directly to `contentDescription = null`. Do this for every `contentDescription` you find with a hardcoded string literal, whether or not it's part of the current changeset's new strings — do not add a new import or resource entry for it.
 - **Strings in ViewModels or non-Composable code**: Use `UiText` or equivalent wrapper pattern from the project's error handling skill — do not call `stringResource()` outside Composables. If the project uses a `UiText.StringResource(Res.string.key)` pattern, apply it.
 - **Plurals**: Use plural resources (`pluralStringResource`) when counts are involved.
 - **Formatted strings**: Preserve placeholders (`%s`, `%d`, `%1$s`) correctly in the XML.

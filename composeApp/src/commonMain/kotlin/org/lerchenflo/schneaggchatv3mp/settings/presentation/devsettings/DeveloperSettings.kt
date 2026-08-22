@@ -103,6 +103,8 @@ fun DeveloperSettings(
                 }
             )
 
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
             SettingsOption(
                 icon = Icons.Default.DateRange,
                 text = "Events",
@@ -111,6 +113,8 @@ fun DeveloperSettings(
                     devSettingsViewModel.navigateEvents()
                 }
             )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
             SettingsOption(
                 icon = Icons.AutoMirrored.Filled.Forward,

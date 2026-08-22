@@ -97,6 +97,7 @@ fun SettingsScreen(
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
+            .padding(bottom = 16.dp)
     ){
         ActivityTitle(
             title = stringResource(Res.string.settings),

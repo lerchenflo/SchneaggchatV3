@@ -175,20 +175,35 @@ class GlobalViewModel(
             }
         }
 
+        // Handles a notification tap requesting a chat be opened. AppLifecycleManager holds the
+        // request as a StateFlow (not a one-shot event) so a tap that arrives before this
+        // collector exists - e.g. a cold app start - is not silently dropped, and only acted on
+        // once the user is logged in AND the auth-gated startup navigation is done (otherwise
+        // that navigation's own backstack reset would immediately undo it).
         viewModelScope.launch {
-            AppLifecycleManager.notificationOpenedEvent.collectLatest { data ->
-                println("App started from notification, synching data")
-                val ownId = SessionCache.requireLoggedIn()?.userId ?: return@collectLatest
-                if (SessionCache.isLoggedIn()) {
-                    appRepository.sendOfflineMessages(ownId)
-                    appRepository.dataSync(reason = "notificationOpened")
+            combine(
+                AppLifecycleManager.pendingNotificationOpen,
+                SessionCache.authState,
+                AppLifecycleManager.startupRoutingDone,
+            ) { pending, authState, routingDone -> Triple(pending, authState, routingDone) }
+                .collectLatest { (pending, authState, routingDone) ->
+                    if (pending == null || !routingDone) return@collectLatest
+                    val ownId = (authState as? SessionCache.AuthState.LoggedIn)?.userId ?: return@collectLatest
 
-                    // Navigate to the chat that the notification belongs to
+                    val data = AppLifecycleManager.consumePendingNotificationOpen() ?: return@collectLatest
+                    println("App started from notification, synching data")
+
+                    // Navigate to the chat that the notification belongs to. Switch to the chat
+                    // tab first - a bare Route.Chat push lands on whichever tab is currently
+                    // selected (see App.kt's NavigationAction.Navigate handling).
                     data.chatId?.let { chatId ->
+                        navigator.navigate(Route.ChatSelector)
                         navigator.navigate(Route.Chat(chatId = chatId, isGroup = data.isGroup))
                     }
+
+                    appRepository.sendOfflineMessages(ownId)
+                    appRepository.dataSync(reason = "notificationOpened")
                 }
-            }
         }
 
         // Track the own user's "share my location" setting reactively and (re-)evaluate

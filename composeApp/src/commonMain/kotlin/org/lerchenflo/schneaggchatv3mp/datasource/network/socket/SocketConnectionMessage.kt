@@ -355,6 +355,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                         createDate = socketMessage.group.createdAt,
                         updatedAt = socketMessage.group.updatedAt,
                         profilePicUpdatedAt = socketMessage.group.profilePicUpdatedAt,
+                        expiresAt = socketMessage.group.expiresAt,
                         notisMuted = existing?.notisMuted ?: false,
                         members = socketMessage.group.members.map { groupMemberresp ->
                             GroupMember(

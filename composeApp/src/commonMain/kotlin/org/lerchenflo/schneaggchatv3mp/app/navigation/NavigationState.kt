@@ -43,6 +43,11 @@ class NavigationState(
 
     val showNavBar: Boolean
         get() = currentRoute::class !in hiddenNavBarRoutes
+
+    val enableSwipeNavigation: Boolean
+        get() {
+            return showNavBar && (backStacks[topLevelRoute]?.size ?: 1) <= 1 && currentRoute::class != Route.Schneaggmap::class
+        }
 }
 
 
@@ -81,10 +86,10 @@ fun rememberNavigationState(
 }
 
 @Composable
-fun NavigationState.toEntries(
+fun NavigationState.decoratedEntriesMap(
     entryProvider: (NavKey) -> NavEntry<NavKey>
-): SnapshotStateList<NavEntry<NavKey>> {
-    val decoratedEntries = backStacks.mapValues { (_, stack) ->
+): Map<NavKey, List<NavEntry<NavKey>>> {
+    return backStacks.mapValues { (_, stack) ->
         val decorators = listOf(
             rememberSaveableStateHolderNavEntryDecorator<NavKey>(),
             rememberViewModelStoreNavEntryDecorator()
@@ -95,11 +100,16 @@ fun NavigationState.toEntries(
             entryProvider = entryProvider
         )
     }
+}
 
+@Composable
+fun NavigationState.toEntries(
+    entryProvider: (NavKey) -> NavEntry<NavKey>
+): SnapshotStateList<NavEntry<NavKey>> {
+    val decoratedEntries = decoratedEntriesMap(entryProvider)
     return stacksInUse
         .flatMap { decoratedEntries[it] ?: emptyList() }
         .toMutableStateList()
-
 }
 
 

@@ -60,7 +60,9 @@ private suspend fun resolveMessage(
         msgType = decoded.messageType,
         content = body,
         senderId = decoded.senderId,
-        receiverId = decoded.receiverId,
+        //For group messages the chat is identified by groupId, not by the raw push receiverId
+        //(which is the recipient user, not the group) - see Message.toNotificationContent().
+        receiverId = if (decoded.groupMessage) decoded.groupId else decoded.receiverId,
         groupMessage = decoded.groupMessage,
         senderAsString = decoded.senderName,
         myMessage = false,

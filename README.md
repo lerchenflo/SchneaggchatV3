@@ -6,14 +6,15 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 ## Was macht Schneaggchat besonders
 - Vorarlbergerisch als Sprachoption
-- Umfragen mit custom Antworten
+- Umfragen mit eigenen Antworten
 - Userbeschreibungen (Freunde können gemeinsam einen Text über dich verfassen)
 - Nachrichten - Reaktionen (Auch mit Text)
 - Geburtstagsanzeige + Benachrichtigungen
-- App kaputt Button
 - Standort mit Verlauf teilen
+- Bearbeitbare Karte mit öffentlichen Orten
 - @Annotations für Standorte + User + Spiele
 - Weckerfeature (Wecker-ton bei Freunden abspielen, auch wenn das Gerät auf lautlos ist)
+- App kaputt Button
 
 
 # Changelog
@@ -23,7 +24,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Features
 - Einführung in die Features
-- Bottom Navigation Bar
+- Bottom Navigation Bar mit Swipen
+- Chat öffnen aus Benachrichtigungen
 - Annas Theme
 - Reaktionszeitpunkt in Nachrichtendetails anzeigen
 - @game Annotations
@@ -47,6 +49,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Umfragen mit leeren optionen wenn eigene Antworten erlaubt sind
 - Bilder Zoom fix
 - Nachricht bearbeiten, neue Nachricht bei Enter (Desktop)
+- Register Bug bei schlechtem Internet behoben
+- App-Name-Titel in Chat-Auswahl mit Website-Icon anklickbar (statt Hyperlink-Styling)
 
 ### 3.0.15
 ##### Highlights
@@ -65,9 +69,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 #### Bugfixes
 - Profilbilder neu laden repariert
 - Map Popup scroll fix
-- Mose code tree voll angezeigt
-
-#### Bugfixes
+- Morse code tree voll angezeigt
 - Tägliche Spiele Timer + Änderung um Mitternacht
 - Fingerpicker fix
 

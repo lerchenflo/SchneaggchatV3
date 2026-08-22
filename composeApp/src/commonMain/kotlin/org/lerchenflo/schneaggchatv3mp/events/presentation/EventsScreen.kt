@@ -1,42 +1,37 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package org.lerchenflo.schneaggchatv3mp.events.presentation
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.koin.core.parameter.parametersOf
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventBottomPopup
+import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.events_screen_title
 
 @Composable
 fun EventsRoot(
-    viewModel: EventsViewModel = koinViewModel()
+    initialEntryId: String?
 ) {
+    val viewModel: EventsViewModel = koinViewModel<EventsViewModel> { parametersOf(initialEntryId) }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     EventsScreen(
@@ -55,7 +50,7 @@ fun EventsScreen(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             ActivityTitle(
-                title = "Events",
+                title = stringResource(Res.string.events_screen_title),
                 showBackButton = false
             )
         },
@@ -72,18 +67,24 @@ fun EventsScreen(
             }
         }
     ) { innerPadding ->
+        val ownId = SessionCache.requireLoggedIn()?.userId
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
+                .padding(innerPadding)
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(
                 items = state.events,
                 key = { it.id }
             ) { event ->
+                val creatorFriend = state.friendsById[event.creatorId]
                 EventItem(
                     event = event,
+                    creatorProfilePictureUrl = creatorFriend?.profilePictureUrl,
+                    isOwnEvent = event.creatorId == ownId,
                     onClick = { onAction(EventsAction.OnEventClick(event.id)) }
                 )
             }
@@ -95,40 +96,10 @@ fun EventsScreen(
                 event = state.selectedEvent,
                 onSave = {onAction(EventsAction.OnSaveEvent(it))},
                 onDismiss = { onAction(EventsAction.OnEventPopupDismiss) },
-                onJoin = {onAction(EventsAction.OnJoinEvent(it))}
+                onJoin = {onAction(EventsAction.OnJoinEvent(it))},
+                isJoining = state.isJoiningEvent
             )
         }
     }
 }
 
-
-
-@Composable
-private fun EventItem(
-    event: Event,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = event.title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            if (event.description.isNotEmpty()) {
-                Text(
-                    text = event.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}

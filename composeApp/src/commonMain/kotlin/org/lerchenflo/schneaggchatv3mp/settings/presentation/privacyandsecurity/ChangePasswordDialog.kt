@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -11,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -42,7 +44,8 @@ import schneaggchatv3mp.composeapp.generated.resources.password_needs_to_be_the_
 @Composable
 fun ChangePasswordDialog(
     onDismiss: () -> Unit,
-    onConfirm: (oldPassword: String, newPassword: String) -> Unit
+    onConfirm: (oldPassword: String, newPassword: String) -> Unit,
+    isLoading: Boolean = false
 ) {
     var oldPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
@@ -143,17 +146,24 @@ fun ChangePasswordDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                    if (isFormValid) {
+                    if (isFormValid && !isLoading) {
                         onConfirm(oldPassword, newPassword)
                     }
                 },
-                enabled = isFormValid
+                enabled = isFormValid && !isLoading
             ) {
-                Text(stringResource(Res.string.change))
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(18.dp)
+                    )
+                } else {
+                    Text(stringResource(Res.string.change))
+                }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(onClick = onDismiss, enabled = !isLoading) {
                 Text(stringResource(Res.string.cancel))
             }
         },

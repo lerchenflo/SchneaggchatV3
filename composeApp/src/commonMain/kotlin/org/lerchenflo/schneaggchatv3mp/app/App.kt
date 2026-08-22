@@ -2,9 +2,12 @@ package org.lerchenflo.schneaggchatv3mp.app
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -14,7 +17,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -32,8 +37,9 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.ObserveAsEvents
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.app.navigation.TOP_LEVEL_DESTINATIONS
+import org.lerchenflo.schneaggchatv3mp.app.navigation.decoratedEntriesMap
+import org.lerchenflo.schneaggchatv3mp.app.navigation.getVisibleTopLevelDestinations
 import org.lerchenflo.schneaggchatv3mp.app.navigation.rememberNavigationState
-import org.lerchenflo.schneaggchatv3mp.app.navigation.toEntries
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.LocalTapTargetController
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetController
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetOverlay
@@ -134,6 +140,67 @@ fun App() {
             topLevelRoutes = TOP_LEVEL_DESTINATIONS.keys
         )
 
+        val isMobile = remember { appRepository.appVersion.isMobile() }
+        val visibleTopLevelRoutes = remember(isMobile, isDeveloper, navigationState.topLevelRoute) {
+            getVisibleTopLevelDestinations(
+                selectedKey = navigationState.topLevelRoute,
+                mobile = isMobile,
+                developer = isDeveloper
+            )
+        }
+
+        val initialPageIndex = remember {
+            val idx = visibleTopLevelRoutes.indexOfFirst { it == navigationState.topLevelRoute || it::class == navigationState.topLevelRoute::class }
+            if (idx >= 0) idx else 0
+        }
+
+        val pagerState = rememberPagerState(
+            initialPage = initialPageIndex,
+            pageCount = { visibleTopLevelRoutes.size }
+        )
+
+        val currentVisibleRoutes by rememberUpdatedState(visibleTopLevelRoutes)
+        var isProgrammaticScroll by remember { mutableStateOf(false) }
+        // True only while a topLevelRoute change originates from the pager's own settle.
+        // Leaving a showOnlyWhenSelected tab (Events/Settings) shrinks the visible page list and
+        // shifts every later index by one, so the page the user is already looking at needs a pure
+        // index resync — animating that would flash the wrong page then slide back into place.
+        var pendingSwipeReindex by remember { mutableStateOf(false) }
+
+        // When topLevelRoute changes, keep the pager's current page in sync with it.
+        LaunchedEffect(navigationState.topLevelRoute) {
+            val targetIndex = currentVisibleRoutes.indexOfFirst {
+                it == navigationState.topLevelRoute || it::class == navigationState.topLevelRoute::class
+            }
+            if (targetIndex >= 0 && targetIndex != pagerState.currentPage) {
+                isProgrammaticScroll = true
+                try {
+                    if (pendingSwipeReindex) {
+                        pagerState.scrollToPage(targetIndex) // silent resync, no animation
+                    } else {
+                        pagerState.animateScrollToPage(targetIndex) // tap / programmatic nav
+                    }
+                } finally {
+                    isProgrammaticScroll = false
+                    pendingSwipeReindex = false
+                }
+            }
+        }
+
+        // When pager settles on a new page from user swiping, update topLevelRoute
+        LaunchedEffect(pagerState) {
+            snapshotFlow { pagerState.settledPage }
+                .collect { settledPage ->
+                    if (!isProgrammaticScroll) {
+                        val targetRoute = currentVisibleRoutes.getOrNull(settledPage)
+                        if (targetRoute != null && targetRoute != navigationState.topLevelRoute && targetRoute::class != navigationState.topLevelRoute::class) {
+                            pendingSwipeReindex = true
+                            navigationState.topLevelRoute = targetRoute
+                        }
+                    }
+                }
+        }
+
         // Koin-injected Navigator singleton used by ViewModels — its channel events are
         // translated into NavigationState mutations below
         val navigator = koinInject<Navigator>()
@@ -171,17 +238,21 @@ fun App() {
 
                     //Navigate
                     val destination = action.destination
+                    val topLevelMatchKey = navigationState.backStacks.keys.firstOrNull { it == destination || it::class == destination::class }
 
                     // Top-level or flat route — navigate within current tab or switch tab
-                    if (destination in navigationState.backStacks.keys) {
+                    if (topLevelMatchKey != null) {
                         // It's a top-level tab key: reset that tab's backstack if requested,
                         // then switch to it. Always ensure at least the tab root is present.
-                        val stack = navigationState.backStacks[destination]
-                        if (stack != null && (navigationOptions.exitAllPreviousScreens || destination == Route.SettingsScreen)) { //Remove backstack for settings
+                        val stack = navigationState.backStacks[topLevelMatchKey]
+                        if (stack != null && (navigationOptions.exitAllPreviousScreens || destination == Route.SettingsScreen || destination::class == Route.SettingsScreen::class)) { //Remove backstack for settings
                             stack.clear()
                             stack.add(destination) // tab root must always be present
+                        } else if (stack != null && destination != topLevelMatchKey) {
+                            stack.clear()
+                            stack.add(destination)
                         }
-                        navigationState.topLevelRoute = destination
+                        navigationState.topLevelRoute = topLevelMatchKey
                     } else {
                         // Flat sub-route on current tab's backstack
                         val stack = navigationState.backStacks[navigationState.topLevelRoute]
@@ -374,9 +445,8 @@ fun App() {
                         }
 
 
-                        NavDisplay(
-                            entries = navigationState.toEntries(
-                                entryProvider = entryProvider {
+                        val entriesMap = navigationState.decoratedEntriesMap(
+                            entryProvider = entryProvider {
 
                                     //Authentication
                                     entry<Route.AutoLoginCredChecker> {
@@ -519,7 +589,7 @@ fun App() {
                                     }
 
                                     entry<Route.Events> {
-                                        EventsRoot()
+                                        EventsRoot(initialEntryId = it.selectedEvent)
                                     }
 
 
@@ -620,9 +690,29 @@ fun App() {
                                         )
                                     }
                                 }
-                            ),
-                            onBack = { scope.launch { navigator.navigateBack() } }
-                        )
+                            )
+
+                        HorizontalPager(
+                            state = pagerState,
+                            modifier = Modifier.fillMaxSize(),
+                            userScrollEnabled = navigationState.enableSwipeNavigation,
+                            key = { pageIndex ->
+                                visibleTopLevelRoutes.getOrNull(pageIndex)?.let { it::class.simpleName ?: it.toString() } ?: pageIndex.toString()
+                            }
+                        ) { pageIndex ->
+                            val tabKey = visibleTopLevelRoutes.getOrNull(pageIndex)
+                            val entries = entriesMap[tabKey]
+                            if (!entries.isNullOrEmpty()) {
+                                NavDisplay(
+                                    entries = entries,
+                                    onBack = { scope.launch { navigator.navigateBack() } },
+                                    // HorizontalPager centers pages vertically by default; without an explicit
+                                    // fillMaxSize, screens shorter than the viewport wrap-size and get centered,
+                                    // showing a top gap instead of just filling down to the bottom nav bar.
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
 
 
                     }
