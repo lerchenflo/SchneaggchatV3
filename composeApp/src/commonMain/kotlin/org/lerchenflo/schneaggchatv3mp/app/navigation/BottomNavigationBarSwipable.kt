@@ -10,6 +10,19 @@ import androidx.navigation3.runtime.NavKey
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 
+fun getVisibleTopLevelDestinations(
+    selectedKey: NavKey,
+    mobile: Boolean,
+    developer: Boolean
+): List<NavKey> {
+    return TOP_LEVEL_DESTINATIONS.filter { (key, data) ->
+        val selected = key == selectedKey || key::class == selectedKey::class
+        if (data.mobileOnly && !mobile) return@filter false
+        if (data.showOnlyWhenSelected && !selected && !developer) return@filter false
+        true
+    }.map { it.key }
+}
+
 @Composable
 fun BottomAppBarSwipable(
     selectedKey: NavKey,
@@ -18,16 +31,18 @@ fun BottomAppBarSwipable(
     developer: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val visibleDestinations = getVisibleTopLevelDestinations(
+        selectedKey = selectedKey,
+        mobile = mobile,
+        developer = developer
+    )
+
     BottomAppBar(
         modifier = modifier
     ) {
-        TOP_LEVEL_DESTINATIONS.forEach { (key, data) ->
-
-            val selected = key == selectedKey
-
-            if (data.mobileOnly && !mobile) return@forEach //Return if this bottom nav entry is only for mobile and the user is on pc
-
-            if (data.showOnlyWhenSelected && !selected && !developer) return@forEach //Settings are only shown when the user has opened them, do not show otherwise
+        visibleDestinations.forEach { key ->
+            val data = TOP_LEVEL_DESTINATIONS[key] ?: return@forEach
+            val selected = key == selectedKey || key::class == selectedKey::class
 
             NavigationBarItem(
                 modifier = Modifier.tapTarget(data.id),
