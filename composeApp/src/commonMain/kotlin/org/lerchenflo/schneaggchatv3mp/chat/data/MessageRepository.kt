@@ -29,6 +29,15 @@ class MessageRepository(
         database.messageDao().deleteMessageDtoByPk(lokalPk)
     }
 
+    suspend fun getLastSyncedMessageVersion(): Long {
+        return database.messageDao().getLastSyncedMessageVersion()
+    }
+
+    suspend fun deleteMessagesForGroup(groupId: String) {
+        database.messageReaderDao().deleteReadersForGroupMessages(groupId)
+        database.messageDao().deleteMessagesForGroup(groupId)
+    }
+
 
     fun getMessagesByUserIdFlow(userId: String, gruppe: Boolean): Flow<List<Message>> {
         return database.messageDao().getMessagesByUserIdFlow(userId, gruppe).map { messages ->

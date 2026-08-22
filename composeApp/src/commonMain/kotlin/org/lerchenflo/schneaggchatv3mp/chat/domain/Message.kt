@@ -45,7 +45,8 @@ data class Message(
     var minimizeMessage: MessageMinimal = MessageMinimal.NONE,
     var senderColor: Int = 0,
     var readers : List<MessageReader>,
-    var reactions: List<Reaction> = emptyList()
+    var reactions: List<Reaction> = emptyList(),
+    var version: Long = 0L
 ) {
     fun isPicture(): Boolean = msgType == MessageType.IMAGE
     fun isAudio(): Boolean = msgType == MessageType.AUDIO
@@ -144,6 +145,7 @@ fun MessageWithReadersDto.toMessage(): Message = Message(
         readerDto.toMessageReader()
     },
     reactions = this.messageDto.reactions,
+    version = this.messageDto.version,
 )
 
 /** Domain -> DTO */
@@ -165,7 +167,8 @@ fun Message.toDto(): MessageWithReadersDto = MessageWithReadersDto(
         sent = this.sent,
         myMessage = this.myMessage,
         readByMe = this.readByMe,
-        reactions = this.reactions
+        reactions = this.reactions,
+        version = this.version
     ),
     readers = this.readers.map { reader ->
         reader.toDto()
