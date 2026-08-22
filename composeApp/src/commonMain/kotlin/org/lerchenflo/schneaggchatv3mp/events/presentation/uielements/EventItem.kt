@@ -16,7 +16,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.PublicOff
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
@@ -49,13 +52,24 @@ import kotlin.time.Duration.Companion.milliseconds
 fun EventItem(
     event: Event,
     creatorProfilePictureUrl: String?,
+    isOwnEvent: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(onClick = onClick),
+        colors = if (isOwnEvent) {
+            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        } else {
+            CardDefaults.cardColors()
+        },
+        border = if (isOwnEvent) {
+            BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+        } else {
+            null
+        }
     ) {
         Row(
             modifier = Modifier
@@ -67,7 +81,7 @@ fun EventItem(
                 modifier = Modifier
                     .size(48.dp)
                     .background(
-                        color = MaterialTheme.colorScheme.primaryContainer,
+                        color = if (isOwnEvent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
                         shape = RoundedCornerShape(12.dp)
                     ),
                 contentAlignment = Alignment.Center
@@ -76,7 +90,7 @@ fun EventItem(
                     imageVector = event.type.icon(),
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    tint = if (isOwnEvent) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
 
@@ -92,14 +106,14 @@ fun EventItem(
                     Text(
                         text = event.title,
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = if (isOwnEvent) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.weight(1f)
                     )
 
                     Icon(
                         imageVector = if (event.public) Icons.Default.Public else Icons.Default.PublicOff,
                         contentDescription = stringResource(if (event.public) Res.string.event_public else Res.string.event_private),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = if (isOwnEvent) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
                     )
 
@@ -118,7 +132,7 @@ fun EventItem(
                     Text(
                         text = event.description,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (isOwnEvent) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -128,15 +142,18 @@ fun EventItem(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val secondaryTextColor = if (isOwnEvent) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+
                     Text(
                         text = millisToString(event.startDate, "dd.MM.yyyy HH:mm"),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = secondaryTextColor
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     EventStartCountdownTimer(
                         startDate = event.startDate,
-                        closeDate = event.closeDate
+                        closeDate = event.closeDate,
+                        textColor = secondaryTextColor
                     )
                 }
             }
@@ -148,6 +165,7 @@ fun EventItem(
 private fun EventStartCountdownTimer(
     startDate: Long,
     closeDate: Long?,
+    textColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     modifier: Modifier = Modifier
 ) {
     var nowMillis by remember { mutableStateOf(Clock.System.now().toEpochMilliseconds()) }
@@ -186,7 +204,7 @@ private fun EventStartCountdownTimer(
     Text(
         text = text,
         style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        color = textColor,
         modifier = modifier
     )
 }

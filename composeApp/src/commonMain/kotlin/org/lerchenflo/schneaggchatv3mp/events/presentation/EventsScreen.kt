@@ -20,6 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventBottomPopup
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
@@ -66,6 +67,8 @@ fun EventsScreen(
             }
         }
     ) { innerPadding ->
+        val ownId = SessionCache.requireLoggedIn()?.userId
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -81,6 +84,7 @@ fun EventsScreen(
                 EventItem(
                     event = event,
                     creatorProfilePictureUrl = creatorFriend?.profilePictureUrl,
+                    isOwnEvent = event.creatorId == ownId,
                     onClick = { onAction(EventsAction.OnEventClick(event.id)) }
                 )
             }
