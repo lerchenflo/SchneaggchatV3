@@ -22,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -74,6 +75,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
 import schneaggchatv3mp.composeapp.generated.resources.camera
@@ -87,6 +89,7 @@ import schneaggchatv3mp.composeapp.generated.resources.description_info_user
 import schneaggchatv3mp.composeapp.generated.resources.enter_nickname
 import schneaggchatv3mp.composeapp.generated.resources.gallery
 import schneaggchatv3mp.composeapp.generated.resources.group_description
+import schneaggchatv3mp.composeapp.generated.resources.group_expires_at
 import schneaggchatv3mp.composeapp.generated.resources.group_name
 import schneaggchatv3mp.composeapp.generated.resources.leave_group
 import schneaggchatv3mp.composeapp.generated.resources.no_description
@@ -431,6 +434,32 @@ fun ChatDetails(
 
                  */
 
+            }
+
+            // Expiry date only for group chats that have one (e.g. event groups)
+            if (isGroup) {
+                (selectedChat as? ChatDetailsState.GroupDetails)?.group?.expiresAt?.let { expiresAt ->
+                    HorizontalDivider()
+
+                    ListItem(
+                        headlineContent = {
+                            Text(
+                                text = stringResource(
+                                    Res.string.group_expires_at,
+                                    millisToString(expiresAt, format = "dd.MM.yyyy HH:mm")
+                                ),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        },
+                        leadingContent = {
+                            Icon(
+                                imageVector = Icons.Default.Schedule,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    )
+                }
             }
 
             HorizontalDivider()
