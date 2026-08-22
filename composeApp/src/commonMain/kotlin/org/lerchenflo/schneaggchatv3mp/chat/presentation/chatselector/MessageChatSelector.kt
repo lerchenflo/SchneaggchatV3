@@ -69,6 +69,7 @@ fun MessageChatSelector(
     val highlightTodaysTimestamp by preferencemanager.getHighlightTodaysMessageTimestampFlow()
         .collectAsStateWithLifecycle(initialValue = true)
 
+    SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
 

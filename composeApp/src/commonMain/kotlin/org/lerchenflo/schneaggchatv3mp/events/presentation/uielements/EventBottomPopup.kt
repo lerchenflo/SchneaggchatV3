@@ -98,6 +98,7 @@ fun EventBottomPopup(
     var showEndDatePicker by remember { mutableStateOf(false) }
     var typeDropdownExpanded by remember { mutableStateOf(false) }
 
+    SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying stale
     val myEvent = event.creatorId == SessionCache.requireLoggedIn()?.userId
 
     ModalBottomSheet(

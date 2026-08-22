@@ -153,6 +153,7 @@ fun Chatauswahlscreen(
 
     var profilePictureFilePathTemp by remember { mutableStateOf("") }
 
+    SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
     val connectionToServer = SessionCache.onlineFlow.collectAsStateWithLifecycle()

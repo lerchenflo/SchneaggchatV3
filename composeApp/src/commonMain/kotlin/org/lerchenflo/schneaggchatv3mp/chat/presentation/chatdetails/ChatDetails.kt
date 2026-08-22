@@ -118,6 +118,7 @@ fun ChatDetails(
     val availableMembers by chatdetailsViewmodel.availableNewMembers.collectAsStateWithLifecycle()
     val searchTerm by chatdetailsViewmodel.searchterm.collectAsStateWithLifecycle()
 
+    SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
     var profilePictureDialogShown by remember { mutableStateOf(false) }

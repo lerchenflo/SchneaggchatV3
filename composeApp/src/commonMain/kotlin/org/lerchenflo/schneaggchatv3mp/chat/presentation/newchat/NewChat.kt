@@ -86,6 +86,7 @@ fun NewChat(
     val pendingFriends by viewModel.pendingFriends.collectAsStateWithLifecycle()
     val pendingFriendPopup by viewModel.pendingFriendPopup.collectAsStateWithLifecycle()
 
+    SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
     Scaffold {

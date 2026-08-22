@@ -154,6 +154,7 @@ fun ChatScreen(
     val chatPartner by viewModel.chatPartner.collectAsStateWithLifecycle()
 
     //Leave chat when not logged in
+    SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
     // Track the visible chat so the socket handler can suppress notifications for it
