@@ -5,6 +5,7 @@ package org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -26,6 +27,7 @@ import schneaggchatv3mp.composeapp.generated.resources.support_email_verificatio
 import schneaggchatv3mp.composeapp.generated.resources.support_email_verification_subject
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -142,6 +144,11 @@ class EmailVerifiedCheckViewModel(
 
         applicationScope.launch {
             appRepository.dataSync(reason = "emailVerifiedCheckInit")
+        }
+
+        viewModelScope.launch {
+            delay(8.seconds)
+            _state.update { it.copy(canResendEmail = true) }
         }
 
 

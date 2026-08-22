@@ -1,7 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,17 +12,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,6 +36,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,7 +62,6 @@ import schneaggchatv3mp.composeapp.generated.resources.change_email
 import schneaggchatv3mp.composeapp.generated.resources.email_check_loading_data
 import schneaggchatv3mp.composeapp.generated.resources.email_check_problem
 import schneaggchatv3mp.composeapp.generated.resources.email_check_verified
-import schneaggchatv3mp.composeapp.generated.resources.email_icon_description
 import schneaggchatv3mp.composeapp.generated.resources.email_not_verified_email_has_been_sent1
 import schneaggchatv3mp.composeapp.generated.resources.email_not_verified_email_has_been_sent2
 import schneaggchatv3mp.composeapp.generated.resources.email_not_verified_screen_title
@@ -73,41 +76,39 @@ fun EmailVerifiedCheckScreenRoot() {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     if (state.userData == null || (state.userData != null && state.userData!!.emailVerifiedAt != null)) {
-
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-
-                    RoundLoadingIndicator(
-                        visible = true,
-                        onClick = {},
-                        size = 50.dp,
-                        strokeWidth = 3.dp
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(4.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(text = stringResource(Res.string.email_check_loading_data))
-
-                }
-            }
-        }
+        EmailCheckLoadingIndicator()
     } else{
         EmailNotVerifiedScreen(
             state = state,
             onAction = viewModel::onAction
         )
+    }
+}
+
+@Composable
+fun EmailCheckLoadingIndicator() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            RoundLoadingIndicator(
+                visible = true,
+                onClick = {},
+                size = 50.dp,
+                strokeWidth = 3.dp
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = stringResource(Res.string.email_check_loading_data),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
@@ -122,29 +123,45 @@ fun EmailNotVerifiedScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(
-                horizontal = 16.dp,
+                horizontal = 24.dp,
                 vertical = 24.dp
             ),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        //Top Email icon
-        Icon(
-            imageVector = Icons.Outlined.Email,
-            contentDescription = stringResource(Res.string.email_icon_description),
-            modifier = Modifier
-                .size(120.dp)
-        )
+        Spacer(modifier = Modifier.height(16.dp))
 
+        //Top Email icon in tinted circle
+        Box(
+            modifier = Modifier
+                .size(96.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Email,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(48.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
 
         //Title
         Text(
             text = stringResource(Res.string.email_not_verified_screen_title),
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(smallSpacer))
 
         //Body text
         val str1 = stringResource(Res.string.email_not_verified_email_has_been_sent1)
@@ -153,7 +170,7 @@ fun EmailNotVerifiedScreen(
             append(str1)
             withStyle(
                 style = SpanStyle(
-                    //color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
             ) {
@@ -162,29 +179,30 @@ fun EmailNotVerifiedScreen(
             append(str2)
         }
         Text(
-            text = annotatedString
+            text = annotatedString,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        Spacer(modifier = Modifier.height(smallSpacer))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        HorizontalDivider(modifier = Modifier.height(4.dp))
+        HorizontalDivider()
 
-        Spacer(modifier = Modifier.height(smallSpacer))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
+            modifier = Modifier.fillMaxWidth()
         ) {
 
-            //Retry login button (Unused if user update push works)
+            //Check verification - primary action, confirms the user has verified
             NormalButton(
-                text = stringResource(Res.string.email_check_verified),
                 onClick = {
                     onAction(EmailVerifiedCheckAction.OnCheckVerificationClick)
                 },
                 isLoading = state.isLoading,
+                text = stringResource(Res.string.email_check_verified),
+                modifier = Modifier.fillMaxWidth(),
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Filled.Check,
@@ -197,14 +215,16 @@ fun EmailNotVerifiedScreen(
 
             Spacer(modifier = Modifier.height(smallSpacer))
 
-            //Resend email
+            //Resend email - fallback when nothing arrived
             NormalButton(
                 onClick = {
                     onAction(EmailVerifiedCheckAction.OnResendEmailClick)
                 },
                 primary = false,
+                disabled = !state.canResendEmail,
                 isLoading = state.isResendingEmail,
                 text = stringResource(Res.string.resend_verification),
+                modifier = Modifier.fillMaxWidth(),
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Filled.Sync,
@@ -215,31 +235,26 @@ fun EmailNotVerifiedScreen(
                 },
             )
 
-            Spacer(modifier = Modifier.height(smallSpacer))
+            Spacer(modifier = Modifier.height(4.dp))
 
-            HorizontalDivider(modifier = Modifier.height(4.dp))
-
-            Spacer(modifier = Modifier.height(smallSpacer))
-
-            //Change email
-            NormalButton(
+            //Change email - rare correction, muted so it doesn't compete with Resend
+            TextButton(
                 onClick = {
                     onAction(EmailVerifiedCheckAction.OnChangeEmailStart)
                 },
-                text = stringResource(Res.string.change_email),
-                primary = false,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = null
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-                },
-            )
+                colors = ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            ) {
+                Text(
+                    text = stringResource(Res.string.change_email),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
 
         }
 
+        Spacer(modifier = Modifier.height(32.dp))
 
         if (state.showChangeEmailPopup) {
             val invalidEmailString = stringResource(Res.string.invalid_email)
@@ -262,42 +277,39 @@ fun EmailNotVerifiedScreen(
             )
         }
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            NormalButton(
-                onClick = {
-                    onAction(EmailVerifiedCheckAction.OnLogoutClick)
-                },
-                text = stringResource(Res.string.logout),
-                destructive = true,
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.Logout,
-                        contentDescription = null
-                    )
+        NormalButton(
+            onClick = {
+                onAction(EmailVerifiedCheckAction.OnLogoutClick)
+            },
+            text = stringResource(Res.string.logout),
+            destructive = true,
+            modifier = Modifier.fillMaxWidth(),
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.Logout,
+                    contentDescription = null
+                )
 
-                    Spacer(modifier = Modifier.width(8.dp))
-                },
+                Spacer(modifier = Modifier.width(8.dp))
+            },
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        TextButton(
+            onClick = {
+                onAction(EmailVerifiedCheckAction.OnRequestSupportClick)
+            }
+        ) {
+            Icon(
+                imageVector = Icons.Filled.HelpOutline,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(6.dp))
 
-            Box(
-                modifier = Modifier
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        shape = RoundedCornerShape(15.dp)
-                    )
-                    .padding(4.dp)
-            ){
-                Text(
-                    text = stringResource(Res.string.email_check_problem),
-                    modifier = Modifier.clickable{
-                        onAction(EmailVerifiedCheckAction.OnRequestSupportClick)
-                    }
-                )
-            }
+            Text(text = stringResource(Res.string.email_check_problem))
         }
 
     }
@@ -313,7 +325,8 @@ private fun EmailnotverifiedPreview() {
     SchneaggchatTheme {
         EmailNotVerifiedScreen(
             state = EmailVerifiedCheckState(
-                currentEmail = "Defaultemail@gmail.com"
+                currentEmail = "Defaultemail@gmail.com",
+                canResendEmail = true
             ),
             onAction = {  }
         )

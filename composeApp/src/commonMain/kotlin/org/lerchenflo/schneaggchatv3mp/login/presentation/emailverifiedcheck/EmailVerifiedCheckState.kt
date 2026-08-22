@@ -6,6 +6,7 @@ data class EmailVerifiedCheckState(
     val userData: User? = null,
     val isLoading: Boolean = false,
     val isResendingEmail: Boolean = false,
+    val canResendEmail: Boolean = false,
 
     val currentEmail: String = "",
     val showChangeEmailPopup: Boolean = false

@@ -54,9 +54,7 @@ import schneaggchatv3mp.composeapp.generated.resources.change_password
 import schneaggchatv3mp.composeapp.generated.resources.change_password_description
 import schneaggchatv3mp.composeapp.generated.resources.delete_account
 import schneaggchatv3mp.composeapp.generated.resources.email
-import schneaggchatv3mp.composeapp.generated.resources.email_not_verified_icon_description
 import schneaggchatv3mp.composeapp.generated.resources.email_provider_warning
-import schneaggchatv3mp.composeapp.generated.resources.email_verified_icon_description
 import schneaggchatv3mp.composeapp.generated.resources.emailinfo
 import schneaggchatv3mp.composeapp.generated.resources.emailinfo_unverified
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
@@ -128,14 +126,14 @@ fun PrivacyAndSecuritySettings(
                         if (ownuser.isEmailVerified()) {
                             Icon(
                                 imageVector = Icons.Outlined.Verified,
-                                contentDescription = stringResource(Res.string.email_verified_icon_description),
+                                contentDescription = null,
                                 modifier = Modifier.size(30.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         } else {
                             Icon(
                                 imageVector = Icons.Rounded.Warning,
-                                contentDescription = stringResource(Res.string.email_not_verified_icon_description),
+                                contentDescription = null,
                                 tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier
                                     .size(30.dp)
