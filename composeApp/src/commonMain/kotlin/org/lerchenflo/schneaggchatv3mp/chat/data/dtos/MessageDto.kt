@@ -9,6 +9,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageMinimal
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
 
 @Serializable
 @Entity(
@@ -31,6 +32,7 @@ data class MessageDto(
 
     var content: String = "",
     var poll: PollMessage? = null,
+    var systemEvent: SystemEventMessage? = null,
     var pictureUrl: String? = null,
     var audioPath: String? = null,
 

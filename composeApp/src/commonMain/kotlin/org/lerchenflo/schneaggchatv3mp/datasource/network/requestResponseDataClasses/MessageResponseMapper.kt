@@ -20,6 +20,7 @@ fun NetworkUtils.MessageResponse.toDomainMessage(
     pictureUrl = if (msgType == MessageType.IMAGE) existingPictureUrl else null,
     audioPath = if (msgType == MessageType.AUDIO) existingAudioPath else null,
     poll = pollResponse?.toPollMessage(ownId),
+    systemEvent = systemEventResponse?.toSystemEventMessage(),
     senderId = senderId,
     receiverId = receiverId,
     sendDate = sendDate.toString(),

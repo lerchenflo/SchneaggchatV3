@@ -40,8 +40,12 @@ suspend fun resolveLocalizedContent(
 private suspend fun resolveMessage(
     decoded: DecodedNotification.Message,
     encryptionKey: String?,
-): NotificationContent {
+): NotificationContent? {
     if (decoded.reaction) return resolveReaction(decoded, encryptionKey)
+
+    // Server-authored SYSTEM messages (group renamed, member added, wake sent, ...) never push -
+    // this branch is currently unreachable, but keep it honest in case that ever changes.
+    if (decoded.messageType == MessageType.SYSTEM) return null
 
     val body = if (!encryptionKey.isNullOrEmpty()) {
         runCatching {
@@ -50,6 +54,7 @@ private suspend fun resolveMessage(
                 MessageType.IMAGE -> getString(Res.string.image)
                 MessageType.AUDIO -> getString(Res.string.audio)
                 MessageType.POLL  -> getString(Res.string.poll)
+                MessageType.SYSTEM -> getString(Res.string.you_have_new_messages)
             }
         }.getOrElse { getString(Res.string.you_have_new_messages) }
     } else {
@@ -91,6 +96,7 @@ private suspend fun resolveReaction(
             MessageType.IMAGE -> Res.string.image
             MessageType.AUDIO -> Res.string.audio
             MessageType.POLL  -> Res.string.poll
+            MessageType.SYSTEM -> Res.string.message
         }
     )
 

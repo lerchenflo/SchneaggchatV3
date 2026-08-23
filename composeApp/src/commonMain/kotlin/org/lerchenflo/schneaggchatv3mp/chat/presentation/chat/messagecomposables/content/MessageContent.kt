@@ -96,6 +96,10 @@ fun MessageContent(
                         )
                     }
 
+                    // Unreachable - SYSTEM messages are rendered as a standalone
+                    // MessageDisplayItem.SystemMessage in Chat.kt, never wrapped in a bubble.
+                    MessageType.SYSTEM -> {}
+
                 }
             }
 

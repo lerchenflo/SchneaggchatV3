@@ -22,6 +22,9 @@ suspend fun Message.toNotificationContent(fallbackGroupName: String? = null): No
         MessageType.IMAGE -> getString(Res.string.image)
         MessageType.AUDIO -> getString(Res.string.audio)
         MessageType.POLL  -> getString(Res.string.poll)
+        // Unreachable in practice - the socket handler skips showNotification() for SYSTEM
+        // messages entirely (see SocketConnectionMessage.kt). Kept exhaustive for the compiler.
+        MessageType.SYSTEM -> getString(Res.string.you_have_new_messages)
     }
     val notifId = id?.hashCode()?.absoluteValue ?: 0
 

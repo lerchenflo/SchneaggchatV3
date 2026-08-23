@@ -105,6 +105,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.NewMessagesDivider
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReaderBar
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.SystemMessageItem
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.systemEventText
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.audio.AudioPlayerView
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.poll.PollDialog
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.DeleteMessageAlert
@@ -514,6 +516,11 @@ fun ChatScreen(
                         }
                         is MessageDisplayItem.NewMessagesDivider -> {
                             NewMessagesDivider()
+                        }
+                        is MessageDisplayItem.SystemMessage -> {
+                            // Deliberately not wrapped in MessageViewWithActions/MessageOptionPopup -
+                            // no reply/react/edit/delete/copy/long-press for a system event line.
+                            SystemMessageItem(systemEventText(item.event))
                         }
 
                     }

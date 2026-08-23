@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
@@ -23,6 +24,20 @@ class RoomTypeConverters {
     @TypeConverter
     fun toPollMessage(pollMessageString: String?): PollMessage? {
         return pollMessageString?.let { json.decodeFromString(PollMessage.serializer(), it) }
+    }
+
+    @TypeConverter
+    fun fromSystemEvent(systemEvent: SystemEventMessage?): String? {
+        return systemEvent?.let { json.encodeToString(SystemEventMessage.serializer(), it) }
+    }
+
+    @TypeConverter
+    fun toSystemEvent(systemEventString: String?): SystemEventMessage? {
+        // Unlike toPollMessage, tolerate a stale/malformed column instead of throwing - a system
+        // message that fails to decode should render as nothing, not crash the message list.
+        return systemEventString?.let {
+            runCatching { json.decodeFromString(SystemEventMessage.serializer(), it) }.getOrNull()
+        }
     }
 
     @TypeConverter

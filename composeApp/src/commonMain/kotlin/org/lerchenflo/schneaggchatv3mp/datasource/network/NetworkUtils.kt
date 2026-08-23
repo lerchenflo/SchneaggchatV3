@@ -45,6 +45,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapEntryResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.MapSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SystemEventResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoreRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapResponse
@@ -555,20 +556,23 @@ class NetworkUtils(
     }
 
     suspend fun sendFriendRequest(friendId: String) : NetworkResult<Any, NetworkError> {
-        return safeGet(
+        return safePost(
             endpoint = "/users/addfriend/$friendId",
+            body = ""
         )
     }
 
     suspend fun denyFriendRequest(friendId: String) : NetworkResult<Any, NetworkError> {
-        return safeGet(
-            endpoint = "/users/denyfriend/$friendId"
+        return safePost(
+            endpoint = "/users/denyfriend/$friendId",
+            body = ""
         )
     }
 
     suspend fun removeFriend(friendId: String) : NetworkResult<Any, NetworkError> {
-        return safeGet(
-            endpoint = "/users/removefriend/$friendId"
+        return safePost(
+            endpoint = "/users/removefriend/$friendId",
+            body = ""
         )
     }
 
@@ -987,6 +991,7 @@ class NetworkUtils(
 
         val content: String,
         val pollResponse: PollResponse?,
+        val systemEventResponse: SystemEventResponse? = null,
 
         val answerId: String?,
 

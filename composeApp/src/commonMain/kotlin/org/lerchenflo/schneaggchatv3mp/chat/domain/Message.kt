@@ -16,7 +16,8 @@ enum class MessageType {
     TEXT,
     IMAGE,
     POLL,
-    AUDIO
+    AUDIO,
+    SYSTEM
 }
 
 
@@ -27,6 +28,7 @@ data class Message(
 
     var content: String = "",
     var poll: PollMessage? = null,
+    var systemEvent: SystemEventMessage? = null,
     var pictureUrl: String? = null,
     var audioPath: String? = null,
 
@@ -114,6 +116,7 @@ data class Message(
             }
 
             appendLine("Poll: $poll")
+            appendLine("SystemEvent: $systemEvent")
             append("}")
         }
     }
@@ -126,6 +129,7 @@ fun MessageWithReadersDto.toMessage(): Message = Message(
     msgType = this.messageDto.msgType,
     content = this.messageDto.content,
     poll = this.messageDto.poll,
+    systemEvent = this.messageDto.systemEvent,
     pictureUrl = this.messageDto.pictureUrl,
     audioPath = this.messageDto.audioPath,
     senderId = this.messageDto.senderId,
@@ -156,6 +160,7 @@ fun Message.toDto(): MessageWithReadersDto = MessageWithReadersDto(
         msgType = this.msgType,
         content = this.content,
         poll = this.poll,
+        systemEvent = this.systemEvent,
         pictureUrl = this.pictureUrl,
         senderId = this.senderId,
         receiverId = this.receiverId,

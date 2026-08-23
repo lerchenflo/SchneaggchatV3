@@ -188,21 +188,24 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                 }
 
                 //THis is a new message, show a notification
-                if (socketMessage.newMessage) {
-                    // resolve username / groupname
-                    message.senderAsString = if(message.groupMessage) {
-                        groupRepository.getGroupById(message.receiverId)?.name ?: ""
-                    } else {
-                        userRepository.getUserById(message.senderId)?.name ?: ""
-                    }
+                // SYSTEM messages are server-authored event lines (group renamed, member added,
+                // wake sent, ...) - never worth a notification banner.
+                if (socketMessage.newMessage && message.msgType != MessageType.SYSTEM) {
+                    // resolve sender name (falling back to the sender's per-group nickname) and,
+                    // for group messages, the group name shown alongside it
+                    val senderUser = userRepository.getUserById(message.senderId)
+                    val group = if (message.groupMessage) groupRepository.getGroupById(message.receiverId) else null
+                    message.senderAsString = senderUser?.displayName
+                        ?: group?.members?.find { it.userId == message.senderId }?.memberName
+                        ?: ""
 
                     if (OpenChatTracker.isChatOpen(chatId = message.senderId, isGroup = message.groupMessage)){
                         if (!AppLifecycleManager.isAppInForeground) {
                             println("Noti in current chat, but app is minimized, showing noti")
-                            NotificationManager.showNotification(message)
+                            NotificationManager.showNotification(message, fallbackGroupName = group?.name)
                         }
                     } else {
-                        NotificationManager.showNotification(message)
+                        NotificationManager.showNotification(message, fallbackGroupName = group?.name)
                     }
 
                     //Only get image if the message is new
