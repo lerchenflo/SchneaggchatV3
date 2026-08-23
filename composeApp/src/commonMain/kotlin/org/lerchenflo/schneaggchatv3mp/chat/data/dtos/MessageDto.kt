@@ -56,6 +56,8 @@ data class MessageDto(
 
     var reactions: List<Reaction> = emptyList(),
 
+    var version: Long = 0L,
+
     ) {
     @Ignore
     var senderAsString: String = ""

@@ -95,6 +95,7 @@ fun UserSettings(
 
     val ownuser = sharedSettingsViewmodel.ownUser
 
+    SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val dev = SessionCache.requireLoggedIn()?.developer ?: return
 
     var showChangeUsernamePopup by remember { mutableStateOf(false) }

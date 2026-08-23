@@ -54,6 +54,10 @@ class GroupRepository(
     }
 
     suspend fun deleteGroup(groupid: String) {
+        // A left/removed group no longer produces a message-sync signal - purge its
+        // messages here so both /groups/sync and the websocket groupchange path cover it.
+        database.messageReaderDao().deleteReadersForGroupMessages(groupid)
+        database.messageDao().deleteMessagesForGroup(groupid)
         database.groupDao().deleteMembersForGroup(groupid)
         database.groupDao().deleteGroup(groupid)
     }

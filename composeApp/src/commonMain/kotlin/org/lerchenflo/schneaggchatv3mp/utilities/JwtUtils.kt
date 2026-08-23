@@ -20,26 +20,26 @@ object JwtUtils {
 
     fun isTokenDateValid(token: String) : Boolean {
         if (token.isBlank()) return false
-        val jwt = JWT.from(token)
-        val now = Clock.System.now()
-        val exp = jwt.expiresAt
+        return runCatching {
+            val jwt = JWT.from(token)
+            val now = Clock.System.now()
+            val exp = jwt.expiresAt
 
-        val isvalid = exp != null && exp.toEpochMilliseconds() > now.toEpochMilliseconds()
-
-        return isvalid
+            exp != null && exp.toEpochMilliseconds() > now.toEpochMilliseconds()
+        }.getOrDefault(false)
     }
 
     fun getTokenValidRemainingMinutes(token: String) : Long {
         if (token.isBlank()) return 0
 
-        val jwt = JWT.from(token)
-        val exp = jwt.expiresAt ?: return 0
-        val now = Clock.System.now()
+        return runCatching {
+            val jwt = JWT.from(token)
+            val exp = jwt.expiresAt ?: return@runCatching 0L
+            val now = Clock.System.now()
 
-        val remainingMillis = exp.toEpochMilliseconds() - now.toEpochMilliseconds()
-        val remainingMinutes = remainingMillis / 1000 / 60
-
-        return remainingMinutes
+            val remainingMillis = exp.toEpochMilliseconds() - now.toEpochMilliseconds()
+            remainingMillis / 1000 / 60
+        }.getOrDefault(0L)
     }
 }
 

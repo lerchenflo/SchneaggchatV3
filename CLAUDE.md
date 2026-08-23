@@ -10,7 +10,7 @@ Privacy-focused chat platform built with Kotlin Multiplatform and Compose Multip
 | UI                    | Compose Multiplatform | 1.10.3       |
 | DI                    | Koin                  | 4.2.0        |
 | Database              | Room + SQLite Bundled | 2.8.4        |
-| Networking            | Ktor Client           | 3.4.2        |
+| Networking            | Ktor Client           | 3.5.2        |
 | Local Storage         | DataStore             | 1.2.1        |
 | Navigation            | Jetpack Navigation 3  | 1.1.0-beta01 |
 | Annotation Processing | KSP                   | 2.3.5        |

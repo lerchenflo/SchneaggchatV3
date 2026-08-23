@@ -126,12 +126,15 @@ import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
 import schneaggchatv3mp.composeapp.generated.resources.error_invalid_credentials
+import schneaggchatv3mp.composeapp.generated.resources.error_login_server_error
+import schneaggchatv3mp.composeapp.generated.resources.error_login_too_many_requests
 import schneaggchatv3mp.composeapp.generated.resources.eventssync
 import schneaggchatv3mp.composeapp.generated.resources.groupsync
 import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
 import schneaggchatv3mp.composeapp.generated.resources.mapsync
 import schneaggchatv3mp.composeapp.generated.resources.mediasync
 import schneaggchatv3mp.composeapp.generated.resources.messagesync
+import schneaggchatv3mp.composeapp.generated.resources.offline
 import schneaggchatv3mp.composeapp.generated.resources.usersync
 import kotlin.collections.map
 import kotlin.time.Duration.Companion.milliseconds
@@ -394,6 +397,11 @@ class AppRepository(
 
             try {
                 coroutineScope {
+                    // Groups deleted this sync - purged again after awaitAll below, since the
+                    // parallel messageJob could re-insert rows right after groupIdSync's own
+                    // inline purge (GroupRepository.deleteGroup) ran.
+                    val removedGroupIds = mutableListOf<String>()
+
                     // Launch all sync operations concurrently
                     val userJob = async {
                         try {
@@ -452,7 +460,7 @@ class AppRepository(
                                 status = DataSyncJobStatus.RUNNING,
                                 error = null
                             )
-                            groupIdSync()
+                            removedGroupIds += groupIdSync()
                             updateSyncJob(
                                 type = GROUPS,
                                 status = DataSyncJobStatus.SUCCESS,
@@ -518,6 +526,11 @@ class AppRepository(
 
                     // Wait for all to complete (errors are already handled)
                     awaitAll(userJob, messageJob, groupJob, mapJob, eventJob)
+
+                    // The message job runs in parallel and may have re-inserted rows just
+                    // after groupIdSync's inline purge ran, so repeat it once everything
+                    // has settled.
+                    removedGroupIds.forEach { messageRepository.deleteMessagesForGroup(it) }
 
                     try {
                         updateSyncJob(
@@ -1240,9 +1253,19 @@ class AppRepository(
             is NetworkResult.Error<*> -> {
                 println("Error: ${result.error}")
 
+                // Only a genuine 401 means wrong credentials - rate limiting, server errors and
+                // being offline are not the user's fault and shouldn't be reported as such.
+                val messageRes = when (result.error) {
+                    is NetworkError.TooManyRequests -> Res.string.error_login_too_many_requests
+                    is NetworkError.NoInternet,
+                    is NetworkError.RequestTimeout -> Res.string.offline
+                    is NetworkError.ServerError -> Res.string.error_login_server_error
+                    else -> Res.string.error_invalid_credentials
+                }
+
                 sendErrorSuspend(
                     ErrorChannel.ErrorEvent(
-                        errorMessageUiText = UiText.StringResourceText(Res.string.error_invalid_credentials),
+                        errorMessageUiText = UiText.StringResourceText(messageRes),
                         duration = 5000L
                     )
                 )
@@ -1822,7 +1845,10 @@ class AppRepository(
                                         readerId = it.userId,
                                         readDate = it.readAt.toString()
                                     )
-                                }
+                                },
+                                // Bypasses /messages/sync - never let it advance the sync
+                                // cursor (MAX(version) over the messages table).
+                                version = existing?.version ?: 0L
                             )
                         )
 
@@ -1956,25 +1982,20 @@ class AppRepository(
 
         val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
-        val localmessages = messageRepository.getmessagechangeid()
         val imagesToGet = mutableListOf<String>()
         val audiosToGet = mutableListOf<String>()
 
-        var currentPage = 0
+        var since = messageRepository.getLastSyncedMessageVersion()
         var moreMessages = true
 
         while (moreMessages) {
 
-            val messageSyncResponse = networkUtils.messageSync(
-                messageIds = localmessages.map { IdTimeStamp(it.id, it.updatedAt) },
-                page = currentPage
-            )
-
+            val messageSyncResponse = networkUtils.messageSync(since = since)
 
             when (messageSyncResponse) {
                 is NetworkResult.Error<*> -> {
                     println("messageid sync error")
-                    break // Stop on error
+                    break // Stop on error, never advance past a batch we failed to fetch
                 }
 
                 is NetworkResult.Success<MessageSyncResponse> -> {
@@ -1982,14 +2003,22 @@ class AppRepository(
                     val deletedMessages = messageSyncResponse.data.deletedMessages
                     moreMessages = messageSyncResponse.data.moreMessages
 
-                    updatedMessages.forEach { messageResponse ->
+                    // Deletions can now arrive on any page, not just page 0. Apply them
+                    // before the updates below so a crash mid-batch never leaves MAX(version)
+                    // ahead of what was actually committed.
+                    deletedMessages.forEach { id ->
+                        messageRepository.deleteMessage(id)
+                    }
+
+                    updatedMessages.sortedBy { it.version }.forEach { messageResponse ->
                         val existing = database.messageDao().getMessageDtoById(messageResponse.messageId)
                         messageRepository.upsertMessage(
                             messageResponse.toDomainMessage(
                                 ownId = ownId,
                                 existingLocalPK = existing?.localPK ?: 0L,
                                 existingPictureUrl = existing?.pictureUrl,
-                                existingAudioPath = existing?.audioPath
+                                existingAudioPath = existing?.audioPath,
+                                version = messageResponse.version
                             )
                         )
                         when (messageResponse.msgType) {
@@ -1999,19 +2028,17 @@ class AppRepository(
                         }
                     }
 
-                    // Delete all non-existing messages
-                    deletedMessages.forEach { id ->
-                        messageRepository.deleteMessage(id)
-                    }
+                    // Always trust the envelope's watermark, never max(updatedMessages) - a
+                    // page can be all deletions, in which case updatedMessages is empty but
+                    // newVersion still advances.
+                    since = messageSyncResponse.data.newVersion
 
                     //println("MessageIdSync finished, new messages: ${updatedMessages.size}")
                 }
             }
-
-            currentPage++
         }
 
-        //println("Messagesync completed. Total pages: $currentPage")
+        //println("Messagesync completed")
 
 
         if (fetchMedia) {
@@ -2247,9 +2274,14 @@ class AppRepository(
     }
 
 
-    suspend fun groupIdSync() {
+    /**
+     * @return the ids of groups deleted during this sync (left, removed, or the group itself
+     * got deleted) - used by [dataSync] to purge that group's messages once the parallel
+     * message job has settled.
+     */
+    suspend fun groupIdSync(): List<String> {
 
-        val userId = SessionCache.requireLoggedIn() ?: return
+        val userId = SessionCache.requireLoggedIn() ?: return emptyList()
 
 
         val localgroups = groupRepository.getgroupchangeid()
@@ -2261,6 +2293,7 @@ class AppRepository(
             }
         )
 
+        var deletedGroupIds: List<String> = emptyList()
 
         when (groupSyncResponse) {
             is NetworkResult.Error<*> -> {
@@ -2301,7 +2334,8 @@ class AppRepository(
                 }
 
 
-                groupSyncResponse.data.deletedGroups.forEach { id ->
+                deletedGroupIds = groupSyncResponse.data.deletedGroups
+                deletedGroupIds.forEach { id ->
                     groupRepository.deleteGroup(id)
                 }
             }
@@ -2310,6 +2344,8 @@ class AppRepository(
         if (profilepicsToGet.isNotEmpty()) {
             getProfilePicturesForGroupIds(profilepicsToGet)
         }
+
+        return deletedGroupIds
     }
 
     suspend fun getProfilePicturesForGroupIds(groupIds: List<String>){

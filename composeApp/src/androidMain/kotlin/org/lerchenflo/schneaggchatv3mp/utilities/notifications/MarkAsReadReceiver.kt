@@ -42,7 +42,7 @@ class MarkAsReadReceiver : BroadcastReceiver() {
 
                 //The app process may have been started just for this broadcast
                 if (SessionCache.authState.value !is SessionCache.AuthState.LoggedIn) {
-                    SessionCache.login(tokens = prefs.getTokens(), developer = false)
+                    SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)
                 }
                 val ownId = (SessionCache.authState.value as? SessionCache.AuthState.LoggedIn)
                     ?.userId ?: return@runCatching

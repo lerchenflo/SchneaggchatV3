@@ -62,6 +62,7 @@ fun MemberSelector(
     minUsers: Int = 2,
     modifier: Modifier = Modifier
 ) {
+    SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
 
 

@@ -102,6 +102,7 @@ fun GameSelectorScreen(
 ){
     val gamesList = viewModel.gamesList
 
+    SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val dev = SessionCache.requireLoggedIn()?.developer ?: return
 
     var highscoreGame by remember { mutableStateOf<GameId?>(null) }

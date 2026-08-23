@@ -111,6 +111,8 @@
     <string name="error_access_not_permitted">Your saved session was invalidated. Please login again.</string>
     <string name="error_access_expired">Your saved session expired after 30 days. Please login again</string>
     <string name="error_invalid_credentials">You entered wrong credentials</string>
+    <string name="error_login_too_many_requests">Too many login attempts. Please wait a moment and try again.</string>
+    <string name="error_login_server_error">The server ran into a problem. Please try again later.</string>
     <string name="error_cannot_be_the_same_username">The new username must differ from the current username</string>
     <string name="error_username_must_not_be_empty">The new username must not be empty</string>
 
@@ -165,6 +167,7 @@
     <string name="variant2">Light Variant 2</string>
     <string name="neon_pulse_theme">Neon Pulse (Dark)</string>
     <string name="anna_theme">Annas theme</string>
+    <string name="flos_theme">Flos theme</string>
 
     <string name="common_friends">common friends: %1$s</string>
     <string name="create_group">Create Group</string>
@@ -292,6 +295,8 @@
     <string name="event_closes_with_date">Closes: %1$s</string>
     <string name="event_created_by">Created by %1$s</string>
     <string name="event_join">Join</string>
+    <string name="event_invite_header">%1$s wants to %2$s at %3$s</string>
+    <string name="event_invited_users">Invited</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Food</string>
     <string name="event_type_cooking">Cooking</string>

@@ -127,6 +127,12 @@ interface MessageDao {
     @Query("SELECT id, updatedAt FROM messages WHERE id != 0")
     suspend fun getMessageIdsWithChangeDates(): List<IdChangeDate>
 
+    @Query("SELECT COALESCE(MAX(version), 0) FROM messages")
+    suspend fun getLastSyncedMessageVersion(): Long
+
+    @Query("DELETE FROM messages WHERE receiverId = :groupId AND groupMessage = 1")
+    suspend fun deleteMessagesForGroup(groupId: String)
+
     @Transaction
     @Query("SELECT * FROM messages WHERE sent = 0")
     suspend fun getUnsentMessages(): List<MessageWithReadersDto>
@@ -168,6 +174,9 @@ interface MessageReaderDao {
 
     @Query("DELETE FROM message_readers WHERE messageId = :messageId")
     suspend fun deleteReadersForMessage(messageId: String)
+
+    @Query("DELETE FROM message_readers WHERE messageId IN (SELECT id FROM messages WHERE receiverId = :groupId AND groupMessage = 1)")
+    suspend fun deleteReadersForGroupMessages(groupId: String)
 }
 
 

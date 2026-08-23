@@ -10,7 +10,8 @@ fun NetworkUtils.MessageResponse.toDomainMessage(
     ownId: String,
     existingLocalPK: Long = 0L,
     existingPictureUrl: String? = null,
-    existingAudioPath: String? = null
+    existingAudioPath: String? = null,
+    version: Long = 0L
 ): Message = Message(
     localPK = existingLocalPK,
     id = messageId,
@@ -37,5 +38,6 @@ fun NetworkUtils.MessageResponse.toDomainMessage(
             readDate = it.readAt.toString()
         )
     },
-    reactions = reactions.map { Reaction(userId = it.userId, content = it.content, reactedAt = it.reactedAt) }
+    reactions = reactions.map { Reaction(userId = it.userId, content = it.content, reactedAt = it.reactedAt) },
+    version = version
 )

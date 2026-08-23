@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.runBlocking
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
@@ -55,6 +54,18 @@ object SessionCache {
         )
         _authState.value = state
         authStateValue = state
+    }
+
+    /**
+     * Same as [login], but refuses tokens that are blank or already expired. Background/push
+     * entry points (FCM, mark-as-read, iOS push bridge) rehydrate a session straight from storage
+     * without going through the login/refresh network path - this keeps them from fabricating a
+     * `LoggedIn(userId = "")` state out of empty or stale tokens. Returns whether login happened.
+     */
+    fun loginIfValid(tokens: NetworkUtils.TokenPair, developer: Boolean = false): Boolean {
+        if (!JwtUtils.isTokenDateValid(tokens.refreshToken)) return false
+        login(tokens, developer)
+        return true
     }
 
     fun logout() {
@@ -105,9 +116,9 @@ object SessionCache {
         val loggedIn = _authState.value as? AuthState.LoggedIn
         if (loggedIn == null) {
             println("user not logged in, sending login request")
-            runBlocking { //User can not do anything anyway, wait for logout screen
-                AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.Login)
-            }
+            // trySend is fine here: the channel is BUFFERED, and this must not block whatever
+            // (possibly main) thread called requireLoggedIn().
+            AppRepository.ActionChannel.trySendAction(AppRepository.ActionChannel.ActionEvent.Login)
         }
         return loggedIn
     }

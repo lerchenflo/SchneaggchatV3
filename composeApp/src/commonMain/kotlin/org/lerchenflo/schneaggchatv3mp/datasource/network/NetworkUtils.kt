@@ -994,7 +994,8 @@ class NetworkUtils(
         val lastChanged: Long,
         val deleted: Boolean,
         val readers: List<ReaderResponse>,
-        val reactions: List<ReactionResponse> = emptyList()
+        val reactions: List<ReactionResponse> = emptyList(),
+        val version: Long = 0L
     )
 
     @Serializable
@@ -1130,13 +1131,13 @@ class NetworkUtils(
     data class MessageSyncResponse(
         val updatedMessages: List<MessageResponse>,
         val deletedMessages: List<String>,
+        val newVersion: Long,
         val moreMessages: Boolean
     )
 
-    suspend fun messageSync(messageIds: List<IdTimeStamp>, page: Int) : NetworkResult<MessageSyncResponse, RequestError>{
-        return safePost(
-            endpoint = "/messages/sync?page=$page&page_size=400",
-            body = messageIds
+    suspend fun messageSync(since: Long) : NetworkResult<MessageSyncResponse, RequestError>{
+        return safeGet(
+            endpoint = "/messages/sync?since=$since&page_size=400",
         )
     }
 

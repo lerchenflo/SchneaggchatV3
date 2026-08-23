@@ -51,6 +51,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Nachricht bearbeiten, neue Nachricht bei Enter (Desktop)
 - Register Bug bei schlechtem Internet behoben
 - App-Name-Titel in Chat-Auswahl mit Website-Icon anklickbar (statt Hyperlink-Styling)
+- Nachrichtensync beschleunigt
+- Token Refresh verbessert
 
 ### 3.0.15
 ##### Highlights

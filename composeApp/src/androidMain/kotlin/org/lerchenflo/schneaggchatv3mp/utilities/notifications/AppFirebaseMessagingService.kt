@@ -57,8 +57,9 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
 
                 if (decoded is DecodedNotification.Message) {
                     val appRepository = KoinPlatform.getKoin().get<AppRepository>()
-                    SessionCache.login(tokens = prefs.getTokens(), developer = false)
-                    appRepository.messageIdSync()
+                    if (SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)) {
+                        appRepository.messageIdSync()
+                    }
                 }
             }.onFailure { e ->
                 println("[AppFirebaseMessagingService] Error handling push: ${e.message}")

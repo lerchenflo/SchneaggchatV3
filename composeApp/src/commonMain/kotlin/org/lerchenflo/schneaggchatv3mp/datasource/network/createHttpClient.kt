@@ -56,14 +56,21 @@ fun createHttpClient(
 
                     refreshTokens {
                         //println("HTTPCLIENT: Automatic token refresh triggered")
-                        
+
                         // Pass the failing refresh token downstream
                         val oldRefreshToken = this.oldTokens?.refreshToken
-                        tokenManager.refreshTokens(oldRefreshToken)
-                        
-                        // Load fresh tokens after refresh
-                        //println("HTTPCLIENT: Refresh finished, loading")
-                        tokenManager.loadBearerTokens()
+                        val result = tokenManager.refreshTokens(oldRefreshToken)
+
+                        // Only hand fresh tokens back to Ktor if the refresh actually succeeded.
+                        // Returning the (unchanged) stored tokens after a failed refresh is what
+                        // causes Ktor to retry with the same stale token and re-trigger this
+                        // callback on every subsequent request - a refresh storm against a
+                        // rate-limited endpoint. On failure, return null so Ktor stops retrying
+                        // instead of looping.
+                        when (result) {
+                            RefreshResult.Success -> tokenManager.loadBearerTokens()
+                            is RefreshResult.Retryable, RefreshResult.Invalidated -> null
+                        }
                     }
 
                 }

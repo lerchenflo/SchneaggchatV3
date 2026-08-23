@@ -27,8 +27,9 @@ class IosPushDelegateBridge {
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
-                SessionCache.login(tokens = prefs.getTokens(), developer = false)
-                KoinPlatform.getKoin().get<AppRepository>().messageIdSync()
+                if (SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)) {
+                    KoinPlatform.getKoin().get<AppRepository>().messageIdSync()
+                }
             }
         }
     }
@@ -45,8 +46,9 @@ class IosPushDelegateBridge {
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
-                SessionCache.login(tokens = prefs.getTokens(), developer = false)
-                KoinPlatform.getKoin().get<AppRepository>().dataSync(reason = "iosNotificationTap")
+                if (SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)) {
+                    KoinPlatform.getKoin().get<AppRepository>().dataSync(reason = "iosNotificationTap")
+                }
             }
         }
     }

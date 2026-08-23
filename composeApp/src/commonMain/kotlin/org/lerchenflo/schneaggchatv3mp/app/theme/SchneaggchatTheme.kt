@@ -227,6 +227,38 @@ private val annaScheme = darkColorScheme(
     outlineVariant = annaOutlineVariant
 )
 
+private val flosScheme = darkColorScheme(
+    primary = flosPrimary,
+    onPrimary = flosOnPrimary,
+    primaryContainer = flosPrimaryContainer,
+    onPrimaryContainer = flosOnPrimaryContainer,
+
+    secondary = flosSecondary,
+    onSecondary = flosOnSecondary,
+    secondaryContainer = flosSecondaryContainer,
+    onSecondaryContainer = flosOnSecondaryContainer,
+
+    tertiary = flosTertiary,
+    onTertiary = flosOnTertiary,
+
+    background = flosBackground,
+    onBackground = flosOnBackground,
+
+    surface = flosSurface,
+    onSurface = flosOnSurface,
+    surfaceVariant = flosSurfaceVariant,
+    onSurfaceVariant = flosOnSurfaceVariant,
+
+    surfaceContainerLowest = flosSurfaceContainerLowest,
+    surfaceContainerLow = flosSurfaceContainerLow,
+    surfaceContainer = flosSurfaceContainer,
+    surfaceContainerHigh = flosSurfaceContainerHigh,
+    surfaceContainerHighest = flosSurfaceContainerHighest,
+
+    outline = flosOutline,
+    outlineVariant = flosOutlineVariant
+)
+
 @Composable
 fun SchneaggchatTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -251,6 +283,9 @@ fun SchneaggchatTheme(
   }
   else if(themeSetting == ThemeSetting.ANNATHEME){
       annaScheme
+  }
+  else if(themeSetting == ThemeSetting.FLOSTHEME){
+      flosScheme
   }
   /*else if(themeSetting == ThemeSetting.PHTHEME){
       phTheme

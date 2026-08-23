@@ -285,15 +285,15 @@ val neonGhostBorder = Color(0x26494847)      // Outline-variant at 15% opacity
 // Anna Theme - SchneaggchatV2Android Colors
 val annaPrimary = Color(0xFF7E1030)           // annablau (Deep Wine/Burgundy)
 val annaOnPrimary = Color(0xFFFFFFFF)
-val annaPrimaryContainer = Color(0xFF816965)  // annaschwarz (Warm Dusty Rose / Muted Pink-Brown)
+val annaPrimaryContainer = Color(0xFFC93E7A)  // annaschwarz, brightened to vivid pink for more contrast
 val annaOnPrimaryContainer = Color(0xFFFFFFFF)
 
-val annaSecondary = Color(0xFF7E1030)         // annablau
+val annaSecondary = Color(0xFFD01E7A)         // pink, was blue (secondaryDark) in default dark theme
 val annaOnSecondary = Color(0xFFFFFFFF)
-val annaSecondaryContainer = Color(0xFF560B20)
+val annaSecondaryContainer = Color(0xFF7A0F46)
 val annaOnSecondaryContainer = Color(0xFFFFFFFF)
 
-val annaTertiary = Color(0xFF816965)          // annaschwarz
+val annaTertiary = Color(0xFF8F52B8)          // lila/purple accent, replaces dusty annaschwarz
 val annaOnTertiary = Color(0xFFFFFFFF)
 
 val annaBackground = Color(0xFF141615)        // Deep dark background
@@ -308,7 +308,39 @@ val annaSurfaceContainerLowest = Color(0xFF181B1A)
 val annaSurfaceContainerLow = Color(0xFF1E2120)
 val annaSurfaceContainer = Color(0xFF222625)    // annapink
 val annaSurfaceContainerHigh = Color(0xFF3B302E)
-val annaSurfaceContainerHighest = Color(0xFF541426) // Soft burgundy incoming bubble
+val annaSurfaceContainerHighest = Color(0xFF7A2568) // Bright plum/lila incoming bubble, more contrast than old burgundy
 
-val annaOutline = Color(0xFF816965)           // annaschwarz
+val annaOutline = Color(0xFFC08AAD)           // Bright pink-lila, brighter than old annaschwarz
 val annaOutlineVariant = Color(0xFF4A3B39)
+
+
+// Flos Theme - dark blue + white
+val flosPrimary = Color(0xFF15477E)           // Darker blue
+val flosOnPrimary = Color(0xFFFFFFFF)
+val flosPrimaryContainer = Color(0xFF1F5FA8)
+val flosOnPrimaryContainer = Color(0xFFFFFFFF)
+
+val flosSecondary = Color(0xFFFFFFFF)         // White
+val flosOnSecondary = Color(0xFF15202B)
+val flosSecondaryContainer = Color(0xFFE3E7EC)
+val flosOnSecondaryContainer = Color(0xFF15202B)
+
+val flosTertiary = Color(0xFF4A90D9)          // Lighter blue accent
+val flosOnTertiary = Color(0xFFFFFFFF)
+
+val flosBackground = Color(0xFF05070A)        // Dark background, darker than before
+val flosOnBackground = Color(0xFFECEDEE)
+
+val flosSurface = Color(0xFF0B0F14)
+val flosOnSurface = Color(0xFFFFFFFF)
+val flosSurfaceVariant = Color(0xFF161C24)
+val flosOnSurfaceVariant = Color(0xFFC5CCD6)
+
+val flosSurfaceContainerLowest = Color(0xFF020304)
+val flosSurfaceContainerLow = Color(0xFF070A0E)
+val flosSurfaceContainer = Color(0xFF0B0F14)
+val flosSurfaceContainerHigh = Color(0xFF141A21)
+val flosSurfaceContainerHighest = Color(0xFF1C232C)
+
+val flosOutline = Color(0xFF4A5568)
+val flosOutlineVariant = Color(0xFF2B333D)
