@@ -186,6 +186,10 @@
     <string name="group_name">group name</string>
     <string name="group_description">group description</string>
     <string name="group_expires_at">Expires: %1$s</string>
+    <string name="group_expires_in">Expires in: %1$s</string>
+    <string name="group_expired">Expired</string>
+    <string name="delete_group_timer">Delete group timer</string>
+    <string name="confirm_delete_group_timer">Remove this group\'s expiry date? It will no longer auto-expire.</string>
     <string name="user_description">user description</string>
     <string name="leave_group">leave group</string>
     <string name="add_users_to_group">add users</string>

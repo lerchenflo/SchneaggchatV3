@@ -361,6 +361,12 @@ class ChatDetailsViewmodel(
         }
     }
 
+    fun decoupleGroupExpiry(){
+        viewModelScope.launch {
+            appRepository.changeGroupExpiry(chatId, null)
+        }
+    }
+
     fun sendFriendRequest(id: String){
         CoroutineScope(Dispatchers.IO).launch { //Launch in coroutinescope to not access the db on main thread
             val success = appRepository.sendFriendRequest(id)

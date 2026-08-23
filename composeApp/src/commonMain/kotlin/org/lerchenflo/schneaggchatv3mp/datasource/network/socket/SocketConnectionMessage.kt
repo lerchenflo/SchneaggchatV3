@@ -28,6 +28,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiId
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager.NotiIdType
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.new_event_noti_title
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_accepted_noti_body
 import schneaggchatv3mp.composeapp.generated.resources.new_friend_request_noti
@@ -418,6 +419,14 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                     eventRepository.deleteEvent(socketMessage.event.id)
                 } else {
                     eventRepository.upsertEvent(socketMessage.event.toEvent())
+
+                    if (socketMessage.newEntry) {
+                        NotificationManager.showNotification(
+                            titletext = getString(Res.string.new_event_noti_title, socketMessage.event.creatorName),
+                            bodytext = socketMessage.event.title,
+                            notiId = NotiId.Integ(NotiIdType.EVENT.baseId)
+                        )
+                    }
                 }
             }
 

@@ -75,21 +75,28 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.formatCountdown
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.rememberCountdownMillis
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
+import kotlin.time.Clock
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add_users_to_group
 import schneaggchatv3mp.composeapp.generated.resources.camera
 import schneaggchatv3mp.composeapp.generated.resources.change_group_name
 import schneaggchatv3mp.composeapp.generated.resources.change_nickname
 import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
+import schneaggchatv3mp.composeapp.generated.resources.confirm_delete_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_friend
+import schneaggchatv3mp.composeapp.generated.resources.delete_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.description_info_group
 import schneaggchatv3mp.composeapp.generated.resources.description_info_user
 import schneaggchatv3mp.composeapp.generated.resources.enter_nickname
 import schneaggchatv3mp.composeapp.generated.resources.gallery
 import schneaggchatv3mp.composeapp.generated.resources.group_description
+import schneaggchatv3mp.composeapp.generated.resources.group_expired
 import schneaggchatv3mp.composeapp.generated.resources.group_expires_at
+import schneaggchatv3mp.composeapp.generated.resources.group_expires_in
 import schneaggchatv3mp.composeapp.generated.resources.group_name
 import schneaggchatv3mp.composeapp.generated.resources.leave_group
 import schneaggchatv3mp.composeapp.generated.resources.no_description
@@ -123,6 +130,7 @@ fun ChatDetails(
 
     var profilePictureDialogShown by remember { mutableStateOf(false) }
     var showLeaveGroupConfirmation by remember { mutableStateOf(false) }
+    var showDecoupleExpiryConfirmation by remember { mutableStateOf(false) }
     var showRemoveFriendConfirmation by remember { mutableStateOf(false) }
 
     var showAddMemberPopup by remember { mutableStateOf(false) }
@@ -442,14 +450,29 @@ fun ChatDetails(
                 (selectedChat as? ChatDetailsState.GroupDetails)?.group?.expiresAt?.let { expiresAt ->
                     HorizontalDivider()
 
+                    if (showDecoupleExpiryConfirmation) {
+                        ConfirmationDialog(
+                            message = stringResource(Res.string.confirm_delete_group_timer),
+                            onConfirm = {
+                                chatdetailsViewmodel.decoupleGroupExpiry()
+                            },
+                            onDismiss = {
+                                showDecoupleExpiryConfirmation = false
+                            }
+                        )
+                    }
+
                     ListItem(
                         headlineContent = {
+                            GroupExpiryCountdownText(expiresAt = expiresAt)
+                        },
+                        supportingContent = {
                             Text(
                                 text = stringResource(
                                     Res.string.group_expires_at,
                                     millisToString(expiresAt, format = "dd.MM.yyyy HH:mm")
                                 ),
-                                style = MaterialTheme.typography.bodyLarge
+                                style = MaterialTheme.typography.bodySmall
                             )
                         },
                         leadingContent = {
@@ -459,6 +482,12 @@ fun ChatDetails(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
+                    )
+
+                    DeleteButton(
+                        text = stringResource(Res.string.delete_group_timer),
+                        onClick = { showDecoupleExpiryConfirmation = true },
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
@@ -744,4 +773,26 @@ fun ChatDetails(
             }
         }
     }
+}
+
+@Composable
+private fun GroupExpiryCountdownText(
+    expiresAt: Long,
+    modifier: Modifier = Modifier
+) {
+    val timeRemaining = rememberCountdownMillis(key = expiresAt) {
+        expiresAt - Clock.System.now().toEpochMilliseconds()
+    }
+
+    val text = if (timeRemaining > 0) {
+        stringResource(Res.string.group_expires_in, formatCountdown(timeRemaining))
+    } else {
+        stringResource(Res.string.group_expired)
+    }
+
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = modifier
+    )
 }

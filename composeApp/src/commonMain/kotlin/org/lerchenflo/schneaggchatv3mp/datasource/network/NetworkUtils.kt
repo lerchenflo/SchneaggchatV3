@@ -883,6 +883,23 @@ class NetworkUtils(
         )
     }
 
+    @Serializable
+    data class SetGroupExpiryRequest(
+        val groupId: String,
+        val expiresAt: Long?
+    )
+
+    //Pass null to clear the expiry (group never auto-expires)
+    suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?): NetworkResult<Any, NetworkError> {
+        return safePost(
+            endpoint = "/groups/setexpiry",
+            body = SetGroupExpiryRequest(
+                groupId = groupId,
+                expiresAt = expiresAt
+            )
+        )
+    }
+
 
     /*
     **************************************************************************

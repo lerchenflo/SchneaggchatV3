@@ -181,6 +181,11 @@
     <string name="group_picture">Gruppenprofilbild</string>
     <string name="group_name">Gruppenname</string>
     <string name="group_description">Gruppenbeschreibung</string>
+    <string name="group_expires_at">Läuft ab: %1$s</string>
+    <string name="group_expires_in">Läuft ab in: %1$s</string>
+    <string name="group_expired">Abgelaufen</string>
+    <string name="delete_group_timer">Gruppentimer löschen</string>
+    <string name="confirm_delete_group_timer">Ablaufdatum dieser Gruppe entfernen? Sie läuft dann nicht mehr automatisch ab.</string>
     <string name="user_description">Userbeschreibung</string>
     <string name="leave_group">Gruppe verlassen</string>
     <string name="add_users_to_group">Mitglied hinzufügen</string>

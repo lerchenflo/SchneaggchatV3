@@ -31,7 +31,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
@@ -53,6 +51,8 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.formatCountdown
+import org.lerchenflo.schneaggchatv3mp.sharedUi.core.rememberCountdownMillis
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.difficulty
 import schneaggchatv3mp.composeapp.generated.resources.games_daily_section
@@ -61,7 +61,6 @@ import schneaggchatv3mp.composeapp.generated.resources.show_global_ranking
 import schneaggchatv3mp.composeapp.generated.resources.show_highscores
 import schneaggchatv3mp.composeapp.generated.resources.tools_and_games
 import kotlin.time.Clock
-import kotlin.time.Duration.Companion.milliseconds
 
 private fun timeRemainingUntilNextMidnight(): Long {
     val tz = TimeZone.currentSystemDefault()
@@ -74,19 +73,8 @@ private fun timeRemainingUntilNextMidnight(): Long {
 
 @Composable
 private fun dailyChallengeTimeRemainingText(): String {
-    var timeRemaining by remember { mutableStateOf(timeRemainingUntilNextMidnight()) }
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            timeRemaining = timeRemainingUntilNextMidnight()
-            delay(1000L.milliseconds)
-        }
-    }
-
-    val h = (timeRemaining / (60 * 60 * 1000)).toString().padStart(2, '0')
-    val m = ((timeRemaining / (60 * 1000)) % 60).toString().padStart(2, '0')
-    val s = ((timeRemaining / 1000) % 60).toString().padStart(2, '0')
-    return "$h:$m:$s"
+    val timeRemaining = rememberCountdownMillis(key = Unit) { timeRemainingUntilNextMidnight() }
+    return formatCountdown(timeRemaining)
 }
 
 @Composable

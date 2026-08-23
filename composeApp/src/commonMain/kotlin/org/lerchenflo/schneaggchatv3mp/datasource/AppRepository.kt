@@ -2413,6 +2413,17 @@ class AppRepository(
         }
     }
 
+    /** Pass null for [expiresAt] to clear the expiry (group never auto-expires). */
+    suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?) : Boolean {
+        when (val success = networkUtils.changeGroupExpiry(groupId, expiresAt)){
+            is NetworkResult.Error<*> -> return false
+            is NetworkResult.Success<*> -> {
+                dataSync(reason = "groupExpiryChanged")
+                return true
+            }
+        }
+    }
+
 
     // Location data itself is now pushed/pulled over the WebSocket (see GlobalViewModel's
     // location-tracking job and SocketConnectionMessage's LocationUpdate/FriendLocationChange/
