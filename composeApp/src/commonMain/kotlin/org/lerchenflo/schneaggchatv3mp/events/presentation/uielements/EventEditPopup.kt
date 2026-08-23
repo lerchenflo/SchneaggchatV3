@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -70,10 +71,14 @@ import schneaggchatv3mp.composeapp.generated.resources.event_invited_users
 import schneaggchatv3mp.composeapp.generated.resources.event_public
 import schneaggchatv3mp.composeapp.generated.resources.event_starts_label
 import schneaggchatv3mp.composeapp.generated.resources.event_title_label
+import schneaggchatv3mp.composeapp.generated.resources.error_event_title_must_not_be_empty
 import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.save
 import kotlin.time.Clock
 import kotlin.time.Instant
+
+//Keep in sync with the server-side limit in ValidationUtils.validateEventTitle (schneaggchatv3server)
+private const val EVENT_TITLE_MAX_LENGTH = 200
 
 // Popup for the event's creator - every field is editable, outside taps never dismiss it
 // (an accidental tap must not silently discard in-progress edits).
@@ -101,6 +106,14 @@ fun EventEditPopup(
     var typeDropdownExpanded by remember { mutableStateOf(false) }
     var showInviteFriendsDialog by remember { mutableStateOf(false) }
     var inviteSearchTerm by remember { mutableStateOf("") }
+
+    var titleError by remember { mutableStateOf(false) }
+
+    LaunchedEffect(currentEvent.title) {
+        if (titleError && currentEvent.title.isNotBlank()) {
+            titleError = false
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -176,11 +189,17 @@ fun EventEditPopup(
             TextField(
                 value = currentEvent.title,
                 onValueChange = {
-                    currentEvent = currentEvent.copy(title = it)
+                    if (it.length <= EVENT_TITLE_MAX_LENGTH) {
+                        currentEvent = currentEvent.copy(title = it)
+                    }
                 },
                 label = {
                     Text(text = stringResource(Res.string.event_title_label))
                 },
+                isError = titleError,
+                supportingText = if (titleError) {
+                    { Text(text = stringResource(Res.string.error_event_title_must_not_be_empty)) }
+                } else null,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -361,7 +380,13 @@ fun EventEditPopup(
 
                 NormalButton(
                     text = stringResource(Res.string.save),
-                    onClick = { onSave(currentEvent) },
+                    onClick = {
+                        if (currentEvent.title.isBlank()) {
+                            titleError = true
+                        } else {
+                            onSave(currentEvent)
+                        }
+                    },
                     disabled = !changed,
                     primary = false,
                     showOutline = true
