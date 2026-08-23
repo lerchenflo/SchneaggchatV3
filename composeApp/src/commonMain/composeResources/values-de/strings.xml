@@ -18,6 +18,7 @@
     <string name="groupsync">Gruppendaten</string>
     <string name="messagesync">Nachrichten</string>
     <string name="mapsync">Map</string>
+    <string name="eventssync">Events</string>
     <string name="mediasync">Medien</string>
 
     <string name="status_infotext">Dieser Status ist für alle deine Freunde lesbar. Aktuell ist er leer.</string>
@@ -110,6 +111,8 @@
     <string name="error_access_not_permitted">Deine gespeicherte Sitzung ist ungültig. Bitte logge dich erneut ein.</string>
     <string name="error_access_expired">Deine gespeicherte Sitzung abgelaufen. Bitte logge dich erneut ein.</string>
     <string name="error_invalid_credentials">Die von dir eingegebenen Daten sind falsch</string>
+    <string name="error_login_too_many_requests">Zu viele Anmeldeversuche. Bitte warte einen Moment und versuche es erneut.</string>
+    <string name="error_login_server_error">Der Server hatte ein Problem. Bitte versuche es später erneut.</string>
     <string name="error_cannot_be_the_same_username">Der neue Benutzername darf nicht der alte sein</string>
     <string name="error_username_must_not_be_empty">Der neue Benutzername darf nicht leer sein</string>
 
@@ -164,6 +167,7 @@
     <string name="variant2">Hell Variante 2</string>
     <string name="neon_pulse_theme">Neon Pulse (Dunkel)</string>
     <string name="anna_theme">Annas Theme</string>
+    <string name="flos_theme">Flos Theme</string>
 
     <string name="common_friends">gemeinsame Freunde: %1$s</string>
     <string name="create_group">Gruppe erstellen</string>
@@ -281,6 +285,39 @@
     <string name="own_birthday_noti_body">Alles Liebe und einen schönen Tag!</string>
     <string name="friend_birthday_noti_title">%1$s hat heute Geburtstag! &#127874;</string>
     <string name="friend_birthday_noti_body">Vergiss nicht zu gratulieren!</string>
+
+    <string name="new_event_noti_title">%1$s hat ein neues Event erstellt</string>
+    <string name="events_screen_title">Events</string>
+    <string name="event_starts_in">Beginnt in: %1$s</string>
+    <string name="event_started">Gestartet</string>
+    <string name="event_ended">Beendet</string>
+    <string name="event_title_label">Titel</string>
+    <string name="error_event_title_must_not_be_empty">Der Event-Titel darf nicht leer sein</string>
+    <string name="event_description_label">Beschreibung</string>
+    <string name="event_starts_label">Beginnt:</string>
+    <string name="event_starts_with_date">Beginnt: %1$s</string>
+    <string name="event_has_end_time">Hat Endzeit</string>
+    <string name="event_closes_with_date">Endet: %1$s</string>
+    <string name="event_created_by">Erstellt von %1$s</string>
+    <string name="event_join">Beitreten</string>
+    <string name="event_invite_header">%1$s möchte %2$s bei %3$s</string>
+    <string name="event_invited_users">Eingeladen</string>
+    <string name="event_invite_friends">Freunde einladen</string>
+    <string name="event_type_sport">Sport</string>
+    <string name="event_type_food">Essen</string>
+    <string name="event_type_cooking">Kochen</string>
+    <string name="event_type_shopping">Einkaufen</string>
+    <string name="event_type_driving">Fahren</string>
+    <string name="event_type_party">Party</string>
+    <string name="event_type_gaming">Gaming</string>
+    <string name="event_type_movie">Film</string>
+    <string name="event_type_trip">Ausflug</string>
+    <string name="event_type_meetup">Treffen</string>
+    <string name="event_type_outdoor">Outdoor</string>
+    <string name="event_type_other">Sonstiges</string>
+    <string name="event_public">Öffentlich</string>
+    <string name="event_friends_only">Nur Freunde</string>
+    <string name="event_invited_friends_only">Nur Eingeladene</string>
 
 
     <string name="tooltip_username">Wähle einen Benutzernamen den andere Benutzer sehen</string>
@@ -681,6 +718,17 @@
     <string name="games_2048_title">2048</string>
     <string name="games_2048_instructions">Wische (nach oben, unten, links, rechts) oder benutze die Pfeiltasten, um die Kacheln zu bewegen. Wenn sich zwei Kacheln mit derselben Zahl berühren, verschmelzen sie zu einer!\n\nKombiniere die Zahlen und erreiche die 2048-Kachel, um zu gewinnen, und spiele weiter für den Highscore!</string>
 
+    <!-- Games: Stanislaus -->
+    <string name="games_stanislaus_title">Stanislaus und der Fisch</string>
+    <string name="games_stanislaus_instructions">Licht bricht sich beim Übergang von Wasser zu Luft, deshalb ist der Fisch nie ganz dort, wo er zu sein scheint!\n\nZieh von Stanislaus weg, um den Speer zu zielen, und lass los, um zu werfen. Der Speer fliegt in einer perfekt geraden Linie — wenn du auf den Fisch zielst, den du siehst, wirst du danebenwerfen. Ziel tiefer und weiter hinaus, um ihn wirklich zu treffen.\n\nFange so viele Fische wie möglich, bevor die Zeit abläuft. Ein Treffer tief im Wasser gibt Extrapunkte, Fehlwürfe kosten dich Zeit, und Fische weit draußen im Teich verstecken sich hinter der spiegelnden Blendung der Oberfläche.</string>
+    <string name="games_stanislaus_caught">Gefangen!</string>
+    <string name="games_stanislaus_missed">Verfehlt!</string>
+    <string name="games_stanislaus_streak">Serie: %1$d</string>
+    <string name="games_stanislaus_label_apparent">Wo er zu sein schien</string>
+    <string name="games_stanislaus_label_real">Wo er wirklich war</string>
+    <string name="games_stanislaus_glare_hint">Zu weit draußen — die Spiegelung versteckt ihn</string>
+    <string name="games_stanislaus_sprite_description">Stanislaus</string>
+
     <!-- Recap -->
     <string name="recap_your_year">Dein Jahr</string>
     <string name="recap_using_schneaggchat_in_numbers">Schneaggchat in Zahlen</string>
@@ -1040,7 +1088,12 @@
     <string name="ttt_settings_wake_description">Du kannst diese Funktion aktivieren, damit deine Freunde dich aufwecken können. Dein Handy klingelt dann wie mit dem Handywecker auch im Lautlosmodus. Wenn deine Freunde dies für dich aktiviert haben, kannst du sie in den Chat-Details wecken.</string>
 
     <string name="ttt_settings_privacy">Datenschutz &amp; Sicherheit</string>
+    <string name="ttt_settings_privacy_description">Hier kannst du dein Passwort, deine E-Mail und die Standortfreigabe verwalten.</string>
     <string name="ttt_privacy_settings_go_back">Lass uns zurück zu den Einstellungen gehen</string>
+
+    <string name="ttt_settings_notifications">Benachrichtigungen</string>
+    <string name="ttt_settings_notifications_description">Hier kannst du deine Benachrichtigungen und Wecker-Einstellungen verwalten.</string>
+    <string name="ttt_notification_settings_go_back">Lass uns zurück zu den Einstellungen gehen</string>
 
     <string name="ttt_settings_appearance">Darstellungs-Einstellungen</string>
     <string name="ttt_settings_appearance_description">Hier kannst du deine Sprache (Österreichisch, Deutsch, Englisch) und dein Design ändern.</string>
@@ -1087,6 +1140,7 @@
     <string name="navbar_chats">Chats</string>
     
     <string name="navbar_map">Karte</string>
+    <string name="navbar_events">Events</string>
     <string name="navbar_games">Spiele</string>
 
     <string name="new_version_available">Neue Version verfügbar: %1$s</string>
@@ -1116,6 +1170,9 @@
     <string name="dev_group_general">Allgemein</string>
     <string name="dev_group_network">Server-Konfiguration</string>
     <string name="dev_group_tools">Tools &amp; Experimente</string>
+    <string name="dev_settings_skip_tour">Onboarding-Tour überspringen</string>
+    <string name="dev_settings_skip_tour_desc">Markiert die Onboarding-Tour als abgeschlossen</string>
+    <string name="dev_settings_tour_skipped">Onboarding-Tour übersprungen</string>
 
     <!-- Privacy & Security -->
     <string name="privacy_and_security">Datenschutz &amp; Sicherheit</string>
@@ -1132,5 +1189,40 @@
     <string name="password_change_failed">Passwort konnte nicht geändert werden. Bitte überprüfe dein aktuelles Passwort.</string>
     <string name="privacy_policy">Datenschutzerklärung</string>
     <string name="privacy_policy_info">Lies unsere Datenschutzbestimmungen und Richtlinien</string>
+
+    <string name="notification_settings">Benachrichtigungen</string>
+    <string name="notification_settings_info">Benachrichtigungsberechtigungen und Wecker-Einstellungen</string>
+    <string name="notification_group_general">Allgemein</string>
+    <string name="notifications">Benachrichtigungen</string>
+    <string name="notifications_enabled">Benachrichtigungen aktiviert</string>
+    <string name="notifications_disabled">Benachrichtigungen deaktiviert - zum Aktivieren antippen</string>
+    <string name="notification_permission_required_title">Benachrichtigungsberechtigung erforderlich</string>
+    <string name="notification_permission_permanently_denied_message">Benachrichtigungen für Schneaggchat sind in deinen Systemeinstellungen deaktiviert. Bitte öffne die Einstellungen und erlaube Benachrichtigungen, um Nachrichten-Alarme zu erhalten.</string>
+    <string name="open_settings">Einstellungen öffnen</string>
+    <string name="notification_permission_press_again">Drücke erneut, falls keine Berechtigungsanfrage erschienen ist</string>
+    <string name="notification_banner_title">Benachrichtigungen deaktiviert</string>
+    <string name="notification_banner_description">Aktiviere Benachrichtigungen, um Alarme für neue Nachrichten zu erhalten</string>
+    <string name="notification_banner_enable">Aktivieren</string>
+
+    <!-- Email Verification Support -->
+    <string name="support_email_verification_subject">E-Mail-Verifizierung funktioniert nicht</string>
+    <string name="support_email_verification_body">Es tuat ned (Bitte mehr infos)</string>
+
+    <!-- System messages (MessageType.SYSTEM) -->
+    <string name="system_group_created">%1$s hat die Gruppe erstellt</string>
+    <string name="system_member_added">%1$s hat %2$s hinzugefügt</string>
+    <string name="system_member_joined_event">%1$s ist über ein Event beigetreten</string>
+    <string name="system_member_removed">%1$s hat %2$s entfernt</string>
+    <string name="system_member_left">%1$s hat die Gruppe verlassen</string>
+    <string name="system_admin_granted">%1$s hat %2$s zum Admin gemacht</string>
+    <string name="system_admin_revoked">%1$s hat %2$s die Admin-Rechte entzogen</string>
+    <string name="system_group_name_changed">%1$s hat den Gruppennamen zu %2$s geändert</string>
+    <string name="system_group_description_changed">%1$s hat die Gruppenbeschreibung geändert</string>
+    <string name="system_group_picture_changed">%1$s hat das Gruppenbild geändert</string>
+    <string name="system_event_changed">%1$s hat das Event aktualisiert</string>
+    <string name="system_friendship_accepted">Ihr seid jetzt Freunde</string>
+    <string name="system_wake_sent">%1$s hat einen Weckruf gesendet</string>
+    <string name="system_wake_sent_reason">%1$s hat einen Weckruf gesendet: %2$s</string>
+    <string name="system_unknown_event">Chat aktualisiert</string>
 
 </resources>

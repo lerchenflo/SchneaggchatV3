@@ -20,8 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.GroupAdd
-import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.PublicOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -57,6 +55,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
 import org.lerchenflo.schneaggchatv3mp.events.domain.labelRes
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
@@ -68,7 +67,6 @@ import schneaggchatv3mp.composeapp.generated.resources.event_description_label
 import schneaggchatv3mp.composeapp.generated.resources.event_has_end_time
 import schneaggchatv3mp.composeapp.generated.resources.event_invite_friends
 import schneaggchatv3mp.composeapp.generated.resources.event_invited_users
-import schneaggchatv3mp.composeapp.generated.resources.event_public
 import schneaggchatv3mp.composeapp.generated.resources.event_starts_label
 import schneaggchatv3mp.composeapp.generated.resources.event_title_label
 import schneaggchatv3mp.composeapp.generated.resources.error_event_title_must_not_be_empty
@@ -104,6 +102,7 @@ fun EventEditPopup(
     var showStartDatePicker by remember { mutableStateOf(false) }
     var showEndDatePicker by remember { mutableStateOf(false) }
     var typeDropdownExpanded by remember { mutableStateOf(false) }
+    var visibilityDropdownExpanded by remember { mutableStateOf(false) }
     var showInviteFriendsDialog by remember { mutableStateOf(false) }
     var inviteSearchTerm by remember { mutableStateOf("") }
 
@@ -293,29 +292,58 @@ fun EventEditPopup(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Public event
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    imageVector = if (currentEvent.public) Icons.Default.Public else Icons.Default.PublicOff,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(Res.string.event_public),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f)
-                )
-                Switch(
-                    checked = currentEvent.public,
-                    onCheckedChange = { isPublic ->
-                        currentEvent = currentEvent.copy(public = isPublic)
+            // Event visibility
+            Box {
+                OutlinedButton(
+                    onClick = { visibilityDropdownExpanded = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = currentEvent.visibility.icon(),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(currentEvent.visibility.labelRes()),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = visibilityDropdownExpanded,
+                    onDismissRequest = { visibilityDropdownExpanded = false }
+                ) {
+                    EventVisibility.entries.forEach { entry ->
+                        val isSelected = entry == currentEvent.visibility
+                        val tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = entry.icon(),
+                                    contentDescription = null,
+                                    tint = tint
+                                )
+                            },
+                            text = {
+                                Text(
+                                    text = stringResource(entry.labelRes()),
+                                    color = tint,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            },
+                            onClick = {
+                                currentEvent = currentEvent.copy(visibility = entry)
+                                visibilityDropdownExpanded = false
+                            }
+                        )
                     }
-                )
+                }
             }
 
             // Invited users
@@ -567,7 +595,7 @@ private fun EventEditPopupPreview() {
                 startDate = Clock.System.now().toEpochMilliseconds(),
                 closeDate = null,
                 invitedUsers = emptyList(),
-                public = true,
+                visibility = EventVisibility.PUBLIC,
                 createdAt = Clock.System.now().toEpochMilliseconds(),
                 updatedAt = Clock.System.now().toEpochMilliseconds(),
                 updatedBy = "awdawd",

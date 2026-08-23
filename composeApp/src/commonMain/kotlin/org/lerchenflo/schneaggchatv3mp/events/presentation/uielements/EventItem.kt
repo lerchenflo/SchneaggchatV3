@@ -13,9 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.PublicOff
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -37,12 +34,11 @@ import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
+import org.lerchenflo.schneaggchatv3mp.events.domain.labelRes
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.event_ended
-import schneaggchatv3mp.composeapp.generated.resources.event_private
-import schneaggchatv3mp.composeapp.generated.resources.event_public
 import schneaggchatv3mp.composeapp.generated.resources.event_started
 import schneaggchatv3mp.composeapp.generated.resources.event_starts_in
 import kotlin.time.Clock
@@ -111,8 +107,8 @@ fun EventItem(
                     )
 
                     Icon(
-                        imageVector = if (event.public) Icons.Default.Public else Icons.Default.PublicOff,
-                        contentDescription = stringResource(if (event.public) Res.string.event_public else Res.string.event_private),
+                        imageVector = event.visibility.icon(),
+                        contentDescription = stringResource(event.visibility.labelRes()),
                         tint = if (isOwnEvent) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
                     )

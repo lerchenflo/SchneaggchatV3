@@ -14,6 +14,7 @@ import schneaggchatv3mp.composeapp.generated.resources.system_group_description_
 import schneaggchatv3mp.composeapp.generated.resources.system_group_name_changed
 import schneaggchatv3mp.composeapp.generated.resources.system_group_picture_changed
 import schneaggchatv3mp.composeapp.generated.resources.system_member_added
+import schneaggchatv3mp.composeapp.generated.resources.system_member_joined_event
 import schneaggchatv3mp.composeapp.generated.resources.system_member_left
 import schneaggchatv3mp.composeapp.generated.resources.system_member_removed
 import schneaggchatv3mp.composeapp.generated.resources.system_unknown_event
@@ -33,6 +34,7 @@ fun systemEventText(event: SystemEventMessage): String {
     return when (event.eventType) {
         SystemEventType.GROUP_CREATED -> stringResource(Res.string.system_group_created, event.actorName)
         SystemEventType.GROUP_MEMBER_ADDED -> stringResource(Res.string.system_member_added, event.actorName, targetNames)
+        SystemEventType.GROUP_MEMBER_JOINED_EVENT -> stringResource(Res.string.system_member_joined_event, event.actorName)
         SystemEventType.GROUP_MEMBER_REMOVED -> stringResource(Res.string.system_member_removed, event.actorName, targetNames)
         SystemEventType.GROUP_MEMBER_LEFT -> stringResource(Res.string.system_member_left, event.actorName)
         SystemEventType.GROUP_ADMIN_GRANTED -> stringResource(Res.string.system_admin_granted, event.actorName, targetNames)

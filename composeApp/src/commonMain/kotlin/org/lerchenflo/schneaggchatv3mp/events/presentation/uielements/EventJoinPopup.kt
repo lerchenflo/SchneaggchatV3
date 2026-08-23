@@ -15,9 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.PublicOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -37,6 +34,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
 import org.lerchenflo.schneaggchatv3mp.events.domain.labelRes
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
@@ -47,8 +45,6 @@ import schneaggchatv3mp.composeapp.generated.resources.event_closes_with_date
 import schneaggchatv3mp.composeapp.generated.resources.event_invite_header
 import schneaggchatv3mp.composeapp.generated.resources.event_invited_users
 import schneaggchatv3mp.composeapp.generated.resources.event_join
-import schneaggchatv3mp.composeapp.generated.resources.event_private
-import schneaggchatv3mp.composeapp.generated.resources.event_public
 import kotlin.time.Clock
 
 // Popup for a guest looking at someone else's event — everything here is read-only, so an
@@ -146,20 +142,20 @@ fun EventJoinPopup(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // Public / private
+            // Visibility
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = if (event.public) Icons.Default.Public else Icons.Default.PublicOff,
+                    imageVector = event.visibility.icon(),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = stringResource(if (event.public) Res.string.event_public else Res.string.event_private),
+                    text = stringResource(event.visibility.labelRes()),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -240,7 +236,7 @@ private fun EventJoinPopupPreview() {
                 startDate = Clock.System.now().toEpochMilliseconds(),
                 closeDate = null,
                 invitedUsers = emptyList(),
-                public = true,
+                visibility = EventVisibility.PUBLIC,
                 createdAt = Clock.System.now().toEpochMilliseconds(),
                 updatedAt = Clock.System.now().toEpochMilliseconds(),
                 updatedBy = "awdawd",

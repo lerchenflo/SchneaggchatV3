@@ -3,6 +3,7 @@ package org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCl
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 
 @Serializable
@@ -17,7 +18,7 @@ data class EventResponse(
     val startDate: Long,
     val closeDate: Long?,
     val invitedUsers: List<String>,
-    val public: Boolean,
+    val visibility: EventVisibility,
     val createdAt: Long = 0L,
     val updatedAt: Long = 0L,
     val updatedBy: String,
@@ -54,5 +55,5 @@ data class EventRequest(
     val startDate: Long,
     val closeDate: Long?,
     val invitedUsers: List<String>,
-    val public: Boolean,
+    val visibility: EventVisibility,
 )

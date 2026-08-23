@@ -17,6 +17,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import kotlin.time.Clock
 
 class EventsViewModel(
@@ -71,7 +72,7 @@ class EventsViewModel(
                             startDate = now,
                             closeDate = null,
                             invitedUsers = emptyList(),
-                            public = false,
+                            visibility = EventVisibility.FRIENDS_ONLY,
                             createdAt = now,
                             updatedAt = now,
                             creatorName = "",
@@ -101,7 +102,7 @@ class EventsViewModel(
                         startDate = event.startDate,
                         closeDate = event.closeDate,
                         invitedUsers = event.invitedUsers,
-                        public = event.public
+                        visibility = event.visibility
                     )
                 }
                 _state.update {
