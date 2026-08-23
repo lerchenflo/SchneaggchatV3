@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.PublicOff
 import androidx.compose.material3.AlertDialog
@@ -36,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,24 +54,31 @@ import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
 import org.lerchenflo.schneaggchatv3mp.events.domain.labelRes
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.event_description_label
 import schneaggchatv3mp.composeapp.generated.resources.event_has_end_time
+import schneaggchatv3mp.composeapp.generated.resources.event_invite_friends
 import schneaggchatv3mp.composeapp.generated.resources.event_invited_users
 import schneaggchatv3mp.composeapp.generated.resources.event_public
 import schneaggchatv3mp.composeapp.generated.resources.event_starts_label
 import schneaggchatv3mp.composeapp.generated.resources.event_title_label
+import schneaggchatv3mp.composeapp.generated.resources.error_event_title_must_not_be_empty
 import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.save
 import kotlin.time.Clock
 import kotlin.time.Instant
+
+//Keep in sync with the server-side limit in ValidationUtils.validateEventTitle (schneaggchatv3server)
+private const val EVENT_TITLE_MAX_LENGTH = 200
 
 // Popup for the event's creator - every field is editable, outside taps never dismiss it
 // (an accidental tap must not silently discard in-progress edits).
@@ -95,6 +104,16 @@ fun EventEditPopup(
     var showStartDatePicker by remember { mutableStateOf(false) }
     var showEndDatePicker by remember { mutableStateOf(false) }
     var typeDropdownExpanded by remember { mutableStateOf(false) }
+    var showInviteFriendsDialog by remember { mutableStateOf(false) }
+    var inviteSearchTerm by remember { mutableStateOf("") }
+
+    var titleError by remember { mutableStateOf(false) }
+
+    LaunchedEffect(currentEvent.title) {
+        if (titleError && currentEvent.title.isNotBlank()) {
+            titleError = false
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -170,11 +189,17 @@ fun EventEditPopup(
             TextField(
                 value = currentEvent.title,
                 onValueChange = {
-                    currentEvent = currentEvent.copy(title = it)
+                    if (it.length <= EVENT_TITLE_MAX_LENGTH) {
+                        currentEvent = currentEvent.copy(title = it)
+                    }
                 },
                 label = {
                     Text(text = stringResource(Res.string.event_title_label))
                 },
+                isError = titleError,
+                supportingText = if (titleError) {
+                    { Text(text = stringResource(Res.string.error_event_title_must_not_be_empty)) }
+                } else null,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -294,6 +319,21 @@ fun EventEditPopup(
             }
 
             // Invited users
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedButton(
+                onClick = { showInviteFriendsDialog = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.GroupAdd,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = stringResource(Res.string.event_invite_friends))
+            }
+
             if (currentEvent.invitedUsers.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
@@ -340,7 +380,13 @@ fun EventEditPopup(
 
                 NormalButton(
                     text = stringResource(Res.string.save),
-                    onClick = { onSave(currentEvent) },
+                    onClick = {
+                        if (currentEvent.title.isBlank()) {
+                            titleError = true
+                        } else {
+                            onSave(currentEvent)
+                        }
+                    },
                     disabled = !changed,
                     primary = false,
                     showOutline = true
@@ -444,6 +490,62 @@ fun EventEditPopup(
                 )
             }
         )
+    }
+
+    // Invite friends dialog
+    if (showInviteFriendsDialog) {
+        val availableUsers = remember(friendsById) {
+            friendsById.values.map { it.toChatListItem() }
+        }
+        val selectedUsers = remember(currentEvent.invitedUsers, friendsById) {
+            currentEvent.invitedUsers.mapNotNull { userId -> friendsById[userId]?.toChatListItem() }
+        }
+
+        ModalBottomSheet(
+            onDismissRequest = { showInviteFriendsDialog = false },
+            containerColor = MaterialTheme.colorScheme.background
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(480.dp)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Text(
+                    text = stringResource(Res.string.event_invite_friends),
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                MemberSelector(
+                    availableUsers = availableUsers,
+                    selectedUsers = selectedUsers,
+                    searchTerm = inviteSearchTerm,
+                    onSearchTermChange = { inviteSearchTerm = it },
+                    onUserSelected = { user ->
+                        currentEvent = currentEvent.copy(invitedUsers = currentEvent.invitedUsers + user.id)
+                    },
+                    onUserDeselected = { user ->
+                        currentEvent = currentEvent.copy(invitedUsers = currentEvent.invitedUsers - user.id)
+                    },
+                    minUsers = 0,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                NormalButton(
+                    text = stringResource(Res.string.ok),
+                    onClick = { showInviteFriendsDialog = false },
+                    primary = false,
+                    showOutline = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
     }
 }
 

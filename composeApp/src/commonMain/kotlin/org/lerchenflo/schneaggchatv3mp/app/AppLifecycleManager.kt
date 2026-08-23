@@ -21,20 +21,24 @@ import kotlinx.coroutines.flow.getAndUpdate
  * Manages app lifecycle state to determine if the app is in foreground/background
  */
 object AppLifecycleManager {
-    private var _isAppInForeground = mutableStateOf(false)
-    
+    // A StateFlow (not Compose mutableStateOf) on purpose: this is read from plain coroutines
+    // outside any Composable (e.g. GlobalViewModel's polling loop), and Compose snapshot state
+    // read from outside the snapshot system can throw "Reading a state that was created after
+    // the snapshot was taken".
+    private val _isAppInForeground = MutableStateFlow(false)
+
     private val _appResumedEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private val _appBackgroundedEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-    
+
     val appResumedEvent: SharedFlow<Unit> = _appResumedEvent.asSharedFlow()
     val appBackgroundedEvent: SharedFlow<Unit> = _appBackgroundedEvent.asSharedFlow()
-    
+
     /**
      * Whether the app is currently in foreground (visible to user)
      */
     val isAppInForeground: Boolean
         get() = _isAppInForeground.value
-    
+
     /**
      * Update the app foreground state
      */

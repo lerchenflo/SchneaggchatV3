@@ -288,6 +288,7 @@
     <string name="event_started">Started</string>
     <string name="event_ended">Ended</string>
     <string name="event_title_label">Title</string>
+    <string name="error_event_title_must_not_be_empty">The event title must not be empty</string>
     <string name="event_description_label">Description</string>
     <string name="event_starts_label">Starts:</string>
     <string name="event_starts_with_date">Starts: %1$s</string>
@@ -297,6 +298,7 @@
     <string name="event_join">Join</string>
     <string name="event_invite_header">%1$s wants to %2$s at %3$s</string>
     <string name="event_invited_users">Invited</string>
+    <string name="event_invite_friends">Invite friends</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Food</string>
     <string name="event_type_cooking">Cooking</string>
