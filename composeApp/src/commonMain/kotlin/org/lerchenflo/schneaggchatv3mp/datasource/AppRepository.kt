@@ -982,8 +982,10 @@ class AppRepository(
                     var unreadCount = 0
                     var unsentCount = 0
                     userMessages.forEach { message ->
-                        // Only count as unread if it's NOT my message and NOT read by me
-                        if (!message.myMessage && !message.readByMe) {
+                        // Only count as unread if it's NOT my message and NOT read by me.
+                        // SYSTEM messages arrive pre-read from the server, but exclude them
+                        // explicitly too - a system event line should never raise a badge.
+                        if (!message.myMessage && !message.readByMe && message.msgType != MessageType.SYSTEM) {
                             unreadCount++
                         }
                         if (!message.sent) unsentCount++
@@ -1014,8 +1016,10 @@ class AppRepository(
                     var unreadCount = 0
                     var unsentCount = 0
                     groupMessages.forEach { message ->
-                        // Only count as unread if it's NOT my message and NOT read by me
-                        if (!message.myMessage && !message.readByMe) {
+                        // Only count as unread if it's NOT my message and NOT read by me.
+                        // SYSTEM messages arrive pre-read from the server, but exclude them
+                        // explicitly too - a system event line should never raise a badge.
+                        if (!message.myMessage && !message.readByMe && message.msgType != MessageType.SYSTEM) {
                             unreadCount++
                         }
                         if (!message.sent) unsentCount++
@@ -1953,6 +1957,8 @@ class AppRepository(
                                 audio = audio
                             )
                         }
+
+                        MessageType.SYSTEM -> error("SYSTEM messages are server-authored and are never queued locally as unsent")
                     },
                     answerid = m.answerId,
                     localpk = m.localPK,

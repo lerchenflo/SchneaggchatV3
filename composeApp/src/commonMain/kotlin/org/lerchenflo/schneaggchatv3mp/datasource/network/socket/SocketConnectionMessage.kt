@@ -188,7 +188,9 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                 }
 
                 //THis is a new message, show a notification
-                if (socketMessage.newMessage) {
+                // SYSTEM messages are server-authored event lines (group renamed, member added,
+                // wake sent, ...) - never worth a notification banner.
+                if (socketMessage.newMessage && message.msgType != MessageType.SYSTEM) {
                     // resolve username / groupname
                     message.senderAsString = if(message.groupMessage) {
                         groupRepository.getGroupById(message.receiverId)?.name ?: ""

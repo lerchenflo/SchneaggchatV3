@@ -95,6 +95,11 @@ class PollOptionInput(text: TextFieldValue = TextFieldValue(""), maxVoters: Int?
     var maxVoters by mutableStateOf(maxVoters)
 }
 
+//Keep in sync with the server-side limits in ValidationUtils / MessageService (schneaggchatv3server)
+private const val POLL_TITLE_MAX_LENGTH = 200
+private const val POLL_DESCRIPTION_MAX_LENGTH = 500
+private const val POLL_MAX_VOTE_OPTIONS = 20
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(
     showBackground = true,
@@ -197,7 +202,7 @@ fun PollDialog(
                 //Title text input
                 ComboInputField(
                     value = title,
-                    onValueChange = { title = it },
+                    onValueChange = { if (it.text.length <= POLL_TITLE_MAX_LENGTH) title = it },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = {Text(stringResource(Res.string.poll_create_title_placeholder))},
                     label = {Text(stringResource(Res.string.poll_create_title))},
@@ -212,7 +217,7 @@ fun PollDialog(
 
                 ComboInputField(
                     value = description,
-                    onValueChange = { description = it },
+                    onValueChange = { if (it.text.length <= POLL_DESCRIPTION_MAX_LENGTH) description = it },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text(stringResource(Res.string.poll_create_description_placeholder)) },
                     shape = RoundedCornerShape(12.dp),
@@ -299,7 +304,7 @@ fun PollDialog(
                 }
 
                 //Auto add new entry if last entry is not empty
-                if (options[options.size-1].text.text.isNotEmpty()) {
+                if (options.size < POLL_MAX_VOTE_OPTIONS && options[options.size-1].text.text.isNotEmpty()) {
                     options.add(PollOptionInput())
                 }
 
@@ -527,6 +532,8 @@ fun PollDialog(
                         onClick = {
                             if (!validateInputs()) return@NormalButton
 
+                            val filledOptions = options.filter { it.text.text.trim().isNotEmpty() }
+
                             onCreatePoll(
                                 NetworkUtils.PollCreateRequest(
                                     title = title.text,
@@ -535,16 +542,19 @@ fun PollDialog(
                                         if (allowedAnswerCount == 10) {
                                             null
                                         } else {
-                                            allowedAnswerCount
+                                            //Can never exceed the actual number of options, or the server rejects the poll
+                                            allowedAnswerCount.coerceAtMost(filledOptions.size)
                                         }
                                     } else 1,
                                     customAnswersEnabled = allowCustomAnswers,
-                                    maxAllowedCustomAnswers = if (allowedCustomAnswerCount == 10) null else allowedCustomAnswerCount,
+                                    //Only meaningful (and only accepted by the server) when custom answers are enabled
+                                    maxAllowedCustomAnswers = if (allowCustomAnswers) {
+                                        if (allowedCustomAnswerCount == 10) null else allowedCustomAnswerCount
+                                    } else null,
                                     visibility = visibility,
                                     closeDate = expiresAt?.toInstant(TimeZone.currentSystemDefault())
                                         ?.toEpochMilliseconds(),
-                                    voteOptions = options
-                                        .filter { it.text.text.trim().isNotEmpty() }
+                                    voteOptions = filledOptions
                                         .map {
                                             NetworkUtils.PollVoteOptionCreateRequest(
                                                 text = it.text.text,

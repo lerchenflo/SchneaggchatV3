@@ -53,6 +53,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageMinimal
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
+import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatViewModel.SendMessageContent.TextContent
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -662,6 +663,37 @@ class ChatViewModel(
                 messages[index + 1].sendDate.toLongOrNull()?.toLocalDate()
             } else null
 
+            // System messages are server-authored event lines, not chat bubbles - senderId is
+            // often a group id (see SystemEventMessage KDoc), so none of the sender/color/reader/
+            // reaction resolution below is meaningful. Emit a standalone display item instead and
+            // skip straight to the shared new-messages/date-divider bookkeeping.
+            if (message.msgType == MessageType.SYSTEM) {
+                val event = message.systemEvent
+                if (event != null) {
+                    displayItems.add(
+                        MessageDisplayItem.SystemMessage(
+                            id = "sys_${message.localPK}",
+                            event = event
+                        )
+                    )
+                }
+
+                if (newMessagesBoundaryId != null && message.id == newMessagesBoundaryId) {
+                    displayItems.add(MessageDisplayItem.NewMessagesDivider)
+                }
+
+                if (currentDate != nextDate && currentDate != null) {
+                    displayItems.add(
+                        MessageDisplayItem.DateDivider(
+                            id = "divider_${currentDate}",
+                            dateMillis = message.sendDate.toLong(),
+                            dateString = formatDate(currentDate)
+                        )
+                    )
+                }
+
+                return@forEachIndexed
+            }
 
             val user = userMap[message.senderId]
             val senderName = user?.displayName ?: groupMap[message.senderId]?.memberName ?: "Unresolved Username"

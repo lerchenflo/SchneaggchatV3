@@ -20,12 +20,14 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 # Changelog
 
 ### 3.0.16
+
 ##### Highlights
 
 #### Features
 - Einführung in die Features
 - Events Beta
 - Bottom Navigation Bar mit Swipen
+- Systemnachrichten im Chat (Gruppenereignisse wie Mitglieder hinzugefügt, Gruppenname geändert, Admin-Status vergeben, Freundschaft angenommen, etc.)
 - Chat öffnen aus Benachrichtigungen
 - Annas Theme & Flos Theme
 - Reaktionszeitpunkt in Nachrichtendetails anzeigen

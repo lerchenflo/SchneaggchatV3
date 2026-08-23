@@ -37,6 +37,15 @@ sealed class MessageDisplayItem {
         val readerList: List<MessageReader>
     ): MessageDisplayItem()
 
+    /**
+     * A server-authored WhatsApp-style event line (group renamed, member added, wake sent, ...).
+     * Rendered as an inert centered pill - never a bubble, no sender row, no read receipts.
+     */
+    data class SystemMessage(
+        override val id: String,  // e.g. "sys_${localPK}"
+        val event: SystemEventMessage,
+    ) : MessageDisplayItem()
+
     data object NewMessagesDivider : MessageDisplayItem() {
         override val id: String = "new_messages_divider"
     }

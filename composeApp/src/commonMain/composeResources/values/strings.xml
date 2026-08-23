@@ -1199,4 +1199,20 @@
     <string name="support_email_verification_subject">Email Verification not working</string>
     <string name="support_email_verification_body">Es tuat ned (Bitte mehr infos)</string>
 
+    <!-- System messages (MessageType.SYSTEM) -->
+    <string name="system_group_created">%1$s created the group</string>
+    <string name="system_member_added">%1$s added %2$s</string>
+    <string name="system_member_removed">%1$s removed %2$s</string>
+    <string name="system_member_left">%1$s left the group</string>
+    <string name="system_admin_granted">%1$s made %2$s an admin</string>
+    <string name="system_admin_revoked">%1$s removed admin rights from %2$s</string>
+    <string name="system_group_name_changed">%1$s changed the group name to %2$s</string>
+    <string name="system_group_description_changed">%1$s changed the group description</string>
+    <string name="system_group_picture_changed">%1$s changed the group picture</string>
+    <string name="system_event_changed">%1$s updated the event</string>
+    <string name="system_friendship_accepted">You are now friends</string>
+    <string name="system_wake_sent">%1$s sent a wake-up</string>
+    <string name="system_wake_sent_reason">%1$s sent a wake-up: %2$s</string>
+    <string name="system_unknown_event">Chat updated</string>
+
 </resources>

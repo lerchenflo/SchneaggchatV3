@@ -39,6 +39,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.systemEventText
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboText
@@ -246,22 +247,29 @@ fun UserButton(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Last message preview — annotations resolve to clickable location names,
-                    // taps outside the annotation still open the chat
+                    // taps outside the annotation still open the chat.
+                    // System messages (e.g. "Flo added Max") are already a full sentence and get
+                    // no "Name: " prefix - unlike every other msgType, whose sender is meaningful.
                     ComboText(
-                        text = (
-                                if (lastMessage.myMessage) {
-                                    stringResource(Res.string.you_sender) + ": "
-                                } else if (lastMessage.isGroupMessage()) {
-                                    lastMessage.senderAsString + ": "
-                                } else {
-                                    lastMessage.senderAsString + ": "
-                                }
-                                ) +
-                                when(lastMessage.msgType) {
-                            MessageType.TEXT -> lastMessage.content
-                            MessageType.IMAGE -> stringResource(Res.string.image)
-                            MessageType.POLL -> stringResource(Res.string.poll)
-                            MessageType.AUDIO -> stringResource(Res.string.audio)
+                        text = if (lastMessage.msgType == MessageType.SYSTEM) {
+                            lastMessage.systemEvent?.let { systemEventText(it) } ?: ""
+                        } else {
+                            (
+                                    if (lastMessage.myMessage) {
+                                        stringResource(Res.string.you_sender) + ": "
+                                    } else if (lastMessage.isGroupMessage()) {
+                                        lastMessage.senderAsString + ": "
+                                    } else {
+                                        lastMessage.senderAsString + ": "
+                                    }
+                                    ) +
+                                    when (lastMessage.msgType) {
+                                MessageType.TEXT -> lastMessage.content
+                                MessageType.IMAGE -> stringResource(Res.string.image)
+                                MessageType.POLL -> stringResource(Res.string.poll)
+                                MessageType.AUDIO -> stringResource(Res.string.audio)
+                                MessageType.SYSTEM -> "" // unreachable, handled above
+                            }
                         },
                         useMD = false,
                         textColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f), // 👈 lighter text
