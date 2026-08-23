@@ -18,7 +18,7 @@ data class Event(
 
     val invitedUsers: List<String>,
 
-    val public: Boolean,
+    val visibility: EventVisibility,
 
     val createdAt: Long,
     val updatedAt: Long,

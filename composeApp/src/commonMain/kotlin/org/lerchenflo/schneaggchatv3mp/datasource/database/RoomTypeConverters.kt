@@ -6,6 +6,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 
@@ -81,6 +82,13 @@ class RoomTypeConverters {
     @TypeConverter
     fun stringToEventType(value: String): EventType =
         runCatching { EventType.valueOf(value) }.getOrDefault(EventType.OTHER)
+
+    @TypeConverter
+    fun eventVisibilityToString(visibility: EventVisibility): String = visibility.name
+
+    @TypeConverter
+    fun stringToEventVisibility(value: String): EventVisibility =
+        runCatching { EventVisibility.valueOf(value) }.getOrDefault(EventVisibility.FRIENDS_ONLY)
 
     @TypeConverter
     fun stringListToString(list: List<String>): String =

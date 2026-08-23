@@ -108,6 +108,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
@@ -679,7 +680,7 @@ class AppRepository(
         startDate: Long,
         closeDate: Long?,
         invitedUsers: List<String>,
-        public: Boolean,
+        visibility: EventVisibility,
     ) {
         val result = networkUtils.upsertEvent(
             EventRequest(
@@ -692,7 +693,7 @@ class AppRepository(
                 startDate = startDate,
                 closeDate = closeDate,
                 invitedUsers = invitedUsers,
-                public = public,
+                visibility = visibility,
             )
         )
 

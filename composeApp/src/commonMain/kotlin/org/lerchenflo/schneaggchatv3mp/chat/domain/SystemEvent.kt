@@ -16,6 +16,7 @@ import kotlinx.serialization.Serializable
 enum class SystemEventType {
     GROUP_CREATED,
     GROUP_MEMBER_ADDED,
+    GROUP_MEMBER_JOINED_EVENT, // joined by themselves via an event, not added by an admin
     GROUP_MEMBER_REMOVED,   // kicked by an admin
     GROUP_MEMBER_LEFT,      // left voluntarily
     GROUP_ADMIN_GRANTED,
