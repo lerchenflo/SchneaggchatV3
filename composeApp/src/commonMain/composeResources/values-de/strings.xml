@@ -637,7 +637,6 @@
     <string name="game_tap_anywhere_to_start">Tippe irgendwo, um zu starten</string>
     <string name="game_stop">Spiel stoppen</string>
     <string name="game_exit">Verlassen</string>
-    <string name="games_daily_expires_in">Tägliches Board läuft ab in: %1$s</string>
 
 
     <!-- Games: Tetris -->
@@ -658,7 +657,7 @@
     <string name="games_schneaggahus_instructions">Schneagga krabbeln aus dem Startpunkt und folgen den Gleisen. Tippe auf die Weichen, um die Gleise umzuleiten, und lenke jeden Schneagg zum Haus seiner Farbe.\n\nJede richtige Zustellung bringt Punkte — sobald 3 Schneagga im falschen Haus gelandet sind, ist das Spiel vorbei. Je länger du überlebst, desto schneller kommen neue Schneagga!</string>
 
     <!-- Games: Grid Rush -->
-    <string name="games_daily_section">Tägliche Challenge</string>
+    <string name="games_daily_section">Tägliche Challenge (%1$s)</string>
     <string name="games_gridrush_title">Grid Rush</string>
     <string name="games_gridrush_instructions">Ziehe eine Linie durch benachbarte Felder derselben Farbe — lässt du bei 2 oder mehr Feldern los, verschwinden sie und die Felder darüber rutschen nach unten. Räume das ganze Feld leer, um zu gewinnen!\n\nLängere Ketten bringen mehr Punkte, und wer unter dem Par bleibt, bekommt einen Bonus. Berühren sich keine zwei gleichfarbigen Felder mehr, ist der Versuch vorbei. Jeder spielt jeden Tag dasselbe Feld — der Timer startet erst mit deinem ersten Zug, also plane voraus!</string>
     <string name="games_gridrush_moves">Züge: %1$d / Par %2$d</string>

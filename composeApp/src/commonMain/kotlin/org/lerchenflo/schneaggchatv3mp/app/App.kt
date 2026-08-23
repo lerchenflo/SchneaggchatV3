@@ -152,7 +152,15 @@ fun App() {
 
         val initialPageIndex = remember {
             val idx = visibleTopLevelRoutes.indexOfFirst { it == navigationState.topLevelRoute || it::class == navigationState.topLevelRoute::class }
-            if (idx >= 0) idx else 0
+            if (idx >= 0) {
+                idx
+            } else {
+                // Selected route isn't in the visible list (e.g. a restored route the current
+                // filter excludes) - fall back to the home tab's index, never a bare 0. Page 0 on
+                // mobile is Schneaggmap, so a naive 0 fallback would silently land on the map.
+                val homeIdx = visibleTopLevelRoutes.indexOfFirst { it == navigationState.homeRoute || it::class == navigationState.homeRoute::class }
+                if (homeIdx >= 0) homeIdx else 0
+            }
         }
 
         val pagerState = rememberPagerState(
@@ -168,15 +176,27 @@ fun App() {
         // index resync — animating that would flash the wrong page then slide back into place.
         var pendingSwipeReindex by remember { mutableStateOf(false) }
 
-        // When topLevelRoute changes, keep the pager's current page in sync with it.
-        LaunchedEffect(navigationState.topLevelRoute) {
+        // Route this effect last resynced the pager against - lets it tell "the selected route
+        // itself changed" (animate) apart from "the visible list reshuffled under the same route"
+        // (e.g. isDeveloper flipping true adds Events/Settings and shifts every later index -
+        // silent resync only, animating would flash the wrong page).
+        var lastSyncedRoute by remember { mutableStateOf(navigationState.topLevelRoute) }
+
+        // Keep the pager's current page in sync whenever the selected route OR the set of
+        // visible tabs changes - either one can make the current page index point at the wrong
+        // route.
+        LaunchedEffect(navigationState.topLevelRoute, visibleTopLevelRoutes) {
+            val routeChanged = navigationState.topLevelRoute != lastSyncedRoute &&
+                navigationState.topLevelRoute::class != lastSyncedRoute::class
+            lastSyncedRoute = navigationState.topLevelRoute
+
             val targetIndex = currentVisibleRoutes.indexOfFirst {
                 it == navigationState.topLevelRoute || it::class == navigationState.topLevelRoute::class
             }
             if (targetIndex >= 0 && targetIndex != pagerState.currentPage) {
                 isProgrammaticScroll = true
                 try {
-                    if (pendingSwipeReindex) {
+                    if (pendingSwipeReindex || !routeChanged) {
                         pagerState.scrollToPage(targetIndex) // silent resync, no animation
                     } else {
                         pagerState.animateScrollToPage(targetIndex) // tap / programmatic nav
@@ -192,7 +212,10 @@ fun App() {
         LaunchedEffect(pagerState) {
             snapshotFlow { pagerState.settledPage }
                 .collect { settledPage ->
-                    if (!isProgrammaticScroll) {
+                    // isScrollInProgress guards against a settle emission caused by the visible
+                    // list reshuffling under the current page (not an actual user swipe) being
+                    // misread as a tab change.
+                    if (!isProgrammaticScroll && !pagerState.isScrollInProgress) {
                         val targetRoute = currentVisibleRoutes.getOrNull(settledPage)
                         if (targetRoute != null && targetRoute != navigationState.topLevelRoute && targetRoute::class != navigationState.topLevelRoute::class) {
                             pendingSwipeReindex = true
