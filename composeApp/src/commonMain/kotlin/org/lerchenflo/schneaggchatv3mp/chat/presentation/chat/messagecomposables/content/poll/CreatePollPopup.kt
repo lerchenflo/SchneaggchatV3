@@ -541,8 +541,11 @@ fun PollDialog(
                                     maxAnswers = if (allowMultipleAnswers) {
                                         if (allowedAnswerCount == 10) {
                                             null
+                                        } else if (allowCustomAnswers) {
+                                            //Custom answers add possibilities beyond the predefined options, so no need to clamp
+                                            allowedAnswerCount
                                         } else {
-                                            //Can never exceed the actual number of options, or the server rejects the poll
+                                            //Without custom answers, can't exceed the actual number of options, or the server rejects the poll
                                             allowedAnswerCount.coerceAtMost(filledOptions.size)
                                         }
                                     } else 1,

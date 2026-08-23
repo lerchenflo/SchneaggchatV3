@@ -9,11 +9,10 @@ import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
-import platform.AVFAudio.AVAudioQualityHigh
 import platform.AVFAudio.AVAudioRecorder
 import platform.AVFAudio.AVAudioSession
 import platform.AVFAudio.AVAudioSessionCategoryRecord
-import platform.AVFAudio.AVEncoderAudioQualityKey
+import platform.AVFAudio.AVEncoderBitRateKey
 import platform.AVFAudio.AVFormatIDKey
 import platform.AVFAudio.AVNumberOfChannelsKey
 import platform.AVFAudio.AVSampleRateKey
@@ -56,12 +55,13 @@ actual class VoiceRecorder actual constructor() {
                 )
             }
 
-            // Standard AAC settings
+            // Tuned for voice rather than music, matching the Android recorder: mono, 16kHz,
+            // 64kbps keeps a 2-minute message safely under the server's 2MB upload cap.
             val settings = mapOf<Any?, Any?>(
                 AVFormatIDKey to kAudioFormatMPEG4AAC,
-                AVSampleRateKey to 44100.0,
-                AVNumberOfChannelsKey to 2,
-                AVEncoderAudioQualityKey to AVAudioQualityHigh
+                AVSampleRateKey to 16000.0,
+                AVNumberOfChannelsKey to 1,
+                AVEncoderBitRateKey to 64_000
             )
 
             val recorderErrorVar = alloc<ObjCObjectVar<NSError?>>()
