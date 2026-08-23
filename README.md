@@ -24,9 +24,10 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Features
 - Einführung in die Features
+- Events Beta
 - Bottom Navigation Bar mit Swipen
 - Chat öffnen aus Benachrichtigungen
-- Annas Theme
+- Annas Theme & Flos Theme
 - Reaktionszeitpunkt in Nachrichtendetails anzeigen
 - @game Annotations
 - 2048 Spiel
@@ -40,9 +41,9 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Fingerpicker resetet nicht direkt
 - Infinite loading screen beim Öffnen der App über Benachrichtigungen behoben
 - Navigation Rebuild (Viele Bugs behoben)
-- Einstellungen neu Strukturiert
+- Einstellungen neu strukturiert
 - Morse Code verbessert
-- Kurz den richtigen Tile anzeige bei odd one out
+- Kurz den richtigen Tile anzeigen bei odd one out
 - Einstellung für farbige Zeit bei heutigen Nachrichten (Standard aus)
 - Umfragen Titelformatierung
 - Antworten auf große Nachrichten
@@ -50,7 +51,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Bilder Zoom fix
 - Nachricht bearbeiten, neue Nachricht bei Enter (Desktop)
 - Register Bug bei schlechtem Internet behoben
-- App-Name-Titel in Chat-Auswahl mit Website-Icon anklickbar (statt Hyperlink-Styling)
+- Website link icon in der Chatauswahl
 - Nachrichtensync beschleunigt
 - Token Refresh verbessert
 
