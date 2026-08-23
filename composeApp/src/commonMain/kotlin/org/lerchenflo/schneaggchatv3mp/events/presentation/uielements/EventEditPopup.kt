@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarMonth
@@ -40,7 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.darkokoa.datetimewheelpicker.WheelDateTimePicker
@@ -50,7 +51,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
@@ -59,28 +60,25 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
-import schneaggchatv3mp.composeapp.generated.resources.event_closes_with_date
-import schneaggchatv3mp.composeapp.generated.resources.event_created_by
 import schneaggchatv3mp.composeapp.generated.resources.event_description_label
 import schneaggchatv3mp.composeapp.generated.resources.event_has_end_time
-import schneaggchatv3mp.composeapp.generated.resources.event_join
-import schneaggchatv3mp.composeapp.generated.resources.event_private
+import schneaggchatv3mp.composeapp.generated.resources.event_invited_users
 import schneaggchatv3mp.composeapp.generated.resources.event_public
 import schneaggchatv3mp.composeapp.generated.resources.event_starts_label
-import schneaggchatv3mp.composeapp.generated.resources.event_starts_with_date
 import schneaggchatv3mp.composeapp.generated.resources.event_title_label
 import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.save
 import kotlin.time.Clock
 import kotlin.time.Instant
 
+// Popup for the event's creator - every field is editable, outside taps never dismiss it
+// (an accidental tap must not silently discard in-progress edits).
 @Composable
-fun EventBottomPopup(
+fun EventEditPopup(
     event: Event,
     onSave: (Event) -> Unit,
     onDismiss: () -> Unit,
-    onJoin: (String) -> Unit,
-    isJoining: Boolean = false,
+    friendsById: Map<String, User> = emptyMap(),
     modifier: Modifier = Modifier
 ) {
 
@@ -98,16 +96,11 @@ fun EventBottomPopup(
     var showEndDatePicker by remember { mutableStateOf(false) }
     var typeDropdownExpanded by remember { mutableStateOf(false) }
 
-    SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying stale
-    val myEvent = event.creatorId == SessionCache.requireLoggedIn()?.userId
-
     ModalBottomSheet(
-        onDismissRequest = {
-            onDismiss()
-        },
+        onDismissRequest = onDismiss,
         properties = ModalBottomSheetProperties(
             shouldDismissOnBackPress = false,
-            shouldDismissOnClickOutside = true
+            shouldDismissOnClickOutside = false
         ),
         containerColor = MaterialTheme.colorScheme.background
     ) {
@@ -122,69 +115,50 @@ fun EventBottomPopup(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                if (myEvent) {
-                    OutlinedButton(
-                        onClick = { typeDropdownExpanded = true }
-                    ) {
-                        Icon(
-                            imageVector = currentEvent.type.icon(),
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = stringResource(currentEvent.type.labelRes()))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            imageVector = Icons.Default.ArrowDropDown,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
+                OutlinedButton(
+                    onClick = { typeDropdownExpanded = true }
+                ) {
+                    Icon(
+                        imageVector = currentEvent.type.icon(),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = stringResource(currentEvent.type.labelRes()))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
 
-                    DropdownMenu(
-                        expanded = typeDropdownExpanded,
-                        onDismissRequest = { typeDropdownExpanded = false }
-                    ) {
-                        EventType.entries.forEach { entry ->
-                            val isSelected = entry == currentEvent.type
-                            val tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                            DropdownMenuItem(
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = entry.icon(),
-                                        contentDescription = null,
-                                        tint = tint
-                                    )
-                                },
-                                text = {
-                                    Text(
-                                        text = stringResource(entry.labelRes()),
-                                        color = tint,
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                },
-                                onClick = {
-                                    currentEvent = currentEvent.copy(type = entry)
-                                    typeDropdownExpanded = false
-                                }
-                            )
-                        }
-                    }
-                } else {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = currentEvent.type.icon(),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(currentEvent.type.labelRes()),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.titleSmall
+                DropdownMenu(
+                    expanded = typeDropdownExpanded,
+                    onDismissRequest = { typeDropdownExpanded = false }
+                ) {
+                    EventType.entries.forEach { entry ->
+                        val isSelected = entry == currentEvent.type
+                        val tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = entry.icon(),
+                                    contentDescription = null,
+                                    tint = tint
+                                )
+                            },
+                            text = {
+                                Text(
+                                    text = stringResource(entry.labelRes()),
+                                    color = tint,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            },
+                            onClick = {
+                                currentEvent = currentEvent.copy(type = entry)
+                                typeDropdownExpanded = false
+                            }
                         )
                     }
                 }
@@ -198,7 +172,6 @@ fun EventBottomPopup(
                 onValueChange = {
                     currentEvent = currentEvent.copy(title = it)
                 },
-                enabled = myEvent,
                 label = {
                     Text(text = stringResource(Res.string.event_title_label))
                 },
@@ -213,7 +186,6 @@ fun EventBottomPopup(
                 onValueChange = {
                     currentEvent = currentEvent.copy(description = it)
                 },
-                enabled = myEvent,
                 label = {
                     Text(text = stringResource(Res.string.event_description_label))
                 },
@@ -223,17 +195,62 @@ fun EventBottomPopup(
             Spacer(modifier = Modifier.height(12.dp))
 
             // Start date
-            if (myEvent) {
-                Text(
-                    text = stringResource(Res.string.event_starts_label),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyMedium
-                )
+            Text(
+                text = stringResource(Res.string.event_starts_label),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium
+            )
 
+            Spacer(modifier = Modifier.height(4.dp))
+
+            OutlinedButton(
+                onClick = { showStartDatePicker = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CalendarMonth,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = millisToString(currentEvent.startDate, "dd.MM.yyyy HH:mm"),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // End date (optional)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(Res.string.event_has_end_time),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                Switch(
+                    checked = hasCloseDate,
+                    onCheckedChange = { checked ->
+                        hasCloseDate = checked
+                        if (checked) {
+                            val defaultClose = currentEvent.closeDate ?: (currentEvent.startDate + 60 * 60 * 1000L)
+                            currentEvent = currentEvent.copy(closeDate = defaultClose)
+                            showEndDatePicker = true
+                        } else {
+                            currentEvent = currentEvent.copy(closeDate = null)
+                        }
+                    }
+                )
+            }
+
+            if (hasCloseDate && currentEvent.closeDate != null) {
                 Spacer(modifier = Modifier.height(4.dp))
 
                 OutlinedButton(
-                    onClick = { showStartDatePicker = true },
+                    onClick = { showEndDatePicker = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
@@ -243,71 +260,8 @@ fun EventBottomPopup(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = millisToString(currentEvent.startDate, "dd.MM.yyyy HH:mm"),
+                        text = millisToString(currentEvent.closeDate!!, "dd.MM.yyyy HH:mm"),
                         color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            } else {
-                Text(
-                    text = stringResource(Res.string.event_starts_with_date, millisToString(currentEvent.startDate, "dd.MM.yyyy HH:mm")),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // End date (optional)
-            if (myEvent) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = stringResource(Res.string.event_has_end_time),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Switch(
-                        checked = hasCloseDate,
-                        onCheckedChange = { checked ->
-                            hasCloseDate = checked
-                            if (checked) {
-                                val defaultClose = currentEvent.closeDate ?: (currentEvent.startDate + 60 * 60 * 1000L)
-                                currentEvent = currentEvent.copy(closeDate = defaultClose)
-                                showEndDatePicker = true
-                            } else {
-                                currentEvent = currentEvent.copy(closeDate = null)
-                            }
-                        }
-                    )
-                }
-
-                if (hasCloseDate && currentEvent.closeDate != null) {
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    OutlinedButton(
-                        onClick = { showEndDatePicker = true },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.CalendarMonth,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = millisToString(currentEvent.closeDate!!, "dd.MM.yyyy HH:mm"),
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            } else {
-                currentEvent.closeDate?.let { closeDate ->
-                    Text(
-                        text = stringResource(Res.string.event_closes_with_date, millisToString(closeDate, "dd.MM.yyyy HH:mm")),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }
@@ -315,59 +269,52 @@ fun EventBottomPopup(
             Spacer(modifier = Modifier.height(12.dp))
 
             // Public event
-            if (myEvent) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = if (currentEvent.public) Icons.Default.Public else Icons.Default.PublicOff,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(Res.string.event_public),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Switch(
-                        checked = currentEvent.public,
-                        onCheckedChange = { isPublic ->
-                            currentEvent = currentEvent.copy(public = isPublic)
-                        }
-                    )
-                }
-            } else {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = if (currentEvent.public) Icons.Default.Public else Icons.Default.PublicOff,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(if (currentEvent.public) Res.string.event_public else Res.string.event_private),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = if (currentEvent.public) Icons.Default.Public else Icons.Default.PublicOff,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(Res.string.event_public),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                Switch(
+                    checked = currentEvent.public,
+                    onCheckedChange = { isPublic ->
+                        currentEvent = currentEvent.copy(public = isPublic)
+                    }
+                )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Creator info
-            Text(
-                text = stringResource(Res.string.event_created_by, currentEvent.creatorName),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Invited users
+            if (currentEvent.invitedUsers.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = stringResource(Res.string.event_invited_users),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(currentEvent.invitedUsers, key = { it }) { userId ->
+                        EventUserAvatar(
+                            userId = userId,
+                            friendsById = friendsById,
+                            size = 40.dp
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -375,13 +322,12 @@ fun EventBottomPopup(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Cancel / join / save row
+            // Cancel / save row
             Row(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-
                 val changed = event != currentEvent
 
                 NormalButton(
@@ -392,22 +338,13 @@ fun EventBottomPopup(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                if (myEvent) {
-                    NormalButton(
-                        text = stringResource(Res.string.save),
-                        onClick = { onSave(currentEvent) },
-                        disabled = !changed,
-                        primary = false,
-                        showOutline = true
-                    )
-                } else {
-                    NormalButton(
-                        text = stringResource(Res.string.event_join),
-                        onClick = { onJoin(currentEvent.id) },
-                        primary = true,
-                        isLoading = isJoining
-                    )
-                }
+                NormalButton(
+                    text = stringResource(Res.string.save),
+                    onClick = { onSave(currentEvent) },
+                    disabled = !changed,
+                    primary = false,
+                    showOutline = true
+                )
             }
         }
     }
@@ -512,11 +449,11 @@ fun EventBottomPopup(
 
 @Preview
 @Composable
-private fun EventBottomPopupPreview() {
+private fun EventEditPopupPreview() {
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        EventBottomPopup(
+        EventEditPopup(
             event = Event(
                 id = "",
                 creatorId = "",
@@ -535,8 +472,7 @@ private fun EventBottomPopupPreview() {
                 creatorName = "Flo"
             ),
             onSave = { },
-            onDismiss = { },
-            onJoin = { }
+            onDismiss = { }
         )
     }
 }

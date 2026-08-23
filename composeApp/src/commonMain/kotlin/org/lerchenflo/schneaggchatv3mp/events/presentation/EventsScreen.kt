@@ -21,8 +21,9 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventBottomPopup
+import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventEditPopup
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
+import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventJoinPopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.events_screen_title
@@ -67,6 +68,7 @@ fun EventsScreen(
             }
         }
     ) { innerPadding ->
+        SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying stale
         val ownId = SessionCache.requireLoggedIn()?.userId
 
         LazyColumn(
@@ -91,14 +93,23 @@ fun EventsScreen(
         }
 
         
-        state.selectedEvent?.let {
-            EventBottomPopup(
-                event = state.selectedEvent,
-                onSave = {onAction(EventsAction.OnSaveEvent(it))},
-                onDismiss = { onAction(EventsAction.OnEventPopupDismiss) },
-                onJoin = {onAction(EventsAction.OnJoinEvent(it))},
-                isJoining = state.isJoiningEvent
-            )
+        state.selectedEvent?.let { selectedEvent ->
+            if (selectedEvent.creatorId == ownId) {
+                EventEditPopup(
+                    event = selectedEvent,
+                    onSave = { onAction(EventsAction.OnSaveEvent(it)) },
+                    onDismiss = { onAction(EventsAction.OnEventPopupDismiss) },
+                    friendsById = state.friendsById
+                )
+            } else {
+                EventJoinPopup(
+                    event = selectedEvent,
+                    onDismiss = { onAction(EventsAction.OnEventPopupDismiss) },
+                    onJoin = { onAction(EventsAction.OnJoinEvent(it)) },
+                    isJoining = state.isJoiningEvent,
+                    friendsById = state.friendsById
+                )
+            }
         }
     }
 }

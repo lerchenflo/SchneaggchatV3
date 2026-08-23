@@ -1,6 +1,5 @@
 package org.lerchenflo.schneaggchatv3mp.di
 
-import io.ktor.client.HttpClient
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -23,7 +22,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
-import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
@@ -86,10 +84,9 @@ val sharedmodule = module{
         NetworkUtils(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get())
     }
 
-    single <HttpClient>(named(HTTPCLIENTTYPE.AUTHENTICATED)) { createHttpClient(get(), get(), true) }
-
-    single <HttpClient>(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)) { createHttpClient(get(), get(), false) }
-
+    // AUTHENTICATED / NOT_AUTHENTICATED HttpClients are platform-specific (they need a concrete
+    // HttpClientEngine) - see androidHttpModule/androidHttpAuthModule, IosHttpModule/IosHttpAuthModule,
+    // desktopHttpModule/desktopHttpAuthModule. Not declared here.
 
     singleOf(::Navigator)
 

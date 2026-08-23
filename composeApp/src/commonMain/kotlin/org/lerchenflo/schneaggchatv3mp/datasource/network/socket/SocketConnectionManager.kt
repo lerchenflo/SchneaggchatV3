@@ -32,6 +32,7 @@ import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.RefreshResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import kotlin.math.min
 import kotlin.time.Duration.Companion.milliseconds
@@ -261,20 +262,25 @@ private class SocketConnection(
         try {
             connectWithToken(tokens?.accessToken)
         } catch (e: Exception) {
-            val refreshError = tokenManager.refreshTokens(tokens?.refreshToken)
-            if (refreshError == null) {
-                val freshTokens = tokenManager.loadBearerTokens()
-                try {
-                    connectWithToken(freshTokens?.accessToken)
-                } catch (retryEx: Exception) {
+            // Only retry the connection if the refresh actually produced new tokens. A
+            // Retryable/Invalidated result means the old token is still what we have - retrying
+            // with it would just fail again; let the caller's backoff loop try later instead.
+            when (tokenManager.refreshTokens(tokens?.refreshToken)) {
+                RefreshResult.Success -> {
+                    val freshTokens = tokenManager.loadBearerTokens()
+                    try {
+                        connectWithToken(freshTokens?.accessToken)
+                    } catch (retryEx: Exception) {
+                        _isActive.value = false
+                        onConnectionStateChanged(false)
+                        onError(retryEx)
+                    }
+                }
+                is RefreshResult.Retryable, RefreshResult.Invalidated -> {
                     _isActive.value = false
                     onConnectionStateChanged(false)
-                    onError(retryEx)
+                    onError(e)
                 }
-            } else {
-                _isActive.value = false
-                onConnectionStateChanged(false)
-                onError(e)
             }
         }
     }

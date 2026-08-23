@@ -1,14 +1,10 @@
+@file:OptIn(ExperimentalTime::class)
+
 package org.lerchenflo.schneaggchatv3mp.datasource.network
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
 import io.ktor.client.plugins.auth.clearAuthTokens
 import io.ktor.client.plugins.auth.providers.BearerTokens
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
-import io.ktor.http.isSuccess
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -16,118 +12,171 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import org.koin.core.qualifier.named
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
+import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
+
+/**
+ * Outcome of a token-refresh attempt. Unlike a plain `RequestError?`, this distinguishes
+ * "try again later" (offline, rate-limited, server error) from "the session is actually dead"
+ * (server rejected the refresh token) - callers need to react very differently to each.
+ */
+sealed interface RefreshResult {
+    /** New tokens were fetched and persisted. */
+    data object Success : RefreshResult
+
+    /** The refresh could not complete right now, but the refresh token itself may still be valid. */
+    data class Retryable(val error: RequestError) : RefreshResult
+
+    /** The server rejected the refresh token (or none is stored) - the session is gone. */
+    data object Invalidated : RefreshResult
+}
 
 class TokenManager(
     private val preferenceManager: Preferencemanager,
     private val loggingRepository: LoggingRepository,
 ) {
-    companion object {
-        private val refreshMutex = Mutex()
-    }
+    /** How long a Retryable failure suppresses further network attempts for the same refresh token. */
+    private val retryCooldownDuration = 5.seconds
 
+    /** Refresh proactively once the access token has less than this much validity left. */
+    private val proactiveRefreshThresholdMinutes = 2L
+
+    private data class Cooldown(val refreshToken: String, val until: Instant, val error: RequestError)
+
+    private val refreshMutex = Mutex()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private var inFlight: Deferred<RequestError?>? = null
+    private var inFlight: Deferred<RefreshResult>? = null
+    private var cooldown: Cooldown? = null
 
     suspend fun loadBearerTokens(): BearerTokens? {
         val tokens = preferenceManager.getTokens()
-        return if (tokens.refreshToken.isBlank()) {
-            null
-        } else {
-            BearerTokens(tokens.accessToken, tokens.refreshToken)
+        if (tokens.refreshToken.isBlank()) return null
+
+        // Refresh proactively once the access token is close to expiry instead of waiting for a
+        // 401 - saves a wasted round trip on the very next request and keeps the (Auth-plugin-less)
+        // WebSocket client from ever needing to connect with an about-to-expire token.
+        val remainingMinutes = JwtUtils.getTokenValidRemainingMinutes(tokens.accessToken)
+        if (remainingMinutes < proactiveRefreshThresholdMinutes && JwtUtils.isTokenDateValid(tokens.refreshToken)) {
+            if (refreshTokens(tokens.refreshToken) == RefreshResult.Success) {
+                val refreshed = preferenceManager.getTokens()
+                return BearerTokens(refreshed.accessToken, refreshed.refreshToken)
+            }
         }
+
+        return BearerTokens(tokens.accessToken, tokens.refreshToken)
     }
 
-    suspend fun refreshTokens(oldRefreshToken: String? = null): RequestError? {
-        val deferred = refreshMutex.withLock {
+    suspend fun refreshTokens(oldRefreshToken: String? = null): RefreshResult {
+        val outcome: Pair<Deferred<RefreshResult>?, RefreshResult?> = refreshMutex.withLock {
             val currentTokens = preferenceManager.getTokens()
 
             // If the token that caused the 401 is different from the token we currently have
-            // in preferences, it means another thread ALREADY refreshed the token while we
-            // were waiting for the Mutex lock!
+            // in preferences, another caller already refreshed while we waited for the lock.
             if (oldRefreshToken != null && currentTokens.refreshToken != oldRefreshToken) {
-                //loggingRepository.logInfo("TokenManager: Token refresh skipped - already refreshed by another thread")
-                return@withLock null
-            }
-
-            if (oldRefreshToken == null && currentTokens.refreshToken.isNotBlank()) {
-                //loggingRepository.logInfo("TokenManager: Token appeared - skipping refresh")
-                return@withLock null
+                return@withLock null to RefreshResult.Success
             }
 
             if (currentTokens.refreshToken.isBlank()) {
-                //loggingRepository.logError("TokenManager: Token refresh aborted - no refresh token available")
-                return@withLock null
+                // Nothing to refresh - there is no session to keep alive.
+                return@withLock null to RefreshResult.Invalidated
+            }
+
+            val activeCooldown = cooldown
+            if (activeCooldown != null && activeCooldown.refreshToken == currentTokens.refreshToken) {
+                if (Clock.System.now() < activeCooldown.until) {
+                    // A refresh for this exact token failed with a retryable error very recently.
+                    // Don't hammer the (rate-limited) endpoint again - report the cached failure.
+                    return@withLock null to RefreshResult.Retryable(activeCooldown.error)
+                }
+                cooldown = null
             }
 
             val active = inFlight
             if (active != null && active.isActive) {
-                active
+                active to null
             } else {
-                scope.async { doRefresh(currentTokens.refreshToken) }.also {
-                    inFlight = it
-                    it.invokeOnCompletion { inFlight = null }
+                val deferred = scope.async { doRefresh(currentTokens.refreshToken) }
+                inFlight = deferred
+                deferred.invokeOnCompletion {
+                    // Only clear inFlight if it still points at *this* deferred - avoids a newer
+                    // in-flight refresh being wiped out by an older one's completion callback.
+                    scope.launch {
+                        refreshMutex.withLock {
+                            if (inFlight === deferred) inFlight = null
+                        }
+                    }
                 }
+                deferred to null
             }
         }
 
-        return if (deferred == null) null
-        else withContext(NonCancellable) { deferred.await() }
+        val (deferred, immediateResult) = outcome
+        return immediateResult ?: withContext(NonCancellable) { deferred!!.await() }
     }
 
-    private suspend fun doRefresh(refreshToken: String): RequestError? {
-        //loggingRepository.logDebug("TokenManager: Sending refresh request to server")
+    private suspend fun recordCooldown(refreshToken: String, error: RequestError) {
+        // doRefresh runs outside the mutex; take it so this write is visible to the
+        // cooldown check in refreshTokens(), which reads under the same lock.
+        refreshMutex.withLock {
+            cooldown = Cooldown(refreshToken, Clock.System.now() + retryCooldownDuration, error)
+        }
+    }
+
+    private suspend fun doRefresh(refreshToken: String): RefreshResult {
         return try {
-            val authClient = KoinPlatform.getKoin().get<HttpClient>(qualifier = named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))
-            val serverUrl = preferenceManager.buildServerUrl("/auth/refresh")
+            val networkUtils = KoinPlatform.getKoin().get<NetworkUtils>()
 
-            val response = authClient.post(serverUrl) {
-                contentType(ContentType.Application.Json)
-                setBody(NetworkUtils.RefreshRequest(refreshToken))
-            }
-
-            if (response.status.value == 401) {
-                //loggingRepository.logError("TokenManager: Authentication invalidated (401) - refresh token likely expired")
-                AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
-                null
-            } else if (response.status.value == 409) {
-                //loggingRepository.logInfo("TokenManager: Concurrent refresh detected - reloading tokens from storage")
-                null
-            } else if (!response.status.isSuccess()) {
-                val errorBody = response.body<String>()
-                //loggingRepository.logError("TokenManager: HTTP error ${response.status.value}: ${errorBody.take(200)}")
-                null
-            } else {
-                val rawBody = response.body<String>()
-
-                val responseTokens = runCatching {
-                    Json.decodeFromString<NetworkUtils.TokenPair>(rawBody)
-                }.getOrNull() ?: run {
-                    //loggingRepository.logError("TokenManager: Invalid response format - JSON parsing failed")
-                    return null
+            when (val result = networkUtils.refresh(refreshToken)) {
+                is NetworkResult.Error -> {
+                    val error = result.error
+                    if (error is NetworkError.Unauthorized) {
+                        loggingRepository.logError("TokenManager: Refresh token rejected by server (401)")
+                        AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
+                        RefreshResult.Invalidated
+                    } else {
+                        loggingRepository.logWarning("TokenManager: Refresh failed retryably (${error.errorCode}): ${error.message}")
+                        recordCooldown(refreshToken, error)
+                        RefreshResult.Retryable(error)
+                    }
                 }
 
-                //loggingRepository.logDebug("TokenManager: Saving new tokens to storage")
-                withContext(NonCancellable) {
-                    KoinPlatform.getKoin().get<AppRepository>().onNewTokenPair(responseTokens)
+                is NetworkResult.Success -> {
+                    // Persist tokens before returning - the HTTP client caches whatever
+                    // loadBearerTokens() returns right after this call completes.
+                    withContext(NonCancellable) {
+                        KoinPlatform.getKoin().get<AppRepository>().onNewTokenPair(result.data)
+                    }
+                    // Drop the Auth plugin's cached BearerTokens so a refresh triggered outside
+                    // the plugin (Login action, socket reconnect) doesn't leave the authenticated
+                    // client sending the old access token until its next 401.
+                    KoinPlatform.getKoin().get<HttpClient>(named(HTTPCLIENTTYPE.AUTHENTICATED)).clearAuthTokens()
+                    RefreshResult.Success
                 }
-                //loggingRepository.logInfo("TokenManager: Tokens saved successfully")
-                KoinPlatform.getKoin().get<HttpClient>(named(HTTPCLIENTTYPE.AUTHENTICATED)).clearAuthTokens()
-                null
             }
         } catch (e: Exception) {
-            loggingRepository.logError("TokenManager: Exception stack trace: ${e.stackTraceToString()}")
-            null
+            currentCoroutineContext().ensureActive() // rethrow cancellation, don't swallow it as a retryable failure
+            loggingRepository.logError("TokenManager: Exception during refresh: ${e.stackTraceToString()}")
+            val error = NetworkError.Unknown(message = e.message)
+            recordCooldown(refreshToken, error)
+            RefreshResult.Retryable(error)
         }
     }
 }

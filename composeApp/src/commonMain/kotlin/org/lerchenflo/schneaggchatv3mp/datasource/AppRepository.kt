@@ -126,12 +126,15 @@ import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
 import schneaggchatv3mp.composeapp.generated.resources.error_invalid_credentials
+import schneaggchatv3mp.composeapp.generated.resources.error_login_server_error
+import schneaggchatv3mp.composeapp.generated.resources.error_login_too_many_requests
 import schneaggchatv3mp.composeapp.generated.resources.eventssync
 import schneaggchatv3mp.composeapp.generated.resources.groupsync
 import schneaggchatv3mp.composeapp.generated.resources.log_out_successfully
 import schneaggchatv3mp.composeapp.generated.resources.mapsync
 import schneaggchatv3mp.composeapp.generated.resources.mediasync
 import schneaggchatv3mp.composeapp.generated.resources.messagesync
+import schneaggchatv3mp.composeapp.generated.resources.offline
 import schneaggchatv3mp.composeapp.generated.resources.usersync
 import kotlin.collections.map
 import kotlin.time.Duration.Companion.milliseconds
@@ -1250,9 +1253,19 @@ class AppRepository(
             is NetworkResult.Error<*> -> {
                 println("Error: ${result.error}")
 
+                // Only a genuine 401 means wrong credentials - rate limiting, server errors and
+                // being offline are not the user's fault and shouldn't be reported as such.
+                val messageRes = when (result.error) {
+                    is NetworkError.TooManyRequests -> Res.string.error_login_too_many_requests
+                    is NetworkError.NoInternet,
+                    is NetworkError.RequestTimeout -> Res.string.offline
+                    is NetworkError.ServerError -> Res.string.error_login_server_error
+                    else -> Res.string.error_invalid_credentials
+                }
+
                 sendErrorSuspend(
                     ErrorChannel.ErrorEvent(
-                        errorMessageUiText = UiText.StringResourceText(Res.string.error_invalid_credentials),
+                        errorMessageUiText = UiText.StringResourceText(messageRes),
                         duration = 5000L
                     )
                 )

@@ -53,8 +53,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.MessageCha
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.NewChat
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.network.RefreshResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.isConnectionError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorScreen
@@ -297,11 +297,21 @@ fun App() {
                 when (action) {
                     AppRepository.ActionChannel.ActionEvent.Login -> {
                         // Login action handled automatically by HTTP client refresh
-                        val error = tokenManager.refreshTokens(preferenceManager.getTokens().refreshToken)
-
-                        if (error != null && !error.isConnectionError()){
-                            AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
+                        val refreshToken = preferenceManager.getTokens().refreshToken
+                        if (refreshToken.isNotBlank()) {
+                            when (tokenManager.refreshTokens(refreshToken)) {
+                                RefreshResult.Invalidated -> {
+                                    AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
+                                }
+                                RefreshResult.Success, is RefreshResult.Retryable -> {
+                                    // Retryable failures (offline, rate limited, server error) are not
+                                    // an invalidated session - do nothing, the next attempt may succeed.
+                                }
+                            }
                         }
+                        // Blank token: no session exists (fresh install, or a logout raced this
+                        // action) - "session invalidated" toast + forced navigation would be
+                        // wrong here; the logout flow already brings the user to the login screen.
                     }
 
                     AppRepository.ActionChannel.ActionEvent.AuthInvalidated -> {
