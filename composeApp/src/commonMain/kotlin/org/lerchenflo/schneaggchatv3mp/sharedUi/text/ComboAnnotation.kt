@@ -31,6 +31,7 @@ object ComboAnnotationTypes {
     val MAP_LOCATION = ComboAnnotationType(key = "map/location", displayPrefix = "📍")
     val USER = ComboAnnotationType(key = "user", displayPrefix = "👤")
     val GAME = ComboAnnotationType(key = "game", displayPrefix = "🎮")
+    val EVENT = ComboAnnotationType(key = "event", displayPrefix = "📅")
 }
 
 /**

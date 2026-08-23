@@ -297,6 +297,7 @@
     <string name="event_join">Join</string>
     <string name="event_invite_header">%1$s wants to %2$s at %3$s</string>
     <string name="event_invited_users">Invited</string>
+    <string name="event_invite_friends">Invite friends</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Food</string>
     <string name="event_type_cooking">Cooking</string>
