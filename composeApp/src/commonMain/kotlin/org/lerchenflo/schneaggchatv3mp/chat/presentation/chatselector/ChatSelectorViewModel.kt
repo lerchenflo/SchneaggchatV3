@@ -201,7 +201,7 @@ class ChatSelectorViewModel(
                 preferenceManager.removePinnedChat(chat.id)
             } else {
                 val now = Clock.System.now().toEpochMilliseconds()
-                preferenceManager.addPinnedChat(PinnedChat(chat.id, now))
+                preferenceManager.addPinnedChat(PinnedChat(chat.id, group = chat.isGroup, now))
             }
         }
     }

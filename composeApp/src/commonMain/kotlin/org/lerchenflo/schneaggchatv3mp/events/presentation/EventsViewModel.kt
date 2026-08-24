@@ -20,7 +20,9 @@ import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
 
 class EventsViewModel(
@@ -29,6 +31,7 @@ class EventsViewModel(
     private val appRepository: AppRepository,
     private val userRepository: UserRepository,
     private val preferenceManager: Preferencemanager,
+    private val pictureManager: PictureManager,
     private val initialEntryId: String? = null
 ) : ViewModel() {
 
@@ -65,6 +68,7 @@ class EventsViewModel(
             EventsAction.OnCreateNewEventButtonClick -> {
                 val userId = SessionCache.requireLoggedIn()?.userId ?: ""
                 val now = Clock.System.now().toEpochMilliseconds()
+                val defaultStartDate = (Clock.System.now() + 1.days).toEpochMilliseconds()
                 _state.update { currentState ->
                     currentState.copy(
                         selectedEvent = Event(
@@ -75,7 +79,7 @@ class EventsViewModel(
                             description = "",
                             groupId = "",
                             location = null,
-                            startDate = now,
+                            startDate = defaultStartDate,
                             closeDate = null,
                             invitedUsers = emptyList(),
                             visibility = EventVisibility.FRIENDS_ONLY,
@@ -98,6 +102,7 @@ class EventsViewModel(
             is EventsAction.OnSaveEvent -> {
                 val event = action.event
                 viewModelScope.launch {
+                    val profilePic = action.typeIcon?.let { pictureManager.encodeImageBitmap(it) }
                     appRepository.upsertEvent(
                         eventId = if (event.id == "") null else event.id,
                         type = event.type,
@@ -108,7 +113,8 @@ class EventsViewModel(
                         startDate = event.startDate,
                         closeDate = event.closeDate,
                         invitedUsers = event.invitedUsers,
-                        visibility = event.visibility
+                        visibility = event.visibility,
+                        profilePic = profilePic,
                     )
                 }
                 _state.update {

@@ -3,6 +3,7 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -13,6 +14,7 @@ import kotlinx.cinterop.useContents
 import kotlinx.cinterop.usePinned
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
@@ -274,4 +276,12 @@ actual class PictureManager {
             ""
         }
     }
+
+    actual suspend fun encodeImageBitmap(bitmap: ImageBitmap): ByteArray =
+        withContext(Dispatchers.Default) {
+            Image.makeFromBitmap(bitmap.asSkiaBitmap())
+                .encodeToData(EncodedImageFormat.PNG)
+                ?.bytes
+                ?: throw RuntimeException("Failed to encode ImageBitmap to PNG")
+        }
 }

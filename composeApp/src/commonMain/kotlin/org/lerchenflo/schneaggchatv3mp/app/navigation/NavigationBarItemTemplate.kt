@@ -36,7 +36,6 @@ val TOP_LEVEL_DESTINATIONS = mapOf<NavKey, NavigationBarItemTemplate>(
         title = Res.string.navbar_events,
         selectedIcon = Icons.Filled.Event,
         unselectedIcon = Icons.Outlined.Event,
-        showOnlyWhenSelected = true
     ),
     Route.Schneaggmap() to NavigationBarItemTemplate(
         id = "bottombar_map_button",

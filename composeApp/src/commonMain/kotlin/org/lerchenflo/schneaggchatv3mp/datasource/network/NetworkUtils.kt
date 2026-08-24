@@ -1256,10 +1256,29 @@ class NetworkUtils(
 
     suspend fun upsertEvent(
         request: EventRequest,
+        profilePic: ByteArray? = null,
     ): NetworkResult<EventResponse, NetworkError> {
-        return safePost(
+        return safePostMultipart(
             endpoint = "/events/upsert",
-            body = request,
+            parts = {
+                append(
+                    key = "request",
+                    value = AppJson.instance.encodeToString(EventRequest.serializer(), request),
+                    headers = Headers.build {
+                        append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                    }
+                )
+                profilePic?.let {
+                    append(
+                        key = "profilepic",
+                        value = it,
+                        headers = Headers.build {
+                            append(HttpHeaders.ContentType, "image/png")
+                            append(HttpHeaders.ContentDisposition, "filename=\"eventtype.png\"")
+                        }
+                    )
+                }
+            }
         )
     }
 

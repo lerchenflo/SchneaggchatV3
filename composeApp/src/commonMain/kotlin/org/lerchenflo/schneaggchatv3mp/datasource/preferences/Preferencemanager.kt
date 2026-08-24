@@ -379,6 +379,7 @@ class Preferencemanager(
 @Serializable
 data class PinnedChat(
     val chatId: String,
+    val group: Boolean,
     val pinTimePoint: Long
 )
 @Serializable

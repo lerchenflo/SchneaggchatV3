@@ -681,6 +681,7 @@ class AppRepository(
         closeDate: Long?,
         invitedUsers: List<String>,
         visibility: EventVisibility,
+        profilePic: ByteArray? = null,
     ) {
         val result = networkUtils.upsertEvent(
             EventRequest(
@@ -694,7 +695,8 @@ class AppRepository(
                 closeDate = closeDate,
                 invitedUsers = invitedUsers,
                 visibility = visibility,
-            )
+            ),
+            profilePic = profilePic,
         )
 
         when (result) {

@@ -45,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.darkokoa.datetimewheelpicker.WheelDateTimePicker
@@ -89,7 +90,7 @@ private const val EVENT_TITLE_MAX_LENGTH = 200
 @Composable
 fun EventEditPopup(
     event: Event,
-    onSave: (Event) -> Unit,
+    onSave: (Event, ImageBitmap?) -> Unit,
     onDismiss: () -> Unit,
     friendsById: Map<String, User> = emptyMap(),
     mapStyleUrl: String = "",
@@ -99,6 +100,11 @@ fun EventEditPopup(
     var currentEvent by remember(event) {
         mutableStateOf(event)
     }
+
+    // Only a brand-new event's group gets created with this picture - an edit must not
+    // overwrite a group picture the members may have set manually since.
+    val isNewEvent = event.id == ""
+    val typeIconBitmap = if (isNewEvent) rememberEventTypeIconBitmap(currentEvent.type) else null
 
     // Separate toggle state so we can flip "has end date" off without losing the picker's
     // last-set value if the user re-enables it (avoids re-deriving a default every toggle)
@@ -461,7 +467,7 @@ fun EventEditPopup(
                         if (currentEvent.title.isBlank()) {
                             titleError = true
                         } else {
-                            onSave(currentEvent)
+                            onSave(currentEvent, typeIconBitmap)
                         }
                     },
                     disabled = !changed,
@@ -663,7 +669,7 @@ private fun EventEditPopupPreview() {
                 updatedBy = "awdawd",
                 creatorName = "Flo"
             ),
-            onSave = { },
+            onSave = { _, _ -> },
             onDismiss = { }
         )
     }
