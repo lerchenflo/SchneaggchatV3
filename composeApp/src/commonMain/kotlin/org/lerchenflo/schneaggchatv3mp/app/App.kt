@@ -26,8 +26,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
@@ -99,6 +103,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_not_permitted
+import schneaggchatv3mp.composeapp.generated.resources.press_back_again_to_exit
 import kotlin.time.Duration.Companion.milliseconds
 
 
@@ -228,6 +233,31 @@ fun App() {
         // Koin-injected Navigator singleton used by ViewModels — its channel events are
         // translated into NavigationState mutations below
         val navigator = koinInject<Navigator>()
+
+        // A tab-root NavDisplay leaves system back unhandled (its stack has a single entry), so the
+        // press would otherwise close the app instead of returning to the chat selector.
+        NavigationBackHandler(
+            state = rememberNavigationEventState(currentInfo = NavigationEventInfo.None),
+            isBackEnabled = navigationState.backExitsToHome,
+            onBackCompleted = { scope.launch { navigator.navigateBack() } }
+        )
+
+        // At the chat selector itself, first back press shows a "press again to exit" prompt and
+        // disarms this handler; the following back press then has nothing left to intercept it and
+        // falls through to the platform's normal back behaviour, which closes the app.
+        var awaitingExitConfirmation by remember { mutableStateOf(false) }
+        NavigationBackHandler(
+            state = rememberNavigationEventState(currentInfo = NavigationEventInfo.None),
+            isBackEnabled = navigationState.atHomeRoot && !awaitingExitConfirmation,
+            onBackCompleted = {
+                awaitingExitConfirmation = true
+                scope.launch {
+                    SnackbarManager.showMessage(getString(Res.string.press_back_again_to_exit))
+                    delay(2000.milliseconds)
+                    awaitingExitConfirmation = false
+                }
+            }
+        )
 
         //Observe what the navigator sends to change screens etc
         ObserveAsEvents(

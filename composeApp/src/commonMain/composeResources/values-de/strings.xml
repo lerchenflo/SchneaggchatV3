@@ -126,6 +126,7 @@
     <string name="app_broken_desc">Behebt die meisten gängigen Fehler mit der App</string>
     <string name="app_broken_are_you_sure">Dies wird die Lokale Datenbank löschen und erneut alle Daten vom Server herunterladen.\nBist du sicher dass du fortfahren willst?</string>
     <string name="please_restart_app">Bitte starte die App neu</string>
+    <string name="press_back_again_to_exit">Nochmal zurück drücken zum Beenden</string>
     <string name="verification_email_sent">Verifizierungsemail gesendet</string>
     <string name="others_say_about">Andere User haben über %1$s geschrieben:</string>
     <string name="status_info">Dieser Text wurde vom User verfasst</string>
