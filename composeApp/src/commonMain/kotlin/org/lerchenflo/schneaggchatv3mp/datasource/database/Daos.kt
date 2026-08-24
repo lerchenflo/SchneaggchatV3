@@ -320,6 +320,9 @@ interface EventDao {
     @Query("SELECT * FROM events ORDER BY startDate ASC")
     fun getAllFlow(): Flow<List<EventDto>>
 
+    @Query("SELECT * FROM events WHERE groupId = :groupId LIMIT 1")
+    fun getEventFlowByGroupId(groupId: String): Flow<EventDto?>
+
     @Query("DELETE FROM events WHERE id = :id")
     suspend fun delete(id: String)
 }

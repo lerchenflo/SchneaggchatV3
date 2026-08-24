@@ -40,6 +40,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
+import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -107,6 +109,7 @@ class ChatDetailsViewmodel(
     private val userRepository: UserRepository,
     private val appRepository: AppRepository,
     private val pictureManager: PictureManager,
+    private val eventRepository: EventRepository,
 ) : ViewModel() {
 
 
@@ -257,6 +260,24 @@ class ChatDetailsViewmodel(
             initialValue = ChatDetailsState.Loading
         )
 
+
+    /** The event this group was created for, if any (groups only, empty for user chats). */
+    val connectedEvent: StateFlow<Event?> = if (!isGroup) {
+        MutableStateFlow(null)
+    } else {
+        eventRepository.getEventFlowForGroup(chatId)
+    }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+
+    fun navigateToConnectedEvent(eventId: String) {
+        viewModelScope.launch {
+            navigator.navigate(Route.Events(selectedEvent = eventId))
+        }
+    }
 
     private suspend fun getGroupMembersWithUsers(groupId: String): List<GroupMemberWithUser> {
         val members = groupRepository.getGroupMembers(groupId)

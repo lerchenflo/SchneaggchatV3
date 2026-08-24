@@ -64,6 +64,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
@@ -124,6 +125,7 @@ fun ChatDetails(
     val selectedChat by chatdetailsViewmodel.chatDetails.collectAsStateWithLifecycle()
     val availableMembers by chatdetailsViewmodel.availableNewMembers.collectAsStateWithLifecycle()
     val searchTerm by chatdetailsViewmodel.searchterm.collectAsStateWithLifecycle()
+    val connectedEvent by chatdetailsViewmodel.connectedEvent.collectAsStateWithLifecycle()
 
     SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
@@ -443,6 +445,27 @@ fun ChatDetails(
 
                  */
 
+            }
+
+            // Event this group was created for, if any
+            if (isGroup) {
+                connectedEvent?.let { event ->
+                    HorizontalDivider()
+
+                    val creatorProfilePictureUrl = (selectedChat as? ChatDetailsState.GroupDetails)
+                        ?.members
+                        ?.find { it.groupMember.userId == event.creatorId }
+                        ?.user
+                        ?.profilePictureUrl
+
+                    EventItem(
+                        event = event,
+                        creatorProfilePictureUrl = creatorProfilePictureUrl,
+                        isOwnEvent = event.creatorId == ownId,
+                        onClick = { chatdetailsViewmodel.navigateToConnectedEvent(event.id) },
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             }
 
             // Expiry date only for group chats that have one (e.g. event groups)
