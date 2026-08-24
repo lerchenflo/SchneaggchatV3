@@ -61,7 +61,6 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
 import org.lerchenflo.schneaggchatv3mp.events.domain.labelRes
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString

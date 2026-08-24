@@ -5,7 +5,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.*
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.*
@@ -19,32 +18,37 @@ import schneaggchatv3mp.composeapp.generated.resources.*
  * 2. Add the new type to the appropriate LocationGroup
  * 3. Add the data class in LocationData sealed class with:
  *    - @Serializable annotation
- *    - @SerialName annotation with snake_case name
- *    - Properties with AttributeValue types (nullable if optional)
+ *    - @SerialName annotation with snake_case name (the persisted/wire type discriminator)
+ *    - Properties with AttributeValue types (nullable if optional), named
+ *      lowerCamelCase(<TYPE>_<ATTRIBUTE>) to match their AttributeKey 1:1
  *    - Override val locationtype
  *    - Getter properties for each field (e.g., val fieldNameValue get() = field?.asType)
- *    - Override fun schema() returning list of AttributeDefinitions
+ *    - Override fun schema() returning list of AttributeDefinitions, keyed by AttributeKey
  * 4. Add the new type to toSimpleLocationData() function
- * 5. Add string resolution for each attribute in AttributeDefinition.label() function
+ * 5. Add an AttributeKey entry per attribute in AttributeKey.kt, then wire it into
+ *    AttributeKey.labelRes() below - the compiler enforces this (exhaustive `when`)
  * 6. Add the type to LocationType.stringRes() function
  * 7. Add string entries in strings.xml:
  *    - location_type_[name] for the type name
  *    - location_[type]_[attribute] for each attribute label
  * 8. Add icon mapping in SchneaggmapScreen.kt with TODO comment for proper icon
- * 9. Update GetSetValueForKey.kt:
- *    - Add case in getValueByKey() for each attribute
- *    - Add case in withValueForKey() for each attribute with copy()
+ * 9. Update GetSetValueForKey.kt - the compiler forces this too (exhaustive `when` over
+ *    LocationData in both getValueByKey() and withValueForKey())
  *
  * SERVER SIDE (SchneaggchatV3server):
  * 1. Add the new type to @JsonSubTypes annotation in LocationData.kt
  * 2. Add the data class in LocationData sealed class with:
  *    - @TypeAlias annotation with snake_case name
- *    - Properties with AttributeValue types (nullable if optional)
+ *    - Properties with AttributeValue types (nullable if optional), same names as the client
  *    - Override fun schema() returning list of AttributeDefinitions
  * 3. Add the new type to LocationDataWriteConverter in MongoConfig.kt
- * 4. Update any service files that instantiate LocationData (e.g., SchneaggmapService.kt)
+ * 4. Add an AttributeKey entry per attribute in model/AttributeKey.kt, then wire it into
+ *    getValueByKey() in GetValueForKey.kt
+ * 5. Update any service files that instantiate LocationData (e.g., SchneaggmapService.kt)
  *
- * IMPORTANT: Keep the serial names consistent between client and server (snake_case)
+ * IMPORTANT: Keep the serial/type-alias names ("radar", ...) and the property names
+ * (lowerCamelCase, e.g. "radarSpeedLimit") consistent between client and server - property names
+ * are also the Mongo field names and the wire JSON keys, so client and server must match exactly.
  */
 
 
@@ -110,34 +114,34 @@ sealed class LocationData {
     @Serializable
     @SerialName("radar")
     data class Radar(
-        val speedLimit: AttributeValue,
-        val mobile: AttributeValue?,
-        val redLight: AttributeValue,
+        val radarSpeedLimit: AttributeValue,
+        val radarMobile: AttributeValue?,
+        val radarRedLight: AttributeValue,
     ) : LocationData() {
         override val locationtype = RADAR
 
-        val speedLimitValue get() = speedLimit.asInt
-        val mobileValue     get() = mobile?.asBool
-        val redLightValue   get() = redLight.asBool
+        val radarSpeedLimitValue get() = radarSpeedLimit.asInt
+        val radarMobileValue     get() = radarMobile?.asBool
+        val radarRedLightValue   get() = radarRedLight.asBool
 
         override fun schema() = listOf(
-            AttributeDefinition.IntDef(key = "speedLimit", required = true, min = 0),
-            AttributeDefinition.BoolDef(key = "mobile",    required = false),
-            AttributeDefinition.BoolDef(key = "redLight",  required = true),
+            AttributeDefinition.IntDef(key = AttributeKey.RADAR_SPEED_LIMIT, required = true, min = 0),
+            AttributeDefinition.BoolDef(key = AttributeKey.RADAR_MOBILE,    required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.RADAR_RED_LIGHT,  required = true),
         )
     }
 
     @Serializable
     @SerialName("police")
     data class Police(
-        val lastSeen: AttributeValue?,
+        val policeLastSeen: AttributeValue?,
     ) : LocationData() {
         override val locationtype = POLICE
 
-        val lastSeenValue get() = lastSeen?.asLong
+        val policeLastSeenValue get() = policeLastSeen?.asLong
 
         override fun schema() = listOf(
-            AttributeDefinition.LongDef(key = "lastSeen", required = false),
+            AttributeDefinition.LongDef(key = AttributeKey.POLICE_LAST_SEEN, required = false),
         )
     }
 
@@ -147,54 +151,54 @@ sealed class LocationData {
     @Serializable
     @SerialName("mountain_street")
     data class MountainStreet(
-        val mautFee: AttributeValue?,
-        val heightLimit: AttributeValue?,
-        val closedInWinter: AttributeValue?,
+        val mountainStreetMautFee: AttributeValue?,
+        val mountainStreetHeightLimit: AttributeValue?,
+        val mountainStreetClosedInWinter: AttributeValue?,
     ) : LocationData() {
         override val locationtype = MOUNTAIN_STREET
 
-        val mautFeeValue        get() = mautFee?.asDouble
-        val heightLimitValue    get() = heightLimit?.asDouble
-        val closedInWinterValue get() = closedInWinter?.asBool
+        val mountainStreetMautFeeValue        get() = mountainStreetMautFee?.asDouble
+        val mountainStreetHeightLimitValue    get() = mountainStreetHeightLimit?.asDouble
+        val mountainStreetClosedInWinterValue get() = mountainStreetClosedInWinter?.asBool
 
         override fun schema() = listOf(
-            AttributeDefinition.DoubleDef(key = "mautFee",        required = false, min = 0.0),
-            AttributeDefinition.DoubleDef(key = "heightLimit",    required = false, min = 0.0),
-            AttributeDefinition.BoolDef  (key = "closedInWinter", required = false),
+            AttributeDefinition.DoubleDef(key = AttributeKey.MOUNTAIN_STREET_MAUT_FEE,        required = false, min = 0.0),
+            AttributeDefinition.DoubleDef(key = AttributeKey.MOUNTAIN_STREET_HEIGHT_LIMIT,    required = false, min = 0.0),
+            AttributeDefinition.BoolDef  (key = AttributeKey.MOUNTAIN_STREET_CLOSED_IN_WINTER, required = false),
         )
     }
 
     @Serializable
     @SerialName("wheeliespot")
     data class Wheeliespot(
-        val onlyOnWeekends: AttributeValue?,
+        val wheeliespotOnlyOnWeekends: AttributeValue?,
     ) : LocationData() {
         override val locationtype = WHEELIESPOT
 
-        val onlyOnWeekendsValue get() = onlyOnWeekends?.asBool
+        val wheeliespotOnlyOnWeekendsValue get() = wheeliespotOnlyOnWeekends?.asBool
 
         override fun schema() = listOf(
-            AttributeDefinition.BoolDef(key = "onlyOnWeekends", required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.WHEELIESPOT_ONLY_ON_WEEKENDS, required = false),
         )
     }
 
     @Serializable
     @SerialName("offroad_motorcycle")
     data class OffroadMotorcycle(
-        val legal: AttributeValue,
-        val motocross: AttributeValue? = null,
-        val enduro: AttributeValue? = null,
+        val offroadMotorcycleLegal: AttributeValue,
+        val offroadMotorcycleMotocross: AttributeValue? = null,
+        val offroadMotorcycleEnduro: AttributeValue? = null,
     ) : LocationData() {
         override val locationtype = OFFROAD_MOTORCYCLE
 
-        val legalValue     get() = legal.asBool
-        val motocrossValue get() = motocross?.asBool
-        val enduroValue    get() = enduro?.asBool
+        val offroadMotorcycleLegalValue     get() = offroadMotorcycleLegal.asBool
+        val offroadMotorcycleMotocrossValue get() = offroadMotorcycleMotocross?.asBool
+        val offroadMotorcycleEnduroValue    get() = offroadMotorcycleEnduro?.asBool
 
         override fun schema() = listOf(
-            AttributeDefinition.BoolDef(key = "legal",     required = true),
-            AttributeDefinition.BoolDef(key = "motocross", required = false),
-            AttributeDefinition.BoolDef(key = "enduro",    required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.OFFROAD_MOTORCYCLE_LEGAL,     required = true),
+            AttributeDefinition.BoolDef(key = AttributeKey.OFFROAD_MOTORCYCLE_MOTOCROSS, required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.OFFROAD_MOTORCYCLE_ENDURO,    required = false),
         )
     }
 
@@ -202,14 +206,14 @@ sealed class LocationData {
     @SerialName("viewpoint")
     data class Viewpoint(
         //Defaulted so map entries cached before this attribute existed still deserialize
-        val lieDownFriendly: AttributeValue? = null,
+        val viewpointLieDownFriendly: AttributeValue? = null,
     ) : LocationData() {
         override val locationtype = VIEWPOINT
 
-        val lieDownFriendlyValue get() = lieDownFriendly?.asBool
+        val viewpointLieDownFriendlyValue get() = viewpointLieDownFriendly?.asBool
 
         override fun schema() = listOf(
-            AttributeDefinition.BoolDef(key = "lieDownFriendly", required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.VIEWPOINT_LIE_DOWN_FRIENDLY, required = false),
         )
     }
 
@@ -219,67 +223,67 @@ sealed class LocationData {
     @Serializable
     @SerialName("camping")
     data class Camping(
-        val official: AttributeValue,
-        val waterDistance: AttributeValue?,
-        val sittingPossibility: AttributeValue?,
-        val grillPossibility: AttributeValue?,
+        val campingOfficial: AttributeValue,
+        val campingWaterDistance: AttributeValue?,
+        val campingSittingPossibility: AttributeValue?,
+        val campingGrillPossibility: AttributeValue?,
     ) : LocationData() {
         override val locationtype = CAMPING
 
-        val officialValue           get() = official.asBool
-        val waterDistanceValue       get() = waterDistance?.asInt
-        val sittingPossibilityValue get() = sittingPossibility?.asBool
-        val grillPossibilityValue   get() = grillPossibility?.asBool
+        val campingOfficialValue           get() = campingOfficial.asBool
+        val campingWaterDistanceValue       get() = campingWaterDistance?.asInt
+        val campingSittingPossibilityValue get() = campingSittingPossibility?.asBool
+        val campingGrillPossibilityValue   get() = campingGrillPossibility?.asBool
 
         override fun schema() = listOf(
-            AttributeDefinition.BoolDef(key = "official",           required = true),
-            AttributeDefinition.IntDef (key = "waterDistance",      required = false, min = 0),
-            AttributeDefinition.BoolDef(key = "sittingPossibility", required = false),
-            AttributeDefinition.BoolDef(key = "grillPossibility",   required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.CAMPING_OFFICIAL,           required = true),
+            AttributeDefinition.IntDef (key = AttributeKey.CAMPING_WATER_DISTANCE,      required = false, min = 0),
+            AttributeDefinition.BoolDef(key = AttributeKey.CAMPING_SITTING_POSSIBILITY, required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.CAMPING_GRILL_POSSIBILITY,   required = false),
         )
     }
 
     @Serializable
     @SerialName("swimming")
     data class SwimmingLocation(
-        val indoor: AttributeValue?,
-        val jumpSpot: AttributeValue?,
+        val swimmingIndoor: AttributeValue?,
+        val swimmingJumpSpot: AttributeValue?,
         //Defaulted so map entries cached before this attribute existed still deserialize
-        val lieDownFriendly: AttributeValue? = null,
-        val price: AttributeValue? = null,
+        val swimmingLieDownFriendly: AttributeValue? = null,
+        val swimmingPrice: AttributeValue? = null,
     ) : LocationData() {
         override val locationtype = SWIMMING
 
-        val indoorValue          get() = indoor?.asBool
-        val jumpSpotValue        get() = jumpSpot?.asBool
-        val lieDownFriendlyValue get() = lieDownFriendly?.asBool
-        val priceValue           get() = price?.asInt
+        val swimmingIndoorValue          get() = swimmingIndoor?.asBool
+        val swimmingJumpSpotValue        get() = swimmingJumpSpot?.asBool
+        val swimmingLieDownFriendlyValue get() = swimmingLieDownFriendly?.asBool
+        val swimmingPriceValue           get() = swimmingPrice?.asInt
 
         override fun schema() = listOf(
-            AttributeDefinition.BoolDef(key = "indoor",          required = false),
-            AttributeDefinition.BoolDef(key = "jumpSpot",        required = false),
-            AttributeDefinition.BoolDef(key = "lieDownFriendly", required = false),
-            AttributeDefinition.IntDef (key = "price",          required = false, min = 0),
+            AttributeDefinition.BoolDef(key = AttributeKey.SWIMMING_INDOOR,          required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.SWIMMING_JUMP_SPOT,        required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.SWIMMING_LIE_DOWN_FRIENDLY, required = false),
+            AttributeDefinition.IntDef (key = AttributeKey.SWIMMING_PRICE,           required = false, min = 0),
         )
     }
 
     @Serializable
     @SerialName("climbingspot")
     data class Climbingspot(
-        val viaFerrata: AttributeValue?,
-        val outdoor: AttributeValue?,
-        val price: AttributeValue?,
+        val climbingspotViaFerrata: AttributeValue?,
+        val climbingspotOutdoor: AttributeValue?,
+        val climbingspotPrice: AttributeValue?,
     ) : LocationData() {
         override val locationtype = CLIMBINGSPOT
 
-        val viaFerrataValue get() = viaFerrata?.asBool
-        val outdoorValue    get() = outdoor?.asBool
-        val priceValue      get() = price?.asInt
+        val climbingspotViaFerrataValue get() = climbingspotViaFerrata?.asBool
+        val climbingspotOutdoorValue    get() = climbingspotOutdoor?.asBool
+        val climbingspotPriceValue      get() = climbingspotPrice?.asInt
 
         override fun schema() = listOf(
-            AttributeDefinition.BoolDef(key = "viaFerrata", required = false),
-            AttributeDefinition.BoolDef(key = "outdoor",    required = false),
-            AttributeDefinition.IntDef (key = "price",      required = false, min = 0),
+            AttributeDefinition.BoolDef(key = AttributeKey.CLIMBINGSPOT_VIA_FERRATA, required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.CLIMBINGSPOT_OUTDOOR,     required = false),
+            AttributeDefinition.IntDef (key = AttributeKey.CLIMBINGSPOT_PRICE,       required = false, min = 0),
         )
     }
 
@@ -289,82 +293,82 @@ sealed class LocationData {
     @Serializable
     @SerialName("volleyball")
     data class Volleyball(
-        val goodNet: AttributeValue?,
-        val goodField: AttributeValue?,
-        val outdoor: AttributeValue?,
+        val volleyballGoodNet: AttributeValue?,
+        val volleyballGoodField: AttributeValue?,
+        val volleyballOutdoor: AttributeValue?,
     ) : LocationData() {
         override val locationtype = VOLLEYBALL
 
-        val goodNetValue   get() = goodNet?.asBool
-        val goodFieldValue get() = goodField?.asBool
-        val outdoorValue   get() = outdoor?.asBool
+        val volleyballGoodNetValue   get() = volleyballGoodNet?.asBool
+        val volleyballGoodFieldValue get() = volleyballGoodField?.asBool
+        val volleyballOutdoorValue   get() = volleyballOutdoor?.asBool
 
         override fun schema() = listOf(
-            AttributeDefinition.BoolDef(key = "goodNet",   required = false),
-            AttributeDefinition.BoolDef(key = "goodField", required = false),
-            AttributeDefinition.BoolDef(key = "outdoor",   required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.VOLLEYBALL_GOOD_NET,   required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.VOLLEYBALL_GOOD_FIELD, required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.VOLLEYBALL_OUTDOOR,    required = false),
         )
     }
 
     @Serializable
     @SerialName("bicycle")
     data class Bicycle(
-        val legal: AttributeValue,
-        val difficulty: AttributeValue,
-        val undergroundType: AttributeValue?,
+        val bicycleLegal: AttributeValue,
+        val bicycleDifficulty: AttributeValue,
+        val bicycleUndergroundType: AttributeValue?,
     ) : LocationData() {
         override val locationtype = BICYCLE
 
-        val legalValue           get() = legal.asBool
-        val difficultyValue      get() = difficulty.asInt
-        val undergroundTypeValue get() = undergroundType?.asString
+        val bicycleLegalValue           get() = bicycleLegal.asBool
+        val bicycleDifficultyValue      get() = bicycleDifficulty.asInt
+        val bicycleUndergroundTypeValue get() = bicycleUndergroundType?.asString
 
         override fun schema() = listOf(
-            AttributeDefinition.BoolDef  (key = "legal",           required = true),
-            AttributeDefinition.IntDef   (key = "difficulty",      required = true, min = 1, max = 10),
-            AttributeDefinition.StringDef(key = "undergroundType", required = false),
+            AttributeDefinition.BoolDef  (key = AttributeKey.BICYCLE_LEGAL,            required = true),
+            AttributeDefinition.IntDef   (key = AttributeKey.BICYCLE_DIFFICULTY,       required = true, min = 1, max = 10),
+            AttributeDefinition.StringDef(key = AttributeKey.BICYCLE_UNDERGROUND_TYPE, required = false),
         )
     }
 
     @Serializable
     @SerialName("outdoor_fitness")
     data class OutdoorFitness(
-        val shadow: AttributeValue?,
+        val outdoorFitnessShadow: AttributeValue?,
     ) : LocationData() {
         override val locationtype = OUTDOOR_FITNESS
 
-        val shadowValue get() = shadow?.asBool
+        val outdoorFitnessShadowValue get() = outdoorFitnessShadow?.asBool
 
         override fun schema() = listOf(
-            AttributeDefinition.BoolDef(key = "shadow", required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.OUTDOOR_FITNESS_SHADOW, required = false),
         )
     }
 
     @Serializable
     @SerialName("table_tennis")
     data class TableTennis(
-        val `private`: AttributeValue?,
+        val tableTennisPrivate: AttributeValue?,
     ) : LocationData() {
         override val locationtype = TABLE_TENNIS
 
-        val privateValue get() = `private`?.asBool
+        val tableTennisPrivateValue get() = tableTennisPrivate?.asBool
 
         override fun schema() = listOf(
-            AttributeDefinition.BoolDef(key = "private", required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.TABLE_TENNIS_PRIVATE, required = false),
         )
     }
 
     @Serializable
     @SerialName("tennis")
     data class Tennis(
-        val paddle: AttributeValue?,
+        val tennisPaddle: AttributeValue?,
     ) : LocationData() {
         override val locationtype = TENNIS
 
-        val paddleValue get() = paddle?.asBool
+        val tennisPaddleValue get() = tennisPaddle?.asBool
 
         override fun schema() = listOf(
-            AttributeDefinition.BoolDef(key = "paddle", required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.TENNIS_PADDLE, required = false),
         )
     }
 
@@ -374,45 +378,45 @@ sealed class LocationData {
     @Serializable
     @SerialName("sightseeing")
     data class SightSeeing(
-        val entryFee: AttributeValue?,
+        val sightseeingEntryFee: AttributeValue?,
     ) : LocationData() {
         override val locationtype = SIGHTSEEING
 
-        val entryFeeValue get() = entryFee?.asDouble
+        val sightseeingEntryFeeValue get() = sightseeingEntryFee?.asDouble
 
         override fun schema() = listOf(
-            AttributeDefinition.DoubleDef(key = "entryFee", required = false, min = 0.0),
+            AttributeDefinition.DoubleDef(key = AttributeKey.SIGHTSEEING_ENTRY_FEE, required = false, min = 0.0),
         )
     }
 
     @Serializable
     @SerialName("party")
     data class PartyLocation(
-        val entryFee: AttributeValue?,
+        val partyEntryFee: AttributeValue?,
     ) : LocationData() {
         override val locationtype = PARTY
 
-        val entryFeeValue get() = entryFee?.asDouble
+        val partyEntryFeeValue get() = partyEntryFee?.asDouble
 
         override fun schema() = listOf(
-            AttributeDefinition.DoubleDef(key = "entryFee", required = false, min = 0.0),
+            AttributeDefinition.DoubleDef(key = AttributeKey.PARTY_ENTRY_FEE, required = false, min = 0.0),
         )
     }
 
     @Serializable
     @SerialName("wifi")
     data class Wifi(
-        val ssid: AttributeValue? = null,
-        val password: AttributeValue? = null,
+        val wifiSsid: AttributeValue? = null,
+        val wifiPassword: AttributeValue? = null,
     ) : LocationData() {
         override val locationtype = WIFI
 
-        val ssidValue     get() = ssid?.asString
-        val passwordValue get() = password?.asString
+        val wifiSsidValue     get() = wifiSsid?.asString
+        val wifiPasswordValue get() = wifiPassword?.asString
 
         override fun schema() = listOf(
-            AttributeDefinition.StringDef(key = "ssid",     required = false),
-            AttributeDefinition.StringDef(key = "password", required = false),
+            AttributeDefinition.StringDef(key = AttributeKey.WIFI_SSID,     required = false),
+            AttributeDefinition.StringDef(key = AttributeKey.WIFI_PASSWORD, required = false),
         )
     }
 
@@ -422,93 +426,93 @@ sealed class LocationData {
     @Serializable
     @SerialName("food_kebab")
     data class FoodKebab(
-        val kebabPrice: AttributeValue?,
+        val foodKebabPrice: AttributeValue?,
     ) : LocationData() {
         override val locationtype = FOOD_KEBAB
 
-        val kebabPriceValue get() = kebabPrice?.asDouble
+        val foodKebabPriceValue get() = foodKebabPrice?.asDouble
 
         override fun schema() = listOf(
-            AttributeDefinition.DoubleDef(key = "kebabPrice", required = false, min = 0.0),
+            AttributeDefinition.DoubleDef(key = AttributeKey.FOOD_KEBAB_PRICE, required = false, min = 0.0),
         )
     }
 
     @Serializable
     @SerialName("food_pizza")
     data class FoodPizza(
-        val margaritaPrice: AttributeValue?,
+        val foodPizzaMargaritaPrice: AttributeValue?,
     ) : LocationData() {
         override val locationtype = FOOD_PIZZA
 
-        val margaritaPriceValue get() = margaritaPrice?.asDouble
+        val foodPizzaMargaritaPriceValue get() = foodPizzaMargaritaPrice?.asDouble
 
         override fun schema() = listOf(
-            AttributeDefinition.DoubleDef(key = "margaritaPrice", required = false, min = 0.0),
+            AttributeDefinition.DoubleDef(key = AttributeKey.FOOD_PIZZA_MARGARITA_PRICE, required = false, min = 0.0),
         )
     }
 
     @Serializable
     @SerialName("food_burger")
     data class FoodBurger(
-        val cheeseburgerPrice: AttributeValue?,
+        val foodBurgerCheeseburgerPrice: AttributeValue?,
     ) : LocationData() {
         override val locationtype = FOOD_BURGER
 
-        val cheeseburgerPriceValue get() = cheeseburgerPrice?.asDouble
+        val foodBurgerCheeseburgerPriceValue get() = foodBurgerCheeseburgerPrice?.asDouble
 
         override fun schema() = listOf(
-            AttributeDefinition.DoubleDef(key = "cheeseburgerPrice", required = false, min = 0.0),
+            AttributeDefinition.DoubleDef(key = AttributeKey.FOOD_BURGER_CHEESEBURGER_PRICE, required = false, min = 0.0),
         )
     }
 
     @Serializable
     @SerialName("food_beer")
     data class FoodBeer(
-        val beerPrice: AttributeValue?,
+        val foodBeerPrice: AttributeValue?,
     ) : LocationData() {
         override val locationtype = FOOD_BEER
 
-        val beerPriceValue get() = beerPrice?.asDouble
+        val foodBeerPriceValue get() = foodBeerPrice?.asDouble
 
         override fun schema() = listOf(
-            AttributeDefinition.DoubleDef(key = "beerPrice", required = false, min = 0.0),
+            AttributeDefinition.DoubleDef(key = AttributeKey.FOOD_BEER_PRICE, required = false, min = 0.0),
         )
     }
 
     @Serializable
     @SerialName("food_ice")
     data class FoodIce(
-        val iceScoopPrice: AttributeValue?,
+        val foodIceScoopPrice: AttributeValue?,
     ) : LocationData() {
         override val locationtype = FOOD_ICE
 
-        val iceScoopPriceValue get() = iceScoopPrice?.asDouble
+        val foodIceScoopPriceValue get() = foodIceScoopPrice?.asDouble
 
         override fun schema() = listOf(
-            AttributeDefinition.DoubleDef(key = "iceScoopPrice", required = false, min = 0.0),
+            AttributeDefinition.DoubleDef(key = AttributeKey.FOOD_ICE_SCOOP_PRICE, required = false, min = 0.0),
         )
     }
 
     @Serializable
     @SerialName("food_cafe_bakery")
     data class FoodCafeBakery(
-        val outdoorSeating: AttributeValue?,
-        val alcohol: AttributeValue?,
-        val coffee: AttributeValue?,
-        val breakfast: AttributeValue?,
+        val foodCafeBakeryOutdoorSeating: AttributeValue?,
+        val foodCafeBakeryAlcohol: AttributeValue?,
+        val foodCafeBakeryCoffee: AttributeValue?,
+        val foodCafeBakeryBreakfast: AttributeValue?,
     ) : LocationData() {
         override val locationtype = FOOD_CAFE_BAKERY
 
-        val outdoorSeatingValue get() = outdoorSeating?.asBool
-        val alcoholValue       get() = alcohol?.asBool
-        val coffeeValue        get() = coffee?.asBool
-        val breakfastValue    get() = breakfast?.asBool
+        val foodCafeBakeryOutdoorSeatingValue get() = foodCafeBakeryOutdoorSeating?.asBool
+        val foodCafeBakeryAlcoholValue        get() = foodCafeBakeryAlcohol?.asBool
+        val foodCafeBakeryCoffeeValue         get() = foodCafeBakeryCoffee?.asBool
+        val foodCafeBakeryBreakfastValue      get() = foodCafeBakeryBreakfast?.asBool
 
         override fun schema() = listOf(
-            AttributeDefinition.BoolDef(key = "outdoorSeating", required = false),
-            AttributeDefinition.BoolDef(key = "alcohol",       required = false),
-            AttributeDefinition.BoolDef(key = "coffee",        required = false),
-            AttributeDefinition.BoolDef(key = "breakfast",     required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.FOOD_CAFE_BAKERY_OUTDOOR_SEATING, required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.FOOD_CAFE_BAKERY_ALCOHOL,        required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.FOOD_CAFE_BAKERY_COFFEE,          required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.FOOD_CAFE_BAKERY_BREAKFAST,       required = false),
         )
     }
 
@@ -518,14 +522,14 @@ sealed class LocationData {
     @Serializable
     @SerialName("food_asian")
     data class FoodAsian(
-        val allYouCanEat: AttributeValue?,
+        val foodAsianAllYouCanEat: AttributeValue?,
     ) : LocationData() {
         override val locationtype = FOOD_ASIAN
 
-        val allYouCanEatValue get() = allYouCanEat?.asBool
+        val foodAsianAllYouCanEatValue get() = foodAsianAllYouCanEat?.asBool
 
         override fun schema() = listOf(
-            AttributeDefinition.BoolDef(key = "allYouCanEat", required = false),
+            AttributeDefinition.BoolDef(key = AttributeKey.FOOD_ASIAN_ALL_YOU_CAN_EAT, required = false),
         )
     }
 
@@ -540,135 +544,137 @@ sealed class LocationData {
     @Serializable
     @SerialName("food_other")
     data class FoodOther(
-        val cuisine: AttributeValue,
+        val foodOtherCuisine: AttributeValue,
     ) : LocationData() {
         override val locationtype = FOOD_OTHER
 
-        val cuisineValue get() = cuisine.asString
+        val foodOtherCuisineValue get() = foodOtherCuisine.asString
 
         override fun schema() = listOf(
-            AttributeDefinition.StringDef(key = "cuisine", required = true),
+            AttributeDefinition.StringDef(key = AttributeKey.FOOD_OTHER_CUISINE, required = true),
         )
     }
 }
 
 
 fun LocationType.toSimpleLocationData(): LocationData = when (this) {
-    RADAR           -> LocationData.Radar(speedLimit = AttributeValue.IntValue(0), mobile = AttributeValue.BoolValue(false), redLight = AttributeValue.BoolValue(false)
+    RADAR           -> LocationData.Radar(radarSpeedLimit = AttributeValue.IntValue(0), radarMobile = AttributeValue.BoolValue(false), radarRedLight = AttributeValue.BoolValue(false)
     )
-    POLICE          -> LocationData.Police(lastSeen = null)
+    POLICE          -> LocationData.Police(policeLastSeen = null)
     MOUNTAIN_STREET -> LocationData.MountainStreet(null, null, null)
-    WHEELIESPOT     -> LocationData.Wheeliespot(onlyOnWeekends = null)
-    OFFROAD_MOTORCYCLE -> LocationData.OffroadMotorcycle(legal = AttributeValue.BoolValue(false), motocross = null, enduro = null)
-    VIEWPOINT       -> LocationData.Viewpoint(lieDownFriendly = null)
-    CAMPING         -> LocationData.Camping(official = AttributeValue.BoolValue(true), waterDistance = null, sittingPossibility = null, grillPossibility = null)
-    SWIMMING        -> LocationData.SwimmingLocation(indoor = null, jumpSpot = null, lieDownFriendly = null, price = null)
-    CLIMBINGSPOT    -> LocationData.Climbingspot(viaFerrata = null, outdoor = null, price = null)
-    VOLLEYBALL      -> LocationData.Volleyball(goodNet = null, goodField = null, outdoor = null)
-    BICYCLE         -> LocationData.Bicycle(legal = AttributeValue.BoolValue(true), difficulty = AttributeValue.IntValue(1), undergroundType = null)
-    OUTDOOR_FITNESS -> LocationData.OutdoorFitness(shadow = null)
-    TABLE_TENNIS    -> LocationData.TableTennis(`private` = null)
-    TENNIS          -> LocationData.Tennis(paddle = null)
-    SIGHTSEEING     -> LocationData.SightSeeing(entryFee = null)
-    PARTY           -> LocationData.PartyLocation(entryFee = null)
-    WIFI            -> LocationData.Wifi(ssid = null, password = null)
-    FOOD_KEBAB      -> LocationData.FoodKebab(kebabPrice = null)
-    FOOD_PIZZA      -> LocationData.FoodPizza(margaritaPrice = null)
-    FOOD_BURGER     -> LocationData.FoodBurger(cheeseburgerPrice = null)
-    FOOD_BEER       -> LocationData.FoodBeer(beerPrice = null)
-    FOOD_ICE        -> LocationData.FoodIce(iceScoopPrice = null)
-    FOOD_ASIAN      -> LocationData.FoodAsian(allYouCanEat = null)
+    WHEELIESPOT     -> LocationData.Wheeliespot(wheeliespotOnlyOnWeekends = null)
+    OFFROAD_MOTORCYCLE -> LocationData.OffroadMotorcycle(offroadMotorcycleLegal = AttributeValue.BoolValue(false), offroadMotorcycleMotocross = null, offroadMotorcycleEnduro = null)
+    VIEWPOINT       -> LocationData.Viewpoint(viewpointLieDownFriendly = null)
+    CAMPING         -> LocationData.Camping(campingOfficial = AttributeValue.BoolValue(true), campingWaterDistance = null, campingSittingPossibility = null, campingGrillPossibility = null)
+    SWIMMING        -> LocationData.SwimmingLocation(swimmingIndoor = null, swimmingJumpSpot = null, swimmingLieDownFriendly = null, swimmingPrice = null)
+    CLIMBINGSPOT    -> LocationData.Climbingspot(climbingspotViaFerrata = null, climbingspotOutdoor = null, climbingspotPrice = null)
+    VOLLEYBALL      -> LocationData.Volleyball(volleyballGoodNet = null, volleyballGoodField = null, volleyballOutdoor = null)
+    BICYCLE         -> LocationData.Bicycle(bicycleLegal = AttributeValue.BoolValue(true), bicycleDifficulty = AttributeValue.IntValue(1), bicycleUndergroundType = null)
+    OUTDOOR_FITNESS -> LocationData.OutdoorFitness(outdoorFitnessShadow = null)
+    TABLE_TENNIS    -> LocationData.TableTennis(tableTennisPrivate = null)
+    TENNIS          -> LocationData.Tennis(tennisPaddle = null)
+    SIGHTSEEING     -> LocationData.SightSeeing(sightseeingEntryFee = null)
+    PARTY           -> LocationData.PartyLocation(partyEntryFee = null)
+    WIFI            -> LocationData.Wifi(wifiSsid = null, wifiPassword = null)
+    FOOD_KEBAB      -> LocationData.FoodKebab(foodKebabPrice = null)
+    FOOD_PIZZA      -> LocationData.FoodPizza(foodPizzaMargaritaPrice = null)
+    FOOD_BURGER     -> LocationData.FoodBurger(foodBurgerCheeseburgerPrice = null)
+    FOOD_BEER       -> LocationData.FoodBeer(foodBeerPrice = null)
+    FOOD_ICE        -> LocationData.FoodIce(foodIceScoopPrice = null)
+    FOOD_ASIAN      -> LocationData.FoodAsian(foodAsianAllYouCanEat = null)
     FOOD_GREEK      -> LocationData.FoodGreek()
-    FOOD_CAFE_BAKERY -> LocationData.FoodCafeBakery(outdoorSeating = null, alcohol = null, coffee = null, breakfast = null)
-    FOOD_OTHER      -> LocationData.FoodOther(cuisine = AttributeValue.StringValue(""))
+    FOOD_CAFE_BAKERY -> LocationData.FoodCafeBakery(foodCafeBakeryOutdoorSeating = null, foodCafeBakeryAlcohol = null, foodCafeBakeryCoffee = null, foodCafeBakeryBreakfast = null)
+    FOOD_OTHER      -> LocationData.FoodOther(foodOtherCuisine = AttributeValue.StringValue(""))
 }
 
 
-@Composable
-fun AttributeDefinition.label(): String {
-    return when (this.key) {
-        // Radar
-        "speedLimit"        -> stringResource(Res.string.location_radar_speed_limit)
-        "mobile"            -> stringResource(Res.string.location_radar_mobile)
-        "redLight"          -> stringResource(Res.string.location_radar_red_light)
+/**
+ * Exhaustive - a missing entry is a compile error, unlike the old string `when` this replaces
+ * (which had "outdoor" declared twice: Climbingspot's branch shadowed Volleyball's, so
+ * VOLLEYBALL_OUTDOOR silently rendered Climbingspot's label until this enum made the collision
+ * impossible to express).
+ */
+fun AttributeKey.labelRes(): StringResource = when (this) {
+    // Radar
+    AttributeKey.RADAR_SPEED_LIMIT -> Res.string.location_radar_speed_limit
+    AttributeKey.RADAR_MOBILE      -> Res.string.location_radar_mobile
+    AttributeKey.RADAR_RED_LIGHT   -> Res.string.location_radar_red_light
 
-        // Police
-        "lastSeen"          -> stringResource(Res.string.location_police_last_seen)
+    // Police
+    AttributeKey.POLICE_LAST_SEEN -> Res.string.location_police_last_seen
 
-        // Mountain Street
-        "mautFee"           -> stringResource(Res.string.location_street_maut_fee)
-        "heightLimit"       -> stringResource(Res.string.location_street_height_limit)
-        "closedInWinter"    -> stringResource(Res.string.location_street_closed_in_winter)
+    // Mountain Street
+    AttributeKey.MOUNTAIN_STREET_MAUT_FEE        -> Res.string.location_street_maut_fee
+    AttributeKey.MOUNTAIN_STREET_HEIGHT_LIMIT    -> Res.string.location_street_height_limit
+    AttributeKey.MOUNTAIN_STREET_CLOSED_IN_WINTER -> Res.string.location_street_closed_in_winter
 
-        // Wheelie Spot
-        "onlyOnWeekends"    -> stringResource(Res.string.location_wheeliespot_only_on_weekends)
+    // Wheelie Spot
+    AttributeKey.WHEELIESPOT_ONLY_ON_WEEKENDS -> Res.string.location_wheeliespot_only_on_weekends
 
-        // Offroad Motorcycle
-        "legal"             -> stringResource(Res.string.location_legal)
-        "motocross"         -> stringResource(Res.string.location_offroad_motocross)
-        "enduro"            -> stringResource(Res.string.location_offroad_enduro)
+    // Offroad Motorcycle
+    AttributeKey.OFFROAD_MOTORCYCLE_LEGAL     -> Res.string.location_legal
+    AttributeKey.OFFROAD_MOTORCYCLE_MOTOCROSS -> Res.string.location_offroad_motocross
+    AttributeKey.OFFROAD_MOTORCYCLE_ENDURO    -> Res.string.location_offroad_enduro
 
-        // Bicycle
-        "difficulty"        -> stringResource(Res.string.location_bicycle_difficulty)
-        "undergroundType"   -> stringResource(Res.string.location_bicycle_underground_type)
+    // Bicycle
+    AttributeKey.BICYCLE_LEGAL            -> Res.string.location_legal
+    AttributeKey.BICYCLE_DIFFICULTY       -> Res.string.location_bicycle_difficulty
+    AttributeKey.BICYCLE_UNDERGROUND_TYPE -> Res.string.location_bicycle_underground_type
 
-        // Viewpoint & Swimming
-        "lieDownFriendly"   -> stringResource(Res.string.location_lie_down_friendly)
+    // Viewpoint & Swimming
+    AttributeKey.VIEWPOINT_LIE_DOWN_FRIENDLY -> Res.string.location_lie_down_friendly
+    AttributeKey.SWIMMING_LIE_DOWN_FRIENDLY  -> Res.string.location_lie_down_friendly
 
-        // Camping
-        "official"           -> stringResource(Res.string.location_camping_official)
-        "waterDistance"       -> stringResource(Res.string.location_camping_water_distance)
-        "sittingPossibility"  -> stringResource(Res.string.location_camping_sitting_possibility)
-        "grillPossibility"    -> stringResource(Res.string.location_camping_grill_possibility)
+    // Camping
+    AttributeKey.CAMPING_OFFICIAL           -> Res.string.location_camping_official
+    AttributeKey.CAMPING_WATER_DISTANCE      -> Res.string.location_camping_water_distance
+    AttributeKey.CAMPING_SITTING_POSSIBILITY -> Res.string.location_camping_sitting_possibility
+    AttributeKey.CAMPING_GRILL_POSSIBILITY   -> Res.string.location_camping_grill_possibility
 
-        // Swimming
-        "indoor"             -> stringResource(Res.string.location_swimming_indoor)
-        "jumpSpot"            -> stringResource(Res.string.location_swimming_jump_spot)
-        "price"              -> stringResource(Res.string.location_swimming_price)
+    // Swimming
+    AttributeKey.SWIMMING_INDOOR    -> Res.string.location_swimming_indoor
+    AttributeKey.SWIMMING_JUMP_SPOT -> Res.string.location_swimming_jump_spot
+    AttributeKey.SWIMMING_PRICE     -> Res.string.location_swimming_price
 
-        // Climbingspot
-        "viaFerrata"         -> stringResource(Res.string.location_climbingspot_via_ferrata)
-        "outdoor"            -> stringResource(Res.string.location_climbingspot_outdoor)
+    // Climbingspot
+    AttributeKey.CLIMBINGSPOT_VIA_FERRATA -> Res.string.location_climbingspot_via_ferrata
+    AttributeKey.CLIMBINGSPOT_OUTDOOR     -> Res.string.location_climbingspot_outdoor
+    AttributeKey.CLIMBINGSPOT_PRICE       -> Res.string.location_swimming_price
 
-        // Volleyball
-        "goodNet"           -> stringResource(Res.string.location_volleyball_good_net)
-        "goodField"         -> stringResource(Res.string.location_volleyball_good_field)
-        "outdoor"           -> stringResource(Res.string.location_volleyball_outdoor)
+    // Volleyball
+    AttributeKey.VOLLEYBALL_GOOD_NET   -> Res.string.location_volleyball_good_net
+    AttributeKey.VOLLEYBALL_GOOD_FIELD -> Res.string.location_volleyball_good_field
+    AttributeKey.VOLLEYBALL_OUTDOOR    -> Res.string.location_volleyball_outdoor
 
-        // Outdoor Fitness
-        "shadow"            -> stringResource(Res.string.location_outdoor_fitness_shadow)
+    // Outdoor Fitness
+    AttributeKey.OUTDOOR_FITNESS_SHADOW -> Res.string.location_outdoor_fitness_shadow
 
-        // Table Tennis
-        "private"           -> stringResource(Res.string.location_table_tennis_private)
+    // Table Tennis
+    AttributeKey.TABLE_TENNIS_PRIVATE -> Res.string.location_table_tennis_private
 
-        // Tennis
-        "paddle"            -> stringResource(Res.string.location_tennis_paddle)
+    // Tennis
+    AttributeKey.TENNIS_PADDLE -> Res.string.location_tennis_paddle
 
-        // Sightseeing & Party
-        "entryFee"          -> stringResource(Res.string.location_sightseeing_entry_fee)
+    // Sightseeing & Party
+    AttributeKey.SIGHTSEEING_ENTRY_FEE -> Res.string.location_sightseeing_entry_fee
+    AttributeKey.PARTY_ENTRY_FEE       -> Res.string.location_sightseeing_entry_fee
 
-        // Food
-        "allYouCanEat"      -> stringResource(Res.string.location_food_all_you_can_eat)
-        "kebabPrice"        -> stringResource(Res.string.location_food_kebab_price)
-        "margaritaPrice"    -> stringResource(Res.string.location_food_margarita_price)
-        "cheeseburgerPrice" -> stringResource(Res.string.location_food_cheeseburger_price)
-        "beerPrice"         -> stringResource(Res.string.location_food_beer_price)
-        "iceScoopPrice"     -> stringResource(Res.string.location_food_ice_scoop_price)
-        "cuisine"           -> stringResource(Res.string.location_food_cuisine)
-        "outdoorSeating"    -> stringResource(Res.string.location_food_cafe_bakery_outdoor_seating)
-        "alcohol"           -> stringResource(Res.string.location_food_cafe_bakery_alcohol)
-        "coffee"            -> stringResource(Res.string.location_food_cafe_bakery_coffee)
-        "breakfast"         -> stringResource(Res.string.location_food_cafe_bakery_breakfast)
+    // Food
+    AttributeKey.FOOD_ASIAN_ALL_YOU_CAN_EAT        -> Res.string.location_food_all_you_can_eat
+    AttributeKey.FOOD_KEBAB_PRICE                  -> Res.string.location_food_kebab_price
+    AttributeKey.FOOD_PIZZA_MARGARITA_PRICE        -> Res.string.location_food_margarita_price
+    AttributeKey.FOOD_BURGER_CHEESEBURGER_PRICE    -> Res.string.location_food_cheeseburger_price
+    AttributeKey.FOOD_BEER_PRICE                   -> Res.string.location_food_beer_price
+    AttributeKey.FOOD_ICE_SCOOP_PRICE              -> Res.string.location_food_ice_scoop_price
+    AttributeKey.FOOD_OTHER_CUISINE                -> Res.string.location_food_cuisine
+    AttributeKey.FOOD_CAFE_BAKERY_OUTDOOR_SEATING  -> Res.string.location_food_cafe_bakery_outdoor_seating
+    AttributeKey.FOOD_CAFE_BAKERY_ALCOHOL          -> Res.string.location_food_cafe_bakery_alcohol
+    AttributeKey.FOOD_CAFE_BAKERY_COFFEE           -> Res.string.location_food_cafe_bakery_coffee
+    AttributeKey.FOOD_CAFE_BAKERY_BREAKFAST        -> Res.string.location_food_cafe_bakery_breakfast
 
-        // WiFi
-        "ssid"              -> stringResource(Res.string.location_wifi_ssid)
-        "password"          -> stringResource(Res.string.location_wifi_password)
-
-        else -> {
-            println("ERROR: SCHNEAGGMAP: KEY NOT RESOLVED: $key")
-            this.key
-        }
-    }
+    // WiFi
+    AttributeKey.WIFI_SSID     -> Res.string.location_wifi_ssid
+    AttributeKey.WIFI_PASSWORD -> Res.string.location_wifi_password
 }
 
 
