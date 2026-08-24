@@ -74,6 +74,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
+import org.lerchenflo.schneaggchatv3mp.events.domain.icon
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.entries
@@ -1116,6 +1117,50 @@ private fun SchneaggmapMapContent(
                             }
                         }
                     }
+                }
+            }
+        }
+
+        //Show events with a location set, gated by the "Events" toggle in the filter dropdown.
+        //Each pin uses the same icon as the event's type (see EventType.icon()).
+        if (state.eventsWithLocation.isNotEmpty() && state.showEvents) {
+            val eventPinTint = MaterialTheme.colorScheme.primary
+
+            state.eventsWithLocation.forEach { event ->
+                val location = event.location ?: return@forEach
+
+                safeAdd(layerId = "event-${event.id}") {
+                    val eventSource = rememberGeoJsonSource(
+                        data = GeoJsonData.Features(
+                            FeatureCollection(features = listOf(Feature(
+                                geometry = Point(
+                                    coordinates = Position(
+                                        longitude = location.long,
+                                        latitude = location.lat,
+                                    )
+                                ),
+                                properties = buildJsonObject {
+                                    put("type", JsonPrimitive("event"))
+                                },
+                                id = JsonPrimitive(event.id)
+                            )))
+                        )
+                    )
+
+                    val eventPinPainter = rememberVectorPainter(event.type.icon())
+
+                    SymbolLayer(
+                        id = "event-${event.id}",
+                        source = eventSource,
+                        onClick = { clickedItems ->
+                            if (clickedItems.isNotEmpty()) {
+                                onAction(SchneaggmapAction.OnEventPinClick(clickedItems.first().id!!.content))
+                                ClickResult.Consume
+                            } else ClickResult.Pass
+                        },
+                        iconImage = image(eventPinPainter, size = DpSize(33.dp, 33.dp), colorFilter = ColorFilter.tint(eventPinTint)),
+                        iconAllowOverlap = const(true)
+                    )
                 }
             }
         }

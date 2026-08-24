@@ -25,6 +25,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -39,6 +40,7 @@ class SchneaggmapViewModel(
     private val preferenceManager: Preferencemanager,
     private val locationService: LocationService,
     private val userRepository: UserRepository,
+    private val eventRepository: EventRepository,
 
     private val initialEntryId: String?
 ) : ViewModel() {
@@ -49,7 +51,8 @@ class SchneaggmapViewModel(
         _state,
         mapRepository.getAllMapEntriesFlow(),
         userRepository.onlineFriendIdsFlow,
-    ) { state, entries, onlineFriendIds ->
+        eventRepository.getAllEventsFlow(),
+    ) { state, entries, onlineFriendIds, events ->
 
         val results = if (state.searchTerm.isEmpty()) emptyList() else entries.filter {
             it.name.contains(state.searchTerm, ignoreCase = true)
@@ -62,6 +65,7 @@ class SchneaggmapViewModel(
         state.copy(
             entries = entries,
             onlineFriendIds = onlineFriendIds,
+            eventsWithLocation = events.filter { it.location != null },
 
             searchResults = results
         )
@@ -275,6 +279,20 @@ class SchneaggmapViewModel(
                     it.copy(
                         showUsers = !it.showUsers
                     )
+                }
+            }
+
+            SchneaggmapAction.ToggleShowEvents -> {
+                _state.update {
+                    it.copy(
+                        showEvents = !it.showEvents
+                    )
+                }
+            }
+
+            is SchneaggmapAction.OnEventPinClick -> {
+                viewModelScope.launch {
+                    navigator.navigate(Route.Events(selectedEvent = action.eventId))
                 }
             }
 

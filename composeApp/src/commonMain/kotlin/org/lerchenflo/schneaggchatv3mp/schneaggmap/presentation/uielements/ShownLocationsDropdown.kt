@@ -34,6 +34,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapAction
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.events_screen_title
 import schneaggchatv3mp.composeapp.generated.resources.location_type_user
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_filter_location_types
 
@@ -72,6 +73,8 @@ fun ShownLocationsDropdown(
                 expandedGroups = state.expandedFilterGroups,
                 onToggleShowUsersClick = { onAction(SchneaggmapAction.ToggleShowUsers) },
                 showUsers = state.showUsers,
+                onToggleShowEventsClick = { onAction(SchneaggmapAction.ToggleShowEvents) },
+                showEvents = state.showEvents,
             )
         }
     }
@@ -81,6 +84,8 @@ fun ShownLocationsDropdown(
 fun LocationDropdownContent(
     onToggleShowUsersClick: () -> Unit,
     showUsers: Boolean,
+    onToggleShowEventsClick: () -> Unit,
+    showEvents: Boolean,
 
     onTypeClick: (LocationType) -> Unit,
     onGroupClick: (LocationGroup) -> Unit,
@@ -104,6 +109,21 @@ fun LocationDropdownContent(
                 Checkbox(
                     checked = showUsers,
                     onCheckedChange = { onToggleShowUsersClick() },
+                )
+            },
+            trailingIcon = {
+                Box(modifier = Modifier.size(24.dp))
+            },
+        )
+
+        // Toggle events separately
+        DropdownMenuItem(
+            text = { Text(stringResource(Res.string.events_screen_title)) },
+            onClick = onToggleShowEventsClick,
+            leadingIcon = {
+                Checkbox(
+                    checked = showEvents,
+                    onCheckedChange = { onToggleShowEventsClick() },
                 )
             },
             trailingIcon = {
