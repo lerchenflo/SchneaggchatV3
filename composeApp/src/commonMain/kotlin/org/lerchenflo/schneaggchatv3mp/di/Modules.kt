@@ -169,6 +169,7 @@ val sharedmodule = module{
             appRepository = get(),
             eventRepository = get(),
             userRepository = get(),
+            preferenceManager = get(),
             initialEntryId = initialEntryId,
         )
     }

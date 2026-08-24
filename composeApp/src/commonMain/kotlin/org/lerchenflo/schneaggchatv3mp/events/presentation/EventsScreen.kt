@@ -99,7 +99,8 @@ fun EventsScreen(
                     event = selectedEvent,
                     onSave = { onAction(EventsAction.OnSaveEvent(it)) },
                     onDismiss = { onAction(EventsAction.OnEventPopupDismiss) },
-                    friendsById = state.friendsById
+                    friendsById = state.friendsById,
+                    mapStyleUrl = state.mapStyleUrl
                 )
             } else {
                 EventJoinPopup(

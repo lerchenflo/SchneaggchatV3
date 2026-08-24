@@ -310,6 +310,9 @@
     <string name="event_invite_header">%1$s möchte %2$s bei %3$s</string>
     <string name="event_invited_users">Eingeladen</string>
     <string name="event_invite_friends">Freunde einladen</string>
+    <string name="event_location_label">Ort</string>
+    <string name="event_no_location_selected">Kein Ort ausgewählt</string>
+    <string name="event_pick_location_title">Ort auswählen</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Essen</string>
     <string name="event_type_cooking">Kochen</string>

@@ -15,6 +15,7 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
@@ -27,6 +28,7 @@ class EventsViewModel(
     private val eventRepository: EventRepository,
     private val appRepository: AppRepository,
     private val userRepository: UserRepository,
+    private val preferenceManager: Preferencemanager,
     private val initialEntryId: String? = null
 ) : ViewModel() {
 
@@ -35,13 +37,15 @@ class EventsViewModel(
         _state,
         eventRepository.getAllEventsFlow(),
         userRepository.getAllUsersFlow(),
-    ) { currentState, events, users ->
+        preferenceManager.getMapStyleUrlFlow(),
+    ) { currentState, events, users, mapStyleUrl ->
         val friendsMap = users
             .filter { it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED }
             .associateBy { it.id }
         currentState.copy(
             events = events,
-            friendsById = friendsMap
+            friendsById = friendsMap,
+            mapStyleUrl = mapStyleUrl
         )
     }.stateIn(
         scope = viewModelScope,
