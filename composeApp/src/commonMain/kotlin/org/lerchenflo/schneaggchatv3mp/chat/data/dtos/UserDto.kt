@@ -63,6 +63,9 @@ data class UserDto(
 
     var birthDate: String? = null,
 
+    // Optional phone number, shared with accepted friends
+    var phoneNumber: String? = null,
+
     var email: String? = null,
     var emailVerifiedAt: Long?,
 

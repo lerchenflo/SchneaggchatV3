@@ -22,10 +22,15 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ### 3.0.16
 
 ##### Highlights
+- Events
+- Telefonnummer teilen
+- Systemnachrichten im Chat (Mitglied hinzugefügt etc.)
+- Bottom Navigation
 
 #### Features
 - Einführung in die Features
 - Events
+- Telefonnummer teilen (Optional)
 - Gruppen - lösch - Countdown
 - Bottom Navigation Bar mit Swipen
 - Systemnachrichten im Chat (Gruppenereignisse wie Mitglieder hinzugefügt, Gruppenname geändert, Admin-Status vergeben, Freundschaft angenommen, etc.)

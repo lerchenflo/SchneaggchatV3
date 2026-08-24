@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EditNote
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -40,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import io.github.ismoy.imagepickerkmp.config.CropConfig
 import io.github.ismoy.imagepickerkmp.config.GalleryConfig
@@ -63,6 +65,7 @@ import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.Settings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsOption
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.utilities.isPhoneNumberValid
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.camera
 import schneaggchatv3mp.composeapp.generated.resources.change
@@ -72,10 +75,15 @@ import schneaggchatv3mp.composeapp.generated.resources.change_username
 import schneaggchatv3mp.composeapp.generated.resources.change_username_description
 import schneaggchatv3mp.composeapp.generated.resources.change_username_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
+import schneaggchatv3mp.composeapp.generated.resources.current_phone_number
 import schneaggchatv3mp.composeapp.generated.resources.currentstatus
+import schneaggchatv3mp.composeapp.generated.resources.change_phone_number
 import schneaggchatv3mp.composeapp.generated.resources.edit_profile_picture
 import schneaggchatv3mp.composeapp.generated.resources.error_cannot_be_the_same_username
 import schneaggchatv3mp.composeapp.generated.resources.gallery
+import schneaggchatv3mp.composeapp.generated.resources.invalid_phone_number
+import schneaggchatv3mp.composeapp.generated.resources.phone_number_infotext
+import schneaggchatv3mp.composeapp.generated.resources.phone_number_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.status_infotext
 import schneaggchatv3mp.composeapp.generated.resources.status_nosemicolon
 import schneaggchatv3mp.composeapp.generated.resources.user_attributes_24px
@@ -101,6 +109,7 @@ fun UserSettings(
     var showChangeUsernamePopup by remember { mutableStateOf(false) }
     var showChangeStatusPopup by remember { mutableStateOf(false) }
     var showChangeBirthDatePopup by remember { mutableStateOf(false) }
+    var showChangePhoneNumberPopup by remember { mutableStateOf(false) }
 
 
 
@@ -339,6 +348,23 @@ fun UserSettings(
             )
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            //Phone number
+            SettingsOption(
+                icon = Icons.Default.Phone,
+                text = stringResource(Res.string.change_phone_number),
+                subtext = if (ownuser?.phoneNumber == null || ownuser.phoneNumber.isEmpty()) {
+                    stringResource(Res.string.phone_number_infotext)
+                } else {
+                    stringResource(Res.string.current_phone_number, ownuser.phoneNumber)
+                },
+                onClick = {
+                    showChangePhoneNumberPopup = true
+                },
+                modifier = Modifier.tapTarget("user_settings_phone_number")
+            )
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
         }
     }
 
@@ -393,5 +419,23 @@ fun UserSettings(
         )
     }
 
+    if (showChangePhoneNumberPopup) {
+        val invalidPhoneText = stringResource(Res.string.invalid_phone_number)
+
+        ChangeDialog(
+            title = stringResource(Res.string.change_phone_number),
+            initialValue = ownuser?.phoneNumber ?: "",
+            placeholder = stringResource(Res.string.phone_number_placeholder),
+            keyboardType = KeyboardType.Phone,
+            onDismiss = { showChangePhoneNumberPopup = false },
+            onConfirm = {
+                userSettingsViewModel.changePhoneNumber(it)
+            },
+            confirmButtonText = stringResource(Res.string.change),
+            validator = { newValue ->
+                if (newValue.isBlank() || isPhoneNumberValid(newValue)) null else invalidPhoneText
+            }
+        )
+    }
 
 }

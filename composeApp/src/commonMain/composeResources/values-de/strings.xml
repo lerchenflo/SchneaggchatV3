@@ -331,6 +331,8 @@
 
 
     <string name="tooltip_username">Wähle einen Benutzernamen den andere Benutzer sehen</string>
+    <string name="phone_number">Telefonnummer (optional)</string>
+    <string name="phone_number_optional_tooltip">Optional. Wird deinen Freunden gezeigt, damit sie dich anrufen können.</string>
     <string name="tooltip_email">Wird zum Wiederherstellen der Zugangsdaten und zur Löschung des Accounts verwendet</string>
     <string name="tooltip_birthdate">Wird benutzt, um deine Freunde zu informieren, wenn du Geburtstag hast</string>
     <string name="tooltip_password">Mindestens 8 Zeichen mit Nummern, Sonderzeichen und Groß - und Kleinbuchstabe</string>
@@ -372,8 +374,9 @@
     <string name="mark_as_read">als gelesen markieren</string>
     <string name="more_info">Mehr Informationen</string>
     <string name="edit_profile_picture">Profilbild bearbeiten</string>
-    
-    
+    <string name="profile_picture_add_photo">Foto hinzufügen</string>
+
+
 
     <string name="admin">Admin</string>
 
@@ -383,6 +386,9 @@
     <string name="no_friends">Keine Freunde</string>
 
     <string name="message_delete_info">Willst du diese Nachricht wirklich löschen?</string>
+    <string name="chat_message_image">Nachrichtenbild</string>
+    <string name="chat_remove_image">Bild entfernen</string>
+    <string name="chat_discard_recording">Aufnahme verwerfen</string>
     <string name="open_chat">Chat öffnen</string>
     <string name="make_admin">Zum Admin machen</string>
     <string name="remove_admin_status">Adminstatus entfernen</string>
@@ -395,7 +401,13 @@
     <string name="change_username_description">Ändere deinen Benutzernamen. Er wird anderen angezeigt und wird fürs Einloggen gebraucht</string>
     <string name="change_username_placeholder">neuer Benutzername ...</string>
 
+    <string name="call">Anrufen</string>
     <string name="change_status">Status ändern</string>
+    <string name="change_phone_number">Telefonnummer ändern</string>
+    <string name="phone_number_infotext">Diese Telefonnummer ist für alle deine Freunde sichtbar. Aktuell ist sie nicht gesetzt.</string>
+    <string name="current_phone_number">Deine aktuelle Telefonnummer: %1$s</string>
+    <string name="phone_number_placeholder">Telefonnummer ...</string>
+    <string name="invalid_phone_number">Das ist keine gültige Telefonnummer</string>
     <string name="change_email">Email ändern</string>
     <string name="resend_verification">Bestätigungsemail erneut senden</string>
 
@@ -1093,6 +1105,11 @@
     <string name="ttt_settings">Hier sind die Einstellungen</string>
     <string name="ttt_settings_user">Account-Einstellungen</string>
     <string name="ttt_settings_user_description">Hier kannst du Angaben zu deinem Account ändern.</string>
+
+    <string name="ttt_user_settings_phone_number">Telefonnummer</string>
+    <string name="ttt_user_settings_phone_number_description">Hier kannst du deine Telefonnummer mit deinen Freunden teilen.</string>
+    <string name="ttt_user_settings_phone_number_freeroam">Setze jetzt gerne deine Telefonnummer, oder fahre mit der Tour fort.</string>
+    <string name="ttt_user_settings_go_back">Gehen wir zurück zu den Einstellungen</string>
 
     <string name="ttt_settings_wake">Wecker-Funktion (nur Android)</string>
     <string name="ttt_settings_wake_description">Du kannst diese Funktion aktivieren, damit deine Freunde dich aufwecken können. Dein Handy klingelt dann wie mit dem Handywecker auch im Lautlosmodus. Wenn deine Freunde dies für dich aktiviert haben, kannst du sie in den Chat-Details wecken.</string>

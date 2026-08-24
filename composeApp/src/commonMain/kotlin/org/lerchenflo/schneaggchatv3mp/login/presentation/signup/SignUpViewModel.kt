@@ -18,9 +18,11 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.getMissingPasswordRequirements
 import org.lerchenflo.schneaggchatv3mp.utilities.isEmailValid
+import org.lerchenflo.schneaggchatv3mp.utilities.isPhoneNumberValid
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cannot_be_empty
 import schneaggchatv3mp.composeapp.generated.resources.invalid_email
+import schneaggchatv3mp.composeapp.generated.resources.invalid_phone_number
 import schneaggchatv3mp.composeapp.generated.resources.must_be_accepted
 import schneaggchatv3mp.composeapp.generated.resources.password_needs_to_be_the_same
 import schneaggchatv3mp.composeapp.generated.resources.username_too_long
@@ -61,6 +63,15 @@ class SignUpViewModel(
                         emailState = state.emailState.copy(
                             text = action.newText,
                             errorMessage = if (isEmailValid(action.newText)) null else getString(Res.string.invalid_email)
+                        )
+                    )
+                }
+                is SignupAction.OnPhoneNumberTextChange -> {
+                    state = state.copy(
+                        phoneNumberState = state.phoneNumberState.copy(
+                            text = action.newText,
+                            //Optional field - blank is valid
+                            errorMessage = if (action.newText.isBlank() || isPhoneNumberValid(action.newText)) null else getString(Res.string.invalid_phone_number)
                         )
                     )
                 }
@@ -202,7 +213,14 @@ class SignUpViewModel(
 
                 if (state.isInputComplete()) {
                     var accCreationSuccessful = false
-                    appRepository.createAccount(state.usernameState.text, state.emailState.text, state.passwordState.text, state.gebiDate.toString(), state.profilePic!!) { success ->
+                    appRepository.createAccount(
+                        username = state.usernameState.text,
+                        email = state.emailState.text,
+                        password = state.passwordState.text,
+                        birthdate = state.gebiDate.toString(),
+                        profilePic = state.profilePic!!,
+                        phoneNumber = state.phoneNumberState.text.takeIf { it.isNotBlank() },
+                    ) { success ->
                         if (success) {
                             accCreationSuccessful = true
                             println("Account erstellen erfolgreich")

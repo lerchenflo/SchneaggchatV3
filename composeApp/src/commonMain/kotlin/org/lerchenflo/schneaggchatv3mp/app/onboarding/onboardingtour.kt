@@ -42,6 +42,10 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_privacy_desc
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_user
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_user_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_wake
+import schneaggchatv3mp.composeapp.generated.resources.ttt_user_settings_go_back
+import schneaggchatv3mp.composeapp.generated.resources.ttt_user_settings_phone_number
+import schneaggchatv3mp.composeapp.generated.resources.ttt_user_settings_phone_number_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_user_settings_phone_number_freeroam
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_wake_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_start_chatting
 import schneaggchatv3mp.composeapp.generated.resources.ttt_start_chatting_description
@@ -111,6 +115,27 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 title = Res.string.ttt_settings_user,
                 description = Res.string.ttt_settings_user_description,
                 route = Route.SettingsScreen
+            )
+
+            tapStep(
+                id = "user_settings_phone_number",
+                title = Res.string.ttt_user_settings_phone_number,
+                description = Res.string.ttt_user_settings_phone_number_description,
+                route = Route.UserSettings
+            )
+
+            freeRoamStep(
+                title = Res.string.ttt_user_settings_phone_number_freeroam,
+                position = FreeRoamBarPosition.Bottom,
+                continueButtonText = Res.string.ttt_continue,
+                route = Route.UserSettings
+            )
+
+            //Point to back button so we return to the settings list before the next step
+            tapStep(
+                id = "user_settings_back_button",
+                title = Res.string.ttt_user_settings_go_back,
+                route = Route.UserSettings
             )
 
             tapStep(

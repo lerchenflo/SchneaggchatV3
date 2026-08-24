@@ -248,6 +248,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 requesterId = newUser.requesterId,
                                 notisMuted = false,
                                 birthDate = null,
+                                phoneNumber = null,
                                 email = null,
                                 emailVerifiedAt = null,
                                 createdAt = null,
@@ -273,6 +274,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
                                 birthDate = newUser.birthDate,
+                                phoneNumber = newUser.phoneNumber,
                                 frienshipStatus = NetworkUtils.FriendshipStatus.ACCEPTED,
                                 requesterId = newUser.requesterId,
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt,
@@ -312,6 +314,7 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
                                 birthDate = newUser.birthDate,
+                                phoneNumber = newUser.phoneNumber,
                                 profilePicUpdatedAt = newUser.profilePicUpdatedAt,
 
                                 // Preserve existing values:

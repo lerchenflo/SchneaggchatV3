@@ -326,6 +326,7 @@ class NetworkUtils(
         email: String,
         birthDate: String,
         profilePicBytes: ByteArray,
+        phoneNumber: String? = null,
         fileName: String = "profile.jpg"
     ): NetworkResult<Unit, NetworkError> {
         return try {
@@ -336,6 +337,9 @@ class NetworkUtils(
                     append("password", password)
                     append("email", email)
                     append("birthDate", birthDate)
+                    if (!phoneNumber.isNullOrBlank()) {
+                        append("phoneNumber", phoneNumber)
+                    }
                     append("profilepic", profilePicBytes, Headers.build {
                         append(HttpHeaders.ContentType, "image/jpeg")
                         append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
@@ -487,6 +491,9 @@ class NetworkUtils(
             val userDescription: String,
             val userStatus: String,
 
+            //Optional phone number, shared with accepted friends
+            val phoneNumber: String? = null,
+
             val nickName: String?,
 
             //Do i share the location with this friend
@@ -519,6 +526,9 @@ class NetworkUtils(
             val birthDate: String,
             val userDescription: String,
             val userStatus: String,
+
+            //Optional phone number, only visible to yourself and accepted friends
+            val phoneNumber: String? = null,
 
             //Custom to own user response:
             val email: String,
@@ -647,9 +657,10 @@ class NetworkUtils(
         val newEmail: String?,
         val newBirthDate: String?,
         val newNickName: String?,
+        val newPhoneNumber: String? = null,
     )
 
-    suspend fun changeProfile(userId: String, newStatus: String?, newDescription: String?, newEmail: String?, newBirthDate: String?, newNickName: String?): NetworkResult<Any, NetworkError> {
+    suspend fun changeProfile(userId: String, newStatus: String?, newDescription: String?, newEmail: String?, newBirthDate: String?, newNickName: String?, newPhoneNumber: String? = null): NetworkResult<Any, NetworkError> {
         return safePost(
             endpoint = "/users/changeprofile",
             body = UserRequest(
@@ -659,6 +670,7 @@ class NetworkUtils(
                 newEmail = newEmail,
                 newBirthDate = newBirthDate,
                 newNickName = newNickName,
+                newPhoneNumber = newPhoneNumber,
             )
         )
     }

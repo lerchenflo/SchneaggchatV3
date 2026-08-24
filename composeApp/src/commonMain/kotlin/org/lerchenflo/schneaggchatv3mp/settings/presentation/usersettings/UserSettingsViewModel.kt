@@ -119,6 +119,15 @@ class UserSettingsViewModel(
         }
     }
 
+    fun changePhoneNumber(newPhoneNumber: String) {
+        val userId = SessionCache.requireLoggedIn()?.userId ?: return
+
+        viewModelScope.launch {
+            appRepository.changeUserDetails(newPhoneNumber = newPhoneNumber, userId = userId)
+            appRepository.dataSync(reason = "phoneNumberChanged")
+        }
+    }
+
 
     fun logout(){
         viewModelScope.launch {

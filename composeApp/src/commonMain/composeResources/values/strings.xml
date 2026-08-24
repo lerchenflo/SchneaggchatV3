@@ -330,6 +330,8 @@
     <string name="event_invited_friends_only">Invited only</string>
 
     <string name="tooltip_username">Choose a unique username others will see</string>
+    <string name="phone_number">Phone number (optional)</string>
+    <string name="phone_number_optional_tooltip">Optional. Shown to your friends so they can call you.</string>
     <string name="tooltip_email">Used for account recovery and deletion</string>
     <string name="tooltip_birthdate">Used to show others when your birthday is</string>
     <string name="tooltip_password">Min. 8 characters with numbers, special chars, and upper/lower case</string>
@@ -371,8 +373,9 @@
     <string name="mark_as_read">mark as read</string>
     <string name="more_info">more info</string>
     <string name="edit_profile_picture">edit profile picture</string>
-    
-    
+    <string name="profile_picture_add_photo">add photo</string>
+
+
 
     <string name="admin">Admin</string>
 
@@ -382,6 +385,9 @@
     <string name="no_friends">no friends</string>
 
     <string name="message_delete_info">Do you really want to delete this message?</string>
+    <string name="chat_message_image">message image</string>
+    <string name="chat_remove_image">remove image</string>
+    <string name="chat_discard_recording">discard recording</string>
     <string name="open_chat">Open chat</string>
     <string name="make_admin">Make Admin</string>
     <string name="remove_admin_status">remove admin status</string>
@@ -394,7 +400,13 @@
     <string name="change_username_description">Change your username. The new username will be shown to others and used for login</string>
     <string name="change_username_placeholder">new username ...</string>
 
+    <string name="call">Call</string>
     <string name="change_status">Change status</string>
+    <string name="change_phone_number">Change phone number</string>
+    <string name="phone_number_infotext">This phone number is available to all your friends. Currently, it is not set.</string>
+    <string name="current_phone_number">Your current phone number: %1$s</string>
+    <string name="phone_number_placeholder">phone number ...</string>
+    <string name="invalid_phone_number">This is not a valid phone number</string>
     <string name="change_email">Change email</string>
     <string name="resend_verification">resend verification</string>
 
@@ -1090,6 +1102,11 @@
     <string name="ttt_settings">Here are the settings</string>
     <string name="ttt_settings_user">user settings</string>
     <string name="ttt_settings_user_description">Here you can change stuff about your account.</string>
+
+    <string name="ttt_user_settings_phone_number">phone number</string>
+    <string name="ttt_user_settings_phone_number_description">You can share your phone number with your friends here.</string>
+    <string name="ttt_user_settings_phone_number_freeroam">Feel free to set your phone number now, or continue the tour.</string>
+    <string name="ttt_user_settings_go_back">Let's go back to the settings</string>
 
     <string name="ttt_settings_wake">Wake up feature (Android only)</string>
     <string name="ttt_settings_wake_description">You can enable this feature to allow your friends to wake you up. Your phone will ring like with your alarm, even if silenced. If your friends have enabled this for you, you can wake them in the chat details.</string>

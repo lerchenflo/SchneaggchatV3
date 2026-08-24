@@ -10,6 +10,7 @@ data class SignupState(
     val passwordState: InputfieldState = InputfieldState(),
     val passwordRetypeState: InputfieldState = InputfieldState(),
     val emailState: InputfieldState = InputfieldState(),
+    val phoneNumberState: InputfieldState = InputfieldState(), //Optional
 
     val gebiDate: LocalDate? = null, //"1994-5-25", //Year month day
     val gebiErrorText: String? = null,
@@ -48,6 +49,7 @@ data class SignupState(
         if (passwordState != other.passwordState) return false
         if (passwordRetypeState != other.passwordRetypeState) return false
         if (emailState != other.emailState) return false
+        if (phoneNumberState != other.phoneNumberState) return false
         if (gebiDate != other.gebiDate) return false
         if (gebiErrorText != other.gebiErrorText) return false
         if (!profilePic.contentEquals(other.profilePic)) return false
@@ -65,6 +67,7 @@ data class SignupState(
         result = 31 * result + passwordState.hashCode()
         result = 31 * result + passwordRetypeState.hashCode()
         result = 31 * result + emailState.hashCode()
+        result = 31 * result + phoneNumberState.hashCode()
         result = 31 * result + (gebiDate?.hashCode() ?: 0)
         result = 31 * result + (gebiErrorText?.hashCode() ?: 0)
         result = 31 * result + (profilePic?.contentHashCode() ?: 0)
@@ -81,6 +84,7 @@ data class SignupState(
             |  passwordState=${passwordState.copy(text = "***")} 
             |  passwordRetypeState=${passwordRetypeState.copy(text = "***")}
             |  emailState=$emailState
+            |  phoneNumberState=$phoneNumberState
             |  gebiDate=$gebiDate
             |  gebiErrorText=$gebiErrorText
             |  profilePic=${if (profilePic != null) "[${profilePic.size} bytes]" else "null"}
@@ -107,6 +111,7 @@ sealed interface SignupAction {
     data class OnUsernameTextChange(val newText: String) : SignupAction
     data class OnPasswordTextChange(val newText: String, val retrypasswordfield: Boolean) : SignupAction
     data class OnEmailTextChange(val newText: String) : SignupAction
+    data class OnPhoneNumberTextChange(val newText: String) : SignupAction
     data object OnSignUpButtonPress : SignupAction
 
     data class OnGebiDateChange(val newDate: LocalDate) : SignupAction

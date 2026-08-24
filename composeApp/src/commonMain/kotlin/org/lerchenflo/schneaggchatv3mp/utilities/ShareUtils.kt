@@ -14,4 +14,7 @@ expect class ShareUtils {
     //Open a lat/long location in the device's maps app
     fun openLocationInMaps(lat: Double, long: Double, label: String = "")
 
+    //Open the phone dialer, pre-filled with the given number
+    fun openPhoneDialer(phoneNumber: String)
+
 }
