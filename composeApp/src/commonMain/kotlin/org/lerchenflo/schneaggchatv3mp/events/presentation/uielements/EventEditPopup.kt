@@ -19,13 +19,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.GroupAdd
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalBottomSheetProperties
@@ -42,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.darkokoa.datetimewheelpicker.WheelDateTimePicker
@@ -67,9 +71,12 @@ import schneaggchatv3mp.composeapp.generated.resources.event_description_label
 import schneaggchatv3mp.composeapp.generated.resources.event_has_end_time
 import schneaggchatv3mp.composeapp.generated.resources.event_invite_friends
 import schneaggchatv3mp.composeapp.generated.resources.event_invited_users
+import schneaggchatv3mp.composeapp.generated.resources.event_location_label
+import schneaggchatv3mp.composeapp.generated.resources.event_no_location_selected
 import schneaggchatv3mp.composeapp.generated.resources.event_starts_label
 import schneaggchatv3mp.composeapp.generated.resources.event_title_label
 import schneaggchatv3mp.composeapp.generated.resources.error_event_title_must_not_be_empty
+import schneaggchatv3mp.composeapp.generated.resources.latlong
 import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.save
 import kotlin.time.Clock
@@ -83,15 +90,21 @@ private const val EVENT_TITLE_MAX_LENGTH = 200
 @Composable
 fun EventEditPopup(
     event: Event,
-    onSave: (Event) -> Unit,
+    onSave: (Event, ImageBitmap?) -> Unit,
     onDismiss: () -> Unit,
     friendsById: Map<String, User> = emptyMap(),
+    mapStyleUrl: String = "",
     modifier: Modifier = Modifier
 ) {
 
     var currentEvent by remember(event) {
         mutableStateOf(event)
     }
+
+    // Only a brand-new event's group gets created with this picture - an edit must not
+    // overwrite a group picture the members may have set manually since.
+    val isNewEvent = event.id == ""
+    val typeIconBitmap = if (isNewEvent) rememberEventTypeIconBitmap(currentEvent.type) else null
 
     // Separate toggle state so we can flip "has end date" off without losing the picker's
     // last-set value if the user re-enables it (avoids re-deriving a default every toggle)
@@ -105,6 +118,7 @@ fun EventEditPopup(
     var visibilityDropdownExpanded by remember { mutableStateOf(false) }
     var showInviteFriendsDialog by remember { mutableStateOf(false) }
     var inviteSearchTerm by remember { mutableStateOf("") }
+    var showLocationPicker by remember { mutableStateOf(false) }
 
     var titleError by remember { mutableStateOf(false) }
 
@@ -215,6 +229,47 @@ fun EventEditPopup(
                 },
                 modifier = Modifier.fillMaxWidth()
             )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Location (optional)
+            Text(
+                text = stringResource(Res.string.event_location_label),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            OutlinedButton(
+                onClick = { showLocationPicker = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.LocationOn,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                val location = currentEvent.location
+                Text(
+                    text = if (location != null) {
+                        stringResource(Res.string.latlong, location.lat.toString().take(8), location.long.toString().take(8))
+                    } else {
+                        stringResource(Res.string.event_no_location_selected)
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                if (location != null) {
+                    IconButton(onClick = { currentEvent = currentEvent.copy(location = null) }) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -412,7 +467,7 @@ fun EventEditPopup(
                         if (currentEvent.title.isBlank()) {
                             titleError = true
                         } else {
-                            onSave(currentEvent)
+                            onSave(currentEvent, typeIconBitmap)
                         }
                     },
                     disabled = !changed,
@@ -575,6 +630,19 @@ fun EventEditPopup(
             }
         }
     }
+
+    // Location picker sheet
+    if (showLocationPicker) {
+        EventLocationPickerSheet(
+            initialLocation = currentEvent.location,
+            mapStyleUrl = mapStyleUrl,
+            onConfirm = { location ->
+                currentEvent = currentEvent.copy(location = location)
+                showLocationPicker = false
+            },
+            onDismiss = { showLocationPicker = false }
+        )
+    }
 }
 
 @Preview
@@ -601,7 +669,7 @@ private fun EventEditPopupPreview() {
                 updatedBy = "awdawd",
                 creatorName = "Flo"
             ),
-            onSave = { },
+            onSave = { _, _ -> },
             onDismiss = { }
         )
     }

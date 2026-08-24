@@ -29,6 +29,9 @@ data class User(
     val lastSeen: Long? = null,
     val birthDate: String? = null, //YYYY-MM-dd
 
+    // Optional phone number, shared with accepted friends
+    val phoneNumber: String? = null,
+
     val email: String? = null,
     val emailVerifiedAt: Long?,
 
@@ -69,6 +72,7 @@ data class User(
             notisMuted=$notisMuted,
             lastSeen=$lastSeen,
             birthDate=$birthDate,
+            phoneNumber=$phoneNumber,
             email=$email,
             emailVerifiedAt=$emailVerifiedAt,
             createdAt=$createdAt,
@@ -107,6 +111,7 @@ fun UserDto.toUser(): User = User(
     notisMuted = this.notisMuted,
     lastSeen = this.lastSeen,
     birthDate = this.birthDate,
+    phoneNumber = this.phoneNumber,
     email = this.email,
     emailVerifiedAt = this.emailVerifiedAt,
     createdAt = this.createdAt,
@@ -139,6 +144,7 @@ fun User.toDto(): UserDto = UserDto(
     notisMuted = this.notisMuted,
     lastSeen = this.lastSeen,
     birthDate = this.birthDate,
+    phoneNumber = this.phoneNumber,
     email = this.email,
     emailVerifiedAt = this.emailVerifiedAt,
     frienshipStatus = this.friendshipStatus,

@@ -42,34 +42,49 @@ data class ComboAnnotationSource(
     val type: ComboAnnotationType,
     /** entity id -> display name */
     val names: Map<String, String>,
+    /** Shown in place of the raw text when an id is unknown (deleted or not yet synced). */
+    val unresolvedName: String,
     val onClick: (id: String) -> Unit = {}
 )
 
-/** A resolved annotation match inside a raw text. */
+/** A resolved (or placeholder) annotation match inside a raw text. */
 internal data class ComboAnnotationMatch(
     val range: IntRange,
     val id: String,
     val name: String,
-    val source: ComboAnnotationSource
+    val source: ComboAnnotationSource,
+    /** false when [name] is the source's placeholder because the id is unknown. */
+    val resolved: Boolean
 )
 
 /**
  * Finds all annotations of all [sources] in [text], ordered by position.
- * Annotations whose id has no known name are skipped (they stay raw text).
+ *
+ * An unknown id still yields a match carrying the source's placeholder name, so the raw
+ * `@user/<id>` never reaches the reader. Pass [includeUnresolved] = false where the raw text
+ * has to stay editable (the input field).
  */
 internal fun findComboAnnotations(
     text: String,
-    sources: List<ComboAnnotationSource>
+    sources: List<ComboAnnotationSource>,
+    includeUnresolved: Boolean = true
 ): List<ComboAnnotationMatch> =
     sources.flatMap { source ->
         source.type.regex.findAll(text).mapNotNull { match ->
             val id = match.groupValues[1]
-            val name = source.names[id] ?: return@mapNotNull null
-            ComboAnnotationMatch(match.range, id, name, source)
+            val name = source.names[id]
+            if (name == null && !includeUnresolved) return@mapNotNull null
+            ComboAnnotationMatch(
+                range = match.range,
+                id = id,
+                name = name ?: source.unresolvedName,
+                source = source,
+                resolved = name != null
+            )
         }
     }.sortedBy { it.range.first }
 
-/** Replaces all resolvable annotations with their display name (plain text, e.g. for previews). */
+/** Replaces all annotations (resolved or not) with their display name (plain text, e.g. for previews). */
 fun resolveComboAnnotationsToPlainText(
     text: String,
     sources: List<ComboAnnotationSource>

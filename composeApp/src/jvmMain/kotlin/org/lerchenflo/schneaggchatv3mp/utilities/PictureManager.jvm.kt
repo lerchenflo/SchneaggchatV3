@@ -1,10 +1,14 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asSkiaBitmap
 import okio.ByteString.Companion.decodeBase64
+import org.jetbrains.skia.EncodedImageFormat
+import org.jetbrains.skia.Image
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
-import java.awt.Image
+import java.awt.Image as AwtImage
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -142,7 +146,7 @@ actual class PictureManager {
                 val scaledImage = bufferedImage.getScaledInstance(
                     newWidth,
                     newHeight,
-                    Image.SCALE_SMOOTH
+                    AwtImage.SCALE_SMOOTH
                 )
 
                 // Convert to BufferedImage (RGB for JPEG)
@@ -223,5 +227,12 @@ actual class PictureManager {
             e.printStackTrace()
             ""
         }
+    }
+
+    actual suspend fun encodeImageBitmap(bitmap: ImageBitmap): ByteArray {
+        return Image.makeFromBitmap(bitmap.asSkiaBitmap())
+            .encodeToData(EncodedImageFormat.PNG)
+            ?.bytes
+            ?: throw RuntimeException("Failed to encode ImageBitmap to PNG")
     }
 }

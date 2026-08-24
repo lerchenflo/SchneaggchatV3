@@ -67,7 +67,6 @@ import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.delete
 import schneaggchatv3mp.composeapp.generated.resources.latlong
 import schneaggchatv3mp.composeapp.generated.resources.location_belongs_to_type
-import schneaggchatv3mp.composeapp.generated.resources.open_location_in_maps
 import schneaggchatv3mp.composeapp.generated.resources.save
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_delete
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_description
@@ -172,7 +171,7 @@ fun MapEntryInfoCard(
                 ) {
                     Icon(
                         Icons.Default.Map,
-                        contentDescription = stringResource(Res.string.open_location_in_maps)
+                        contentDescription = null
                     )
                 }
 
@@ -310,25 +309,44 @@ fun EntryTitleView(entry: MapEntry, onChange: (MapEntry) -> Unit) {
 }
 
 @Composable
-fun CoordinateView(coordinates: LatLong) {
+fun CoordinateView(
+    coordinates: LatLong,
+    modifier: Modifier = Modifier,
+    trailing: (@Composable () -> Unit)? = null,
+) {
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
 
         val clipboard = LocalClipboard.current.nativeClipboard
 
-        Text(
-            text = stringResource(Res.string.latlong, coordinates.lat.toString().take(8), coordinates.long.toString().take(8)),
-            modifier = Modifier.clickable {
-                copyToClipboard(
-                    text = coordinates.lat.toString().take(8) + ", " + coordinates.long.toString().take(8),
-                    clipboard = clipboard
+        if (trailing == null) {
+            Text(
+                text = stringResource(Res.string.latlong, coordinates.lat.toString().take(8), coordinates.long.toString().take(8)),
+                modifier = Modifier.clickable {
+                    copyToClipboard(
+                        text = coordinates.lat.toString().take(8) + ", " + coordinates.long.toString().take(8),
+                        clipboard = clipboard
+                    )
+                }
+            )
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(Res.string.latlong, coordinates.lat.toString().take(8), coordinates.long.toString().take(8)),
+                    modifier = Modifier.clickable {
+                        copyToClipboard(
+                            text = coordinates.lat.toString().take(8) + ", " + coordinates.long.toString().take(8),
+                            clipboard = clipboard
+                        )
+                    }
                 )
+                trailing()
             }
-        )
+        }
     }
 
     /*

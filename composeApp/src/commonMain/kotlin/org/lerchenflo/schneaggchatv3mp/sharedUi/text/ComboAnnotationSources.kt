@@ -29,6 +29,10 @@ import schneaggchatv3mp.composeapp.generated.resources.games_2048_title
 import schneaggchatv3mp.composeapp.generated.resources.games_tetris_title
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
 import schneaggchatv3mp.composeapp.generated.resources.games_yahtzee_title
+import schneaggchatv3mp.composeapp.generated.resources.unknown_event
+import schneaggchatv3mp.composeapp.generated.resources.unknown_game
+import schneaggchatv3mp.composeapp.generated.resources.unknown_location
+import schneaggchatv3mp.composeapp.generated.resources.unknown_user
 
 /**
  * Default [ComboAnnotationSource]s, self-contained: names are looked up through the injected
@@ -62,6 +66,11 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
         eventRepository.getAllEventsFlow()
             .map { entries -> entries.associate { it.id to it.title } }
     }.collectAsState(initial = emptyMap())
+
+    val unknownUser = stringResource(Res.string.unknown_user)
+    val unknownLocation = stringResource(Res.string.unknown_location)
+    val unknownEvent = stringResource(Res.string.unknown_event)
+    val unknownGame = stringResource(Res.string.unknown_game)
 
     val gameTetrisTitle = stringResource(Res.string.games_tetris_title)
     val gameTowerstackTitle = stringResource(Res.string.games_stack_tower)
@@ -99,11 +108,15 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
         )
     }
 
-    return remember(locationNames, userNames, gameNames, eventNames) {
+    return remember(
+        locationNames, userNames, gameNames, eventNames,
+        unknownUser, unknownLocation, unknownEvent, unknownGame
+    ) {
         listOf(
             ComboAnnotationSource(
                 type = ComboAnnotationTypes.MAP_LOCATION,
                 names = locationNames,
+                unresolvedName = unknownLocation,
                 onClick = { entryId ->
                     scope.launch { navigator.navigate(Route.Schneaggmap(initialEntryId = entryId)) }
                 }
@@ -111,6 +124,7 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
             ComboAnnotationSource(
                 type = ComboAnnotationTypes.USER,
                 names = userNames,
+                unresolvedName = unknownUser,
                 onClick = { entryId ->
                     if (entryId != SessionCache.requireLoggedIn()?.userId) { //Dont allow to open own chat
                         scope.launch { navigator.navigate(Route.Chat(entryId, false)) }
@@ -120,6 +134,7 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
             ComboAnnotationSource(
                 type = ComboAnnotationTypes.EVENT,
                 names = eventNames,
+                unresolvedName = unknownEvent,
                 onClick = { eventId ->
                     scope.launch { navigator.navigate(Route.Events(selectedEvent = eventId)) }
                 }
@@ -127,6 +142,7 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
             ComboAnnotationSource(
                 type = ComboAnnotationTypes.GAME,
                 names = gameNames,
+                unresolvedName = unknownGame,
                 onClick = { gameKey ->
                     val route = when (gameKey) {
                         "tetris" -> Route.Tetris

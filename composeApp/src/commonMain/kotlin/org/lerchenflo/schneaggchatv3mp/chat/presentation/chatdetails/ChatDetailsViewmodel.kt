@@ -40,11 +40,14 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
+import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_friend_request
+import schneaggchatv3mp.composeapp.generated.resources.event_delete_failed
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 import schneaggchatv3mp.composeapp.generated.resources.please_restart_app
 import schneaggchatv3mp.composeapp.generated.resources.wake_no_devices
@@ -107,6 +110,7 @@ class ChatDetailsViewmodel(
     private val userRepository: UserRepository,
     private val appRepository: AppRepository,
     private val pictureManager: PictureManager,
+    private val eventRepository: EventRepository,
 ) : ViewModel() {
 
 
@@ -257,6 +261,33 @@ class ChatDetailsViewmodel(
             initialValue = ChatDetailsState.Loading
         )
 
+
+    /** The event this group was created for, if any (groups only, empty for user chats). */
+    val connectedEvent: StateFlow<Event?> = if (!isGroup) {
+        MutableStateFlow(null)
+    } else {
+        eventRepository.getEventFlowForGroup(chatId)
+    }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+
+    fun navigateToConnectedEvent(eventId: String) {
+        viewModelScope.launch {
+            navigator.navigate(Route.Events(selectedEvent = eventId))
+        }
+    }
+
+    fun deleteConnectedEvent(eventId: String) {
+        viewModelScope.launch {
+            val success = appRepository.deleteEvent(eventId)
+            if (!success) {
+                SnackbarManager.showMessage(getString(Res.string.event_delete_failed))
+            }
+        }
+    }
 
     private suspend fun getGroupMembersWithUsers(groupId: String): List<GroupMemberWithUser> {
         val members = groupRepository.getGroupMembers(groupId)

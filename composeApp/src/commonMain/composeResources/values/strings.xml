@@ -12,6 +12,9 @@
     <string name="search_section_messages">Messages (%1$d)</string>
     <string name="no_status">no status</string>
     <string name="unknown_user">unknown user</string>
+    <string name="unknown_location">unknown location</string>
+    <string name="unknown_event">unknown event</string>
+    <string name="unknown_game">unknown game</string>
     <string name="chat_last_seen_status">last seen %1$s</string>
 
     <string name="usersync">userdata</string>
@@ -126,6 +129,7 @@
     <string name="app_broken_desc">Will fix most of the errors</string>
     <string name="app_broken_are_you_sure">This will delete the local database and fetch all data from the server again.\nAre you sure you want to continue?</string>
     <string name="please_restart_app">Please restart the app</string>
+    <string name="press_back_again_to_exit">Press back again to exit</string>
     <string name="verification_email_sent">Verification email sent</string>
     <string name="others_say_about">others wrote about %1$s:</string>
     <string name="status_info">This Text is written by the user himself</string>
@@ -190,6 +194,9 @@
     <string name="group_expired">Expired</string>
     <string name="delete_group_timer">Delete group timer</string>
     <string name="confirm_delete_group_timer">Remove this group\'s expiry date? It will no longer auto-expire.</string>
+    <string name="delete_event">Delete event</string>
+    <string name="confirm_delete_event">Delete this event? The group will be detached from it and will remain, but the event itself will be permanently deleted.</string>
+    <string name="event_delete_failed">❌ Failed to delete event</string>
     <string name="user_description">user description</string>
     <string name="leave_group">leave group</string>
     <string name="add_users_to_group">add users</string>
@@ -303,6 +310,9 @@
     <string name="event_invite_header">%1$s wants to %2$s at %3$s</string>
     <string name="event_invited_users">Invited</string>
     <string name="event_invite_friends">Invite friends</string>
+    <string name="event_location_label">Location</string>
+    <string name="event_no_location_selected">No location selected</string>
+    <string name="event_pick_location_title">Pick a location</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Food</string>
     <string name="event_type_cooking">Cooking</string>
@@ -320,6 +330,8 @@
     <string name="event_invited_friends_only">Invited only</string>
 
     <string name="tooltip_username">Choose a unique username others will see</string>
+    <string name="phone_number">Phone number (optional)</string>
+    <string name="phone_number_optional_tooltip">Optional. Shown to your friends so they can call you.</string>
     <string name="tooltip_email">Used for account recovery and deletion</string>
     <string name="tooltip_birthdate">Used to show others when your birthday is</string>
     <string name="tooltip_password">Min. 8 characters with numbers, special chars, and upper/lower case</string>
@@ -361,8 +373,9 @@
     <string name="mark_as_read">mark as read</string>
     <string name="more_info">more info</string>
     <string name="edit_profile_picture">edit profile picture</string>
-    
-    
+    <string name="profile_picture_add_photo">add photo</string>
+
+
 
     <string name="admin">Admin</string>
 
@@ -372,6 +385,9 @@
     <string name="no_friends">no friends</string>
 
     <string name="message_delete_info">Do you really want to delete this message?</string>
+    <string name="chat_message_image">message image</string>
+    <string name="chat_remove_image">remove image</string>
+    <string name="chat_discard_recording">discard recording</string>
     <string name="open_chat">Open chat</string>
     <string name="make_admin">Make Admin</string>
     <string name="remove_admin_status">remove admin status</string>
@@ -384,7 +400,13 @@
     <string name="change_username_description">Change your username. The new username will be shown to others and used for login</string>
     <string name="change_username_placeholder">new username ...</string>
 
+    <string name="call">Call</string>
     <string name="change_status">Change status</string>
+    <string name="change_phone_number">Change phone number</string>
+    <string name="phone_number_infotext">This phone number is available to all your friends. Currently, it is not set.</string>
+    <string name="current_phone_number">Your current phone number: %1$s</string>
+    <string name="phone_number_placeholder">phone number ...</string>
+    <string name="invalid_phone_number">This is not a valid phone number</string>
     <string name="change_email">Change email</string>
     <string name="resend_verification">resend verification</string>
 
@@ -1080,6 +1102,11 @@
     <string name="ttt_settings">Here are the settings</string>
     <string name="ttt_settings_user">user settings</string>
     <string name="ttt_settings_user_description">Here you can change stuff about your account.</string>
+
+    <string name="ttt_user_settings_phone_number">phone number</string>
+    <string name="ttt_user_settings_phone_number_description">You can share your phone number with your friends here.</string>
+    <string name="ttt_user_settings_phone_number_freeroam">Feel free to set your phone number now, or continue the tour.</string>
+    <string name="ttt_user_settings_go_back">Let's go back to the settings</string>
 
     <string name="ttt_settings_wake">Wake up feature (Android only)</string>
     <string name="ttt_settings_wake_description">You can enable this feature to allow your friends to wake you up. Your phone will ring like with your alarm, even if silenced. If your friends have enabled this for you, you can wake them in the chat details.</string>

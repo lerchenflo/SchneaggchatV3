@@ -145,4 +145,28 @@ actual class ShareUtils {
             }
         }
     }
+
+    actual fun openPhoneDialer(phoneNumber: String) {
+        val url = NSURL.URLWithString(URLString = "tel:${percentEncode(phoneNumber)}")
+
+        if (url != null && UIApplication.sharedApplication.canOpenURL(url)) {
+            UIApplication.sharedApplication.openURL(url, options = emptyMap<Any?, Any>(), completionHandler = null)
+        } else {
+            // canOpenURL for "tel:" is false on devices with no telephony (iPad, simulator)
+            val topVC = getTopViewController()
+            val alert = UIAlertController.alertControllerWithTitle(
+                title = "Cannot Make Calls",
+                message = "This device is not able to make phone calls.",
+                preferredStyle = UIAlertControllerStyleAlert
+            )
+            alert.addAction(
+                UIAlertAction.actionWithTitle(
+                    "OK",
+                    style = UIAlertActionStyleDefault,
+                    handler = null
+                )
+            )
+            topVC?.presentViewController(alert, animated = true, completion = null)
+        }
+    }
 }

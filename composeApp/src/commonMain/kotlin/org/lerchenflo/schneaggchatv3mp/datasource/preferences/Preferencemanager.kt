@@ -238,6 +238,8 @@ class Preferencemanager(
         MapStyleSetting.entries.getOrNull(ordinal) ?: MapStyleSetting.LIBERTY
     }
 
+    fun getMapStyleUrlFlow(): Flow<String> = getMapStyleSettingFlow().map { it.tileUrl }
+
     suspend fun saveLastStartedVersion(value: String) {
         prefs.edit { it[PrefsKeys.LAST_STARTED_VERSION] = value }
     }
@@ -377,6 +379,7 @@ class Preferencemanager(
 @Serializable
 data class PinnedChat(
     val chatId: String,
+    val group: Boolean,
     val pinTimePoint: Long
 )
 @Serializable

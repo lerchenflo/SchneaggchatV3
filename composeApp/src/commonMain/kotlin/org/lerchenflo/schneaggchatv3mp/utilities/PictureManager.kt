@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
+import androidx.compose.ui.graphics.ImageBitmap
+
 expect class PictureManager {
 
 
@@ -59,4 +61,9 @@ expect class PictureManager {
         filePath: String,
         fileName: String
     ): String
+
+    /**
+     * Encode a Compose [ImageBitmap] to PNG bytes.
+     */
+    suspend fun encodeImageBitmap(bitmap: ImageBitmap): ByteArray
 }

@@ -28,6 +28,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -91,6 +92,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.koin.mp.KoinPlatform
@@ -124,9 +126,13 @@ import org.lerchenflo.schneaggchatv3mp.utilities.formatMillis
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
+import schneaggchatv3mp.composeapp.generated.resources.call
 import schneaggchatv3mp.composeapp.generated.resources.camera
 import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.chat_discard_recording
 import schneaggchatv3mp.composeapp.generated.resources.chat_last_seen_status
+import schneaggchatv3mp.composeapp.generated.resources.chat_message_image
+import schneaggchatv3mp.composeapp.generated.resources.chat_remove_image
 import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
 import schneaggchatv3mp.composeapp.generated.resources.copied_to_clipboard
 import schneaggchatv3mp.composeapp.generated.resources.edit
@@ -318,7 +324,23 @@ fun ChatScreen(
                         },
                         ownId = ownId,
                     )
+
+                    if (!partner.isGroup && !partner.phoneNumber.isNullOrBlank()) {
+                        //Only show call button if the friend shared their phone number
+                        val shareUtils = koinInject<ShareUtils>()
+                        val phoneNumber = partner.phoneNumber
+                        IconButton(
+                            onClick = { shareUtils.openPhoneDialer(phoneNumber) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Call,
+                                contentDescription = stringResource(Res.string.call)
+                            )
+                        }
+                    }
                 }
+
+
             }
         },
     ) {innerPadding ->
@@ -700,7 +722,7 @@ fun ChatScreen(
                                         ) {
                                             Image(
                                                 painter = BitmapPainter(imageBytes.decodeToImageBitmap()),
-                                                contentDescription = "image to send",
+                                                contentDescription = stringResource(Res.string.chat_message_image),
                                                 contentScale = ContentScale.Crop,
                                                 modifier = Modifier.fillMaxSize()
                                             )
@@ -726,7 +748,7 @@ fun ChatScreen(
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.Close,
-                                                    contentDescription = "Remove image",
+                                                    contentDescription = stringResource(Res.string.chat_remove_image),
                                                     modifier = Modifier.size(14.dp),
                                                     tint = MaterialTheme.colorScheme.onSurface
                                                 )
@@ -902,7 +924,7 @@ fun ChatScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Delete,
-                                        contentDescription = "Discard recording",
+                                        contentDescription = stringResource(Res.string.chat_discard_recording),
                                         tint = MaterialTheme.colorScheme.error
                                     )
                                 }
@@ -925,7 +947,7 @@ fun ChatScreen(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.StopCircle,
-                                        contentDescription = "Discard recording",
+                                        contentDescription = stringResource(Res.string.chat_discard_recording),
                                         //tint = MaterialTheme.colorScheme.error
                                     )
                                 }

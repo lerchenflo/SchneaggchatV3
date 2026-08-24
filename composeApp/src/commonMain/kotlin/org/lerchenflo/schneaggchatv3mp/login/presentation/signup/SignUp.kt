@@ -80,7 +80,10 @@ import schneaggchatv3mp.composeapp.generated.resources.gallery
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 import schneaggchatv3mp.composeapp.generated.resources.password
 import schneaggchatv3mp.composeapp.generated.resources.password_again
+import schneaggchatv3mp.composeapp.generated.resources.phone_number
+import schneaggchatv3mp.composeapp.generated.resources.phone_number_optional_tooltip
 import schneaggchatv3mp.composeapp.generated.resources.profile_picture
+import schneaggchatv3mp.composeapp.generated.resources.profile_picture_add_photo
 import schneaggchatv3mp.composeapp.generated.resources.select_gebi_date
 import schneaggchatv3mp.composeapp.generated.resources.select_profile_pic
 import schneaggchatv3mp.composeapp.generated.resources.tooltip_birthdate
@@ -184,6 +187,18 @@ fun SignUpScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
 
+                        InputTextField(
+                            value = state.phoneNumberState.text,
+                            onValueChange = { onAction(SignupAction.OnPhoneNumberTextChange(it)) },
+                            label = stringResource(Res.string.phone_number),
+                            hint = stringResource(Res.string.phone_number),
+                            errortext = state.phoneNumberState.errorMessage,
+                            tooltip = stringResource(Res.string.phone_number_optional_tooltip),
+                            imeAction = ImeAction.Next,
+                            keyboardType = KeyboardType.Phone,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
                         // Birth date picker button
                         var showDatePicker by remember { mutableStateOf(false) }
                         
@@ -264,7 +279,7 @@ fun SignUpScreen(
                                 if (state.profilePic == null) {
                                     Icon(
                                         imageVector = Icons.Default.AddAPhoto,
-                                        contentDescription = "Add photo",
+                                        contentDescription = stringResource(Res.string.profile_picture_add_photo),
                                         modifier = Modifier
                                             .align(Alignment.BottomEnd)
                                             .padding(8.dp)

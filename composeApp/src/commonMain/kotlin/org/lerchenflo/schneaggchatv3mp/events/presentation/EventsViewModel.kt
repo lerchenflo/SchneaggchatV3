@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.events.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -14,17 +15,23 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
+import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.milliseconds
 
 class EventsViewModel(
     private val navigator: Navigator,
     private val eventRepository: EventRepository,
     private val appRepository: AppRepository,
     private val userRepository: UserRepository,
+    private val preferenceManager: Preferencemanager,
+    private val pictureManager: PictureManager,
     private val initialEntryId: String? = null
 ) : ViewModel() {
 
@@ -33,13 +40,15 @@ class EventsViewModel(
         _state,
         eventRepository.getAllEventsFlow(),
         userRepository.getAllUsersFlow(),
-    ) { currentState, events, users ->
+        preferenceManager.getMapStyleUrlFlow(),
+    ) { currentState, events, users, mapStyleUrl ->
         val friendsMap = users
             .filter { it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED }
             .associateBy { it.id }
         currentState.copy(
             events = events,
-            friendsById = friendsMap
+            friendsById = friendsMap,
+            mapStyleUrl = mapStyleUrl
         )
     }.stateIn(
         scope = viewModelScope,
@@ -59,6 +68,7 @@ class EventsViewModel(
             EventsAction.OnCreateNewEventButtonClick -> {
                 val userId = SessionCache.requireLoggedIn()?.userId ?: ""
                 val now = Clock.System.now().toEpochMilliseconds()
+                val defaultStartDate = (Clock.System.now() + 1.days).toEpochMilliseconds()
                 _state.update { currentState ->
                     currentState.copy(
                         selectedEvent = Event(
@@ -69,7 +79,7 @@ class EventsViewModel(
                             description = "",
                             groupId = "",
                             location = null,
-                            startDate = now,
+                            startDate = defaultStartDate,
                             closeDate = null,
                             invitedUsers = emptyList(),
                             visibility = EventVisibility.FRIENDS_ONLY,
@@ -92,6 +102,7 @@ class EventsViewModel(
             is EventsAction.OnSaveEvent -> {
                 val event = action.event
                 viewModelScope.launch {
+                    val profilePic = action.typeIcon?.let { pictureManager.encodeImageBitmap(it) }
                     appRepository.upsertEvent(
                         eventId = if (event.id == "") null else event.id,
                         type = event.type,
@@ -102,7 +113,8 @@ class EventsViewModel(
                         startDate = event.startDate,
                         closeDate = event.closeDate,
                         invitedUsers = event.invitedUsers,
-                        visibility = event.visibility
+                        visibility = event.visibility,
+                        profilePic = profilePic,
                     )
                 }
                 _state.update {
@@ -139,8 +151,17 @@ class EventsViewModel(
 
 
     init {
-        if (initialEntryId != null) {
-            onAction(EventsAction.OnEventClick(initialEntryId))
+        viewModelScope.launch {
+            if (initialEntryId != null) {
+                var tryCount = 0
+                while (!state.value.events.any { it.id == initialEntryId } && 25 > tryCount ) {
+                    delay(50.milliseconds)
+                    tryCount++
+                }
+
+                onAction(EventsAction.OnEventClick(initialEntryId))
+            }
         }
+
     }
 }

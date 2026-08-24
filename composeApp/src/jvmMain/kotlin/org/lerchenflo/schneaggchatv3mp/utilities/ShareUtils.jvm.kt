@@ -69,4 +69,17 @@ actual class ShareUtils {
             println("Failed to open location in maps: ${e.message}")
         }
     }
+
+    actual fun openPhoneDialer(phoneNumber: String) {
+        try {
+            val url = "tel:$phoneNumber"
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                Desktop.getDesktop().browse(URI(url))
+            } else {
+                println("No app available to open dialer: $url")
+            }
+        } catch (e: Exception) {
+            println("Failed to open phone dialer: ${e.message}")
+        }
+    }
 }

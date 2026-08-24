@@ -8,6 +8,7 @@ import android.content.Intent.ACTION_SEND
 import android.content.Intent.EXTRA_TEXT
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.net.Uri
+import androidx.core.net.toUri
 
 actual class ShareUtils(private val context: Context) {
     
@@ -77,6 +78,17 @@ actual class ShareUtils(private val context: Context) {
             } catch (e2: Exception) {
                 println("No app available to open location: ${e2.message}")
             }
+        }
+    }
+
+    actual fun openPhoneDialer(phoneNumber: String) {
+        val intent = Intent(Intent.ACTION_DIAL, "tel:${Uri.encode(phoneNumber)}".toUri()).apply {
+            addFlags(FLAG_ACTIVITY_NEW_TASK)
+        }
+        try {
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            println("No dialer app available on this device: ${e.message}")
         }
     }
 }

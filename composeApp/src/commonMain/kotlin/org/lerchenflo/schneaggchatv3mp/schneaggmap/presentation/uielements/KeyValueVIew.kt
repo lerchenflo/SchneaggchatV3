@@ -46,13 +46,15 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeDefinition
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeKey
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.BoolValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.DoubleValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.IntValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.StringValue
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.label
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.labelRes
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -71,7 +73,7 @@ fun KeyValueView(
 
 
         Text(
-            text = definition.label() + if (definition.required) " *" else "",
+            text = stringResource(definition.key.labelRes()) + if (definition.required) " *" else "",
         )
 
         Spacer(modifier = Modifier.weight(1f))
@@ -301,7 +303,7 @@ private fun AllKeyValueTypesPreview() {
             KeyValueView(
                 value = BoolValue(true),
                 definition = AttributeDefinition.BoolDef(
-                    key = "official",
+                    key = AttributeKey.CAMPING_OFFICIAL,
                     required = true
                 ),
                 onValueChange = {}
@@ -310,7 +312,7 @@ private fun AllKeyValueTypesPreview() {
             KeyValueView(
                 value = IntValue(80),
                 definition = AttributeDefinition.IntDef(
-                    key = "speedLimit",
+                    key = AttributeKey.RADAR_SPEED_LIMIT,
                     required = true,
                     min = 10,
                     max = 130
@@ -321,7 +323,7 @@ private fun AllKeyValueTypesPreview() {
             KeyValueView(
                 value = DoubleValue(15.5),
                 definition = AttributeDefinition.DoubleDef(
-                    key = "entryFee",
+                    key = AttributeKey.SIGHTSEEING_ENTRY_FEE,
                     required = false,
                     min = 0.0,
                     max = 100.0
@@ -332,7 +334,7 @@ private fun AllKeyValueTypesPreview() {
             KeyValueView(
                 value = StringValue("Pizza"),
                 definition = AttributeDefinition.StringDef(
-                    key = "foodType",
+                    key = AttributeKey.FOOD_OTHER_CUISINE,
                     required = true,
                     maxLength = 30
                 ),

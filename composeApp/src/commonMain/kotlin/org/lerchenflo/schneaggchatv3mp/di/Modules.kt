@@ -159,6 +159,7 @@ val sharedmodule = module{
             preferenceManager = get(),
             locationService = get(),
             userRepository = get(),
+            eventRepository = get(),
             initialEntryId = initialEntryId
         )
     }
@@ -169,6 +170,8 @@ val sharedmodule = module{
             appRepository = get(),
             eventRepository = get(),
             userRepository = get(),
+            preferenceManager = get(),
+            pictureManager = get(),
             initialEntryId = initialEntryId,
         )
     }

@@ -25,4 +25,7 @@ class EventRepository(
 
     fun getAllEventsFlow(): Flow<List<Event>> =
         database.eventDao().getAllFlow().map { list -> list.map { it.toEvent() } }
+
+    fun getEventFlowForGroup(groupId: String): Flow<Event?> =
+        database.eventDao().getEventFlowByGroupId(groupId).map { it?.toEvent() }
 }

@@ -7,8 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSerializable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
@@ -30,13 +28,17 @@ class NavigationState(
 ) {
     var topLevelRoute by topLevelRoute //Make mutablestate observable
 
-    val stacksInUse: List<NavKey>
-        //When navigating back always go to home destination
-        get() = if (topLevelRoute == homeRoute) {
-            listOf(homeRoute)
-        } else {
-            listOf(homeRoute, topLevelRoute)
-        }
+    // The pager gives every tab its own NavDisplay, and a NavDisplay only handles system back
+    // while its own stack has more than one entry. At a non-home tab root nothing handles back,
+    // so App.kt installs a BackHandler on this condition to return to the home tab.
+    val backExitsToHome: Boolean
+        get() = topLevelRoute != homeRoute && (backStacks[topLevelRoute]?.size ?: 1) <= 1
+
+    // True at the chat selector itself (home tab, nothing pushed on top) - no NavDisplay
+    // handles back here either, so App.kt uses this to arm a "press back again to exit" prompt
+    // instead of closing immediately.
+    val atHomeRoot: Boolean
+        get() = topLevelRoute == homeRoute && (backStacks[homeRoute]?.size ?: 1) <= 1
 
     val currentRoute: NavKey
         get() = backStacks[topLevelRoute]?.lastOrNull() ?: topLevelRoute
@@ -100,16 +102,6 @@ fun NavigationState.decoratedEntriesMap(
             entryProvider = entryProvider
         )
     }
-}
-
-@Composable
-fun NavigationState.toEntries(
-    entryProvider: (NavKey) -> NavEntry<NavKey>
-): SnapshotStateList<NavEntry<NavKey>> {
-    val decoratedEntries = decoratedEntriesMap(entryProvider)
-    return stacksInUse
-        .flatMap { decoratedEntries[it] ?: emptyList() }
-        .toMutableStateList()
 }
 
 

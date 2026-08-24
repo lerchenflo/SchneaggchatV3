@@ -681,6 +681,7 @@ class AppRepository(
         closeDate: Long?,
         invitedUsers: List<String>,
         visibility: EventVisibility,
+        profilePic: ByteArray? = null,
     ) {
         val result = networkUtils.upsertEvent(
             EventRequest(
@@ -694,7 +695,8 @@ class AppRepository(
                 closeDate = closeDate,
                 invitedUsers = invitedUsers,
                 visibility = visibility,
-            )
+            ),
+            profilePic = profilePic,
         )
 
         when (result) {
@@ -1299,9 +1301,10 @@ class AppRepository(
         password: String,
         birthdate: String,
         profilePic: ByteArray,
+        phoneNumber: String? = null,
         onResult: (Boolean) -> Unit
     ) {
-        when(val response = networkUtils.register(username, password, email, birthdate, profilePic)){
+        when(val response = networkUtils.register(username, password, email, birthdate, profilePic, phoneNumber)){
             is NetworkResult.Error -> {
                 println("Error: ${response.error}")
 
@@ -1364,6 +1367,7 @@ class AppRepository(
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
                                 birthDate = newUser.birthDate,
+                                phoneNumber = newUser.phoneNumber,
                                 frienshipStatus = FriendshipStatus.ACCEPTED,
                                 requesterId = newUser.requesterId,
 
@@ -1404,6 +1408,7 @@ class AppRepository(
                                 description = newUser.userDescription,
                                 status = newUser.userStatus,
                                 birthDate = newUser.birthDate,
+                                phoneNumber = newUser.phoneNumber,
 
                                 // Preserve existing values:
                                 locationLat = existing?.locationLat,
@@ -1448,6 +1453,7 @@ class AppRepository(
                                 requesterId = newUser.requesterId,
                                 notisMuted = false,
                                 birthDate = null,
+                                phoneNumber = null,
                                 email = null,
                                 emailVerifiedAt = null,
                                 createdAt = null,
@@ -1596,6 +1602,7 @@ class AppRepository(
         newEmail: String? = null,
         newBirthDate: String? = null,
         newNickName: String? = null,
+        newPhoneNumber: String? = null,
         ) : Boolean {
         return when (val success = networkUtils.changeProfile(
             userId = userId,
@@ -1604,6 +1611,7 @@ class AppRepository(
             newEmail = newEmail,
             newBirthDate = newBirthDate,
             newNickName = newNickName,
+            newPhoneNumber = newPhoneNumber,
         )){
             is NetworkResult.Error<*> -> false
             is NetworkResult.Success<*> -> {

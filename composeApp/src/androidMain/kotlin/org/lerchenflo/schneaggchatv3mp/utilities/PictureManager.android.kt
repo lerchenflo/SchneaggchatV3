@@ -7,6 +7,8 @@ import android.graphics.BitmapFactory
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.core.graphics.scale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -219,4 +221,11 @@ actual class PictureManager(private val context: Context) {
             ""
         }
     }
+
+    actual suspend fun encodeImageBitmap(bitmap: ImageBitmap): ByteArray =
+        withContext(Dispatchers.Default) {
+            val outputStream = ByteArrayOutputStream()
+            bitmap.asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+            outputStream.toByteArray()
+        }
 }

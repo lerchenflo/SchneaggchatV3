@@ -97,9 +97,10 @@ fun EventsScreen(
             if (selectedEvent.creatorId == ownId) {
                 EventEditPopup(
                     event = selectedEvent,
-                    onSave = { onAction(EventsAction.OnSaveEvent(it)) },
+                    onSave = { event, typeIcon -> onAction(EventsAction.OnSaveEvent(event, typeIcon)) },
                     onDismiss = { onAction(EventsAction.OnEventPopupDismiss) },
-                    friendsById = state.friendsById
+                    friendsById = state.friendsById,
+                    mapStyleUrl = state.mapStyleUrl
                 )
             } else {
                 EventJoinPopup(

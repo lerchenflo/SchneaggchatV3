@@ -22,10 +22,15 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ### 3.0.16
 
 ##### Highlights
+- Events
+- Telefonnummer teilen
+- Systemnachrichten im Chat (Mitglied hinzugefügt etc.)
+- Bottom Navigation
 
 #### Features
 - Einführung in die Features
 - Events
+- Telefonnummer teilen (Optional)
 - Gruppen - lösch - Countdown
 - Bottom Navigation Bar mit Swipen
 - Systemnachrichten im Chat (Gruppenereignisse wie Mitglieder hinzugefügt, Gruppenname geändert, Admin-Status vergeben, Freundschaft angenommen, etc.)
@@ -33,6 +38,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Annas Theme & Flos Theme
 - Reaktionszeitpunkt in Nachrichtendetails anzeigen
 - @Game und @Event annotations im Chat
+- Ungelöste @Annotations zeigen Platzhalter statt ungültiger IDs
 - 2048 Spiel
 - Schneaggmap: Anzahl zusammengefasster Freunde im Hock-Marker in der Mitte anzeigen
 - Schneaggmap: Eigenen Standort im Hock-Marker anzeigen (wenn im Radius) und eigenen Standort-Marker ausblenden 

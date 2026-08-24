@@ -12,6 +12,9 @@
     <string name="search_section_messages">Nachrichten (%1$d)</string>
     <string name="no_status">kein Status</string>
     <string name="unknown_user">unbekannter Nutzer</string>
+    <string name="unknown_location">unbekannter Ort</string>
+    <string name="unknown_event">unbekanntes Event</string>
+    <string name="unknown_game">unbekanntes Spiel</string>
     <string name="chat_last_seen_status">zuletzt Online %1$s</string>
 
     <string name="usersync">Benutzerdaten</string>
@@ -126,6 +129,7 @@
     <string name="app_broken_desc">Behebt die meisten gängigen Fehler mit der App</string>
     <string name="app_broken_are_you_sure">Dies wird die Lokale Datenbank löschen und erneut alle Daten vom Server herunterladen.\nBist du sicher dass du fortfahren willst?</string>
     <string name="please_restart_app">Bitte starte die App neu</string>
+    <string name="press_back_again_to_exit">Nochmal zurück drücken zum Beenden</string>
     <string name="verification_email_sent">Verifizierungsemail gesendet</string>
     <string name="others_say_about">Andere User haben über %1$s geschrieben:</string>
     <string name="status_info">Dieser Text wurde vom User verfasst</string>
@@ -190,6 +194,9 @@
     <string name="group_expired">Abgelaufen</string>
     <string name="delete_group_timer">Gruppentimer löschen</string>
     <string name="confirm_delete_group_timer">Ablaufdatum dieser Gruppe entfernen? Sie läuft dann nicht mehr automatisch ab.</string>
+    <string name="delete_event">Event löschen</string>
+    <string name="confirm_delete_event">Dieses Event löschen? Die Gruppe wird davon getrennt und bleibt bestehen, aber das Event selbst wird endgültig gelöscht.</string>
+    <string name="event_delete_failed">❌ Event konnte nicht gelöscht werden</string>
     <string name="user_description">Userbeschreibung</string>
     <string name="leave_group">Gruppe verlassen</string>
     <string name="add_users_to_group">Mitglied hinzufügen</string>
@@ -303,6 +310,9 @@
     <string name="event_invite_header">%1$s möchte %2$s bei %3$s</string>
     <string name="event_invited_users">Eingeladen</string>
     <string name="event_invite_friends">Freunde einladen</string>
+    <string name="event_location_label">Ort</string>
+    <string name="event_no_location_selected">Kein Ort ausgewählt</string>
+    <string name="event_pick_location_title">Ort auswählen</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Essen</string>
     <string name="event_type_cooking">Kochen</string>
@@ -321,6 +331,8 @@
 
 
     <string name="tooltip_username">Wähle einen Benutzernamen den andere Benutzer sehen</string>
+    <string name="phone_number">Telefonnummer (optional)</string>
+    <string name="phone_number_optional_tooltip">Optional. Wird deinen Freunden gezeigt, damit sie dich anrufen können.</string>
     <string name="tooltip_email">Wird zum Wiederherstellen der Zugangsdaten und zur Löschung des Accounts verwendet</string>
     <string name="tooltip_birthdate">Wird benutzt, um deine Freunde zu informieren, wenn du Geburtstag hast</string>
     <string name="tooltip_password">Mindestens 8 Zeichen mit Nummern, Sonderzeichen und Groß - und Kleinbuchstabe</string>
@@ -362,8 +374,9 @@
     <string name="mark_as_read">als gelesen markieren</string>
     <string name="more_info">Mehr Informationen</string>
     <string name="edit_profile_picture">Profilbild bearbeiten</string>
-    
-    
+    <string name="profile_picture_add_photo">Foto hinzufügen</string>
+
+
 
     <string name="admin">Admin</string>
 
@@ -373,6 +386,9 @@
     <string name="no_friends">Keine Freunde</string>
 
     <string name="message_delete_info">Willst du diese Nachricht wirklich löschen?</string>
+    <string name="chat_message_image">Nachrichtenbild</string>
+    <string name="chat_remove_image">Bild entfernen</string>
+    <string name="chat_discard_recording">Aufnahme verwerfen</string>
     <string name="open_chat">Chat öffnen</string>
     <string name="make_admin">Zum Admin machen</string>
     <string name="remove_admin_status">Adminstatus entfernen</string>
@@ -385,7 +401,13 @@
     <string name="change_username_description">Ändere deinen Benutzernamen. Er wird anderen angezeigt und wird fürs Einloggen gebraucht</string>
     <string name="change_username_placeholder">neuer Benutzername ...</string>
 
+    <string name="call">Anrufen</string>
     <string name="change_status">Status ändern</string>
+    <string name="change_phone_number">Telefonnummer ändern</string>
+    <string name="phone_number_infotext">Diese Telefonnummer ist für alle deine Freunde sichtbar. Aktuell ist sie nicht gesetzt.</string>
+    <string name="current_phone_number">Deine aktuelle Telefonnummer: %1$s</string>
+    <string name="phone_number_placeholder">Telefonnummer ...</string>
+    <string name="invalid_phone_number">Das ist keine gültige Telefonnummer</string>
     <string name="change_email">Email ändern</string>
     <string name="resend_verification">Bestätigungsemail erneut senden</string>
 
@@ -1083,6 +1105,11 @@
     <string name="ttt_settings">Hier sind die Einstellungen</string>
     <string name="ttt_settings_user">Account-Einstellungen</string>
     <string name="ttt_settings_user_description">Hier kannst du Angaben zu deinem Account ändern.</string>
+
+    <string name="ttt_user_settings_phone_number">Telefonnummer</string>
+    <string name="ttt_user_settings_phone_number_description">Hier kannst du deine Telefonnummer mit deinen Freunden teilen.</string>
+    <string name="ttt_user_settings_phone_number_freeroam">Setze jetzt gerne deine Telefonnummer, oder fahre mit der Tour fort.</string>
+    <string name="ttt_user_settings_go_back">Gehen wir zurück zu den Einstellungen</string>
 
     <string name="ttt_settings_wake">Wecker-Funktion (nur Android)</string>
     <string name="ttt_settings_wake_description">Du kannst diese Funktion aktivieren, damit deine Freunde dich aufwecken können. Dein Handy klingelt dann wie mit dem Handywecker auch im Lautlosmodus. Wenn deine Freunde dies für dich aktiviert haben, kannst du sie in den Chat-Details wecken.</string>
