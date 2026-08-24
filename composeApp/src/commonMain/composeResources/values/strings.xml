@@ -12,6 +12,9 @@
     <string name="search_section_messages">Messages (%1$d)</string>
     <string name="no_status">no status</string>
     <string name="unknown_user">unknown user</string>
+    <string name="unknown_location">unknown location</string>
+    <string name="unknown_event">unknown event</string>
+    <string name="unknown_game">unknown game</string>
     <string name="chat_last_seen_status">last seen %1$s</string>
 
     <string name="usersync">userdata</string>

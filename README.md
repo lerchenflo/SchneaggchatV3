@@ -33,6 +33,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Annas Theme & Flos Theme
 - Reaktionszeitpunkt in Nachrichtendetails anzeigen
 - @Game und @Event annotations im Chat
+- Ungelöste @Annotations zeigen Platzhalter statt ungültiger IDs
 - 2048 Spiel
 - Schneaggmap: Anzahl zusammengefasster Freunde im Hock-Marker in der Mitte anzeigen
 - Schneaggmap: Eigenen Standort im Hock-Marker anzeigen (wenn im Radius) und eigenen Standort-Marker ausblenden 

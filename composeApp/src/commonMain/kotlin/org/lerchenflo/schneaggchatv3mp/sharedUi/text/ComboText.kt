@@ -27,7 +27,9 @@ import com.mikepenz.markdown.model.DefaultMarkdownColors
  * Displays text as plain text or markdown (merged into one composable) and resolves
  * inline annotations (`@<key>/<id>`, see [ComboAnnotationType]) into clickable names.
  *
- * Annotations whose id is not resolvable through [annotationSources] stay raw text.
+ * Annotations whose id is not resolvable through [annotationSources] are still converted to
+ * the source's placeholder name (e.g. "unknown user"), but rendered as plain, non-clickable
+ * text - the raw `@<key>/<id>` never reaches the reader.
  */
 @Composable
 fun ComboText(
@@ -49,11 +51,16 @@ fun ComboText(
                 var last = 0
                 matches.forEach { match ->
                     append(text, last, match.range.first)
-                    val linkText = match.source.type.displayName(match.name)
+                    val display = match.source.type.displayName(match.name)
                         .replace("[", "\\[")
                         .replace("]", "\\]")
-                    append("[").append(linkText).append("](")
-                    append(match.source.type.linkScheme).append(match.id).append(")")
+                    if (match.resolved) {
+                        append("[").append(display).append("](")
+                        append(match.source.type.linkScheme).append(match.id).append(")")
+                    } else {
+                        // No link at all - a dead target must not look or behave like a working mention
+                        append(display)
+                    }
                     last = match.range.last + 1
                 }
                 append(text, last, text.length)
@@ -95,19 +102,25 @@ fun ComboText(
                 var last = 0
                 findComboAnnotations(text, annotationSources).forEach { match ->
                     append(text.substring(last, match.range.first))
-                    withLink(
-                        LinkAnnotation.Clickable(
-                            tag = match.source.type.linkScheme + match.id,
-                            styles = TextLinkStyles(
-                                style = SpanStyle(
-                                    fontWeight = FontWeight.Bold,
-                                    textDecoration = TextDecoration.Underline
-                                )
-                            ),
-                            linkInteractionListener = { match.source.onClick(match.id) }
-                        )
-                    ) {
-                        append(match.source.type.displayName(match.name))
+                    val display = match.source.type.displayName(match.name)
+                    if (match.resolved) {
+                        withLink(
+                            LinkAnnotation.Clickable(
+                                tag = match.source.type.linkScheme + match.id,
+                                styles = TextLinkStyles(
+                                    style = SpanStyle(
+                                        fontWeight = FontWeight.Bold,
+                                        textDecoration = TextDecoration.Underline
+                                    )
+                                ),
+                                linkInteractionListener = { match.source.onClick(match.id) }
+                            )
+                        ) {
+                            append(display)
+                        }
+                    } else {
+                        // No link at all - a dead target must not look or behave like a working mention
+                        append(display)
                     }
                     last = match.range.last + 1
                 }

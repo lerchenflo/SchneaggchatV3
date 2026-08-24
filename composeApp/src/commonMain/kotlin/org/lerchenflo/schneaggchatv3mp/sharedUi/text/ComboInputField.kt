@@ -217,7 +217,7 @@ class ComboAnnotationVisualTransformation(
 
         val transformed = buildAnnotatedString {
             var last = 0
-            findComboAnnotations(original, sources).forEach { match ->
+            findComboAnnotations(original, sources, includeUnresolved = false).forEach { match ->
                 append(original.substring(last, match.range.first))
                 val display = match.source.type.displayName(match.name)
                 val transStart = length

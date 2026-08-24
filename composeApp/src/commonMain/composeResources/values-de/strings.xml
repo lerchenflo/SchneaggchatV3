@@ -12,6 +12,9 @@
     <string name="search_section_messages">Nachrichten (%1$d)</string>
     <string name="no_status">kein Status</string>
     <string name="unknown_user">unbekannter Nutzer</string>
+    <string name="unknown_location">unbekannter Ort</string>
+    <string name="unknown_event">unbekanntes Event</string>
+    <string name="unknown_game">unbekanntes Spiel</string>
     <string name="chat_last_seen_status">zuletzt Online %1$s</string>
 
     <string name="usersync">Benutzerdaten</string>
