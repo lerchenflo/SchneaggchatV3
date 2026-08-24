@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.events.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -19,6 +20,7 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
 
 class EventsViewModel(
     private val navigator: Navigator,
@@ -139,8 +141,17 @@ class EventsViewModel(
 
 
     init {
-        if (initialEntryId != null) {
-            onAction(EventsAction.OnEventClick(initialEntryId))
+        viewModelScope.launch {
+            if (initialEntryId != null) {
+                var tryCount = 0
+                while (!state.value.events.any { it.id == initialEntryId } && 25 > tryCount ) {
+                    delay(50.milliseconds)
+                    tryCount++
+                }
+
+                onAction(EventsAction.OnEventClick(initialEntryId))
+            }
         }
+
     }
 }

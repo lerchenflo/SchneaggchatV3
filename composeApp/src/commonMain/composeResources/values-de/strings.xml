@@ -191,6 +191,9 @@
     <string name="group_expired">Abgelaufen</string>
     <string name="delete_group_timer">Gruppentimer löschen</string>
     <string name="confirm_delete_group_timer">Ablaufdatum dieser Gruppe entfernen? Sie läuft dann nicht mehr automatisch ab.</string>
+    <string name="delete_event">Event löschen</string>
+    <string name="confirm_delete_event">Dieses Event löschen? Die Gruppe wird davon getrennt und bleibt bestehen, aber das Event selbst wird endgültig gelöscht.</string>
+    <string name="event_delete_failed">❌ Event konnte nicht gelöscht werden</string>
     <string name="user_description">Userbeschreibung</string>
     <string name="leave_group">Gruppe verlassen</string>
     <string name="add_users_to_group">Mitglied hinzufügen</string>

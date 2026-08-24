@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cake
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.BasicAlertDialog
@@ -29,6 +30,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -86,9 +88,11 @@ import schneaggchatv3mp.composeapp.generated.resources.camera
 import schneaggchatv3mp.composeapp.generated.resources.change_group_name
 import schneaggchatv3mp.composeapp.generated.resources.change_nickname
 import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
+import schneaggchatv3mp.composeapp.generated.resources.confirm_delete_event
 import schneaggchatv3mp.composeapp.generated.resources.confirm_delete_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_friend
+import schneaggchatv3mp.composeapp.generated.resources.delete_event
 import schneaggchatv3mp.composeapp.generated.resources.delete_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.description_info_group
 import schneaggchatv3mp.composeapp.generated.resources.description_info_user
@@ -134,6 +138,7 @@ fun ChatDetails(
     var showLeaveGroupConfirmation by remember { mutableStateOf(false) }
     var showDecoupleExpiryConfirmation by remember { mutableStateOf(false) }
     var showRemoveFriendConfirmation by remember { mutableStateOf(false) }
+    var showDeleteEventConfirmation by remember { mutableStateOf(false) }
 
     var showAddMemberPopup by remember { mutableStateOf(false) }
     var showImagePickerDialog by remember { mutableStateOf(false) }
@@ -458,13 +463,40 @@ fun ChatDetails(
                         ?.user
                         ?.profilePictureUrl
 
-                    EventItem(
-                        event = event,
-                        creatorProfilePictureUrl = creatorProfilePictureUrl,
-                        isOwnEvent = event.creatorId == ownId,
-                        onClick = { chatdetailsViewmodel.navigateToConnectedEvent(event.id) },
-                        modifier = Modifier.padding(16.dp)
-                    )
+                    if (showDeleteEventConfirmation) {
+                        ConfirmationDialog(
+                            message = stringResource(Res.string.confirm_delete_event),
+                            onConfirm = {
+                                chatdetailsViewmodel.deleteConnectedEvent(event.id)
+                            },
+                            onDismiss = {
+                                showDeleteEventConfirmation = false
+                            }
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        EventItem(
+                            event = event,
+                            creatorProfilePictureUrl = creatorProfilePictureUrl,
+                            isOwnEvent = event.creatorId == ownId,
+                            onClick = { chatdetailsViewmodel.navigateToConnectedEvent(event.id) },
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        if (event.creatorId == ownId) {
+                            IconButton(onClick = { showDeleteEventConfirmation = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = stringResource(Res.string.delete_event),
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                    }
                 }
             }
 

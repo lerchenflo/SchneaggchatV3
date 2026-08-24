@@ -47,6 +47,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_friend_request
+import schneaggchatv3mp.composeapp.generated.resources.event_delete_failed
 import schneaggchatv3mp.composeapp.generated.resources.friend_request_sent
 import schneaggchatv3mp.composeapp.generated.resources.please_restart_app
 import schneaggchatv3mp.composeapp.generated.resources.wake_no_devices
@@ -276,6 +277,15 @@ class ChatDetailsViewmodel(
     fun navigateToConnectedEvent(eventId: String) {
         viewModelScope.launch {
             navigator.navigate(Route.Events(selectedEvent = eventId))
+        }
+    }
+
+    fun deleteConnectedEvent(eventId: String) {
+        viewModelScope.launch {
+            val success = appRepository.deleteEvent(eventId)
+            if (!success) {
+                SnackbarManager.showMessage(getString(Res.string.event_delete_failed))
+            }
         }
     }
 
