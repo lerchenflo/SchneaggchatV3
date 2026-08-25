@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,8 +13,10 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,6 +30,7 @@ import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventJoinPopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.events_empty
 import schneaggchatv3mp.composeapp.generated.resources.events_screen_title
 
 @Composable
@@ -73,24 +77,40 @@ fun EventsScreen(
         SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying stale
         val ownId = SessionCache.requireLoggedIn()?.userId
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(
-                items = state.events,
-                key = { it.id }
-            ) { event ->
-                val creatorFriend = state.friendsById[event.creatorId]
-                EventItem(
-                    event = event,
-                    creatorProfilePictureUrl = creatorFriend?.profilePictureUrl,
-                    isOwnEvent = event.creatorId == ownId,
-                    onClick = { onAction(EventsAction.OnEventClick(event.id)) }
+        if (state.events.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(Res.string.events_empty),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(
+                    items = state.events,
+                    key = { it.id }
+                ) { event ->
+                    val creatorFriend = state.friendsById[event.creatorId]
+                    EventItem(
+                        event = event,
+                        creatorProfilePictureUrl = creatorFriend?.profilePictureUrl,
+                        isOwnEvent = event.creatorId == ownId,
+                        onClick = { onAction(EventsAction.OnEventClick(event.id)) }
+                    )
+                }
             }
         }
 

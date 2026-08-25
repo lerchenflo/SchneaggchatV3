@@ -296,6 +296,7 @@
 
     <string name="new_event_noti_title">%1$s created a new event</string>
     <string name="events_screen_title">events</string>
+    <string name="events_empty">No events yet. Create one yourself!</string>
     <string name="event_starts_in">Starts in: %1$s</string>
     <string name="event_started">Started</string>
     <string name="event_ended">Ended</string>
@@ -1183,6 +1184,9 @@
 
     <string name="ttt_thank_you">Thank you!</string>
     <string name="ttt_thank_you_description">Thank you for taking the tour! Enjoy using Schneaggchat.</string>
+
+    <string name="ttt_hint_tap_highlighted">Tap the highlighted area to continue</string>
+    <string name="ttt_hint_tap_anywhere">Tap anywhere to continue</string>
 
     <string name="navbar_chats">chats</string>
     
