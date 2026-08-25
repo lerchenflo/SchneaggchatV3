@@ -228,7 +228,7 @@ private fun EventJoinPopupPreview() {
             event = Event(
                 id = "",
                 creatorId = "",
-                type = EventType.SHOPPING,
+                type = EventType.OTHER,
                 title = "Lets go shopping",
                 description = "bla bla bla",
                 groupId = "",

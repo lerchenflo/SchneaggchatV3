@@ -6,11 +6,11 @@ import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.Luggage
 import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Restaurant
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.SportsBar
 import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material.icons.filled.Terrain
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -20,7 +20,7 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.EventType.*
 import schneaggchatv3mp.composeapp.generated.resources.Res
 
 
-import schneaggchatv3mp.composeapp.generated.resources.event_type_cooking
+import schneaggchatv3mp.composeapp.generated.resources.event_type_beer
 import schneaggchatv3mp.composeapp.generated.resources.event_type_driving
 import schneaggchatv3mp.composeapp.generated.resources.event_type_food
 import schneaggchatv3mp.composeapp.generated.resources.event_type_gaming
@@ -29,7 +29,7 @@ import schneaggchatv3mp.composeapp.generated.resources.event_type_movie
 import schneaggchatv3mp.composeapp.generated.resources.event_type_other
 import schneaggchatv3mp.composeapp.generated.resources.event_type_outdoor
 import schneaggchatv3mp.composeapp.generated.resources.event_type_party
-import schneaggchatv3mp.composeapp.generated.resources.event_type_shopping
+import schneaggchatv3mp.composeapp.generated.resources.event_type_riding
 import schneaggchatv3mp.composeapp.generated.resources.event_type_sport
 import schneaggchatv3mp.composeapp.generated.resources.event_type_trip
 
@@ -42,7 +42,7 @@ enum class EventType {
     BEER,
     DRIVING,
 
-    RIDING,
+    HORSE_RIDING,
 
     // New
     PARTY,       // birthdays, get-togethers, celebrations
@@ -65,8 +65,8 @@ fun EventType.icon(): ImageVector = when (this) {
     MEETUP -> Icons.Default.Groups
     OUTDOOR -> Icons.Default.Terrain
     OTHER -> Icons.Default.Event
-    BEER -> TODO()
-    RIDING -> TODO()
+    BEER -> Icons.Default.SportsBar
+    HORSE_RIDING -> Icons.Default.Pets
 }
 
 fun EventType.labelRes(): StringResource = when (this) {
@@ -80,6 +80,6 @@ fun EventType.labelRes(): StringResource = when (this) {
     MEETUP -> Res.string.event_type_meetup
     OUTDOOR -> Res.string.event_type_outdoor
     OTHER -> Res.string.event_type_other
-    BEER -> TODO()
-    RIDING -> TODO()
+    BEER -> Res.string.event_type_beer
+    HORSE_RIDING -> Res.string.event_type_riding
 }

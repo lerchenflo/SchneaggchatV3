@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.notifications
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_games
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map_description
@@ -21,7 +22,6 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_frien
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_new_chat_search_friends_freeroam
 import schneaggchatv3mp.composeapp.generated.resources.ttt_notification_settings_go_back
-import schneaggchatv3mp.composeapp.generated.resources.ttt_privacy_settings_go_back
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_schneaggmap_locations_freeroam
@@ -35,7 +35,6 @@ import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_app_broken
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_app_broken_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_misc_bugreport
-import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_notifications
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_notifications_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_privacy
 import schneaggchatv3mp.composeapp.generated.resources.ttt_settings_privacy_description
@@ -149,7 +148,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
             if (isAndroid) {
                 tapStep(
                     id = "settings_notifications",
-                    title = Res.string.ttt_settings_notifications,
+                    title = Res.string.notifications,
                     description = Res.string.ttt_settings_notifications_description,
                     route = Route.SettingsScreen
                 )
@@ -171,7 +170,7 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
             } else {
                 tapStep(
                     id = "settings_notifications",
-                    title = Res.string.ttt_settings_notifications,
+                    title = Res.string.notifications,
                     description = Res.string.ttt_settings_notifications_description,
                     route = Route.SettingsScreen,
                     requireExactTap = false

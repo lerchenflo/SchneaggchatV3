@@ -295,7 +295,7 @@
     <string name="friend_birthday_noti_body">Don't forget to congratulate them!</string>
 
     <string name="new_event_noti_title">%1$s created a new event</string>
-    <string name="events_screen_title">Events</string>
+    <string name="events_screen_title">events</string>
     <string name="event_starts_in">Starts in: %1$s</string>
     <string name="event_started">Started</string>
     <string name="event_ended">Ended</string>
@@ -316,9 +316,9 @@
     <string name="event_pick_location_title">Pick a location</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Food</string>
-    <string name="event_type_cooking">Cooking</string>
-    <string name="event_type_shopping">Shopping</string>
+    <string name="event_type_beer">Beer</string>
     <string name="event_type_driving">Driving</string>
+    <string name="event_type_riding">Horse riding</string>
     <string name="event_type_party">Party</string>
     <string name="event_type_gaming">Gaming</string>
     <string name="event_type_movie">Movie</string>
@@ -1120,7 +1120,7 @@
     <string name="ttt_settings_privacy_description">Here you can manage your password, email, and location sharing.</string>
     <string name="ttt_privacy_settings_go_back">Let's go back to the settings</string>
 
-    <string name="ttt_settings_notifications">notifications</string>
+    
     <string name="ttt_settings_notifications_description">Here you can manage your notifications and wake-up settings.</string>
     <string name="ttt_notification_settings_go_back">Let's go back to the settings</string>
 
@@ -1220,7 +1220,7 @@
     <string name="privacy_policy_info">Read our data privacy terms and policy</string>
 
     <!-- Notifications -->
-    <string name="notification_settings">Notifications</string>
+    
     <string name="notification_settings_info">Notification permissions and wake-up settings</string>
     <string name="notification_group_general">General</string>
     <string name="notifications">Notifications</string>
@@ -1229,14 +1229,14 @@
     <string name="notification_permission_required_title">Notification Permission Required</string>
     <string name="notification_permission_permanently_denied_message">Notifications are disabled for Schneaggchat in your system settings. Please open settings and allow notifications to receive message alerts.</string>
     <string name="open_settings">Open Settings</string>
-    <string name="notification_permission_press_again">Press again if no permission request showed up</string>
+    
     <string name="notification_banner_title">Notifications Disabled</string>
     <string name="notification_banner_description">Enable notifications to receive alerts for new messages</string>
     <string name="notification_banner_enable">Enable</string>
 
     <!-- Email Verification Support -->
     <string name="support_email_verification_subject">Email Verification not working</string>
-    <string name="support_email_verification_body">Es tuat ned (Bitte mehr infos)</string>
+    <string name="support_email_verification_body">It doesnt work (More infos please)</string>
 
     <!-- System messages (MessageType.SYSTEM) -->
     <string name="system_group_created">%1$s created the group</string>
@@ -1251,8 +1251,8 @@
     <string name="system_group_picture_changed">%1$s changed the group picture</string>
     <string name="system_event_changed">%1$s updated the event</string>
     <string name="system_friendship_accepted">You are now friends</string>
-    <string name="system_wake_sent">%1$s sent a wake-up</string>
-    <string name="system_wake_sent_reason">%1$s sent a wake-up: %2$s</string>
+    <string name="system_wake_sent">%1$s woke you up</string>
+    <string name="system_wake_sent_reason">%1$s woke you up: %2$s</string>
     <string name="system_unknown_event">Chat updated</string>
 
 </resources>
