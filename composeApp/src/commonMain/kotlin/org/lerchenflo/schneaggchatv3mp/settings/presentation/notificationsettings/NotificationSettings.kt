@@ -44,7 +44,6 @@ import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.notification_group_general
 import schneaggchatv3mp.composeapp.generated.resources.notification_permission_permanently_denied_message
 import schneaggchatv3mp.composeapp.generated.resources.notification_permission_required_title
-import schneaggchatv3mp.composeapp.generated.resources.notification_settings
 import schneaggchatv3mp.composeapp.generated.resources.notifications
 import schneaggchatv3mp.composeapp.generated.resources.notifications_disabled
 import schneaggchatv3mp.composeapp.generated.resources.notifications_enabled
@@ -79,7 +78,7 @@ fun NotificationSettings(
 
     Column {
         ActivityTitle(
-            title = stringResource(Res.string.notification_settings),
+            title = stringResource(Res.string.notifications),
             onBackClick = onBackClick,
             backButtonModifier = Modifier.tapTarget("notification_settings_back_button")
         )

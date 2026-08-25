@@ -58,8 +58,8 @@ import schneaggchatv3mp.composeapp.generated.resources.developer_setting_info
 import schneaggchatv3mp.composeapp.generated.resources.developer_settings
 import schneaggchatv3mp.composeapp.generated.resources.misc_setting_info
 import schneaggchatv3mp.composeapp.generated.resources.misc_settings
-import schneaggchatv3mp.composeapp.generated.resources.notification_settings
 import schneaggchatv3mp.composeapp.generated.resources.notification_settings_info
+import schneaggchatv3mp.composeapp.generated.resources.notifications
 import schneaggchatv3mp.composeapp.generated.resources.privacy_and_security
 import schneaggchatv3mp.composeapp.generated.resources.privacy_and_security_info
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_settings
@@ -193,7 +193,7 @@ fun SettingsScreen(
 
         SettingsOption(
             icon = Icons.Default.Notifications,
-            text = stringResource(Res.string.notification_settings),
+            text = stringResource(Res.string.notifications),
             subtext = stringResource(Res.string.notification_settings_info),
             onClick = navigateNotificationSettings,
             modifier = Modifier.tapTarget("settings_notifications")

@@ -323,6 +323,7 @@ fun ChatScreen(
                             viewModel.onChatDetailsClick()
                         },
                         ownId = ownId,
+                        modifier = Modifier.weight(1f)
                     )
 
                     if (!partner.isGroup && !partner.phoneNumber.isNullOrBlank()) {
