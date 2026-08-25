@@ -4,6 +4,8 @@ val BASE_SERVER_URL = "https://schneaggchat.lerchenflo.eu"
 
 val BASE_SERVER_URL_TEST = "https://schneaggchattest.lerchenflo.eu"
 
+val TEST_ACCOUNT_USERNAME = "testaccount"
+
 val SUPPORT_EMAIL = "schneaggchat@gmail.com"
 
 fun getPrivacyPolicyUrl(baseUrl: String) = "$baseUrl/privacypolicy.html"

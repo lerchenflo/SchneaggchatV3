@@ -3,6 +3,7 @@
 package org.lerchenflo.schneaggchatv3mp.datasource
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.toLowerCase
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.auth.clearAuthTokens
 import kotlinx.coroutines.Dispatchers
@@ -32,11 +33,13 @@ import org.jetbrains.compose.resources.getString
 import org.koin.core.qualifier.named
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL_TEST
 import org.lerchenflo.schneaggchatv3mp.GITHUB_ISSUES_API_URL
 import org.lerchenflo.schneaggchatv3mp.GITHUB_LATEST_RELEASE_API_URL
 import org.lerchenflo.schneaggchatv3mp.GITHUB_URL
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
+import org.lerchenflo.schneaggchatv3mp.TEST_ACCOUNT_USERNAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -1264,6 +1267,11 @@ class AppRepository(
         password: String,
         onResult: (Boolean) -> Unit
     ) {
+        //Overwrite the server url for the test account to always connect to it
+        if (username.lowercase().trim() == TEST_ACCOUNT_USERNAME) {
+            preferencemanager.saveServerUrl(BASE_SERVER_URL_TEST)
+        }
+
         when(val result = networkUtils.login(username.trim(), password)){
             is NetworkResult.Error<*> -> {
                 println("Error: ${result.error}")
