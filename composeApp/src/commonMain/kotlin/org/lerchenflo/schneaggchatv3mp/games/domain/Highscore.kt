@@ -5,17 +5,18 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 
 /**
  * Games with a server-side leaderboard. The name must match the server's Game enum.
- * [daily] marks games with a new board every day.
+ * [daily] marks games with a new board every day. [indev] marks games still under development -
+ * their scores are never submitted to the server (see GameHighscoreRepository.submitScore).
  */
-enum class GameId(val daily: Boolean = false) {
+enum class GameId(val daily: Boolean = false, val indev: Boolean = false) {
     TETRIS,
     TOWERSTACK,
     MORSE,
-    SCHNEAGGAHUS,
+    SCHNEAGGAHUS(indev = true),
     GRIDRUSH(daily = true),
     ODDONEOUT,
     GAME_2048,
-    STANISLAUS,
+    STANISLAUS(indev = true),
 }
 
 /**
