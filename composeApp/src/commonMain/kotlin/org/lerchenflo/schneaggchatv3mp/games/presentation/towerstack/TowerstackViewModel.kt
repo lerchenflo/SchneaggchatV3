@@ -12,6 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
+import org.lerchenflo.schneaggchatv3mp.games.presentation.awaitResume
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -32,13 +33,15 @@ data class GameState(
     val isGameStarted: Boolean = false,
     val gameSpeed: Float = 2f,
     val elapsedMillis: Long = 0L,
-    val perfectStreak: Int = 0
+    val perfectStreak: Int = 0,
+    val isPaused: Boolean = false,
 )
 
 sealed class GameAction {
     object StartGame : GameAction()
     object PlacePlatform : GameAction()
     object ResetGame : GameAction()
+    object TogglePause : GameAction()
 }
 
 class TowerstackViewModel(
@@ -68,7 +71,14 @@ class TowerstackViewModel(
             is GameAction.StartGame -> startGame()
             is GameAction.PlacePlatform -> placePlatform()
             is GameAction.ResetGame -> resetGame()
+            is GameAction.TogglePause -> togglePause()
         }
+    }
+
+    private fun togglePause() {
+        val current = _gameState.value
+        if (!current.isGameStarted || current.isGameOver) return
+        _gameState.value = current.copy(isPaused = !current.isPaused)
     }
     
     private fun startGame() {
@@ -113,6 +123,9 @@ class TowerstackViewModel(
         gameLoopJob?.cancel()
         gameLoopJob = viewModelScope.launch {
             while (isActive) {
+                val drift = awaitResume { _gameState.value.isPaused }
+                if (drift > 0) gameStartTime += drift
+
                 updateMovingPlatform()
                 _gameState.value = _gameState.value.copy(
                     elapsedMillis = Clock.System.now().toEpochMilliseconds() - gameStartTime
@@ -145,7 +158,7 @@ class TowerstackViewModel(
     
     private fun placePlatform() {
         val currentState = _gameState.value
-        if (!currentState.isGameStarted || currentState.isGameOver) return
+        if (!currentState.isGameStarted || currentState.isGameOver || currentState.isPaused) return
         
         val current = currentState.currentPlatform ?: return
         val platforms = currentState.platforms

@@ -13,6 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
+import org.lerchenflo.schneaggchatv3mp.games.presentation.awaitResume
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.math.max
@@ -35,10 +36,18 @@ class GridRushViewmodel(
             GridRushAction.StartGame -> startGame()
             GridRushAction.StopGame -> stopGame()
             GridRushAction.RestartGame -> startGame()
+            GridRushAction.TogglePause -> togglePause()
             is GridRushAction.OnDragStart -> onDragStart(action.cell)
             is GridRushAction.OnDragMove -> onDragMove(action.cell)
             GridRushAction.OnDragEnd -> onDragEnd()
         }
+    }
+
+    private fun togglePause() {
+        val current = _state.value
+        if (!current.isPlaying || current.isGameOver) return
+        // Cancel any drag in progress so resuming never leaves a half-committed chain.
+        _state.update { it.copy(isPaused = !it.isPaused, dragPath = emptyList()) }
     }
 
     /** Today's local daily board — restarting on the same day reproduces the same board. */
@@ -70,7 +79,7 @@ class GridRushViewmodel(
 
     private fun onDragStart(cell: Cell) {
         val current = _state.value
-        if (!current.isPlaying || current.isGameOver) return
+        if (!current.isPlaying || current.isGameOver || current.isPaused) return
         if (current.board.getOrNull(cell.row)?.getOrNull(cell.col) == null) return
         if (runStartTime == 0L) startTimer()
         _state.update { it.copy(dragPath = listOf(cell)) }
@@ -80,6 +89,9 @@ class GridRushViewmodel(
         runStartTime = Clock.System.now().toEpochMilliseconds()
         timerJob = viewModelScope.launch {
             while (isActive) {
+                val drift = awaitResume { _state.value.isPaused }
+                if (drift > 0) runStartTime += drift
+
                 delay(100L.milliseconds)
                 _state.update { it.copy(elapsedMillis = Clock.System.now().toEpochMilliseconds() - runStartTime) }
             }
@@ -87,6 +99,7 @@ class GridRushViewmodel(
     }
 
     private fun onDragMove(cell: Cell) {
+        if (_state.value.isPaused) return
         _state.update { current ->
             val path = current.dragPath
             when {

@@ -13,6 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
+import org.lerchenflo.schneaggchatv3mp.games.presentation.awaitResume
 import kotlin.time.Clock
 
 private const val SCORE_PER_DELIVERY = 10
@@ -36,8 +37,15 @@ class SchneaggaHusViewmodel(
             SchneaggaHusAction.StartGame -> startGame()
             SchneaggaHusAction.StopGame -> stopGame()
             SchneaggaHusAction.RestartGame -> startGame()
+            SchneaggaHusAction.TogglePause -> togglePause()
             is SchneaggaHusAction.OnSwitchClick -> toggleSwitch(action.position)
         }
+    }
+
+    private fun togglePause() {
+        val current = _state.value
+        if (!current.isPlaying || current.isGameOver) return
+        _state.update { it.copy(isPaused = !it.isPaused) }
     }
 
     private fun startGame() {
@@ -80,6 +88,12 @@ class SchneaggaHusViewmodel(
             var lastTickTime = Clock.System.now().toEpochMilliseconds()
             var nextSpawnAt = 0L // first schneagg spawns immediately
             while (isActive) {
+                val drift = awaitResume { _state.value.isPaused }
+                if (drift > 0) {
+                    gameStartTime += drift
+                    lastTickTime += drift
+                }
+
                 delay(16L) // ~60 FPS
                 val now = Clock.System.now().toEpochMilliseconds()
                 val deltaTiles = tilesPerSecond * (now - lastTickTime) / 1000f
@@ -166,6 +180,7 @@ class SchneaggaHusViewmodel(
     }
 
     private fun toggleSwitch(position: Position) {
+        if (_state.value.isPaused) return
         _state.update { state ->
             state.copy(
                 trackList = state.trackList.map { tile ->

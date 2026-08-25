@@ -41,6 +41,7 @@ import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameHud
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameOverOverlay
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GamePauseOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameStartOverlay
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -88,7 +89,7 @@ fun TowerStackScreen(
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() }
                 ) {
-                    if (gameState.isGameStarted && !gameState.isGameOver) {
+                    if (gameState.isGameStarted && !gameState.isGameOver && !gameState.isPaused) {
                         viewModel.onAction(GameAction.PlacePlatform)
                     }
                 },
@@ -100,6 +101,7 @@ fun TowerStackScreen(
                     explanationDismissed = false
                     viewModel.onAction(GameAction.ResetGame)
                 },
+                onTogglePause = { viewModel.onAction(GameAction.TogglePause) },
                 onRestart = {
                     viewModel.onAction(GameAction.ResetGame)
                     viewModel.onAction(GameAction.StartGame)
@@ -128,6 +130,7 @@ fun TowerStackScreen(
 private fun GameContent(
     gameState: GameState,
     onStop: () -> Unit,
+    onTogglePause: () -> Unit,
     onRestart: () -> Unit,
     onExit: () -> Unit
 ) {
@@ -190,13 +193,15 @@ private fun GameContent(
                 score = gameState.score.toLong(),
                 timeMillis = gameState.elapsedMillis,
                 onStop = onStop,
+                isPaused = gameState.isPaused,
+                onTogglePause = onTogglePause,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
             )
         }
 
-        
+
         // Unified game over overlay with restart, difficulty selection and highscores
         if (gameState.isGameOver) {
             GameOverOverlay(
@@ -206,6 +211,8 @@ private fun GameContent(
                 onRestart = onRestart,
                 onExit = onExit
             )
+        } else if (gameState.isPaused) {
+            GamePauseOverlay(onResume = onTogglePause)
         }
         
         // Instructions for first move

@@ -32,6 +32,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameHud
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameOverOverlay
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GamePauseOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameStartOverlay
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -103,6 +104,8 @@ fun TetrisScreen(
                         explanationDismissed = false
                         viewModel.stopGame()
                     },
+                    isPaused = state.isPaused,
+                    onTogglePause = { viewModel.togglePause() },
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(8.dp)
@@ -131,6 +134,8 @@ fun TetrisScreen(
                         onBackClick()
                     }
                 )
+            } else if (state.isPaused) {
+                GamePauseOverlay(onResume = { viewModel.togglePause() })
             }
         }
     }

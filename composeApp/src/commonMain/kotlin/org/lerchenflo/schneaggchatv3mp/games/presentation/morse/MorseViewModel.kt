@@ -18,6 +18,7 @@ import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
+import org.lerchenflo.schneaggchatv3mp.games.presentation.awaitResume
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
@@ -40,6 +41,7 @@ data class MorseChallengeState(
     val errors: Int = 0,
     val score: Int = 0,
     val isGameOver: Boolean = false,
+    val isPaused: Boolean = false,
     val elapsedMillis: Long = 0L,
     val charTimeLimitMs: Long = 5000L,
     val charTimeRemainingMs: Long = 5000L
@@ -90,7 +92,8 @@ class MorseViewModel(
     private fun addSymbol(symbol: String) {
         autoCommitJob?.cancel()
         val current = _state.value
-        if (current.challenge?.isGameOver == true) return
+        val challenge = current.challenge
+        if (challenge?.isGameOver == true || challenge?.isPaused == true) return
         val newCode = current.currentCode + symbol
 
         if (newCode.length > MAX_CODE_DEPTH) {
@@ -102,9 +105,16 @@ class MorseViewModel(
         _state.update { it.copy(currentCode = newCode, currentChar = resolved, invalid = false) }
 
         if (resolved != null) {
-            autoCommitJob = viewModelScope.launch {
-                delay(autoCommitDelayMs().milliseconds)
+            val expected = challenge?.targetText?.getOrNull(challenge.currentIndex)
+            if (challenge != null && resolved == expected) {
+                // Landed on the correct character: advance immediately instead of
+                // waiting out the usual accept delay, so a correct run feels instant.
                 commit()
+            } else {
+                autoCommitJob = viewModelScope.launch {
+                    delay(autoCommitDelayMs().milliseconds)
+                    commit()
+                }
             }
         }
     }
@@ -150,6 +160,7 @@ class MorseViewModel(
     fun commit() {
         val char = _state.value.currentChar ?: return
         val challenge = _state.value.challenge
+        if (challenge?.isPaused == true) return
 
         if (challenge != null) {
             if (!challenge.isGameOver) {
@@ -201,11 +212,34 @@ class MorseViewModel(
         startChallengeTimer()
     }
 
+    fun togglePause() {
+        val challenge = _state.value.challenge ?: return
+        if (challenge.isGameOver) return
+
+        if (!challenge.isPaused) {
+            // Pausing cancels any half-entered code so resuming always starts clean.
+            autoCommitJob?.cancel()
+            _state.update {
+                it.copy(
+                    currentCode = "",
+                    currentChar = null,
+                    invalid = false,
+                    challenge = it.challenge?.copy(isPaused = true)
+                )
+            }
+        } else {
+            _state.update { it.copy(challenge = it.challenge?.copy(isPaused = false)) }
+        }
+    }
+
     private fun startChallengeTimer() {
         challengeTimerJob?.cancel()
         challengeTimerJob = viewModelScope.launch {
             val tickMs = 50L
             while (true) {
+                val drift = awaitResume { _state.value.challenge?.isPaused == true }
+                if (drift > 0) challengeStartTime += drift
+
                 delay(tickMs.milliseconds)
                 var submitScoreNeeded = false
                 var scoreToSubmit = 0

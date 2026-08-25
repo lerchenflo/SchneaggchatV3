@@ -45,6 +45,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -53,10 +54,12 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameHud
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameOverOverlay
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GamePauseOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameStartOverlay
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_2048_instructions
+import schneaggchatv3mp.composeapp.generated.resources.games_2048_reached
 import schneaggchatv3mp.composeapp.generated.resources.games_2048_title
 import kotlin.math.abs
 
@@ -97,7 +100,7 @@ fun Game2048ScreenRoot(
             .focusRequester(focusRequester)
             .focusable()
             .onKeyEvent { keyEvent ->
-                if (keyEvent.type != KeyEventType.KeyDown || state.isGameOver || !state.isGameStarted) {
+                if (keyEvent.type != KeyEventType.KeyDown || state.isGameOver || !state.isGameStarted || state.isPaused) {
                     return@onKeyEvent false
                 }
                 when (keyEvent.key) {
@@ -138,7 +141,8 @@ fun Game2048ScreenRoot(
                 onStop = {
                     explanationDismissed = false
                     viewModel.onAction(Game2048Action.StopGame)
-                }
+                },
+                onTogglePause = { viewModel.onAction(Game2048Action.TogglePause) }
             )
 
             if (!explanationDismissed && !isStarted) {
@@ -163,6 +167,10 @@ fun Game2048ScreenRoot(
                         onBackClick()
                     }
                 )
+            } else if (state.isPaused) {
+                GamePauseOverlay(
+                    onResume = { viewModel.onAction(Game2048Action.TogglePause) }
+                )
             }
         }
     }
@@ -173,6 +181,7 @@ private fun Game2048Content(
     state: Game2048State,
     onMove: (MoveDirection) -> Unit,
     onStop: () -> Unit,
+    onTogglePause: () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
     val density = LocalDensity.current
@@ -185,8 +194,8 @@ private fun Game2048Content(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .pointerInput(state.isGameStarted, state.isGameOver) {
-                if (!state.isGameStarted || state.isGameOver) return@pointerInput
+            .pointerInput(state.isGameStarted, state.isGameOver, state.isPaused) {
+                if (!state.isGameStarted || state.isGameOver || state.isPaused) return@pointerInput
                 detectDragGestures(
                     onDragStart = {
                         dragAmountX = 0f
@@ -234,6 +243,8 @@ private fun Game2048Content(
                 score = state.score.toLong(),
                 timeMillis = state.elapsedMillis,
                 onStop = onStop,
+                isPaused = state.isPaused,
+                onTogglePause = onTogglePause,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
@@ -257,7 +268,7 @@ private fun Game2048Content(
                     modifier = Modifier.padding(bottom = 12.dp)
                 ) {
                     Text(
-                        text = "★ 2048 reached! ★",
+                        text = stringResource(Res.string.games_2048_reached),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = colors.onPrimaryContainer,
@@ -266,30 +277,37 @@ private fun Game2048Content(
                 }
             }
 
+            // Board shrinks with the grid size so tiles stay roughly the same
+            // physical size across difficulties instead of always filling the width.
+            val boardWidthFraction = (state.gridSize.toFloat() / DEFAULT_GRID_SIZE).coerceIn(0.4f, 1f)
+
             BoxWithConstraints(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth(boardWidthFraction)
                     .aspectRatio(1f)
                     .clip(RoundedCornerShape(16.dp))
                     .background(colors.surfaceVariant.copy(alpha = 0.5f))
                     .padding(8.dp)
             ) {
+                val cellSize = maxWidth / state.gridSize
+
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    for (row in 0 until 4) {
+                    for (row in 0 until state.gridSize) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            for (col in 0 until 4) {
-                                val value = state.grid[row * 4 + col]
+                            for (col in 0 until state.gridSize) {
+                                val value = state.grid[row * state.gridSize + col]
                                 TileView(
                                     value = value,
                                     colors = colors,
+                                    cellSize = cellSize,
                                     modifier = Modifier
                                         .weight(1f)
                                         .fillMaxSize()
@@ -309,6 +327,7 @@ private fun Game2048Content(
 private fun TileView(
     value: Int,
     colors: ColorScheme,
+    cellSize: Dp,
     modifier: Modifier = Modifier,
 ) {
     val (backgroundColor, textColor) = getTileColors(value, colors)
@@ -321,12 +340,15 @@ private fun TileView(
     ) {
         if (value > 0) {
             val text = value.toString()
+            // Scale off the actual cell size (which shrinks with the grid) instead of
+            // a fixed step table, then shrink further for longer numbers.
+            val baseSp = (cellSize.value * 0.42f).coerceIn(12f, 34f)
             val fontSize = when {
-                text.length <= 2 -> 26.sp
-                text.length == 3 -> 22.sp
-                text.length == 4 -> 18.sp
-                else -> 14.sp
-            }
+                text.length <= 2 -> baseSp
+                text.length == 3 -> baseSp * 0.85f
+                text.length == 4 -> baseSp * 0.7f
+                else -> baseSp * 0.55f
+            }.sp
 
             Text(
                 text = text,

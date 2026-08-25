@@ -8,12 +8,14 @@ sealed interface SchneaggaHusAction {
     data object StartGame : SchneaggaHusAction
     data object StopGame : SchneaggaHusAction
     data object RestartGame : SchneaggaHusAction
+    data object TogglePause : SchneaggaHusAction
     data class OnSwitchClick(val position: Position) : SchneaggaHusAction
 }
 
 data class SchneaggaHusState(
     val isPlaying: Boolean = false,
     val isGameOver: Boolean = false,
+    val isPaused: Boolean = false,
     val score: Int = 0,
     val lives: Int = SCHNEAGGHUS_MAX_LIVES,
     val elapsedMillis: Long = 0L,
