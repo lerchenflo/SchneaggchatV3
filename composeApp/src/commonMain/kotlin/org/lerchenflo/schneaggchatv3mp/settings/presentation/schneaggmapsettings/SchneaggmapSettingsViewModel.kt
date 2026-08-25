@@ -5,9 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -91,14 +88,14 @@ class SchneaggmapSettingsViewModel(
     }
 
     fun updateMergeMapLocations(newValue: Boolean) {
-        CoroutineScope(Dispatchers.IO).launch {
-            preferenceManager.saveMergeMapLocations(newValue)
+        viewModelScope.launch {
+            appRepository.setMergeMapLocations(newValue)
         }
     }
 
     fun updateMergeMapUsers(newValue: Boolean) {
         viewModelScope.launch {
-            preferenceManager.saveMergeMapUsers(newValue)
+            appRepository.setMergeMapUsers(newValue)
         }
     }
 

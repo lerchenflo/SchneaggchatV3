@@ -589,6 +589,7 @@ fun AddUserToGroupPopup(
     onSearchTermChange: (String) -> Unit,
     onUserSelected: (ChatListItem) -> Unit,
     onUserDeselected: (ChatListItem) -> Unit,
+    isSelected: (ChatListItem) -> Boolean = { selectedUsers.contains(it) },
 ) {
 
 
@@ -620,6 +621,7 @@ fun AddUserToGroupPopup(
                 onSearchTermChange = onSearchTermChange,
                 onUserSelected = onUserSelected,
                 onUserDeselected = onUserDeselected,
+                isSelected = isSelected,
                 minUsers = 1
             )
         }

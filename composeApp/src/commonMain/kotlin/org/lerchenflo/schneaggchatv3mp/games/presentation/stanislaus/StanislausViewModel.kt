@@ -12,6 +12,7 @@ import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
+import org.lerchenflo.schneaggchatv3mp.games.presentation.awaitResume
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.sqrt
@@ -53,8 +54,15 @@ class StanislausViewModel(
             StanislausAction.StartGame -> startGame()
             StanislausAction.StopGame -> stopGame()
             StanislausAction.RestartGame -> startGame()
+            StanislausAction.TogglePause -> togglePause()
             is StanislausAction.Throw -> throwSpear(action.directionX, action.directionY)
         }
+    }
+
+    private fun togglePause() {
+        val current = _state.value
+        if (!current.isPlaying || current.isGameOver) return
+        _state.value = current.copy(isPaused = !current.isPaused)
     }
 
     private fun startGame() {
@@ -81,6 +89,13 @@ class StanislausViewModel(
     private fun startLoop() {
         loopJob = viewModelScope.launch {
             while (isActive) {
+                val drift = awaitResume { _state.value.isPaused }
+                if (drift > 0) {
+                    runStartTime += drift
+                    lastTickTime += drift
+                    revealDeadline += drift
+                }
+
                 delay(16L)
                 val now = Clock.System.now().toEpochMilliseconds()
                 val dtMillis = now - lastTickTime

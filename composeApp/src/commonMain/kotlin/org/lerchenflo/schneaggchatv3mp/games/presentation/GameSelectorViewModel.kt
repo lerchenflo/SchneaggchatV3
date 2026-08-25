@@ -38,35 +38,35 @@ class GameSelectorViewModel : ViewModel() {
             title = Res.string.games_tetris_title,
             icon = Icons.Default.Menu, // Placeholder
             route = Route.Tetris,
-            inDev = false,
+            inDev = GameId.TETRIS.indev,
             gameId = GameId.TETRIS
         ),
         GameScreenElement(
             title = Res.string.games_stack_tower,
             icon = Icons.Default.Menu,
             route = Route.TowerStack,
-            inDev = false,
+            inDev = GameId.TOWERSTACK.indev,
             gameId = GameId.TOWERSTACK
         ),
         GameScreenElement(
             title = Res.string.games_morse_title,
             icon = Icons.Default.GraphicEq,
             route = Route.Morse,
-            inDev = false,
+            inDev = GameId.MORSE.indev,
             gameId = GameId.MORSE
         ),
         GameScreenElement(
             title = Res.string.games_schneaggahus_title,
             icon = Icons.Default.House,
             route = Route.SchneaggaHus,
-            inDev = true,
+            inDev = GameId.SCHNEAGGAHUS.indev,
             gameId = GameId.SCHNEAGGAHUS
         ),
         GameScreenElement(
             title = Res.string.games_gridrush_title,
             icon = Icons.Default.GridOn,
             route = Route.GridRush,
-            inDev = false,
+            inDev = GameId.GRIDRUSH.indev,
             gameId = GameId.GRIDRUSH,
             daily = true
         ),
@@ -74,21 +74,21 @@ class GameSelectorViewModel : ViewModel() {
             title = Res.string.games_oddoneout_title,
             icon = Icons.Default.Search,
             route = Route.OddOneOut,
-            inDev = false,
+            inDev = GameId.ODDONEOUT.indev,
             gameId = GameId.ODDONEOUT
         ),
         GameScreenElement(
             title = Res.string.games_2048_title,
             icon = Icons.Default.GridOn,
             route = Route.Game2048,
-            inDev = false,
+            inDev = GameId.GAME_2048.indev,
             gameId = GameId.GAME_2048
         ),
         GameScreenElement(
             title = Res.string.games_stanislaus_title,
             icon = Icons.Default.Phishing,
             route = Route.Stanislaus,
-            inDev = true,
+            inDev = GameId.STANISLAUS.indev,
             gameId = GameId.STANISLAUS
         ),
         GameScreenElement(

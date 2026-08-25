@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
+import org.lerchenflo.schneaggchatv3mp.games.presentation.awaitResume
 import kotlin.random.Random
 import kotlin.time.Clock
 
@@ -40,8 +41,15 @@ class OddOneOutViewmodel(
             OddOneOutAction.StartGame -> startGame()
             OddOneOutAction.StopGame -> stopGame()
             OddOneOutAction.RestartGame -> startGame()
+            OddOneOutAction.TogglePause -> togglePause()
             is OddOneOutAction.OnTileTapped -> onTileTapped(action.index)
         }
+    }
+
+    private fun togglePause() {
+        val current = _state.value
+        if (!current.isPlaying || current.isGameOver) return
+        _state.update { it.copy(isPaused = !it.isPaused) }
     }
 
     private fun startGame() {
@@ -86,6 +94,13 @@ class OddOneOutViewmodel(
     private fun startTimer() {
         timerJob = viewModelScope.launch {
             while (isActive) {
+                val drift = awaitResume { _state.value.isPaused }
+                if (drift > 0) {
+                    runStartTime += drift
+                    roundStartTime += drift
+                    roundDeadline += drift
+                }
+
                 delay(100L)
                 val now = Clock.System.now().toEpochMilliseconds()
                 val remaining = (roundDeadline - now).coerceAtLeast(0L)
@@ -103,7 +118,7 @@ class OddOneOutViewmodel(
 
     private fun onTileTapped(index: Int) {
         val current = _state.value
-        if (!current.isPlaying || current.isGameOver || !roundActive) return
+        if (!current.isPlaying || current.isGameOver || current.isPaused || !roundActive) return
         roundActive = false
         if (index == current.oddIndex) {
             val reaction = Clock.System.now().toEpochMilliseconds() - roundStartTime

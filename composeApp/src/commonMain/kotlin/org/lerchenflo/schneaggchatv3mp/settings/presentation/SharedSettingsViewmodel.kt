@@ -5,9 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -69,8 +66,8 @@ class SharedSettingsViewmodel(
     // Developer Settings
 
     fun updateDevSettings(newValue: Boolean){
-        CoroutineScope(Dispatchers.IO).launch {
-            preferenceManager.saveDevSettings(newValue)
+        viewModelScope.launch {
+            appRepository.setDevSettings(newValue)
             SessionCache.updateDeveloper(newValue)
         }
     }

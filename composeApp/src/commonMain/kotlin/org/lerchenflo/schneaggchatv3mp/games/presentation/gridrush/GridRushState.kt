@@ -4,6 +4,7 @@ sealed interface GridRushAction {
     data object StartGame : GridRushAction
     data object StopGame : GridRushAction
     data object RestartGame : GridRushAction
+    data object TogglePause : GridRushAction
     data class OnDragStart(val cell: Cell) : GridRushAction
     data class OnDragMove(val cell: Cell) : GridRushAction
     data object OnDragEnd : GridRushAction
@@ -31,6 +32,7 @@ data class GridRushState(
     val board: List<List<GridTileColor?>> = emptyList(),
     /** Cells of the drag currently in progress, in drag order */
     val dragPath: List<Cell> = emptyList(),
+    val isPaused: Boolean = false,
 ) {
     /** A chain only clears when it contains at least two tiles */
     val dragValid: Boolean get() = dragPath.size >= 2

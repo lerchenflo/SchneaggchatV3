@@ -45,6 +45,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameHud
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameOverOverlay
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GamePauseOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameStartOverlay
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -117,6 +118,8 @@ fun MorseScreen(
                         score = challenge.score.toLong(),
                         timeMillis = challenge.elapsedMillis,
                         onStop = viewModel::exitChallenge,
+                        isPaused = challenge.isPaused,
+                        onTogglePause = viewModel::togglePause,
                         modifier = Modifier.align(Alignment.End)
                     )
 
@@ -176,6 +179,8 @@ fun MorseScreen(
                         viewModel.startChallenge()
                     }
                 )
+            } else if (state.challenge?.isPaused == true) {
+                GamePauseOverlay(onResume = viewModel::togglePause)
             }
         }
     }

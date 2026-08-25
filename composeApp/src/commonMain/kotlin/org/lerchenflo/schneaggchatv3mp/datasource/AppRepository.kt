@@ -83,11 +83,13 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.IdTimeSta
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.NewFriendsUserResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PersonalUserSettings
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteOptionCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventJoinResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventRequest
@@ -104,7 +106,11 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
@@ -117,6 +123,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogParser
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
@@ -161,6 +168,7 @@ class AppRepository(
     private val loggingRepository: LoggingRepository,
     private val mapRepository: MapRepository,
     private val eventRepository: EventRepository,
+    private val languageService: LanguageService,
 ) {
     //Errorchannel for global error events (Show in every screen)
     object ErrorChannel {
@@ -1434,6 +1442,8 @@ class AppRepository(
                             if (existing == null || existing.profilePicUpdatedAt < newUser.profilePicUpdatedAt) {
                                 profilePicsToGet += newUser.id
                             }
+
+                            applyServerSettings(newUser.settings)
                         }
                         is UserResponse.SimpleUserResponse -> {
                             val existing = database.userDao().getUserbyId(newUser.id)
@@ -2519,6 +2529,79 @@ class AppRepository(
         reason: String,
     ): NetworkResult<NetworkUtils.WakeResponse, NetworkError> {
         return networkUtils.sendWake(targetId, isGroup, reason)
+    }
+
+    // ─── Personal settings (theme, language, pinned chats, ...) ────────────────
+    // Synced across every device of this account via SelfUserResponse.settings. Push side:
+    // write the local preference first so the UI reacts instantly, then fire the partial-update
+    // request in the background and ignore its result - an offline edit is reconciled by the next
+    // /users/sync or UserChange socket push, which always wins (see applyServerSettings below).
+
+    /**
+     * Applies the server's settings onto local DataStore, overwriting whatever was there. Called
+     * from both the /users/sync SelfUserResponse branch and the UserChange socket push, so a
+     * settings change made on another device of the same account takes effect here without the
+     * user touching a setting themselves.
+     */
+    suspend fun applyServerSettings(settings: PersonalUserSettings) {
+        preferencemanager.applySyncedSettings(settings)
+
+        // Language has to go through LanguageService/LanguageManager to actually switch the
+        // platform locale (recreates the Activity on Android), so only touch it when it changed.
+        val newLanguage = LanguageSetting.entries.firstOrNull { it.name == settings.language } ?: LanguageSetting.SYSTEM
+        if (preferencemanager.getLanguageSetting() != newLanguage) {
+            languageService.applyLanguage(newLanguage)
+        }
+    }
+
+    suspend fun setUseMd(value: Boolean) {
+        preferencemanager.saveUseMd(value)
+        networkUtils.updateSettings(UserSettingsRequest(mdFormat = value))
+    }
+
+    suspend fun setDevSettings(value: Boolean) {
+        preferencemanager.saveDevSettings(value)
+        networkUtils.updateSettings(UserSettingsRequest(developerSettings = value))
+    }
+
+    suspend fun setHighlightTodaysMessageTimestamp(value: Boolean) {
+        preferencemanager.saveHighlightTodaysMessageTimestamp(value)
+        networkUtils.updateSettings(UserSettingsRequest(highlightTodaysMessageTimestamp = value))
+    }
+
+    suspend fun setThemeSetting(theme: ThemeSetting) {
+        preferencemanager.saveThemeSetting(theme)
+        networkUtils.updateSettings(UserSettingsRequest(theme = theme.name))
+    }
+
+    suspend fun setLanguageSetting(language: LanguageSetting) {
+        languageService.applyLanguage(language)
+        networkUtils.updateSettings(UserSettingsRequest(language = language.name))
+    }
+
+    suspend fun setMergeMapLocations(value: Boolean) {
+        preferencemanager.saveMergeMapLocations(value)
+        networkUtils.updateSettings(UserSettingsRequest(mergeMapLocations = value))
+    }
+
+    suspend fun setMergeMapUsers(value: Boolean) {
+        preferencemanager.saveMergeMapUsers(value)
+        networkUtils.updateSettings(UserSettingsRequest(mergeMapUsers = value))
+    }
+
+    suspend fun setMapStyleSetting(style: MapStyleSetting) {
+        preferencemanager.saveMapStyleSetting(style)
+        networkUtils.updateSettings(UserSettingsRequest(mapStyle = style.name))
+    }
+
+    /** Pins or unpins a chat locally, then pushes the whole resulting list (server stores it wholesale). */
+    suspend fun setPinnedChat(chatId: String, group: Boolean, pinned: Boolean) {
+        if (pinned) {
+            preferencemanager.addPinnedChat(PinnedChat(chatId, group, getCurrentTimeMillisString().toLong()))
+        } else {
+            preferencemanager.removePinnedChat(chatId)
+        }
+        networkUtils.updateSettings(UserSettingsRequest(pinnedChats = preferencemanager.getPinnedChats()))
     }
 
     /*

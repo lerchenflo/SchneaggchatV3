@@ -60,6 +60,9 @@ fun MemberSelector(
     onUserSelected: (ChatListItem) -> Unit,
     onUserDeselected: (ChatListItem) -> Unit,
     minUsers: Int = 2,
+    // Lets a group row show "selected" once all its member friends are in the selection,
+    // even though the group itself is never part of selectedUsers.
+    isSelected: (ChatListItem) -> Boolean = { selectedUsers.contains(it) },
     modifier: Modifier = Modifier
 ) {
     SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
@@ -68,26 +71,46 @@ fun MemberSelector(
 
     Column(modifier = modifier) {
 
-        // Selected users horizontal scroll view
-        if (selectedUsers.isNotEmpty()) {
+        // Selected users horizontal scroll view - always reserves its height (even with an empty
+        // selection) via a placeholder box, so the UI doesn't jump when the first member is added.
+        if (selectedUsers.isNotEmpty() && selectedUsers.size < minUsers){
+            Text(
+                text = stringResource(Res.string.at_least_members, minUsers.toString()),
+                color = MaterialTheme.colorScheme.error
+            )
+        }
 
-            if (selectedUsers.size < minUsers){
-                Text(
-                    text = stringResource(Res.string.at_least_members, minUsers.toString()),
-                    color = MaterialTheme.colorScheme.error
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(
+                    start = 16.dp,
+                    end = 2.dp,
+                    bottom = 10.dp
                 )
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(
-                        start = 16.dp,
-                        end = 2.dp,
-                        bottom = 10.dp
+        ) {
+            if (selectedUsers.isEmpty()) {
+                val size = 70.dp
+                Column(
+                    modifier = Modifier.padding(end = 5.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(size)
+                            .padding(8.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
                     )
-            ) {
+                    // Empty text with the same style reserves the name label's line height too,
+                    // so the row's total height matches the populated state exactly.
+                    Text(
+                        text = "",
+                        maxLines = 1,
+                        modifier = Modifier.width(size)
+                    )
+                }
+            } else {
                 selectedUsers.forEach { user ->
                     Column(
                         modifier = Modifier
@@ -193,7 +216,7 @@ fun MemberSelector(
             ),
         ) {
             items(availableUsers) { user ->
-                val selected = selectedUsers.contains(user)
+                val selected = isSelected(user)
 
                 UserButton(
                     chat = user,

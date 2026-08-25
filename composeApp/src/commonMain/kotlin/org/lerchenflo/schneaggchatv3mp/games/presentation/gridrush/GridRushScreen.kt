@@ -33,6 +33,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameHud
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameOverOverlay
+import org.lerchenflo.schneaggchatv3mp.games.presentation.GamePauseOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameStartOverlay
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -101,6 +102,8 @@ fun GridRushScreenRoot(
                         explanationDismissed = false
                         viewmodel.onAction(GridRushAction.StopGame)
                     },
+                    isPaused = state.isPaused,
+                    onTogglePause = { viewmodel.onAction(GridRushAction.TogglePause) },
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(8.dp)
@@ -129,6 +132,8 @@ fun GridRushScreenRoot(
                         onBackClick()
                     }
                 )
+            } else if (state.isPaused) {
+                GamePauseOverlay(onResume = { viewmodel.onAction(GridRushAction.TogglePause) })
             }
         }
     }

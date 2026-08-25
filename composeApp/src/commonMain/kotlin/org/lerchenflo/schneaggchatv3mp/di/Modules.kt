@@ -93,7 +93,7 @@ val sharedmodule = module{
 
     //Repository
     single {
-        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
+        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     singleOf(::SettingsRepository)
     singleOf(::GroupRepository)
@@ -170,6 +170,7 @@ val sharedmodule = module{
             appRepository = get(),
             eventRepository = get(),
             userRepository = get(),
+            groupRepository = get(),
             preferenceManager = get(),
             pictureManager = get(),
             initialEntryId = initialEntryId,

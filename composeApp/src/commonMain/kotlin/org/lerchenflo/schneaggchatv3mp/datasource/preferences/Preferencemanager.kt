@@ -329,6 +329,30 @@ class Preferencemanager(
         }
     }
 
+    // ========== SYNCED SETTINGS (applied from the server, overwriting local values) ==========
+
+    /**
+     * Overwrites every server-synced preference with the server's authoritative values, in one
+     * DataStore edit so observers see a single coherent update. Language is deliberately excluded -
+     * applying a new language has to go through LanguageService/LanguageManager to actually switch
+     * the platform locale, so AppRepository.applyServerSettings handles that field separately.
+     */
+    suspend fun applySyncedSettings(settings: NetworkUtils.PersonalUserSettings) {
+        val theme = ThemeSetting.entries.firstOrNull { it.name == settings.theme } ?: ThemeSetting.SYSTEM
+        val mapStyle = MapStyleSetting.entries.firstOrNull { it.name == settings.mapStyle } ?: MapStyleSetting.LIBERTY
+
+        prefs.edit {
+            it[PrefsKeys.MD_FORMAT] = settings.mdFormat
+            it[PrefsKeys.HIGHLIGHT_TODAYS_MESSAGE_TIMESTAMP] = settings.highlightTodaysMessageTimestamp
+            it[PrefsKeys.THEME] = theme.ordinal
+            it[PrefsKeys.MERGE_MAP_LOCATIONS] = settings.mergeMapLocations
+            it[PrefsKeys.MERGE_MAP_USERS] = settings.mergeMapUsers
+            it[PrefsKeys.MAP_STYLE] = mapStyle.ordinal
+            it[PrefsKeys.PINNED_CHATS] = json.encodeToString(settings.pinnedChats)
+            it[PrefsKeys.DEVELOPER_SETTINGS] = settings.developerSettings
+        }
+    }
+
     // Drafts - Stored as JSON
     suspend fun addDraft(draft: Draft) {
         val currentDrafts = getDrafts().toMutableList()

@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Card
@@ -22,17 +24,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.game_pause
+import schneaggchatv3mp.composeapp.generated.resources.game_resume
 import schneaggchatv3mp.composeapp.generated.resources.game_stop
 
 /**
  * Unified in-game counter shown in the same corner of every game while a run
- * is active: elapsed time, current points and a stop button ending the run.
+ * is active: elapsed time, current points, a pause/resume toggle and a stop
+ * button ending the run.
  */
 @Composable
 fun GameHud(
     score: Long,
     timeMillis: Long,
     onStop: () -> Unit,
+    isPaused: Boolean = false,
+    onTogglePause: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -81,6 +88,21 @@ fun GameHud(
             )
 
             Spacer(modifier = Modifier.width(4.dp))
+
+            if (onTogglePause != null) {
+                IconButton(
+                    onClick = onTogglePause,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isPaused) Icons.Default.PlayArrow else Icons.Default.Pause,
+                        contentDescription = stringResource(
+                            if (isPaused) Res.string.game_resume else Res.string.game_pause
+                        ),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
 
             IconButton(
                 onClick = onStop,

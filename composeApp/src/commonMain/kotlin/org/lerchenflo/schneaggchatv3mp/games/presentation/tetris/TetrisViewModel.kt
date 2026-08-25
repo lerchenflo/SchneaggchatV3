@@ -13,6 +13,7 @@ import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameDifficultySelection
+import org.lerchenflo.schneaggchatv3mp.games.presentation.awaitResume
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -25,7 +26,8 @@ data class TetrisState(
     val isGameOver: Boolean = false,
     val isPlaying: Boolean = false,
     val gameTime: Long = 0L, // Total game time in milliseconds
-    val isSoftDropping: Boolean = false
+    val isSoftDropping: Boolean = false,
+    val isPaused: Boolean = false,
 )
 
 /** Row the current piece would land on if dropped straight down; null when no piece is active. */
@@ -150,6 +152,9 @@ class TetrisViewModel(
         gameLoopJob = viewModelScope.launch {
             var elapsedInTick = 0L
             while (state.value.isPlaying && !state.value.isGameOver) {
+                val drift = awaitResume { _state.value.isPaused }
+                if (drift > 0) gameStartTime += drift
+
                 val currentTime = Clock.System.now().toEpochMilliseconds()
                 val gameTime = currentTime - gameStartTime
                 _state.update { it.copy(gameTime = gameTime) }
@@ -171,6 +176,12 @@ class TetrisViewModel(
     fun stopGame() {
         gameLoopJob?.cancel()
         _state.value = TetrisState()
+    }
+
+    fun togglePause() {
+        val current = _state.value
+        if (!current.isPlaying || current.isGameOver) return
+        _state.update { it.copy(isPaused = !it.isPaused) }
     }
 
     fun restartGame() {
@@ -225,7 +236,7 @@ class TetrisViewModel(
 
     private fun move(rowOffset: Int, colOffset: Int) {
         val currentState = _state.value
-        if (!currentState.isPlaying || currentState.isGameOver || currentState.currentPiece == null) return
+        if (!currentState.isPlaying || currentState.isGameOver || currentState.isPaused || currentState.currentPiece == null) return
 
         val (r, c) = currentState.piecePosition
         if (isValidMove(currentState.currentPiece, r + rowOffset, c + colOffset)) {
@@ -240,7 +251,7 @@ class TetrisViewModel(
     
     fun rotate() {
         val currentState = _state.value
-        if (!currentState.isPlaying || currentState.isGameOver || currentState.currentPiece == null) return
+        if (!currentState.isPlaying || currentState.isGameOver || currentState.isPaused || currentState.currentPiece == null) return
 
         val currentPiece = currentState.currentPiece
         val nextRotation = (currentPiece.rotation + 1) % 4
@@ -260,7 +271,7 @@ class TetrisViewModel(
     
     fun hardDrop() {
        val currentState = _state.value
-        if (!currentState.isPlaying || currentState.isGameOver || currentState.currentPiece == null) return
+        if (!currentState.isPlaying || currentState.isGameOver || currentState.isPaused || currentState.currentPiece == null) return
         
         var dropRow = currentState.piecePosition.first
         while (isValidMove(currentState.currentPiece, dropRow + 1, currentState.piecePosition.second)) {
@@ -283,6 +294,7 @@ class TetrisViewModel(
     private var ignoreSoftDropUntilReset = false
 
     fun setSoftDropping(isSoftDropping: Boolean) {
+        if (_state.value.isPaused) return
         if (isSoftDropping) {
             if (!ignoreSoftDropUntilReset) {
                 _state.update { it.copy(isSoftDropping = true) }

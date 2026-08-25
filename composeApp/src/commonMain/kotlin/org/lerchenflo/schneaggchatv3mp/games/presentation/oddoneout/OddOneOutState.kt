@@ -6,6 +6,7 @@ sealed interface OddOneOutAction {
     data object StartGame : OddOneOutAction
     data object StopGame : OddOneOutAction
     data object RestartGame : OddOneOutAction
+    data object TogglePause : OddOneOutAction
     data class OnTileTapped(val index: Int) : OddOneOutAction
 }
 
@@ -23,6 +24,7 @@ data class OddOneOutTile(
 data class OddOneOutState(
     val isPlaying: Boolean = false,
     val isGameOver: Boolean = false,
+    val isPaused: Boolean = false,
     val score: Int = 0,
     val lives: Int = ODDONEOUT_STARTING_LIVES,
     val round: Int = 0,

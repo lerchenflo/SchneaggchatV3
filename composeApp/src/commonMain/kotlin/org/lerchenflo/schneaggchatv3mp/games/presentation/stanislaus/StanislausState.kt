@@ -56,6 +56,7 @@ data class ThrowReveal(
 data class StanislausState(
     val isPlaying: Boolean = false,
     val isGameOver: Boolean = false,
+    val isPaused: Boolean = false,
     val score: Int = 0,
     val streak: Int = 0,
     val timeRemainingMillis: Long = 0L,
@@ -69,12 +70,13 @@ data class StanislausState(
     val liveHint: Boolean = false,
 ) {
     /** Aiming is only allowed while nothing is in flight and no reveal is being shown. */
-    val canAim: Boolean get() = isPlaying && spear == null && reveal == null
+    val canAim: Boolean get() = isPlaying && !isPaused && spear == null && reveal == null
 }
 
 sealed interface StanislausAction {
     data object StartGame : StanislausAction
     data object StopGame : StanislausAction
     data object RestartGame : StanislausAction
+    data object TogglePause : StanislausAction
     data class Throw(val directionX: Float, val directionY: Float) : StanislausAction
 }

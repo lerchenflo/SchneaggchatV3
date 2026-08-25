@@ -44,6 +44,9 @@ class GameHighscoreRepository(
         score: Long,
         timeMillis: Long,
     ): EmptyResult<NetworkError> {
+        // In-dev games have no real leaderboard yet - don't pollute it with test scores.
+        if (game.indev) return NetworkResult.Success(Unit)
+
         return networkUtils.submitGameScore(
             SubmitGameScoreRequest(
                 gameId = game.name,

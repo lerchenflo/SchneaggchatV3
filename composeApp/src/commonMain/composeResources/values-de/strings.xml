@@ -701,6 +701,9 @@
     <string name="game_tap_anywhere_to_start">Tippe irgendwo, um zu starten</string>
     <string name="game_stop">Spiel stoppen</string>
     <string name="game_exit">Verlassen</string>
+    <string name="game_pause">Pause</string>
+    <string name="game_resume">Fortsetzen</string>
+    <string name="game_paused">Pausiert</string>
 
 
     <!-- Games: Tetris -->
@@ -738,7 +741,8 @@
 
     <!-- Games: 2048 -->
     <string name="games_2048_title">2048</string>
-    <string name="games_2048_instructions">Wische (nach oben, unten, links, rechts) oder benutze die Pfeiltasten, um die Kacheln zu bewegen. Wenn sich zwei Kacheln mit derselben Zahl berühren, verschmelzen sie zu einer!\n\nKombiniere die Zahlen und erreiche die 2048-Kachel, um zu gewinnen, und spiele weiter für den Highscore!</string>
+    <string name="games_2048_instructions">Wische (nach oben, unten, links, rechts) oder benutze die Pfeiltasten, um die Kacheln zu bewegen. Wenn sich zwei Kacheln mit derselben Zahl berühren, verschmelzen sie zu einer!\n\nKombiniere die Zahlen und erreiche die 2048-Kachel, um zu gewinnen, und spiele weiter für den Highscore! Das Spielfeld wird mit steigendem Schwierigkeitsgrad kleiner.</string>
+    <string name="games_2048_reached">★ 2048 erreicht! ★</string>
 
     <!-- Games: Stanislaus -->
     <string name="games_stanislaus_title">Stanislaus und der Fisch</string>

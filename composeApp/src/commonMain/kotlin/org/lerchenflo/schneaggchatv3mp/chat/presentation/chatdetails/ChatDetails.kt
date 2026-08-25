@@ -654,6 +654,7 @@ fun ChatDetails(
                             onSearchTermChange = chatdetailsViewmodel::onSearchTermChange,
                             onUserSelected = chatdetailsViewmodel::onUserSelected,
                             onUserDeselected = chatdetailsViewmodel::onUserDeSelected,
+                            isSelected = chatdetailsViewmodel::isItemSelected,
                         )
                     }
 

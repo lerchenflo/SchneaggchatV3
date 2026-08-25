@@ -100,6 +100,7 @@ fun EventsScreen(
                     onSave = { event, typeIcon -> onAction(EventsAction.OnSaveEvent(event, typeIcon)) },
                     onDismiss = { onAction(EventsAction.OnEventPopupDismiss) },
                     friendsById = state.friendsById,
+                    groups = state.groups,
                     mapStyleUrl = state.mapStyleUrl
                 )
             } else {

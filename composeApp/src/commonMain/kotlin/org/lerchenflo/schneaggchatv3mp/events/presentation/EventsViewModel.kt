@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
@@ -30,6 +31,7 @@ class EventsViewModel(
     private val eventRepository: EventRepository,
     private val appRepository: AppRepository,
     private val userRepository: UserRepository,
+    private val groupRepository: GroupRepository,
     private val preferenceManager: Preferencemanager,
     private val pictureManager: PictureManager,
     private val initialEntryId: String? = null
@@ -40,14 +42,16 @@ class EventsViewModel(
         _state,
         eventRepository.getAllEventsFlow(),
         userRepository.getAllUsersFlow(),
+        groupRepository.getAllGroupswithMembersFlow(),
         preferenceManager.getMapStyleUrlFlow(),
-    ) { currentState, events, users, mapStyleUrl ->
+    ) { currentState, events, users, groups, mapStyleUrl ->
         val friendsMap = users
             .filter { it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED }
             .associateBy { it.id }
         currentState.copy(
             events = events,
             friendsById = friendsMap,
+            groups = groups,
             mapStyleUrl = mapStyleUrl
         )
     }.stateIn(
