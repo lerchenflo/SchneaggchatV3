@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarMonth
@@ -35,6 +37,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -49,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import dev.darkokoa.datetimewheelpicker.WheelDateTimePicker
 import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
 import kotlinx.datetime.LocalDateTime
@@ -149,6 +153,7 @@ fun EventEditPopup(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 12.dp)
                 .clearFocusOnTap()
         ) {
@@ -522,7 +527,6 @@ fun EventEditPopup(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                val changed = event != currentEvent
 
                 NormalButton(
                     text = stringResource(Res.string.cancel),
@@ -541,7 +545,6 @@ fun EventEditPopup(
                             onSave(currentEvent, typeIconBitmap)
                         }
                     },
-                    disabled = !changed,
                     primary = false,
                     showOutline = true
                 )
@@ -648,81 +651,103 @@ fun EventEditPopup(
 
     // Invite friends dialog
     if (showInviteFriendsDialog) {
-        val availableUsers = remember(friendsById, groups) {
-            groups.map { it.toChatListItem() } + friendsById.values.map { it.toChatListItem() }
+        val currentUserId = event.creatorId
+
+        // Filter out groups that contain only the current user as a member
+        val filteredGroups = remember(groups, currentUserId) {
+            groups.filter { group ->
+                val memberIds = group.members.map { it.userId }
+                !(memberIds.size == 1 && memberIds.first() == currentUserId)
+            }
+        }
+
+        val availableUsers = remember(filteredGroups, friendsById) {
+            filteredGroups.map { it.toChatListItem() } + friendsById.values.map { it.toChatListItem() }
         }
         val selectedUsers = remember(currentEvent.invitedUsers, friendsById) {
             currentEvent.invitedUsers.mapNotNull { userId -> friendsById[userId]?.toChatListItem() }
         }
 
-        // Members of a group that are actually invitable (i.e. also a friend) - a group can
-        // contain people who aren't friends of the event creator.
+        // Members of a group that are actually invitable (i.e. also a friend)
         fun groupMemberIds(groupId: String): Set<String> =
             groups.find { it.id == groupId }?.members?.map { it.userId }?.toSet() ?: emptySet()
 
-        ModalBottomSheet(
-            onDismissRequest = { showInviteFriendsDialog = false },
-            containerColor = MaterialTheme.colorScheme.background
+        Dialog(
+            onDismissRequest = { showInviteFriendsDialog = false }
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(480.dp)
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            Surface(
+                shape = MaterialTheme.shapes.medium,
+                color = MaterialTheme.colorScheme.background,
+                tonalElevation = 6.dp
             ) {
-                Text(
-                    text = stringResource(Res.string.event_invite_friends),
-                    style = MaterialTheme.typography.titleMedium
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                MemberSelector(
-                    availableUsers = availableUsers,
-                    selectedUsers = selectedUsers,
-                    searchTerm = inviteSearchTerm,
-                    onSearchTermChange = { inviteSearchTerm = it },
-                    onUserSelected = { user ->
-                        if (user.isGroup) {
-                            val memberIds = groupMemberIds(user.id)
-                            val friendIds = friendsById.keys.filter { it in memberIds }
-                            currentEvent = currentEvent.copy(invitedUsers = (currentEvent.invitedUsers + friendIds).toSet().toList())
-                        } else {
-                            currentEvent = currentEvent.copy(invitedUsers = currentEvent.invitedUsers + user.id)
-                        }
-                    },
-                    onUserDeselected = { user ->
-                        if (user.isGroup) {
-                            val memberIds = groupMemberIds(user.id)
-                            currentEvent = currentEvent.copy(invitedUsers = currentEvent.invitedUsers.filterNot { it in memberIds })
-                        } else {
-                            currentEvent = currentEvent.copy(invitedUsers = currentEvent.invitedUsers - user.id)
-                        }
-                    },
-                    isSelected = { user ->
-                        if (user.isGroup) {
-                            val memberIds = groupMemberIds(user.id)
-                            val relevantIds = friendsById.keys.filter { it in memberIds }
-                            relevantIds.isNotEmpty() && relevantIds.all { it in currentEvent.invitedUsers }
-                        } else {
-                            selectedUsers.contains(user)
-                        }
-                    },
-                    minUsers = 0,
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
-                )
+                        .height(480.dp)
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    Text(
+                        text = stringResource(Res.string.event_invite_friends),
+                        style = MaterialTheme.typography.titleMedium
+                    )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                NormalButton(
-                    text = stringResource(Res.string.ok),
-                    onClick = { showInviteFriendsDialog = false },
-                    primary = false,
-                    showOutline = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    MemberSelector(
+                        availableUsers = availableUsers,
+                        selectedUsers = selectedUsers,
+                        searchTerm = inviteSearchTerm,
+                        onSearchTermChange = { inviteSearchTerm = it },
+                        onUserSelected = { user ->
+                            if (user.isGroup) {
+                                val memberIds = groupMemberIds(user.id)
+                                val friendIds = friendsById.keys.filter { it in memberIds }
+                                currentEvent = currentEvent.copy(
+                                    invitedUsers = (currentEvent.invitedUsers + friendIds).toSet().toList()
+                                )
+                            } else {
+                                currentEvent = currentEvent.copy(
+                                    invitedUsers = currentEvent.invitedUsers + user.id
+                                )
+                            }
+                        },
+                        onUserDeselected = { user ->
+                            if (user.isGroup) {
+                                val memberIds = groupMemberIds(user.id)
+                                currentEvent = currentEvent.copy(
+                                    invitedUsers = currentEvent.invitedUsers.filterNot { it in memberIds }
+                                )
+                            } else {
+                                currentEvent = currentEvent.copy(
+                                    invitedUsers = currentEvent.invitedUsers - user.id
+                                )
+                            }
+                        },
+                        isSelected = { user ->
+                            if (user.isGroup) {
+                                val memberIds = groupMemberIds(user.id)
+                                val relevantIds = friendsById.keys.filter { it in memberIds }
+                                relevantIds.isNotEmpty() && relevantIds.all { it in currentEvent.invitedUsers }
+                            } else {
+                                selectedUsers.contains(user)
+                            }
+                        },
+                        minUsers = 0,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    NormalButton(
+                        text = stringResource(Res.string.ok),
+                        onClick = { showInviteFriendsDialog = false },
+                        primary = false,
+                        showOutline = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
     }
