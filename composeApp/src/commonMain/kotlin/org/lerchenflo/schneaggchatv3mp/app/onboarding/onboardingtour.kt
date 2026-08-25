@@ -128,7 +128,8 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 id = "user_settings_phone_number",
                 title = Res.string.ttt_user_settings_phone_number,
                 description = Res.string.ttt_user_settings_phone_number_description,
-                route = Route.UserSettings
+                route = Route.UserSettings,
+                requireExactTap = false
             )
 
             freeRoamStep(
@@ -190,7 +191,6 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 title = Res.string.ttt_settings_appearance,
                 description = Res.string.ttt_settings_appearance_description,
                 route = Route.SettingsScreen,
-                requireExactTap = false
             )
 
             tapStep(
@@ -273,7 +273,9 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                     id = "schneaggmap_location_dropdown",
                     title = Res.string.ttt_schneaggmap_locations,
                     description = Res.string.ttt_schneaggmap_locations_description,
-                    route = Route.Schneaggmap()
+                    route = Route.Schneaggmap(),
+                    requireExactTap = false
+
                 )
 
                 freeRoamStep(

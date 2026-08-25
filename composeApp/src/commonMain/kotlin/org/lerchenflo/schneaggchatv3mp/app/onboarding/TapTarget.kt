@@ -1,25 +1,40 @@
 package org.lerchenflo.schneaggchatv3mp.app.onboarding
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +50,7 @@ import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
@@ -49,6 +65,9 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.ttt_hint_tap_anywhere
+import schneaggchatv3mp.composeapp.generated.resources.ttt_hint_tap_highlighted
 import kotlin.collections.get
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -87,6 +106,18 @@ data class TourStep(
      *  steps that just show a button without requiring the user to press it. */
     val requireExactTap: Boolean = true,
 )
+
+/** Whether a step expects a tap on the highlighted target or a tap anywhere on screen. */
+private enum class TapHint { EXACT, ANYWHERE }
+
+/** Derives which tap hint to show, or null for free-roam steps that use a Continue button instead. */
+private val TourStep.tapHint: TapHint?
+    get() = when {
+        freeRoamPosition != null -> null
+        id == null -> TapHint.ANYWHERE
+        requireExactTap -> TapHint.EXACT
+        else -> TapHint.ANYWHERE
+    }
 
 /** Immutable tour description produced by [tapTargetTour]. */
 class TapTargetTour(val steps: List<TourStep>)
@@ -410,6 +441,30 @@ fun TapTargetOverlay(controller: TapTargetController) {
 
     var bubbleSize by remember(step.id) { mutableStateOf(IntSize.Zero) }
 
+    // Wrong-tap feedback: a one-shot pulse layered on top of the ambient ring animation.
+    // 1f = settled/idle, 0f = just triggered — decays back to 1f so the boost fades out.
+    var wrongTapCount by remember(step.id) { mutableIntStateOf(0) }
+    val wrongTapPulse = remember(step.id) { Animatable(1f) }
+    LaunchedEffect(wrongTapCount) {
+        if (wrongTapCount > 0) {
+            wrongTapPulse.snapTo(0f)
+            wrongTapPulse.animateTo(1f, tween(400, easing = FastOutSlowInEasing))
+        }
+    }
+
+    // Ambient pulse ring shown only while the user must tap the exact highlighted spot.
+    val ringTransition = rememberInfiniteTransition(label = "tapTargetRing")
+    val ringProgress by ringTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "tapTargetRingProgress",
+    )
+    val ringColor = MaterialTheme.colorScheme.primary
+
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val density       = LocalDensity.current
         val screenWidthPx = with(density) { maxWidth.toPx() }
@@ -418,6 +473,8 @@ fun TapTargetOverlay(controller: TapTargetController) {
         val iconPaddingPx = with(density) { controller.tourSettings.iconPadding.toPx() }
         val cornerRadiusPx = with(density) { controller.tourSettings.cornerRadius.toPx() }
         val highlightedBounds = target.bounds.inflate(iconPaddingPx)
+        val ringInflatePx = with(density) { 10.dp.toPx() }
+        val ringStrokePx = with(density) { 2.dp.toPx() }
 
         // ── Scrim with punched-out spotlight ─────────────────────────
         Canvas(
@@ -427,6 +484,8 @@ fun TapTargetOverlay(controller: TapTargetController) {
                     detectTapGestures { offset ->
                         if (!step.requireExactTap || highlightedBounds.contains(offset)) {
                             controller.next()
+                        } else {
+                            wrongTapCount++
                         }
                     }
                 }
@@ -442,10 +501,27 @@ fun TapTargetOverlay(controller: TapTargetController) {
             }
             val diff  = Path().apply { op(scrim, hole, PathOperation.Difference) }
             drawPath(diff, color = step.backgroundColor)
+
+            // Draw a pulsing ring around the hole to signal "tap exactly here".
+            if (step.tapHint == TapHint.EXACT) {
+                // wrongTapBoost decays from 1 (just tapped wrong) to 0 (settled) over ~400ms.
+                val wrongTapBoost = 1f - wrongTapPulse.value
+                val inflate = ringInflatePx * ringProgress + ringInflatePx * 1.5f * wrongTapBoost
+                val alpha = (0.8f * (1f - ringProgress)) + (0.6f * wrongTapBoost)
+                val ringBounds = highlightedBounds.inflate(inflate)
+                drawRoundRect(
+                    color = ringColor,
+                    topLeft = ringBounds.topLeft,
+                    size = ringBounds.size,
+                    cornerRadius = CornerRadius(cornerRadiusPx + inflate, cornerRadiusPx + inflate),
+                    style = Stroke(width = ringStrokePx + ringStrokePx * wrongTapBoost),
+                    alpha = alpha.coerceIn(0f, 1f),
+                )
+            }
         }
 
         // ── Info bubble ──────────────────────────────────────────────
-        if (step.title != null || step.description != null) {
+        if (step.title != null || step.description != null || step.tapHint != null) {
 
             // Horizontal: keep within [edgePadding, screenWidth - bubbleWidth - edgePadding]
             val clampedX = target.bounds.left
@@ -474,17 +550,18 @@ fun TapTargetOverlay(controller: TapTargetController) {
             ) {
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.surface,
                     shadowElevation = 4.dp,
                 ) {
                     Column(Modifier.padding(12.dp)) {
                         step.title?.let {
-                            Text(stringResource(it), style = MaterialTheme.typography.titleMedium, color = Color.Black)
+                            Text(stringResource(it), style = MaterialTheme.typography.titleMedium)
                         }
                         step.description?.let {
                             if (step.title != null) Spacer(Modifier.height(4.dp))
-                            Text(text = stringResource(it), style = MaterialTheme.typography.bodyMedium, color = Color.Black)
+                            Text(text = stringResource(it), style = MaterialTheme.typography.bodyMedium)
                         }
+                        step.tapHint?.let { TapHintRow(it, hasTextAbove = step.title != null || step.description != null) }
                     }
                 }
             }
@@ -508,27 +585,57 @@ private fun CenteredTourStep(step: TourStep, onTap: () -> Unit) {
             drawRect(color = step.backgroundColor)
         }
 
-        if (step.title != null || step.description != null) {
+        if (step.title != null || step.description != null || step.tapHint != null) {
             Surface(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .widthIn(max = 280.dp)
                     .padding(24.dp),
                 shape = RoundedCornerShape(12.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 4.dp,
             ) {
                 Column(Modifier.padding(16.dp)) {
                     step.title?.let {
-                        Text(stringResource(it), style = MaterialTheme.typography.titleMedium, color = Color.Black)
+                        Text(stringResource(it), style = MaterialTheme.typography.titleMedium)
                     }
                     step.description?.let {
                         if (step.title != null) Spacer(Modifier.height(8.dp))
-                        Text(text = stringResource(it), style = MaterialTheme.typography.bodyMedium, color = Color.Black)
+                        Text(text = stringResource(it), style = MaterialTheme.typography.bodyMedium)
                     }
+                    step.tapHint?.let { TapHintRow(it, hasTextAbove = step.title != null || step.description != null) }
                 }
             }
         }
+    }
+}
+
+/**
+ * Small icon + label row explaining whether this step expects a tap on the highlighted
+ * target ([TapHint.EXACT]) or a tap anywhere on screen ([TapHint.ANYWHERE]).
+ */
+@Composable
+private fun TapHintRow(hint: TapHint, hasTextAbove: Boolean) {
+    if (hasTextAbove) {
+        Spacer(Modifier.height(8.dp))
+        HorizontalDivider()
+        Spacer(Modifier.height(8.dp))
+    }
+    Row {
+        Icon(
+            imageVector = Icons.Default.TouchApp,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+            tint = MaterialTheme.colorScheme.primary,
+        )
+        Spacer(Modifier.width(6.dp))
+        Text(
+            text = stringResource(
+                if (hint == TapHint.EXACT) Res.string.ttt_hint_tap_highlighted else Res.string.ttt_hint_tap_anywhere
+            ),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
     }
 }
 
@@ -565,7 +672,7 @@ private fun FreeRoamTourBar(
         Surface(
             modifier = widthModifier,
             shape = RoundedCornerShape(12.dp),
-            color = Color.White,
+            color = MaterialTheme.colorScheme.surface,
             shadowElevation = 6.dp,
         ) {
             Column(
@@ -573,11 +680,11 @@ private fun FreeRoamTourBar(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 step.title?.let {
-                    Text(stringResource(it), style = MaterialTheme.typography.titleMedium, color = Color.Black)
+                    Text(stringResource(it), style = MaterialTheme.typography.titleMedium)
                 }
                 step.description?.let {
                     if (step.title != null) Spacer(Modifier.height(4.dp))
-                    Text(stringResource(it), style = MaterialTheme.typography.bodyMedium, color = Color.Black)
+                    Text(stringResource(it), style = MaterialTheme.typography.bodyMedium)
                 }
                 Spacer(Modifier.height(12.dp))
                 Button(onClick = onContinue) {
