@@ -197,6 +197,7 @@
     <string name="delete_event">Delete event</string>
     <string name="confirm_delete_event">Delete this event? The group will be detached from it and will remain, but the event itself will be permanently deleted.</string>
     <string name="event_delete_failed">❌ Failed to delete event</string>
+    <string name="event_and_group_created">Event and group created!</string>
     <string name="user_description">user description</string>
     <string name="leave_group">leave group</string>
     <string name="add_users_to_group">add users</string>
