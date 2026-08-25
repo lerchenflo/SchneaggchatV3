@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -104,9 +105,10 @@ class ChatViewModel(
 
     /**
      * The chat partner (user or group) for the top bar, kept up to date from the database.
-     * Null until the first database emission.
+     * Null until the first database emission. If a DB emission is null (missing/stale chatId -
+     * a bug), navigates back out of the chat instead of leaving a broken screen.
      */
-    val chatPartner: StateFlow<ChatListItem?> = if (isGroup) {
+    val chatPartner: StateFlow<ChatListItem?> = (if (isGroup) {
         groupRepository.getGroupFlow(chatId).map { group ->
             group?.toChatListItem()
         }
@@ -116,6 +118,13 @@ class ChatViewModel(
             userRepository.onlineFriendIdsFlow
         ) { user, onlineFriendIds ->
             user?.toChatListItem(isOnline = chatId in onlineFriendIds)
+        }
+    }).onEach { chatListItem ->
+        if (chatListItem == null) {
+            loggingRepository.logWarning("ChatViewModel: chat partner not found for chatId=$chatId, isGroup=$isGroup, navigating back")
+            navigator.navigateBack(navigationOptions = Navigator.NavigationOptions(
+                removeAllScreensByClass = listOf(Route.ChatDetails::class, Route.Chat::class)
+            ))
         }
     }.stateIn(
         scope = viewModelScope,
