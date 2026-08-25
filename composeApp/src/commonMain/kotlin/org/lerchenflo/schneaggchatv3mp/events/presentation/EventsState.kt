@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.events.presentation
 
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.ImageBitmap
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
@@ -11,6 +12,7 @@ data class EventsState(
     val events: List<Event> = emptyList(),
     val selectedEvent: Event? = null,
     val friendsById: Map<String, User> = emptyMap(),
+    val groups: List<Group> = emptyList(),
     val isJoiningEvent: Boolean = false,
     val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl
 )

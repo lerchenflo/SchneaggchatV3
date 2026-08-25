@@ -118,20 +118,42 @@ class ChatDetailsViewmodel(
     private val _searchTerm = MutableStateFlow("")
     val searchterm = _searchTerm.asStateFlow()
 
-    /** Friends that can still be added to this group (groups only, empty for user chats). */
+    /** All groups the user is in, kept around to expand a selected group into its member friends. */
+    private val allGroupsWithMembers: StateFlow<List<Group>> = groupRepository.getAllGroupswithMembersFlow()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    /**
+     * Friends and other groups that can be picked to add to this group (groups only, empty for
+     * user chats). Picking a group is handled in [onUserSelected] - it expands into that group's
+     * member friends rather than being added itself.
+     */
     val availableNewMembers: StateFlow<List<ChatListItem>> = if (!isGroup) {
         MutableStateFlow<List<ChatListItem>>(emptyList())
     } else {
         combine(
             _searchTerm.flatMapLatest { term -> appRepository.getFriendsFlow(term) },
-            groupRepository.getGroupFlow(chatId)
-        ) { friends, group ->
+            groupRepository.getGroupFlow(chatId),
+            allGroupsWithMembers,
+            _searchTerm
+        ) { friends, group, allGroups, term ->
             val currentMemberIds = group?.members?.map { it.userId }?.toSet() ?: emptySet()
 
             // Only show friends who are NOT already in the group
-            friends
+            val availableFriends = friends
                 .filter { friend -> friend.id !in currentMemberIds }
                 .map { it.toChatListItem() }
+
+            // Other groups, picking one adds all its member friends
+            val availableGroups = allGroups
+                .filter { it.id != chatId }
+                .filter { it.name.contains(term, ignoreCase = true) }
+                .map { it.toChatListItem() }
+
+            availableGroups + availableFriends
         }
             .stateIn(
                 scope = viewModelScope,
@@ -198,11 +220,37 @@ class ChatDetailsViewmodel(
         _searchTerm.value = newValue
     }
 
+    private fun groupMemberIds(groupId: String): Set<String> =
+        allGroupsWithMembers.value.find { it.id == groupId }?.members?.map { it.userId }?.toSet() ?: emptySet()
+
     fun onUserSelected(user: ChatListItem){
-        selectedNewMembers = selectedNewMembers + user
+        if (user.isGroup) {
+            // Picking a group adds all its member friends instead of the group itself
+            val memberIds = groupMemberIds(user.id)
+            val friendsInGroup = availableNewMembers.value.filter { !it.isGroup && it.id in memberIds }
+            selectedNewMembers = (selectedNewMembers + friendsInGroup).toSet().toList()
+        } else {
+            selectedNewMembers = selectedNewMembers + user
+        }
     }
     fun onUserDeSelected(user: ChatListItem){
-        selectedNewMembers = selectedNewMembers - user
+        if (user.isGroup) {
+            val memberIds = groupMemberIds(user.id)
+            selectedNewMembers = selectedNewMembers.filterNot { it.id in memberIds }
+        } else {
+            selectedNewMembers = selectedNewMembers - user
+        }
+    }
+
+    /** True for a friend already picked, or a group whose member friends are all already picked. */
+    fun isItemSelected(item: ChatListItem): Boolean {
+        return if (item.isGroup) {
+            val memberIds = groupMemberIds(item.id)
+            val relevantIds = availableNewMembers.value.filter { !it.isGroup && it.id in memberIds }.map { it.id }
+            relevantIds.isNotEmpty() && relevantIds.all { id -> selectedNewMembers.any { it.id == id } }
+        } else {
+            selectedNewMembers.any { it.id == item.id }
+        }
     }
 
 

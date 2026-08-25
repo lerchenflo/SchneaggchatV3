@@ -45,6 +45,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Neue Schneaggmap-Standorttypen: Eis (Preis pro Kugel) und WiFi (SSID und Passwort)
 - Zurückknopf auf IOS verwendet nun das IOS - Icon
 - Versionsabfrage Desktop
+- Pausetaste für Spiele
+- Ganze Gruppen adden bei Userauswahl
 
 #### Bugfixes
 - Fingerpicker resetet nicht direkt

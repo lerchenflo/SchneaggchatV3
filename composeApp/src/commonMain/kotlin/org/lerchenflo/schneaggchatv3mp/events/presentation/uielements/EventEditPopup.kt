@@ -55,6 +55,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
@@ -93,6 +94,7 @@ fun EventEditPopup(
     onSave: (Event, ImageBitmap?) -> Unit,
     onDismiss: () -> Unit,
     friendsById: Map<String, User> = emptyMap(),
+    groups: List<Group> = emptyList(),
     mapStyleUrl: String = "",
     modifier: Modifier = Modifier
 ) {
@@ -577,12 +579,17 @@ fun EventEditPopup(
 
     // Invite friends dialog
     if (showInviteFriendsDialog) {
-        val availableUsers = remember(friendsById) {
-            friendsById.values.map { it.toChatListItem() }
+        val availableUsers = remember(friendsById, groups) {
+            groups.map { it.toChatListItem() } + friendsById.values.map { it.toChatListItem() }
         }
         val selectedUsers = remember(currentEvent.invitedUsers, friendsById) {
             currentEvent.invitedUsers.mapNotNull { userId -> friendsById[userId]?.toChatListItem() }
         }
+
+        // Members of a group that are actually invitable (i.e. also a friend) - a group can
+        // contain people who aren't friends of the event creator.
+        fun groupMemberIds(groupId: String): Set<String> =
+            groups.find { it.id == groupId }?.members?.map { it.userId }?.toSet() ?: emptySet()
 
         ModalBottomSheet(
             onDismissRequest = { showInviteFriendsDialog = false },
@@ -607,10 +614,30 @@ fun EventEditPopup(
                     searchTerm = inviteSearchTerm,
                     onSearchTermChange = { inviteSearchTerm = it },
                     onUserSelected = { user ->
-                        currentEvent = currentEvent.copy(invitedUsers = currentEvent.invitedUsers + user.id)
+                        if (user.isGroup) {
+                            val memberIds = groupMemberIds(user.id)
+                            val friendIds = friendsById.keys.filter { it in memberIds }
+                            currentEvent = currentEvent.copy(invitedUsers = (currentEvent.invitedUsers + friendIds).toSet().toList())
+                        } else {
+                            currentEvent = currentEvent.copy(invitedUsers = currentEvent.invitedUsers + user.id)
+                        }
                     },
                     onUserDeselected = { user ->
-                        currentEvent = currentEvent.copy(invitedUsers = currentEvent.invitedUsers - user.id)
+                        if (user.isGroup) {
+                            val memberIds = groupMemberIds(user.id)
+                            currentEvent = currentEvent.copy(invitedUsers = currentEvent.invitedUsers.filterNot { it in memberIds })
+                        } else {
+                            currentEvent = currentEvent.copy(invitedUsers = currentEvent.invitedUsers - user.id)
+                        }
+                    },
+                    isSelected = { user ->
+                        if (user.isGroup) {
+                            val memberIds = groupMemberIds(user.id)
+                            val relevantIds = friendsById.keys.filter { it in memberIds }
+                            relevantIds.isNotEmpty() && relevantIds.all { it in currentEvent.invitedUsers }
+                        } else {
+                            selectedUsers.contains(user)
+                        }
                     },
                     minUsers = 0,
                     modifier = Modifier

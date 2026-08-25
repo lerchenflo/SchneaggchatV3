@@ -698,6 +698,9 @@
     <string name="game_tap_anywhere_to_start">Tap anywhere to start</string>
     <string name="game_stop">Stop game</string>
     <string name="game_exit">Exit</string>
+    <string name="game_pause">Pause</string>
+    <string name="game_resume">Resume</string>
+    <string name="game_paused">Paused</string>
 
 
     <!-- Games: Tetris -->
@@ -735,7 +738,8 @@
 
     <!-- Games: 2048 -->
     <string name="games_2048_title">2048</string>
-    <string name="games_2048_instructions">Swipe (up, down, left, right) or use arrow keys to move the tiles. When two tiles with the same number touch, they merge into one!\n\nJoin the numbers and reach the 2048 tile to win, and keep going for the highest score!</string>
+    <string name="games_2048_instructions">Swipe (up, down, left, right) or use arrow keys to move the tiles. When two tiles with the same number touch, they merge into one!\n\nJoin the numbers and reach the 2048 tile to win, and keep going for the highest score! The board shrinks as the difficulty goes up.</string>
+    <string name="games_2048_reached">★ 2048 reached! ★</string>
 
     <!-- Games: Stanislaus -->
     <string name="games_stanislaus_title">Stanislaus and the Fish</string>
