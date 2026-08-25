@@ -321,6 +321,9 @@
     <string name="event_location_label">Ort</string>
     <string name="event_no_location_selected">Kein Ort ausgewählt</string>
     <string name="event_pick_location_title">Ort auswählen</string>
+    <string name="event_pick_location_hint">Karte verschieben, um die Position festzulegen</string>
+    <string name="event_use_this_location">Diesen Ort verwenden</string>
+    <string name="event_location_mobile_only">Nur auf dem Handy verfügbar</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Essen</string>
     <string name="event_type_beer">Bier</string>

@@ -26,6 +26,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SnailTrailPoint
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -42,10 +43,13 @@ class SchneaggmapViewModel(
     private val userRepository: UserRepository,
     private val eventRepository: EventRepository,
 
-    private val initialEntryId: String?
+    private val initialEntryId: String?,
+    private val currentlyEditedEvent: Event?
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(SchneaggmapState())
+    val pickLocationMode = currentlyEditedEvent != null
+
+    private val _state = MutableStateFlow(SchneaggmapState(pickLocationMode = pickLocationMode))
 
     val state = combine(
         _state,
@@ -72,13 +76,27 @@ class SchneaggmapViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = SchneaggmapState(),
+        initialValue = SchneaggmapState(pickLocationMode = pickLocationMode),
     )
 
 
     fun onAction(action: SchneaggmapAction) {
         when (action) {
             SchneaggmapAction.OnBackClicked -> viewModelScope.launch { navigator.navigateBack() }
+            is SchneaggmapAction.OnConfirmLocationPick -> {
+
+                val newEvent = currentlyEditedEvent?.copy(
+                    location = action.coordinates
+                )
+                println("location picked, returning newevent: $newEvent")
+
+                viewModelScope.launch { navigator.navigate(Route.Events(
+                    selectedEvent = newEvent
+                )) }
+            }
+            SchneaggmapAction.OnCancelLocationPick -> {
+                viewModelScope.launch { navigator.navigate(Route.Events(selectedEvent = currentlyEditedEvent)) }
+            }
             SchneaggmapAction.ToggleFilterDropdown -> _state.update {
                 it.copy(
                     isFilterDropdownVisible = !it.isFilterDropdownVisible,
@@ -114,6 +132,11 @@ class SchneaggmapViewModel(
 
             is SchneaggmapAction.OnMapClick -> {
                 println("Onclick. Longclick: ${action.longClick}")
+
+                // In pickLocationMode the user places the pin by panning the map (see
+                // LocationPickOverlay's fixed center pin) - taps/long-presses shouldn't also
+                // open the unrelated "create a public map entry" flow.
+                if (_state.value.pickLocationMode) return
 
                 //Dismiss filter/map-style dropdowns on map click
                 if (_state.value.isFilterDropdownVisible || _state.value.isMapStyleDropdownVisible) {
@@ -292,7 +315,7 @@ class SchneaggmapViewModel(
 
             is SchneaggmapAction.OnEventPinClick -> {
                 viewModelScope.launch {
-                    navigator.navigate(Route.Events(selectedEvent = action.eventId))
+                    navigator.navigate(Route.Events(selectedEventId = action.eventId))
                 }
             }
 

@@ -1,7 +1,9 @@
 package org.lerchenflo.schneaggchatv3mp.events.domain
 
+import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 
+@Serializable
 data class Event(
     val id: String,
     val creatorId: String,

@@ -49,5 +49,11 @@ data class SchneaggmapState(
 
     //Searching
     val searchTerm: String = "",
-    val searchResults: List<MapEntry> = emptyList()
+    val searchResults: List<MapEntry> = emptyList(),
+
+    // True when this screen was opened to pick a coordinate for something else (e.g. an event's
+    // location) rather than for normal map browsing - swaps the usual chrome for a focused
+    // confirm-pin overlay. The result travels back via Route.Events(pickedLocation = ...); see
+    // SchneaggmapAction.OnConfirmLocationPick.
+    val pickLocationMode: Boolean = false,
 )

@@ -25,6 +25,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
+import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventEditPopup
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventJoinPopup
@@ -35,14 +36,15 @@ import schneaggchatv3mp.composeapp.generated.resources.events_screen_title
 
 @Composable
 fun EventsRoot(
-    initialEntryId: String?
+    initialEntryId: String?,
+    initialEntry: Event?
 ) {
-    val viewModel: EventsViewModel = koinViewModel<EventsViewModel> { parametersOf(initialEntryId) }
+    val viewModel: EventsViewModel = koinViewModel<EventsViewModel> { parametersOf(initialEntryId, initialEntry) }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     EventsScreen(
         state = state,
-        onAction = viewModel::onAction
+        onAction = viewModel::onAction,
     )
 }
 
@@ -114,8 +116,7 @@ fun EventsScreen(
             }
         }
 
-        
-        state.selectedEvent?.let { selectedEvent ->
+       state.selectedEvent?.let { selectedEvent ->
             if (selectedEvent.creatorId == ownId) {
                 EventEditPopup(
                     event = selectedEvent,
@@ -123,7 +124,8 @@ fun EventsScreen(
                     onDismiss = { onAction(EventsAction.OnEventPopupDismiss) },
                     friendsById = state.friendsById,
                     groups = state.groups,
-                    mapStyleUrl = state.mapStyleUrl
+                    onPickLocation = { onAction(EventsAction.OnPickLocationClick(it)) },
+                    isMobile = state.isMobile,
                 )
             } else {
                 EventJoinPopup(

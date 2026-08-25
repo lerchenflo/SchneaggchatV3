@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.app.navigation
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
+import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 
 sealed interface Route : NavKey {
 
@@ -31,11 +32,11 @@ sealed interface Route : NavKey {
     data class ChatDetails(val chatId: String, val isGroup: Boolean): Route
 
     @Serializable
-    data class Schneaggmap(val initialEntryId: String? = null): Route
+    data class Schneaggmap(val initialEntryId: String? = null, val currentlyEditedEvent: Event? = null): Route
 
     // EVENTS
     @Serializable
-    data class Events(val selectedEvent: String? = null): Route
+    data class Events(val selectedEventId: String? = null, val selectedEvent: Event? = null): Route
 
 
 

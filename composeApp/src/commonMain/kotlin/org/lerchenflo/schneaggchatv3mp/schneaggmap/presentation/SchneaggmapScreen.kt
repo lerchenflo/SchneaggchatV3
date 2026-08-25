@@ -10,22 +10,28 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Polyline
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -74,11 +80,13 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.UserLocation
+import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.entries
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.drawableRes
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.CoordinateView
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.FriendLocationsPreview
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapSearchBar
@@ -126,6 +134,10 @@ import org.maplibre.spatialk.units.Bearing
 import org.maplibre.spatialk.units.extensions.inDegrees
 import org.maplibre.spatialk.units.extensions.inMeters
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.event_pick_location_hint
+import schneaggchatv3mp.composeapp.generated.resources.event_pick_location_title
+import schneaggchatv3mp.composeapp.generated.resources.event_use_this_location
 import schneaggchatv3mp.composeapp.generated.resources.icon_beer
 import schneaggchatv3mp.composeapp.generated.resources.icon_nutzer
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_user_online
@@ -222,9 +234,10 @@ private fun clusterUsersByProximity(users: List<User>, radiusMeters: Double): Li
 
 @Composable
 fun SchneaggmapScreenRoot(
-    initialEntryId: String? = null
+    initialEntryId: String? = null,
+    currentlyEditedEvent: Event? = null
 ) {
-    val viewModel = koinViewModel<SchneaggmapViewModel> { parametersOf(initialEntryId) }
+    val viewModel = koinViewModel<SchneaggmapViewModel> { parametersOf(initialEntryId, currentlyEditedEvent) }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     SchneaggmapScreen(
@@ -336,84 +349,95 @@ fun SchneaggmapScreen(
         )
 
 
-        Column(
-            modifier = Modifier.fillMaxWidth()
-                .align(Alignment.TopCenter)
-                .padding(4.dp)
-        ) {
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(),
+        if (state.pickLocationMode) {
+            LocationPickOverlay(
+                cameraTarget = LatLong(
+                    lat = cameraState.position.target.latitude,
+                    long = cameraState.position.target.longitude
+                ),
+                onConfirm = { onAction(SchneaggmapAction.OnConfirmLocationPick(it)) },
+                onCancel = { onAction(SchneaggmapAction.OnCancelLocationPick) },
+            )
+        } else {
+            Column(
+                modifier = Modifier.fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .padding(4.dp)
             ) {
 
-
-                //Settingsbutton
-                IconButton(
-                    onClick = { onAction(SchneaggmapAction.OnSettingsClick) },
-                    colors = IconButtonDefaults.iconButtonColors().copy(
-                        containerColor = MaterialTheme.colorScheme.background
-                    ),
-                    modifier = Modifier.tapTarget("schneaggmap_settings_button")
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(4.dp))
-
-                //Map Search bar with user info button
-                MapSearchBar(
-                    state = state,
-                    onAction = onAction,
-                    modifier = Modifier.weight(1f)
-                )
-
-                Spacer(modifier = Modifier.width(4.dp))
-
-                ShownLocationsDropdown(
-                    state = state,
-                    onAction = onAction,
-                    modifier = Modifier.tapTarget("schneaggmap_location_dropdown")
-                )
-            }
 
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                ) {
-                    //Map style dropdown menu
-                    MapStyleDropdown(
-                        state = state,
-                        onAction = onAction,
-                    )
-
-
-                    //Own user detail button
-                    SmallFloatingActionButton(
-                        onClick = { onAction(SchneaggmapAction.OnOwnUserClick) },
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    //Settingsbutton
+                    IconButton(
+                        onClick = { onAction(SchneaggmapAction.OnSettingsClick) },
+                        colors = IconButtonDefaults.iconButtonColors().copy(
+                            containerColor = MaterialTheme.colorScheme.background
+                        ),
+                        modifier = Modifier.tapTarget("schneaggmap_settings_button")
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = null
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface,
                         )
                     }
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    //Map Search bar with user info button
+                    MapSearchBar(
+                        state = state,
+                        onAction = onAction,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    ShownLocationsDropdown(
+                        state = state,
+                        onAction = onAction,
+                        modifier = Modifier.tapTarget("schneaggmap_location_dropdown")
+                    )
                 }
 
 
-            }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
 
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+                        //Map style dropdown menu
+                        MapStyleDropdown(
+                            state = state,
+                            onAction = onAction,
+                        )
+
+
+                        //Own user detail button
+                        SmallFloatingActionButton(
+                            onClick = { onAction(SchneaggmapAction.OnOwnUserClick) },
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null
+                            )
+                        }
+                    }
+
+
+                }
+
+            }
         }
 
 
@@ -453,188 +477,267 @@ fun SchneaggmapScreen(
                 .padding(end = 8.dp)
         )
 
-        //Bottom column
-        Column(
+        if (!state.pickLocationMode) {
+            //Bottom column
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+
+                        //Center to own location button
+                        ownLocation?.let {
+                            SmallFloatingActionButton(
+                                onClick = { isFollowingLocation = true },
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                contentColor = MaterialTheme.colorScheme.onSurface,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.MyLocation,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.secondary
+                                )
+                            }
+                        }
+                    }
+                }
+
+                if (state.usersWithLocation.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    FriendLocationsPreview(
+                        friends = state.usersWithLocation,
+                        onlineFriendIds = state.onlineFriendIds,
+                        onUserClick = { user ->
+                            val loc = user.location ?: return@FriendLocationsPreview
+                            isFollowingLocation = false
+                            scope.launch {
+                                cameraState.animateTo(
+                                    CameraPosition(
+                                        target = Position(longitude = loc.long, latitude = loc.lat),
+                                        zoom = OWN_LOCATION_CLICK_ZOOM
+                                    )
+                                )
+                            }
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    // Left: Scale bar
+                    DisappearingScaleBar(
+                        metersPerDp = cameraState.metersPerDpAtTarget,
+                        color = MaterialTheme.colorScheme.background,
+                        modifier = Modifier.align(Alignment.CenterStart),
+                        zoom = cameraState.position.zoom
+                    )
+
+                    //compass
+                    DisappearingCompassButton(
+                        cameraState = cameraState,
+                        size = 32.dp
+                    )
+
+                    //Round speed indicator
+                    ownLocation?.speed?.let { speed ->
+                        if (speed.distancePerSecond.inMeters > 3) {
+                            val speedKmh = (speed.distancePerSecond.inMeters * 3.6).roundToInt()
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .size(56.dp)
+                                    .background(Color.White, CircleShape)
+                                    .border(width = 4.dp, color = Color.Red, shape = CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "$speedKmh",
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                            }
+                        }
+                    }
+
+
+                    // Right: Snail trails toggle
+                    Card(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .tapTarget("schneaggmap_snailtrail_switch")
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Polyline,
+                                contentDescription = null,
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Switch(
+                                checked = state.showSnailTrails,
+                                onCheckedChange = { onAction(SchneaggmapAction.ToggleSnailTrails) },
+                            )
+                        }
+                    }
+                }
+            }
+
+
+            //Popup cards from the bottom
+            state.selectedEntry?.let { entry ->
+                MapEntryInfoCard(
+                    entry = entry,
+                    onDismiss = {
+                        onAction(SchneaggmapAction.OnPopupDismiss)
+                    },
+                    onSave = { changedEntry ->
+                        onAction(SchneaggmapAction.OnEntryPopupSave(
+                            entry = changedEntry,
+                        ))
+                    },
+                    onDelete = {
+                        onAction(SchneaggmapAction.OnEntryPopupDelete(it))
+                    },
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
+            }
+
+            state.selectedUser?.let { user ->
+                val isOwnUser = user.id == SessionCache.requireLoggedIn()?.userId
+                val batteryService = koinInject<BatteryService>()
+
+                //Own user has no synced `location` in the local DB (only ever pushed to the server,
+                //never written back) - build it from the same live GPS fix the map puck already uses.
+                val displayUser = if (isOwnUser) {
+                    user.copy(
+                        location = ownLocation?.let { location ->
+                            UserLocation(
+                                lat = location.position.value.latitude,
+                                long = location.position.value.longitude,
+                                date = Clock.System.now().toEpochMilliseconds(),
+                                speed = location.speed?.distancePerSecond?.inMeters,
+                                heading = location.course?.value?.let { bearing -> (bearing - Bearing.North).inDegrees },
+                                altitude = location.position.value.altitude,
+                                batteryLevel = batteryService.getBatteryLevel(),
+                            )
+                        }
+                    )
+                } else {
+                    user
+                }
+
+                UserInfoCard(
+                    user = displayUser,
+                    isOnline = isOwnUser || user.id in state.onlineFriendIds,
+                    ownLocation = ownLocation?.position?.value?.let { position ->
+                        LatLong(lat = position.latitude, long = position.longitude)
+                    },
+                    onDismiss = {
+                        onAction(SchneaggmapAction.OnPopupDismiss)
+                    },
+                    onOpenChat = { clickedUser ->
+                        onAction(SchneaggmapAction.OnOpenChatClick(clickedUser))
+                    },
+                    isOwnUser = isOwnUser,
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                )
+            }
+        }
+
+
+
+    }
+}
+
+/**
+ * Focused "pick a coordinate" chrome shown instead of the normal top bar/dropdowns while
+ * [SchneaggmapState.pickLocationMode] is true. The pin stays fixed at the screen center; the
+ * user places it by panning the map underneath (like a typical address picker), so there's no
+ * tap/drag handling here - [cameraTarget] is just the live camera center converted to [LatLong].
+ */
+@Composable
+private fun LocationPickOverlay(
+    cameraTarget: LatLong,
+    onConfirm: (LatLong) -> Unit,
+    onCancel: () -> Unit,
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = onCancel) {
+                Icon(imageVector = Icons.Default.Close, contentDescription = stringResource(Res.string.cancel))
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.background,
+            ) {
+                Text(
+                    text = stringResource(Res.string.event_pick_location_title),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+        }
+
+        Icon(
+            imageVector = Icons.Default.LocationOn,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(48.dp)
+                .offset(y = (-24).dp),
+        )
+
+        Surface(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(8.dp)
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+            color = MaterialTheme.colorScheme.surface,
+            shadowElevation = 6.dp,
         ) {
-
-            Row(
-                horizontalArrangement = Arrangement.End,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                    ) {
-
-                    //Center to own location button
-                    ownLocation?.let {
-                        SmallFloatingActionButton(
-                            onClick = { isFollowingLocation = true },
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            contentColor = MaterialTheme.colorScheme.onSurface,
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.MyLocation,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.secondary
-                            )
-                        }
-                    }
-                }
-            }
-
-            if (state.usersWithLocation.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
-
-                FriendLocationsPreview(
-                    friends = state.usersWithLocation,
-                    onlineFriendIds = state.onlineFriendIds,
-                    onUserClick = { user ->
-                        val loc = user.location ?: return@FriendLocationsPreview
-                        isFollowingLocation = false
-                        scope.launch {
-                            cameraState.animateTo(
-                                CameraPosition(
-                                    target = Position(longitude = loc.long, latitude = loc.lat),
-                                    zoom = OWN_LOCATION_CLICK_ZOOM
-                                )
-                            )
-                        }
-                    }
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(Res.string.event_pick_location_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                // Left: Scale bar
-                DisappearingScaleBar(
-                    metersPerDp = cameraState.metersPerDpAtTarget,
-                    color = MaterialTheme.colorScheme.background,
-                    modifier = Modifier.align(Alignment.CenterStart),
-                    zoom = cameraState.position.zoom
-                )
-
-                //compass
-                DisappearingCompassButton(
-                    cameraState = cameraState,
-                    size = 32.dp
-                )
-
-                //Round speed indicator
-                ownLocation?.speed?.let { speed ->
-                    if (speed.distancePerSecond.inMeters > 3) {
-                        val speedKmh = (speed.distancePerSecond.inMeters * 3.6).roundToInt()
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .size(56.dp)
-                                .background(Color.White, CircleShape)
-                                .border(width = 4.dp, color = Color.Red, shape = CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "$speedKmh",
-                                color = Color.Black,
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                        }
-                    }
-                }
-
-
-                // Right: Snail trails toggle
-                Card(
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .tapTarget("schneaggmap_snailtrail_switch")
+                Spacer(modifier = Modifier.height(8.dp))
+                CoordinateView(coordinates = cameraTarget)
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    onClick = { onConfirm(cameraTarget) },
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Polyline,
-                            contentDescription = null,
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Switch(
-                            checked = state.showSnailTrails,
-                            onCheckedChange = { onAction(SchneaggmapAction.ToggleSnailTrails) },
-                        )
-                    }
+                    Text(text = stringResource(Res.string.event_use_this_location))
                 }
             }
         }
-
-
-        //Popup cards from the bottom
-        state.selectedEntry?.let { entry ->
-            MapEntryInfoCard(
-                entry = entry,
-                onDismiss = {
-                    onAction(SchneaggmapAction.OnPopupDismiss)
-                },
-                onSave = { changedEntry ->
-                    onAction(SchneaggmapAction.OnEntryPopupSave(
-                        entry = changedEntry,
-                    ))
-                },
-                onDelete = {
-                    onAction(SchneaggmapAction.OnEntryPopupDelete(it))
-                },
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
-        }
-
-        state.selectedUser?.let { user ->
-            val isOwnUser = user.id == SessionCache.requireLoggedIn()?.userId
-            val batteryService = koinInject<BatteryService>()
-
-            //Own user has no synced `location` in the local DB (only ever pushed to the server,
-            //never written back) - build it from the same live GPS fix the map puck already uses.
-            val displayUser = if (isOwnUser) {
-                user.copy(
-                    location = ownLocation?.let { location ->
-                        UserLocation(
-                            lat = location.position.value.latitude,
-                            long = location.position.value.longitude,
-                            date = Clock.System.now().toEpochMilliseconds(),
-                            speed = location.speed?.distancePerSecond?.inMeters,
-                            heading = location.course?.value?.let { bearing -> (bearing - Bearing.North).inDegrees },
-                            altitude = location.position.value.altitude,
-                            batteryLevel = batteryService.getBatteryLevel(),
-                        )
-                    }
-                )
-            } else {
-                user
-            }
-
-            UserInfoCard(
-                user = displayUser,
-                isOnline = isOwnUser || user.id in state.onlineFriendIds,
-                ownLocation = ownLocation?.position?.value?.let { position ->
-                    LatLong(lat = position.latitude, long = position.longitude)
-                },
-                onDismiss = {
-                    onAction(SchneaggmapAction.OnPopupDismiss)
-                },
-                onOpenChat = { clickedUser ->
-                    onAction(SchneaggmapAction.OnOpenChatClick(clickedUser))
-                },
-                isOwnUser = isOwnUser,
-                modifier = Modifier.align(Alignment.BottomCenter)
-            )
-        }
-
     }
 }
 

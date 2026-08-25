@@ -34,10 +34,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -66,20 +66,22 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
 import org.lerchenflo.schneaggchatv3mp.events.domain.labelRes
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
+import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.error_event_title_must_not_be_empty
 import schneaggchatv3mp.composeapp.generated.resources.event_description_label
 import schneaggchatv3mp.composeapp.generated.resources.event_group_delete_label
 import schneaggchatv3mp.composeapp.generated.resources.event_has_end_time
 import schneaggchatv3mp.composeapp.generated.resources.event_invite_friends
 import schneaggchatv3mp.composeapp.generated.resources.event_invited_users
 import schneaggchatv3mp.composeapp.generated.resources.event_location_label
+import schneaggchatv3mp.composeapp.generated.resources.event_location_mobile_only
 import schneaggchatv3mp.composeapp.generated.resources.event_no_location_selected
 import schneaggchatv3mp.composeapp.generated.resources.event_starts_label
 import schneaggchatv3mp.composeapp.generated.resources.event_title_label
-import schneaggchatv3mp.composeapp.generated.resources.error_event_title_must_not_be_empty
 import schneaggchatv3mp.composeapp.generated.resources.latlong
 import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.save
@@ -88,6 +90,7 @@ import kotlin.time.Instant
 
 //Keep in sync with the server-side limit in ValidationUtils.validateEventTitle (schneaggchatv3server)
 private const val EVENT_TITLE_MAX_LENGTH = 200
+
 
 // Popup for the event's creator - every field is editable, outside taps never dismiss it
 // (an accidental tap must not silently discard in-progress edits).
@@ -98,11 +101,12 @@ fun EventEditPopup(
     onDismiss: () -> Unit,
     friendsById: Map<String, User> = emptyMap(),
     groups: List<Group> = emptyList(),
-    mapStyleUrl: String = "",
+    onPickLocation: (Event) -> Unit = {},
+    isMobile: Boolean = true,
     modifier: Modifier = Modifier
 ) {
 
-    var currentEvent by remember(event) {
+    var currentEvent by remember {
         mutableStateOf(event)
     }
 
@@ -124,7 +128,6 @@ fun EventEditPopup(
     var groupDeleteDelayDropdownExpanded by remember { mutableStateOf(false) }
     var showInviteFriendsDialog by remember { mutableStateOf(false) }
     var inviteSearchTerm by remember { mutableStateOf("") }
-    var showLocationPicker by remember { mutableStateOf(false) }
 
     var titleError by remember { mutableStateOf(false) }
 
@@ -140,12 +143,14 @@ fun EventEditPopup(
             shouldDismissOnBackPress = false,
             shouldDismissOnClickOutside = false
         ),
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        modifier = modifier
     ) {
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
+                .clearFocusOnTap()
         ) {
 
             // Selectable Type label & icon
@@ -205,7 +210,7 @@ fun EventEditPopup(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Title
-            TextField(
+            OutlinedTextField(
                 value = currentEvent.title,
                 onValueChange = {
                     if (it.length <= EVENT_TITLE_MAX_LENGTH) {
@@ -225,7 +230,7 @@ fun EventEditPopup(
             Spacer(modifier = Modifier.height(12.dp))
 
             // Description
-            TextField(
+            OutlinedTextField(
                 value = currentEvent.description,
                 onValueChange = {
                     currentEvent = currentEvent.copy(description = it)
@@ -248,7 +253,10 @@ fun EventEditPopup(
             Spacer(modifier = Modifier.height(4.dp))
 
             OutlinedButton(
-                onClick = { showLocationPicker = true },
+                onClick = {
+                    onPickLocation(currentEvent)
+                },
+                enabled = isMobile,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
@@ -259,10 +267,10 @@ fun EventEditPopup(
                 Spacer(modifier = Modifier.width(8.dp))
                 val location = currentEvent.location
                 Text(
-                    text = if (location != null) {
-                        stringResource(Res.string.latlong, location.lat.toString().take(8), location.long.toString().take(8))
-                    } else {
-                        stringResource(Res.string.event_no_location_selected)
+                    text = when {
+                        !isMobile -> stringResource(Res.string.event_location_mobile_only)
+                        location != null -> stringResource(Res.string.latlong, location.lat.toString().take(8), location.long.toString().take(8))
+                        else -> stringResource(Res.string.event_no_location_selected)
                     },
                     modifier = Modifier.weight(1f)
                 )
@@ -717,19 +725,6 @@ fun EventEditPopup(
                 )
             }
         }
-    }
-
-    // Location picker sheet
-    if (showLocationPicker) {
-        EventLocationPickerSheet(
-            initialLocation = currentEvent.location,
-            mapStyleUrl = mapStyleUrl,
-            onConfirm = { location ->
-                currentEvent = currentEvent.copy(location = location)
-                showLocationPicker = false
-            },
-            onDismiss = { showLocationPicker = false }
-        )
     }
 }
 

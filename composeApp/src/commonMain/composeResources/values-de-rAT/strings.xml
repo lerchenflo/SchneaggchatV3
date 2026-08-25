@@ -296,7 +296,7 @@
 
     <string name="new_event_noti_title">%1$s hot a neus Event erstellt</string>
     <string name="events_screen_title">Events</string>
-    <string name="events_empty">No kua Events. Erstell sealn uans!</string>
+    <string name="events_empty">No kua Events. Erstell seal uans!</string>
     <string name="event_starts_in">Startet in: %1$s</string>
     <string name="event_started">Gstartet</string>
     <string name="event_ended">Beendet</string>
@@ -320,7 +320,7 @@
     <string name="event_invite_friends">Freunde ilada</string>
     <string name="event_location_label">Ort</string>
     <string name="event_no_location_selected">Kuan Ort usgwählt</string>
-    <string name="event_pick_location_title">Ort üswähla</string>
+    <string name="event_pick_location_title">Ort uswähla</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Eeassa</string>
     <string name="event_type_beer">Bier</string>

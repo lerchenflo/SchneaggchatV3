@@ -565,7 +565,8 @@ fun App() {
 
                                     entry<Route.Schneaggmap> { route ->
                                         SchneaggmapScreenRoot(
-                                            initialEntryId = route.initialEntryId
+                                            initialEntryId = route.initialEntryId,
+                                            currentlyEditedEvent = route.currentlyEditedEvent
                                         )
                                     }
 
@@ -653,7 +654,10 @@ fun App() {
                                     }
 
                                     entry<Route.Events> {
-                                        EventsRoot(initialEntryId = it.selectedEvent)
+                                        EventsRoot(
+                                            initialEntryId = it.selectedEventId,
+                                            initialEntry = it.selectedEvent
+                                        )
                                     }
 
 
