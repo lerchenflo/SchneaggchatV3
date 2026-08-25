@@ -15,6 +15,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.getMissingPasswordRequirements
 import org.lerchenflo.schneaggchatv3mp.utilities.isEmailValid
@@ -35,7 +36,8 @@ class SignUpViewModel(
     private val navigator: Navigator,
     private val pictureManager: PictureManager,
     private val loggingRepository: LoggingRepository,
-    private val applicationScope: ApplicationScope
+    private val applicationScope: ApplicationScope,
+    private val languageService: LanguageService
 ): ViewModel() {
 
     var state by mutableStateOf(SignupState())
@@ -220,6 +222,7 @@ class SignUpViewModel(
                         birthdate = state.gebiDate.toString(),
                         profilePic = state.profilePic!!,
                         phoneNumber = state.phoneNumberState.text.takeIf { it.isNotBlank() },
+                        language = languageService.getCurrentLanguage().name,
                     ) { success ->
                         if (success) {
                             accCreationSuccessful = true

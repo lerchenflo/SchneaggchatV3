@@ -1129,6 +1129,11 @@
     <string name="ttt_settings_appearance">Darstellungs-Einstellungen</string>
     <string name="ttt_settings_appearance_description">Hier kannst du deine Sprache (Österreichisch, Deutsch, Englisch) und dein Design ändern.</string>
 
+    <string name="ttt_appearance_settings_language">Sprache ändern</string>
+    <string name="ttt_appearance_settings_language_description">Hier kannst du zwischen Deutsch, Österreichisch und Englisch wechseln.</string>
+    <string name="ttt_appearance_settings_language_freeroam">Probier ruhig aus, wie die Sprache aussieht, oder mach mit der Tour weiter.</string>
+    <string name="ttt_appearance_settings_go_back">Lass uns zurück zu den Einstellungen gehen</string>
+
     <string name="ttt_settings_misc">Sonstige Einstellungen</string>
 
     <string name="ttt_settings_misc_bugreport">Hier kannst du Fehler melden und Feature-Anfragen einreichen.</string>
@@ -1137,6 +1142,13 @@
     <string name="ttt_settings_misc_app_broken_description">Wenn etwas nicht wie vorgesehen funktioniert, kannst du diesen Button drücken. Dadurch werden alle App-Daten gelöscht und neu vom Server geladen.</string>
     <string name="ttt_misc_settings_go_back">Lass uns zurück zu den Einstellungen gehen</string>
 
+
+
+    <string name="ttt_chatselector_events">Hier kommst du zu den Events</string>
+    <string name="ttt_chatselector_events_description">Du kannst anstehende Events sehen, ihnen beitreten oder selbst welche erstellen.</string>
+
+    <string name="ttt_events_create_button">Event erstellen</string>
+    <string name="ttt_events_create_button_description">Tippe hier, um ein neues Event zu erstellen und deine Freunde einzuladen.</string>
 
 
     <string name="ttt_chatselector_map">Hier kommst du zur Schneaggmap</string>

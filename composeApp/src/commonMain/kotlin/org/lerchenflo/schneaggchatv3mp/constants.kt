@@ -1,8 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp
 
-val BASE_SERVER_URL = "https://schneaggchatv3.lerchenflo.eu"
+val BASE_SERVER_URL = "https://schneaggchat.lerchenflo.eu"
 
-val BASE_SERVER_URL_TEST = "https://schneaggchatv3test.lerchenflo.eu"
+val BASE_SERVER_URL_TEST = "https://schneaggchattest.lerchenflo.eu"
 
 val SUPPORT_EMAIL = "schneaggchat@gmail.com"
 

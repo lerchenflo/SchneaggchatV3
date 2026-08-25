@@ -21,6 +21,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventEditPopup
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventJoinPopup
@@ -57,6 +58,7 @@ fun EventsScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
+                modifier = Modifier.tapTarget("events_create_button"),
                 onClick = {
                     onAction(EventsAction.OnCreateNewEventButtonClick)
                 },

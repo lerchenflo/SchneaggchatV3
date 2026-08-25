@@ -328,6 +328,7 @@ class NetworkUtils(
         birthDate: String,
         profilePicBytes: ByteArray,
         phoneNumber: String? = null,
+        language: String? = null,
         fileName: String = "profile.jpg"
     ): NetworkResult<Unit, NetworkError> {
         return try {
@@ -340,6 +341,9 @@ class NetworkUtils(
                     append("birthDate", birthDate)
                     if (!phoneNumber.isNullOrBlank()) {
                         append("phoneNumber", phoneNumber)
+                    }
+                    if (!language.isNullOrBlank()) {
+                        append("language", language)
                     }
                     append("profilepic", profilePicBytes, Headers.build {
                         append(HttpHeaders.ContentType, "image/jpeg")

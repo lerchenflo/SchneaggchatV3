@@ -5,10 +5,18 @@ import androidx.compose.runtime.remember
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.notifications
+import schneaggchatv3mp.composeapp.generated.resources.ttt_appearance_settings_go_back
+import schneaggchatv3mp.composeapp.generated.resources.ttt_appearance_settings_language
+import schneaggchatv3mp.composeapp.generated.resources.ttt_appearance_settings_language_description
+import schneaggchatv3mp.composeapp.generated.resources.ttt_appearance_settings_language_freeroam
+import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_events
+import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_events_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_games
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map
 import schneaggchatv3mp.composeapp.generated.resources.ttt_chatselector_map_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_continue
+import schneaggchatv3mp.composeapp.generated.resources.ttt_events_create_button
+import schneaggchatv3mp.composeapp.generated.resources.ttt_events_create_button_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_games_difficulty
 import schneaggchatv3mp.composeapp.generated.resources.ttt_games_difficulty_description
 import schneaggchatv3mp.composeapp.generated.resources.ttt_games_global_highscore
@@ -186,6 +194,28 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
             )
 
             tapStep(
+                id = "appearance_settings_language",
+                title = Res.string.ttt_appearance_settings_language,
+                description = Res.string.ttt_appearance_settings_language_description,
+                route = Route.AppearanceSettings,
+                requireExactTap = false
+            )
+
+            freeRoamStep(
+                title = Res.string.ttt_appearance_settings_language_freeroam,
+                position = FreeRoamBarPosition.Bottom,
+                continueButtonText = Res.string.ttt_continue,
+                route = Route.AppearanceSettings
+            )
+
+            //Point to back button so we return to the settings list before the next step
+            tapStep(
+                id = "appearance_settings_back_button",
+                title = Res.string.ttt_appearance_settings_go_back,
+                route = Route.AppearanceSettings
+            )
+
+            tapStep(
                 id = "settings_misc",
                 title = Res.string.ttt_settings_misc,
                 route = Route.SettingsScreen
@@ -211,6 +241,22 @@ fun rememberOnboardingTour(isAndroid: Boolean, isDesktop: Boolean): TapTargetTou
                 id = "misc_settings_back_button",
                 title = Res.string.ttt_misc_settings_go_back,
                 route = Route.MiscSettings
+            )
+
+            //Go to events via bottom nav
+            tapStep(
+                id = "bottombar_events_button",
+                title = Res.string.ttt_chatselector_events,
+                description = Res.string.ttt_chatselector_events_description,
+                route = Route.ChatSelector
+            )
+
+            tapStep(
+                id = "events_create_button",
+                title = Res.string.ttt_events_create_button,
+                description = Res.string.ttt_events_create_button_description,
+                route = Route.Events(),
+                requireExactTap = false
             )
 
             //Mobile only

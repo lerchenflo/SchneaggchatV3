@@ -1310,9 +1310,10 @@ class AppRepository(
         birthdate: String,
         profilePic: ByteArray,
         phoneNumber: String? = null,
+        language: String? = null,
         onResult: (Boolean) -> Unit
     ) {
-        when(val response = networkUtils.register(username, password, email, birthdate, profilePic, phoneNumber)){
+        when(val response = networkUtils.register(username, password, email, birthdate, profilePic, phoneNumber, language)){
             is NetworkResult.Error -> {
                 println("Error: ${response.error}")
 
