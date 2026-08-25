@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><resources>
     <string name="app_name">SchneaggchatV3</string>
-    
+
     
     <string name="profile_picture">Profilbild</string>
     <string name="schneaggmap">Schneaggmap</string>
@@ -197,6 +197,7 @@
     <string name="delete_event">Event löschen</string>
     <string name="confirm_delete_event">Dieses Event löschen? Die Gruppe wird davon getrennt und bleibt bestehen, aber das Event selbst wird endgültig gelöscht.</string>
     <string name="event_delete_failed">❌ Event konnte nicht gelöscht werden</string>
+    <string name="event_and_group_created">Event und Gruppe erstellt!</string>
     <string name="user_description">Userbeschreibung</string>
     <string name="leave_group">Gruppe verlassen</string>
     <string name="add_users_to_group">Mitglied hinzufügen</string>
@@ -315,9 +316,9 @@
     <string name="event_pick_location_title">Ort auswählen</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Essen</string>
-    <string name="event_type_cooking">Kochen</string>
-    <string name="event_type_shopping">Einkaufen</string>
+    <string name="event_type_beer">Bier</string>
     <string name="event_type_driving">Fahren</string>
+    <string name="event_type_riding">Reiten</string>
     <string name="event_type_party">Party</string>
     <string name="event_type_gaming">Gaming</string>
     <string name="event_type_movie">Film</string>
@@ -328,7 +329,6 @@
     <string name="event_public">Öffentlich</string>
     <string name="event_friends_only">Nur Freunde</string>
     <string name="event_invited_friends_only">Nur Eingeladene</string>
-
 
     <string name="tooltip_username">Wähle einen Benutzernamen den andere Benutzer sehen</string>
     <string name="phone_number">Telefonnummer (optional)</string>
@@ -1122,7 +1122,7 @@
     <string name="ttt_settings_privacy_description">Hier kannst du dein Passwort, deine E-Mail und die Standortfreigabe verwalten.</string>
     <string name="ttt_privacy_settings_go_back">Lass uns zurück zu den Einstellungen gehen</string>
 
-    <string name="ttt_settings_notifications">Benachrichtigungen</string>
+    
     <string name="ttt_settings_notifications_description">Hier kannst du deine Benachrichtigungen und Wecker-Einstellungen verwalten.</string>
     <string name="ttt_notification_settings_go_back">Lass uns zurück zu den Einstellungen gehen</string>
 
@@ -1221,7 +1221,8 @@
     <string name="privacy_policy">Datenschutzerklärung</string>
     <string name="privacy_policy_info">Lies unsere Datenschutzbestimmungen und Richtlinien</string>
 
-    <string name="notification_settings">Benachrichtigungen</string>
+    <!-- Notifications -->
+    
     <string name="notification_settings_info">Benachrichtigungsberechtigungen und Wecker-Einstellungen</string>
     <string name="notification_group_general">Allgemein</string>
     <string name="notifications">Benachrichtigungen</string>
@@ -1230,14 +1231,14 @@
     <string name="notification_permission_required_title">Benachrichtigungsberechtigung erforderlich</string>
     <string name="notification_permission_permanently_denied_message">Benachrichtigungen für Schneaggchat sind in deinen Systemeinstellungen deaktiviert. Bitte öffne die Einstellungen und erlaube Benachrichtigungen, um Nachrichten-Alarme zu erhalten.</string>
     <string name="open_settings">Einstellungen öffnen</string>
-    <string name="notification_permission_press_again">Drücke erneut, falls keine Berechtigungsanfrage erschienen ist</string>
+    
     <string name="notification_banner_title">Benachrichtigungen deaktiviert</string>
-    <string name="notification_banner_description">Aktiviere Benachrichtigungen, um Alarme für neue Nachrichten zu erhalten</string>
+    <string name="notification_banner_description">Aktiviere Benachrichtigungen, um bei neuen Nachrichten benachrichtigt zu werden</string>
     <string name="notification_banner_enable">Aktivieren</string>
 
     <!-- Email Verification Support -->
     <string name="support_email_verification_subject">E-Mail-Verifizierung funktioniert nicht</string>
-    <string name="support_email_verification_body">Es tuat ned (Bitte mehr infos)</string>
+    <string name="support_email_verification_body">Es geht nicht (Bitte mehr infos)</string>
 
     <!-- System messages (MessageType.SYSTEM) -->
     <string name="system_group_created">%1$s hat die Gruppe erstellt</string>
@@ -1252,8 +1253,8 @@
     <string name="system_group_picture_changed">%1$s hat das Gruppenbild geändert</string>
     <string name="system_event_changed">%1$s hat das Event aktualisiert</string>
     <string name="system_friendship_accepted">Ihr seid jetzt Freunde</string>
-    <string name="system_wake_sent">%1$s hat einen Weckruf gesendet</string>
-    <string name="system_wake_sent_reason">%1$s hat einen Weckruf gesendet: %2$s</string>
+    <string name="system_wake_sent">%1$s hat dich geweckt</string>
+    <string name="system_wake_sent_reason">%1$s hat dich geweckt: %2$s</string>
     <string name="system_unknown_event">Chat aktualisiert</string>
 
 </resources>

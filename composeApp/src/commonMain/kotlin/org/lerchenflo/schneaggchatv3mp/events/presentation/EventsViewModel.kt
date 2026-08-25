@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -22,6 +23,9 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.event_and_group_created
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.milliseconds
@@ -107,8 +111,10 @@ class EventsViewModel(
                 val event = action.event
                 viewModelScope.launch {
                     val profilePic = action.typeIcon?.let { pictureManager.encodeImageBitmap(it) }
+                    val eventid = if (event.id == "") null else event.id
+
                     appRepository.upsertEvent(
-                        eventId = if (event.id == "") null else event.id,
+                        eventId = eventid,
                         type = event.type,
                         title = event.title,
                         description = event.description,
@@ -120,6 +126,11 @@ class EventsViewModel(
                         visibility = event.visibility,
                         profilePic = profilePic,
                     )
+
+                    //Newly created event
+                    if (eventid == null) {
+                        SnackbarManager.showMessage(getString(Res.string.event_and_group_created))
+                    }
                 }
                 _state.update {
                     it.copy(

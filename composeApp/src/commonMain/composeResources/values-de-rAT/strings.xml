@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><resources>
     <string name="app_name">SchneaggchatV3</string>
-    
+
     
     <string name="profile_picture">Profilbild</string>
     <string name="schneaggmap">Schneaggmap</string>
@@ -12,12 +12,16 @@
     <string name="search_section_messages">Nochrichta (%1$d)</string>
     <string name="no_status">kuan Status</string>
     <string name="unknown_user">kennsch ned</string>
+    <string name="unknown_location">unbekannter Ort</string>
+    <string name="unknown_event">unbekanntes Event</string>
+    <string name="unknown_game">unbekanntes Spiel</string>
     <string name="chat_last_seen_status">letztes mol Online %1$s</string>
 
     <string name="usersync">Benutzerdata</string>
     <string name="groupsync">Gruppendata</string>
     <string name="messagesync">Nochrichta</string>
     <string name="mapsync">Map</string>
+    <string name="eventssync">Events</string>
     <string name="mediasync">Media</string>
 
     <string name="status_infotext">Din Status dean alle dine Freunde leasa künnand. Aktuell ischa leer.</string>
@@ -110,6 +114,8 @@
     <string name="error_access_not_permitted">Dine gspeicherte Sitzung isch ungültig, logg di nomml i.</string>
     <string name="error_access_expired">Dine gspeicherte Sitzung isch abglofa, logg di nomml i.</string>
     <string name="error_invalid_credentials">Dine Einloggdaten sind falsch</string>
+    <string name="error_login_too_many_requests">Zu viele Anmeldeversuche. Bitte wart an Moment und versuachs denn nomml.</string>
+    <string name="error_login_server_error">Der Server hot a Problem. Bitte versuachs später nomml.</string>
     <string name="error_cannot_be_the_same_username">Du musch an neua Nama igia</string>
     <string name="error_username_must_not_be_empty">Da neue Nama darf ned leer si</string>
 
@@ -123,6 +129,7 @@
     <string name="app_broken_desc">Behebt die meista fehler mit da App</string>
     <string name="app_broken_are_you_sure">Löscht alle Appdaten vom handy und startet d App neu.\nBisch da sicha dassd des willsch?</string>
     <string name="please_restart_app">Bitte start dine App neu</string>
+    <string name="press_back_again_to_exit">Nomml zruck drucka zum Beenda</string>
     <string name="verification_email_sent">Verifizierungsemail gschickt</string>
     <string name="others_say_about">Freunde hond über %1$s gschrieba:</string>
     <string name="status_info">Der Text isch vo eam verfasst worra</string>
@@ -164,6 +171,7 @@
     <string name="variant2">Hell Variante 2</string>
     <string name="neon_pulse_theme">Neon Pulse (Dunkel)</string>
     <string name="anna_theme">Annas Theme</string>
+    <string name="flos_theme">Flos Theme</string>
 
     <string name="common_friends">gemeinsame Freunde: %1$s</string>
     <string name="create_group">Gruppe erstella</string>
@@ -181,6 +189,15 @@
     <string name="group_picture">Gruppenprofilbild</string>
     <string name="group_name">Gruppennama</string>
     <string name="group_description">Gruppenbeschreibung</string>
+    <string name="group_expires_at">Läuft ab: %1$s</string>
+    <string name="group_expires_in">Läuft ab in: %1$s</string>
+    <string name="group_expired">Abgloufa</string>
+    <string name="delete_group_timer">Gruppentimer löscha</string>
+    <string name="confirm_delete_group_timer">Ablaufdatum vo derra Gruppe entferna? Sie louft denn num automatisch ab.</string>
+    <string name="delete_event">Event löscha</string>
+    <string name="confirm_delete_event">Des Event löscha? Die Gruppe wird davo trennt und blibt bestoh, aber s Event sealb wird endgültig glöscht.</string>
+    <string name="event_delete_failed">❌ Event hot ned glöscht werra künna</string>
+    <string name="event_and_group_created">Event und Gruppe erstellt!</string>
     <string name="user_description">Userbeschreibung</string>
     <string name="leave_group">Abhaua</string>
     <string name="add_users_to_group">Mitglied hinzufüga</string>
@@ -277,8 +294,45 @@
     <string name="friend_birthday_noti_title">%1$s hot hüt Geburtstag! &#127874;</string>
     <string name="friend_birthday_noti_body">Vergiss ned zum gratuliera!</string>
 
+    <string name="new_event_noti_title">%1$s hot a neus Event erstellt</string>
+    <string name="events_screen_title">Events</string>
+    <string name="event_starts_in">Startet in: %1$s</string>
+    <string name="event_started">Gstartet</string>
+    <string name="event_ended">Beendet</string>
+    <string name="event_title_label">Titel</string>
+    <string name="error_event_title_must_not_be_empty">Der Event - Titel darf ned leer si</string>
+    <string name="event_description_label">Beschreibung</string>
+    <string name="event_starts_label">Beginnt:</string>
+    <string name="event_starts_with_date">Beginnt: %1$s</string>
+    <string name="event_has_end_time">Hot Endzit</string>
+    <string name="event_closes_with_date">Endet: %1$s</string>
+    <string name="event_created_by">Erstellt vo %1$s</string>
+    <string name="event_join">Beitreata</string>
+    <string name="event_invite_header">%1$s möcht %2$s bei %3$s</string>
+    <string name="event_invited_users">Iglada</string>
+    <string name="event_invite_friends">Freunde ilada</string>
+    <string name="event_location_label">Ort</string>
+    <string name="event_no_location_selected">Kuan Ort usgwählt</string>
+    <string name="event_pick_location_title">Ort üswähla</string>
+    <string name="event_type_sport">Sport</string>
+    <string name="event_type_food">Eeassa</string>
+    <string name="event_type_beer">Bier</string>
+    <string name="event_type_driving">Fahra</string>
+    <string name="event_type_riding">Ritta</string>
+    <string name="event_type_party">Party</string>
+    <string name="event_type_gaming">Zocka</string>
+    <string name="event_type_movie">Film</string>
+    <string name="event_type_trip">Usflug</string>
+    <string name="event_type_meetup">Treaffa</string>
+    <string name="event_type_outdoor">Dussa hänga</string>
+    <string name="event_type_other">Sonstiges</string>
+    <string name="event_public">Öffentlich</string>
+    <string name="event_friends_only">Nur Freunde</string>
+    <string name="event_invited_friends_only">Nur Igladene</string>
 
     <string name="tooltip_username">Wähl an Benutzernama dean andere Benutzer seahand</string>
+    <string name="phone_number">Telefonnummer (Optional)</string>
+    <string name="phone_number_optional_tooltip">Optional. Wird dina Freunde azoagt, damit se di arufa künnand.</string>
     <string name="tooltip_email">Wird zum Wiederherstella vo da Zugangsdaten und zur Löschung vom Account verwendet</string>
     <string name="tooltip_birthdate">Wird verwendet zum dine Freunde zum informiera wenn du Geburtstag hosch</string>
     <string name="tooltip_password">Mindestens 8 Zeicha mit Nummera, Sonderzeicha und Groß - und Kleinbuchstaba</string>
@@ -320,8 +374,9 @@
     <string name="mark_as_read">als gleasa markiera</string>
     <string name="more_info">Mieh Informationa</string>
     <string name="edit_profile_picture">Profilbild bearbeita</string>
-    
-    
+    <string name="profile_picture_add_photo">Foto hinzufüga</string>
+
+
 
     <string name="admin">Admin</string>
 
@@ -331,6 +386,9 @@
     <string name="no_friends">Keine Freunde</string>
 
     <string name="message_delete_info">Willsch du dia Nachricht wirklich löscha?</string>
+    <string name="chat_message_image">Nochrichtabild</string>
+    <string name="chat_remove_image">Bild entferna</string>
+    <string name="chat_discard_recording">Aufnahme verwerfa</string>
     <string name="open_chat">Chat öffna</string>
     <string name="make_admin">Zum Admin macha</string>
     <string name="remove_admin_status">Adminstatus entferna</string>
@@ -343,7 +401,13 @@
     <string name="change_username_description">Änder din Benutzernama. Er wird andra azoagt und wird fürs Ilogga brucht</string>
     <string name="change_username_placeholder">neuer Benutzernama ...</string>
 
+    <string name="call">Arufa</string>
     <string name="change_status">Status ändra</string>
+    <string name="change_phone_number">Telefonnummer ändra</string>
+    <string name="phone_number_infotext">Dia Telefonnummer isch für alle dine Freunde sichtbar. Aktuell isch se ned gsetzt.</string>
+    <string name="current_phone_number">Dine aktuelle Telefonnummer: %1$s</string>
+    <string name="phone_number_placeholder">Telefonnummer ...</string>
+    <string name="invalid_phone_number">Des isch kua gültige Telefonnummer</string>
     <string name="change_email">Email ändra</string>
     <string name="resend_verification">Bestätigungsemail noml schicka</string>
 
@@ -635,6 +699,9 @@
     <string name="game_tap_anywhere_to_start">Irgendwo tippa zum starta</string>
     <string name="game_stop">Spiel stoppa</string>
     <string name="game_exit">Verlo</string>
+    <string name="game_pause">Pause</string>
+    <string name="game_resume">Fortsetza</string>
+    <string name="game_paused">Pausiert</string>
 
 
     <!-- Games: Tetris -->
@@ -673,6 +740,18 @@
     <!-- Games: 2048 -->
     <string name="games_2048_title">2048</string>
     <string name="games_2048_instructions">Wüscha oda mit Pfeiltasta ummadrucka. Wenn sich zwoa Fealda mit da glicha Zahl berührand, werrand se zu uana großa. Mehr groß mehr Punkte</string>
+    <string name="games_2048_reached">★ 2048 erreicht! ★</string>
+
+    <!-- Games: Stanislaus -->
+    <string name="games_stanislaus_title">Stanislaus siaht da Fisch ned</string>
+    <string name="games_stanislaus_instructions"/>
+    <string name="games_stanislaus_caught"/>
+    <string name="games_stanislaus_missed"/>
+    <string name="games_stanislaus_streak"/>
+    <string name="games_stanislaus_label_apparent"/>
+    <string name="games_stanislaus_label_real"/>
+    <string name="games_stanislaus_glare_hint"/>
+    <string name="games_stanislaus_sprite_description">Stanislaus</string>
 
     <!-- Recap -->
     <string name="recap_your_year">Din Joar</string>
@@ -1030,11 +1109,21 @@ Mealds, egal wie klenn.</string>
     <string name="ttt_settings_user">Account-Einstellunga</string>
     <string name="ttt_settings_user_description">Do kannsch du Angaben zu dinam Account ändra.</string>
 
+    <string name="ttt_user_settings_phone_number">Telefonnummer</string>
+    <string name="ttt_user_settings_phone_number_description">Do kannsch du dine Telefonnummer mit dina Freunden teila.</string>
+    <string name="ttt_user_settings_phone_number_freeroam">Setz jetzt gern dine Telefonnummer, oder fahr mit da Tour fort.</string>
+    <string name="ttt_user_settings_go_back">Gomma zruck zu da Einstellunga</string>
+
     <string name="ttt_settings_wake">Weckerfeature (nur Android)</string>
     <string name="ttt_settings_wake_description">Du kannsch dia Funktion aktiviera, damit dine Freunde di ufwecka künnand. Din Handy klingelt denn wie bei nam Wecker, o im Lautlosmodus. Wenn dine Freunde des aktiviert hond, kannsch du se in da Chat-Details wecka.</string>
 
     <string name="ttt_settings_privacy">Datenschutz &amp; Sicherheit</string>
+    <string name="ttt_settings_privacy_description">Do kannsch du din Passwort, dine E-Mail und die Standortfreigab verwalta.</string>
     <string name="ttt_privacy_settings_go_back">Gomma zruck zu da Einstellunga</string>
+
+    
+    <string name="ttt_settings_notifications_description">Do kannsch du dine Benachrichtigunga und Wecker Einstellunga verwalta.</string>
+    <string name="ttt_notification_settings_go_back">Gomma zruck zu da Einstellunga</string>
 
     <string name="ttt_settings_appearance">Darstellungs-Einstellunga</string>
     <string name="ttt_settings_appearance_description">Do kannsch du dine Sproch (Österreichisch, Deutsch, Englisch) und s Design ändra.</string>
@@ -1081,6 +1170,7 @@ Mealds, egal wie klenn.</string>
     <string name="navbar_chats">Chats</string>
     
     <string name="navbar_map">Karta</string>
+    <string name="navbar_events">Events</string>
     <string name="navbar_games">Spiele</string>
 
     <string name="new_version_available">Neue Version verfügbar: %1$s</string>
@@ -1110,6 +1200,9 @@ Mealds, egal wie klenn.</string>
     <string name="dev_group_general">Allgemein</string>
     <string name="dev_group_network">Serverconfig</string>
     <string name="dev_group_tools">Tools &amp; Experimente</string>
+    <string name="dev_settings_skip_tour">Onboarding Tour skippen</string>
+    <string name="dev_settings_skip_tour_desc">Onboarding Tour skippen</string>
+    <string name="dev_settings_tour_skipped">Onboarding-Tour übersprunga</string>
 
     <!-- Privacy & Security -->
     <string name="privacy_and_security">Datenschutz &amp; Sicherheit</string>
@@ -1126,5 +1219,41 @@ Mealds, egal wie klenn.</string>
     <string name="password_change_failed">Passwort hot ned gändert werra künna. Bitte prüf din aktuells Passwort.</string>
     <string name="privacy_policy">Datenschutzerklärung</string>
     <string name="privacy_policy_info">Leas üsre Datenschutzbestimmunga und Richtlinia</string>
+
+    <!-- Notifications -->
+    
+    <string name="notification_settings_info">Benachrichtigungsberechtigunga und Wecker - Einstellunga</string>
+    <string name="notification_group_general">Allgemein</string>
+    <string name="notifications">Benachrichtigunga</string>
+    <string name="notifications_enabled">Benachrichtigunga aktiviert</string>
+    <string name="notifications_disabled">Benachrichtigunga deaktiviert - zum Aktiviera atippa</string>
+    <string name="notification_permission_required_title">Benachrichtigungsberechtigung erforderlich</string>
+    <string name="notification_permission_permanently_denied_message">Benachrichtigunga für Schneaggchat sind in dina Systemeinstellunga deaktiviert. Bitte öffne d Einstellunga und tua Benachrichtigunga zualo.</string>
+    <string name="open_settings">Einstellunga öffna</string>
+    
+    <string name="notification_banner_title">Benachrichtigunga deaktiviert</string>
+    <string name="notification_banner_description">Aktivier Benachrichtigunga, sunsch isch des ganze do sinnlos</string>
+    <string name="notification_banner_enable">Aktiviera</string>
+
+    <!-- Email Verification Support -->
+    <string name="support_email_verification_subject">E-Mail-Verifizierung funktioniert ned</string>
+    <string name="support_email_verification_body">Es tuat ned (Bitte mehr infos)</string>
+
+    <!-- System messages (MessageType.SYSTEM) -->
+    <string name="system_group_created">%1$s hot die Gruppe erstellt</string>
+    <string name="system_member_added">%1$s hot %2$s dazuato</string>
+    <string name="system_member_joined_event">%1$s isch über a Event beitreata</string>
+    <string name="system_member_removed">%1$s hot %2$s entfernt</string>
+    <string name="system_member_left">%1$s hot dia Gruppa verlo</string>
+    <string name="system_admin_granted">%1$s hot %2$s zum Admin gmacht</string>
+    <string name="system_admin_revoked">%1$s hot %2$s die Admin-Rechte entzoga</string>
+    <string name="system_group_name_changed">%1$s hot da Gruppennama zu %2$s gändert</string>
+    <string name="system_group_description_changed">%1$s hot d Gruppenbeschreibung gändert</string>
+    <string name="system_group_picture_changed">%1$s hat s Gruppenbild gändert</string>
+    <string name="system_event_changed">%1$s hot s Event aktualisiert</string>
+    <string name="system_friendship_accepted">Ihr sind jetzt freunde</string>
+    <string name="system_wake_sent">%1$s hot di gweckt</string>
+    <string name="system_wake_sent_reason">%1$s hot di gweckt: %2$s</string>
+    <string name="system_unknown_event">Chat aktualisiert</string>
 
 </resources>

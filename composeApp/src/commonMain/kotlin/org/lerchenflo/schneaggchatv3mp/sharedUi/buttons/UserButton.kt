@@ -80,9 +80,10 @@ fun UserButton(
     onClickGes: () -> Unit = {},  // Add click for everything
     onClickText: () -> Unit = {},  // Add click for name ...
     onLongClickText: () -> Unit = {}, // Add long click for name ...
-    onClickImage: () -> Unit = {}  // Add click for image (profilepicture)
+    onClickImage: () -> Unit = {},  // Add click for image (profilepicture)
+    modifier: Modifier = Modifier
 ) {
-    var modifierGes = Modifier
+    var modifierGes = modifier
         .fillMaxWidth()
         .padding(6.dp)
         .height(60.dp)
