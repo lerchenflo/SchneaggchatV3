@@ -321,6 +321,9 @@
     <string name="event_location_label">Location</string>
     <string name="event_no_location_selected">No location selected</string>
     <string name="event_pick_location_title">Pick a location</string>
+    <string name="event_pick_location_hint">Move the map to position the pin</string>
+    <string name="event_use_this_location">Use this location</string>
+    <string name="event_location_mobile_only">Only available on mobile</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Food</string>
     <string name="event_type_beer">Beer</string>

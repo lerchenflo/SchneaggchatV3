@@ -31,18 +31,18 @@ data class NavigationBarItemTemplate(
 )
 
 val TOP_LEVEL_DESTINATIONS = mapOf<NavKey, NavigationBarItemTemplate>(
+    Route.Events() to NavigationBarItemTemplate(
+        id = "bottombar_events_button",
+        title = Res.string.navbar_events,
+        selectedIcon = Icons.Filled.Event,
+        unselectedIcon = Icons.Outlined.Event,
+    ),
     Route.Schneaggmap() to NavigationBarItemTemplate(
         id = "bottombar_map_button",
         title = Res.string.navbar_map,
         selectedIcon = Icons.Filled.Map,
         unselectedIcon = Icons.Outlined.Map,
         mobileOnly = true
-    ),
-    Route.Events() to NavigationBarItemTemplate(
-        id = "bottombar_events_button",
-        title = Res.string.navbar_events,
-        selectedIcon = Icons.Filled.Event,
-        unselectedIcon = Icons.Outlined.Event,
     ),
     Route.ChatSelector to NavigationBarItemTemplate(
         id = "bottombar_chatselector_button",

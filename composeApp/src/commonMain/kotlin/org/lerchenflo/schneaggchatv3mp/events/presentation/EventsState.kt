@@ -14,7 +14,8 @@ data class EventsState(
     val friendsById: Map<String, User> = emptyMap(),
     val groups: List<Group> = emptyList(),
     val isJoiningEvent: Boolean = false,
-    val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl
+    val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl,
+    val isMobile: Boolean = true,
 )
 
 sealed interface EventsAction {
@@ -27,4 +28,6 @@ sealed interface EventsAction {
     data class OnSaveEvent(val event: Event, val typeIcon: ImageBitmap?): EventsAction
 
     data class OnJoinEvent(val eventId: String): EventsAction
+
+    data class OnPickLocationClick(val currentEventState: Event): EventsAction
 }

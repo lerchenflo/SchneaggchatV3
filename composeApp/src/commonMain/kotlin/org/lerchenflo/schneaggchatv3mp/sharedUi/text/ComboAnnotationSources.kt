@@ -136,7 +136,7 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
                 names = eventNames,
                 unresolvedName = unknownEvent,
                 onClick = { eventId ->
-                    scope.launch { navigator.navigate(Route.Events(selectedEvent = eventId)) }
+                    scope.launch { navigator.navigate(Route.Events(selectedEventId = eventId)) }
                 }
             ),
             ComboAnnotationSource(

@@ -39,10 +39,12 @@ class EventsViewModel(
     private val groupRepository: GroupRepository,
     private val preferenceManager: Preferencemanager,
     private val pictureManager: PictureManager,
-    private val initialEntryId: String? = null
+
+    private val initialEntryId: String? = null,
+    private val initialEntry: Event? = null
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(EventsState())
+    private val _state = MutableStateFlow(EventsState(isMobile = appRepository.appVersion.isMobile(), selectedEvent = initialEntry))
     val state = combine(
         _state,
         eventRepository.getAllEventsFlow(),
@@ -62,15 +64,19 @@ class EventsViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = EventsState(),
+        initialValue = EventsState(isMobile = appRepository.appVersion.isMobile(), selectedEvent = initialEntry),
     )
 
     fun onAction(action: EventsAction) {
         when (action) {
             is EventsAction.OnEventClick -> {
                 val clickedEvent = state.value.events.firstOrNull { it.id == action.eventId }
-                _state.update { currentState ->
-                    currentState.copy(selectedEvent = clickedEvent)
+                viewModelScope.launch {
+                    _state.update {
+                        it.copy(
+                            selectedEvent = clickedEvent
+                        )
+                    }
                 }
             }
 
@@ -78,34 +84,38 @@ class EventsViewModel(
                 val userId = SessionCache.requireLoggedIn()?.userId ?: ""
                 val now = Clock.System.now().toEpochMilliseconds()
                 val defaultStartDate = (Clock.System.now() + 1.days).toEpochMilliseconds()
-                _state.update { currentState ->
-                    currentState.copy(
-                        selectedEvent = Event(
-                            id = "",
-                            creatorId = userId,
-                            type = EventType.OTHER,
-                            title = "",
-                            description = "",
-                            groupId = "",
-                            location = null,
-                            startDate = defaultStartDate,
-                            closeDate = null,
-                            invitedUsers = emptyList(),
-                            visibility = EventVisibility.FRIENDS_ONLY,
-                            groupDeleteDelay = GroupDeleteDelay.ONE_DAY,
-                            createdAt = now,
-                            updatedAt = now,
-                            creatorName = "",
+                viewModelScope.launch {
+                    _state.update {
+                        it.copy(
+                            selectedEvent = Event(
+                                id = "",
+                                creatorId = userId,
+                                type = EventType.OTHER,
+                                title = "",
+                                description = "",
+                                groupId = "",
+                                location = null,
+                                startDate = defaultStartDate,
+                                closeDate = null,
+                                invitedUsers = emptyList(),
+                                visibility = EventVisibility.FRIENDS_ONLY,
+                                groupDeleteDelay = GroupDeleteDelay.ONE_DAY,
+                                createdAt = now,
+                                updatedAt = now,
+                                creatorName = "",
+                            )
                         )
-                    )
+                    }
                 }
             }
 
             EventsAction.OnEventPopupDismiss -> {
-                _state.update { currentState ->
-                    currentState.copy(
-                        selectedEvent = null
-                    )
+                viewModelScope.launch {
+                    _state.update {
+                        it.copy(
+                            selectedEvent = null
+                        )
+                    }
                 }
             }
 
@@ -134,13 +144,26 @@ class EventsViewModel(
                     if (eventid == null) {
                         SnackbarManager.showMessage(getString(Res.string.event_and_group_created))
                     }
-                }
-                _state.update {
-                    it.copy(
-                        selectedEvent = null
-                    )
+
+                    _state.update {
+                        it.copy(
+                            selectedEvent = null
+                        )
+                    }
                 }
             }
+            is EventsAction.OnPickLocationClick -> {
+                viewModelScope.launch {
+                    val passedEvent = action.currentEventState
+                    _state.update {
+                        it.copy(
+                            selectedEvent = null
+                        )
+                    }
+                    navigator.navigate(Route.Schneaggmap(currentlyEditedEvent = passedEvent))
+                }
+            }
+
             is EventsAction.OnJoinEvent -> {
                 viewModelScope.launch {
                     // Guard set synchronously, before any suspend call, so a second

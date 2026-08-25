@@ -43,4 +43,14 @@ sealed interface SchneaggmapAction {
     data class OnSearchTermChange(val newTerm: String) : SchneaggmapAction
 
     data class OnSearchResultClick(val entry: MapEntry) : SchneaggmapAction
+
+    /** Confirms the pin in pickLocationMode and hands it back via Route.Events(pickedLocation = ...). */
+    data class OnConfirmLocationPick(val coordinates: LatLong) : SchneaggmapAction
+
+    /**
+     * Cancels pickLocationMode without delivering a result. Distinct from [OnBackClicked]: a plain
+     * back-pop would fall through to the app's fixed home tab once this tab's backstack is down to
+     * one entry, not back to the Events tab that opened the picker.
+     */
+    data object OnCancelLocationPick : SchneaggmapAction
 }

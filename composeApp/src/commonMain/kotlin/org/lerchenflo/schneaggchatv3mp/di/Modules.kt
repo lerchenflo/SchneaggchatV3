@@ -47,6 +47,7 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck.Ema
 import org.lerchenflo.schneaggchatv3mp.login.presentation.login.LoginViewModel
 import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpViewModel
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsViewModel
 import org.lerchenflo.schneaggchatv3mp.roadmap.presentation.RoadmapViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
@@ -151,7 +152,7 @@ val sharedmodule = module{
     viewModelOf(::SignUpViewModel)
 
     // Explicit lambda because the nullable initialEntryId can't be resolved by viewModelOf
-    viewModel { (initialEntryId: String?) ->
+    viewModel { (initialEntryId: String?, currentlyEditedEvent: Event?) ->
         SchneaggmapViewModel(
             navigator = get(),
             mapRepository = get(),
@@ -160,11 +161,12 @@ val sharedmodule = module{
             locationService = get(),
             userRepository = get(),
             eventRepository = get(),
-            initialEntryId = initialEntryId
+            initialEntryId = initialEntryId,
+            currentlyEditedEvent = currentlyEditedEvent
         )
     }
 
-    viewModel { (initialEntryId: String?) ->
+    viewModel { (initialEntryId: String?, initialEntry: Event?) ->
         EventsViewModel(
             navigator = get(),
             appRepository = get(),
@@ -174,6 +176,7 @@ val sharedmodule = module{
             preferenceManager = get(),
             pictureManager = get(),
             initialEntryId = initialEntryId,
+            initialEntry = initialEntry
         )
     }
 
