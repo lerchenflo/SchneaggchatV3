@@ -306,6 +306,12 @@
     <string name="event_starts_with_date">Starts: %1$s</string>
     <string name="event_has_end_time">Has end time</string>
     <string name="event_closes_with_date">Closes: %1$s</string>
+    <string name="event_group_delete_label">Delete group chat</string>
+    <string name="group_delete_delay_never">Never</string>
+    <string name="group_delete_delay_one_hour">1 hour after the event</string>
+    <string name="group_delete_delay_one_day">1 day after the event</string>
+    <string name="group_delete_delay_three_days">3 days after the event</string>
+    <string name="group_delete_delay_one_week">1 week after the event</string>
     <string name="event_created_by">Created by %1$s</string>
     <string name="event_join">Join</string>
     <string name="event_invite_header">%1$s wants to %2$s at %3$s</string>

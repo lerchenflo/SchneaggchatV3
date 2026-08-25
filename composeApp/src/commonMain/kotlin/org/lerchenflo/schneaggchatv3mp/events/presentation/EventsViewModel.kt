@@ -22,6 +22,7 @@ import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
+import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -91,6 +92,7 @@ class EventsViewModel(
                             closeDate = null,
                             invitedUsers = emptyList(),
                             visibility = EventVisibility.FRIENDS_ONLY,
+                            groupDeleteDelay = GroupDeleteDelay.ONE_DAY,
                             createdAt = now,
                             updatedAt = now,
                             creatorName = "",
@@ -124,6 +126,7 @@ class EventsViewModel(
                         closeDate = event.closeDate,
                         invitedUsers = event.invitedUsers,
                         visibility = event.visibility,
+                        groupDeleteDelay = event.groupDeleteDelay,
                         profilePic = profilePic,
                     )
 

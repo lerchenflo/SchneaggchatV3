@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
+import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 
 @Serializable
@@ -19,6 +20,7 @@ data class EventResponse(
     val closeDate: Long?,
     val invitedUsers: List<String>,
     val visibility: EventVisibility,
+    val groupDeleteDelay: GroupDeleteDelay,
     val createdAt: Long = 0L,
     val updatedAt: Long = 0L,
     val updatedBy: String,
@@ -56,4 +58,5 @@ data class EventRequest(
     val closeDate: Long?,
     val invitedUsers: List<String>,
     val visibility: EventVisibility,
+    val groupDeleteDelay: GroupDeleteDelay,
 )

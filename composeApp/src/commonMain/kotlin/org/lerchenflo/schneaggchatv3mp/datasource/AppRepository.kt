@@ -118,6 +118,7 @@ import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
+import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
@@ -692,6 +693,7 @@ class AppRepository(
         closeDate: Long?,
         invitedUsers: List<String>,
         visibility: EventVisibility,
+        groupDeleteDelay: GroupDeleteDelay,
         profilePic: ByteArray? = null,
     ) {
         val result = networkUtils.upsertEvent(
@@ -706,6 +708,7 @@ class AppRepository(
                 closeDate = closeDate,
                 invitedUsers = invitedUsers,
                 visibility = visibility,
+                groupDeleteDelay = groupDeleteDelay,
             ),
             profilePic = profilePic,
         )

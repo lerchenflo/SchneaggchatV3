@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
+import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 
 @Entity(tableName = "events")
@@ -19,6 +20,7 @@ data class EventDto(
     val closeDate: Long?,
     val invitedUsers: List<String>,
     val visibility: EventVisibility,
+    val groupDeleteDelay: GroupDeleteDelay,
     val createdAt: Long,
     val updatedAt: Long,
     val updatedBy: String,
