@@ -306,6 +306,12 @@
     <string name="event_starts_with_date">Beginnt: %1$s</string>
     <string name="event_has_end_time">Hat Endzeit</string>
     <string name="event_closes_with_date">Endet: %1$s</string>
+    <string name="event_group_delete_label">Gruppenchat löschen</string>
+    <string name="group_delete_delay_never">Nie</string>
+    <string name="group_delete_delay_one_hour">1 Stunde nach dem Event</string>
+    <string name="group_delete_delay_one_day">1 Tag nach dem Event</string>
+    <string name="group_delete_delay_three_days">3 Tage nach dem Event</string>
+    <string name="group_delete_delay_one_week">1 Woche nach dem Event</string>
     <string name="event_created_by">Erstellt von %1$s</string>
     <string name="event_join">Beitreten</string>
     <string name="event_invite_header">%1$s möchte %2$s bei %3$s</string>
@@ -1129,6 +1135,11 @@
     <string name="ttt_settings_appearance">Darstellungs-Einstellungen</string>
     <string name="ttt_settings_appearance_description">Hier kannst du deine Sprache (Österreichisch, Deutsch, Englisch) und dein Design ändern.</string>
 
+    <string name="ttt_appearance_settings_language">Sprache ändern</string>
+    <string name="ttt_appearance_settings_language_description">Hier kannst du zwischen Deutsch, Vorarlbergerisch und Englisch wechseln.</string>
+    <string name="ttt_appearance_settings_language_freeroam">Probier ruhig aus, wie die Sprache aussieht, oder mach mit der Tour weiter.</string>
+    <string name="ttt_appearance_settings_go_back">Lass uns zurück zu den Einstellungen gehen</string>
+
     <string name="ttt_settings_misc">Sonstige Einstellungen</string>
 
     <string name="ttt_settings_misc_bugreport">Hier kannst du Fehler melden und Feature-Anfragen einreichen.</string>
@@ -1137,6 +1148,13 @@
     <string name="ttt_settings_misc_app_broken_description">Wenn etwas nicht wie vorgesehen funktioniert, kannst du diesen Button drücken. Dadurch werden alle App-Daten gelöscht und neu vom Server geladen.</string>
     <string name="ttt_misc_settings_go_back">Lass uns zurück zu den Einstellungen gehen</string>
 
+
+
+    <string name="ttt_chatselector_events">Hier kommst du zu den Events</string>
+    <string name="ttt_chatselector_events_description">Du kannst anstehende Events sehen, ihnen beitreten oder selbst welche erstellen.</string>
+
+    <string name="ttt_events_create_button">Event erstellen</string>
+    <string name="ttt_events_create_button_description">Tippe hier, um ein neues Event zu erstellen und deine Freunde einzuladen.</string>
 
 
     <string name="ttt_chatselector_map">Hier kommst du zur Schneaggmap</string>

@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.resources.vectorResource
+import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
@@ -52,7 +53,8 @@ fun AppearanceSettings(
     Column {
         ActivityTitle(
             title = stringResource(Res.string.appearance_settings),
-            onBackClick = onBackClick
+            onBackClick = onBackClick,
+            backButtonModifier = Modifier.tapTarget("appearance_settings_back_button")
         )
         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
@@ -106,7 +108,8 @@ fun AppearanceSettings(
                 onClick = {
                     previousLanguage = appearanceSettingsViewModel.selectedLanguage
                     languageSelDialog = true
-                }
+                },
+                modifier = Modifier.tapTarget("appearance_settings_language")
             )
             if (languageSelDialog) {
                 LanguageSelector(

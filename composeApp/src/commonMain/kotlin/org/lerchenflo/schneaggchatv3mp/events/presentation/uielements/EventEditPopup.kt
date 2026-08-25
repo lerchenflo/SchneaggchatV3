@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -61,6 +62,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
+import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
 import org.lerchenflo.schneaggchatv3mp.events.domain.labelRes
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
@@ -69,6 +71,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.event_description_label
+import schneaggchatv3mp.composeapp.generated.resources.event_group_delete_label
 import schneaggchatv3mp.composeapp.generated.resources.event_has_end_time
 import schneaggchatv3mp.composeapp.generated.resources.event_invite_friends
 import schneaggchatv3mp.composeapp.generated.resources.event_invited_users
@@ -118,6 +121,7 @@ fun EventEditPopup(
     var showEndDatePicker by remember { mutableStateOf(false) }
     var typeDropdownExpanded by remember { mutableStateOf(false) }
     var visibilityDropdownExpanded by remember { mutableStateOf(false) }
+    var groupDeleteDelayDropdownExpanded by remember { mutableStateOf(false) }
     var showInviteFriendsDialog by remember { mutableStateOf(false) }
     var inviteSearchTerm by remember { mutableStateOf("") }
     var showLocationPicker by remember { mutableStateOf(false) }
@@ -344,6 +348,63 @@ fun EventEditPopup(
                         text = millisToString(currentEvent.closeDate!!, "dd.MM.yyyy HH:mm"),
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Group auto-delete delay (how long after start/end the connected group chat gets deleted)
+            Text(
+                text = stringResource(Res.string.event_group_delete_label),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Box {
+                OutlinedButton(
+                    onClick = { groupDeleteDelayDropdownExpanded = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Schedule,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = stringResource(currentEvent.groupDeleteDelay.labelRes()),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = groupDeleteDelayDropdownExpanded,
+                    onDismissRequest = { groupDeleteDelayDropdownExpanded = false }
+                ) {
+                    GroupDeleteDelay.entries.forEach { entry ->
+                        val isSelected = entry == currentEvent.groupDeleteDelay
+                        val tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = stringResource(entry.labelRes()),
+                                    color = tint,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            },
+                            onClick = {
+                                currentEvent = currentEvent.copy(groupDeleteDelay = entry)
+                                groupDeleteDelayDropdownExpanded = false
+                            }
+                        )
+                    }
                 }
             }
 

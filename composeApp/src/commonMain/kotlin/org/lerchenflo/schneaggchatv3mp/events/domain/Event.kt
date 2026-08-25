@@ -20,6 +20,8 @@ data class Event(
 
     val visibility: EventVisibility,
 
+    val groupDeleteDelay: GroupDeleteDelay = GroupDeleteDelay.ONE_DAY,
+
     val createdAt: Long,
     val updatedAt: Long,
     val updatedBy: String = "",

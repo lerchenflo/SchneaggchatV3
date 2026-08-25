@@ -32,11 +32,13 @@ import org.jetbrains.compose.resources.getString
 import org.koin.core.qualifier.named
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL_TEST
 import org.lerchenflo.schneaggchatv3mp.GITHUB_ISSUES_API_URL
 import org.lerchenflo.schneaggchatv3mp.GITHUB_LATEST_RELEASE_API_URL
 import org.lerchenflo.schneaggchatv3mp.GITHUB_URL
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
+import org.lerchenflo.schneaggchatv3mp.TEST_ACCOUNT_USERNAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -115,6 +117,7 @@ import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
+import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
@@ -689,6 +692,7 @@ class AppRepository(
         closeDate: Long?,
         invitedUsers: List<String>,
         visibility: EventVisibility,
+        groupDeleteDelay: GroupDeleteDelay,
         profilePic: ByteArray? = null,
     ) {
         val result = networkUtils.upsertEvent(
@@ -703,6 +707,7 @@ class AppRepository(
                 closeDate = closeDate,
                 invitedUsers = invitedUsers,
                 visibility = visibility,
+                groupDeleteDelay = groupDeleteDelay,
             ),
             profilePic = profilePic,
         )
@@ -1264,6 +1269,11 @@ class AppRepository(
         password: String,
         onResult: (Boolean) -> Unit
     ) {
+        //Overwrite the server url for the test account to always connect to it
+        if (username.lowercase().trim() == TEST_ACCOUNT_USERNAME) {
+            preferencemanager.saveServerUrl(BASE_SERVER_URL_TEST)
+        }
+
         when(val result = networkUtils.login(username.trim(), password)){
             is NetworkResult.Error<*> -> {
                 println("Error: ${result.error}")
@@ -1310,9 +1320,10 @@ class AppRepository(
         birthdate: String,
         profilePic: ByteArray,
         phoneNumber: String? = null,
+        language: String? = null,
         onResult: (Boolean) -> Unit
     ) {
-        when(val response = networkUtils.register(username, password, email, birthdate, profilePic, phoneNumber)){
+        when(val response = networkUtils.register(username, password, email, birthdate, profilePic, phoneNumber, language)){
             is NetworkResult.Error -> {
                 println("Error: ${response.error}")
 

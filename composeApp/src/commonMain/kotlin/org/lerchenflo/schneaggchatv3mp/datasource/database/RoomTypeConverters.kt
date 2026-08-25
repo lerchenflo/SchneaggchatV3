@@ -7,6 +7,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
+import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationData
 
@@ -89,6 +90,13 @@ class RoomTypeConverters {
     @TypeConverter
     fun stringToEventVisibility(value: String): EventVisibility =
         runCatching { EventVisibility.valueOf(value) }.getOrDefault(EventVisibility.FRIENDS_ONLY)
+
+    @TypeConverter
+    fun groupDeleteDelayToString(delay: GroupDeleteDelay): String = delay.name
+
+    @TypeConverter
+    fun stringToGroupDeleteDelay(value: String): GroupDeleteDelay =
+        runCatching { GroupDeleteDelay.valueOf(value) }.getOrDefault(GroupDeleteDelay.ONE_DAY)
 
     @TypeConverter
     fun stringListToString(list: List<String>): String =
