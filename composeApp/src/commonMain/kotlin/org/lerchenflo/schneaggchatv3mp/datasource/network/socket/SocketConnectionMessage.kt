@@ -343,6 +343,8 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                             if (existing == null || existing.profilePicUpdatedAt < socketMessage.user.profilePicUpdatedAt) {
                                 appRepository.getProfilePicturesForUserIds(listOf(socketMessage.user.id))
                             }
+
+                            appRepository.applyServerSettings(newUser.settings)
                         }
                     }
 

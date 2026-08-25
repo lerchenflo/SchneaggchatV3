@@ -47,6 +47,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Versionsabfrage Desktop
 - Pausetaste für Spiele
 - Ganze Gruppen adden bei Userauswahl
+- Einstellungen auf Server synchen
 
 #### Bugfixes
 - Fingerpicker resetet nicht direkt

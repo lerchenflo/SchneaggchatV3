@@ -5,13 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
@@ -20,7 +18,8 @@ import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
 class AppearanceSettingsViewModel(
     private val preferenceManager: Preferencemanager,
     private val loggingRepository: LoggingRepository,
-    private val languageService: LanguageService
+    private val languageService: LanguageService,
+    private val appRepository: AppRepository,
 ): ViewModel() {
 
     var markdownEnabeled by mutableStateOf(false)
@@ -78,28 +77,28 @@ class AppearanceSettingsViewModel(
 
 
     fun updateMarkdownSwitch(newValue: Boolean){
-        CoroutineScope(Dispatchers.IO).launch {
-            preferenceManager.saveUseMd(newValue)
+        viewModelScope.launch {
+            appRepository.setUseMd(newValue)
         }
     }
 
     fun updateHighlightTodaysMessageTimestamp(newValue: Boolean){
-        CoroutineScope(Dispatchers.IO).launch {
-            preferenceManager.saveHighlightTodaysMessageTimestamp(newValue)
+        viewModelScope.launch {
+            appRepository.setHighlightTodaysMessageTimestamp(newValue)
         }
     }
 
 
     fun saveThemeSetting(theme: ThemeSetting){
-        CoroutineScope(Dispatchers.IO).launch {
-            preferenceManager.saveThemeSetting(theme = theme)
+        viewModelScope.launch {
+            appRepository.setThemeSetting(theme)
         }
     }
 
 
     fun saveLanguageSetting(language: LanguageSetting){
-        CoroutineScope(Dispatchers.IO).launch {
-            languageService.applyLanguage(language = language)
+        viewModelScope.launch {
+            appRepository.setLanguageSetting(language)
         }
         println("System language: ${languageService.getSystemLanguage()}")
     }

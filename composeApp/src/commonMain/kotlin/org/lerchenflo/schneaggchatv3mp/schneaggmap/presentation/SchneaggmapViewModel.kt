@@ -270,7 +270,7 @@ class SchneaggmapViewModel(
             is SchneaggmapAction.SelectMapStyle -> {
                 _state.update { it.copy(isMapStyleDropdownVisible = false) }
                 viewModelScope.launch {
-                    preferenceManager.saveMapStyleSetting(action.style)
+                    appRepository.setMapStyleSetting(action.style)
                 }
             }
 

@@ -51,6 +51,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText.StringResourceText
@@ -541,8 +542,56 @@ class NetworkUtils(
             //Master switch: do i allow anyone to wake me at all
             val allowWakeGlobal: Boolean = false,
 
+            //Per-user app settings (theme, language, pinned chats, ...), synced across devices
+            val settings: PersonalUserSettings = PersonalUserSettings(),
 
         ) : UserResponse
+    }
+
+    /**
+     * Per-user app settings, synced across every device of this account. Mirrors the server's
+     * PersonalUserSettings 1:1 - theme/language/mapStyle are sent as the enum's [Enum.name], since
+     * the server treats them as opaque strings and never interprets them.
+     */
+    @Serializable
+    data class PersonalUserSettings(
+        val mdFormat: Boolean = true,
+        val highlightTodaysMessageTimestamp: Boolean = false,
+
+        val theme: String = "SYSTEM",
+        val language: String = "SYSTEM",
+
+        val mergeMapLocations: Boolean = true,
+        val mergeMapUsers: Boolean = true,
+        val mapStyle: String = "LIBERTY",
+
+        val pinnedChats: List<PinnedChat> = emptyList(),
+
+        val developerSettings: Boolean = false,
+    )
+
+    /**
+     * Partial update for [PersonalUserSettings] - every field nullable, a null means "leave
+     * unchanged" on the server, so only the fields that actually changed need to be sent.
+     */
+    @Serializable
+    data class UserSettingsRequest(
+        val mdFormat: Boolean? = null,
+        val highlightTodaysMessageTimestamp: Boolean? = null,
+        val theme: String? = null,
+        val language: String? = null,
+        val mergeMapLocations: Boolean? = null,
+        val mergeMapUsers: Boolean? = null,
+        val mapStyle: String? = null,
+        val pinnedChats: List<PinnedChat>? = null,
+        val developerSettings: Boolean? = null,
+    )
+
+    suspend fun updateSettings(request: UserSettingsRequest): NetworkResult<Unit, NetworkError> {
+        return safePost(
+            endpoint = "/users/settings",
+            body = request
+        )
     }
 
     suspend fun userIdSync(userIds: List<IdTimeStamp>) : NetworkResult<UserSyncResponse, NetworkError> {

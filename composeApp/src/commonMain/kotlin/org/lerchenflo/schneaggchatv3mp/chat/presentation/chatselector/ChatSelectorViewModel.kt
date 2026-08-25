@@ -35,12 +35,9 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GitHubRelease
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.getTagName
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
-import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -52,14 +49,12 @@ import schneaggchatv3mp.composeapp.generated.resources.groups
 import schneaggchatv3mp.composeapp.generated.resources.none
 import schneaggchatv3mp.composeapp.generated.resources.persons
 import schneaggchatv3mp.composeapp.generated.resources.unread
-import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 
 class ChatSelectorViewModel(
     private val appRepository: AppRepository,
     private val navigator: Navigator,
     private val loggingRepository: LoggingRepository,
-    private val preferenceManager: Preferencemanager,
     private val permissionManager: PermissionManager,
 ): ViewModel() {
 
@@ -197,12 +192,7 @@ class ChatSelectorViewModel(
 
     fun pinUnpinChat(chat: ChatListItem) {
         viewModelScope.launch {
-            if(chat.pinned > 0L){
-                preferenceManager.removePinnedChat(chat.id)
-            } else {
-                val now = Clock.System.now().toEpochMilliseconds()
-                preferenceManager.addPinnedChat(PinnedChat(chat.id, group = chat.isGroup, now))
-            }
+            appRepository.setPinnedChat(chat.id, group = chat.isGroup, pinned = chat.pinned <= 0L)
         }
     }
 
