@@ -3,7 +3,6 @@
 package org.lerchenflo.schneaggchatv3mp.datasource
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.text.toLowerCase
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.auth.clearAuthTokens
 import kotlinx.coroutines.Dispatchers

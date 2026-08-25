@@ -306,6 +306,12 @@
     <string name="event_starts_with_date">Beginnt: %1$s</string>
     <string name="event_has_end_time">Hot Endzit</string>
     <string name="event_closes_with_date">Endet: %1$s</string>
+    <string name="event_group_delete_label">Gruppenchat löscha</string>
+    <string name="group_delete_delay_never">Nie</string>
+    <string name="group_delete_delay_one_hour">1 Stund nocham Event</string>
+    <string name="group_delete_delay_one_day">1 Tag nocham Event</string>
+    <string name="group_delete_delay_three_days">3 Täg nocham Event</string>
+    <string name="group_delete_delay_one_week">1 Wocha nocham Event</string>
     <string name="event_created_by">Erstellt vo %1$s</string>
     <string name="event_join">Beitreata</string>
     <string name="event_invite_header">%1$s möcht %2$s bei %3$s</string>
@@ -1128,6 +1134,11 @@ Mealds, egal wie klenn.</string>
     <string name="ttt_settings_appearance">Darstellungs-Einstellunga</string>
     <string name="ttt_settings_appearance_description">Do kannsch du dine Sproch (Österreichisch, Deutsch, Englisch) und s Design ändra.</string>
 
+    <string name="ttt_appearance_settings_language">Sproch ändra</string>
+    <string name="ttt_appearance_settings_language_description">Do kannsc hdu zwüschat Dütsch, Vori und Englisch wechsla.</string>
+    <string name="ttt_appearance_settings_language_freeroam">Probier ruhig, wie die verschiedana Sprocha usluagand, oda mach mit da Tour witta.</string>
+    <string name="ttt_appearance_settings_go_back">Gomma zruck zu da Einstellunga</string>
+
     <string name="ttt_settings_misc">Sonstige Einstellunga</string>
 
     <string name="ttt_settings_misc_bugreport">Do kannsch du Fehler mealda und Features requesten.</string>
@@ -1136,6 +1147,13 @@ Mealds, egal wie klenn.</string>
     <string name="ttt_settings_misc_app_broken_description">Wenn eapas ned wie erwartet funktioniert, kannsch mit deam Knopf alle dine App - Daten löscha und neu vom Server abalada.</string>
     <string name="ttt_misc_settings_go_back">Gomma zruck zu da Einstellunga</string>
 
+
+
+    <string name="ttt_chatselector_events">Do kummsch du zu da Events</string>
+    <string name="ttt_chatselector_events_description">Do kannsch kommende Events seaha, beitreata und sealb welche erstella.</string>
+
+    <string name="ttt_events_create_button">Event erstella</string>
+    <string name="ttt_events_create_button_description">Druck do, zum a neus Event erstella und Freunde ilada.</string>
 
 
     <string name="ttt_chatselector_map">Do kummsch du zur Schneaggmap</string>
