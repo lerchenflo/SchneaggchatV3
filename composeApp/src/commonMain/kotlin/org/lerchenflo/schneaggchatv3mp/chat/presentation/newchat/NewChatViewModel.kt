@@ -8,6 +8,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -86,6 +88,7 @@ class NewChatViewModel (
             _availableChats.value = response
                 .sortedByDescending { it.commonFriendCount }
         } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             // Handle error
             loggingRepository.logWarning("NewChat loadAvailableUsers failed: ${e.message}")
             _availableChats.value = emptyList()

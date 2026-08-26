@@ -47,7 +47,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ReaderRow
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday

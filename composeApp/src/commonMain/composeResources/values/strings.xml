@@ -156,6 +156,7 @@
     <string name="camera">Camera</string>
     <string name="gallery">Gallery</string>
     <string name="choose_image_source">Choose image source</string>
+    <string name="image_picker_error">Error: %1$s</string>
 
     <string name="new_chat">new chat</string>
     <string name="new_group">create group</string>

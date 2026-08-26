@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.ismoy.imagepickerkmp.extensions.loadBytes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
@@ -245,6 +246,7 @@ class SignUpViewModel(
                 }
 
             } catch (e: Exception) {
+                ensureActive()
                 loggingRepository.logWarning("Signup failed: ${e.message}")
             } finally {
                 state = state.copy(

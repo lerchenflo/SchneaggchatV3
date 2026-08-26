@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.copyToClipboard
+import org.lerchenflo.schneaggchatv3mp.utilities.copyToClipboard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils

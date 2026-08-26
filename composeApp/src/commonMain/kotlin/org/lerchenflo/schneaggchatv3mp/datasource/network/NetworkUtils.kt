@@ -370,6 +370,7 @@ class NetworkUtils(
             setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         }catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             loggingRepository.logWarning("NetworkUtils register failed: ${e.message}")
             NetworkResult.Error(NetworkError.Unknown(message = e.message))
         }
@@ -697,6 +698,7 @@ class NetworkUtils(
             setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             loggingRepository.logWarning("NetworkUtils changeProfilePic failed: ${e.message}")
             NetworkResult.Error(NetworkError.Unknown(message = e.message))
         }
@@ -849,6 +851,7 @@ class NetworkUtils(
             setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         }catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             loggingRepository.logWarning("NetworkUtils createGroup failed: ${e.message}")
             NetworkResult.Error(NetworkError.Unknown(message = e.message))
         }
@@ -903,6 +906,7 @@ class NetworkUtils(
             setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             loggingRepository.logWarning("NetworkUtils changeGroupProfilePic failed: ${e.message}")
             NetworkResult.Error(NetworkError.Unknown(message = e.message))
         }
