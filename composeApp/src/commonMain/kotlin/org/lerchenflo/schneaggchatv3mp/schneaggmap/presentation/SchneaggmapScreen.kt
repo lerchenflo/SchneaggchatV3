@@ -88,6 +88,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.entries
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.drawableRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.CoordinateView
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.FriendLocationsPreview
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapCreateChoiceDialog
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapSearchBar
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapStyleDropdown
@@ -659,6 +660,14 @@ fun SchneaggmapScreen(
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
             }
+
+            state.createChoiceLocation?.let {
+                MapCreateChoiceDialog(
+                    onDismiss = { onAction(SchneaggmapAction.OnCreateChoiceDismiss) },
+                    onCreateMapEntry = { onAction(SchneaggmapAction.OnCreateMapEntryChoice) },
+                    onCreateEvent = { onAction(SchneaggmapAction.OnCreateEventChoice) },
+                )
+            }
         }
 
 
@@ -686,7 +695,12 @@ private fun LocationPickOverlay(
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(onClick = onCancel) {
+            IconButton(
+                onClick = onCancel,
+                colors = IconButtonDefaults.iconButtonColors().copy(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            ) {
                 Icon(imageVector = Icons.Default.Close, contentDescription = stringResource(Res.string.cancel))
             }
             Spacer(modifier = Modifier.width(8.dp))

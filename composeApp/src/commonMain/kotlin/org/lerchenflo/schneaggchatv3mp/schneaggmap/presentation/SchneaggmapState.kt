@@ -53,7 +53,11 @@ data class SchneaggmapState(
 
     // True when this screen was opened to pick a coordinate for something else (e.g. an event's
     // location) rather than for normal map browsing - swaps the usual chrome for a focused
-    // confirm-pin overlay. The result travels back via Route.Events(pickedLocation = ...); see
+    // confirm-pin overlay. The result travels back via Route.Events(selectedEvent = ...); see
     // SchneaggmapAction.OnConfirmLocationPick.
     val pickLocationMode: Boolean = false,
+
+    // Coordinate of the last long-press, while the user is choosing between creating a map entry
+    // and creating an event there. Non-null = the choice dialog is showing.
+    val createChoiceLocation: LatLong? = null,
 )

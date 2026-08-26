@@ -197,6 +197,13 @@
     <string name="delete_event">Delete event</string>
     <string name="confirm_delete_event">Delete this event? The group will be detached from it and will remain, but the event itself will be permanently deleted.</string>
     <string name="event_delete_failed">❌ Failed to delete event</string>
+    <string name="event_delete_warning_message">Deleting this event cannot be undone. Do you also want to delete the connected group chat?</string>
+    <string name="event_delete_only">Delete event</string>
+    <string name="event_delete_with_group">Delete event + group</string>
+    <string name="event_max_users_label">Limit participants</string>
+    <string name="event_max_users_info">Set how many people can join this event. Leave off for no limit.</string>
+    <string name="event_max_users_hint">e.g. 20</string>
+    <string name="error_event_max_users_invalid">Enter a number between 1 and 1000</string>
     <string name="event_and_group_created">Event and group created!</string>
     <string name="user_description">user description</string>
     <string name="leave_group">leave group</string>
@@ -324,6 +331,9 @@
     <string name="event_pick_location_hint">Move the map to position the pin</string>
     <string name="event_use_this_location">Use this location</string>
     <string name="event_location_mobile_only">Only available on mobile</string>
+    <string name="map_create_choice_title">What do you want to create here?</string>
+    <string name="map_create_choice_entry">Map entry</string>
+    <string name="map_create_choice_event">Event</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Food</string>
     <string name="event_type_beer">Beer</string>
@@ -335,6 +345,7 @@
     <string name="event_type_trip">Trip</string>
     <string name="event_type_meetup">Meetup</string>
     <string name="event_type_outdoor">Outdoor</string>
+    <string name="event_type_work">Work</string>
     <string name="event_type_other">Other</string>
     <string name="event_public">Public</string>
     <string name="event_friends_only">Friends only</string>

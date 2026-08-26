@@ -44,7 +44,7 @@ sealed interface SchneaggmapAction {
 
     data class OnSearchResultClick(val entry: MapEntry) : SchneaggmapAction
 
-    /** Confirms the pin in pickLocationMode and hands it back via Route.Events(pickedLocation = ...). */
+    /** Confirms the pin in pickLocationMode and hands it back via Route.Events(selectedEvent = ...). */
     data class OnConfirmLocationPick(val coordinates: LatLong) : SchneaggmapAction
 
     /**
@@ -53,4 +53,13 @@ sealed interface SchneaggmapAction {
      * one entry, not back to the Events tab that opened the picker.
      */
     data object OnCancelLocationPick : SchneaggmapAction
+
+    /** Dismisses the "map entry or event?" choice dialog shown after a long-press, without creating anything. */
+    data object OnCreateChoiceDismiss : SchneaggmapAction
+
+    /** User chose "map entry" in the long-press choice dialog - opens the blank MapEntry sheet at that coordinate. */
+    data object OnCreateMapEntryChoice : SchneaggmapAction
+
+    /** User chose "event" in the long-press choice dialog - navigates to Events with a blank Event pre-filled at that coordinate. */
+    data object OnCreateEventChoice : SchneaggmapAction
 }

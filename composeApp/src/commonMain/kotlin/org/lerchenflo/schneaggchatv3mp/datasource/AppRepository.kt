@@ -692,6 +692,7 @@ class AppRepository(
         closeDate: Long?,
         invitedUsers: List<String>,
         visibility: EventVisibility,
+        maxUsers: Int?,
         groupDeleteDelay: GroupDeleteDelay,
         profilePic: ByteArray? = null,
     ) {
@@ -707,6 +708,7 @@ class AppRepository(
                 closeDate = closeDate,
                 invitedUsers = invitedUsers,
                 visibility = visibility,
+                maxUsers = maxUsers,
                 groupDeleteDelay = groupDeleteDelay,
             ),
             profilePic = profilePic,
@@ -761,11 +763,20 @@ class AppRepository(
         }
     }
 
-    suspend fun deleteEvent(eventId: String): Boolean {
-        return when (networkUtils.deleteEvent(eventId)) {
+    /**
+     * Deletes an event. Optionally also deletes its connected group chat.
+     * [groupId] only matters when [deleteConnectedGroup] is true - the local group delete here is
+     * just an optimistic fast path, the server's own group deletion + notifyGroupUpdate / group
+     * sync converge on the same result regardless.
+     */
+    suspend fun deleteEvent(eventId: String, groupId: String? = null, deleteConnectedGroup: Boolean = false): Boolean {
+        return when (networkUtils.deleteEvent(eventId, deleteConnectedGroup)) {
             is NetworkResult.Error<*> -> false
             is NetworkResult.Success<*> -> {
                 eventRepository.deleteEvent(eventId)
+                if (deleteConnectedGroup && groupId != null) {
+                    groupRepository.deleteGroup(groupId)
+                }
                 true
             }
         }

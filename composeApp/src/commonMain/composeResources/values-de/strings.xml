@@ -197,6 +197,13 @@
     <string name="delete_event">Event löschen</string>
     <string name="confirm_delete_event">Dieses Event löschen? Die Gruppe wird davon getrennt und bleibt bestehen, aber das Event selbst wird endgültig gelöscht.</string>
     <string name="event_delete_failed">❌ Event konnte nicht gelöscht werden</string>
+    <string name="event_delete_warning_message">Das Löschen dieses Events kann nicht rückgängig gemacht werden. Möchtest du auch den verbundenen Gruppenchat löschen?</string>
+    <string name="event_delete_only">Event löschen</string>
+    <string name="event_delete_with_group">Event + Gruppe löschen</string>
+    <string name="event_max_users_label">Teilnehmer begrenzen</string>
+    <string name="event_max_users_info">Lege fest, wie viele Personen diesem Event beitreten können. Deaktiviert für keine Beschränkung.</string>
+    <string name="event_max_users_hint">z.B. 20</string>
+    <string name="error_event_max_users_invalid">Gib eine Zahl zwischen 1 und 1000 ein</string>
     <string name="event_and_group_created">Event und Gruppe erstellt!</string>
     <string name="user_description">Userbeschreibung</string>
     <string name="leave_group">Gruppe verlassen</string>
@@ -324,6 +331,9 @@
     <string name="event_pick_location_hint">Karte verschieben, um die Position festzulegen</string>
     <string name="event_use_this_location">Diesen Ort verwenden</string>
     <string name="event_location_mobile_only">Nur auf dem Handy verfügbar</string>
+    <string name="map_create_choice_title">Was möchtest du hier erstellen?</string>
+    <string name="map_create_choice_entry">Karteneintrag</string>
+    <string name="map_create_choice_event">Event</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Essen</string>
     <string name="event_type_beer">Bier</string>
@@ -335,6 +345,7 @@
     <string name="event_type_trip">Ausflug</string>
     <string name="event_type_meetup">Treffen</string>
     <string name="event_type_outdoor">Outdoor</string>
+    <string name="event_type_work">Arbeit</string>
     <string name="event_type_other">Sonstiges</string>
     <string name="event_public">Öffentlich</string>
     <string name="event_friends_only">Nur Freunde</string>

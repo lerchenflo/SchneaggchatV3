@@ -2,6 +2,8 @@ package org.lerchenflo.schneaggchatv3mp.events.domain
 
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 
 @Serializable
 data class Event(
@@ -22,6 +24,8 @@ data class Event(
 
     val visibility: EventVisibility,
 
+    val maxUsers: Int? = null, //Optional cap on how many people can join, null = unlimited
+
     val groupDeleteDelay: GroupDeleteDelay = GroupDeleteDelay.ONE_DAY,
 
     val createdAt: Long,
@@ -36,4 +40,28 @@ data class Event(
     }
 
      */
+}
+
+/** Builds a blank [Event] with the app's default field values, ready to hand to the event edit popup. */
+fun newEvent(creatorId: String, location: LatLong? = null): Event {
+    val now = Clock.System.now().toEpochMilliseconds()
+    val defaultStartDate = (Clock.System.now() + 1.days).toEpochMilliseconds()
+
+    return Event(
+        id = "",
+        creatorId = creatorId,
+        type = EventType.OTHER,
+        title = "",
+        description = "",
+        groupId = "",
+        location = location,
+        startDate = defaultStartDate,
+        closeDate = null,
+        invitedUsers = emptyList(),
+        visibility = EventVisibility.FRIENDS_ONLY,
+        groupDeleteDelay = GroupDeleteDelay.ONE_DAY,
+        createdAt = now,
+        updatedAt = now,
+        creatorName = "",
+    )
 }
