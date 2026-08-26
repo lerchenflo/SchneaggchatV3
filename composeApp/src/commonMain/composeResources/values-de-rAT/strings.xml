@@ -197,6 +197,13 @@
     <string name="delete_event">Event löscha</string>
     <string name="confirm_delete_event">Des Event löscha? Die Gruppe wird davo trennt und blibt bestoh, aber s Event sealb wird endgültig glöscht.</string>
     <string name="event_delete_failed">❌ Event hot ned glöscht werra künna</string>
+    <string name="event_delete_warning_message">Wenn du a Event löschesch kann des ned rückgängig gmacht werra. Magsch du o die verbundene Gruppe löscha?</string>
+    <string name="event_delete_only">Event löscha</string>
+    <string name="event_delete_with_group">Event + Gruppe löscha</string>
+    <string name="event_max_users_label">Teilnehmer begrenza</string>
+    <string name="event_max_users_info">Leg fest, wie viele Persona dam Event beitreata künnand. Deaktiviert für kua Beschränkung.</string>
+    <string name="event_max_users_hint">z.B. 20</string>
+    <string name="error_event_max_users_invalid">Gib a Zahl zwüschat 1 und 1000 i</string>
     <string name="event_and_group_created">Event und Gruppe erstellt!</string>
     <string name="user_description">Userbeschreibung</string>
     <string name="leave_group">Abhaua</string>
@@ -321,6 +328,12 @@
     <string name="event_location_label">Ort</string>
     <string name="event_no_location_selected">Kuan Ort usgwählt</string>
     <string name="event_pick_location_title">Ort uswähla</string>
+    <string name="event_pick_location_hint">Karta verschiaba zum da Ort festlega</string>
+    <string name="event_use_this_location">Dean Ort verwenda</string>
+    <string name="event_location_mobile_only">Nur ufam Handy verfügbar</string>
+    <string name="map_create_choice_title">Was magsch du do erstella?</string>
+    <string name="map_create_choice_entry">Ort</string>
+    <string name="map_create_choice_event">Event</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Eeassa</string>
     <string name="event_type_beer">Bier</string>
@@ -332,6 +345,7 @@
     <string name="event_type_trip">Usflug</string>
     <string name="event_type_meetup">Treaffa</string>
     <string name="event_type_outdoor">Dussa hänga</string>
+    <string name="event_type_work">Schaffa</string>
     <string name="event_type_other">Sonstiges</string>
     <string name="event_public">Öffentlich</string>
     <string name="event_friends_only">Nur Freunde</string>

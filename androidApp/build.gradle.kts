@@ -24,7 +24,7 @@ android {
         applicationId = "org.lerchenflo.schneaggchatv3mp"
         minSdk = 28
         targetSdk = 37
-        versionCode = 31
+        versionCode = 32
         versionName = "3.0.16"
     }
     packaging {
