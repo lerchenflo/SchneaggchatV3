@@ -20,6 +20,7 @@ data class EventResponse(
     val closeDate: Long?,
     val invitedUsers: List<String>,
     val visibility: EventVisibility,
+    val maxUsers: Int? = null,
     val groupDeleteDelay: GroupDeleteDelay,
     val createdAt: Long = 0L,
     val updatedAt: Long = 0L,
@@ -58,5 +59,6 @@ data class EventRequest(
     val closeDate: Long?,
     val invitedUsers: List<String>,
     val visibility: EventVisibility,
+    val maxUsers: Int? = null,
     val groupDeleteDelay: GroupDeleteDelay,
 )

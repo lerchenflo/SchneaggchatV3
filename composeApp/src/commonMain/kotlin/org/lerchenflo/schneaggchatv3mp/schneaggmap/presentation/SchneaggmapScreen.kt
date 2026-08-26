@@ -88,6 +88,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType.entries
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.drawableRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.CoordinateView
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.FriendLocationsPreview
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapCreateChoiceDialog
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapEntryInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapSearchBar
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapStyleDropdown
@@ -657,6 +658,14 @@ fun SchneaggmapScreen(
                     },
                     isOwnUser = isOwnUser,
                     modifier = Modifier.align(Alignment.BottomCenter)
+                )
+            }
+
+            state.createChoiceLocation?.let {
+                MapCreateChoiceDialog(
+                    onDismiss = { onAction(SchneaggmapAction.OnCreateChoiceDismiss) },
+                    onCreateMapEntry = { onAction(SchneaggmapAction.OnCreateMapEntryChoice) },
+                    onCreateEvent = { onAction(SchneaggmapAction.OnCreateEventChoice) },
                 )
             }
         }

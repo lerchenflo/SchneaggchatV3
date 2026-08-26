@@ -125,6 +125,7 @@ fun EventsScreen(
                     friendsById = state.friendsById,
                     groups = state.groups,
                     onPickLocation = { onAction(EventsAction.OnPickLocationClick(it)) },
+                    onDelete = { deleteGroup -> onAction(EventsAction.OnDeleteEvent(event = selectedEvent, deleteGroup = deleteGroup)) },
                     isMobile = state.isMobile,
                 )
             } else {

@@ -30,4 +30,6 @@ sealed interface EventsAction {
     data class OnJoinEvent(val eventId: String): EventsAction
 
     data class OnPickLocationClick(val currentEventState: Event): EventsAction
+
+    data class OnDeleteEvent(val event: Event, val deleteGroup: Boolean): EventsAction
 }

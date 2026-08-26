@@ -27,6 +27,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -162,20 +163,10 @@ class SchneaggmapViewModel(
                     }
                 }
 
-                //On longclick show add location dialog
+                //On longclick ask whether to create a map entry or an event here
                 if (action.longClick) {
                     _state.update {
-                        it.copy(selectedEntry = MapEntry(
-                            id = "",
-                            coordinates = action.coordinates,
-                            name = "",
-                            description = "",
-                            locationData = emptyList(),
-                            createdBy = "",
-                            createdAt = Clock.System.now().toEpochMilliseconds(),
-                            updatedBy = "",
-                            updatedAt = Clock.System.now().toEpochMilliseconds()
-                        ))
+                        it.copy(createChoiceLocation = action.coordinates)
                     }
                 } else {
 
@@ -185,6 +176,44 @@ class SchneaggmapViewModel(
                             it.copy(selectedEntry = null)
                         }
                     }
+                }
+            }
+
+            SchneaggmapAction.OnCreateChoiceDismiss -> {
+                _state.update { it.copy(createChoiceLocation = null) }
+            }
+
+            SchneaggmapAction.OnCreateMapEntryChoice -> {
+                val coordinates = _state.value.createChoiceLocation ?: return
+
+                _state.update {
+                    it.copy(
+                        createChoiceLocation = null,
+                        selectedEntry = MapEntry(
+                            id = "",
+                            coordinates = coordinates,
+                            name = "",
+                            description = "",
+                            locationData = emptyList(),
+                            createdBy = "",
+                            createdAt = Clock.System.now().toEpochMilliseconds(),
+                            updatedBy = "",
+                            updatedAt = Clock.System.now().toEpochMilliseconds()
+                        )
+                    )
+                }
+            }
+
+            SchneaggmapAction.OnCreateEventChoice -> {
+                val coordinates = _state.value.createChoiceLocation ?: return
+                val userId = SessionCache.requireLoggedIn()?.userId ?: ""
+
+                _state.update { it.copy(createChoiceLocation = null) }
+
+                viewModelScope.launch {
+                    navigator.navigate(Route.Events(
+                        selectedEvent = newEvent(creatorId = userId, location = coordinates)
+                    ))
                 }
             }
 

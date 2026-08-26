@@ -20,6 +20,7 @@ data class EventDto(
     val closeDate: Long?,
     val invitedUsers: List<String>,
     val visibility: EventVisibility,
+    val maxUsers: Int? = null,
     val groupDeleteDelay: GroupDeleteDelay,
     val createdAt: Long,
     val updatedAt: Long,

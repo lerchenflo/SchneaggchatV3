@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.SportsBar
 import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material.icons.filled.Terrain
+import androidx.compose.material.icons.filled.Work
 import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
@@ -32,6 +33,7 @@ import schneaggchatv3mp.composeapp.generated.resources.event_type_party
 import schneaggchatv3mp.composeapp.generated.resources.event_type_riding
 import schneaggchatv3mp.composeapp.generated.resources.event_type_sport
 import schneaggchatv3mp.composeapp.generated.resources.event_type_trip
+import schneaggchatv3mp.composeapp.generated.resources.event_type_work
 
 @Serializable
 enum class EventType {
@@ -51,6 +53,7 @@ enum class EventType {
     TRIP,        // day trips, weekend trips, vacations
     MEETUP,      // casual hangout with no specific activity
     OUTDOOR,     // hiking, camping, swimming, nature stuff
+    WORK,        // work-related meetups, shifts, business events
     OTHER        // fallback / catch-all
 }
 
@@ -67,6 +70,7 @@ fun EventType.icon(): ImageVector = when (this) {
     OTHER -> Icons.Default.Event
     BEER -> Icons.Default.SportsBar
     HORSE_RIDING -> Icons.Default.Pets
+    WORK -> Icons.Default.Work
 }
 
 fun EventType.labelRes(): StringResource = when (this) {
@@ -82,4 +86,5 @@ fun EventType.labelRes(): StringResource = when (this) {
     OTHER -> Res.string.event_type_other
     BEER -> Res.string.event_type_beer
     HORSE_RIDING -> Res.string.event_type_riding
+    WORK -> Res.string.event_type_work
 }

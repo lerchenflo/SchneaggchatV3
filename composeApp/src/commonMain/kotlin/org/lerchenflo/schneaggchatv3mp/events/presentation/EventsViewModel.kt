@@ -20,15 +20,12 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
-import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
-import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
+import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.event_and_group_created
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.days
+import schneaggchatv3mp.composeapp.generated.resources.event_delete_failed
 import kotlin.time.Duration.Companion.milliseconds
 
 class EventsViewModel(
@@ -82,28 +79,10 @@ class EventsViewModel(
 
             EventsAction.OnCreateNewEventButtonClick -> {
                 val userId = SessionCache.requireLoggedIn()?.userId ?: ""
-                val now = Clock.System.now().toEpochMilliseconds()
-                val defaultStartDate = (Clock.System.now() + 1.days).toEpochMilliseconds()
                 viewModelScope.launch {
                     _state.update {
                         it.copy(
-                            selectedEvent = Event(
-                                id = "",
-                                creatorId = userId,
-                                type = EventType.OTHER,
-                                title = "",
-                                description = "",
-                                groupId = "",
-                                location = null,
-                                startDate = defaultStartDate,
-                                closeDate = null,
-                                invitedUsers = emptyList(),
-                                visibility = EventVisibility.FRIENDS_ONLY,
-                                groupDeleteDelay = GroupDeleteDelay.ONE_DAY,
-                                createdAt = now,
-                                updatedAt = now,
-                                creatorName = "",
-                            )
+                            selectedEvent = newEvent(creatorId = userId)
                         )
                     }
                 }
@@ -136,6 +115,7 @@ class EventsViewModel(
                         closeDate = event.closeDate,
                         invitedUsers = event.invitedUsers,
                         visibility = event.visibility,
+                        maxUsers = event.maxUsers,
                         groupDeleteDelay = event.groupDeleteDelay,
                         profilePic = profilePic,
                     )
@@ -185,6 +165,20 @@ class EventsViewModel(
                     } finally {
                         _state.update { it.copy(isJoiningEvent = false) }
                     }
+                }
+            }
+
+            is EventsAction.OnDeleteEvent -> {
+                viewModelScope.launch {
+                    val success = appRepository.deleteEvent(
+                        eventId = action.event.id,
+                        groupId = action.event.groupId,
+                        deleteConnectedGroup = action.deleteGroup,
+                    )
+                    if (!success) {
+                        SnackbarManager.showMessage(getString(Res.string.event_delete_failed))
+                    }
+                    _state.update { it.copy(selectedEvent = null) }
                 }
             }
         }

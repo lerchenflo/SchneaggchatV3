@@ -17,11 +17,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Schedule
@@ -50,6 +52,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -69,13 +72,19 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
 import org.lerchenflo.schneaggchatv3mp.events.domain.labelRes
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.SettingsSwitch
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.MemberSelector
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.delete_event
+import schneaggchatv3mp.composeapp.generated.resources.error_event_max_users_invalid
 import schneaggchatv3mp.composeapp.generated.resources.error_event_title_must_not_be_empty
+import schneaggchatv3mp.composeapp.generated.resources.event_delete_only
+import schneaggchatv3mp.composeapp.generated.resources.event_delete_warning_message
+import schneaggchatv3mp.composeapp.generated.resources.event_delete_with_group
 import schneaggchatv3mp.composeapp.generated.resources.event_description_label
 import schneaggchatv3mp.composeapp.generated.resources.event_group_delete_label
 import schneaggchatv3mp.composeapp.generated.resources.event_has_end_time
@@ -83,6 +92,9 @@ import schneaggchatv3mp.composeapp.generated.resources.event_invite_friends
 import schneaggchatv3mp.composeapp.generated.resources.event_invited_users
 import schneaggchatv3mp.composeapp.generated.resources.event_location_label
 import schneaggchatv3mp.composeapp.generated.resources.event_location_mobile_only
+import schneaggchatv3mp.composeapp.generated.resources.event_max_users_hint
+import schneaggchatv3mp.composeapp.generated.resources.event_max_users_info
+import schneaggchatv3mp.composeapp.generated.resources.event_max_users_label
 import schneaggchatv3mp.composeapp.generated.resources.event_no_location_selected
 import schneaggchatv3mp.composeapp.generated.resources.event_starts_label
 import schneaggchatv3mp.composeapp.generated.resources.event_title_label
@@ -95,6 +107,9 @@ import kotlin.time.Instant
 //Keep in sync with the server-side limit in ValidationUtils.validateEventTitle (schneaggchatv3server)
 private const val EVENT_TITLE_MAX_LENGTH = 200
 
+//Keep in sync with the server-side limit in ValidationUtils.validateEventMaxUsers (schneaggchatv3server)
+private const val EVENT_MAX_USERS_LIMIT = 1000
+
 
 // Popup for the event's creator - every field is editable, outside taps never dismiss it
 // (an accidental tap must not silently discard in-progress edits).
@@ -106,6 +121,7 @@ fun EventEditPopup(
     friendsById: Map<String, User> = emptyMap(),
     groups: List<Group> = emptyList(),
     onPickLocation: (Event) -> Unit = {},
+    onDelete: (deleteGroup: Boolean) -> Unit = {},
     isMobile: Boolean = true,
     modifier: Modifier = Modifier
 ) {
@@ -132,12 +148,26 @@ fun EventEditPopup(
     var groupDeleteDelayDropdownExpanded by remember { mutableStateOf(false) }
     var showInviteFriendsDialog by remember { mutableStateOf(false) }
     var inviteSearchTerm by remember { mutableStateOf("") }
+    var showDeleteWarning by remember { mutableStateOf(false) }
 
     var titleError by remember { mutableStateOf(false) }
+    var maxUsersError by remember { mutableStateOf(false) }
+
+    // Separate toggle + raw text state so the field can hold an in-progress or invalid entry
+    // without collapsing currentEvent.maxUsers to null on every keystroke.
+    var limitParticipants by remember { mutableStateOf(event.maxUsers != null) }
+    var maxUsersText by remember { mutableStateOf(event.maxUsers?.toString() ?: "") }
 
     LaunchedEffect(currentEvent.title) {
         if (titleError && currentEvent.title.isNotBlank()) {
             titleError = false
+        }
+    }
+
+    LaunchedEffect(maxUsersText, limitParticipants) {
+        val enteredValue = maxUsersText.toIntOrNull()
+        if (maxUsersError && (!limitParticipants || (enteredValue != null && enteredValue in 1..EVENT_MAX_USERS_LIMIT))) {
+            maxUsersError = false
         }
     }
 
@@ -207,6 +237,20 @@ fun EventEditPopup(
                                 currentEvent = currentEvent.copy(type = entry)
                                 typeDropdownExpanded = false
                             }
+                        )
+                    }
+                }
+
+                // Only an already-saved event can be deleted
+                if (!isNewEvent) {
+                    IconButton(
+                        onClick = { showDeleteWarning = true },
+                        modifier = Modifier.align(Alignment.CenterEnd)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = stringResource(Res.string.delete_event),
+                            tint = MaterialTheme.colorScheme.error
                         )
                     }
                 }
@@ -423,6 +467,43 @@ fun EventEditPopup(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Max participants (optional cap on how many people can join)
+            SettingsSwitch(
+                modifier = Modifier.fillMaxWidth(),
+                titletext = stringResource(Res.string.event_max_users_label),
+                infotext = stringResource(Res.string.event_max_users_info),
+                switchchecked = limitParticipants,
+                onSwitchChange = { checked ->
+                    limitParticipants = checked
+                    currentEvent = currentEvent.copy(maxUsers = if (checked) maxUsersText.toIntOrNull() else null)
+                },
+                icon = null
+            )
+
+            if (limitParticipants) {
+                Spacer(modifier = Modifier.height(4.dp))
+
+                OutlinedTextField(
+                    value = maxUsersText,
+                    onValueChange = { input ->
+                        val digits = input.filter { it.isDigit() }.take(4)
+                        maxUsersText = digits
+                        currentEvent = currentEvent.copy(maxUsers = digits.toIntOrNull())
+                    },
+                    label = { Text(text = stringResource(Res.string.event_max_users_label)) },
+                    placeholder = { Text(text = stringResource(Res.string.event_max_users_hint)) },
+                    singleLine = true,
+                    isError = maxUsersError,
+                    supportingText = if (maxUsersError) {
+                        { Text(text = stringResource(Res.string.error_event_max_users_invalid)) }
+                    } else null,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             // Event visibility
             Box {
                 OutlinedButton(
@@ -539,9 +620,13 @@ fun EventEditPopup(
                 NormalButton(
                     text = stringResource(Res.string.save),
                     onClick = {
-                        if (currentEvent.title.isBlank()) {
-                            titleError = true
-                        } else {
+                        val enteredMaxUsers = maxUsersText.toIntOrNull()
+                        val maxUsersInvalid = limitParticipants && (enteredMaxUsers == null || enteredMaxUsers !in 1..EVENT_MAX_USERS_LIMIT)
+
+                        titleError = currentEvent.title.isBlank()
+                        maxUsersError = maxUsersInvalid
+
+                        if (!titleError && !maxUsersInvalid) {
                             onSave(currentEvent, typeIconBitmap)
                         }
                     },
@@ -550,6 +635,31 @@ fun EventEditPopup(
                 )
             }
         }
+    }
+
+    // Delete confirmation - three-way choice, so the extra actions live inside confirmButton
+    // instead of the shared two-button ConfirmationDialog composable.
+    if (showDeleteWarning) {
+        AlertDialog(
+            onDismissRequest = { showDeleteWarning = false },
+            title = { Text(text = stringResource(Res.string.delete_event)) },
+            text = { Text(text = stringResource(Res.string.event_delete_warning_message)) },
+            confirmButton = {
+                Column {
+                    TextButton(onClick = { showDeleteWarning = false; onDelete(false) }) {
+                        Text(text = stringResource(Res.string.event_delete_only))
+                    }
+                    TextButton(onClick = { showDeleteWarning = false; onDelete(true) }) {
+                        Text(text = stringResource(Res.string.event_delete_with_group))
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteWarning = false }) {
+                    Text(text = stringResource(Res.string.cancel))
+                }
+            }
+        )
     }
 
     // Start Date Picker Dialog
