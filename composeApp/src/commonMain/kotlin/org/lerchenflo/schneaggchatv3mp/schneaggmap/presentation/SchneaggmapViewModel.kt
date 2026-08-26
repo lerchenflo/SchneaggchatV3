@@ -88,14 +88,31 @@ class SchneaggmapViewModel(
                 val newEvent = currentlyEditedEvent?.copy(
                     location = action.coordinates
                 )
-                println("location picked, returning newevent: $newEvent")
+
+                _state.update {
+                    it.copy(
+                        pickLocationMode = false
+                    )
+                }
 
                 viewModelScope.launch { navigator.navigate(Route.Events(
                     selectedEvent = newEvent
-                )) }
+                ), navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true)) } //Close screen to remove picking ui
+
+
+
             }
             SchneaggmapAction.OnCancelLocationPick -> {
-                viewModelScope.launch { navigator.navigate(Route.Events(selectedEvent = currentlyEditedEvent)) }
+
+                _state.update {
+                    it.copy(
+                        pickLocationMode = false
+                    )
+                }
+
+                viewModelScope.launch { navigator.navigate(Route.Events(selectedEvent = currentlyEditedEvent),
+                    navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true)) }
+
             }
             SchneaggmapAction.ToggleFilterDropdown -> _state.update {
                 it.copy(

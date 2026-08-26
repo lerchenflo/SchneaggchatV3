@@ -686,7 +686,12 @@ private fun LocationPickOverlay(
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(onClick = onCancel) {
+            IconButton(
+                onClick = onCancel,
+                colors = IconButtonDefaults.iconButtonColors().copy(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            ) {
                 Icon(imageVector = Icons.Default.Close, contentDescription = stringResource(Res.string.cancel))
             }
             Spacer(modifier = Modifier.width(8.dp))
