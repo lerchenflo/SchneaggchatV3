@@ -134,24 +134,20 @@ fun EventItem(
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val secondaryTextColor = if (isOwnEvent) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                val secondaryTextColor = if (isOwnEvent) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
 
-                    Text(
-                        text = millisToString(event.startDate, "dd.MM.yyyy HH:mm"),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = secondaryTextColor
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    EventStartCountdownTimer(
-                        startDate = event.startDate,
-                        closeDate = event.closeDate,
-                        textColor = secondaryTextColor
-                    )
-                }
+                Text(
+                    text = millisToString(event.startDate, "dd.MM.yyyy HH:mm"),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = secondaryTextColor,
+                    maxLines = 1,
+                    softWrap = false
+                )
+                EventStartCountdownTimer(
+                    startDate = event.startDate,
+                    closeDate = event.closeDate,
+                    textColor = secondaryTextColor
+                )
             }
         }
     }
@@ -206,6 +202,8 @@ private fun EventStartCountdownTimer(
         text = text,
         style = MaterialTheme.typography.bodySmall,
         color = textColor,
+        maxLines = 1,
+        softWrap = false,
         modifier = modifier
     )
 }
