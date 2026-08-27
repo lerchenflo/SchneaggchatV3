@@ -781,8 +781,9 @@ fun EventEditPopup(
             }
         }
 
-        val availableUsers = remember(filteredGroups, friendsById) {
-            filteredGroups.map { it.toChatListItem() } + friendsById.values.map { it.toChatListItem() }
+        val availableUsers = remember(filteredGroups, friendsById, inviteSearchTerm) {
+            (filteredGroups.map { it.toChatListItem() } + friendsById.values.map { it.toChatListItem() })
+                .filter { it.displayName.contains(inviteSearchTerm, ignoreCase = true) }
         }
         val selectedUsers = remember(currentEvent.invitedUsers, friendsById) {
             currentEvent.invitedUsers.mapNotNull { userId -> friendsById[userId]?.toChatListItem() }
