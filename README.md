@@ -19,6 +19,14 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 # Changelog
 
+### 3.0.17
+
+#### Features
+
+
+#### Bugfixes
+- Event Farbe auf der Map repariert
+
 ### 3.0.16
 
 ##### Highlights
