@@ -335,6 +335,7 @@
     <string name="map_create_choice_title">What do you want to create here?</string>
     <string name="map_create_choice_entry">Map entry</string>
     <string name="map_create_choice_event">Event</string>
+    <string name="map_create_choice_open_in_maps">Open in maps</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Food</string>
     <string name="event_type_beer">Beer</string>

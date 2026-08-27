@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,10 +32,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
+import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
+import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.map_create_choice_entry
 import schneaggchatv3mp.composeapp.generated.resources.map_create_choice_event
+import schneaggchatv3mp.composeapp.generated.resources.map_create_choice_open_in_maps
 import schneaggchatv3mp.composeapp.generated.resources.map_create_choice_title
 
 /**
@@ -44,9 +50,10 @@ import schneaggchatv3mp.composeapp.generated.resources.map_create_choice_title
  */
 @Composable
 fun MapCreateChoiceDialog(
+    location: LatLong,
     onDismiss: () -> Unit,
-    onCreateMapEntry: () -> Unit,
-    onCreateEvent: () -> Unit,
+    onCreateMapEntry: (LatLong) -> Unit,
+    onCreateEvent: (LatLong) -> Unit,
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -75,14 +82,34 @@ fun MapCreateChoiceDialog(
                         label = stringResource(Res.string.map_create_choice_entry),
                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                        onClick = onCreateMapEntry,
+                        onClick = {
+                            onCreateMapEntry(location)
+                        },
                     )
                     ChoiceRow(
                         icon = Icons.Default.Event,
                         label = stringResource(Res.string.map_create_choice_event),
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        onClick = onCreateEvent,
+                        onClick = {
+                            onCreateEvent(location)
+                        },
+                    )
+
+                    val shareUtils = koinInject<ShareUtils>()
+                    ChoiceRow(
+                        icon = Icons.Default.Map,
+                        label = stringResource(Res.string.map_create_choice_open_in_maps),
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                        onClick = {
+
+                            shareUtils.openLocationInMaps(
+                                lat = location.lat,
+                                long = location.long,
+                                label = "Marker"
+                            )
+                        }
                     )
                 }
 
@@ -152,9 +179,12 @@ private fun ChoiceRow(
 @Preview
 @Composable
 private fun MapCreateChoiceDialogPreview() {
-    MapCreateChoiceDialog(
-        onDismiss = {},
-        onCreateMapEntry = {},
-        onCreateEvent = {},
-    )
+    SchneaggchatTheme {
+        MapCreateChoiceDialog(
+            onDismiss = {},
+            onCreateMapEntry = {},
+            onCreateEvent = {},
+            location = LatLong(24.2,0.2)
+            )
+    }
 }

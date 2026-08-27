@@ -661,11 +661,12 @@ fun SchneaggmapScreen(
                 )
             }
 
-            state.createChoiceLocation?.let {
+            state.currentlySelectedLocation?.let { location ->
                 MapCreateChoiceDialog(
                     onDismiss = { onAction(SchneaggmapAction.OnCreateChoiceDismiss) },
-                    onCreateMapEntry = { onAction(SchneaggmapAction.OnCreateMapEntryChoice) },
-                    onCreateEvent = { onAction(SchneaggmapAction.OnCreateEventChoice) },
+                    onCreateMapEntry = { onAction(SchneaggmapAction.OnCreateMapEntryChoice(it)) },
+                    onCreateEvent = { onAction(SchneaggmapAction.OnCreateEventChoice(it)) },
+                    location = location
                 )
             }
         }

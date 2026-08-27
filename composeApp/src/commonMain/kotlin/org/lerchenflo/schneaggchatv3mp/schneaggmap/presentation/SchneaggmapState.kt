@@ -57,7 +57,5 @@ data class SchneaggmapState(
     // SchneaggmapAction.OnConfirmLocationPick.
     val pickLocationMode: Boolean = false,
 
-    // Coordinate of the last long-press, while the user is choosing between creating a map entry
-    // and creating an event there. Non-null = the choice dialog is showing.
-    val createChoiceLocation: LatLong? = null,
+    val currentlySelectedLocation: LatLong? = null
 )
