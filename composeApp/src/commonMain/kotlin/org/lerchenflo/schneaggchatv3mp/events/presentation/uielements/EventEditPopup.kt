@@ -1,8 +1,7 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package org.lerchenflo.schneaggchatv3mp.events.presentation.uielements
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,13 +31,10 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -53,6 +49,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -178,10 +175,10 @@ fun EventEditPopup(
         }
     }
 
-    // DIAGNOSTIC: was a ModalBottomSheet. Swapped for a plain Dialog to test whether the sheet's
-    // own machinery (anchored drag / nested scroll) is what leaves the editor inert - clicks and
-    // text-field focus dead while drag still works - after returning from the map's location
-    // picker. Revert to ModalBottomSheet if this makes no difference.
+    // A plain Dialog rather than a ModalBottomSheet: the sheet's anchored-drag machinery could
+    // end up swallowing pointer-down events after the editor was rebuilt on returning from the
+    // map's location picker, leaving it visible but inert - clicks and text-field focus dead
+    // while dragging the sheet still worked.
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
@@ -190,16 +187,12 @@ fun EventEditPopup(
             usePlatformDefaultWidth = false
         )
     ) {
-        Surface(
-            color = MaterialTheme.colorScheme.background,
-            shape = RoundedCornerShape(28.dp),
+        Column(
             modifier = modifier
                 .fillMaxWidth(0.95f)
                 .fillMaxHeight(0.9f)
-        ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
+                .clip(RoundedCornerShape(28.dp))
+                .background(MaterialTheme.colorScheme.background)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 12.dp)
                 .clearFocusOnTap()
@@ -651,7 +644,6 @@ fun EventEditPopup(
                     showOutline = true
                 )
             }
-        }
         }
     }
 
