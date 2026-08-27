@@ -145,6 +145,8 @@ fun Chatauswahlscreen(
 
     val shareUtils = koinInject<ShareUtils>()
 
+    val chatFilter by viewModel.filter.collectAsStateWithLifecycle()
+
     var profilePictureDialogShown by remember { mutableStateOf(false) }
     var changeLogDialogContent by remember { mutableStateOf<ChangelogEntry?>(null) }
     var contributePopupShown by remember { mutableStateOf(false) }
@@ -503,7 +505,8 @@ fun Chatauswahlscreen(
                                     Text(
                                         text = stringResource(Res.string.search_friend),
                                         fontSize = 14.sp,
-                                        color = LocalContentColor.current.copy(alpha = 0.4f)
+                                        color = LocalContentColor.current.copy(alpha = 0.4f),
+                                        maxLines = 1
                                     )
                                 }
                                 innerTextField()
@@ -538,7 +541,10 @@ fun Chatauswahlscreen(
                         modifier = Modifier
                             .size(30.dp)
                             .clickable { filterDropdownExpanded = true },
-                        tint = MaterialTheme.colorScheme.onSurface
+                        tint = if (chatFilter != ChatFilter.NONE)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.onSurface
 
                     )
                     DropdownMenu(
@@ -552,7 +558,7 @@ fun Chatauswahlscreen(
                                         Icon(
                                             imageVector = filter.getIcon(),
                                             contentDescription = filter.toUiText().asString(),
-                                            tint = if (viewModel.filter.value == filter)
+                                            tint = if (chatFilter == filter)
                                                 MaterialTheme.colorScheme.primary
                                             else
                                                 MaterialTheme.colorScheme.onSurface
