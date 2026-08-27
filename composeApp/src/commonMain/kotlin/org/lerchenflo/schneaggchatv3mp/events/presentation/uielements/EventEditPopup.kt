@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -56,6 +58,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import dev.darkokoa.datetimewheelpicker.WheelDateTimePicker
 import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
 import kotlinx.datetime.LocalDateTime
@@ -175,15 +178,25 @@ fun EventEditPopup(
         }
     }
 
-    ModalBottomSheet(
+    // DIAGNOSTIC: was a ModalBottomSheet. Swapped for a plain Dialog to test whether the sheet's
+    // own machinery (anchored drag / nested scroll) is what leaves the editor inert - clicks and
+    // text-field focus dead while drag still works - after returning from the map's location
+    // picker. Revert to ModalBottomSheet if this makes no difference.
+    Dialog(
         onDismissRequest = onDismiss,
-        properties = ModalBottomSheetProperties(
-            shouldDismissOnBackPress = false,
-            shouldDismissOnClickOutside = false
-        ),
-        containerColor = MaterialTheme.colorScheme.background,
-        modifier = modifier
+        properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false,
+            usePlatformDefaultWidth = false
+        )
     ) {
+        Surface(
+            color = MaterialTheme.colorScheme.background,
+            shape = RoundedCornerShape(28.dp),
+            modifier = modifier
+                .fillMaxWidth(0.95f)
+                .fillMaxHeight(0.9f)
+        ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -638,6 +651,7 @@ fun EventEditPopup(
                     showOutline = true
                 )
             }
+        }
         }
     }
 
