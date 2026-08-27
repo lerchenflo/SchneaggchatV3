@@ -87,6 +87,24 @@ fun rememberNavigationState(
 
 }
 
+/**
+ * Closes a top-level tab: drops its backstack and re-adds the tab route with all-default
+ * arguments. Used when `exitPreviousScreen` leaves a tab whose root carried flow-specific args
+ * (the map's `currentlyEditedEvent`, the events tab's `selectedEvent`, ...) - the fresh NavKey
+ * gives the tab a new NavEntry, so the screen and its ViewModel are recreated on the next visit
+ * instead of resurrecting the old state.
+ *
+ * Skipped when the root is a different route class than the tab key - the home tab legitimately
+ * starts on the auth flow (`AutoLoginCredChecker`), which must not be rewritten.
+ */
+fun NavigationState.resetTabRoot(tabKey: NavKey) {
+    val stack = backStacks[tabKey] ?: return
+    val root = stack.firstOrNull() ?: return
+    if (root::class != tabKey::class) return
+    stack.clear()
+    stack.add(tabKey) // tab keys are the all-default instances: Route.Schneaggmap(), Route.Events()
+}
+
 @Composable
 fun NavigationState.decoratedEntriesMap(
     entryProvider: (NavKey) -> NavEntry<NavKey>

@@ -26,6 +26,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Bugfixes
 - Event Farbe auf der Map repariert
+- Schneaggmap und Events Tabs resetzen korrekt beim Zurücknavigieren statt alten Zustand zu behalten
 
 ### 3.0.16
 

@@ -83,7 +83,9 @@ class SchneaggmapViewModel(
 
     fun onAction(action: SchneaggmapAction) {
         when (action) {
-            SchneaggmapAction.OnBackClicked -> viewModelScope.launch { navigator.navigateBack() }
+            SchneaggmapAction.OnBackClicked -> viewModelScope.launch {
+                navigator.navigateBack()
+            }
             is SchneaggmapAction.OnConfirmLocationPick -> {
 
                 val newEvent = currentlyEditedEvent?.copy(
