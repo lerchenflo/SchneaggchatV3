@@ -32,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -370,6 +371,14 @@ val LocalTapTargetController = staticCompositionLocalOf<TapTargetController?> { 
  */
 fun Modifier.tapTarget(id: String): Modifier = composed {
     val controller = LocalTapTargetController.current ?: return@composed this
+
+    // Bounds are only valid while this composable is on screen. Without this the entry would
+    // linger after the screen leaves composition, and the tour would spotlight (and gate taps on)
+    // a stale rectangle where the element used to be.
+    DisposableEffect(controller, id) {
+        onDispose { controller.unregister(id) }
+    }
+
     onGloballyPositioned { coords ->
         val pos = coords.positionInRoot()
         controller.register(

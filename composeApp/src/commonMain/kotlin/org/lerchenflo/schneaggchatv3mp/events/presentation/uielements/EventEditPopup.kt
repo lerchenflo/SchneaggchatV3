@@ -126,7 +126,11 @@ fun EventEditPopup(
     modifier: Modifier = Modifier
 ) {
 
-    var currentEvent by remember {
+    // Keyed on the incoming event so the draft is re-seeded whenever a different event (or the
+    // same one carrying new data, e.g. the coordinates picked on the map) is delivered. An
+    // unkeyed remember would keep editing the previous event's stale copy. Keying on event.id
+    // alone would not work: a not-yet-saved event has id == "" both before and after the map trip.
+    var currentEvent by remember(event) {
         mutableStateOf(event)
     }
 
@@ -137,7 +141,7 @@ fun EventEditPopup(
 
     // Separate toggle state so we can flip "has end date" off without losing the picker's
     // last-set value if the user re-enables it (avoids re-deriving a default every toggle)
-    var hasCloseDate by remember {
+    var hasCloseDate by remember(event) {
         mutableStateOf(event.closeDate != null)
     }
 
@@ -155,8 +159,8 @@ fun EventEditPopup(
 
     // Separate toggle + raw text state so the field can hold an in-progress or invalid entry
     // without collapsing currentEvent.maxUsers to null on every keystroke.
-    var limitParticipants by remember { mutableStateOf(event.maxUsers != null) }
-    var maxUsersText by remember { mutableStateOf(event.maxUsers?.toString() ?: "") }
+    var limitParticipants by remember(event) { mutableStateOf(event.maxUsers != null) }
+    var maxUsersText by remember(event) { mutableStateOf(event.maxUsers?.toString() ?: "") }
 
     LaunchedEffect(currentEvent.title) {
         if (titleError && currentEvent.title.isNotBlank()) {

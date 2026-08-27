@@ -101,8 +101,14 @@ fun NavigationState.resetTabRoot(tabKey: NavKey) {
     val stack = backStacks[tabKey] ?: return
     val root = stack.firstOrNull() ?: return
     if (root::class != tabKey::class) return
-    stack.clear()
-    stack.add(tabKey) // tab keys are the all-default instances: Route.Schneaggmap(), Route.Events()
+    // Already at the bare tab root - removing and re-adding an equal key would destroy and rebuild
+    // the NavEntry (new ViewModelStore, and any ModalBottomSheet it hosts torn down mid-flight)
+    // for no state change at all.
+    if (stack.size == 1 && root == tabKey) return
+    while (stack.size > 1) stack.removeAt(stack.size - 1)
+    // Replace in place rather than remove-then-re-add, so the entry is swapped in a single step.
+    // Tab keys are the all-default instances: Route.Schneaggmap(), Route.Events().
+    if (root != tabKey) stack[0] = tabKey
 }
 
 @Composable
