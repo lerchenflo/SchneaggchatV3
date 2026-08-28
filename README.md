@@ -22,7 +22,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ### 3.0.17
 
 #### Features
-
+- Chat-Nachrichtenliste: Zu neuen Nachrichten springen Pfeil
 
 #### Bugfixes
 - Event Farbe auf der Map repariert
