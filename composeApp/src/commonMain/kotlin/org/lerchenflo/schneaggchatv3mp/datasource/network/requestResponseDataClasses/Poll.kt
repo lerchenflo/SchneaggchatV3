@@ -19,6 +19,8 @@ fun PollResponse.toPollMessage(ownId: String): PollMessage {
         maxAllowedCustomAnswers = this.maxAllowedCustomAnswers,
         visibility = this.visibility,
         expiresAt = this.closeDate,
+        allowDeleteOptions = this.allowDeleteOptions,
+        showCheckboxes = this.showCheckboxes,
         voteOptions = when (this) {
             is PollResponse.PublicPollResponse -> this.voteOptions.map { option ->
                 PollVoteOption(
@@ -32,22 +34,24 @@ fun PollResponse.toPollMessage(ownId: String): PollMessage {
                             votedAt = voter.votedAt
                         )
                     },
-                    maxVoters = option.maxVoters
+                    maxVoters = option.maxVoters,
+                    createdByMe = option.creatorId == ownId,
                 )
             }
             is PollResponse.AnonymousPollResponse -> this.voteOptions.map { option ->
                 PollVoteOption(
                     id = option.id,
                     text = option.text,
-                    custom = false,   // Not available in anonymous response
-                    creatorId = this.creatorId, // Not available in anonymous response
+                    custom = option.custom,
+                    creatorId = this.creatorId, // Not available per-option in anonymous response
                     voters = option.voters.map { voter ->
                         PollVoter(
                             userId = if (voter.myAnswer) ownId else null, // Anonymous — no userId
                             votedAt = voter.votedAt
                         )
                     },
-                    maxVoters = option.maxVoters
+                    maxVoters = option.maxVoters,
+                    createdByMe = option.createdByMe,
                 )
             }
             else -> emptyList()
@@ -74,6 +78,9 @@ interface PollResponse {
 
     val closeDate: Long?
 
+    val allowDeleteOptions: Boolean
+    val showCheckboxes: Boolean
+
 
 
     @Serializable
@@ -87,6 +94,8 @@ interface PollResponse {
         override val maxAllowedCustomAnswers: Int?,
         override val visibility: PollVisibility,
         override val closeDate: Long?,
+        override val allowDeleteOptions: Boolean = false,
+        override val showCheckboxes: Boolean = true,
 
         val voteOptions: List<PublicPollVoteOptionResponse>,
 
@@ -103,6 +112,8 @@ interface PollResponse {
         override val maxAllowedCustomAnswers: Int?,
         override val visibility: PollVisibility,
         override val closeDate: Long?,
+        override val allowDeleteOptions: Boolean = false,
+        override val showCheckboxes: Boolean = true,
 
         val voteOptions: List<AnonymousPollVoteOptionResponse>,
 
@@ -114,6 +125,8 @@ interface PollResponse {
 data class AnonymousPollVoteOptionResponse(
     val id: String,
     val text: String,
+    val custom: Boolean = false,
+    val createdByMe: Boolean = false,
     val voters : List<AnonymousPollVoterResponse>,
     val maxVoters: Int? = null,
 )

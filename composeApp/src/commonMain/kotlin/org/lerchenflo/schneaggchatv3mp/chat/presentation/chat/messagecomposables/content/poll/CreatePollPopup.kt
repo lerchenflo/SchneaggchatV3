@@ -78,10 +78,14 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_settings_allowcustom
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_allowmultiple
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_allowmultiple_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_allowmultiple_withcount
+import schneaggchatv3mp.composeapp.generated.resources.poll_settings_allowdeleteoptions
+import schneaggchatv3mp.composeapp.generated.resources.poll_settings_allowdeleteoptions_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_infinite_custom_and_selected_answers_warning
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_infinite_custom_answers_warning
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_limitperentry
 import schneaggchatv3mp.composeapp.generated.resources.poll_settings_limitperentry_info
+import schneaggchatv3mp.composeapp.generated.resources.poll_settings_showcheckboxes
+import schneaggchatv3mp.composeapp.generated.resources.poll_settings_showcheckboxes_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_visibility_title
 import sh.calvin.reorderable.ReorderableColumn
 import kotlin.time.Clock
@@ -125,6 +129,9 @@ fun PollDialog(
     var showExpiresAtDatePickerDialog by remember { mutableStateOf(false) }
 
     var limitVotersPerEntry by remember { mutableStateOf(false) }
+
+    var showCheckboxes by remember { mutableStateOf(true) }
+    var allowDeleteOptions by remember { mutableStateOf(false) }
 
     val options = remember {
         mutableStateListOf(PollOptionInput(), PollOptionInput())
@@ -313,36 +320,58 @@ fun PollDialog(
 
 
                 //settings
+
+                //Whether the poll shows checkboxes/radio buttons and accepts votes, or is a plain read-only list
                 SettingsSwitch(
-                    titletext = if (!allowMultipleAnswers) {
-                        stringResource(Res.string.poll_settings_allowmultiple)
-                    }
-                    else if (allowedAnswerCount in 1..9) {
-                        stringResource(
-                            Res.string.poll_settings_allowmultiple_withcount, //TODO: Quantity string?? für 1 answer: https://developer.android.com/guide/topics/resources/string-resource
-                            allowedAnswerCount.toString()
-                        )
-                    }
-                    else {
-                        stringResource(Res.string.poll_settings_allowmultiple_withcount, "∞")
+                    modifier = Modifier.fillMaxWidth(),
+                    titletext = stringResource(Res.string.poll_settings_showcheckboxes),
+                    infotext = stringResource(Res.string.poll_settings_showcheckboxes_info),
+                    switchchecked = showCheckboxes,
+                    onSwitchChange = {
+                        showCheckboxes = it
+                        if (!showCheckboxes) {
+                            //Voting-only settings are meaningless without checkboxes
+                            allowMultipleAnswers = false
+                            limitVotersPerEntry = false
+                        }
                     },
-                    infotext = stringResource(Res.string.poll_settings_allowmultiple_info),
-                    switchchecked = allowMultipleAnswers,
-                    onSwitchChange = { allowMultipleAnswers = it},
-                    icon = null,
-                    modifier = Modifier.fillMaxWidth()
+                    icon = null
                 )
-                if (allowMultipleAnswers) {
-                    Slider(
-                        value = allowedAnswerCount.toFloat(),
-                        onValueChange = {allowedAnswerCount = it.toInt()},
-                        valueRange = 1f..10f,
-                        steps = 9,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
-                }
 
                 Spacer(modifier = Modifier.height(16.dp))
+
+                if (showCheckboxes) {
+                    SettingsSwitch(
+                        titletext = if (!allowMultipleAnswers) {
+                            stringResource(Res.string.poll_settings_allowmultiple)
+                        }
+                        else if (allowedAnswerCount in 1..9) {
+                            stringResource(
+                                Res.string.poll_settings_allowmultiple_withcount, //TODO: Quantity string?? für 1 answer: https://developer.android.com/guide/topics/resources/string-resource
+                                allowedAnswerCount.toString()
+                            )
+                        }
+                        else {
+                            stringResource(Res.string.poll_settings_allowmultiple_withcount, "∞")
+                        },
+                        infotext = stringResource(Res.string.poll_settings_allowmultiple_info),
+                        switchchecked = allowMultipleAnswers,
+                        onSwitchChange = { allowMultipleAnswers = it},
+                        icon = null,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    if (allowMultipleAnswers) {
+                        Slider(
+                            value = allowedAnswerCount.toFloat(),
+                            onValueChange = {allowedAnswerCount = it.toInt()},
+                            valueRange = 1f..10f,
+                            steps = 9,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
 
                 SettingsSwitch(
                     modifier = Modifier.fillMaxWidth(),
@@ -404,12 +433,26 @@ fun PollDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                if (showCheckboxes) {
+                    SettingsSwitch(
+                        modifier = Modifier.fillMaxWidth(),
+                        titletext = stringResource(Res.string.poll_settings_limitperentry),
+                        infotext = stringResource(Res.string.poll_settings_limitperentry_info),
+                        switchchecked = limitVotersPerEntry,
+                        onSwitchChange = { limitVotersPerEntry = it },
+                        icon = null
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                //Whether the creator/option-creators may delete options after the poll is sent
                 SettingsSwitch(
                     modifier = Modifier.fillMaxWidth(),
-                    titletext = stringResource(Res.string.poll_settings_limitperentry),
-                    infotext = stringResource(Res.string.poll_settings_limitperentry_info),
-                    switchchecked = limitVotersPerEntry,
-                    onSwitchChange = { limitVotersPerEntry = it },
+                    titletext = stringResource(Res.string.poll_settings_allowdeleteoptions),
+                    infotext = stringResource(Res.string.poll_settings_allowdeleteoptions_info),
+                    switchchecked = allowDeleteOptions,
+                    onSwitchChange = { allowDeleteOptions = it },
                     icon = null
                 )
 
@@ -538,7 +581,8 @@ fun PollDialog(
                                 NetworkUtils.PollCreateRequest(
                                     title = title.text,
                                     description = description.text.ifEmpty { null },
-                                    maxAnswers = if (allowMultipleAnswers) {
+                                    //A list-mode poll (no checkboxes) never votes, so maxAnswers must stay null - the server rejects it otherwise
+                                    maxAnswers = if (!showCheckboxes) null else if (allowMultipleAnswers) {
                                         if (allowedAnswerCount == 10) {
                                             null
                                         } else if (allowCustomAnswers) {
@@ -561,9 +605,12 @@ fun PollDialog(
                                         .map {
                                             NetworkUtils.PollVoteOptionCreateRequest(
                                                 text = it.text.text,
-                                                maxVoters = if (limitVotersPerEntry) it.maxVoters else null
+                                                //maxVoters is a voting concept - never sent on a list-mode poll
+                                                maxVoters = if (showCheckboxes && limitVotersPerEntry) it.maxVoters else null
                                             )
-                                        }
+                                        },
+                                    allowDeleteOptions = allowDeleteOptions,
+                                    showCheckboxes = showCheckboxes,
                                 )
                             )
 

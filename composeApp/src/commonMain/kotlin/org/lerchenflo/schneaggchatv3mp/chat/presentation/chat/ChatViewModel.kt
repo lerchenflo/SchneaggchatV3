@@ -380,6 +380,15 @@ class ChatViewModel(
                     )
                 }
             }
+            is MessageAction.DeletePollOption -> {
+                viewModelScope.launch {
+                    appRepository.deletePollOption(
+                        ownId = ownId,
+                        messageId = action.messageId,
+                        optionId = action.optionId
+                    )
+                }
+            }
             is MessageAction.PlayAudio -> {
                 val filePath = action.audioPath
                 //val playPath = (if (filePath.startsWith("/")) "file:/$filePath" else filePath).trim()

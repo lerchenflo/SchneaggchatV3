@@ -25,7 +25,11 @@ class RoomTypeConverters {
 
     @TypeConverter
     fun toPollMessage(pollMessageString: String?): PollMessage? {
-        return pollMessageString?.let { json.decodeFromString(PollMessage.serializer(), it) }
+        // Tolerate a stale/malformed column instead of throwing - a poll that fails to decode
+        // should render as null, not crash the message list.
+        return pollMessageString?.let {
+            runCatching { json.decodeFromString(PollMessage.serializer(), it) }.getOrNull()
+        }
     }
 
     @TypeConverter
@@ -35,8 +39,8 @@ class RoomTypeConverters {
 
     @TypeConverter
     fun toSystemEvent(systemEventString: String?): SystemEventMessage? {
-        // Unlike toPollMessage, tolerate a stale/malformed column instead of throwing - a system
-        // message that fails to decode should render as nothing, not crash the message list.
+        // Same tolerance as toPollMessage - a system message that fails to decode should render
+        // as nothing, not crash the message list.
         return systemEventString?.let {
             runCatching { json.decodeFromString(SystemEventMessage.serializer(), it) }.getOrNull()
         }

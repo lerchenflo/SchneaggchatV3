@@ -91,3 +91,4 @@ When a task matches a skill, read and follow it.
 - Do not add tests unless explicitly asked.
 - Run the readme-changelog-updater agent after every fix (Add even small fixes, the user will remove them again if unnecessary.)
 - Before implementing new functions, utils, repositories, or mappers, run the code-reuse-scout agent with the planned function list (name + one-line intent per item) so it can research existing code to reuse or extend first. It reports a REUSE/EXTEND/NEW verdict per item and maintains `.claude/code-index.md`; it never edits source code itself.
+- **Never look at the `games/` folder for reference** (structure, functions, patterns, reuse candidates, etc.) when working on anything outside of `games/` — the code there is low quality and must not be copied or mirrored elsewhere. Only read it when the task is actually about the games feature.

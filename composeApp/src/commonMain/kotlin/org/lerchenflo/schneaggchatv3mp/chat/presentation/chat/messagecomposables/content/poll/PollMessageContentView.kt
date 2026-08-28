@@ -20,10 +20,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Blind
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PersonSearch
@@ -34,6 +36,7 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -90,11 +93,16 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_answer_summary
 import schneaggchatv3mp.composeapp.generated.resources.poll_answers_count
 import schneaggchatv3mp.composeapp.generated.resources.poll_closed
 import schneaggchatv3mp.composeapp.generated.resources.poll_customoption_info
+import schneaggchatv3mp.composeapp.generated.resources.poll_deleteoptions_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_ends_in
 import schneaggchatv3mp.composeapp.generated.resources.poll_haslimitedentries_info
+import schneaggchatv3mp.composeapp.generated.resources.poll_listmode_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_maxoptions_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_oneoption_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_option_claimed_count
+import schneaggchatv3mp.composeapp.generated.resources.poll_option_delete
+import schneaggchatv3mp.composeapp.generated.resources.poll_option_delete_confirm_text
+import schneaggchatv3mp.composeapp.generated.resources.poll_option_delete_confirm_title
 import schneaggchatv3mp.composeapp.generated.resources.poll_option_full
 import schneaggchatv3mp.composeapp.generated.resources.poll_option_maxvoters_withcount
 import schneaggchatv3mp.composeapp.generated.resources.poll_private_info
@@ -212,7 +220,11 @@ fun PollMessageContentView(
                     )
                 },
                 ownId = ownId,
-                useMD = useMD
+                useMD = useMD,
+                showCheckbox = poll.showCheckboxes,
+                //Fake option ids ("0", "1", ...) are used for the optimistic local echo until the server responds - deleting those would target nothing
+                canDelete = poll.canDeleteOption(option, ownId) && message.id != null,
+                onDelete = { onAction(MessageAction.DeletePollOption(message.id!!, option.id)) }
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -279,7 +291,8 @@ fun PollMessageContentView(
         Spacer(modifier = Modifier.height(8.dp))
 
 
-        if (poll.visibility == PollVisibility.PUBLIC || (poll.visibility == PollVisibility.PRIVATE && poll.creatorId == ownId)) {
+        //A list-mode poll (no checkboxes) never accepts votes, so there is no results view to show
+        if (poll.showCheckboxes && (poll.visibility == PollVisibility.PUBLIC || (poll.visibility == PollVisibility.PRIVATE && poll.creatorId == ownId))) {
             var showVoterDialog by remember { mutableStateOf(false) }
 
             Row {
@@ -470,12 +483,16 @@ fun PollMessageOptionView(
     voterIds: List<String?>,
     onOptionSelected: (Boolean) -> Unit,
     full: Boolean = false,
-    useMD: Boolean = false
+    useMD: Boolean = false,
+    showCheckbox: Boolean = true,
+    canDelete: Boolean = false,
+    onDelete: () -> Unit = {}
 ) {
 
     val optionCheckedByMe = option.voters.any { it.userId == ownId }
-    val selectable = optionCheckedByMe || !full
+    val selectable = showCheckbox && (optionCheckedByMe || !full)
 
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
@@ -483,33 +500,35 @@ fun PollMessageOptionView(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        //Start checkbox / radiobutton
-        if (multipleAnswers) {
-            Checkbox(
-                checked = optionCheckedByMe,
-                onCheckedChange = { onOptionSelected(!optionCheckedByMe) },
-                enabled = selectable,
-                modifier = Modifier.size(24.dp),
-                colors = CheckboxDefaults.colors(
-                    checkedColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                    uncheckedColor = if (myMessage) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurfaceVariant,
-                    checkmarkColor = if (myMessage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary
+        //Start checkbox / radiobutton - a list-mode poll (showCheckbox == false) skips this entirely, it's just text rows
+        if (showCheckbox) {
+            if (multipleAnswers) {
+                Checkbox(
+                    checked = optionCheckedByMe,
+                    onCheckedChange = { onOptionSelected(!optionCheckedByMe) },
+                    enabled = selectable,
+                    modifier = Modifier.size(24.dp),
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+                        uncheckedColor = if (myMessage) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurfaceVariant,
+                        checkmarkColor = if (myMessage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary
+                    )
                 )
-            )
-        } else {
-            RadioButton(
-                selected = optionCheckedByMe,
-                onClick = { onOptionSelected(!optionCheckedByMe) },
-                enabled = selectable,
-                modifier = Modifier.size(24.dp),
-                colors = RadioButtonDefaults.colors(
-                    selectedColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                    unselectedColor = if (myMessage) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurfaceVariant
+            } else {
+                RadioButton(
+                    selected = optionCheckedByMe,
+                    onClick = { onOptionSelected(!optionCheckedByMe) },
+                    enabled = selectable,
+                    modifier = Modifier.size(24.dp),
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+                        unselectedColor = if (myMessage) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 )
-            )
-        }
+            }
 
-        Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+        }
 
         //Userview, text + progressbar
         Column(
@@ -560,72 +579,114 @@ fun PollMessageOptionView(
                     }
                 }
 
-                // Per-entry vote limit (claimed/max, or "full")
-                option.maxVoters?.let { maxVoters ->
-                    Spacer(modifier = Modifier.width(4.dp))
+                //Voting-only info - meaningless on a plain list, so all hidden when showCheckbox is false
+                if (showCheckbox) {
+                    // Per-entry vote limit (claimed/max, or "full")
+                    option.maxVoters?.let { maxVoters ->
+                        Spacer(modifier = Modifier.width(4.dp))
 
-                    Text(
-                        text = if (full) {
-                            stringResource(Res.string.poll_option_full)
-                        } else {
-                            stringResource(Res.string.poll_option_claimed_count, option.voters.size.toString(), maxVoters.toString())
-                        },
-                        fontSize = 10.sp,
-                        color = if (full) {
-                            MaterialTheme.colorScheme.error
-                        } else if (myMessage) {
-                            MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        }
-                    )
-                }
-
-
-
-                Spacer(modifier = Modifier.width(4.dp))
-
-                val pictureManager = koinInject<PictureManager>()
-
-
-                val nonNullVoterIds = voterIds.filterNotNull()
-                val anonymousVoterCount = voterIds.count { it == null }
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(2.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.horizontalScroll(rememberScrollState())
-                ) {
-
-                    // Show profile pictures for identified voters
-                    nonNullVoterIds.forEach { userId ->
-                        ProfilePictureView(
-                            filepath = pictureManager.getProfilePicFilePath(userId, false),
-                            modifier = Modifier.size(24.dp)
+                        Text(
+                            text = if (full) {
+                                stringResource(Res.string.poll_option_full)
+                            } else {
+                                stringResource(Res.string.poll_option_claimed_count, option.voters.size.toString(), maxVoters.toString())
+                            },
+                            fontSize = 10.sp,
+                            color = if (full) {
+                                MaterialTheme.colorScheme.error
+                            } else if (myMessage) {
+                                MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            }
                         )
                     }
 
-                    // Show count of anonymous voters if any
-                    if (anonymousVoterCount > 0) {
-                        Text(
-                            text = "+$anonymousVoterCount",
-                            fontSize = 12.sp,
-                            color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+
+
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    val pictureManager = koinInject<PictureManager>()
+
+
+                    val nonNullVoterIds = voterIds.filterNotNull()
+                    val anonymousVoterCount = voterIds.count { it == null }
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                    ) {
+
+                        // Show profile pictures for identified voters
+                        nonNullVoterIds.forEach { userId ->
+                            ProfilePictureView(
+                                filepath = pictureManager.getProfilePicFilePath(userId, false),
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+
+                        // Show count of anonymous voters if any
+                        if (anonymousVoterCount > 0) {
+                            Text(
+                                text = "+$anonymousVoterCount",
+                                fontSize = 12.sp,
+                                color = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+
+                if (canDelete) {
+                    IconButton(
+                        onClick = {
+                            //Skip the confirm dialog when nobody voted - nothing is lost
+                            if (option.voters.isEmpty()) onDelete() else showDeleteConfirm = true
+                        },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = stringResource(Res.string.poll_option_delete),
+                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(2.dp))
+            if (showCheckbox) {
+                Spacer(modifier = Modifier.height(2.dp))
 
-            LinearProgressIndicator(
-                progress = { votePercentage },
-                drawStopIndicator = {}, //Remove stop indicator
-                trackColor = Color.Transparent,
-                color = if (myMessage) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
-            )
+                LinearProgressIndicator(
+                    progress = { votePercentage },
+                    drawStopIndicator = {}, //Remove stop indicator
+                    trackColor = Color.Transparent,
+                    color = if (myMessage) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.primary
+                )
+            }
 
         }
+    }
+
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text(stringResource(Res.string.poll_option_delete_confirm_title)) },
+            text = { Text(stringResource(Res.string.poll_option_delete_confirm_text, option.text)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteConfirm = false
+                    onDelete()
+                }) {
+                    Text(stringResource(Res.string.poll_option_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) {
+                    Text(stringResource(Res.string.cancel))
+                }
+            }
+        )
     }
 }
 
@@ -675,8 +736,15 @@ fun PollSmallInfoWindow(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(5.dp),
             ) {
-                // Multiple answers?
-                if (poll.acceptsMultipleAnswers()) {
+                // Answer type - meaningless on a list-mode poll (never votes), show a list icon instead
+                if (!poll.showCheckboxes) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.List,
+                        contentDescription = "List",
+                        modifier = Modifier.size(12.dp),
+                        tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else if (poll.acceptsMultipleAnswers()) {
                     Icon(
                         imageVector = Icons.Default.CheckBox,
                         contentDescription = "Multiple answers",
@@ -757,6 +825,16 @@ fun PollSmallInfoWindow(
                         tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+
+                // Options can be deleted
+                if (poll.allowDeleteOptions) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Options can be deleted",
+                        modifier = Modifier.size(12.dp),
+                        tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             poll.expiresAt?.let {
@@ -780,15 +858,22 @@ fun PollInfoTooltipContent(poll: PollMessage) {
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
-        // Answer type
-        TooltipRow(
-            icon = if (poll.acceptsMultipleAnswers()) Icons.Default.CheckBox else Icons.Default.CheckCircle,
-            text = if (poll.acceptsMultipleAnswers()) {
-                stringResource(Res.string.poll_maxoptions_info, poll.maxAnswers ?: stringResource(Res.string.unlimited))
-            } else {
-                stringResource(Res.string.poll_oneoption_info)
-            }
-        )
+        // Answer type - a list-mode poll never votes, so show that instead
+        if (!poll.showCheckboxes) {
+            TooltipRow(
+                icon = Icons.AutoMirrored.Filled.List,
+                text = stringResource(Res.string.poll_listmode_info)
+            )
+        } else {
+            TooltipRow(
+                icon = if (poll.acceptsMultipleAnswers()) Icons.Default.CheckBox else Icons.Default.CheckCircle,
+                text = if (poll.acceptsMultipleAnswers()) {
+                    stringResource(Res.string.poll_maxoptions_info, poll.maxAnswers ?: stringResource(Res.string.unlimited))
+                } else {
+                    stringResource(Res.string.poll_oneoption_info)
+                }
+            )
+        }
 
         // Custom answers
         if (poll.customAnswersEnabled) {
@@ -817,6 +902,14 @@ fun PollInfoTooltipContent(poll: PollMessage) {
             TooltipRow(
                 icon = Icons.Default.Lock,
                 text = stringResource(Res.string.poll_haslimitedentries_info)
+            )
+        }
+
+        // Options can be deleted
+        if (poll.allowDeleteOptions) {
+            TooltipRow(
+                icon = Icons.Default.Delete,
+                text = stringResource(Res.string.poll_deleteoptions_info)
             )
         }
 

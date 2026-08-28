@@ -24,6 +24,12 @@ data class PollMessage(
     val expiresAt: Long?,
 
     val voteOptions: List<PollVoteOption> = emptyList(),
+
+    //If true, the creator may delete any option, and users may delete options they created
+    val allowDeleteOptions: Boolean = false,
+
+    //If false, the poll renders as a plain read-only list - no voting, no checkboxes
+    val showCheckboxes: Boolean = true,
 ) {
     /**
      * Get total number of votes across all options
@@ -78,6 +84,14 @@ data class PollMessage(
     fun optionIsFull(option: PollVoteOption, excludingUserId: String): Boolean {
         return option.maxVoters != null && option.voters.count { it.userId != excludingUserId } >= option.maxVoters
     }
+
+    /**
+     * Whether ownId may delete this option: the poll creator may delete any option,
+     * and a user may delete an option they created themselves (works for anonymous polls too,
+     * since createdByMe is computed server-side rather than compared via creatorId).
+     */
+    fun canDeleteOption(option: PollVoteOption, ownId: String): Boolean =
+        allowDeleteOptions && !isExpired() && (creatorId == ownId || option.createdByMe)
 }
 
 
@@ -89,6 +103,9 @@ data class PollVoteOption(
     val creatorId: String,
     val voters : List<PollVoter>,
     val maxVoters: Int? = null, // null = unlimited
+
+    //True if the current user created this option - computed server-side so it also works on anonymous polls
+    val createdByMe: Boolean = false,
 ) {
     /**
      * Get list of user IDs who voted for this option

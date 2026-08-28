@@ -617,6 +617,12 @@
     <string name="poll_settings_limitperentry_info">Set a maximum number of users who can vote for each entry</string>
     <string name="poll_option_maxvoters_withcount">Max %1$s users for this entry</string>
 
+    <string name="poll_settings_showcheckboxes">Show checkboxes</string>
+    <string name="poll_settings_showcheckboxes_info">If disabled, the poll is shown as a plain list without voting - useful for shared lists like a shopping list</string>
+
+    <string name="poll_settings_allowdeleteoptions">Allow deleting options</string>
+    <string name="poll_settings_allowdeleteoptions_info">Let the poll creator delete any option, and let each user delete the options they created themselves</string>
+
     <string name="poll_visibility_title">Visibility: %1$s</string>
 
     <string name="poll_visibility_public">public (Everyone can see who voted where)</string>
@@ -659,6 +665,13 @@
     <string name="poll_option_claimed_count">%1$s/%2$s</string>
     <string name="poll_option_full">full</string>
     <string name="poll_haslimitedentries_info">Some entries have a limited number of voters</string>
+
+    <string name="poll_listmode_info">This is a plain list - no voting</string>
+    <string name="poll_deleteoptions_info">The creator can delete any option, and users can delete the options they created</string>
+
+    <string name="poll_option_delete">Delete option</string>
+    <string name="poll_option_delete_confirm_title">Delete this option?</string>
+    <string name="poll_option_delete_confirm_text">\"%1$s\" and its votes will be removed. This cannot be undone.</string>
 
 
 

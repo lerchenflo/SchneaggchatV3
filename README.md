@@ -23,6 +23,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Features
 - Chat-Nachrichtenliste: Zu neuen Nachrichten springen Pfeil
+- Umfragen: Option Checkboxen anzeigen & Option löschen
 
 #### Bugfixes
 - Event Farbe auf der Map repariert
