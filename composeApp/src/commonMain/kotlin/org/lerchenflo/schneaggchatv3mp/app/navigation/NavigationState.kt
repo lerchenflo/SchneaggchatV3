@@ -156,6 +156,7 @@ private val gameRoutes: Set<KClass<out NavKey>> = setOf(
 private val chatRoutes: Set<KClass<out NavKey>> = setOf(
     Route.Chat::class,
     Route.ChatDetails::class,
+    Route.Birthdays::class,
     Route.NewChat::class,
     Route.MessageChatSelector::class,
     Route.GroupCreator::class
@@ -176,6 +177,7 @@ val backStackConfiguration = SavedStateConfiguration {
             subclass(Route.SignUp::class, Route.SignUp.serializer())
             subclass(Route.EmailVerifiedCheck::class, Route.EmailVerifiedCheck.serializer())
             subclass(Route.ChatDetails::class, Route.ChatDetails.serializer())
+            subclass(Route.Birthdays::class, Route.Birthdays.serializer())
             subclass(Route.Schneaggmap::class, Route.Schneaggmap.serializer())
             subclass(Route.Events::class, Route.Events.serializer())
 

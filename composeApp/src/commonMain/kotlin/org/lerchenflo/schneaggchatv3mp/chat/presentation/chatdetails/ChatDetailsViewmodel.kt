@@ -328,6 +328,12 @@ class ChatDetailsViewmodel(
         }
     }
 
+    fun navigateToBirthdays() {
+        viewModelScope.launch {
+            navigator.navigate(Route.Birthdays)
+        }
+    }
+
     fun deleteConnectedEvent(eventId: String) {
         viewModelScope.launch {
             val success = appRepository.deleteEvent(eventId)

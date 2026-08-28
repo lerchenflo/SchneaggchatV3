@@ -9,10 +9,12 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.daysUntil
 import kotlinx.datetime.format
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlinx.datetime.format.byUnicodePattern
 import kotlinx.datetime.minus
+import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -184,3 +186,63 @@ fun isBirthdayToday(birthDate: String?): Boolean {
             (parsed.month == Month(2) && parsed.day == 29 &&            //29. Feb is shown on 28th
                     today.month == Month(2) && today.day ==28)
 }
+
+/**
+ * The next occurrence of [parsed]'s month/day on or after [today], or null if [parsed] is blank/
+ * unparseable. 29. Feb is treated as 28. Feb in non-leap years, consistent with [isBirthdayToday].
+ */
+private fun nextBirthdayOccurrence(parsed: LocalDate, today: LocalDate): LocalDate {
+    fun occurrenceInYear(year: Int): LocalDate {
+        return if (parsed.month == Month(2) && parsed.day == 29 && !isLeapYear(year)) {
+            LocalDate(year, 2, 28)
+        } else {
+            LocalDate(year, parsed.month, parsed.day)
+        }
+    }
+
+    val thisYear = occurrenceInYear(today.year)
+    return if (thisYear >= today) thisYear else occurrenceInYear(today.year + 1)
+}
+
+/**
+ * Days from today until the next occurrence of this birthday. 0 means the birthday is today.
+ * Null if [birthDate] is blank/unparseable.
+ */
+fun daysUntilNextBirthday(birthDate: String?): Int? {
+    if (birthDate.isNullOrBlank()) return null
+    val parsed = runCatching { LocalDate.parse(birthDate) }.getOrNull() ?: return null
+    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+
+    return today.daysUntil(nextBirthdayOccurrence(parsed, today))
+}
+
+/**
+ * The calendar month (1-12) of the next occurrence of this birthday, or null if [birthDate] is
+ * blank/unparseable.
+ */
+fun nextBirthdayMonth(birthDate: String?): Int? {
+    if (birthDate.isNullOrBlank()) return null
+    val parsed = runCatching { LocalDate.parse(birthDate) }.getOrNull() ?: return null
+    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+
+    return nextBirthdayOccurrence(parsed, today).month.number
+}
+
+/**
+ * The age the person turns on their next birthday, or null if [birthDate] is blank/unparseable,
+ * has no plausible birth year (before 1900), or would produce an implausible age (<= 0 or > 130).
+ */
+fun ageOnNextBirthday(birthDate: String?): Int? {
+    if (birthDate.isNullOrBlank()) return null
+    val parsed = runCatching { LocalDate.parse(birthDate) }.getOrNull() ?: return null
+    if (parsed.year < 1900) return null
+
+    val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+    val nextOccurrence = nextBirthdayOccurrence(parsed, today)
+    val age = nextOccurrence.year - parsed.year
+
+    return age.takeIf { it in 1..130 }
+}
+
+private fun isLeapYear(year: Int): Boolean =
+    (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)

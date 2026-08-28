@@ -85,8 +85,7 @@ fun ChatInputBar(
         ) {
             // button zum züg addden
 
-            val hasContent = sendContent !is SendMessageContent.TextContent
-                    || (sendContent as? SendMessageContent.TextContent)?.textMessage?.text?.isNotEmpty() == true
+            val hasContent = sendContent !is SendMessageContent.TextContent || (sendContent).textMessage.text.isNotEmpty()
             val isRecording = (sendContent as? SendMessageContent.AudioContent)?.isRecording ?: false
 
             if (!hasContent) {

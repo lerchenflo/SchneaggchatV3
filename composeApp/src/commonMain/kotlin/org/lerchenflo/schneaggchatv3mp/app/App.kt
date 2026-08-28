@@ -53,6 +53,7 @@ import org.lerchenflo.schneaggchatv3mp.app.onboarding.rememberOnboardingTour
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.birthdays.BirthdaysScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.Chatauswahlscreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.MessageChatSelector
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorScreenRoot
@@ -565,6 +566,9 @@ fun App() {
                                             chatId = route.chatId,
                                             isGroup = route.isGroup
                                         )
+                                    }
+                                    entry<Route.Birthdays> {
+                                        BirthdaysScreenRoot()
                                     }
                                     entry<Route.MessageChatSelector> {
                                         MessageChatSelector()

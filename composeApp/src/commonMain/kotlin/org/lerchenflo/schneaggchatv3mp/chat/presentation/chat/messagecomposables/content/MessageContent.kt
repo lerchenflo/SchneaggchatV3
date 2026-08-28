@@ -54,7 +54,7 @@ fun MessageContent(
             // Show name for groups/other senders
             val senderName = sender?.name
             if (!mymessage && !senderName.isNullOrEmpty() && message.groupMessage && (minimal == MessageMinimal.FIRST || minimal == MessageMinimal.NONE)) {
-                val senderColor = sender?.color ?: 0
+                val senderColor = sender.color
                 Text(
                     text = senderName,
                     color = if (senderColor == 0) Color.Red else Color(senderColor.toLong() and 0xFFFFFFFFL),

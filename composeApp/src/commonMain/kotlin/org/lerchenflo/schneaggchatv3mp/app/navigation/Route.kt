@@ -32,6 +32,9 @@ sealed interface Route : NavKey {
     data class ChatDetails(val chatId: String, val isGroup: Boolean): Route
 
     @Serializable
+    data object Birthdays: Route
+
+    @Serializable
     data class Schneaggmap(val initialEntryId: String? = null, val currentlyEditedEvent: Event? = null): Route
 
     // EVENTS

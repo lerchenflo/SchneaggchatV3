@@ -353,7 +353,7 @@ fun ChatDetails(
                 // Birthdate
                 (selectedChat as? ChatDetailsState.UserDetails)?.user?.birthDate?.let { birthDate ->
 
-                    val isToday = remember { isBirthdayToday(birthDate) }
+                    val isToday = remember(birthDate) { isBirthdayToday(birthDate) }
 
                     val infiniteTransition = rememberInfiniteTransition(label = "birthday")
                     val animatedAlpha by infiniteTransition.animateFloat(
@@ -416,6 +416,9 @@ fun ChatDetails(
                             else
                                 Color.Transparent
                         ),
+                        modifier = Modifier.clickable {
+                            chatdetailsViewmodel.navigateToBirthdays()
+                        },
                     )
                 }
 

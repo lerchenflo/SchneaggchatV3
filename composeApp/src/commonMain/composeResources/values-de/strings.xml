@@ -141,6 +141,12 @@
 
     <string name="birthdate">Geburtsdatum</string>
 
+    <string name="birthdays">Geburtstage</string>
+    <string name="birthday_tomorrow">morgen</string>
+    <string name="birthday_in_days">in %1$d Tagen</string>
+    <string name="birthday_turns_age">wird %1$d</string>
+    <string name="no_birthdays">Keiner deiner Freunde hat ein Geburtsdatum gesetzt</string>
+
     <string name="no_description">Keine Beschreibung</string>
     <string name="remove_friend">Freund entfernen</string>
     <string name="save">Speichern</string>
