@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageMinimal
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReadIndicator
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReadState
@@ -35,8 +36,7 @@ fun MessageContent(
     useMD: Boolean = false,
     mymessage: Boolean = false,
     selectedChatId: String,
-    senderName: String? = null,
-    senderColor: Int = 0,
+    sender: SenderInfo? = null,
     minimal: MessageMinimal = MessageMinimal.NONE,
     readerMap: Map<String, String> = emptyMap(),
     onAction: (MessageAction) -> Unit = {},
@@ -52,9 +52,11 @@ fun MessageContent(
             modifier = Modifier // Remove the modifier parameter here
         ){
             // Show name for groups/other senders
-            if (!mymessage && message.senderAsString != "" && message.groupMessage && (minimal == MessageMinimal.FIRST || minimal == MessageMinimal.NONE)) {
+            val senderName = sender?.name
+            if (!mymessage && !senderName.isNullOrEmpty() && message.groupMessage && (minimal == MessageMinimal.FIRST || minimal == MessageMinimal.NONE)) {
+                val senderColor = sender?.color ?: 0
                 Text(
-                    text = message.senderAsString,
+                    text = senderName,
                     color = if (senderColor == 0) Color.Red else Color(senderColor.toLong() and 0xFFFFFFFFL),
                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                 )

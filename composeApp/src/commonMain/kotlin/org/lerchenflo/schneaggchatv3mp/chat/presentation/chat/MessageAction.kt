@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 
 sealed interface MessageAction {
     // Poll actions
@@ -22,7 +23,10 @@ sealed interface MessageAction {
     data class StartEditMessage(val message: Message) : MessageAction
 
     data object CancelEditMessage: MessageAction
-    data class ReplyToMessage(val message: Message) : MessageAction
+    data class ReplyToMessage(
+        val message: Message,
+        val sender: SenderInfo? = null,
+    ) : MessageAction
 
     data class ToggleReaction(val messageId: String, val reaction: String) : MessageAction
 }

@@ -98,6 +98,7 @@ fun ChatScreen(
             ChatInputBar(
                 sendContent = state.sendContent,
                 replyMessage = state.replyMessage,
+                replyMessageSender = state.replyMessageSender,
                 editMessage = state.editMessage,
                 useMarkdown = state.markdownEnabled,
                 chatId = state.chatId,

@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent
@@ -37,6 +38,7 @@ import schneaggchatv3mp.composeapp.generated.resources.add
 fun ChatInputBar(
     sendContent: SendMessageContent,
     replyMessage: Message?,
+    replyMessageSender: SenderInfo?,
     editMessage: Message?,
     useMarkdown: Boolean,
     chatId: String,
@@ -67,6 +69,7 @@ fun ChatInputBar(
             ReplyPreview(
                 ownId = ownId,
                 message = reply,
+                sender = replyMessageSender,
                 useMD = useMarkdown,
                 selectedChatId = chatId,
                 onDismiss = { onAction(ChatAction.OnCancelReply) },

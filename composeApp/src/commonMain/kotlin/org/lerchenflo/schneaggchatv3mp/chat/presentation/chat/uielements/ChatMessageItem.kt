@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalClipboard
 import kotlinx.coroutines.flow.StateFlow
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.MessageViewWithActions
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.DeleteMessageAlert
@@ -29,6 +30,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.copyToClipboard
 fun ChatMessageItem(
     item: MessageDisplayItem.MessageItem,
     replyMessage: Message?,
+    replyMessageSender: SenderInfo?,
     isHighlighted: Boolean,
     ownId: String,
     chatId: String,
@@ -47,15 +49,15 @@ fun ChatMessageItem(
             useMD = useMarkdown,
             selectedChatId = chatId,
             message = message,
-            senderName = item.senderName,  // Pre-resolved sender name!
-            senderColor = item.senderColor, // Pre-resolved sender color!
+            sender = item.sender,  // Pre-resolved sender name + color!
             minimal = item.messageMinimal,
             modifier = Modifier,
             replyMessage = replyMessage,
+            replyMessageSender = replyMessageSender,
             replyMessageOnClick = onReplyPreviewClick,
             isHighlighted = isHighlighted,
             onReplyCall = {
-                onAction(MessageAction.ReplyToMessage(message))
+                onAction(MessageAction.ReplyToMessage(message, item.sender))
             },
             onLongPress = {
                 showMessageOptionPopup = true
@@ -73,7 +75,7 @@ fun ChatMessageItem(
             expanded = showMessageOptionPopup,
             message = message,
             onDismissRequest = { showMessageOptionPopup = false },
-            onReply = { onAction(MessageAction.ReplyToMessage(message)) },
+            onReply = { onAction(MessageAction.ReplyToMessage(message, item.sender)) },
             onCopy = {
                 copyToClipboard(message.content, clipboard)
                 showMessageOptionPopup = false
@@ -108,6 +110,7 @@ fun ChatMessageItem(
                 },
                 message = message,
                 selectedChatId = chatId,
+                sender = item.sender,
                 ownId = ownId
             )
         }
@@ -117,8 +120,10 @@ fun ChatMessageItem(
                 onDismiss = { showDetailsDialog = false },
                 message = message,
                 selectedChatId = chatId,
+                sender = item.sender,
                 ownId = ownId,
-                resolvedReactions = item.resolvedReactions
+                resolvedReactions = item.resolvedReactions,
+                resolvedReaders = item.resolvedReaderList
             )
         }
     }

@@ -32,6 +32,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageMinimal
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 
@@ -41,11 +42,11 @@ fun MessageViewWithActions(
     useMD: Boolean = false,
     selectedChatId: String = "",
     message: Message,
-    senderName: String? = null,
-    senderColor: Int = 0,
+    sender: SenderInfo? = null,
     minimal: MessageMinimal = MessageMinimal.NONE,
     readerMap: Map<String, String> = emptyMap(),
     replyMessage: Message? = null,
+    replyMessageSender: SenderInfo? = null,
     replyMessageOnClick: () -> Unit = {},
     isHighlighted: Boolean = false,
     onReplyCall: () -> Unit = {},
@@ -132,11 +133,11 @@ fun MessageViewWithActions(
                 message = message,
                 useMD = useMD,
                 selectedChatId = selectedChatId,
-                senderName = senderName,
-                senderColor = senderColor,
+                sender = sender,
                 minimal = minimal,
                 readerMap = readerMap,
                 replyMessage = replyMessage,
+                replyMessageSender = replyMessageSender,
                 replyMessageOnClick = replyMessageOnClick,
                 isHighlighted = isHighlighted,
                 onAction = onAction,
@@ -190,8 +191,7 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                     Reaction(userId = "user6", content = "👍")
                 )
             ),
-            senderName = "Alice",
-            senderColor = 0xFF4CAF50.toInt(),
+            sender = SenderInfo("Alice", 0xFF4CAF50.toInt()),
             onAction = {},
             onLongPress = {},
             onReplyCall = {},
@@ -231,8 +231,7 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                     Reaction(userId = "user7", content = "❤️")
                 )
             ),
-            senderName = "Bob",
-            senderColor = 0xFFFF9800.toInt(),
+            sender = SenderInfo("Bob", 0xFFFF9800.toInt()),
             onAction = {},
             onLongPress = {},
             onReplyCall = {},
@@ -276,8 +275,7 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                     Reaction(userId = "user11", content = "💯")
                 )
             ),
-            senderName = "Charlie",
-            senderColor = 0xFF9C27B0.toInt(),
+            sender = SenderInfo("Charlie", 0xFF9C27B0.toInt()),
             onAction = {},
             onLongPress = {},
             onReplyCall = {},
@@ -321,8 +319,7 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                     Reaction(userId = "user11", content = "💯")
                 )
             ),
-            senderName = "David",
-            senderColor = 0xFF607D8B.toInt(),
+            sender = SenderInfo("David", 0xFF607D8B.toInt()),
             onAction = {},
             onLongPress = {},
             onReplyCall = {},
@@ -356,8 +353,7 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                     Reaction(userId = "user7", content = "�")
                 )
             ),
-            senderName = "Me",
-            senderColor = 0xFF2196F3.toInt(),
+            sender = SenderInfo("Me", 0xFF2196F3.toInt()),
             onAction = {},
             onLongPress = {},
             onReplyCall = {},
@@ -400,8 +396,7 @@ private fun MessageViewWithActions_Text_Reactions_Preview() {
                     Reaction(userId = "user10", content = "😂")
                 )
             ),
-            senderName = "Eve",
-            senderColor = 0xFFE91E63.toInt(),
+            sender = SenderInfo("Eve", 0xFFE91E63.toInt()),
             onAction = {},
             onLongPress = {},
             onReplyCall = {},

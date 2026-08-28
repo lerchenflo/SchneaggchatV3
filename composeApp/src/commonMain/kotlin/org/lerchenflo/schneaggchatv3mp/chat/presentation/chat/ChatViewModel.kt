@@ -8,7 +8,6 @@ import io.github.ismoy.imagepickerkmp.picker.GalleryPhotoResult
 import io.github.lerchenflo.voicemessages.VoiceRecorder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -19,18 +18,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.VOICEMSG_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
@@ -42,14 +37,10 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.MessageRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
-import org.lerchenflo.schneaggchatv3mp.chat.domain.GroupMember
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageMinimal
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.chat.domain.User
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.SendMessageContent.TextContent
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
@@ -68,8 +59,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.message_too_long
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 import kotlin.time.TimeSource
 
 class ChatViewModel(
@@ -90,7 +79,6 @@ class ChatViewModel(
 
     companion object {
         private const val MAX_VOICE_MSG_TIME = 2*60*1000L
-        private const val TIME_TO_MINIMIZE = 30_000L //Time between messages to remove name and space between messages (in ms)
     }
 
     private var voiceRecorder: VoiceRecorder? = null // Object for Audio Recording
@@ -116,6 +104,11 @@ class ChatViewModel(
 
     private var newMessagesBoundaryComputed = false
     private val newMessagesBoundaryId = MutableStateFlow<String?>(null)
+
+    // Guards setAllMessagesRead(): without this it re-runs (and writes to the DB) on every
+    // single messageDisplayItemsFlow emission, including ones with nothing unread - which then
+    // re-emits the messages flow and reprocesses the whole list again.
+    private var lastMarkedReadMessageId: String? = null
 
     /**
      * Centralized action handler for all chat-screen user interactions.
@@ -150,8 +143,13 @@ class ChatViewModel(
         _state.update { it.copy(sendContent = content) }
     }
 
-    private fun updateReplyMessage(message: Message?) {
-        _state.update { it.copy(replyMessage = message) }
+    private fun updateReplyMessage(message: Message?, sender: SenderInfo? = null) {
+        _state.update {
+            it.copy(
+                replyMessage = message,
+                replyMessageSender = sender
+            )
+        }
     }
 
     private fun updateEditMessage(newValue: Message?) {
@@ -419,7 +417,7 @@ class ChatViewModel(
                 //println("Update message sendtext to empty")
             }
 
-            is MessageAction.ReplyToMessage -> updateReplyMessage(action.message)
+            is MessageAction.ReplyToMessage -> updateReplyMessage(action.message, action.sender)
             is MessageAction.ToggleReaction -> {
                 viewModelScope.launch {
                     appRepository.reactToMessage(
@@ -589,40 +587,36 @@ class ChatViewModel(
 
 
 
-    private fun formatDate(date: LocalDate): String {
-        return "${date.day}.${date.month.ordinal}.${date.year}"
-    }
+    private val messageDisplayMapper = MessageDisplayMapper(
+        getProfilePicFilePath = { userId -> pictureManager.getProfilePicFilePath(userId, false) }
+    )
 
-    @OptIn(ExperimentalTime::class)
-    private fun Long.toLocalDate(): LocalDate {
-        val instant = Instant.fromEpochMilliseconds(this)
-        return instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
-    }
-
-
-
+    // Only the id -> displayName projection, not the full User list: getAllUsersFlow() emits on
+    // ANY row change in `users` - including presence/lastSeen writes, which arrive constantly
+    // over the socket and have nothing to do with this chat. distinctUntilChanged() on the
+    // narrowed projection means only an actual display-name change reprocesses the message list.
+    private val senderNamesFlow: Flow<Map<String, String>> = userRepository.getAllUsersFlow()
+        .map { users -> users.associate { it.id to it.displayName } }
+        .distinctUntilChanged()
 
     /**
      * Transform message flow to display items with pre-resolved sender names.
      */
-    @OptIn(ExperimentalCoroutinesApi::class)
     private val messageDisplayItemsFlow: Flow<List<MessageDisplayItem>> =
         combine(
             messageRepository.getMessagesByUserIdFlow(
                 userId = chatId,
                 gruppe = isGroup
             ),
-            userRepository.getAllUsersFlow(),
+            senderNamesFlow,
             flow {
                 emit(if (isGroup) groupRepository.getGroupMembers(chatId) else emptyList())
             }
-        ) { messages, userList, groupList ->
+        ) { messages, senderNames, groupMembers ->
             captureNewMessagesBoundary(messages)
-            Triple(messages, userList, groupList)
-        }.flowOn(Dispatchers.Default)
-            .flatMapLatest { (messages, users, groupMembers) ->
-                flowOf(processMessages(messages, users, groupMembers, newMessagesBoundaryId.value))
-            }
+            messageDisplayMapper.map(messages, senderNames, groupMembers, newMessagesBoundaryId.value)
+        }
+            .distinctUntilChanged()
             .flowOn(Dispatchers.Default)
 
     private fun captureNewMessagesBoundary(messages: List<Message>) {
@@ -630,159 +624,6 @@ class ChatViewModel(
         newMessagesBoundaryComputed = true
         val idx = messages.indexOfLast { !it.myMessage && !it.readByMe }
         newMessagesBoundaryId.value = if (idx >= 0) messages[idx].id else null
-    }
-
-    private fun processMessages(
-        messages: List<Message>,
-        users: List<User>,
-        groupMembers: List<GroupMember>,
-        newMessagesBoundaryId: String?,
-    ): List<MessageDisplayItem> {
-        val userMap = users.associateBy { it.id }
-        val groupMap = groupMembers.associateBy { it.userId }
-
-        // Find the LATEST message each user has read
-        // Map<ReaderId, MessageReader>
-        val latestReadMap = mutableMapOf<String, MessageReader>()
-        messages.forEach { message ->
-            message.readers.forEach { reader ->
-                val existing = latestReadMap[reader.readerId]
-                // We update the map if this is the first time we see the user
-                // or if this reader entry has a newer timestamp
-                if (existing == null || reader.getReadDateAsLong() > existing.getReadDateAsLong()) {
-                    latestReadMap[reader.readerId] = reader
-                }
-            }
-        }
-
-        // Group those latest readers by the Message ID where they stopped
-        // Map<MessageId, List<MessageReader>>
-        val readersToDisplayPerMessage = latestReadMap.values.groupBy { it.messageId }
-
-        val displayItems = mutableListOf<MessageDisplayItem>()
-
-        messages.forEachIndexed { index, message ->
-            val currentDateLong = message.sendDate.toLongOrNull() ?: 0
-            val currentDate = message.sendDate.toLongOrNull()?.toLocalDate()
-            val nextDate = if (index + 1 in messages.indices) {
-                messages[index + 1].sendDate.toLongOrNull()?.toLocalDate()
-            } else null
-
-            // System messages are server-authored event lines, not chat bubbles - senderId is
-            // often a group id (see SystemEventMessage KDoc), so none of the sender/color/reader/
-            // reaction resolution below is meaningful. Emit a standalone display item instead and
-            // skip straight to the shared new-messages/date-divider bookkeeping.
-            if (message.msgType == MessageType.SYSTEM) {
-                val event = message.systemEvent
-                if (event != null) {
-                    displayItems.add(
-                        MessageDisplayItem.SystemMessage(
-                            id = "sys_${message.localPK}",
-                            event = event
-                        )
-                    )
-                }
-
-                if (newMessagesBoundaryId != null && message.id == newMessagesBoundaryId) {
-                    displayItems.add(MessageDisplayItem.NewMessagesDivider)
-                }
-
-                if (currentDate != nextDate && currentDate != null) {
-                    displayItems.add(
-                        MessageDisplayItem.DateDivider(
-                            id = "divider_${currentDate}",
-                            dateMillis = message.sendDate.toLong(),
-                            dateString = formatDate(currentDate)
-                        )
-                    )
-                }
-
-                return@forEachIndexed
-            }
-
-            val user = userMap[message.senderId]
-            val senderName = user?.displayName ?: groupMap[message.senderId]?.memberName ?: "Unresolved Username"
-            message.senderAsString = senderName
-            val resolvedColor = groupMap[message.senderId]?.color ?: 0
-            message.senderColor = resolvedColor
-
-            val resolvedReaders = message.readers.associate { reader ->
-                val readerUser = userMap[reader.readerId]
-                reader.readerName = readerUser?.displayName ?: groupMap[reader.readerId]?.memberName ?: "Unknown"
-                reader.readerPicture = pictureManager.getProfilePicFilePath(reader.readerId, false)
-                reader.readerId to (reader.readerName ?: "Unknown")
-            }
-
-            val resolvedReactions = message.reactions.associate { reaction ->
-                val reactUser = userMap[reaction.userId]
-                reaction.userId to (reactUser?.displayName ?: groupMap[reaction.userId]?.memberName ?: "Unknown")
-            }
-
-            // Use the message's unique ID to look up the grouped readers
-            val readersAtThisMessage = readersToDisplayPerMessage[message.id]
-            if (!readersAtThisMessage.isNullOrEmpty()) {
-                displayItems.add(
-                    MessageDisplayItem.ReaderBar(
-                        id = "readers_${message.id}",
-                        readerList = readersAtThisMessage
-                    )
-                )
-            }
-
-
-            val hasPrevNeighbor = if(index + 1 in messages.indices) {
-                val prevDate_ = messages[index + 1].sendDate.toLongOrNull() ?: 0
-                val nextSenderId = messages[index + 1].senderId
-                if(currentDateLong - prevDate_  in 0..TIME_TO_MINIMIZE && nextSenderId == message.senderId){
-                    true
-                }else false
-            }else false
-
-
-            val hasNextNeighbor = if(index - 1 in messages.indices) {
-                val nextDate_ = messages[index - 1].sendDate.toLongOrNull() ?: 0
-                val nextSenderId = messages[index - 1].senderId
-                if(nextDate_ - currentDateLong in 0..TIME_TO_MINIMIZE && nextSenderId == message.senderId){
-                    true
-                }else false
-            }else false
-
-            val minimalState = when {
-                hasPrevNeighbor && hasNextNeighbor -> MessageMinimal.MIDDLE
-                hasPrevNeighbor -> MessageMinimal.LAST
-                hasNextNeighbor -> MessageMinimal.FIRST
-                else -> MessageMinimal.NONE
-            }
-            //println("Messageminimal Status viewmodel: " + minimalState)
-
-            displayItems.add(
-                MessageDisplayItem.MessageItem(
-                    id = "msg_${message.localPK}",
-                    message = message,
-                    senderName = senderName,
-                    messageMinimal = minimalState,
-                    senderColor = resolvedColor,
-                    resolvedReaders = resolvedReaders,
-                    resolvedReactions = resolvedReactions
-                )
-            )
-
-            if (newMessagesBoundaryId != null && message.id == newMessagesBoundaryId) {
-                displayItems.add(MessageDisplayItem.NewMessagesDivider)
-            }
-
-            if (currentDate != nextDate && currentDate != null) {
-                displayItems.add(
-                    MessageDisplayItem.DateDivider(
-                        id = "divider_${currentDate}",
-                        dateMillis = message.sendDate.toLong(),
-                        dateString = formatDate(currentDate)
-                    )
-                )
-            }
-        }
-
-        return displayItems
     }
 
 
@@ -851,8 +692,17 @@ class ChatViewModel(
         viewModelScope.launch {
             messageDisplayItemsFlow.collectLatest { displayItems ->
                 _state.update { it.copy(displayItems = displayItems) }
-                if (displayItems.isNotEmpty() && AppLifecycleManager.isAppInForeground) {
-                    setAllMessagesRead()
+
+                if (AppLifecycleManager.isAppInForeground) {
+                    val messageItems = displayItems.filterIsInstance<MessageDisplayItem.MessageItem>()
+                    // Messages come back newest-first (ORDER BY sendDate DESC), so the newest is
+                    // the first MessageItem, not the last.
+                    val newestMessageId = messageItems.firstOrNull()?.message?.id
+                    val hasUnread = messageItems.any { !it.message.readByMe }
+                    if (hasUnread && newestMessageId != lastMarkedReadMessageId) {
+                        lastMarkedReadMessageId = newestMessageId
+                        setAllMessagesRead()
+                    }
                 }
             }
         }

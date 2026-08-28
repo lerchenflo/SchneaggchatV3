@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboAnnotationSources
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.resolveComboAnnotationsToPlainText
@@ -32,6 +33,7 @@ import schneaggchatv3mp.composeapp.generated.resources.you_sender
 @Composable
 fun RepliedMessagePreview(
     message: Message,
+    sender: SenderInfo?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -67,10 +69,11 @@ fun RepliedMessagePreview(
                     .padding(horizontal = 8.dp, vertical = 4.dp)
             ) {
                 if(message.groupMessage){
+                    val senderColor = sender?.color ?: 0
                     Text(
-                        text = if (message.myMessage) stringResource(Res.string.you_sender) else message.senderAsString, // Replace with actual name if available
+                        text = if (message.myMessage) stringResource(Res.string.you_sender) else sender?.name.orEmpty(),
                         style = MaterialTheme.typography.labelMedium,
-                        color = if (message.senderColor == 0) Color.Red else Color(message.senderColor.toLong() and 0xFFFFFFFFL),
+                        color = if (senderColor == 0) Color.Red else Color(senderColor.toLong() and 0xFFFFFFFFL),
                         maxLines = 1
                     )
                 }

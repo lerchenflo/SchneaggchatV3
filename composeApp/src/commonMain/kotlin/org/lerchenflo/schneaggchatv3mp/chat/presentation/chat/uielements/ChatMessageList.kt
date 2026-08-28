@@ -17,7 +17,6 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.DayDivider
@@ -111,18 +110,18 @@ fun ChatMessageList(
                     val message = item.message
                     //println("Message read by: ${message.readers}")
 
-                    var replyMessage: Message? = null
+                    var replyItem: MessageDisplayItem.MessageItem? = null
                     if (message.answerId != null) {
                         // Find answer message from display items
-                        replyMessage = displayItems
+                        replyItem = displayItems
                             .filterIsInstance<MessageDisplayItem.MessageItem>()
                             .firstOrNull { it.message.id == message.answerId }
-                            ?.message
                     }
 
                     ChatMessageItem(
                         item = item,
-                        replyMessage = replyMessage,
+                        replyMessage = replyItem?.message,
+                        replyMessageSender = replyItem?.sender,
                         isHighlighted = message.id != null && message.id == highlightedMessageId,
                         ownId = ownId,
                         chatId = chatId,

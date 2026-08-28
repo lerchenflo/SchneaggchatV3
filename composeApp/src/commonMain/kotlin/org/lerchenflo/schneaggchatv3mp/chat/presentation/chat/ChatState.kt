@@ -6,6 +6,7 @@ import io.github.ismoy.imagepickerkmp.picker.GalleryPhotoResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 
 @Stable
@@ -16,6 +17,7 @@ data class ChatState(
     val displayItems: List<MessageDisplayItem> = emptyList(),
     val sendContent: SendMessageContent = SendMessageContent.TextContent(TextFieldValue("")),
     val replyMessage: Message? = null,
+    val replyMessageSender: SenderInfo? = null,
     val editMessage: Message? = null,
     val markdownEnabled: Boolean = false,
     val isDesktop: Boolean = false,

@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.StateFlow
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageMinimal
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.MessageAction
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.options.ReactionView
@@ -32,11 +33,11 @@ fun MessageView(
     message: Message,
     useMD: Boolean = false,
     selectedChatId: String,
-    senderName: String? = null,
-    senderColor: Int = 0,
+    sender: SenderInfo? = null,
     minimal: MessageMinimal = MessageMinimal.NONE,
     readerMap: Map<String,String> = emptyMap(),
     replyMessage: Message? = null,
+    replyMessageSender: SenderInfo? = null,
     replyMessageOnClick: () -> Unit = {},
     isHighlighted: Boolean = false,
     onAction: (MessageAction) -> Unit = {},
@@ -64,6 +65,7 @@ fun MessageView(
 
             RepliedMessagePreview(
                 message = replyMessage,
+                sender = replyMessageSender,
                 onClick = replyMessageOnClick,
                 modifier = Modifier
                     .padding(
@@ -111,8 +113,7 @@ fun MessageView(
                 useMD = useMD,
                 mymessage = mymessage,
                 selectedChatId = selectedChatId,
-                senderName = senderName,
-                senderColor = senderColor,
+                sender = sender,
                 minimal = minimal,
                 readerMap = readerMap,
                 onAction = onAction,
