@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -202,23 +203,35 @@ fun ChatMessageList(
         }
 
         AnimatedVisibility(
-            visible = newMessagesAvailable,
+            visible = newMessagesAvailable || !isAtBottom,
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 16.dp)
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 16.dp, end = 16.dp)
         ) {
-            ExtendedFloatingActionButton(
-                text = { Text(stringResource(Res.string.new_messages)) },
-                icon = { Icon(Icons.Default.KeyboardArrowDown, contentDescription = null) },
-                onClick = {
-                    scope.launch {
-                        listState.animateScrollToItem(0, scrollOffset = 2)
+            if (newMessagesAvailable) {
+                ExtendedFloatingActionButton(
+                    text = { Text(stringResource(Res.string.new_messages)) },
+                    icon = { Icon(Icons.Default.KeyboardArrowDown, contentDescription = null) },
+                    onClick = {
+                        scope.launch {
+                            listState.animateScrollToItem(0, scrollOffset = 2)
+                        }
+                        newMessagesAvailable = false
                     }
-                    newMessagesAvailable = false
+                )
+            } else {
+                FloatingActionButton(
+                    onClick = {
+                        scope.launch {
+                            listState.animateScrollToItem(0, scrollOffset = 2)
+                        }
+                    }
+                ) {
+                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
                 }
-            )
+            }
         }
     }
 }
