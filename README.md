@@ -30,6 +30,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 #### Bugfixes
 - Event Farbe auf der Map repariert
 - Event bearbeiten/erstellen Bug behoben
+- iOS Tastatur-Anzeige unter Chat-Eingabe behoben
+- ChatScreen Layout-Modifier Duplizierung behoben
 
 ### 3.0.16
 
