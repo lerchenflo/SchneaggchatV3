@@ -468,6 +468,7 @@
     <string name="german_language">German (Germany)</string>
     <string name="english_language">English</string>
     <string name="vori_language">Vori (Austria)</string>
+    <string name="italian_language">Italian</string>
     <string name="language">Language</string>
     <string name="language_sel_desc">Select app language</string>
 
@@ -1167,10 +1168,10 @@
     <string name="ttt_notification_settings_go_back">Let's go back to the settings</string>
 
     <string name="ttt_settings_appearance">appearance settings</string>
-    <string name="ttt_settings_appearance_description">Here you can change your language (Austrian, German, English) and your theme.</string>
+    <string name="ttt_settings_appearance_description">Here you can change your language (Austrian, German, English, Italian) and your theme.</string>
 
     <string name="ttt_appearance_settings_language">Change language</string>
-    <string name="ttt_appearance_settings_language_description">Here you can switch between German, Austrian dialect and English.</string>
+    <string name="ttt_appearance_settings_language_description">Here you can switch between German, Austrian dialect, English and Italian.</string>
     <string name="ttt_appearance_settings_language_freeroam">Feel free to switch the language now to see how it looks, or continue the tour.</string>
     <string name="ttt_appearance_settings_go_back">Let's go back to the settings</string>
 

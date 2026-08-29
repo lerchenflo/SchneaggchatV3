@@ -25,6 +25,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Chat-Nachrichtenliste: Zu neuen Nachrichten springen Pfeil
 - Umfragen: Option Checkboxen anzeigen & Option löschen
 - Geburtstagsliste
+- Italienisch als Sprache
 
 #### Bugfixes
 - Event Farbe auf der Map repariert

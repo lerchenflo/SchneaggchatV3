@@ -81,7 +81,7 @@ When a task matches a skill, read and follow it.
 ## Guardrails & Agent Rules
 
 - **Never hardcode colors**: Always use `MaterialTheme.colorScheme` colors (or `contentColorFor(...)`). If a specific non-theme color is needed, ask the user first.
-- **String resources**: Add new strings to default `strings.xml` (in `values/`) and their German translation to `values-de/strings.xml`. NEVER add strings to `values-de-rAT` (Austrian) — that locale is translated manually.
+- **String resources**: Add new strings to default `strings.xml` (in `values/`) and their translations to `values-de/strings.xml` (German) and `values-it/strings.xml` (Italian). NEVER add strings to `values-de-rAT` (Austrian) — that locale is translated manually.
 - **Never run Gradle builds**: Do not run `./gradlew` commands or build tasks unless explicitly requested by the user.
 - **Do not assume anything**: If an instruction or requirement is ambiguous or unclear, ask the user for clarification before proceeding.
 - **Use available skills**: Always check and apply relevant skills from the skills directory when working on tasks.

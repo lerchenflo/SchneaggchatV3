@@ -1,0 +1,1313 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><resources>
+    <string name="app_name">SchneaggchatV3</string>
+
+
+    <string name="profile_picture">foto profilo</string>
+    <string name="schneaggmap">schneaggmap</string>
+    <string name="settings">impostazioni</string>
+    <string name="tools_and_games">strumenti e giochi</string>
+    <string name="filter">filtro</string>
+    <string name="search_friend">cerca amici e messaggi ...</string>
+    <string name="search_section_chats">Chat</string>
+    <string name="search_section_messages">Messaggi (%1$d)</string>
+    <string name="no_status">nessuno stato</string>
+    <string name="unknown_user">utente sconosciuto</string>
+    <string name="unknown_location">posizione sconosciuta</string>
+    <string name="unknown_event">evento sconosciuto</string>
+    <string name="unknown_game">gioco sconosciuto</string>
+    <string name="chat_last_seen_status">ultimo accesso %1$s</string>
+
+    <string name="usersync">dati utente</string>
+    <string name="groupsync">dati gruppo</string>
+    <string name="messagesync">messaggi</string>
+    <string name="mapsync">voci mappa</string>
+    <string name="eventssync">eventi</string>
+    <string name="mediasync">media</string>
+
+    <string name="status_infotext">Questo stato è visibile a tutti i tuoi amici. Al momento non è impostato.</string>
+    <string name="currentstatus">Il tuo stato attuale: %1$s</string>
+
+
+    <string name="go_back">indietro</string>
+    <string name="add">aggiungi</string>
+    <string name="message">messaggio</string>
+    <string name="login">accedi</string>
+
+
+    <string name="email_not_verified_screen_title">Devi verificare la tua email per iniziare a usare Schneaggchat</string>
+    <string name="email_not_verified_email_has_been_sent1">Se hai appena creato il tuo account, ti è stato inviato un link di conferma a </string>
+    <string name="email_not_verified_email_has_been_sent2">. Se hai creato il tuo account tempo fa, potresti dover richiedere nuovamente il link.</string>
+    <string name="email_check_verified">Verifica conferma email</string>
+    <string name="email_check_problem">Problemi? Ottieni aiuto</string>
+    <string name="email_check_loading_data">Caricamento dei dati del tuo account ...</string>
+
+
+
+    <string name="just_now">proprio ora</string>
+    <string name="yesterday">ieri</string>
+    <string name="today">oggi</string>
+
+    <string name="username">Nome utente</string>
+    <string name="password">Password</string>
+    <string name="password_again">Ripeti la stessa password</string>
+    <string name="password_forgotten">Password dimenticata?</string>
+
+
+    <string name="email">Email</string>
+    <string name="invalid_email">Inserisci un indirizzo email corretto</string>
+    <string name="email_provider_warning">Utilizza un provider email affidabile (Gmail, Yahoo, Outlook, iCloud, GMX). I servizi email temporanei o usa e getta sono sconsigliati per motivi di sicurezza (ad es. furto e problemi di recupero dell'account).</string>    <string name="sign_up">Non ho un account</string>
+    <string name="loginsubtitle">LA migliore app di chat di sempre - ora in V3 con Multiplatform per Android, IOS e Desktop!</string>
+    <string name="create_account">Crea account</string>
+    <string name="create_account_subtitle">Iscriviti ora</string>
+    <string name="acc_not_exist">L'account non esiste</string>
+    <string name="offline">Connessione al server persa</string>
+    <string name="unknown_error">Si è verificato un errore sconosciuto</string>
+    <string name="birthdateerror">Errore con la data di nascita</string>
+    <string name="acc_locked">Il tuo account è attualmente bloccato</string>
+    <string name="password_wrong">La password non è corretta</string>
+    <string name="feature_disabled">Questa funzione è attualmente disabilitata</string>
+    <string name="cannot_be_empty">Questo campo deve essere compilato</string>
+    <string name="password_needs_to_be_the_same">Le password devono corrispondere</string>
+    <string name="email_exists">Esiste già un account con questa email</string>
+    <string name="username_exists">Esiste già un account con questo nome utente</string>
+    <string name="username_too_long">Il tuo nome utente è troppo lungo</string>
+    <string name="username_too_short">Il tuo nome utente è troppo corto</string>
+
+    <string name="requirement_length">8 o più caratteri</string>
+    <string name="requirement_digit">Almeno un numero</string>
+    <string name="requirement_special">Almeno un carattere speciale</string>
+    <string name="requirement_forbidden">Non deve contenere pattern comuni o vietati</string>
+    <string name="password_missing_requirements">Mancante: %1$s</string>
+    <string name="logout">esci</string>
+    <string name="are_you_sure_you_want_to_logout">Sei sicuro di voler uscire?</string>
+    <string name="yes">sì</string>
+    <string name="no">no</string>
+    <string name="ok">ok</string>
+    <string name="cancel">annulla</string>
+    <string name="version">Versione: %1$s</string>
+    <string name="app_broken">App non funzionante</string>
+
+    <string name="bugreport_request">Segnalazione bug / Richiesta funzione</string>
+    <string name="bugreport_request_info">Segnala bug o cose che non ti convincono (non intuitivo ecc.), o richiedi una nuova funzione!</string>
+
+
+    <string name="loadinginfo_messages">Caricamento messaggi...</string>
+    <string name="loadinginfo_offline">Sei attualmente offline...</string>
+    <string name="read">letto</string>
+    <string name="useMarkdown">usa la formattazione Markdown</string>
+    <string name="markdownInfo">Questo aggiungerà la formattazione Markdown ai messaggi, ma rallenterà il caricamento dei messaggi in chat.</string>
+    <string name="highlight_todays_message_timestamp">Evidenzia l'orario di oggi</string>
+    <string name="highlight_todays_message_timestamp_info">Evidenzia in verde l'orario dei messaggi ricevuti oggi nel selettore chat.</string>
+    <string name="something_wrong_message">Qualcosa è andato storto con questo messaggio</string>
+    <string name="message_too_long">Il messaggio è troppo lungo!</string>
+    <string name="log_out_successfully">Uscita effettuata con successo</string>
+    <string name="accept_agb_pt1">Accetto i </string>
+    <string name="accept_agb_pt2">Termini e Condizioni e l'Informativa sulla Privacy</string>
+
+    <string name="change_nickname">Cambia soprannome</string>
+    <string name="enter_nickname">Inserisci soprannome</string>
+    <string name="remove">rimuovi</string>
+
+    <string name="requirement_lowercase">Almeno un carattere minuscolo</string>
+    <string name="requirement_uppercase">Almeno un carattere maiuscolo</string>
+
+    <string name="error_access_not_permitted">La tua sessione salvata non è più valida. Effettua di nuovo l'accesso.</string>
+    <string name="error_access_expired">La tua sessione salvata è scaduta dopo 30 giorni. Effettua di nuovo l'accesso</string>
+    <string name="error_invalid_credentials">Hai inserito credenziali errate</string>
+    <string name="error_login_too_many_requests">Troppi tentativi di accesso. Attendi un momento e riprova.</string>
+    <string name="error_login_server_error">Il server ha riscontrato un problema. Riprova più tardi.</string>
+    <string name="error_cannot_be_the_same_username">Il nuovo nome utente deve essere diverso da quello attuale</string>
+    <string name="error_username_must_not_be_empty">Il nuovo nome utente non può essere vuoto</string>
+
+    <string name="select_gebi_date">Seleziona la tua data di nascita</string>
+    <string name="change_gebi_date">Modifica la tua data di nascita</string>
+    <string name="select_profile_pic">Seleziona una foto profilo</string>
+
+    <string name="status">Stato:</string>
+    <string name="status_nosemicolon">Stato</string>
+
+    <string name="app_broken_desc">Risolve la maggior parte degli errori</string>
+    <string name="app_broken_are_you_sure">Questo eliminerà il database locale e recupererà tutti i dati dal server.\nSei sicuro di voler continuare?</string>
+    <string name="please_restart_app">Riavvia l'app</string>
+    <string name="press_back_again_to_exit">Premi di nuovo indietro per uscire</string>
+    <string name="verification_email_sent">Email di verifica inviata</string>
+    <string name="others_say_about">altri hanno scritto su %1$s:</string>
+    <string name="status_info">Questo testo è scritto dall'utente stesso</string>
+    <string name="description_info_user">Tutti gli amici di %1$s possono modificare questo testo, ma %1$s non può.</string>
+    <string name="description_info_group">Modifica la descrizione di questo Gruppo</string>
+
+    <string name="become_beta_tester">Diventa un Beta Tester</string>
+    <string name="become_beta_tester_desc">Ottieni accesso anticipato a nuove funzioni/correzioni prima di tutti gli altri</string>
+
+    <string name="birthdate">Data di nascita</string>
+
+    <string name="birthdays">Compleanni</string>
+    <string name="birthday_tomorrow">domani</string>
+    <string name="birthday_in_days">tra %1$d giorni</string>
+    <string name="birthday_turns_age">compie %1$d anni</string>
+    <string name="no_birthdays">Nessuno dei tuoi amici ha impostato una data di nascita</string>
+
+    <string name="no_description">Nessuna descrizione</string>
+    <string name="remove_friend">rimuovi amico</string>
+    <string name="save">salva</string>
+    <string name="close">chiudi</string>
+    <string name="you_sender">Tu</string>
+
+
+    <string name="send_to">Invia a ...</string>
+
+    <string name="theme">Tema</string>
+    <string name="theme_sel_desc">Cambia l'aspetto della tua app</string>
+
+    <string name="camera">Fotocamera</string>
+    <string name="gallery">Galleria</string>
+    <string name="choose_image_source">Scegli la fonte dell'immagine</string>
+    <string name="image_picker_error">Errore: %1$s</string>
+
+    <string name="new_chat">nuova chat</string>
+    <string name="new_group">crea gruppo</string>
+    <string name="invite_friend">invita amico</string>
+    <string name="search_user">cerca utente</string>
+    <string name="enter_username">Inserisci nome utente ...</string>
+
+    <string name="system_theme">tema di sistema</string>
+    <string name="dark_theme">tema scuro</string>
+    <string name="light_theme">tema chiaro</string>
+    <string name="ph_theme">Tema Ph</string>
+    <string name="variant1">Variante scura 1</string>
+    <string name="variant2">Variante chiara 2</string>
+    <string name="neon_pulse_theme">Neon Pulse (Scuro)</string>
+    <string name="anna_theme">Tema di Anna</string>
+    <string name="flos_theme">Tema di Flo</string>
+
+    <string name="common_friends">amici in comune: %1$s</string>
+    <string name="create_group">Crea Gruppo</string>
+
+    <string name="members">Membri</string>
+    <string name="info">Info</string>
+    <string name="at_least_members">hai bisogno di almeno %1$s membri nel tuo gruppo</string>
+    <string name="group_name_missing">Fornisci un nome per il gruppo</string>
+
+    <string name="none">tutti</string>
+    <string name="persons">persone</string>
+    <string name="groups">gruppi</string>
+    <string name="unread">non letti</string>
+
+    <string name="group_picture">foto del gruppo</string>
+    <string name="group_name">nome del gruppo</string>
+    <string name="group_description">descrizione del gruppo</string>
+    <string name="group_expires_at">Scade: %1$s</string>
+    <string name="group_expires_in">Scade tra: %1$s</string>
+    <string name="group_expired">Scaduto</string>
+    <string name="delete_group_timer">Elimina timer del gruppo</string>
+    <string name="confirm_delete_group_timer">Rimuovere la data di scadenza di questo gruppo? Non scadrà più automaticamente.</string>
+    <string name="delete_event">Elimina evento</string>
+    <string name="confirm_delete_event">Eliminare questo evento? Il gruppo verrà scollegato da esso e rimarrà, ma l'evento stesso verrà eliminato definitivamente.</string>
+    <string name="event_delete_failed">❌ Impossibile eliminare l'evento</string>
+    <string name="event_delete_warning_message">Eliminare questo evento non può essere annullato. Vuoi eliminare anche la chat di gruppo collegata?</string>
+    <string name="event_delete_only">Elimina evento</string>
+    <string name="event_delete_with_group">Elimina evento + gruppo</string>
+    <string name="event_max_users_label">Limita i partecipanti</string>
+    <string name="event_max_users_info">Imposta quante persone possono partecipare a questo evento. Lascia vuoto per nessun limite.</string>
+    <string name="event_max_users_hint">es. 20</string>
+    <string name="error_event_max_users_invalid">Inserisci un numero tra 1 e 1000</string>
+    <string name="event_and_group_created">Evento e gruppo creati!</string>
+    <string name="user_description">descrizione utente</string>
+    <string name="leave_group">abbandona gruppo</string>
+    <string name="add_users_to_group">aggiungi utenti</string>
+    <string name="member_since">membro dal %1$s</string>
+    <string name="change_group_name">Modifica il nome di questo Gruppo</string>
+
+    <string name="image">immagine</string>
+    <string name="video">video</string>
+    <string name="audio">audio</string>
+    <string name="poll">sondaggio</string>
+
+    <string name="change_server_url">cambia URL del server</string>
+    <string name="developer_settings">Sviluppatore</string>
+
+    <string name="steps_until_developer">in %1$s passaggi sarai uno sviluppatore</string>
+    <string name="you_are_now_developer">ora sei uno sviluppatore</string>
+    <string name="you_are_already_developer">sei già uno sviluppatore</string>
+    <string name="developer_setting_info">Fai attenzione con le impostazioni sviluppatore. Assicurati di sapere cosa stai facendo.</string>
+
+    <string name="misc_settings">Varie</string>
+    <string name="misc_setting_info">Altre impostazioni che potrebbero essere utili se l'app non funziona correttamente.</string>
+    <string name="misc_settings_logs">Log</string>
+    <string name="misc_settings_reset_tour">Reimposta il tour</string>
+    <string name="misc_settings_reset_tour_desc">Reimposta il tour introduttivo in modo che venga mostrato di nuovo al prossimo avvio</string>
+
+    <string name="friend_request_title">Vuoi accettare questa richiesta di amicizia?</string>
+    <string name="friend_request_cancel_title">Vuoi annullare questa richiesta di amicizia?</string>
+
+    <string name="friend_request_accept">Accetta</string>
+    <string name="friend_request_deny">Rifiuta</string>
+    <string name="friend_request_cancel">Annulla richiesta di amicizia</string>
+    <string name="friend_request_block">Blocca</string>
+
+    <string name="send_friend_request">Invia richiesta di amicizia</string>
+    <string name="send_friend_request_description">Vuoi aggiungere %1$s come amico?</string>
+    <string name="friend_request_sent">✔ Richiesta di amicizia inviata</string>
+    <string name="error_friend_request">❌ Errore durante l'invio della richiesta di amicizia</string>
+
+    <string name="server_not_reachable">Impossibile stabilire una connessione al server</string>
+
+
+    <string name="user_settings">Account</string>
+    <string name="user_settingsinfo">Apporta modifiche al tuo profilo</string>
+    <string name="emailinfo">Cambia il tuo indirizzo email</string>
+    <string name="emailinfo_unverified">Verifica il tuo indirizzo email</string>
+
+    <string name="appearance_settings">Aspetto</string>
+    <string name="appearance_settings_info">Cambia l'aspetto della tua app</string>
+
+    <string name="schneaggmap_settings">Schneaggmap</string>
+    <string name="schneaggmap_settings_info">Modifica le impostazioni della tua mappa</string>
+    <string name="merge_map_locations">Unisci posizioni durante lo zoom</string>
+    <string name="merge_map_locations_info">Raggruppa le posizioni vicine in un unico marcatore quando si riduce lo zoom</string>
+    <string name="merge_map_users">Unisci amici durante lo zoom</string>
+    <string name="merge_map_users_info">Raggruppa gli amici vicini in un unico marcatore quando si riduce lo zoom</string>
+    <string name="schneaggmap_map_style">Stile mappa</string>
+    <string name="map_style_liberty">Liberty</string>
+    <string name="map_style_bright">Bright</string>
+    <string name="map_style_positron">Positron</string>
+    <string name="map_style_dark">Dark</string>
+    <string name="map_style_fiord">Fiord</string>
+    <string name="share_location_global">Condividi la mia posizione</string>
+    <string name="share_location_global_info">Consenti agli amici con cui condividi di vedere la tua posizione</string>
+    <string name="share_location_friends_title">Condividi con</string>
+    <string name="advanced_location_sharing">Condivisione posizione avanzata</string>
+    <string name="advanced_location_sharing_info">Invia anche la tua velocità e direzione, e mostra opzioni avanzate per ogni amico</string>
+    <string name="share_speed_heading">Condividi velocità &amp; direzione</string>
+    <string name="share_snail_trail">Condividi scia (ultime 24h)</string>
+    <string name="schneaggmap_user_speed_label">Velocità</string>
+    <string name="schneaggmap_user_altitude_label">Altitudine</string>
+    <string name="schneaggmap_user_battery_label">Batteria</string>
+    <string name="schneaggmap_user_distance_24h_label">Distanza percorsa (24h)</string>
+
+    <string name="use_default_server">Usa server predefinito</string>
+    <string name="use_test_server">Usa server di test</string>
+
+
+    <string name="you_have_new_messages">Hai nuovi messaggi</string>
+    <string name="new_messages">Nuovi messaggi</string>
+    <string name="new_message_noti_single_title">Nuova chat da %1$s</string>
+    <string name="new_message_noti_group_title">Nuova chat da %1$s in %2$s</string>
+
+    <string name="new_message_reaction">%1$s ha reagito al tuo %2$s</string>
+
+
+    <string name="new_friend_request_noti">Richiesta di amicizia da %1$s</string>
+    <string name="new_friend_request_noti_body">%1$s vuole essere tuo amico</string>
+
+    <string name="new_friend_accepted_noti">Richiesta di amicizia accettata</string>
+    <string name="new_friend_accepted_noti_body">%1$s è ora tuo amico</string>
+
+    <string name="own_birthday_noti_title">Buon compleanno! &#127874;</string>
+    <string name="own_birthday_noti_body">Ti auguriamo una giornata meravigliosa!</string>
+    <string name="friend_birthday_noti_title">%1$s oggi compie gli anni! &#127874;</string>
+    <string name="friend_birthday_noti_body">Non dimenticare di fargli gli auguri!</string>
+
+    <string name="new_event_noti_title">%1$s ha creato un nuovo evento</string>
+    <string name="events_screen_title">eventi</string>
+    <string name="events_empty">Nessun evento ancora. Creane uno tu stesso!</string>
+    <string name="event_starts_in">Inizia tra: %1$s</string>
+    <string name="event_started">Iniziato</string>
+    <string name="event_ended">Terminato</string>
+    <string name="event_title_label">Titolo</string>
+    <string name="error_event_title_must_not_be_empty">Il titolo dell'evento non può essere vuoto</string>
+    <string name="event_description_label">Descrizione</string>
+    <string name="event_starts_label">Inizio:</string>
+    <string name="event_starts_with_date">Inizio: %1$s</string>
+    <string name="event_has_end_time">Ha un orario di fine</string>
+    <string name="event_closes_with_date">Chiusura: %1$s</string>
+    <string name="event_group_delete_label">Elimina la chat di gruppo</string>
+    <string name="group_delete_delay_never">Mai</string>
+    <string name="group_delete_delay_one_hour">1 ora dopo l'evento</string>
+    <string name="group_delete_delay_one_day">1 giorno dopo l'evento</string>
+    <string name="group_delete_delay_three_days">3 giorni dopo l'evento</string>
+    <string name="group_delete_delay_one_week">1 settimana dopo l'evento</string>
+    <string name="event_created_by">Creato da %1$s</string>
+    <string name="event_join">Partecipa</string>
+    <string name="event_invite_header">%1$s vuole %2$s a %3$s</string>
+    <string name="event_invited_users">Invitati</string>
+    <string name="event_invite_friends">Invita amici</string>
+    <string name="event_location_label">Posizione</string>
+    <string name="event_no_location_selected">Nessuna posizione selezionata</string>
+    <string name="event_pick_location_title">Scegli una posizione</string>
+    <string name="event_pick_location_hint">Sposta la mappa per posizionare il pin</string>
+    <string name="event_use_this_location">Usa questa posizione</string>
+    <string name="event_location_mobile_only">Disponibile solo su mobile</string>
+    <string name="map_create_choice_title">Cosa vuoi creare qui?</string>
+    <string name="map_create_choice_entry">Voce mappa</string>
+    <string name="map_create_choice_event">Evento</string>
+    <string name="map_create_choice_open_in_maps">Apri in mappe</string>
+    <string name="event_type_sport">Sport</string>
+    <string name="event_type_food">Cibo</string>
+    <string name="event_type_beer">Birra</string>
+    <string name="event_type_driving">Guida</string>
+    <string name="event_type_riding">Equitazione</string>
+    <string name="event_type_party">Festa</string>
+    <string name="event_type_gaming">Gaming</string>
+    <string name="event_type_movie">Film</string>
+    <string name="event_type_trip">Gita</string>
+    <string name="event_type_meetup">Incontro</string>
+    <string name="event_type_outdoor">Outdoor</string>
+    <string name="event_type_work">Lavoro</string>
+    <string name="event_type_other">Altro</string>
+    <string name="event_public">Pubblico</string>
+    <string name="event_friends_only">Solo amici</string>
+    <string name="event_invited_friends_only">Solo invitati</string>
+
+    <string name="tooltip_username">Scegli un nome utente unico che gli altri vedranno</string>
+    <string name="phone_number">Numero di telefono (opzionale)</string>
+    <string name="phone_number_optional_tooltip">Opzionale. Mostrato ai tuoi amici in modo che possano chiamarti.</string>
+    <string name="tooltip_email">Usato per il recupero e l'eliminazione dell'account</string>
+    <string name="tooltip_birthdate">Usato per mostrare agli altri quando è il tuo compleanno</string>
+    <string name="tooltip_password">Min. 8 caratteri con numeri, caratteri speciali e maiuscole/minuscole</string>
+    <string name="tooltip_password_repeat">Digita di nuovo la tua password per assicurarti che sia corretta</string>
+    <string name="tooltip_profile_picture">Una foto profilo per mostrare ai tuoi amici come sei</string>
+    <string name="tooltip_terms">Accettare i termini è obbligatorio per usare Schneaggchat</string>
+    <string name="tooltip_group_name">Scegli un nome per il tuo gruppo. Potrà essere modificato in seguito</string>
+    <string name="tooltip_group_description">[opzionale] Aggiungi una descrizione per il tuo gruppo. Potrà essere modificata in seguito</string>
+    <string name="tooltip_group_picture">Seleziona una foto per il gruppo</string>
+
+
+    <string name="swipecardview_left">← Precedente</string>
+    <string name="swipecardview_right">Successivo →</string>
+    <string name="swipecardview_finish">Fine ✓</string>
+    <string name="swipecardview_back">← Indietro</string>
+
+
+    <string name="name_too_long">Nome troppo lungo</string>
+    <string name="name_too_short">Nome troppo corto</string>
+
+
+    <string name="copied_to_clipboard">Copiato negli appunti</string>
+    <string name="reply">Rispondi</string>
+    <string name="copy">Copia</string>
+    <string name="edit">Modifica</string>
+    <string name="delete">Elimina</string>
+    <string name="message_details">Dettagli messaggio</string>
+    <string name="readers">Lettori</string>
+    <string name="read_at_time">letto %1$s</string>
+    <string name="no_readers">Nessuno lo ha ancora letto</string>
+    <string name="reactions">Reazioni</string>
+    <string name="no_reactions">Ancora nessuna reazione</string>
+    <string name="sent_at">Inviato %1$s</string>
+    <string name="reacted_at">reagito %1$s</string>
+
+    <string name="pin_chat">Fissa chat</string>
+    <string name="unpin_chat">Rimuovi fissaggio chat</string>
+    <string name="mark_as_unread">segna come non letto</string>
+    <string name="mark_as_read">segna come letto</string>
+    <string name="more_info">maggiori informazioni</string>
+    <string name="edit_profile_picture">modifica foto profilo</string>
+    <string name="profile_picture_add_photo">aggiungi foto</string>
+
+
+
+    <string name="admin">Admin</string>
+
+
+    <string name="pending_friend_requests">%1$s richieste di amicizia in sospeso</string>
+    <string name="no_friends_found_search">Amico non trovato?</string>
+    <string name="no_friends">nessun amico</string>
+
+    <string name="message_delete_info">Vuoi davvero eliminare questo messaggio?</string>
+    <string name="chat_message_image">immagine del messaggio</string>
+    <string name="chat_remove_image">rimuovi immagine</string>
+    <string name="chat_discard_recording">scarta registrazione</string>
+    <string name="open_chat">Apri chat</string>
+    <string name="make_admin">Rendi Admin</string>
+    <string name="remove_admin_status">rimuovi stato admin</string>
+    <string name="remove_from_group">rimuovi dal gruppo</string>
+    <string name="you_with_brackets"> (tu)</string>
+    <string name="add_description_placeholder">aggiungi una descrizione ...</string>
+    <string name="change">modifica</string>
+    <string name="search_results">Risultati della ricerca (%1$s)</string>
+    <string name="change_username">Cambia nome utente</string>
+    <string name="change_username_description">Cambia il tuo nome utente. Il nuovo nome utente sarà mostrato agli altri e usato per l'accesso</string>
+    <string name="change_username_placeholder">nuovo nome utente ...</string>
+
+    <string name="call">Chiama</string>
+    <string name="change_status">Cambia stato</string>
+    <string name="change_phone_number">Cambia numero di telefono</string>
+    <string name="phone_number_infotext">Questo numero di telefono è visibile a tutti i tuoi amici. Al momento non è impostato.</string>
+    <string name="current_phone_number">Il tuo numero di telefono attuale: %1$s</string>
+    <string name="phone_number_placeholder">numero di telefono ...</string>
+    <string name="invalid_phone_number">Questo non è un numero di telefono valido</string>
+    <string name="change_email">Cambia email</string>
+    <string name="resend_verification">reinvia verifica</string>
+
+
+    <string name="common_groups">Gruppi in comune (%1$s)</string>
+    <string name="groupmembers">Membri del gruppo (%1$s)</string>
+
+
+    <string name="delete_account">Elimina account</string>
+    <string name="invitation_text">Non usi Schneaggchat? Iscriviti ora:</string>
+
+    <string name="must_be_accepted">Devi accettare questo</string>
+    <string name="you_need_to_select_a_profilepicture">Devi selezionare una foto profilo</string>
+
+    <string name="user_since">dal %1$s</string>
+
+    <string name="pending">In sospeso</string>
+    <string name="accepted">Accettato</string>
+    <string name="declined">Rifiutato</string>
+    <string name="blocked">Bloccato</string>
+
+    <!-- Confirmation dialogs -->
+    <string name="confirm_leave_group">Sei sicuro di voler abbandonare questo gruppo?</string>
+    <string name="confirm_remove_friend">Sei sicuro di voler rimuovere %1$s dagli amici?</string>
+    <string name="confirm_remove_member">Sei sicuro di voler rimuovere %1$s dal gruppo?</string>
+
+    <!-- Language settings -->
+    <string name="system_language">Sistema</string>
+    <string name="german_language">Tedesco (Germania)</string>
+    <string name="english_language">Inglese</string>
+    <string name="vori_language">Vori (Austria)</string>
+    <string name="italian_language">Italiano</string>
+    <string name="language">Lingua</string>
+    <string name="language_sel_desc">Seleziona la lingua dell'app</string>
+
+    <!-- Games -->
+    <string name="games_dartcounter_title">Dartcounter</string>
+    <string name="games_undercover_title">Undercover</string>
+    <string name="games_stack_tower">Stack Tower</string>
+    <string name="games_morse_title">Morse</string>
+    <string name="games_morse_press_hint">Premi · corto / lungo −</string>
+    <string name="games_coinflip_title">Testa o Croce</string>
+    <string name="games_coinflip_tails_label">Etichetta croce</string>
+    <string name="games_coinflip_tails_default">Croce</string>
+    <string name="games_coinflip_heads">Testa</string>
+    <string name="games_coinflip_flip">Lancia</string>
+    <string name="games_coinflip_flipping">Lanciando…</string>
+    <string name="games_coinflip_swipe_hint">Scorri verso l'alto o tocca il pulsante per lanciare</string>
+    <string name="games_fingerpicker_title">Finger Picker</string>
+    <string name="games_fingerpicker_hint">Ognuno metta un dito sullo schermo</string>
+    <string name="games_fingerpicker_holding">Resta fermo…</string>
+    <string name="games_fingerpicker_result">%1$d dita selezionate!</string>
+    <string name="games_fingerpicker_winner_count">Numero di vincitori</string>
+    <string name="games_morse_invalid">Nessun carattere per questo codice</string>
+
+    <!-- Games: DartCounter -->
+    <string name="dartcounter_add_players">Aggiungi giocatori</string>
+    <string name="dartcounter_start_game">Inizia partita</string>
+    <string name="dartcounter_stop_game">Termina partita</string>
+    <string name="dartcounter_highscores">Classifiche</string>
+    <string name="dartcounter_configure_game_hint">Configura la partita e aggiungi giocatori per iniziare</string>
+    <string name="dartcounter_multiplier_single">Singolo</string>
+    <string name="dartcounter_multiplier_double">Doppio</string>
+    <string name="dartcounter_multiplier_triple">Triplo</string>
+    <string name="dartcounter_miss">Mancato</string>
+    <string name="dartcounter_undo">Annulla</string>
+    <string name="dartcounter_list_separator">, </string>
+    <string name="dartcounter_winners_format">Vincitori: %1$s</string>
+    <string name="dartcounter_current_player_format">Giocatore attuale: %1$s, (Freccetta %2$d/3)</string>
+    <string name="dartcounter_avg_format">Media: %1$s</string>
+    <string name="dartcounter_finished_suffix"> ✓</string>
+    <string name="dartcounter_player_name_label">Nome giocatore</string>
+    <string name="dartcounter_add">Aggiungi</string>
+    <string name="dartcounter_remove">Rimuovi</string>
+    <string name="dartcounter_done">Fatto</string>
+    <string name="dartcounter_game_configuration_title">Configurazione partita</string>
+    <string name="dartcounter_countdown_label">Countdown:</string>
+    <string name="dartcounter_out_mode_label">Modalità uscita:</string>
+    <string name="dartcounter_out_mode_single_out">Singolo</string>
+    <string name="dartcounter_out_mode_double_out">Doppio</string>
+    <string name="dartcounter_players_format">Giocatori: %1$s</string>
+    <string name="dartcounter_please_add_players_first">Aggiungi prima i giocatori</string>
+    <string name="dartcounter_cancel">Annulla</string>
+    <string name="dartcounter_stop_game_confirmation_message">Sei sicuro di voler terminare la partita attuale? Tutti i progressi andranno persi.</string>
+
+    <!-- Games: Undercover -->
+    <string name="undercover_title">Undercover</string>
+    <string name="undercover_player_name_label">Nome giocatore</string>
+    <string name="undercover_add">Aggiungi</string>
+    <string name="undercover_players_title">Giocatori</string>
+    <string name="undercover_remove">Rimuovi</string>
+    <string name="undercover_roles_title">Ruoli</string>
+    <string name="undercover_role_civilian">Civile</string>
+    <string name="undercover_role_mr_white">Mr. White</string>
+    <string name="undercover_role_undercover">Undercover</string>
+    <string name="undercover_autohide_title">Nascondi rivelazione automaticamente</string>
+    <string name="undercover_seconds_format">Secondi: %1$d</string>
+    <string name="undercover_minus">-</string>
+    <string name="undercover_plus">+</string>
+    <string name="undercover_start_game">Inizia partita</string>
+    <string name="undercover_pass_phone_to">Passa il telefono a %1$s</string>
+    <string name="undercover_i_am_player">Io sono %1$s</string>
+    <string name="undercover_no_player">Nessun giocatore</string>
+    <string name="undercover_reset">Reimposta</string>
+    <string name="undercover_reveal_word_format">Parola: %1$s</string>
+    <string name="undercover_reveal_mr_white">Sei Mr White</string>
+    <string name="undercover_hide_and_pass_phone">Nascondi &amp; Passa il telefono</string>
+    <string name="undercover_autohide_enabled">Nascondimento automatico attivato</string>
+    <string name="undercover_starting_player_title">Giocatore iniziale</string>
+    <string name="undercover_mr_white_cannot_start">Mr. White non può iniziare.</string>
+    <string name="undercover_starting_player_format">Giocatore iniziale: %1$s</string>
+    <string name="undercover_no_valid_starter">Nessun giocatore valido trovato</string>
+    <string name="undercover_continue">Continua</string>
+    <string name="undercover_discussion_title">Discussione</string>
+    <string name="undercover_discussion_instructions">Ogni giocatore descrive la propria parola senza pronunciarla. Poi si vota per eliminare qualcuno.</string>
+    <string name="undercover_start_voting">Inizia votazione</string>
+    <string name="undercover_voting_title">Votazione</string>
+    <string name="undercover_eliminate">Elimina</string>
+    <string name="undercover_eliminated_format">Eliminato: %1$s</string>
+    <string name="undercover_role_was_format">Il ruolo era: %1$s</string>
+    <string name="undercover_mr_white_guess_title">Ipotesi di Mr. White</string>
+    <string name="undercover_mr_white_guess_instructions">Mr. White è stato eliminato. Inserisci la tua ipotesi per la parola dei civili.</string>
+    <string name="undercover_word_guess_label">Ipotesi parola</string>
+    <string name="undercover_submit_guess">Invia ipotesi</string>
+    <string name="undercover_game_over">Partita finita</string>
+    <string name="undercover_new_game">Nuova partita</string>
+    <string name="undercover_winner_mr_white">Mr. White vince</string>
+    <string name="undercover_winner_civilians">I civili vincono</string>
+    <string name="undercover_winner_undercover">Undercover / Mr. White vincono</string>
+
+    <!-- Rules Dialog -->
+    <string name="undercover_rules_explanation">Spiegazione</string>
+    <string name="undercover_rules_explanation_text">Un piccolo gruppo di Impostori è apparso nel gioco. Hanno una parola diversa dagli altri e devono nascondersi. I civili devono scoprirli.</string>
+
+    <string name="undercover_rules_roles">Ruoli e obiettivi</string>
+    <string name="undercover_rules_roles_text">Ci sono 3 gruppi nel gioco: Civili, Undercover e Mr.White. La maggioranza degli abitanti sono i pacifici Civili. Ci sono fino a due gruppi di Impostori: Undercover e Mr.White.</string>
+
+    <string name="undercover_rules_secret_word">Ricevi la tua parola segreta</string>
+    <string name="undercover_rules_secret_word_text">All'inizio della partita, tutti ricevono una parola segreta. Ogni partita usa una coppia di parole segrete. Ricorda di tenere nascosta la tua parola segreta agli altri.\n\nI Civili ricevono la stessa parola segreta. Gli Undercover ricevono una parola leggermente diversa da quella dei Civili. I Mr.White non ricevono alcuna parola. In questo momento, non sai se sei un Civile o un Undercover.</string>
+
+    <string name="undercover_rules_gameplay">Gameplay</string>
+
+    <string name="undercover_rules_description_phase">Fase di descrizione</string>
+    <string name="undercover_rules_description_phase_text">Non appena tutti hanno ricevuto la loro parola segreta, un giocatore casuale viene incaricato di iniziare a descrivere la propria parola. Uno per uno, tutti descrivono la propria parola con una parola o una frase. Mr.White deve improvvisare, poiché non ha una parola.\n\nUsa questa fase per rivelare abbastanza informazioni da trovare i tuoi alleati, ma nascondi i dettagli a Mr.White.</string>
+
+    <string name="undercover_rules_discussion_phase">Fase di discussione</string>
+    <string name="undercover_rules_discussion_phase_text">Una volta completato il turno di descrizione, i giocatori discutono su chi pensano siano gli Impostori o i Civili.\n\nI Civili e gli Undercover dovrebbero usare questa fase per raccogliere più indizi per scoprire la propria identità, costruire alleanze e identificare i nemici. Nel frattempo, per Mr.White, è il momento migliore per indagare più a fondo sulla parola segreta dei Civili.\n\nRicorda il punto chiave: non esporti inutilmente troppo presto! Usa il tuo fascino per volgere le probabilità a tuo favore.</string>
+
+    <string name="undercover_rules_elimination_phase">Fase di eliminazione</string>
+    <string name="undercover_rules_elimination_phase_text">Quando la fase di discussione termina, tutti i giocatori rimanenti votano per un giocatore che vogliono eliminare. Ricorda, i giocatori già eliminati non possono più votare.\n\nIl giocatore con più voti verrà eliminato dalla partita! A meno che il giocatore votato non risulti essere Mr.White! In questo caso, ha ancora 1 possibilità di indovinare la parola dei Civili. Se indovina correttamente la parola dei Civili, Mr.White vince immediatamente!\n\nSe la condizione di vittoria della partita non viene soddisfatta dopo la fase di eliminazione, ripeti le 3 fasi sopra finché uno dei gruppi (Civile, Undercover o Mr.White) non vince la partita.</string>
+
+    <string name="undercover_rules_victory">Vittoria</string>
+    <string name="undercover_rules_victory_text">• I Civili vincono se eliminano tutti gli Undercover e i Mr.White.\n• Gli Impostori (Undercover e/o Mr.White) vincono se sopravvivono finché rimane solo 1 Civile.\n• Mr.White vince anche se indovina correttamente la parola dei Civili.</string>
+
+    <string name="undercover_rules_button">Regole</string>
+    <string name="undercover_rules_close">Chiudi</string>
+
+    <string name="your_friends_wrote_this">~ I tuoi amici</string>
+    <string name="show_logs">Mostra log</string>
+
+    <!-- polls -->
+    <string name="poll_create_screentitle">Crea sondaggio</string>
+    <string name="poll_create_title">Domanda</string>
+    <string name="poll_create_title_placeholder">Fai una domanda ...</string>
+
+    <string name="poll_create_description">Descrizione (Opzionale)</string>
+    <string name="poll_create_description_placeholder">Scrivi una descrizione se la domanda non è chiara ...</string>
+
+    <string name="poll_options_title">Opzioni</string>
+    <string name="poll_options_placeholder">+ Aggiungi opzione</string>
+    <string name="poll_options_error">Hai bisogno di almeno 2 possibili risposte</string>
+
+    <string name="poll_settings_allowmultiple">Consenti risposte multiple</string>
+    <string name="poll_settings_allowmultiple_withcount">Consenti %1$s risposte per utente</string>
+    <string name="poll_settings_allowmultiple_info">Consenti a ciascun utente di inviare più risposte (seleziona più di un'opzione)</string>
+
+    <string name="poll_settings_allowcustom">Consenti risposte personalizzate</string>
+    <string name="poll_settings_allowcustom_withcount">Consenti %1$s risposte personalizzate per utente</string>
+    <string name="poll_settings_allowcustom_info">Consenti a ciascun utente di creare risposte personalizzate nel caso non gradisca le tue opzioni</string>
+
+    <string name="poll_settings_infinite_custom_answers_warning">ATTENZIONE: Gli utenti potranno creare infinite risposte personalizzate!</string>
+    <string name="poll_settings_infinite_custom_and_selected_answers_warning">ATTENZIONE: Gli utenti potranno creare e selezionare un numero illimitato di risposte!</string>
+
+    <string name="poll_settings_limitperentry">Limita utenti per voce</string>
+    <string name="poll_settings_limitperentry_info">Imposta un numero massimo di utenti che possono votare per ogni voce</string>
+    <string name="poll_option_maxvoters_withcount">Massimo %1$s utenti per questa voce</string>
+
+    <string name="poll_settings_showcheckboxes">Mostra caselle di controllo</string>
+    <string name="poll_settings_showcheckboxes_info">Se disabilitato, il sondaggio viene mostrato come un semplice elenco senza votazione - utile per liste condivise come una lista della spesa</string>
+
+    <string name="poll_settings_allowdeleteoptions">Consenti l'eliminazione delle opzioni</string>
+    <string name="poll_settings_allowdeleteoptions_info">Lascia che il creatore del sondaggio elimini qualsiasi opzione, e che ogni utente elimini le opzioni che ha creato lui stesso</string>
+
+    <string name="poll_visibility_title">Visibilità: %1$s</string>
+
+    <string name="poll_visibility_public">pubblico (Tutti possono vedere chi ha votato cosa)</string>
+    <string name="poll_visibility_private">privato (Solo tu puoi vedere chi ha votato cosa)</string>
+    <string name="poll_visibility_anonym">anonimo (Nessuno può vedere chi ha votato)</string>
+
+    <string name="poll_expiry_title">Scade</string>
+    <string name="poll_expiry_title_withdate">Scade il %1$s</string>
+
+    <string name="poll_expiry_title_info">Il sondaggio non consente voti dopo questa data &amp; ora</string>
+
+
+    <string name="poll_create">crea sondaggio</string>
+
+
+    <string name="poll_add_custom_answer">crea risposta personalizzata</string>
+    <string name="poll_answer_label">risposta</string>
+    <string name="poll_answer_placeholder">scrivi la tua risposta ...</string>
+    <string name="poll_answers_count">%1$s risposte</string>
+    <string name="poll_user_count">%1$s utenti</string>
+    <string name="poll_ends_in">termina tra: %1$s</string>
+    <string name="poll_closed">chiuso</string>
+
+
+    <string name="poll_tooltip_title">Info sondaggio</string>
+    <string name="poll_maxoptions_info">Seleziona più opzioni (max %1$s)</string>
+    <string name="poll_oneoption_info">Seleziona solo un'opzione</string>
+    <string name="unlimited">∞</string>
+
+    <string name="poll_customoption_info">Aggiungi la tua risposta (max %1$s)</string>
+
+    <string name="poll_public_info">Tutti i voti sono pubblici</string>
+    <string name="poll_private_info">Solo il creatore vede i voti</string>
+    <string name="poll_anonymous_info">I voti sono anonimi</string>
+
+    <string name="poll_answer_summary">%1$s voti da %2$s utenti</string>
+
+    <string name="poll_show_answers">mostra risposte</string>
+
+    <string name="poll_option_claimed_count">%1$s/%2$s</string>
+    <string name="poll_option_full">pieno</string>
+    <string name="poll_haslimitedentries_info">Alcune voci hanno un numero limitato di votanti</string>
+
+    <string name="poll_listmode_info">Questo è un semplice elenco - nessuna votazione</string>
+    <string name="poll_deleteoptions_info">Il creatore può eliminare qualsiasi opzione, e gli utenti possono eliminare le opzioni che hanno creato</string>
+
+    <string name="poll_option_delete">Elimina opzione</string>
+    <string name="poll_option_delete_confirm_title">Eliminare questa opzione?</string>
+    <string name="poll_option_delete_confirm_text">"%1$s" e i suoi voti verranno rimossi. Questa azione non può essere annullata.</string>
+
+
+
+
+
+    <string name="audio_playback_on_desktop_not_supported_yet">La riproduzione audio non è ancora supportata su Desktop</string>
+
+
+    <!-- Bug Report Dialog -->
+    <string name="bugreportdialog_title_bug">Segnalazione bug</string>
+    <string name="bugreportdialog_title_feature">Richiesta funzione</string>
+    <string name="bugreportdialog_type_bug">Bug</string>
+    <string name="bugreportdialog_type_feature">Funzione</string>
+    <string name="bugreportdialog_field_title">Titolo *</string>
+    <string name="bugreportdialog_field_description">Descrizione *</string>
+    <string name="bugreportdialog_field_steps">Passaggi per riprodurre</string>
+    <string name="bugreportdialog_field_steps_placeholder">1. Apri…\n2. Tocca…\n3. Vedi errore</string>
+    <string name="bugreportdialog_field_expected">Comportamento atteso</string>
+    <string name="bugreportdialog_field_actual">Comportamento effettivo</string>
+    <string name="bugreportdialog_label_severity">Gravità</string>
+
+    <string name="bugreportdialog_severity_low">BASSA</string>
+    <string name="bugreportdialog_severity_medium">MEDIA</string>
+    <string name="bugreportdialog_severity_high">ALTA</string>
+    <string name="bugreportdialog_severity_critical">CRITICA</string>
+
+    <string name="bugreportdialog_field_motivation">Perché è necessario?</string>
+    <string name="bugreportdialog_label_priority">Priorità</string>
+
+    <string name="bugreportdialog_priority_low">BASSA</string>
+    <string name="bugreportdialog_priority_medium">MEDIA</string>
+    <string name="bugreportdialog_priority_high">ALTA</string>
+
+
+    <!-- Games: Yatzi -->
+    <string name="games_yahtzee_title">Yahtzee</string>
+    <string name="yatzi_setup_title">Configurazione Yahtzee</string>
+    <string name="yatzi_game_title">Partita Yahtzee</string>
+    <string name="yatzi_add_manage_players">Aggiungi / Gestisci giocatori</string>
+    <string name="yatzi_players">Giocatori:</string>
+    <string name="yatzi_start_game">Inizia partita</string>
+    <string name="yatzi_continue">Continua</string>
+    <string name="yatzi_restart">Ricomincia</string>
+    <string name="yatzi_new_game">Nuova partita</string>
+    <string name="yatzi_game_over">Partita finita!</string>
+    <string name="yatzi_winner">Vincitore: %1$s</string>
+    <string name="yatzi_score">Punteggio: %1$s</string>
+    <string name="yatzi_back_to_menu">Torna al menu</string>
+    <string name="yatzi_no_active_game">Nessuna partita attiva. Torna indietro e configura una nuova partita.</string>
+    <string name="yatzi_category">Categoria</string>
+    <string name="yatzi_upper_sum">Somma superiore</string>
+    <string name="yatzi_bonus">Bonus</string>
+    <string name="yatzi_total">Totale</string>
+    <string name="yatzi_roll_dice">Lancia i dadi, %1$d rimasti</string>
+    <string name="yatzi_roll_again">Lancia di nuovo, %1$d rimasti</string>
+
+    <!-- Games: shared flow -->
+    <string name="game_tap_anywhere_to_start">Tocca ovunque per iniziare</string>
+    <string name="game_stop">Ferma partita</string>
+    <string name="game_exit">Esci</string>
+    <string name="game_pause">Pausa</string>
+    <string name="game_resume">Riprendi</string>
+    <string name="game_paused">In pausa</string>
+
+
+    <!-- Games: Tetris -->
+    <string name="games_tetris_title">Tetris</string>
+    <string name="games_tetris_score">Punteggio: %1$d</string>
+    <string name="games_tetris_pause_resume">Pausa/Riprendi</string>
+    <string name="games_tetris_restart">Ricomincia</string>
+    <string name="games_tetris_instructions">Scorri a sinistra o a destra per spostare il pezzo che cade, tocca per ruotarlo, scorri verso il basso per una caduta più veloce e tieni premuto per far cadere il pezzo istantaneamente.\n\nCompleta righe intere per ottenere punti — il gioco accelera nel tempo!</string>
+
+    <!-- Games: Tower Stack -->
+    <string name="games_tower_stack_tap_to_start">Tocca per iniziare</string>
+    <string name="games_tower_stack_instructions">Impila le piattaforme più in alto che puoi!\n\nTocca per posizionare ogni piattaforma.\nL'allineamento perfetto aumenta il tuo punteggio.\nLa velocità aumenta ogni 5 punti!</string>
+    <string name="games_tower_stack_score">Punteggio</string>
+    <string name="games_tower_stack_tap_to_place">&#128070; Tocca per posizionare!</string>
+
+    <!-- Games: Schneaggahus -->
+    <string name="games_schneaggahus_title">Schneaggahus</string>
+    <string name="games_schneaggahus_instructions">Gli Schneagg strisciano fuori dal punto di partenza e seguono i binari. Tocca gli scambi per cambiare dove portano i binari e guida ogni Schneagg fino alla casa del suo colore.\n\nOgni consegna corretta assegna punti — dopo 3 Schneagg finiti nella casa sbagliata, la partita finisce. Le nascite diventano più veloci più a lungo sopravvivi!</string>
+
+    <!-- Games: Grid Rush -->
+    <string name="games_daily_section">Sfida giornaliera (%1$s)</string>
+    <string name="games_gridrush_title">Grid Rush</string>
+    <string name="games_gridrush_instructions">Trascina una linea attraverso caselle adiacenti dello stesso colore — rilasciando su 2 o più caselle le elimini e le caselle sopra cadono giù. Svuota l'intera griglia per vincere!\n\nCatene più lunghe danno più punti e finire sotto il par guadagna un bonus. Se due caselle uguali non si toccano più, la partita finisce. Tutti giocano la stessa griglia ogni giorno — il timer parte solo con la tua prima mossa, quindi pianifica in anticipo!</string>
+    <string name="games_gridrush_moves">Mosse: %1$d / Par %2$d</string>
+
+
+    <!-- Games: Odd One Out -->
+    <string name="games_oddoneout_title">Odd One Out</string>
+    <string name="games_oddoneout_instructions">Appare una griglia di caselle — ogni casella è identica tranne una. Tocca quella diversa prima che scada il timer!\n\nUn tocco corretto vale più punti quanto più velocemente lo trovi. Un tocco sbagliato o un timeout costa una delle tue 3 vite — perdile tutte e la partita finisce. I round diventano più veloci e la casella diversa più subdola più a lungo sopravvivi!</string>
+    <string name="games_oddoneout_lives_remaining">%1$d vite rimaste</string>
+
+    <!-- Games: Morse -->
+    <string name="games_morse_clear">Cancella</string>
+    <string name="games_morse_instructions">Premi il pulsante grande per inviare segnali morse: una pressione breve è un punto (·), una pressione lunga è una linea (−). L'albero mostra a quale lettera porta il tuo codice.\n\nDattilografo infinito: Digita il flusso di testo in codice morse! Hai un tempo limitato per carattere che accelera con la crescita del tuo punteggio. Il ritardo di accettazione si riduce proporzionalmente. 3 errori e la partita finisce.</string>
+
+    <!-- Games: 2048 -->
+    <string name="games_2048_title">2048</string>
+    <string name="games_2048_instructions">Scorri (su, giù, sinistra, destra) o usa i tasti freccia per spostare le caselle. Quando due caselle con lo stesso numero si toccano, si uniscono in una!\n\nUnisci i numeri e raggiungi la casella 2048 per vincere, e continua per il punteggio più alto! La griglia si riduce man mano che la difficoltà aumenta.</string>
+    <string name="games_2048_reached">★ 2048 raggiunto! ★</string>
+
+    <!-- Games: Stanislaus -->
+    <string name="games_stanislaus_title">Stanislaus e il pesce</string>
+    <string name="games_stanislaus_instructions">La luce si piega quando passa dall'acqua all'aria, quindi il pesce non è mai esattamente dove sembra essere!\n\nTrascina da Stanislaus per mirare con l'arpione, poi rilascia per lanciare. L'arpione vola in linea perfettamente retta — se miri al pesce che vedi, lo mancherai. Mira più in profondità e più lontano per colpirlo davvero.\n\nCattura più pesci possibile prima che il tempo scada. Un colpo in profondità nell'acqua vale punti extra, i colpi mancati ti costano tempo, e i pesci lontani nello stagno si nascondono dietro il riflesso della superficie.</string>
+    <string name="games_stanislaus_caught">Preso!</string>
+    <string name="games_stanislaus_missed">Mancato!</string>
+    <string name="games_stanislaus_streak">Serie: %1$d</string>
+    <string name="games_stanislaus_label_apparent">Dove sembrava essere</string>
+    <string name="games_stanislaus_label_real">Dove era realmente</string>
+    <string name="games_stanislaus_glare_hint">Troppo lontano — il riflesso lo nasconde</string>
+    <string name="games_stanislaus_sprite_description">Stanislaus</string>
+
+    <!-- Recap -->
+    <string name="recap_your_year">Il tuo anno</string>
+    <string name="recap_using_schneaggchat_in_numbers">usare Schneaggchat in numeri</string>
+    <string name="recap_in_year_you_had_a_lot_to_say">Nel %1$d, avevi un SACCO da dire.</string>
+    <string name="recap_others_sent_you">Quest'anno altre persone ti hanno inviato</string>
+    <string name="recap_others_sent_you_suffix">messaggi</string>
+    <string name="recap_you_sent">Hai inviato</string>
+    <string name="recap_messages_to_favorite_humans">messaggi ai tuoi umani preferiti.</string>
+    <string name="recap_new_friends_found">Nuovi amici trovati</string>
+    <string name="recap_you_have">Hai</string>
+    <string name="recap_are_now_your_friends">nuovi Amici acquisiti.</string>
+    <string name="recap_texts_number">%1$d testi</string>
+    <string name="recap_loading">Elaborazione dei tuoi numeri…</string>
+    <string name="recap_load_failed">Impossibile caricare il tuo riepilogo.</string>
+    <string name="recap_retry">Riprova</string>
+    <string name="recap_hello">Ciao %1$s!</string>
+    <string name="recap_member_since">Iscritto dal %1$s — sono %2$d giorni.</string>
+    <string name="recap_logins_this_year">Ti sei collegato al tuo account  %1$s volte quest'anno.</string>
+    <string name="recap_all_time_messages">%1$s messaggi in totale</string>
+    <string name="recap_type_text">Testi</string>
+    <string name="recap_type_image">Immagini</string>
+    <string name="recap_type_audio">Messaggi vocali</string>
+    <string name="recap_type_poll">Sondaggi</string>
+    <string name="recap_typing_title">La tua tastiera l'ha sentito.</string>
+    <string name="recap_characters_typed">caratteri digitati</string>
+    <string name="recap_words_typed">%1$s parole in totale</string>
+    <string name="recap_avg_message_length">Ø %1$d caratteri per messaggio</string>
+    <string name="recap_longest_message">Il tuo messaggio più lungo: %1$d caratteri</string>
+    <string name="recap_longest_message_to">inviato a %1$s</string>
+    <string name="recap_rhythm_title">Hai un ritmo.</string>
+    <string name="recap_busiest_day">Il tuo giorno più impegnato: %1$s</string>
+    <string name="recap_busiest_day_messages">%1$d messaggi in un solo giorno</string>
+    <string name="recap_busiest_hour">Momento clou: %1$d:00</string>
+    <string name="recap_streak_days">%1$d giorni</string>
+    <string name="recap_streak_label">La tua serie giornaliera più lunga</string>
+    <string name="recap_most_active_month">%1$s è stato il tuo mese più rumoroso</string>
+    <string name="recap_first_message_ever">Il tuo primissimo messaggio: %1$s</string>
+    <string name="recap_popular">Sei una specie di celebrità.</string>
+    <string name="recap_inner_circle">La tua cerchia ristretta.</string>
+
+    <string name="recap_from_you_from_them">%1$s da te · %2$s da loro</string>
+    <string name="recap_reactions_title">Hai sparso un po' d'amore.</string>
+    <string name="recap_reactions_given">reazioni date</string>
+    <string name="recap_reactions_received">%1$s reazioni ricevute</string>
+    <string name="recap_top_emoji_given">Le tue emoji distintive</string>
+    <string name="recap_top_emoji_received">Cosa hai ricevuto in cambio</string>
+    <string name="recap_most_reacted_message">Il tuo messaggio con più reazioni (%1$d reazioni):</string>
+    <string name="recap_social_title">La tua cerchia è cresciuta.</string>
+    <string name="recap_friends_label">amici al tuo fianco</string>
+    <string name="recap_new_friends_this_year">%1$d nuovi quest'anno</string>
+    <string name="recap_friend_requests_sent">%1$d richieste di amicizia inviate</string>
+    <string name="recap_polls_created">%1$d sondaggi creati</string>
+    <string name="recap_poll_votes_cast">%1$d voti espressi nei sondaggi</string>
+    <string name="recap_groups_title">Chat di gruppo. Caos meraviglioso.</string>
+    <string name="recap_groups_member_of">gruppi di cui fai parte</string>
+    <string name="recap_groups_created">%1$d creati da te</string>
+    <string name="recap_most_active_group">Il tuo gruppo più rumoroso</string>
+    <string name="recap_group_message_count">%1$s messaggi</string>
+    <string name="recap_leaderboard_title">La classifica globale.</string>
+    <string name="recap_your_rank">Tra tutti gli utenti di Schneaggchat, ti sei classificato</string>
+    <string name="recap_rank_number">#%1$d</string>
+    <string name="recap_leaderboard_messages">%1$s messaggi inviati quest'anno</string>
+    <string name="recap_map_title">Hai lasciato la tua scia.</string>
+    <string name="recap_map_created">voci mappa create quest'anno</string>
+    <string name="recap_map_edited">%1$d voci modificate</string>
+    <string name="recap_map_all_time">%1$d create in totale</string>
+    <string name="recap_games_title">Giocatore certificato.</string>
+    <string name="recap_games_rank">Posizione #%1$d</string>
+    <string name="recap_games_score">Miglior punteggio: %1$s</string>
+
+    <string name="recap_betatester_title">Beta tester certificato.</string>
+    <string name="recap_betatester_your_rank">Tra tutti quelli che hanno mai rotto Schneaggchat, ti classifichi</string>
+    <string name="recap_betatester_exception_count">%1$s eccezioni causate</string>
+    <string name="recap_betatester_clean_record">Hai testato Schneaggchat, ma nessun vero danno è stato fatto.</string>
+
+    <string name="recap_password_title">Non riesci a gestire una buona password.</string>
+    <string name="recap_password_reset_label">email di reimpostazione password inviate</string>
+    <string name="recap_password_reset_this_year">%1$d di queste quest'anno</string>
+    <string name="recap_password_reset_subtitle">Forse questa volta scrivila da qualche parte.</string>
+
+    <string name="recap_outro_title">Ecco fatto, %1$s.</string>
+    <string name="recap_outro_subtitle">Ci vediamo il prossimo anno. Continua a schneaggare.</string>
+    <string name="recap_outro_messages">messaggi</string>
+    <string name="recap_outro_friends">amici</string>
+    <string name="recap_outro_reactions">reazioni</string>
+    <string name="recap_outro_streak">giorni di serie</string>
+    <string name="recap_outro_rank_messages">classifica messaggi</string>
+    <string name="recap_outro_rank_errors">classifica errori</string>
+    <string name="recap_tap_hint">Tocca per continuare</string>
+
+    <!-- Month names -->
+    <string name="month_january">Gennaio</string>
+    <string name="month_february">Febbraio</string>
+    <string name="month_march">Marzo</string>
+    <string name="month_april">Aprile</string>
+    <string name="month_may">Maggio</string>
+    <string name="month_june">Giugno</string>
+    <string name="month_july">Luglio</string>
+    <string name="month_august">Agosto</string>
+    <string name="month_september">Settembre</string>
+    <string name="month_october">Ottobre</string>
+    <string name="month_november">Novembre</string>
+    <string name="month_december">Dicembre</string>
+
+    <!-- Changelog Popup -->
+    <string name="changelog_whats_new">Novità</string>
+    <string name="changelog_highlights">In evidenza</string>
+    <string name="changelog_announcements">Annunci</string>
+    <string name="changelog_version">Versione %1$s</string>
+    <string name="changelog_features">Funzionalità</string>
+    <string name="changelog_bug_fixes">Correzioni di bug</string>
+    <string name="changelog_no_details">Nessun dettaglio disponibile per questa versione.</string>
+    <string name="changelog_got_it">Capito</string>
+
+    <!-- Contribute Popup -->
+    <string name="contribute_title">Aiuta a plasmare Schneaggchat</string>
+    <string name="contribute_message">Questa app migliora solo se ti fai sentire. Niente migliora da solo — se qualcosa ti infastidisce o ti manca una funzione, faccelo sapere!</string>
+    <string name="contribute_bug_title">Hai trovato un bug?</string>
+    <string name="contribute_bug_hint">Qualcosa si blocca, è rotto o non ti convince? Segnalalo, non importa quanto piccolo.</string>
+    <string name="contribute_feature_title">Ti manca una funzione?</string>
+    <string name="contribute_feature_hint">Dicci cosa vorresti vedere — molte funzioni sono nate da una richiesta di un utente o sono state copiate da altre app.</string>
+    <string name="contribute_open_form">Segnala un bug o richiedi una funzione</string>
+    <string name="contribute_later">Forse più tardi</string>
+
+    <!-- Roadmap -->
+    <string name="roadmap">Roadmap</string>
+    <string name="roadmap_info">Scopri cosa è già stato rilasciato e cosa sta per arrivare</string>
+    <string name="roadmap_status_done">Fatto</string>
+    <string name="roadmap_status_upcoming">Pianificato</string>
+    <string name="roadmap_load_error">Impossibile caricare la roadmap. Controlla la tua connessione e riprova.</string>
+    <string name="roadmap_retry">Riprova</string>
+    <string name="roadmap_view_issue">Visualizza issue #%1$d</string>
+
+
+    <string name="custom_reaction">Reazione personalizzata</string>
+    <string name="enter_reaction">Inserisci reazione</string>
+
+    <!-- Schneaggmap -->
+    <string name="schneaggmap_filter_location_types">Tipi di posizione</string>
+    <string name="location_belongs_to_type">Appartiene a: %1$s</string>
+    <string name="location_add_type">Aggiungi un nuovo tipo</string>
+
+    <string name="schneaggmap_entry_title">Nome</string>
+    <string name="schneaggmap_entry_description">Descrizione</string>
+
+    <string name="schneaggmap_entry_delete">Elimina questa voce. Verrà eliminata anche per tutti gli altri. Non potrai ripristinarla.</string>
+
+    <string name="latlong">Lat %1$s, Long %2$s</string>
+    <string name="open_location_in_maps">Apri in Mappe</string>
+    <string name="latitude">Latitudine</string>
+    <string name="longitude">Longitudine</string>
+
+    <string name="schneaggmap_user_last_online_label">Ultimo accesso</string>
+    <string name="schneaggmap_user_distance_label">Distanza</string>
+    <string name="schneaggmap_user_online">Online</string>
+    <string name="schneaggmap_entry_last_changed_label">Ultima modifica</string>
+    <string name="schneaggmap_entry_last_changed_by">Ultima modifica di %1$s il %2$s</string>
+
+    <!-- Game highscores -->
+    <string name="highscores_title">Classifiche</string>
+    <string name="highscores_error">Impossibile caricare le classifiche</string>
+    <string name="highscores_empty">Ancora nessuna classifica</string>
+    <string name="highscores_period_daily">Oggi</string>
+    <string name="highscores_period_weekly">Questa settimana</string>
+    <string name="highscores_period_yearly">Quest'anno</string>
+    <string name="highscores_period_all_time">Sempre</string>
+    <string name="game_over">Partita finita!</string>
+    <string name="game_over_final_score">Punteggio finale: %1$d</string>
+    <string name="game_over_final_time">Tempo: %1$s</string>
+    <string name="game_restart">Ricomincia</string>
+    <string name="show_highscores">Mostra classifiche</string>
+    <string name="global_ranking_title">Classifica generale</string>
+    <string name="global_ranking_explanation">Punti su tutte le partite e difficoltà</string>
+    <string name="global_ranking_error">Impossibile caricare la classifica</string>
+    <string name="global_ranking_empty">Nessuno ha ancora giocato</string>
+    <string name="global_ranking_points">%1$d pt</string>
+    <string name="global_ranking_boards">%1$d classifiche · %2$d partite</string>
+    <string name="show_global_ranking">Mostra classifica generale</string>
+    <string name="difficulty">Difficoltà</string>
+    <string name="difficulty_low">Bassa</string>
+    <string name="difficulty_medium">Media</string>
+    <string name="difficulty_high">Alta</string>
+    <string name="games_without_highscores">Giochi senza classifiche</string>
+
+    <!-- Morse challenge -->
+    <string name="morse_challenge_start">Inizia sfida</string>
+    <string name="morse_challenge_stop">Esci dalla sfida</string>
+    <string name="morse_challenge_score">Punteggio: %1$d</string>
+    <string name="morse_challenge_type_text">Digita il testo in codice morse:</string>
+
+    <!-- Location Groups -->
+    <string name="location_group_driving">Guida</string>
+    <string name="location_group_nature_activities">Natura &amp; Attività</string>
+    <string name="location_group_sport">Sport</string>
+    <string name="location_group_social_entertainment">Social &amp; Intrattenimento</string>
+    <string name="location_group_food">Cibo</string>
+
+    <!-- Location Types -->
+    <string name="location_type_user">Amici</string>
+
+    <string name="location_type_radar">Autovelox</string>
+    <string name="location_type_police">Polizia</string>
+    <string name="location_type_mountain_street">Strada di montagna</string>
+    <string name="location_type_wheeliespot">Punto per impennate</string>
+    <string name="location_type_offroad_motorcycle">Moto fuoristrada</string>
+    <string name="location_type_viewpoint">Punto panoramico</string>
+    <string name="location_type_camping">Campeggio</string>
+    <string name="location_type_swimming">Nuoto</string>
+    <string name="location_type_climbingspot">Zona arrampicata</string>
+    <string name="location_type_volleyball">Pallavolo</string>
+    <string name="location_type_bicycle">Percorso ciclabile</string>
+    <string name="location_type_outdoor_fitness">Fitness all'aperto</string>
+    <string name="location_type_table_tennis">Ping pong</string>
+    <string name="location_type_tennis">Tennis</string>
+    <string name="location_type_sightseeing">Turismo</string>
+    <string name="location_type_party">Festa</string>
+    <string name="location_type_wifi">WiFi</string>
+    <string name="location_type_food_kebab">Kebab</string>
+    <string name="location_type_food_pizza">Pizza</string>
+    <string name="location_type_food_burger">Burger</string>
+    <string name="location_type_food_beer">Birra</string>
+    <string name="location_type_food_ice">Gelato</string>
+    <string name="location_type_food_asian">Cucina asiatica</string>
+    <string name="location_type_food_greek">Cucina greca</string>
+    <string name="location_type_food_cafe_bakery">Bar / Panetteria</string>
+    <string name="location_type_food_other">Altro cibo</string>
+
+    <!-- Radar -->
+    <string name="location_radar_speed_limit">Limite di velocità</string>
+    <string name="location_radar_mobile">Mobile</string>
+    <string name="location_radar_red_light">Semaforo con telecamera</string>
+
+    <!-- Police -->
+    <string name="location_police_last_seen">Ultimo avvistamento</string>
+
+    <!-- Mountain Street -->
+    <string name="location_street_maut_fee">Pedaggio</string>
+    <string name="location_street_height_limit">Limite di altezza</string>
+    <string name="location_street_closed_in_winter">Chiuso in inverno</string>
+
+    <!-- Wheelie Spot -->
+    <string name="location_wheeliespot_only_on_weekends">Solo nei weekend</string>
+    <string name="location_legal">Legale</string>
+    <string name="location_offroad_motocross">Motocross</string>
+    <string name="location_offroad_enduro">Enduro</string>
+    <string name="location_bicycle_difficulty">Difficoltà (1-10)</string>
+    <string name="location_bicycle_underground_type">Tipo di fondo</string>
+    <string name="location_lie_down_friendly">Adatto per sdraiarsi</string>
+
+    <!-- Camping -->
+    <string name="location_camping_official">Ufficiale</string>
+    <string name="location_camping_water_distance">Distanza dall'acqua (m)</string>
+    <string name="location_camping_sitting_possibility">Posti a sedere disponibili</string>
+    <string name="location_camping_grill_possibility">Grigliate consentite</string>
+
+    <!-- Swimming -->
+    <string name="location_swimming_indoor">Al coperto</string>
+    <string name="location_swimming_jump_spot">Punto per tuffi</string>
+    <string name="location_swimming_price">Prezzo</string>
+
+    <!-- Climbingspot -->
+    <string name="location_climbingspot_via_ferrata">Via ferrata</string>
+    <string name="location_climbingspot_outdoor">All'aperto</string>
+    <string name="location_climbingspot_price">Prezzo</string>
+
+    <!-- Volleyball -->
+    <string name="location_volleyball_good_net">Rete buona</string>
+    <string name="location_volleyball_good_field">Campo buono</string>
+    <string name="location_volleyball_outdoor">All'aperto</string>
+
+    <!-- Outdoor Fitness -->
+    <string name="location_outdoor_fitness_shadow">Ombra</string>
+
+    <!-- Table Tennis -->
+    <string name="location_table_tennis_private">Privato</string>
+
+    <!-- Tennis -->
+    <string name="location_tennis_paddle">Racchetta</string>
+
+    <!-- Sightseeing & Party -->
+    <string name="location_sightseeing_entry_fee">Biglietto d'ingresso</string>
+
+    <!-- Food -->
+    <string name="location_food_all_you_can_eat">Tutto ciò che puoi mangiare</string>
+    <string name="location_food_kebab_price">Prezzo kebab</string>
+    <string name="location_food_margarita_price">Prezzo margherita</string>
+    <string name="location_food_cheeseburger_price">Prezzo cheeseburger</string>
+    <string name="location_food_beer_price">Prezzo birra</string>
+    <string name="location_food_ice_scoop_price">Prezzo pallina gelato</string>
+    <string name="location_food_cuisine">Cucina</string>
+    <string name="location_food_cafe_bakery_outdoor_seating">Posti a sedere all'aperto</string>
+    <string name="location_food_cafe_bakery_alcohol">Alcolici</string>
+    <string name="location_food_cafe_bakery_coffee">Caffè</string>
+    <string name="location_food_cafe_bakery_breakfast">Colazione</string>
+
+    <!-- WiFi -->
+    <string name="location_wifi_ssid">SSID</string>
+    <string name="location_wifi_password">Password</string>
+
+    <!-- Wake -->
+    <string name="wake_settings">Sveglie</string>
+    <string name="wake_settings_info">Scegli chi può svegliarti</string>
+    <string name="wake_allow_global">Consenti di essere svegliato</string>
+    <string name="wake_allow_global_info">Permette agli amici scelti di far suonare un allarme sul tuo telefono</string>
+    <string name="wake_allow_friends_title">Autorizzati a svegliarmi</string>
+    <string name="wake_button">Sveglia</string>
+    <string name="wake_reason_title">Perché li stai svegliando?</string>
+    <string name="wake_reason_placeholder">Motivo</string>
+    <string name="wake_sent_users">Svegliati %1$d utenti su %2$d dispositivi</string>
+    <string name="wake_sent_user">Svegliato %1$s su %2$d dispositivi</string>
+    <string name="wake_sent_skipped">%1$s (%2$d saltati)</string>
+    <string name="wake_not_allowed_user">%1$s ha disattivato le sveglie per te</string>
+    <string name="wake_not_allowed_group">Nessuno in questo gruppo consente sveglie da te</string>
+    <string name="wake_no_devices">%1$s non ha alcun dispositivo Android registrato</string>
+    <string name="wake_not_friends">Puoi svegliare solo gli amici</string>
+
+    <string name="wake_notification_title">%1$s ti sta svegliando</string>
+    <string name="wake_notification_title_group">%1$s sta svegliando %2$s</string>
+
+
+    <string name="wake_woken_alongside">%1$d persone svegliate su %2$d dispositivi</string>
+
+
+
+    <string name="schneaggmap_search_label">cerca ...</string>
+
+
+    <string name="ttt_popup">Esplora Schneaggchat</string>
+    <string name="ttt_popup_description">Fai un tour e scopri come funziona l'app e alcune funzionalità interessanti, anche se hai già usato l'app in precedenza.</string>
+    <string name="ttt_popup_start">Andiamo</string>
+
+
+
+    <string name="ttt_initscreen">Esploriamo alcune funzionalità!</string>
+    <string name="ttt_initscreen_description">Come sempre, se qualcosa non ti convince / non funziona, vuoi una nuova funzione o qualcosa è cambiato, sentiti libero di richiederlo nelle impostazioni.</string>
+
+    <string name="ttt_start_chatting">Inizia a chattare</string>
+    <string name="ttt_start_chatting_description">Tocca qui per aggiungere amici.</string>
+
+    <string name="ttt_new_chat_search_friends">Cerca i tuoi amici</string>
+    <string name="ttt_new_chat_search_friends_description">Puoi cercare amici qui. Se hai almeno un amico, appariranno gli amici in comune.</string>
+
+    <string name="ttt_new_chat_search_friends_freeroam">Prova ad aggiungere un nuovo amico.</string>
+
+
+    <string name="ttt_new_chat_create_group">Puoi toccare qui per creare un nuovo gruppo</string>
+
+    <string name="ttt_new_chat_go_back">Torniamo alla selezione chat</string>
+
+
+
+    <string name="ttt_settings">Ecco le impostazioni</string>
+    <string name="ttt_settings_user">impostazioni utente</string>
+    <string name="ttt_settings_user_description">Qui puoi modificare le informazioni sul tuo account.</string>
+
+    <string name="ttt_user_settings_phone_number">numero di telefono</string>
+    <string name="ttt_user_settings_phone_number_description">Puoi condividere il tuo numero di telefono con i tuoi amici qui.</string>
+    <string name="ttt_user_settings_phone_number_freeroam">Sentiti libero di impostare il tuo numero di telefono ora, oppure continua il tour.</string>
+    <string name="ttt_user_settings_go_back">Torniamo alle impostazioni</string>
+
+    <string name="ttt_settings_wake">Funzione sveglia (solo Android)</string>
+    <string name="ttt_settings_wake_description">Puoi attivare questa funzione per permettere ai tuoi amici di svegliarti. Il tuo telefono squillerà come una sveglia, anche se è silenziato. Se i tuoi amici hanno attivato questa funzione per te, puoi svegliarli nei dettagli della chat.</string>
+
+    <string name="ttt_settings_privacy">privacy e sicurezza</string>
+    <string name="ttt_settings_privacy_description">Qui puoi gestire la tua password, email e condivisione della posizione.</string>
+    <string name="ttt_privacy_settings_go_back">Torniamo alle impostazioni</string>
+
+
+    <string name="ttt_settings_notifications_description">Qui puoi gestire le tue notifiche e le impostazioni di sveglia.</string>
+    <string name="ttt_notification_settings_go_back">Torniamo alle impostazioni</string>
+
+    <string name="ttt_settings_appearance">impostazioni aspetto</string>
+    <string name="ttt_settings_appearance_description">Qui puoi cambiare la tua lingua (Austriaco, Tedesco, Inglese, Italiano) e il tuo tema.</string>
+
+    <string name="ttt_appearance_settings_language">Cambia lingua</string>
+    <string name="ttt_appearance_settings_language_description">Qui puoi passare tra Tedesco, dialetto austriaco, Inglese e Italiano.</string>
+    <string name="ttt_appearance_settings_language_freeroam">Sentiti libero di cambiare la lingua ora per vedere come appare, oppure continua il tour.</string>
+    <string name="ttt_appearance_settings_go_back">Torniamo alle impostazioni</string>
+
+    <string name="ttt_settings_misc">impostazioni varie</string>
+
+    <string name="ttt_settings_misc_bugreport">Qui puoi inviare segnalazioni di bug e richieste di funzionalità.</string>
+
+    <string name="ttt_settings_misc_app_broken">App non funzionante?</string>
+    <string name="ttt_settings_misc_app_broken_description">Se qualcosa non funziona come previsto, puoi premere questo pulsante. Eliminerà tutti i dati dell'app e li recupererà di nuovo dal server.</string>
+    <string name="ttt_misc_settings_go_back">Torniamo alle impostazioni</string>
+
+
+
+    <string name="ttt_chatselector_events">Qui puoi accedere agli Eventi</string>
+    <string name="ttt_chatselector_events_description">Puoi vedere gli eventi in arrivo, partecipare o crearne di tuoi.</string>
+
+    <string name="ttt_events_create_button">Crea un evento</string>
+    <string name="ttt_events_create_button_description">Tocca qui per creare un nuovo evento e invitare i tuoi amici.</string>
+
+
+    <string name="ttt_chatselector_map">Qui puoi accedere alla Schneaggmap</string>
+    <string name="ttt_chatselector_map_description">Puoi condividere la tua posizione, mostrare le posizioni pubbliche e modificarle o aggiungerle tu stesso.</string>
+
+
+    <string name="ttt_schneaggmap_locations">Posizioni pubbliche</string>
+    <string name="ttt_schneaggmap_locations_description">Qui puoi vedere tutte le posizioni create da altri utenti. \nSentiti libero di aggiungerne alcune tu stesso tenendo premuto sulla mappa.\nATTENZIONE: Non abusare di questa funzione, altrimenti dovremo rimuovere il tuo permesso di aggiungere/modificare voci.</string>
+
+    <string name="ttt_schneaggmap_locations_freeroam">Dai un'occhiata ad alcune voci create da altri utenti!</string>
+    <string name="ttt_continue">Continua il tour</string>
+
+    <string name="ttt_schneaggmap_settings">Impostazioni mappa</string>
+    <string name="ttt_schneaggmap_settings_description">Puoi toccare qui per accedere alle impostazioni della mappa. Modifica se vuoi condividere la tua posizione e altre opzioni.</string>
+
+    <string name="ttt_schneaggmap_snailtrail_description">Puoi mostrare la scia (dove sono stati i tuoi amici nelle ultime 24h) se l'hanno attivata per te.</string>
+
+    <string name="ttt_chatselector_games">Ora diamo un'occhiata ai giochi</string>
+
+    <string name="ttt_games_info">Strumenti e giochi</string>
+    <string name="ttt_games_info_description">Ora diamo un'occhiata ai giochi. Se scorri verso il basso, puoi accedere a tutti i tipi di strumenti richiesti dagli utenti.</string>
+
+    <string name="ttt_games_difficulty">Selezione difficoltà</string>
+    <string name="ttt_games_difficulty_description">Puoi selezionare la difficoltà per i giochi qui.</string>
+
+    <string name="ttt_games_global_highscore">Classifiche globali</string>
+    <string name="ttt_games_global_highscore_description">Puoi toccare qui per visualizzare le tue classifiche globali in tutti i giochi.</string>
+
+    <string name="ttt_thank_you">Grazie!</string>
+    <string name="ttt_thank_you_description">Grazie per aver fatto il tour! Goditi Schneaggchat.</string>
+
+    <string name="ttt_hint_tap_highlighted">Tocca l'area evidenziata per continuare</string>
+    <string name="ttt_hint_tap_anywhere">Tocca ovunque per continuare</string>
+
+    <string name="navbar_chats">chat</string>
+
+    <string name="navbar_map">mappa</string>
+    <string name="navbar_events">eventi</string>
+    <string name="navbar_games">giochi</string>
+
+    <string name="new_version_available">Nuova versione disponibile: %1$s</string>
+    <string name="download_from_github">Scarica la nuova versione da GitHub</string>
+    <string name="download">Scarica</string>
+
+    <!-- Settings Group Headers -->
+
+
+
+
+    <string name="appearance_group_general">Schermo &amp; Lingua</string>
+    <string name="appearance_group_chat">Aspetto chat</string>
+
+    <string name="schneaggmap_group_sharing">Condivisione posizione</string>
+    <string name="schneaggmap_group_display">Visualizzazione mappa</string>
+
+    <string name="user_settings_group_profile">Profilo</string>
+    <string name="user_settings_group_account">Account &amp; Sicurezza</string>
+    <string name="user_settings_group_features">Funzionalità</string>
+    <string name="user_settings_group_danger_zone">Azioni account</string>
+
+    <string name="misc_group_feedback">Feedback &amp; Roadmap</string>
+    <string name="misc_group_diagnostics">Diagnostica &amp; Risoluzione problemi</string>
+    <string name="misc_group_data_reset">Ripristino &amp; Riparazione</string>
+
+    <string name="dev_group_general">Generale</string>
+    <string name="dev_group_network">Configurazione server</string>
+    <string name="dev_group_tools">Strumenti &amp; Esperimenti</string>
+    <string name="dev_settings_skip_tour">Salta tour introduttivo</string>
+    <string name="dev_settings_skip_tour_desc">Contrassegna il tour introduttivo come completato</string>
+    <string name="dev_settings_tour_skipped">Tour introduttivo saltato</string>
+
+    <!-- Privacy & Security -->
+    <string name="privacy_and_security">Privacy &amp; Sicurezza</string>
+    <string name="privacy_and_security_info">Password, email, condivisione posizione e privacy dell'account</string>
+    <string name="privacy_group_security">Sicurezza &amp; Autenticazione</string>
+    <string name="privacy_group_location">Posizione &amp; Privacy</string>
+    <string name="privacy_group_legal">Dati &amp; Legale</string>
+    <string name="change_password">Cambia password</string>
+    <string name="change_password_description">Aggiorna la password di accesso al tuo account</string>
+    <string name="current_password">Password attuale</string>
+    <string name="new_password">Nuova password</string>
+    <string name="confirm_new_password">Conferma nuova password</string>
+    <string name="password_changed_successfully">Password cambiata con successo</string>
+    <string name="password_change_failed">Impossibile cambiare la password. Verifica la tua password attuale.</string>
+    <string name="privacy_policy">Informativa sulla privacy</string>
+    <string name="privacy_policy_info">Leggi i nostri termini e la nostra informativa sulla privacy</string>
+
+    <!-- Notifications -->
+
+    <string name="notification_settings_info">Permessi di notifica e impostazioni di sveglia</string>
+    <string name="notification_group_general">Generale</string>
+    <string name="notifications">Notifiche</string>
+    <string name="notifications_enabled">Notifiche attivate</string>
+    <string name="notifications_disabled">Notifiche disattivate - tocca per attivare</string>
+    <string name="notification_permission_required_title">Permesso notifiche richiesto</string>
+    <string name="notification_permission_permanently_denied_message">Le notifiche sono disattivate per Schneaggchat nelle impostazioni di sistema. Apri le impostazioni e consenti le notifiche per ricevere avvisi sui messaggi.</string>
+    <string name="open_settings">Apri impostazioni</string>
+
+    <string name="notification_banner_title">Notifiche disattivate</string>
+    <string name="notification_banner_description">Attiva le notifiche per ricevere avvisi sui nuovi messaggi</string>
+    <string name="notification_banner_enable">Attiva</string>
+
+    <!-- Email Verification Support -->
+    <string name="support_email_verification_subject">La verifica email non funziona</string>
+    <string name="support_email_verification_body">Non funziona (Maggiori informazioni per favore)</string>
+
+    <!-- System messages (MessageType.SYSTEM) -->
+    <string name="system_group_created">%1$s ha creato il gruppo</string>
+    <string name="system_member_added">%1$s ha aggiunto %2$s</string>
+    <string name="system_member_joined_event">%1$s si è unito da un evento</string>
+    <string name="system_member_removed">%1$s ha rimosso %2$s</string>
+    <string name="system_member_left">%1$s ha abbandonato il gruppo</string>
+    <string name="system_admin_granted">%1$s ha reso %2$s un admin</string>
+    <string name="system_admin_revoked">%1$s ha rimosso i diritti di admin da %2$s</string>
+    <string name="system_group_name_changed">%1$s ha cambiato il nome del gruppo in %2$s</string>
+    <string name="system_group_description_changed">%1$s ha cambiato la descrizione del gruppo</string>
+    <string name="system_group_picture_changed">%1$s ha cambiato la foto del gruppo</string>
+    <string name="system_event_changed">%1$s ha aggiornato l'evento</string>
+    <string name="system_friendship_accepted">Ora siete amici</string>
+    <string name="system_wake_sent">%1$s ti ha svegliato</string>
+    <string name="system_wake_sent_reason">%1$s ti ha svegliato: %2$s</string>
+    <string name="system_unknown_event">Chat aggiornata</string>
+
+</resources>

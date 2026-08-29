@@ -31,11 +31,17 @@ enum NotificationStrings {
     private static func bucket(for language: String?) -> [NotificationStringKey: String] {
         guard let raw = language?.lowercased() else { return englishStrings }
         let parts = raw.replacingOccurrences(of: "_", with: "-").split(separator: "-").map(String.init)
-        guard parts.first == "de" else { return englishStrings }
-        if parts.count > 1, parts[1] == "at" || parts[1] == "rat" {
-            return austrianGermanStrings
+        switch parts.first {
+        case "de":
+            if parts.count > 1, parts[1] == "at" || parts[1] == "rat" {
+                return austrianGermanStrings
+            }
+            return germanStrings
+        case "it":
+            return italianStrings
+        default:
+            return englishStrings
         }
-        return germanStrings
     }
 
     private static let englishStrings: [NotificationStringKey: String] = [
@@ -96,5 +102,25 @@ enum NotificationStrings {
         .friendBirthdayTitle: "%1$@ hot hüt Geburtstag! 🎂",
         .friendBirthdayBody: "Vergiss ned zum gratuliera!",
         .newEventTitle: "%1$@ hot a neus Event erstellt",
+    ]
+
+    private static let italianStrings: [NotificationStringKey: String] = [
+        .image: "immagine",
+        .audio: "audio",
+        .poll: "sondaggio",
+        .message: "messaggio",
+        .youHaveNewMessages: "Hai nuovi messaggi",
+        .newMessageSingleTitle: "Nuova chat da %1$@",
+        .newMessageGroupTitle: "Nuova chat da %1$@ in %2$@",
+        .newMessageReaction: "%1$@ ha reagito al tuo %2$@",
+        .newFriendRequestTitle: "Richiesta di amicizia da %1$@",
+        .newFriendRequestBody: "%1$@ vuole essere tuo amico",
+        .newFriendAcceptedTitle: "Richiesta di amicizia accettata",
+        .newFriendAcceptedBody: "%1$@ è ora tuo amico",
+        .ownBirthdayTitle: "Buon compleanno! 🎂",
+        .ownBirthdayBody: "Ti auguriamo una splendida giornata!",
+        .friendBirthdayTitle: "%1$@ oggi compie gli anni! 🎂",
+        .friendBirthdayBody: "Non dimenticare di fargli gli auguri!",
+        .newEventTitle: "%1$@ ha creato un nuovo evento",
     ]
 }
