@@ -176,8 +176,7 @@ val sharedmodule = module{
             targetUserId = targetUserId,
             navigator = get(),
             appRepository = get(),
-            locationService = get(),
-            compassService = get()
+            locationService = get()
         )
     }
 

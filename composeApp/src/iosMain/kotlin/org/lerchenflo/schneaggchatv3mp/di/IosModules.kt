@@ -56,7 +56,6 @@ val IosPermissionManagerModule = module {
     single { PermissionManager() }
     single { org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService() }
     single { org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService() }
-    single { org.lerchenflo.schneaggchatv3mp.utilities.compass.CompassService() }
 }
 
 
