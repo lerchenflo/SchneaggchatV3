@@ -945,7 +945,7 @@
     <string name="friend_compass_title">Freundekompass</string>
     <string name="friend_compass_button">Kompass</string>
     <string name="friend_compass_waiting_gps">Warte auf GPS-Position…</string>
-    <string name="friend_compass_no_sensor">Kein Kompasssensor verfügbar – Norden ist oben</string>
+    <string name="friend_compass_no_heading">Noch keine Richtung – bewege dich, Norden ist oben</string>
     <string name="friend_compass_no_friends">Keine Freunde mit aktuellem Standort</string>
     <string name="direction_n">N</string>
     <string name="direction_ne">NO</string>

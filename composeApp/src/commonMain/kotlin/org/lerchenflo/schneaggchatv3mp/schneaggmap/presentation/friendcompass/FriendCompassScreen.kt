@@ -10,16 +10,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -65,7 +62,7 @@ import schneaggchatv3mp.composeapp.generated.resources.direction_se
 import schneaggchatv3mp.composeapp.generated.resources.direction_sw
 import schneaggchatv3mp.composeapp.generated.resources.direction_w
 import schneaggchatv3mp.composeapp.generated.resources.friend_compass_no_friends
-import schneaggchatv3mp.composeapp.generated.resources.friend_compass_no_sensor
+import schneaggchatv3mp.composeapp.generated.resources.friend_compass_no_heading
 import schneaggchatv3mp.composeapp.generated.resources.friend_compass_title
 import schneaggchatv3mp.composeapp.generated.resources.friend_compass_waiting_gps
 import kotlin.math.PI
@@ -102,7 +99,6 @@ fun FriendCompassScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.safeDrawing)
             .padding(horizontal = 12.dp)
     ) {
         ActivityTitle(
@@ -167,7 +163,7 @@ fun FriendCompassScreen(
 
                 if (state.azimuthDegrees == null) {
                     Text(
-                        text = stringResource(Res.string.friend_compass_no_sensor),
+                        text = stringResource(Res.string.friend_compass_no_heading),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
