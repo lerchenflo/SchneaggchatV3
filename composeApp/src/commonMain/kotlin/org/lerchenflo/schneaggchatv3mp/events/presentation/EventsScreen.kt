@@ -116,7 +116,10 @@ fun EventsScreen(
             }
         }
 
-       state.selectedEvent?.let { selectedEvent ->
+        // ownId is null until autologin finishes. Rendering then would pick the popup by comparing
+        // against null and open the read-only join sheet for the user's own event, so wait for the
+        // id instead of guessing - the reactive read above recomposes us once it arrives.
+        state.selectedEvent?.takeIf { ownId != null }?.let { selectedEvent ->
             if (selectedEvent.creatorId == ownId) {
                 EventEditPopup(
                     event = selectedEvent,

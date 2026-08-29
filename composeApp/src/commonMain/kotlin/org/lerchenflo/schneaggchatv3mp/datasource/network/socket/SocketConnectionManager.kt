@@ -14,7 +14,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -178,6 +180,7 @@ class SocketConnectionManager(
                     try {
                         connection.connect()
                     } catch (t: Throwable) {
+                        currentCoroutineContext().ensureActive()
                         setConnectionState(ConnectionState.Disconnected)
                         onError(t)
                         scheduleReconnectIfPossible()
@@ -186,6 +189,7 @@ class SocketConnectionManager(
 
                 true
             } catch (e: Exception) {
+                currentCoroutineContext().ensureActive()
                 //loggingRepository.logError("Failed to connect WebSocket: ${e.message}")
                 setConnectionState(ConnectionState.Disconnected)
                 onError(e)
@@ -262,6 +266,7 @@ private class SocketConnection(
         try {
             connectWithToken(tokens?.accessToken)
         } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             // Only retry the connection if the refresh actually produced new tokens. A
             // Retryable/Invalidated result means the old token is still what we have - retrying
             // with it would just fail again; let the caller's backoff loop try later instead.
@@ -271,6 +276,7 @@ private class SocketConnection(
                     try {
                         connectWithToken(freshTokens?.accessToken)
                     } catch (retryEx: Exception) {
+                        currentCoroutineContext().ensureActive()
                         _isActive.value = false
                         onConnectionStateChanged(false)
                         onError(retryEx)
@@ -305,6 +311,7 @@ private class SocketConnection(
                         onMessage(message)
                     }
             } catch (e: Exception) {
+                currentCoroutineContext().ensureActive()
                 onError(e)
             } finally {
                 _isActive.value = false
@@ -321,6 +328,7 @@ private class SocketConnection(
             session?.send(Frame.Text(message)) ?: return false
             true
         } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             onError(e)
             false
         }
@@ -333,6 +341,7 @@ private class SocketConnection(
             onConnectionStateChanged(false)
             session = null
         } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             //e.printStackTrace()
             // Ignore close errors
         }

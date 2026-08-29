@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
-import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageReader
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ReaderUi
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -133,7 +133,7 @@ fun DayDivider(millis: Long) {
 
 
 @Composable
-fun ReaderBar(readers: List<MessageReader>) {
+fun ReaderBar(readers: List<ReaderUi>) {
 
     val loggedIn = SessionCache.authStateValue as? SessionCache.AuthState.LoggedIn
         ?: return
@@ -152,10 +152,10 @@ fun ReaderBar(readers: List<MessageReader>) {
         ) {
 
             readers
-                .filter { it.readerId != loggedIn.userId }
+                .filter { it.id != loggedIn.userId }
                 .forEach { reader ->
                     ProfilePictureView(
-                        filepath = reader.readerPicture ?: "",
+                        filepath = reader.picturePath,
                         modifier = Modifier
                             .padding(start = 2.dp)
                             .size(16.dp),

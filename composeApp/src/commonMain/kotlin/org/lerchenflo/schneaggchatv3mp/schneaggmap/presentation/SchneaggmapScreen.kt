@@ -661,11 +661,12 @@ fun SchneaggmapScreen(
                 )
             }
 
-            state.createChoiceLocation?.let {
+            state.currentlySelectedLocation?.let { location ->
                 MapCreateChoiceDialog(
                     onDismiss = { onAction(SchneaggmapAction.OnCreateChoiceDismiss) },
-                    onCreateMapEntry = { onAction(SchneaggmapAction.OnCreateMapEntryChoice) },
-                    onCreateEvent = { onAction(SchneaggmapAction.OnCreateEventChoice) },
+                    onCreateMapEntry = { onAction(SchneaggmapAction.OnCreateMapEntryChoice(it)) },
+                    onCreateEvent = { onAction(SchneaggmapAction.OnCreateEventChoice(it)) },
+                    location = location
                 )
             }
         }
@@ -1241,7 +1242,7 @@ private fun SchneaggmapMapContent(
         //Show events with a location set, gated by the "Events" toggle in the filter dropdown.
         //Each pin uses the same icon as the event's type (see EventType.icon()).
         if (state.eventsWithLocation.isNotEmpty() && state.showEvents) {
-            val eventPinTint = MaterialTheme.colorScheme.primary
+            val eventPinTint = MaterialTheme.colorScheme.onError
 
             state.eventsWithLocation.forEach { event ->
                 val location = event.location ?: return@forEach

@@ -47,7 +47,8 @@ import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ReaderRow
+import org.lerchenflo.schneaggchatv3mp.chat.domain.ReaderUi
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
@@ -320,6 +321,7 @@ fun DeleteMessageAlert(
     onConfirm:() -> Unit,
     message: Message,
     selectedChatId: String,
+    sender: SenderInfo? = null,
 ){
     AlertDialog(
         onDismissRequest = {onDismiss()},
@@ -357,6 +359,7 @@ fun DeleteMessageAlert(
                 message = message,
                 useMD = false, // fertig mit markdown
                 selectedChatId = selectedChatId,
+                sender = sender,
                 ownId = ownId,
             )
         },
@@ -370,7 +373,9 @@ fun MessageDetailsDialog(
     onDismiss: () -> Unit,
     message: Message,
     selectedChatId: String,
+    sender: SenderInfo? = null,
     resolvedReactions: Map<String, String> = emptyMap(),
+    resolvedReaders: List<ReaderUi> = emptyList(),
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -423,6 +428,7 @@ fun MessageDetailsDialog(
                             message = message,
                             useMD = false,
                             selectedChatId = selectedChatId,
+                            sender = sender,
                             ownId = ownId,
                         )
                     }
@@ -513,7 +519,7 @@ fun MessageDetailsDialog(
                         )
                     }
 
-                    if (message.readers.isEmpty()) {
+                    if (resolvedReaders.isEmpty()) {
                         item {
                             Text(
                                 text = stringResource(Res.string.no_readers),
@@ -523,7 +529,7 @@ fun MessageDetailsDialog(
                             )
                         }
                     } else {
-                        items(message.readers) { reader ->
+                        items(resolvedReaders) { reader ->
                             ReaderRow(reader)
                         }
                     }

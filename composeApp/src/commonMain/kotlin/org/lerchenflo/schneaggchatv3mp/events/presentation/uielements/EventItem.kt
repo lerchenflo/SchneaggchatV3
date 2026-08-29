@@ -134,24 +134,20 @@ fun EventItem(
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val secondaryTextColor = if (isOwnEvent) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                val secondaryTextColor = if (isOwnEvent) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
 
-                    Text(
-                        text = millisToString(event.startDate, "dd.MM.yyyy HH:mm"),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = secondaryTextColor
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    EventStartCountdownTimer(
-                        startDate = event.startDate,
-                        closeDate = event.closeDate,
-                        textColor = secondaryTextColor
-                    )
-                }
+                Text(
+                    text = millisToString(event.startDate, "dd.MM.yyyy HH:mm"),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = secondaryTextColor,
+                    maxLines = 1,
+                    softWrap = false
+                )
+                EventStartCountdownTimer(
+                    startDate = event.startDate,
+                    closeDate = event.closeDate,
+                    textColor = secondaryTextColor
+                )
             }
         }
     }
@@ -166,10 +162,15 @@ private fun EventStartCountdownTimer(
 ) {
     var nowMillis by remember { mutableStateOf(Clock.System.now().toEpochMilliseconds()) }
 
-    LaunchedEffect(startDate, closeDate) {
-        while (true) {
-            nowMillis = Clock.System.now().toEpochMilliseconds()
+    // Only tick while something is actually counting down. Once the event has started and either
+    // has no close date or has already ended, the rendered text is constant - a per-row 1s loop
+    // would recompose every visible list item forever for no visible change.
+    val needsTicking = nowMillis < startDate || (closeDate != null && nowMillis < closeDate)
+
+    LaunchedEffect(startDate, closeDate, needsTicking) {
+        while (needsTicking) {
             delay(1000L.milliseconds)
+            nowMillis = Clock.System.now().toEpochMilliseconds()
         }
     }
 
@@ -201,6 +202,8 @@ private fun EventStartCountdownTimer(
         text = text,
         style = MaterialTheme.typography.bodySmall,
         color = textColor,
+        maxLines = 1,
+        softWrap = false,
         modifier = modifier
     )
 }

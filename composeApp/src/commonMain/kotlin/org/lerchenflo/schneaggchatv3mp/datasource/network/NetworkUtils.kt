@@ -370,6 +370,7 @@ class NetworkUtils(
             setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         }catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             loggingRepository.logWarning("NetworkUtils register failed: ${e.message}")
             NetworkResult.Error(NetworkError.Unknown(message = e.message))
         }
@@ -697,6 +698,7 @@ class NetworkUtils(
             setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             loggingRepository.logWarning("NetworkUtils changeProfilePic failed: ${e.message}")
             NetworkResult.Error(NetworkError.Unknown(message = e.message))
         }
@@ -849,6 +851,7 @@ class NetworkUtils(
             setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         }catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             loggingRepository.logWarning("NetworkUtils createGroup failed: ${e.message}")
             NetworkResult.Error(NetworkError.Unknown(message = e.message))
         }
@@ -903,6 +906,7 @@ class NetworkUtils(
             setOffline()
             NetworkResult.Error(NetworkError.NoInternet())
         } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             loggingRepository.logWarning("NetworkUtils changeGroupProfilePic failed: ${e.message}")
             NetworkResult.Error(NetworkError.Unknown(message = e.message))
         }
@@ -1029,6 +1033,9 @@ class NetworkUtils(
         val closeDate: Long?,
 
         val voteOptions: List<PollVoteOptionCreateRequest>,
+
+        val allowDeleteOptions: Boolean = false,
+        val showCheckboxes: Boolean = true,
     )
 
     /**
@@ -1059,6 +1066,22 @@ class NetworkUtils(
         return safePost(
             endpoint = "/messages/pollvote",
             body = pollVoteRequest,
+        )
+    }
+
+    /**
+     * Delete a vote option from a poll
+     */
+    @Serializable
+    data class PollOptionDeleteRequest(
+        val messageId: String,
+        val optionId: String,
+    )
+
+    suspend fun deletePollOption(request: PollOptionDeleteRequest) : NetworkResult<MessageResponse, RequestError> {
+        return safePost(
+            endpoint = "/messages/polloption/delete",
+            body = request,
         )
     }
 

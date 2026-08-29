@@ -58,8 +58,8 @@ sealed interface SchneaggmapAction {
     data object OnCreateChoiceDismiss : SchneaggmapAction
 
     /** User chose "map entry" in the long-press choice dialog - opens the blank MapEntry sheet at that coordinate. */
-    data object OnCreateMapEntryChoice : SchneaggmapAction
+    data class OnCreateMapEntryChoice(val location: LatLong): SchneaggmapAction
 
     /** User chose "event" in the long-press choice dialog - navigates to Events with a blank Event pre-filled at that coordinate. */
-    data object OnCreateEventChoice : SchneaggmapAction
+    data class OnCreateEventChoice(val location: LatLong) : SchneaggmapAction
 }

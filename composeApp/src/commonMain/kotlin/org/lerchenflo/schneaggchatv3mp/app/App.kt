@@ -44,14 +44,16 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.TOP_LEVEL_DESTINATIONS
 import org.lerchenflo.schneaggchatv3mp.app.navigation.decoratedEntriesMap
 import org.lerchenflo.schneaggchatv3mp.app.navigation.getVisibleTopLevelDestinations
 import org.lerchenflo.schneaggchatv3mp.app.navigation.rememberNavigationState
+import org.lerchenflo.schneaggchatv3mp.app.navigation.resetTabRoot
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.LocalTapTargetController
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetController
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TapTargetOverlay
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.TourSettings
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.rememberOnboardingTour
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreen
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.ChatScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ChatDetails
+import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.birthdays.BirthdaysScreenRoot
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.Chatauswahlscreen
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatselector.MessageChatSelector
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.newchat.GroupCreatorScreenRoot
@@ -239,7 +241,13 @@ fun App() {
         NavigationBackHandler(
             state = rememberNavigationEventState(currentInfo = NavigationEventInfo.None),
             isBackEnabled = navigationState.backExitsToHome,
-            onBackCompleted = { scope.launch { navigator.navigateBack() } }
+            onBackCompleted = {
+                scope.launch {
+                    navigator.navigateBack(
+                        Navigator.NavigationOptions(exitPreviousScreen = true)
+                    )
+                }
+            }
         )
 
         // At the chat selector itself, first back press shows a "press again to exit" prompt and
@@ -267,7 +275,17 @@ fun App() {
 
             if (navigationOptions.exitPreviousScreen) {
                 navigationState.backStacks[navigationState.topLevelRoute]?.let { stack ->
-                    if (stack.size > 1) stack.removeAt(stack.size - 1)
+                    if (stack.size > 1) {
+                        // Sub-route pushed on top of the tab root - pop it so back-navigation
+                        // from the new destination doesn't return to it.
+                        stack.removeAt(stack.size - 1)
+                    } else {
+                        // The tab root itself is the screen being left and may carry
+                        // flow-specific args (e.g. the map's location-picking state) - delete it
+                        // and reset the tab to its all-default route so revisiting it later
+                        // recreates the screen fresh.
+                        navigationState.resetTabRoot(navigationState.topLevelRoute)
+                    }
                 }
             }
 
@@ -537,7 +555,7 @@ fun App() {
                                     }
 
                                     entry<Route.Chat> { route ->
-                                        ChatScreen(
+                                        ChatScreenRoot(
                                             chatId = route.chatId,
                                             isGroup = route.isGroup,
                                             highlightMessageId = route.highlightMessageId
@@ -548,6 +566,9 @@ fun App() {
                                             chatId = route.chatId,
                                             isGroup = route.isGroup
                                         )
+                                    }
+                                    entry<Route.Birthdays> {
+                                        BirthdaysScreenRoot()
                                     }
                                     entry<Route.MessageChatSelector> {
                                         MessageChatSelector()

@@ -83,7 +83,9 @@ class SchneaggmapViewModel(
 
     fun onAction(action: SchneaggmapAction) {
         when (action) {
-            SchneaggmapAction.OnBackClicked -> viewModelScope.launch { navigator.navigateBack() }
+            SchneaggmapAction.OnBackClicked -> viewModelScope.launch {
+                navigator.navigateBack()
+            }
             is SchneaggmapAction.OnConfirmLocationPick -> {
 
                 val newEvent = currentlyEditedEvent?.copy(
@@ -166,7 +168,7 @@ class SchneaggmapViewModel(
                 //On longclick ask whether to create a map entry or an event here
                 if (action.longClick) {
                     _state.update {
-                        it.copy(createChoiceLocation = action.coordinates)
+                        it.copy(currentlySelectedLocation = action.coordinates)
                     }
                 } else {
 
@@ -180,18 +182,17 @@ class SchneaggmapViewModel(
             }
 
             SchneaggmapAction.OnCreateChoiceDismiss -> {
-                _state.update { it.copy(createChoiceLocation = null) }
+                _state.update { it.copy(currentlySelectedLocation = null) }
             }
 
-            SchneaggmapAction.OnCreateMapEntryChoice -> {
-                val coordinates = _state.value.createChoiceLocation ?: return
+            is SchneaggmapAction.OnCreateMapEntryChoice -> {
 
                 _state.update {
                     it.copy(
-                        createChoiceLocation = null,
+                        currentlySelectedLocation = null,
                         selectedEntry = MapEntry(
                             id = "",
-                            coordinates = coordinates,
+                            coordinates = action.location,
                             name = "",
                             description = "",
                             locationData = emptyList(),
@@ -204,15 +205,14 @@ class SchneaggmapViewModel(
                 }
             }
 
-            SchneaggmapAction.OnCreateEventChoice -> {
-                val coordinates = _state.value.createChoiceLocation ?: return
+            is SchneaggmapAction.OnCreateEventChoice -> {
                 val userId = SessionCache.requireLoggedIn()?.userId ?: ""
 
-                _state.update { it.copy(createChoiceLocation = null) }
+                _state.update { it.copy(currentlySelectedLocation = null) }
 
                 viewModelScope.launch {
                     navigator.navigate(Route.Events(
-                        selectedEvent = newEvent(creatorId = userId, location = coordinates)
+                        selectedEvent = newEvent(creatorId = userId, location = action.location)
                     ))
                 }
             }

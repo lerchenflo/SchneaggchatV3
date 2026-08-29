@@ -7,7 +7,9 @@ import io.github.lerchenflo.voicemessages.VoicePlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -76,6 +78,7 @@ class AudioPlayer(
                 // 5. Poll for progress updates (replaces the old push-based listener)
                 startPolling(messageId)
             } catch (e: Exception) {
+                currentCoroutineContext().ensureActive()
                 //loggingRepository.logWarning("Failed to play audio: ${e.message}")
                 println("Failed to play audio: ${e.message}")
                 stopAudio()
@@ -111,6 +114,7 @@ class AudioPlayer(
             isPlaying = false
             _playbackProgress.value = _playbackProgress.value.copy(isPlaying = false)
         } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             //loggingRepository.logWarning("Failed to pause audio: ${e.message}")
             println("Failed to pause audio: ${e.message}")
         }
@@ -120,6 +124,7 @@ class AudioPlayer(
         try {
             voicePlayer.seekTo(position)
         }catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             println("Failed to seeking audio: ${e.message}")
         }
     }
@@ -130,6 +135,7 @@ class AudioPlayer(
             voicePlayer.stop()
             resetPlaybackState()
         } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             //loggingRepository.logWarning("Failed to stop audio: ${e.message}")
             println("Failed to stop audio: ${e.message}")
         }

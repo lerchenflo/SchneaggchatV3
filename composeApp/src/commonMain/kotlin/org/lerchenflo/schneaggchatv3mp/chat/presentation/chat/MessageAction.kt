@@ -1,11 +1,13 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 
 sealed interface MessageAction {
     // Poll actions
     data class VotePoll(val messageId: String, val optionId: String, val checked: Boolean) : MessageAction
     data class AddCustomPollOption(val messageId: String, val text: String, val maxAnswers: Int?) : MessageAction
+    data class DeletePollOption(val messageId: String, val optionId: String) : MessageAction
 
     // Audio actions
     data class PlayAudio(val messageId: String, val audioPath: String, ) : MessageAction
@@ -22,7 +24,10 @@ sealed interface MessageAction {
     data class StartEditMessage(val message: Message) : MessageAction
 
     data object CancelEditMessage: MessageAction
-    data class ReplyToMessage(val message: Message) : MessageAction
+    data class ReplyToMessage(
+        val message: Message,
+        val sender: SenderInfo? = null,
+    ) : MessageAction
 
     data class ToggleReaction(val messageId: String, val reaction: String) : MessageAction
 }

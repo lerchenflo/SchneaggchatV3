@@ -619,7 +619,7 @@ val UNDERCOVER_WORD_PAIRS_DE: List<UndercoverWordPair> = listOf(
  */
 fun getUndercoverWordPairs(languageSetting: LanguageSetting): List<UndercoverWordPair> {
     return when (languageSetting) {
-        LanguageSetting.ENGLISH -> UNDERCOVER_WORD_PAIRS_EN
+        LanguageSetting.ENGLISH, LanguageSetting.ITALIAN -> UNDERCOVER_WORD_PAIRS_EN
         LanguageSetting.GERMAN, LanguageSetting.VORI -> UNDERCOVER_WORD_PAIRS_DE
         LanguageSetting.SYSTEM -> {
             runBlocking {

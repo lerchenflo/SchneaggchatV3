@@ -87,6 +87,30 @@ fun rememberNavigationState(
 
 }
 
+/**
+ * Closes a top-level tab: drops its backstack and re-adds the tab route with all-default
+ * arguments. Used when `exitPreviousScreen` leaves a tab whose root carried flow-specific args
+ * (the map's `currentlyEditedEvent`, the events tab's `selectedEvent`, ...) - the fresh NavKey
+ * gives the tab a new NavEntry, so the screen and its ViewModel are recreated on the next visit
+ * instead of resurrecting the old state.
+ *
+ * Skipped when the root is a different route class than the tab key - the home tab legitimately
+ * starts on the auth flow (`AutoLoginCredChecker`), which must not be rewritten.
+ */
+fun NavigationState.resetTabRoot(tabKey: NavKey) {
+    val stack = backStacks[tabKey] ?: return
+    val root = stack.firstOrNull() ?: return
+    if (root::class != tabKey::class) return
+    // Already at the bare tab root - removing and re-adding an equal key would destroy and rebuild
+    // the NavEntry (new ViewModelStore, and any ModalBottomSheet it hosts torn down mid-flight)
+    // for no state change at all.
+    if (stack.size == 1 && root == tabKey) return
+    while (stack.size > 1) stack.removeAt(stack.size - 1)
+    // Replace in place rather than remove-then-re-add, so the entry is swapped in a single step.
+    // Tab keys are the all-default instances: Route.Schneaggmap(), Route.Events().
+    if (root != tabKey) stack[0] = tabKey
+}
+
 @Composable
 fun NavigationState.decoratedEntriesMap(
     entryProvider: (NavKey) -> NavEntry<NavKey>
@@ -132,6 +156,7 @@ private val gameRoutes: Set<KClass<out NavKey>> = setOf(
 private val chatRoutes: Set<KClass<out NavKey>> = setOf(
     Route.Chat::class,
     Route.ChatDetails::class,
+    Route.Birthdays::class,
     Route.NewChat::class,
     Route.MessageChatSelector::class,
     Route.GroupCreator::class
@@ -152,6 +177,7 @@ val backStackConfiguration = SavedStateConfiguration {
             subclass(Route.SignUp::class, Route.SignUp.serializer())
             subclass(Route.EmailVerifiedCheck::class, Route.EmailVerifiedCheck.serializer())
             subclass(Route.ChatDetails::class, Route.ChatDetails.serializer())
+            subclass(Route.Birthdays::class, Route.Birthdays.serializer())
             subclass(Route.Schneaggmap::class, Route.Schneaggmap.serializer())
             subclass(Route.Events::class, Route.Events.serializer())
 

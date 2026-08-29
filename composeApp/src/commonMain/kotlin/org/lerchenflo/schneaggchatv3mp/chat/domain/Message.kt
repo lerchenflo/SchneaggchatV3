@@ -1,5 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.chat.domain
 
+import androidx.compose.runtime.Immutable
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.todayIn
@@ -21,6 +22,14 @@ enum class MessageType {
 }
 
 
+/**
+ * Declared @Immutable so Compose can skip recomposing a message row whose content is unchanged
+ * instead of always treating it as unstable (the compiler can't infer stability on its own here
+ * because the fields below are `var`, needed for Room/DTO mapping). This is only true as long as
+ * nothing mutates a Message instance once it's reached a live chat composition - see
+ * MessageDisplayMapper, which is the only place in the chat display path that used to do that.
+ */
+@Immutable
 data class Message(
     var localPK: Long = 0L,
     var id: String? = null,

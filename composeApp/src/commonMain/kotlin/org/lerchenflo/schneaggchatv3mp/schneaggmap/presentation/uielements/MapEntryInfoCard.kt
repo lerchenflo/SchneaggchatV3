@@ -51,7 +51,7 @@ import com.stevdza_san.swipeable.domain.SwipeBehavior
 import com.stevdza_san.swipeable.domain.SwipeDirection
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.copyToClipboard
+import org.lerchenflo.schneaggchatv3mp.utilities.copyToClipboard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry

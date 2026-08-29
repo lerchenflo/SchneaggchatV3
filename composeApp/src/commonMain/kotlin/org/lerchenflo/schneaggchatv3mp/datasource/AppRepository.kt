@@ -13,7 +13,9 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -87,6 +89,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.MessageSy
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.NewFriendsUserResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PersonalUserSettings
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollCreateRequest
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollOptionDeleteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteOptionCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
@@ -430,6 +433,7 @@ class AppRepository(
                             )
                             //println("User sync completed successfully")
                         } catch (e: Exception) {
+                            ensureActive()
                             updateSyncJob(
                                 type = USERS,
                                 status = DataSyncJobStatus.FAILED,
@@ -456,6 +460,7 @@ class AppRepository(
                             )
                             //println("Message sync completed successfully")
                         } catch (e: Exception) {
+                            ensureActive()
                             updateSyncJob(
                                 type = MESSAGES,
                                 status = DataSyncJobStatus.FAILED,
@@ -480,6 +485,7 @@ class AppRepository(
                             )
                             //println("Group sync completed successfully")
                         } catch (e: Exception) {
+                            ensureActive()
                             updateSyncJob(
                                 type = GROUPS,
                                 status = DataSyncJobStatus.FAILED,
@@ -504,6 +510,7 @@ class AppRepository(
                             )
                             //println("Map sync completed successfully")
                         } catch (e: Exception) {
+                            ensureActive()
                             updateSyncJob(
                                 type = MAP,
                                 status = DataSyncJobStatus.FAILED,
@@ -527,6 +534,7 @@ class AppRepository(
                                 error = null
                             )
                         } catch (e: Exception) {
+                            ensureActive()
                             updateSyncJob(
                                 type = EVENTS,
                                 status = DataSyncJobStatus.FAILED,
@@ -558,6 +566,7 @@ class AppRepository(
                             error = null
                         )
                     } catch (e: Exception) {
+                        currentCoroutineContext().ensureActive()
                         updateSyncJob(
                             type = DataSyncJobType.MEDIA,
                             status = DataSyncJobStatus.FAILED,
@@ -1704,6 +1713,8 @@ class AppRepository(
                             maxAllowedCustomAnswers = content.poll.maxAllowedCustomAnswers,
                             visibility = content.poll.visibility,
                             expiresAt = content.poll.closeDate,
+                            allowDeleteOptions = content.poll.allowDeleteOptions,
+                            showCheckboxes = content.poll.showCheckboxes,
                             voteOptions = content.poll.voteOptions.mapIndexed { index, request ->
                                 PollVoteOption(
                                     id = index.toString(),
@@ -1711,7 +1722,8 @@ class AppRepository(
                                     custom = false,
                                     creatorId = ownId,
                                     voters = emptyList(),
-                                    maxVoters = request.maxVoters
+                                    maxVoters = request.maxVoters,
+                                    createdByMe = true,
                                 )
                             }
                         ),
@@ -1981,7 +1993,9 @@ class AppRepository(
                                             text = it.text,
                                             maxVoters = it.maxVoters
                                         )
-                                    }
+                                    },
+                                    allowDeleteOptions = poll.allowDeleteOptions,
+                                    showCheckboxes = poll.showCheckboxes,
                                 )
                             )
                         }
@@ -2252,6 +2266,27 @@ class AppRepository(
                     ))
                 }
 
+            }
+        }
+    }
+
+    suspend fun deletePollOption(ownId: String, messageId: String, optionId: String) {
+        val request = networkUtils.deletePollOption(
+            PollOptionDeleteRequest(messageId = messageId, optionId = optionId)
+        )
+
+        when (request) {
+            is NetworkResult.Error<RequestError> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
+            }
+            is NetworkResult.Success<MessageResponse> -> {
+                val existing = messageRepository.getMessageById(request.data.messageId)
+                if (existing != null) {
+                    messageRepository.upsertMessage(existing.copy(
+                        poll = request.data.pollResponse?.toPollMessage(ownId),
+                        changeDate = request.data.lastChanged.toString(),
+                    ))
+                }
             }
         }
     }

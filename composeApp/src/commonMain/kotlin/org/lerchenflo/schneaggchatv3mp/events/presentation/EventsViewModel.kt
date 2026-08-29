@@ -140,7 +140,7 @@ class EventsViewModel(
                             selectedEvent = null
                         )
                     }
-                    navigator.navigate(Route.Schneaggmap(currentlyEditedEvent = passedEvent))
+                    navigator.navigate(Route.Schneaggmap(currentlyEditedEvent = passedEvent), navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true))
                 }
             }
 

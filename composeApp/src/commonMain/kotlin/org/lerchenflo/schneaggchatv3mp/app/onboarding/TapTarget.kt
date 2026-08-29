@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.TouchApp
@@ -32,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -52,6 +55,8 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
@@ -370,18 +375,85 @@ val LocalTapTargetController = staticCompositionLocalOf<TapTargetController?> { 
  */
 fun Modifier.tapTarget(id: String): Modifier = composed {
     val controller = LocalTapTargetController.current ?: return@composed this
-    onGloballyPositioned { coords ->
-        val pos = coords.positionInRoot()
-        controller.register(
-            id,
-            Rect(
-                left   = pos.x,
-                top    = pos.y,
-                right  = pos.x + coords.size.width,
-                bottom = pos.y + coords.size.height,
-            )
-        )
+
+    val bringIntoViewRequester = remember(id) { BringIntoViewRequester() }
+    var lastCoords by remember(id) { mutableStateOf<LayoutCoordinates?>(null) }
+    // Guards against re-triggering a scroll on every relayout pass while the bring-into-view
+    // animation itself is in flight (which keeps calling onGloballyPositioned). Reset whenever
+    // this id stops being the active step so it's armed again next time the tour reaches it.
+    var hasAutoScrolledForStep by remember(id) { mutableStateOf(false) }
+
+    // Bounds are only valid while this composable is on screen. Without this the entry would
+    // linger after the screen leaves composition, and the tour would spotlight (and gate taps on)
+    // a stale rectangle where the element used to be.
+    DisposableEffect(controller, id) {
+        onDispose { controller.unregister(id) }
     }
+
+    // Auto-scrolls this target into the center 40% band of the screen once it becomes the
+    // active step's target. Only fires once per activation — not on every layout pass — so it
+    // doesn't fight the scroll animation it just started.
+    LaunchedEffect(controller.currentIndex, id) {
+        if (controller.currentStep?.id != id) {
+            hasAutoScrolledForStep = false
+            return@LaunchedEffect
+        }
+        if (hasAutoScrolledForStep) return@LaunchedEffect
+        hasAutoScrolledForStep = true
+
+        withTimeoutOrNull(2000.milliseconds) {
+            while (lastCoords == null) delay(16.milliseconds)
+        }
+        val coords = lastCoords ?: return@LaunchedEffect
+        if (!coords.isAttached) return@LaunchedEffect
+
+        val rootSize = coords.findRootCoordinates().size
+        val pos = coords.positionInRoot()
+        val targetCenterY = pos.y + coords.size.height / 2f
+        val bandTop = rootSize.height * 0.3f
+        val bandBottom = rootSize.height * 0.7f
+
+        if (targetCenterY < bandTop || targetCenterY > bandBottom) {
+            val w = coords.size.width.toFloat()
+            val h = coords.size.height.toFloat()
+            // Vertical span is padded to the root's height, centered on the target's own local
+            // center — against Compose's default bring-into-view algorithm this resolves to
+            // "scroll until the target's center reaches the viewport's center" on whichever
+            // ancestor is vertically scrollable, i.e. it centers rather than just nudges into view.
+            //
+            // Horizontal span is left as the target's own natural bounds (0..w), NOT padded the
+            // same way. A target like the chat-selector FAB sits inside a horizontal page (see
+            // App.kt's HorizontalPager wrapping Chatauswahlscreen) purely for cross-screen swipe
+            // navigation, not as a "scrollable row of targets". Padding the X axis too made the
+            // FAB look off-page to that pager, which then paged forward to "bring it into view" —
+            // instantly swiping the user to the next tab. Only touch the axis we actually mean to
+            // center on.
+            bringIntoViewRequester.bringIntoView(
+                Rect(
+                    left   = 0f,
+                    top    = h / 2f - rootSize.height / 2f,
+                    right  = w,
+                    bottom = h / 2f + rootSize.height / 2f,
+                )
+            )
+        }
+    }
+
+    this
+        .bringIntoViewRequester(bringIntoViewRequester)
+        .onGloballyPositioned { coords ->
+            lastCoords = coords
+            val pos = coords.positionInRoot()
+            controller.register(
+                id,
+                Rect(
+                    left   = pos.x,
+                    top    = pos.y,
+                    right  = pos.x + coords.size.width,
+                    bottom = pos.y + coords.size.height,
+                )
+            )
+        }
 }
 
 // ─────────────────────────────────────────────────────────────────

@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
@@ -111,6 +112,7 @@ class LoginViewModel(
                     }
 
                 } catch (e: Exception) {
+                    ensureActive()
                     errorMessage = "Connection error: ${e.message}"
                 } finally {
                     isLoading = false

@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
+import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.close
@@ -28,6 +29,7 @@ import schneaggchatv3mp.composeapp.generated.resources.close
 fun ReplyPreview(
     ownId: String,
     message: Message,
+    sender: SenderInfo?,
     useMD: Boolean,
     selectedChatId: String,
     onDismiss: () -> Unit,
@@ -64,7 +66,7 @@ fun ReplyPreview(
                 useMD = useMD,
                 mymessage = message.myMessage,
                 selectedChatId = selectedChatId,
-                senderColor = message.senderColor,
+                sender = sender,
                 ownId = ownId,
             )
         }

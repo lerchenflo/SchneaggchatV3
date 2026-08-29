@@ -141,6 +141,12 @@
 
     <string name="birthdate">Geburtsdatum</string>
 
+    <string name="birthdays">Geburtstage</string>
+    <string name="birthday_tomorrow">morgen</string>
+    <string name="birthday_in_days">in %1$d Tagen</string>
+    <string name="birthday_turns_age">wird %1$d</string>
+    <string name="no_birthdays">Keiner deiner Freunde hat ein Geburtsdatum gesetzt</string>
+
     <string name="no_description">Keine Beschreibung</string>
     <string name="remove_friend">Freund entfernen</string>
     <string name="save">Speichern</string>
@@ -156,6 +162,7 @@
     <string name="camera">Kamera</string>
     <string name="gallery">Gallerie</string>
     <string name="choose_image_source">Bildquelle auswählen</string>
+    <string name="image_picker_error">Fehler: %1$s</string>
 
     <string name="new_chat">Neuer Chat</string>
     <string name="new_group">Gruppe erstellen</string>
@@ -322,7 +329,7 @@
     <string name="group_delete_delay_one_week">1 Woche nach dem Event</string>
     <string name="event_created_by">Erstellt von %1$s</string>
     <string name="event_join">Beitreten</string>
-    <string name="event_invite_header">%1$s möchte %2$s bei %3$s</string>
+    <string name="event_invite_header">%1$s möchte %2$s am %3$s</string>
     <string name="event_invited_users">Eingeladen</string>
     <string name="event_invite_friends">Freunde einladen</string>
     <string name="event_location_label">Ort</string>

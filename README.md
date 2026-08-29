@@ -19,6 +19,18 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 # Changelog
 
+### 3.0.17
+
+#### Features
+- Chat-Nachrichtenliste: Zu neuen Nachrichten springen Pfeil
+- Umfragen: Option Checkboxen anzeigen & Option löschen
+- Geburtstagsliste
+- Italienisch als Sprache
+
+#### Bugfixes
+- Event Farbe auf der Map repariert
+- Event bearbeiten/erstellen Bug behoben
+
 ### 3.0.16
 
 ##### Highlights
