@@ -200,7 +200,7 @@
     <string name="group_expires_in">Expires in: %1$s</string>
     <string name="group_expired">Expired</string>
     <string name="delete_group_timer">Delete group timer</string>
-    <string name="confirm_delete_group_timer">Remove this group\'s expiry date? It will no longer auto-expire.</string>
+    <string name="confirm_delete_group_timer">Remove this group's expiry date? It will no longer auto-expire.</string>
     <string name="delete_event">Delete event</string>
     <string name="confirm_delete_event">Delete this event? The group will be detached from it and will remain, but the event itself will be permanently deleted.</string>
     <string name="event_delete_failed">❌ Failed to delete event</string>
@@ -678,7 +678,7 @@
 
     <string name="poll_option_delete">Delete option</string>
     <string name="poll_option_delete_confirm_title">Delete this option?</string>
-    <string name="poll_option_delete_confirm_text">\"%1$s\" and its votes will be removed. This cannot be undone.</string>
+    <string name="poll_option_delete_confirm_text">"%1$s" and its votes will be removed. This cannot be undone.</string>
 
 
 
@@ -787,7 +787,7 @@
 
     <!-- Games: Stanislaus -->
     <string name="games_stanislaus_title">Stanislaus and the Fish</string>
-    <string name="games_stanislaus_instructions">Light bends when it crosses from water into air, so the fish is never quite where it looks like it is!\n\nDrag from Stanislaus to aim the spear, then release to throw. The spear flies in a perfectly straight line — if you aim at the fish you see, you\'ll miss. Aim deeper and further out to actually hit it.\n\nCatch as many fish as you can before time runs out. A hit deep in the water scores extra, misses cost you time, and fish far out on the pond hide behind the mirror-like glare of the surface.</string>
+    <string name="games_stanislaus_instructions">Light bends when it crosses from water into air, so the fish is never quite where it looks like it is!\n\nDrag from Stanislaus to aim the spear, then release to throw. The spear flies in a perfectly straight line — if you aim at the fish you see, you'll miss. Aim deeper and further out to actually hit it.\n\nCatch as many fish as you can before time runs out. A hit deep in the water scores extra, misses cost you time, and fish far out on the pond hide behind the mirror-like glare of the surface.</string>
     <string name="games_stanislaus_caught">Caught!</string>
     <string name="games_stanislaus_missed">Missed!</string>
     <string name="games_stanislaus_streak">Streak: %1$d</string>

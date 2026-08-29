@@ -30,6 +30,8 @@ Your sole responsibility is to identify hardcoded user-facing English strings in
 
 4. **Update the English, German and Italian Resource Files**: Locate the English `strings.xml` (typically under `composeApp/src/commonMain/composeResources/values/strings.xml`), the German `strings.xml` (`composeResources/values-de/strings.xml`), and the Italian `strings.xml` (`composeResources/values-it/strings.xml`). Add each new key to all three. Do NOT modify `values-de-rAT/` (Austrian) — that locale is translated manually.
 
+5. **Existing keys whose English value changed**: Not just newly hardcoded strings — if the recent change edited the value of an *existing* string resource key in `values/strings.xml`, redo the German and Italian translations for that same key so all three stay in sync. Never touch `values-de-rAT/` for this either.
+
 ## Workflow
 
 1. Determine which files were changed in the recent bugfix/feature using `git diff --name-only` or equivalent context.
