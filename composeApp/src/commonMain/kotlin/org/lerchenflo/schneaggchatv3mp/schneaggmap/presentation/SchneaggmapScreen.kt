@@ -824,6 +824,10 @@ private fun SchneaggmapMapContent(
     //background as the "table", a beer for the center/decorations, and a generic person icon for
     //cluster members whose profile picture hasn't loaded (so the ring still shows every member).
     val clusterBackgroundColor = pillColor.copy(alpha = 0.85f)
+
+    //Merged multi-type location marker background - much more transparent than the user cluster
+    //one above, since it's just a backdrop for a couple of small icons, not a "table".
+    val mergedLocationBackgroundColor = pillColor.copy(alpha = 0.35f)
     val clusterCountBackgroundColor = MaterialTheme.colorScheme.primary
     val clusterCountTextColor = MaterialTheme.colorScheme.onPrimary
     val beerIcon = imageResource(Res.drawable.icon_beer)
@@ -1102,7 +1106,7 @@ private fun SchneaggmapMapContent(
             //icon per type on the same coordinate. Not clustered - these are rare compared to
             //single-type entries, so native per-type clustering above is left untouched.
             val entryMergedIcons: Map<String, MarkerIcon> = remember(
-                multiTypeEntries, typeIconBitmaps, clusterBackgroundColor, density
+                multiTypeEntries, typeIconBitmaps, mergedLocationBackgroundColor, density
             ) {
                 multiTypeEntries.associate { entry ->
                     val icons = entry.locationData
@@ -1113,7 +1117,7 @@ private fun SchneaggmapMapContent(
                         .mapNotNull { typeIconBitmaps[it] }
                     val bitmap = mergeLocationTypeIcons(
                         icons = icons,
-                        backgroundColor = clusterBackgroundColor,
+                        backgroundColor = mergedLocationBackgroundColor,
                         density = density,
                     )
                     val size = with(density) { DpSize(bitmap.width.toDp(), bitmap.height.toDp()) }
