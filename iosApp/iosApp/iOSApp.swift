@@ -19,6 +19,10 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 
         NotificationManager.shared.initialize()
 
+        // Apply any messages the Notification Service Extension queued while this process
+        // wasn't running (background/killed push) before the chat UI first renders.
+        IosPushDelegateBridge().drainPendingPushMessages()
+
         return true
     }
 
@@ -92,6 +96,7 @@ struct iOSApp: App {
             if phase == .active {
                 logger.info("DEBUG onChange Log")
                 handleIncomingShare()
+                IosPushDelegateBridge().drainPendingPushMessages()
                 UIApplication.shared.applicationIconBadgeNumber = 0
             }
         }

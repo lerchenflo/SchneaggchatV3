@@ -134,8 +134,11 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
+import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
+import org.lerchenflo.schneaggchatv3mp.utilities.CryptoUtil
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.DecodedNotification
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
@@ -2113,6 +2116,73 @@ class AppRepository(
                 getAudiosForMessageIds(audiosToGet)
             }
         }
+    }
+
+    /**
+     * Instantly upserts a message delivered via push notification (FCM/APNs) into Room, so a
+     * chat opened before the next sync already shows it. Never overwrites an existing row and
+     * never advances the sync cursor (version stays 0, the same trick [messageIdSync] and the
+     * socket handler rely on) - the caller is still expected to follow up with [messageIdSync],
+     * which replaces this provisional row with the authoritative one (readers, reactions,
+     * real version).
+     */
+    suspend fun applyPushMessage(decoded: DecodedNotification.Message) {
+        if (SessionCache.requireLoggedIn()?.userId == null) return
+        val encryptionKey = preferencemanager.getEncryptionKey().ifEmpty { return }
+
+        if (decoded.reaction) {
+            applyPushReaction(decoded, encryptionKey)
+            return
+        }
+
+        // Only TEXT pushes carry enough content for a useful provisional row - IMAGE/AUDIO/POLL
+        // wait for the real sync + media fetch instead of flashing an empty bubble.
+        if (decoded.messageType != MessageType.TEXT) return
+
+        // Never overwrite an already-synced or socket-delivered row.
+        if (messageRepository.getMessageById(decoded.msgId) != null) return
+
+        val content = runCatching { CryptoUtil.decrypt(decoded.encodedContent, encryptionKey) }
+            .getOrNull() ?: return
+
+        val sendDate = (decoded.sendDate.takeIf { it > 0L } ?: getCurrentTimeMillisLong()).toString()
+
+        messageRepository.upsertMessage(
+            Message(
+                id = decoded.msgId,
+                msgType = MessageType.TEXT,
+                content = content,
+                senderId = decoded.senderId,
+                // Group chat is identified by groupId, not the push's receiverId (the
+                // recipient user) - see NotificationContentResolver.resolveMessage.
+                receiverId = if (decoded.groupMessage) decoded.groupId else decoded.receiverId,
+                groupMessage = decoded.groupMessage,
+                answerId = decoded.answerId.ifBlank { null },
+                sendDate = sendDate,
+                changeDate = sendDate,
+                sent = true,
+                myMessage = false,
+                readByMe = false,
+                readers = emptyList(),
+                reactions = emptyList(),
+                version = 0L,
+            )
+        )
+    }
+
+    /** Applies a reaction push to an already-local message. Never creates a new row. */
+    private suspend fun applyPushReaction(decoded: DecodedNotification.Message, encryptionKey: String) {
+        val existing = messageRepository.getMessageById(decoded.msgId) ?: return
+
+        val emoji = runCatching { CryptoUtil.decrypt(decoded.encodedContent, encryptionKey) }
+            .getOrNull()?.takeIf { it.isNotBlank() } ?: return
+
+        messageRepository.upsertMessage(
+            existing.copy(
+                reactions = existing.reactions.filterNot { it.userId == decoded.senderId } +
+                    Reaction(userId = decoded.senderId, content = emoji, reactedAt = getCurrentTimeMillisLong())
+            )
+        )
     }
 
     suspend fun getPicturesForMessageIds(ids: List<String>){

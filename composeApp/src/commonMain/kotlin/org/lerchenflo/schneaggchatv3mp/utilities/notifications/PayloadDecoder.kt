@@ -15,7 +15,10 @@ sealed interface DecodedNotification {
         val reaction: Boolean = false,
         //The chat this notification belongs to when it is a group message. Empty for 1:1
         //messages, where the chat is identified by senderId instead.
-        val groupId: String = ""
+        val groupId: String = "",
+        //Lets a provisional push-upserted message sort correctly without waiting for sync.
+        val sendDate: Long = 0L,
+        val answerId: String = ""
     ) : DecodedNotification {
         /** Chat id this message notification points at: the group for group messages, the sender for 1:1. */
         val chatTargetId: String? get() = (if (groupMessage) groupId else senderId).ifBlank { null }
@@ -76,6 +79,8 @@ object PayloadDecoder {
                 receiverId = data["receiverId"] ?: "",
                 reaction = data["reaction"]?.toBoolean() ?: false,
                 groupId = data["groupId"] ?: "",
+                sendDate = data["sendDate"]?.toLongOrNull() ?: 0L,
+                answerId = data["answerId"] ?: "",
             )
             "friend_request" -> DecodedNotification.FriendRequest(
                 requesterId = data["requesterId"] ?: "",
