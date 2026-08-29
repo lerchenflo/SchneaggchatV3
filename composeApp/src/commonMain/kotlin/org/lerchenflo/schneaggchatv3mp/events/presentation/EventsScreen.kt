@@ -1,8 +1,10 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -29,6 +31,7 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventEditPopup
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventJoinPopup
+import org.lerchenflo.schneaggchatv3mp.sharedUi.DateChip
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.events_empty
@@ -101,17 +104,32 @@ fun EventsScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(
-                    items = state.events,
-                    key = { it.id }
-                ) { event ->
-                    val creatorFriend = state.friendsById[event.creatorId]
-                    EventItem(
-                        event = event,
-                        creatorProfilePictureUrl = creatorFriend?.profilePictureUrl,
-                        isOwnEvent = event.creatorId == ownId,
-                        onClick = { onAction(EventsAction.OnEventClick(event.id)) }
-                    )
+                state.eventDayGroups.forEach { group ->
+                    stickyHeader(key = group.dayId) { _ ->
+                        // Full-width opaque band so list content doesn't shine through
+                        // while the header is pinned.
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.background)
+                                .padding(vertical = 4.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            DateChip(group.dateMillis)
+                        }
+                    }
+                    items(
+                        items = group.events,
+                        key = { it.id }
+                    ) { event ->
+                        val creatorFriend = state.friendsById[event.creatorId]
+                        EventItem(
+                            event = event,
+                            creatorProfilePictureUrl = creatorFriend?.profilePictureUrl,
+                            isOwnEvent = event.creatorId == ownId,
+                            onClick = { onAction(EventsAction.OnEventClick(event.id)) }
+                        )
+                    }
                 }
             }
         }

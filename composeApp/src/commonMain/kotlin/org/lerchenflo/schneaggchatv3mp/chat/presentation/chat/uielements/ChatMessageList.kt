@@ -38,7 +38,10 @@ import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.ReaderBar
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.SystemMessageItem
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.systemEventText
+import org.lerchenflo.schneaggchatv3mp.sharedUi.DATE_CHIP_FORMAT
+import org.lerchenflo.schneaggchatv3mp.sharedUi.DateChip
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.new_messages
 import kotlin.time.Duration.Companion.milliseconds
@@ -134,6 +137,38 @@ fun ChatMessageList(
         highlightedMessageId = null
     }
 
+    // Day of the topmost (partially) visible item, shown in the floating date chip while
+    // scrolling. In the reversed list the topmost item is the LAST entry of visibleItemsInfo.
+    // A real LazyColumn stickyHeader can't be used here: with reverseLayout the foundation
+    // sticky logic pins headers to the wrong edge and expects headers to precede their items.
+    // Derived as the formatted day string so derivedStateOf only invalidates on day changes,
+    // not on every new topmost message.
+    val topVisibleDateString by remember(displayItems) {
+        derivedStateOf {
+            val millis = listState.layoutInfo.visibleItemsInfo.asReversed().firstNotNullOfOrNull { info ->
+                when (val item = displayItems.getOrNull(info.index)) {
+                    is MessageDisplayItem.MessageItem -> item.message.getSendDateAsLong()
+                    is MessageDisplayItem.DateDivider -> item.dateMillis
+                    else -> null // ReaderBar / NewMessagesDivider / SystemMessage carry no date
+                }
+            }
+            millis?.let { millisToString(it, DATE_CHIP_FORMAT) }
+        }
+    }
+
+    // Chip fades in while scrolling away from the bottom and fades out shortly after scrolling
+    // stops. The isAtBottom guard keeps it hidden during the programmatic scrolls at the very
+    // bottom (initial open, incoming-message auto-scroll), where the date is obvious anyway.
+    var dateChipVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(listState.isScrollInProgress, isAtBottom) {
+        if (listState.isScrollInProgress) {
+            if (!isAtBottom) dateChipVisible = true
+        } else {
+            delay(1000.milliseconds)
+            dateChipVisible = false
+        }
+    }
+
     Box(modifier = modifier) {
         LazyColumn(
             contentPadding = PaddingValues(16.dp),
@@ -198,6 +233,21 @@ fun ChatMessageList(
                         SystemMessageItem(systemEventText(item.event))
                     }
                 }
+            }
+        }
+
+        // Floating sticky-style date chip at the top of the list
+        val chipText = topVisibleDateString
+        if (chipText != null) {
+            AnimatedVisibility(
+                visible = dateChipVisible,
+                enter = fadeIn(),
+                exit = fadeOut(),
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 8.dp)
+            ) {
+                DateChip(chipText)
             }
         }
 

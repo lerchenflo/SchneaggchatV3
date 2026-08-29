@@ -23,6 +23,7 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.event_and_group_created
 import schneaggchatv3mp.composeapp.generated.resources.event_delete_failed
@@ -52,8 +53,22 @@ class EventsViewModel(
         val friendsMap = users
             .filter { it.friendshipStatus == NetworkUtils.FriendshipStatus.ACCEPTED }
             .associateBy { it.id }
+
+        // Events arrive sorted by startDate ASC; groupBy keeps that encounter order,
+        // so the day groups (and the events inside them) stay chronological.
+        val dayGroups = events
+            .groupBy { millisToString(it.startDate, "yyyy-MM-dd") }
+            .map { (dayKey, dayEvents) ->
+                EventDayGroup(
+                    dayId = "day_$dayKey",
+                    dateMillis = dayEvents.first().startDate,
+                    events = dayEvents
+                )
+            }
+
         currentState.copy(
             events = events,
+            eventDayGroups = dayGroups,
             friendsById = friendsMap,
             groups = groups,
             mapStyleUrl = mapStyleUrl
