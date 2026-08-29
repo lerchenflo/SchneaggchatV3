@@ -3,6 +3,9 @@ import UserNotifications
 private let appGroupId = "group.org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtension"
 private let languageKey = "shared_language_iso"
 private let encryptionKeyKey = "shared_encryption_key"
+// Must match SharedNotificationDefaults.KEY_PENDING_PUSH_MESSAGES on the Kotlin side.
+private let pendingPushMessagesKey = "pending_push_messages"
+private let maxPendingPushMessages = 100
 
 class NotificationService: UNNotificationServiceExtension {
 
@@ -30,6 +33,14 @@ class NotificationService: UNNotificationServiceExtension {
         let language = defaults?.string(forKey: languageKey)
         let encryptionKey = defaults?.string(forKey: encryptionKeyKey)
 
+        // Queue the raw payload for the main app to upsert into Room next time it activates -
+        // a background push never reaches Kotlin otherwise, since this extension is a separate
+        // process. Queued regardless of decode success below so a future app version that
+        // understands more types can still process it.
+        if payload["type"] == "message" {
+            enqueuePendingPushMessage(payload)
+        }
+
         guard let decoded = NotificationPayloadDecoder.decode(payload) else {
             contentHandler(bestAttemptContent)
             return
@@ -39,6 +50,32 @@ class NotificationService: UNNotificationServiceExtension {
         if let title = resolved.title { bestAttemptContent.title = title }
         if let body  = resolved.body  { bestAttemptContent.body  = body }
         contentHandler(bestAttemptContent)
+    }
+
+    /// Appends the flattened push payload to the shared App Group queue, capped so a burst of
+    /// undelivered pushes can't grow it unboundedly. The `aps` entry is dropped - its stringified
+    /// value is a Swift dictionary description, not usable data.
+    private func enqueuePendingPushMessage(_ payload: [String: String]) {
+        var entry = payload
+        entry.removeValue(forKey: "aps")
+
+        let defaults = UserDefaults(suiteName: appGroupId)
+        var queue: [[String: String]] = []
+        if let raw = defaults?.string(forKey: pendingPushMessagesKey),
+           let data = raw.data(using: .utf8),
+           let decoded = try? JSONDecoder().decode([[String: String]].self, from: data) {
+            queue = decoded
+        }
+
+        queue.append(entry)
+        if queue.count > maxPendingPushMessages {
+            queue.removeFirst(queue.count - maxPendingPushMessages)
+        }
+
+        if let data = try? JSONEncoder().encode(queue), let json = String(data: data, encoding: .utf8) {
+            defaults?.set(json, forKey: pendingPushMessagesKey)
+            defaults?.synchronize()
+        }
     }
 
     override func serviceExtensionTimeWillExpire() {
