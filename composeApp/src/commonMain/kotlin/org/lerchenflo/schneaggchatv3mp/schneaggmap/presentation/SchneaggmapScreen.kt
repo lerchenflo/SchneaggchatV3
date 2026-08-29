@@ -656,6 +656,9 @@ fun SchneaggmapScreen(
                     onOpenChat = { clickedUser ->
                         onAction(SchneaggmapAction.OnOpenChatClick(clickedUser))
                     },
+                    onOpenCompass = { clickedUser ->
+                        onAction(SchneaggmapAction.OnOpenCompassClick(clickedUser))
+                    },
                     isOwnUser = isOwnUser,
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )

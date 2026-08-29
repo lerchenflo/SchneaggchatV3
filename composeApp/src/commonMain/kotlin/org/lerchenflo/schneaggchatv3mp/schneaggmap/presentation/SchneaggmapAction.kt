@@ -24,6 +24,7 @@ sealed interface SchneaggmapAction {
     data class OnUserClick(val userId: String) : SchneaggmapAction
     data object OnOwnUserClick : SchneaggmapAction
     data class OnOpenChatClick(val user: User) : SchneaggmapAction
+    data class OnOpenCompassClick(val user: User) : SchneaggmapAction
 
     data object OnPopupDismiss: SchneaggmapAction
     data object OnFocusEntryHandled: SchneaggmapAction
@@ -41,6 +42,13 @@ sealed interface SchneaggmapAction {
 
 
     data class OnSearchTermChange(val newTerm: String) : SchneaggmapAction
+
+    data class OnSearchGroupToggle(val group: LocationGroup) : SchneaggmapAction
+
+    data class OnSearchTypeToggle(val type: LocationType) : SchneaggmapAction
+
+    /** Leaves the search: clears the term and all type filter chips. */
+    data object OnSearchClose : SchneaggmapAction
 
     data class OnSearchResultClick(val entry: MapEntry) : SchneaggmapAction
 

@@ -88,6 +88,7 @@ import org.lerchenflo.schneaggchatv3mp.login.presentation.signup.SignUpScreenRoo
 import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsRoot
 import org.lerchenflo.schneaggchatv3mp.roadmap.presentation.RoadmapScreen
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapScreenRoot
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.friendcompass.FriendCompassRoot
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsScreen
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.appearancesettings.AppearanceSettings
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.devsettings.DeveloperSettings
@@ -588,6 +589,12 @@ fun App() {
                                         SchneaggmapScreenRoot(
                                             initialEntryId = route.initialEntryId,
                                             currentlyEditedEvent = route.currentlyEditedEvent
+                                        )
+                                    }
+
+                                    entry<Route.FriendCompass> { route ->
+                                        FriendCompassRoot(
+                                            targetUserId = route.targetUserId
                                         )
                                     }
 

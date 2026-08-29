@@ -50,6 +50,8 @@ data class SchneaggmapState(
     //Searching
     val searchTerm: String = "",
     val searchResults: List<MapEntry> = emptyList(),
+    val searchSelectedGroups: Set<LocationGroup> = emptySet(),
+    val searchSelectedTypes: Set<LocationType> = emptySet(),
 
     // True when this screen was opened to pick a coordinate for something else (e.g. an event's
     // location) rather than for normal map browsing - swaps the usual chrome for a focused

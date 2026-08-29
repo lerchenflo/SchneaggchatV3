@@ -22,6 +22,8 @@ import androidx.compose.ui.text.withLink
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.markdownTypography
 import com.mikepenz.markdown.model.DefaultMarkdownColors
+import com.mikepenz.markdown.model.markdownAnnotator
+import com.mikepenz.markdown.model.markdownAnnotatorConfig
 
 /**
  * Displays text as plain text or markdown (merged into one composable) and resolves
@@ -86,6 +88,9 @@ fun ComboText(
                 content = markdownContent,
                 modifier = modifier,
                 typography = markdownTypography(paragraph = style),
+                // Chat messages: a single newline must stay a line break, not collapse to a
+                // space like CommonMark soft breaks
+                annotator = markdownAnnotator(config = markdownAnnotatorConfig(eolAsNewLine = true)),
 
                 colors = DefaultMarkdownColors(
                     text = textColor,

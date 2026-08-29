@@ -162,7 +162,11 @@ private val chatRoutes: Set<KClass<out NavKey>> = setOf(
     Route.GroupCreator::class
 )
 
-private val hiddenNavBarRoutes: Set<KClass<out NavKey>> = authFlowRoutes + gameRoutes + chatRoutes
+private val mapRoutes: Set<KClass<out NavKey>> = setOf(
+    Route.FriendCompass::class
+)
+
+private val hiddenNavBarRoutes: Set<KClass<out NavKey>> = authFlowRoutes + gameRoutes + chatRoutes + mapRoutes
 
 val backStackConfiguration = SavedStateConfiguration {
     serializersModule = SerializersModule {
@@ -179,6 +183,7 @@ val backStackConfiguration = SavedStateConfiguration {
             subclass(Route.ChatDetails::class, Route.ChatDetails.serializer())
             subclass(Route.Birthdays::class, Route.Birthdays.serializer())
             subclass(Route.Schneaggmap::class, Route.Schneaggmap.serializer())
+            subclass(Route.FriendCompass::class, Route.FriendCompass.serializer())
             subclass(Route.Events::class, Route.Events.serializer())
 
 

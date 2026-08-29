@@ -678,7 +678,6 @@ fun AttributeKey.labelRes(): StringResource = when (this) {
 }
 
 
-@Composable
 fun LocationType.stringRes(): StringResource = when (this) {
     RADAR           -> Res.string.location_type_radar
     POLICE          -> Res.string.location_type_police
