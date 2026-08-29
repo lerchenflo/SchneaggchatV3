@@ -1,11 +1,13 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -16,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -35,8 +38,10 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationGroup
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.drawableRes
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapAction
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -85,10 +90,10 @@ fun MapSearchBar(
             },
             leadingIcon = {
 
-                if (state.searchTerm.isNotEmpty() or (searchbarstate.currentValue == SearchBarValue.Expanded)) {
+                if (state.searchTerm.isNotEmpty() or state.searchSelectedGroups.isNotEmpty() or (searchbarstate.currentValue == SearchBarValue.Expanded)) {
                     //User is searching, show back icon from google maps for ios users to go back
                     IconButton(onClick = {
-                        onAction(SchneaggmapAction.OnSearchTermChange(""))
+                        onAction(SchneaggmapAction.OnSearchClose)
                         scope.launch { searchbarstate.animateToCollapsed() }
                     }) {
                         Icon(
@@ -129,6 +134,49 @@ fun MapSearchBar(
         Column(
             modifier = Modifier.verticalScroll(rememberScrollState())
         ) {
+            //Filter by location group, and within selected groups by individual type
+            Row(
+                modifier = Modifier
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                LocationGroup.entries.forEach { group ->
+                    FilterChip(
+                        selected = group in state.searchSelectedGroups,
+                        onClick = { onAction(SchneaggmapAction.OnSearchGroupToggle(group)) },
+                        label = { Text(stringResource(group.stringRes())) }
+                    )
+                }
+            }
+
+            AnimatedVisibility(visible = state.searchSelectedGroups.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    LocationGroup.entries
+                        .filter { it in state.searchSelectedGroups }
+                        .flatMap { it.types }
+                        .forEach { type ->
+                            FilterChip(
+                                selected = type in state.searchSelectedTypes,
+                                onClick = { onAction(SchneaggmapAction.OnSearchTypeToggle(type)) },
+                                label = { Text(stringResource(type.stringRes())) },
+                                leadingIcon = {
+                                    Image(
+                                        painter = painterResource(type.drawableRes()),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            )
+                        }
+                }
+            }
+
             state.searchResults.forEach { entry ->
 
                 MapSearchResult(

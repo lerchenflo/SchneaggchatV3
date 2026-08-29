@@ -10,12 +10,23 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 @Stable
 data class EventsState(
     val events: List<Event> = emptyList(),
+    val eventDayGroups: List<EventDayGroup> = emptyList(),
     val selectedEvent: Event? = null,
     val friendsById: Map<String, User> = emptyMap(),
     val groups: List<Group> = emptyList(),
     val isJoiningEvent: Boolean = false,
     val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl,
     val isMobile: Boolean = true,
+)
+
+/**
+ * All events starting on the same calendar day, shown under one sticky date header.
+ */
+@Stable
+data class EventDayGroup(
+    val dayId: String,     // stable LazyColumn key, e.g. "day_2026-08-29"
+    val dateMillis: Long,  // representative millis of that day (first event's startDate)
+    val events: List<Event>
 )
 
 sealed interface EventsAction {

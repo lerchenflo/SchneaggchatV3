@@ -53,6 +53,7 @@ import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsViewModel
 import org.lerchenflo.schneaggchatv3mp.roadmap.presentation.RoadmapViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewModel
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.friendcompass.FriendCompassViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
@@ -166,6 +167,17 @@ val sharedmodule = module{
             eventRepository = get(),
             initialEntryId = initialEntryId,
             currentlyEditedEvent = currentlyEditedEvent
+        )
+    }
+
+    // Explicit lambda because the nullable targetUserId can't be resolved by viewModelOf
+    viewModel { (targetUserId: String?) ->
+        FriendCompassViewModel(
+            targetUserId = targetUserId,
+            navigator = get(),
+            appRepository = get(),
+            locationService = get(),
+            compassService = get()
         )
     }
 

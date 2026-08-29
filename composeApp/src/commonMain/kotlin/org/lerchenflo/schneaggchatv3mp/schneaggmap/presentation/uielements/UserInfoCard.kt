@@ -53,6 +53,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.formatDistance
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.friend_compass_button
 import schneaggchatv3mp.composeapp.generated.resources.latlong
 import schneaggchatv3mp.composeapp.generated.resources.open_chat
 import schneaggchatv3mp.composeapp.generated.resources.open_location_in_maps
@@ -80,6 +81,7 @@ fun UserInfoCard(
     ownLocation: LatLong?,
     onDismiss: () -> Unit,
     onOpenChat: (User) -> Unit,
+    onOpenCompass: (User) -> Unit,
     modifier: Modifier = Modifier,
     isOwnUser: Boolean = false,
 ) {
@@ -129,9 +131,6 @@ fun UserInfoCard(
                 }
             }
 
-            //Note: heading is available on user.location?.heading but intentionally not shown
-            // here - there's currently no good way to render it usefully (no compass/rotation
-            // display), so it's left out of the popup for now.
             val onlineColor = MaterialTheme.colorScheme.primary
 
             val tiles = buildList {
@@ -234,6 +233,14 @@ fun UserInfoCard(
                     NormalButton(
                         text = stringResource(Res.string.open_location_in_maps),
                         onClick = { shareUtils.openLocationInMaps(userLocation.lat, userLocation.long, user.displayName) },
+                        primary = false
+                    )
+                }
+
+                if (!isOwnUser && location != null) {
+                    NormalButton(
+                        text = stringResource(Res.string.friend_compass_button),
+                        onClick = { onOpenCompass(user) },
                         primary = false
                     )
                 }

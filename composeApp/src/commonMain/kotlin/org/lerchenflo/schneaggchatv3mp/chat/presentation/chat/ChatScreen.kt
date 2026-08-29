@@ -79,7 +79,8 @@ fun ChatScreen(
     ) {innerPadding ->
         // The innerPadding contains the height of the topBar
         Column(
-            modifier = modifier
+            modifier = Modifier
+                .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding())
         ) {
 

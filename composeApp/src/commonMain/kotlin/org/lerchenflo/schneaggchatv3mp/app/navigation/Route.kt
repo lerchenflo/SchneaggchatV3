@@ -37,6 +37,9 @@ sealed interface Route : NavKey {
     @Serializable
     data class Schneaggmap(val initialEntryId: String? = null, val currentlyEditedEvent: Event? = null): Route
 
+    @Serializable
+    data class FriendCompass(val targetUserId: String? = null): Route
+
     // EVENTS
     @Serializable
     data class Events(val selectedEventId: String? = null, val selectedEvent: Event? = null): Route

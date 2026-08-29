@@ -28,8 +28,11 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
+import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LocationType
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.MapEntry
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.stringRes
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
 import kotlin.time.Clock
@@ -59,9 +62,33 @@ class SchneaggmapViewModel(
         eventRepository.getAllEventsFlow(),
     ) { state, entries, onlineFriendIds, events ->
 
-        val results = if (state.searchTerm.isEmpty()) emptyList() else entries.filter {
-            it.name.contains(state.searchTerm, ignoreCase = true)
-                    || it.description.contains(state.searchTerm, ignoreCase = true)
+        // Types the search is restricted to: explicitly picked types win within their group,
+        // a selected group with no individual picks counts as the whole group.
+        val searchFilterTypes = state.searchSelectedGroups.flatMapTo(mutableSetOf()) { group ->
+            group.types.filter { it in state.searchSelectedTypes }.ifEmpty { group.types }
+        }
+
+        val results = if (state.searchTerm.isEmpty() && searchFilterTypes.isEmpty()) {
+            emptyList()
+        } else {
+            // The term also matches localized type names (e.g. typing "Radar" finds all radars)
+            val termMatchedTypes = if (state.searchTerm.isEmpty()) emptySet() else {
+                LocationType.entries.filterTo(mutableSetOf()) {
+                    getString(it.stringRes()).contains(state.searchTerm, ignoreCase = true)
+                }
+            }
+
+            entries.filter { entry ->
+                val matchesTerm = state.searchTerm.isEmpty()
+                        || entry.name.contains(state.searchTerm, ignoreCase = true)
+                        || entry.description.contains(state.searchTerm, ignoreCase = true)
+                        || entry.locationData.any { it.locationtype in termMatchedTypes }
+
+                val matchesTypeFilter = searchFilterTypes.isEmpty()
+                        || entry.locationData.any { it.locationtype in searchFilterTypes }
+
+                matchesTerm && matchesTypeFilter
+            }
         }
 
         //println("Results: ${results.size}")
@@ -324,6 +351,14 @@ class SchneaggmapViewModel(
                 _state.update { it.copy(selectedUser = null) }
             }
 
+            is SchneaggmapAction.OnOpenCompassClick -> {
+                viewModelScope.launch {
+                    navigator.navigate(Route.FriendCompass(targetUserId = action.user.id))
+                }
+
+                _state.update { it.copy(selectedUser = null) }
+            }
+
             SchneaggmapAction.ToggleSnailTrails -> _state.update {
                 it.copy(showSnailTrails = !it.showSnailTrails)
             }
@@ -369,6 +404,39 @@ class SchneaggmapViewModel(
                 _state.update {
                     it.copy(
                         searchTerm = action.newTerm
+                    )
+                }
+            }
+
+            is SchneaggmapAction.OnSearchGroupToggle -> {
+                _state.update {
+                    val deselect = action.group in it.searchSelectedGroups
+                    it.copy(
+                        searchSelectedGroups = if (deselect) it.searchSelectedGroups - action.group else it.searchSelectedGroups + action.group,
+                        // Deselecting a group also drops its individual type picks
+                        searchSelectedTypes = if (deselect) it.searchSelectedTypes - action.group.types.toSet() else it.searchSelectedTypes
+                    )
+                }
+            }
+
+            is SchneaggmapAction.OnSearchTypeToggle -> {
+                _state.update {
+                    it.copy(
+                        searchSelectedTypes = if (action.type in it.searchSelectedTypes) {
+                            it.searchSelectedTypes - action.type
+                        } else {
+                            it.searchSelectedTypes + action.type
+                        }
+                    )
+                }
+            }
+
+            SchneaggmapAction.OnSearchClose -> {
+                _state.update {
+                    it.copy(
+                        searchTerm = "",
+                        searchSelectedGroups = emptySet(),
+                        searchSelectedTypes = emptySet()
                     )
                 }
             }

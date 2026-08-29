@@ -941,6 +941,21 @@
     <string name="schneaggmap_entry_last_changed_label">Zuletzt geändert</string>
     <string name="schneaggmap_entry_last_changed_by">Zuletzt geändert von %1$s am %2$s</string>
 
+    <!-- Friend compass -->
+    <string name="friend_compass_title">Freundekompass</string>
+    <string name="friend_compass_button">Kompass</string>
+    <string name="friend_compass_waiting_gps">Warte auf GPS-Position…</string>
+    <string name="friend_compass_no_sensor">Kein Kompasssensor verfügbar – Norden ist oben</string>
+    <string name="friend_compass_no_friends">Keine Freunde mit aktuellem Standort</string>
+    <string name="direction_n">N</string>
+    <string name="direction_ne">NO</string>
+    <string name="direction_e">O</string>
+    <string name="direction_se">SO</string>
+    <string name="direction_s">S</string>
+    <string name="direction_sw">SW</string>
+    <string name="direction_w">W</string>
+    <string name="direction_nw">NW</string>
+
     <!-- Game highscores -->
     <string name="highscores_title">Bestenliste</string>
     <string name="highscores_error">Bestenliste konnte nicht geladen werden</string>
