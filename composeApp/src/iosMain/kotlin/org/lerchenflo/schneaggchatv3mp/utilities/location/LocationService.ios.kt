@@ -9,6 +9,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import platform.CoreLocation.CLAuthorizationStatus
+import platform.CoreLocation.CLHeading
 import platform.CoreLocation.CLLocation
 import platform.CoreLocation.CLLocationManager
 import platform.CoreLocation.CLLocationManagerDelegateProtocol
@@ -17,6 +18,8 @@ import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
 import platform.CoreLocation.kCLAuthorizationStatusDenied
 import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
 import platform.CoreLocation.kCLAuthorizationStatusRestricted
+import platform.CoreLocation.kCLDistanceFilterNone
+import platform.CoreLocation.kCLLocationAccuracyBest
 import platform.CoreLocation.kCLLocationAccuracyNearestTenMeters
 import platform.Foundation.NSError
 import platform.Foundation.timeIntervalSince1970
@@ -27,7 +30,7 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalForeignApi::class)
 actual class LocationService {
 
-    actual fun getLocationFlow(): Flow<DeviceLocation?> = callbackFlow {
+    actual fun getLocationFlow(fastUpdates: Boolean): Flow<DeviceLocation?> = callbackFlow {
         val manager = CLLocationManager()
 
         val delegate = object : NSObject(), CLLocationManagerDelegateProtocol {
@@ -46,8 +49,8 @@ actual class LocationService {
         }
 
         manager.delegate = delegate
-        manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-        manager.distanceFilter = 20.0
+        manager.desiredAccuracy = if (fastUpdates) kCLLocationAccuracyBest else kCLLocationAccuracyNearestTenMeters
+        manager.distanceFilter = if (fastUpdates) kCLDistanceFilterNone else 20.0
         manager.startUpdatingLocation()
 
         // Emit cached location immediately so the flow isn't empty at start
@@ -57,6 +60,35 @@ actual class LocationService {
 
         awaitClose {
             manager.stopUpdatingLocation()
+            manager.delegate = null
+        }
+    }
+
+    actual fun getHeadingFlow(): Flow<Float?> = callbackFlow {
+        if (!CLLocationManager.headingAvailable()) {
+            trySend(null)
+            close()
+            return@callbackFlow
+        }
+
+        val manager = CLLocationManager()
+
+        val delegate = object : NSObject(), CLLocationManagerDelegateProtocol {
+            override fun locationManager(manager: CLLocationManager, didUpdateHeading: CLHeading) {
+                // trueHeading is negative when it can't be determined (no GPS fix for
+                // declination) - fall back to the magnetic heading in that case.
+                val heading = didUpdateHeading.trueHeading.takeIf { it >= 0.0 }
+                    ?: didUpdateHeading.magneticHeading.takeIf { it >= 0.0 }
+                heading?.let { trySend(((it.toFloat()) % 360f + 360f) % 360f) }
+            }
+        }
+
+        manager.delegate = delegate
+        manager.headingFilter = 2.0
+        manager.startUpdatingHeading()
+
+        awaitClose {
+            manager.stopUpdatingHeading()
             manager.delegate = null
         }
     }

@@ -955,7 +955,7 @@
     <string name="friend_compass_title">Bussola degli amici</string>
     <string name="friend_compass_button">Bussola</string>
     <string name="friend_compass_waiting_gps">In attesa della posizione GPS…</string>
-    <string name="friend_compass_no_heading">Nessuna direzione ancora – muoviti, il nord è in alto</string>
+    <string name="friend_compass_no_sensor">Nessun sensore bussola disponibile – il nord è in alto</string>
     <string name="friend_compass_no_friends">Nessun amico con una posizione recente</string>
     <string name="direction_n">N</string>
     <string name="direction_ne">NE</string>

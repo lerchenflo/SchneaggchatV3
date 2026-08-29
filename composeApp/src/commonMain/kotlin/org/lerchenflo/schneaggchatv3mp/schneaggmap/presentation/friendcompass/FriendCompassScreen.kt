@@ -62,7 +62,7 @@ import schneaggchatv3mp.composeapp.generated.resources.direction_se
 import schneaggchatv3mp.composeapp.generated.resources.direction_sw
 import schneaggchatv3mp.composeapp.generated.resources.direction_w
 import schneaggchatv3mp.composeapp.generated.resources.friend_compass_no_friends
-import schneaggchatv3mp.composeapp.generated.resources.friend_compass_no_heading
+import schneaggchatv3mp.composeapp.generated.resources.friend_compass_no_sensor
 import schneaggchatv3mp.composeapp.generated.resources.friend_compass_title
 import schneaggchatv3mp.composeapp.generated.resources.friend_compass_waiting_gps
 import kotlin.math.PI
@@ -163,7 +163,7 @@ fun FriendCompassScreen(
 
                 if (state.azimuthDegrees == null) {
                     Text(
-                        text = stringResource(Res.string.friend_compass_no_heading),
+                        text = stringResource(Res.string.friend_compass_no_sensor),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,

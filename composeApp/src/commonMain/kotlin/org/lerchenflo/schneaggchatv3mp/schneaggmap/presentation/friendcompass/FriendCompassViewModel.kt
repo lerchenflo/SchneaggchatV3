@@ -35,15 +35,18 @@ class FriendCompassViewModel(
         }
 
         viewModelScope.launch {
-            locationService.getLocationFlow().collect { fix ->
+            // fastUpdates: the compass recomputes friend bearings on every tiny movement, so
+            // the default distance-filtered updates are too coarse and make it feel broken.
+            locationService.getLocationFlow(fastUpdates = true).collect { fix ->
                 fix?.let { deviceLocation ->
-                    _state.update {
-                        it.copy(
-                            ownLocation = deviceLocation.coordinates,
-                            azimuthDegrees = deviceLocation.heading?.toFloat() ?: it.azimuthDegrees
-                        )
-                    }
+                    _state.update { it.copy(ownLocation = deviceLocation.coordinates) }
                 }
+            }
+        }
+
+        viewModelScope.launch {
+            locationService.getHeadingFlow().collect { azimuth ->
+                _state.update { it.copy(azimuthDegrees = azimuth) }
             }
         }
     }

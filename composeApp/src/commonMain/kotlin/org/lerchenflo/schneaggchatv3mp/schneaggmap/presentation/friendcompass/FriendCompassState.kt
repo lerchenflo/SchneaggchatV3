@@ -11,10 +11,10 @@ data class FriendCompassState(
     val ownLocation: LatLong? = null,
 
     /**
-     * Direction of travel in degrees clockwise from north (0-360), from
-     * [org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService]'s GPS fixes. Null
-     * until the device has moved enough for a heading to be determined - the compass is then
-     * rendered north-up.
+     * Device azimuth in degrees clockwise from north (0-360), from
+     * [org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService]'s orientation sensor.
+     * Null when the platform has no orientation sensor (Desktop) - the compass is then rendered
+     * north-up.
      */
     val azimuthDegrees: Float? = null,
 
