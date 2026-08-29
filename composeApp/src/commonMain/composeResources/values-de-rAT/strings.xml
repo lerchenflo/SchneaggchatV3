@@ -322,7 +322,7 @@
     <string name="group_delete_delay_one_week">1 Wocha nocham Event</string>
     <string name="event_created_by">Erstellt vo %1$s</string>
     <string name="event_join">Beitreata</string>
-    <string name="event_invite_header">%1$s möcht %2$s bei %3$s</string>
+    <string name="event_invite_header">%1$s möcht %2$s am %3$s</string>
     <string name="event_invited_users">Iglada</string>
     <string name="event_invite_friends">Freunde ilada</string>
     <string name="event_location_label">Ort</string>

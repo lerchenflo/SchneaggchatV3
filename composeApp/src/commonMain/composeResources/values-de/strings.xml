@@ -329,7 +329,7 @@
     <string name="group_delete_delay_one_week">1 Woche nach dem Event</string>
     <string name="event_created_by">Erstellt von %1$s</string>
     <string name="event_join">Beitreten</string>
-    <string name="event_invite_header">%1$s möchte %2$s bei %3$s</string>
+    <string name="event_invite_header">%1$s möchte %2$s am %3$s</string>
     <string name="event_invited_users">Eingeladen</string>
     <string name="event_invite_friends">Freunde einladen</string>
     <string name="event_location_label">Ort</string>
