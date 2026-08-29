@@ -119,6 +119,7 @@ import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.OrnamentOptions
 import org.maplibre.compose.material3.DisappearingCompassButton
 import org.maplibre.compose.material3.DisappearingScaleBar
+import org.maplibre.compose.material3.ExpandingAttributionButton
 import org.maplibre.compose.sources.GeoJsonData
 import org.maplibre.compose.sources.GeoJsonOptions
 import org.maplibre.compose.sources.rememberGeoJsonSource
@@ -539,13 +540,27 @@ fun SchneaggmapScreen(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    // Left: Scale bar
-                    DisappearingScaleBar(
-                        metersPerDp = cameraState.metersPerDpAtTarget,
-                        color = MaterialTheme.colorScheme.background,
-                        modifier = Modifier.align(Alignment.CenterStart),
-                        zoom = cameraState.position.zoom
-                    )
+                    // Left: Scale bar + attribution
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    ) {
+                        // Legally required OSM/OpenFreeMap copyright notice.
+                        var attributionExpanded by remember { mutableStateOf(false) }
+                        ExpandingAttributionButton(
+                            expanded = attributionExpanded,
+                            onClick = { attributionExpanded = !attributionExpanded },
+                            styleState = styleState,
+                            contentAlignment = Alignment.BottomStart,
+                        )
+
+                        DisappearingScaleBar(
+                            metersPerDp = cameraState.metersPerDpAtTarget,
+                            color = MaterialTheme.colorScheme.background,
+                            zoom = cameraState.position.zoom
+                        )
+                        
+                    }
 
                     //compass
                     DisappearingCompassButton(
