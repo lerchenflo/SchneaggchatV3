@@ -22,9 +22,8 @@ import org.koin.core.qualifier.named
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
@@ -43,7 +42,7 @@ sealed interface RefreshResult {
     data object Success : RefreshResult
 
     /** The refresh could not complete right now, but the refresh token itself may still be valid. */
-    data class Retryable(val error: RequestError) : RefreshResult
+    data class Retryable(val error: NetworkingError) : RefreshResult
 
     /** The server rejected the refresh token (or none is stored) - the session is gone. */
     data object Invalidated : RefreshResult
@@ -59,7 +58,7 @@ class TokenManager(
     /** Refresh proactively once the access token has less than this much validity left. */
     private val proactiveRefreshThresholdMinutes = 2L
 
-    private data class Cooldown(val refreshToken: String, val until: Instant, val error: RequestError)
+    private data class Cooldown(val refreshToken: String, val until: Instant, val error: NetworkingError)
 
     private val refreshMutex = Mutex()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -132,7 +131,7 @@ class TokenManager(
         return immediateResult ?: withContext(NonCancellable) { deferred!!.await() }
     }
 
-    private suspend fun recordCooldown(refreshToken: String, error: RequestError) {
+    private suspend fun recordCooldown(refreshToken: String, error: NetworkingError) {
         // doRefresh runs outside the mutex; take it so this write is visible to the
         // cooldown check in refreshTokens(), which reads under the same lock.
         refreshMutex.withLock {
@@ -147,7 +146,7 @@ class TokenManager(
             when (val result = networkUtils.refresh(refreshToken)) {
                 is NetworkResult.Error -> {
                     val error = result.error
-                    if (error is NetworkError.Unauthorized) {
+                    if (error is NetworkingError.Unauthorized) {
                         loggingRepository.logError("TokenManager: Refresh token rejected by server (401)")
                         AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)
                         RefreshResult.Invalidated
@@ -174,7 +173,7 @@ class TokenManager(
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive() // rethrow cancellation, don't swallow it as a retryable failure
             loggingRepository.logError("TokenManager: Exception during refresh: ${e.stackTraceToString()}")
-            val error = NetworkError.Unknown(message = e.message)
+            val error = NetworkingError.Unknown(message = e.message)
             recordCooldown(refreshToken, error)
             RefreshResult.Retryable(error)
         }

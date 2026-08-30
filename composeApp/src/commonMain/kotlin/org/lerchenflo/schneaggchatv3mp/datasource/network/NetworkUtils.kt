@@ -47,10 +47,9 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.PollResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SystemEventResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoreRequest
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
@@ -102,7 +101,7 @@ class NetworkUtils(
 
     private suspend inline fun <reified R> safeCall(
         crossinline block: suspend () -> HttpResponse
-    ): NetworkResult<R, NetworkError> {
+    ): NetworkResult<R, NetworkingError> {
         return try {
             val response = block()
             SessionCache.updateOnline(true)
@@ -120,40 +119,40 @@ class NetworkUtils(
         } catch (e: UnresolvedAddressException) {
             println("Going offline: DNS resolution failed - ${e.message}")
             setOffline()
-            NetworkResult.Error(NetworkError.NoInternet())
+            NetworkResult.Error(NetworkingError.NoInternetConnection)
         } catch (e: ConnectTimeoutException) {
             println("Going offline: Connection timeout - ${e.message}")
             setOffline()
-            NetworkResult.Error(NetworkError.RequestTimeout())
+            NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: HttpRequestTimeoutException) {
             println("Going offline: HTTP request timeout - ${e.message}")
             setOffline()
-            NetworkResult.Error(NetworkError.RequestTimeout())
+            NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: IOException) {
             // Covers SocketTimeoutException, UnknownHostException, etc. on JVM/Android
             //println("Going offline: IO exception - ${e.message}")
             //e.printStackTrace()
             setOffline()
-            NetworkResult.Error(NetworkError.NoInternet())
+            NetworkResult.Error(NetworkingError.NoInternetConnection)
         } catch (e: SerializationException) {
             println("Serialization error (staying online): ${e.message}")
             loggingRepository.logWarning("SerializationException: ${e.message}")
-            NetworkResult.Error(NetworkError.Serialization(message = e.message))
+            NetworkResult.Error(NetworkingError.SerializationError(message = e.message))
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive() //Check for cancellation exceptions
 
             // ✅ Detect platform-specific network errors by message/type name
             // on iOS, NSURLErrorDomain errors land here as they don't extend IOException
-            val isNetworkError = isNetworkException(e)
-            println("Is network connection error: $isNetworkError: ${e.message}")
-            if (isNetworkError) {
+            val isNetworkingError = isNetworkException(e)
+            println("Is network connection error: $isNetworkingError: ${e.message}")
+            if (isNetworkingError) {
                 println("Going offline: Platform network exception - ${e.message}")
                 setOffline()
-                NetworkResult.Error(NetworkError.NoInternet())
+                NetworkResult.Error(NetworkingError.NoInternetConnection)
             } else {
                 println("Unknown exception (staying online): ${e.message}")
                 loggingRepository.logWarning("safeCall failed: ${e.message}")
-                NetworkResult.Error(NetworkError.Unknown(message = e.message))
+                NetworkResult.Error(NetworkingError.Unknown(message = e.message))
             }
         }
     }
@@ -174,23 +173,24 @@ class NetworkUtils(
                 || message.contains("unreachable", ignoreCase = true)
     }
 
-    // Helper function to map HTTP status codes to NetworkError
-    private fun mapHttpStatusToError(statusCode: Int, message: String?): NetworkError {
+    // Helper function to map HTTP status codes to NetworkingError
+    private fun mapHttpStatusToError(statusCode: Int, message: String?): NetworkingError {
         return when (statusCode) {
-            401 -> NetworkError.Unauthorized(message = message)
-            403 -> NetworkError.Forbidden(message = message)
-            404 -> NetworkError.NotFound(message = message)
-            408 -> NetworkError.RequestTimeout(message = message)
-            409 -> NetworkError.Conflict(message = message)
-            413 -> NetworkError.PayloadTooLarge(message = message)
-            429 -> NetworkError.TooManyRequests(message = message)
-            in 500..599 -> NetworkError.ServerError(message = message)
-            else -> NetworkError.Unknown(message = message)
+            400 -> NetworkingError.BadRequest(message = message)
+            401 -> NetworkingError.Unauthorized(message = message)
+            403 -> NetworkingError.Forbidden(message = message)
+            404 -> NetworkingError.NotFound(message = message)
+            408 -> NetworkingError.NetworkTimeout(message = message)
+            409 -> NetworkingError.Conflict(message = message)
+            413 -> NetworkingError.PayloadTooLarge(message = message)
+            429 -> NetworkingError.TooManyRequests(message = message)
+            in 500..599 -> NetworkingError.ServerError(message = message)
+            else -> NetworkingError.Unknown(message = message)
         }
     }
 
     // Now all the safe methods use the single safeCall function
-    private suspend inline fun <reified T> safeGet(endpoint: String): NetworkResult<T, NetworkError> {
+    private suspend inline fun <reified T> safeGet(endpoint: String): NetworkResult<T, NetworkingError> {
         return safeCall {
             httpClient.get(preferenceManager.buildServerUrl(endpoint))
         }
@@ -199,7 +199,7 @@ class NetworkUtils(
     private suspend inline fun <reified T, reified R> safePost(
         endpoint: String,
         body: T
-    ): NetworkResult<R, NetworkError> {
+    ): NetworkResult<R, NetworkingError> {
         return safeCall {
             httpClient.post(preferenceManager.buildServerUrl(endpoint)) {
                 contentType(ContentType.Application.Json)
@@ -211,7 +211,7 @@ class NetworkUtils(
     private suspend inline fun <reified R> safePostMultipart(
         endpoint: String,
         crossinline parts: FormBuilder.() -> Unit
-    ): NetworkResult<R, NetworkError> {
+    ): NetworkResult<R, NetworkingError> {
         return safeCall {
             httpClient.post(preferenceManager.buildServerUrl(endpoint)) {
                 setBody(MultiPartFormDataContent(formData { parts() }))
@@ -222,7 +222,7 @@ class NetworkUtils(
     private suspend inline fun <reified T, reified R> safePut(
         endpoint: String,
         body: T
-    ): NetworkResult<R, NetworkError> {
+    ): NetworkResult<R, NetworkingError> {
         return safeCall {
             httpClient.put(preferenceManager.buildServerUrl(endpoint)) {
                 contentType(ContentType.Application.Json)
@@ -231,7 +231,7 @@ class NetworkUtils(
         }
     }
 
-    private suspend inline fun <reified T> safeDelete(endpoint: String): NetworkResult<T, NetworkError> {
+    private suspend inline fun <reified T> safeDelete(endpoint: String): NetworkResult<T, NetworkingError> {
         return safeCall {
             httpClient.delete(preferenceManager.buildServerUrl(endpoint))
         }
@@ -240,7 +240,7 @@ class NetworkUtils(
     private suspend inline fun <reified T, reified R> safeAuthPost(
         endpoint: String,
         body: T
-    ): NetworkResult<R, NetworkError> {
+    ): NetworkResult<R, NetworkingError> {
         return safeCall {
             authHttpClient.post(preferenceManager.buildServerUrl(endpoint)) {
                 contentType(ContentType.Application.Json)
@@ -252,7 +252,7 @@ class NetworkUtils(
     private suspend inline fun <reified R> safeAuthGet(
         endpoint: String,
         url: String? = null
-    ): NetworkResult<R, NetworkError> {
+    ): NetworkResult<R, NetworkingError> {
 
         val serverUrl = url ?: preferenceManager.buildServerUrl(endpoint)
 
@@ -268,28 +268,28 @@ class NetworkUtils(
 
 
 
-    suspend fun testServer(serverUrl: String) : NetworkResult<String, NetworkError> {
+    suspend fun testServer(serverUrl: String) : NetworkResult<String, NetworkingError> {
         return safeCall {
             authHttpClient.get("$serverUrl/public/test")
         }
     }
 
 
-    suspend fun getChangeLog(githubUrl: String) : NetworkResult<String, NetworkError> {
+    suspend fun getChangeLog(githubUrl: String) : NetworkResult<String, NetworkingError> {
         return safeAuthGet(
             endpoint = "",
             url = githubUrl
         )
     }
 
-    suspend fun getGitHubVersionJson(url: String) : NetworkResult<String, NetworkError> {
+    suspend fun getGitHubVersionJson(url: String) : NetworkResult<String, NetworkingError> {
         return safeAuthGet(
             endpoint = "",
             url = url
         )
     }
 
-    suspend fun getOpenGithubIssues(githubIssuesApiUrl: String) : NetworkResult<List<GithubIssueDto>, NetworkError> {
+    suspend fun getOpenGithubIssues(githubIssuesApiUrl: String) : NetworkResult<List<GithubIssueDto>, NetworkingError> {
         return safeAuthGet(
             endpoint = "",
             url = githubIssuesApiUrl
@@ -319,7 +319,7 @@ class NetworkUtils(
         val password: String
     )
 
-    suspend fun login(username: String, password: String): NetworkResult<TokenPair, NetworkError> {
+    suspend fun login(username: String, password: String): NetworkResult<TokenPair, NetworkingError> {
         return safeAuthPost<LoginRequest, TokenPair>(
             endpoint = "/auth/login",
             body = LoginRequest(username = username, password = password)
@@ -335,7 +335,7 @@ class NetworkUtils(
         phoneNumber: String? = null,
         language: String? = null,
         fileName: String = "profile.jpg"
-    ): NetworkResult<Unit, NetworkError> {
+    ): NetworkResult<Unit, NetworkingError> {
         return try {
             val response = authHttpClient.submitFormWithBinaryData(
                 url = preferenceManager.buildServerUrl("/auth/register"),
@@ -364,24 +364,24 @@ class NetworkUtils(
                 NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
             }
         } catch (e: UnresolvedAddressException) {
-            NetworkResult.Error(NetworkError.NoInternet())
+            NetworkResult.Error(NetworkingError.NoInternetConnection)
         } catch (e: HttpRequestTimeoutException) {
-            NetworkResult.Error(NetworkError.RequestTimeout())
+            NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: SocketTimeoutException) {
-            NetworkResult.Error(NetworkError.RequestTimeout())
+            NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkError.Serialization())
+            NetworkResult.Error(NetworkingError.SerializationError())
         } catch (e: IOException) { // This catches UnknownHostException too
             setOffline()
-            NetworkResult.Error(NetworkError.NoInternet())
+            NetworkResult.Error(NetworkingError.NoInternetConnection)
         }catch (e: Exception) {
             currentCoroutineContext().ensureActive()
             loggingRepository.logWarning("NetworkUtils register failed: ${e.message}")
-            NetworkResult.Error(NetworkError.Unknown(message = e.message))
+            NetworkResult.Error(NetworkingError.Unknown(message = e.message))
         }
     }
 
-    suspend fun sendEmailVerify(): NetworkResult<Unit, NetworkError> {
+    suspend fun sendEmailVerify(): NetworkResult<Unit, NetworkingError> {
         return safePost<String, Unit>(
             endpoint = "/users/verificationemail",
             body = ""
@@ -394,7 +394,7 @@ class NetworkUtils(
         val refreshToken: String
     )
 
-    suspend fun refresh(refreshToken: String): NetworkResult<TokenPair, NetworkError> {
+    suspend fun refresh(refreshToken: String): NetworkResult<TokenPair, NetworkingError> {
         return safeAuthPost<RefreshRequest, TokenPair>(
             endpoint = "/auth/refresh",
             body = RefreshRequest(refreshToken = refreshToken)
@@ -407,7 +407,7 @@ class NetworkUtils(
         val isAndroid: Boolean
     )
 
-    suspend fun setNotificationToken(token: String, isAndroid: Boolean) : NetworkResult<Any, NetworkError> {
+    suspend fun setNotificationToken(token: String, isAndroid: Boolean) : NetworkResult<Any, NetworkingError> {
         return safePost(
             endpoint = "/users/setnotificationtoken",
             body = NotificationTokenRequest(
@@ -431,7 +431,7 @@ class NetworkUtils(
     @Serializable
     data class IdTimeStamp(val id: String, val timeStamp: String)
 
-    suspend fun getProfilePicForUserId(userId: String) : NetworkResult<ByteArray, NetworkError> {
+    suspend fun getProfilePicForUserId(userId: String) : NetworkResult<ByteArray, NetworkingError> {
         return safeGet(
             endpoint = "/users/profilepic/$userId"
         )
@@ -597,14 +597,14 @@ class NetworkUtils(
         val developerSettings: Boolean? = null,
     )
 
-    suspend fun updateSettings(request: UserSettingsRequest): NetworkResult<Unit, NetworkError> {
+    suspend fun updateSettings(request: UserSettingsRequest): NetworkResult<Unit, NetworkingError> {
         return safePost(
             endpoint = "/users/settings",
             body = request
         )
     }
 
-    suspend fun userIdSync(userIds: List<IdTimeStamp>) : NetworkResult<UserSyncResponse, NetworkError> {
+    suspend fun userIdSync(userIds: List<IdTimeStamp>) : NetworkResult<UserSyncResponse, NetworkingError> {
         return safePost(
             endpoint = "/users/sync",
             body = userIds
@@ -618,34 +618,34 @@ class NetworkUtils(
         val commonFriendCount: Int,
     )
 
-    suspend fun getAvailableUsers(searchterm: String) : NetworkResult<List<NewFriendsUserResponse>, NetworkError> {
+    suspend fun getAvailableUsers(searchterm: String) : NetworkResult<List<NewFriendsUserResponse>, NetworkingError> {
         return safeGet(
             endpoint = "/users/availableusers?searchterm=$searchterm"
         )
     }
 
-    suspend fun sendFriendRequest(friendId: String) : NetworkResult<Any, NetworkError> {
+    suspend fun sendFriendRequest(friendId: String) : NetworkResult<Any, NetworkingError> {
         return safePost(
             endpoint = "/users/addfriend/$friendId",
             body = ""
         )
     }
 
-    suspend fun denyFriendRequest(friendId: String) : NetworkResult<Any, NetworkError> {
+    suspend fun denyFriendRequest(friendId: String) : NetworkResult<Any, NetworkingError> {
         return safePost(
             endpoint = "/users/denyfriend/$friendId",
             body = ""
         )
     }
 
-    suspend fun removeFriend(friendId: String) : NetworkResult<Any, NetworkError> {
+    suspend fun removeFriend(friendId: String) : NetworkResult<Any, NetworkingError> {
         return safePost(
             endpoint = "/users/removefriend/$friendId",
             body = ""
         )
     }
 
-    suspend fun changeUsername(newUsername: String) : NetworkResult<Any, NetworkError> {
+    suspend fun changeUsername(newUsername: String) : NetworkResult<Any, NetworkingError> {
         return safePost(
             endpoint = "/users/changeusername",
             body = newUsername
@@ -658,7 +658,7 @@ class NetworkUtils(
         val newPassword: String
     )
 
-    suspend fun changePassword(oldPassword: String, newPassword: String) : NetworkResult<Any, NetworkError> {
+    suspend fun changePassword(oldPassword: String, newPassword: String) : NetworkResult<Any, NetworkingError> {
         return safePost(
             endpoint = "/users/changepassword",
             body = PasswordChangeRequest(
@@ -668,7 +668,7 @@ class NetworkUtils(
         )
     }
 
-    suspend fun changeProfilePic(newProfilePic: ByteArray, fileName: String = "profile.jpg"): NetworkResult<Any, NetworkError> {
+    suspend fun changeProfilePic(newProfilePic: ByteArray, fileName: String = "profile.jpg"): NetworkResult<Any, NetworkingError> {
         return try {
             val response = httpClient.submitFormWithBinaryData(
                 url = preferenceManager.buildServerUrl("/users/setprofilepic"),
@@ -687,25 +687,25 @@ class NetworkUtils(
             }
         } catch (e: UnresolvedAddressException) {
             setOffline()
-            NetworkResult.Error(NetworkError.NoInternet())
+            NetworkResult.Error(NetworkingError.NoInternetConnection)
         } catch (e: HttpRequestTimeoutException) {
             setOffline()
-            NetworkResult.Error(NetworkError.RequestTimeout())
+            NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: SocketTimeoutException) {
             setOffline()
-            NetworkResult.Error(NetworkError.RequestTimeout())
+            NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: ConnectTimeoutException) {
             setOffline()
-            NetworkResult.Error(NetworkError.RequestTimeout())
+            NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkError.Serialization(message = e.message))
+            NetworkResult.Error(NetworkingError.SerializationError(message = e.message))
         } catch (e: IOException) {
             setOffline()
-            NetworkResult.Error(NetworkError.NoInternet())
+            NetworkResult.Error(NetworkingError.NoInternetConnection)
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
             loggingRepository.logWarning("NetworkUtils changeProfilePic failed: ${e.message}")
-            NetworkResult.Error(NetworkError.Unknown(message = e.message))
+            NetworkResult.Error(NetworkingError.Unknown(message = e.message))
         }
     }
 
@@ -720,7 +720,7 @@ class NetworkUtils(
         val newPhoneNumber: String? = null,
     )
 
-    suspend fun changeProfile(userId: String, newStatus: String?, newDescription: String?, newEmail: String?, newBirthDate: String?, newNickName: String?, newPhoneNumber: String? = null): NetworkResult<Any, NetworkError> {
+    suspend fun changeProfile(userId: String, newStatus: String?, newDescription: String?, newEmail: String?, newBirthDate: String?, newNickName: String?, newPhoneNumber: String? = null): NetworkResult<Any, NetworkingError> {
         return safePost(
             endpoint = "/users/changeprofile",
             body = UserRequest(
@@ -787,7 +787,7 @@ class NetworkUtils(
      */
 
 
-    suspend fun getProfilePicForGroupId(groupId: String) : NetworkResult<ByteArray, NetworkError> {
+    suspend fun getProfilePicForGroupId(groupId: String) : NetworkResult<ByteArray, NetworkingError> {
         return safeGet(
             endpoint = "/groups/profilepic/$groupId"
         )
@@ -822,7 +822,7 @@ class NetworkUtils(
         description: String,
         memberIds: List<String>, //Userids
         profilePicBytes: ByteArray,
-    ): NetworkResult<GroupResponse, NetworkError> {
+    ): NetworkResult<GroupResponse, NetworkingError> {
         val fileName = "image.png"
         return try {
             val response = httpClient.submitFormWithBinaryData(
@@ -845,20 +845,20 @@ class NetworkUtils(
                 NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
             }
         } catch (e: UnresolvedAddressException) {
-            NetworkResult.Error(NetworkError.NoInternet())
+            NetworkResult.Error(NetworkingError.NoInternetConnection)
         } catch (e: HttpRequestTimeoutException) {
-            NetworkResult.Error(NetworkError.RequestTimeout())
+            NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: SocketTimeoutException) {
-            NetworkResult.Error(NetworkError.RequestTimeout())
+            NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkError.Serialization())
+            NetworkResult.Error(NetworkingError.SerializationError())
         } catch (e: IOException) { // This catches UnknownHostException too
             setOffline()
-            NetworkResult.Error(NetworkError.NoInternet())
+            NetworkResult.Error(NetworkingError.NoInternetConnection)
         }catch (e: Exception) {
             currentCoroutineContext().ensureActive()
             loggingRepository.logWarning("NetworkUtils createGroup failed: ${e.message}")
-            NetworkResult.Error(NetworkError.Unknown(message = e.message))
+            NetworkResult.Error(NetworkingError.Unknown(message = e.message))
         }
     }
 
@@ -868,7 +868,7 @@ class NetworkUtils(
         val deletedGroups: List<String>
     )
 
-    suspend fun groupIdSync(groupIds: List<IdTimeStamp>) : NetworkResult<GroupSyncResponse, NetworkError> {
+    suspend fun groupIdSync(groupIds: List<IdTimeStamp>) : NetworkResult<GroupSyncResponse, NetworkingError> {
         return safePost(
             endpoint = "/groups/sync",
             body = groupIds
@@ -876,7 +876,7 @@ class NetworkUtils(
     }
 
 
-    suspend fun changeGroupProfilePic(newProfilePic: ByteArray, groupId: String, fileName: String = "profile.jpg"): NetworkResult<Any, NetworkError> {
+    suspend fun changeGroupProfilePic(newProfilePic: ByteArray, groupId: String, fileName: String = "profile.jpg"): NetworkResult<Any, NetworkingError> {
         return try {
             val response = httpClient.submitFormWithBinaryData(
                 url = preferenceManager.buildServerUrl("/groups/setprofilepic?groupid=$groupId"),
@@ -895,36 +895,36 @@ class NetworkUtils(
             }
         } catch (e: UnresolvedAddressException) {
             setOffline()
-            NetworkResult.Error(NetworkError.NoInternet())
+            NetworkResult.Error(NetworkingError.NoInternetConnection)
         } catch (e: HttpRequestTimeoutException) {
             setOffline()
-            NetworkResult.Error(NetworkError.RequestTimeout())
+            NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: SocketTimeoutException) {
             setOffline()
-            NetworkResult.Error(NetworkError.RequestTimeout())
+            NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: ConnectTimeoutException) {
             setOffline()
-            NetworkResult.Error(NetworkError.RequestTimeout())
+            NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkError.Serialization(message = e.message))
+            NetworkResult.Error(NetworkingError.SerializationError(message = e.message))
         } catch (e: IOException) {
             setOffline()
-            NetworkResult.Error(NetworkError.NoInternet())
+            NetworkResult.Error(NetworkingError.NoInternetConnection)
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
             loggingRepository.logWarning("NetworkUtils changeGroupProfilePic failed: ${e.message}")
-            NetworkResult.Error(NetworkError.Unknown(message = e.message))
+            NetworkResult.Error(NetworkingError.Unknown(message = e.message))
         }
     }
 
-    suspend fun changeGroupDescription(newDescription: String, groupId: String) : NetworkResult<Any, NetworkError> {
+    suspend fun changeGroupDescription(newDescription: String, groupId: String) : NetworkResult<Any, NetworkingError> {
         return safePost(
             endpoint = "/groups/setdescription?groupid=$groupId",
             body = newDescription
         )
     }
 
-    suspend fun changeGroupName(newName: String, groupId: String) : NetworkResult<Any, NetworkError> {
+    suspend fun changeGroupName(newName: String, groupId: String) : NetworkResult<Any, NetworkingError> {
         return safePost(
             endpoint = "/groups/setGroupName?groupid=$groupId",
             body = newName
@@ -946,7 +946,7 @@ class NetworkUtils(
         val groupId: String
     )
     
-    suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String): NetworkResult<Any, NetworkError> {
+    suspend fun changeGroupMembers(action: GroupMemberAction, memberId: String, groupId: String): NetworkResult<Any, NetworkingError> {
         return safePost(
             endpoint = "/groups/changemembers",
             body = GroupActionRequest(
@@ -964,7 +964,7 @@ class NetworkUtils(
     )
 
     //Pass null to clear the expiry (group never auto-expires)
-    suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?): NetworkResult<Any, NetworkError> {
+    suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?): NetworkResult<Any, NetworkingError> {
         return safePost(
             endpoint = "/groups/setexpiry",
             body = SetGroupExpiryRequest(
@@ -1071,7 +1071,7 @@ class NetworkUtils(
     )
 
 
-    suspend fun votePoll(pollVoteRequest: PollVoteRequest) : NetworkResult<MessageResponse, RequestError>{
+    suspend fun votePoll(pollVoteRequest: PollVoteRequest) : NetworkResult<MessageResponse, NetworkingError>{
         return safePost(
             endpoint = "/messages/pollvote",
             body = pollVoteRequest,
@@ -1087,7 +1087,7 @@ class NetworkUtils(
         val optionId: String,
     )
 
-    suspend fun deletePollOption(request: PollOptionDeleteRequest) : NetworkResult<MessageResponse, RequestError> {
+    suspend fun deletePollOption(request: PollOptionDeleteRequest) : NetworkResult<MessageResponse, NetworkingError> {
         return safePost(
             endpoint = "/messages/polloption/delete",
             body = request,
@@ -1130,7 +1130,7 @@ class NetworkUtils(
         val reactedAt: Long = 0L,
     )
 
-    suspend fun sendTextMessageToServer(messageId: String?, empfaenger: String, gruppe: Boolean, content: String, answerid: String?, clientMessageId: String) : NetworkResult<MessageResponse, NetworkError> {
+    suspend fun sendTextMessageToServer(messageId: String?, empfaenger: String, gruppe: Boolean, content: String, answerid: String?, clientMessageId: String) : NetworkResult<MessageResponse, NetworkingError> {
         val messageRequest = MessageRequest(
             messageId = messageId,
             receiverId = empfaenger,
@@ -1156,7 +1156,7 @@ class NetworkUtils(
         text: String,
         answerid: String?,
         clientMessageId: String
-    ): NetworkResult<MessageResponse, NetworkError> {
+    ): NetworkResult<MessageResponse, NetworkingError> {
 
         val messageRequest = ImageMessageRequest(
             messageId = null,
@@ -1196,7 +1196,7 @@ class NetworkUtils(
         audio: ByteArray,
         answerid: String?,
         clientMessageId: String
-    ): NetworkResult<MessageResponse, NetworkError> {
+    ): NetworkResult<MessageResponse, NetworkingError> {
 
         val messageRequest = AudioMessageRequest(
             messageId = null,
@@ -1230,7 +1230,7 @@ class NetworkUtils(
     }
 
 
-    suspend fun sendPollMessageToServer(empfaenger: String, gruppe: Boolean, content: PollCreateRequest, answerid: String?, clientMessageId: String) : NetworkResult<MessageResponse, NetworkError> {
+    suspend fun sendPollMessageToServer(empfaenger: String, gruppe: Boolean, content: PollCreateRequest, answerid: String?, clientMessageId: String) : NetworkResult<MessageResponse, NetworkingError> {
         val pollRequest = PollMessageRequest(
             receiverId = empfaenger,
             groupMessage = gruppe,
@@ -1260,13 +1260,13 @@ class NetworkUtils(
         val moreMessages: Boolean
     )
 
-    suspend fun messageSync(since: Long) : NetworkResult<MessageSyncResponse, RequestError>{
+    suspend fun messageSync(since: Long) : NetworkResult<MessageSyncResponse, NetworkingError>{
         return safeGet(
             endpoint = "/messages/sync?since=$since&page_size=400",
         )
     }
 
-    suspend fun setMessagesRead(chatId: String, group: Boolean, timeStamp: Long) : NetworkResult<String, RequestError>{
+    suspend fun setMessagesRead(chatId: String, group: Boolean, timeStamp: Long) : NetworkResult<String, NetworkingError>{
         return safePost(
             endpoint = "/messages/setread?userid=$chatId&group=$group&timestamp=$timeStamp",
             body = "",
@@ -1280,7 +1280,7 @@ class NetworkUtils(
         val newContent: String,
     )
 
-    suspend fun editMessage(messageId: String, newContent: String): NetworkResult<MessageResponse, RequestError> {
+    suspend fun editMessage(messageId: String, newContent: String): NetworkResult<MessageResponse, NetworkingError> {
         return safePost(
             endpoint = "/messages/edit",
             body = EditMessageRequest(
@@ -1290,7 +1290,7 @@ class NetworkUtils(
         )
     }
 
-    suspend fun deleteMessage(messageId: String): NetworkResult<Any, RequestError> {
+    suspend fun deleteMessage(messageId: String): NetworkResult<Any, NetworkingError> {
         return safeDelete(
             endpoint = "/messages/delete?messageid=$messageId"
         )
@@ -1302,20 +1302,20 @@ class NetworkUtils(
         val content: String
     )
 
-    suspend fun reactToMessage(messageId: String, content: String): NetworkResult<MessageResponse, NetworkError> {
+    suspend fun reactToMessage(messageId: String, content: String): NetworkResult<MessageResponse, NetworkingError> {
         return safePost(
             endpoint = "/messages/react",
             body = ReactionRequest(messageId = messageId, content = content)
         )
     }
 
-    suspend fun getImageForImageMessage(messageId: String) : NetworkResult<ByteArray, NetworkError> {
+    suspend fun getImageForImageMessage(messageId: String) : NetworkResult<ByteArray, NetworkingError> {
         return safeGet(
             endpoint = "/messages/images/$messageId"
         )
     }
 
-    suspend fun getAudioForAudioMessage(messageId: String) : NetworkResult<ByteArray, NetworkError> {
+    suspend fun getAudioForAudioMessage(messageId: String) : NetworkResult<ByteArray, NetworkingError> {
         return safeGet(
             endpoint = "/messages/audios/$messageId"
         )
@@ -1326,7 +1326,7 @@ class NetworkUtils(
     suspend fun mapSync(
         entries: List<IdTimeStamp>,
         page: Int,
-    ): NetworkResult<MapSyncResponse, NetworkError> {
+    ): NetworkResult<MapSyncResponse, NetworkingError> {
         return safePost(
             endpoint = "/map/sync?page=$page&page_size=400",
             body = entries,
@@ -1335,13 +1335,13 @@ class NetworkUtils(
 
     suspend fun upsertMapEntry(
         request: MapEntryRequest,
-    ): NetworkResult<MapEntryResponse, NetworkError> {
+    ): NetworkResult<MapEntryResponse, NetworkingError> {
         return safePost(
             endpoint = "/map/upsert",
             body = request)
     }
 
-    suspend fun deleteMapEntry(entryId: String): NetworkResult<Unit, NetworkError> {
+    suspend fun deleteMapEntry(entryId: String): NetworkResult<Unit, NetworkingError> {
         return safeDelete(endpoint = "/map/delete?entryid=$entryId")
     }
 
@@ -1350,7 +1350,7 @@ class NetworkUtils(
     suspend fun eventSync(
         entries: List<IdTimeStamp>,
         page: Int,
-    ): NetworkResult<EventSyncResponse, NetworkError> {
+    ): NetworkResult<EventSyncResponse, NetworkingError> {
         return safePost(
             endpoint = "/events/sync?page=$page&page_size=400",
             body = entries,
@@ -1360,7 +1360,7 @@ class NetworkUtils(
     suspend fun upsertEvent(
         request: EventRequest,
         profilePic: ByteArray? = null,
-    ): NetworkResult<EventResponse, NetworkError> {
+    ): NetworkResult<EventResponse, NetworkingError> {
         return safePostMultipart(
             endpoint = "/events/upsert",
             parts = {
@@ -1387,7 +1387,7 @@ class NetworkUtils(
 
     suspend fun joinEvent(
         eventId: String
-    ): NetworkResult<EventJoinResponse, NetworkError> {
+    ): NetworkResult<EventJoinResponse, NetworkingError> {
         return safePost(
             endpoint = "/events/join",
             body = EventJoinRequest(
@@ -1396,7 +1396,7 @@ class NetworkUtils(
         )
     }
 
-    suspend fun detachEvent(eventId: String, deleteGroup: Boolean = false, deleteEvent: Boolean = false): NetworkResult<Unit, NetworkError> {
+    suspend fun detachEvent(eventId: String, deleteGroup: Boolean = false, deleteEvent: Boolean = false): NetworkResult<Unit, NetworkingError> {
         return safeDelete(endpoint = "/events/delete?eventid=$eventId&deletegroup=$deleteGroup&deleteevent=$deleteEvent")
     }
 
@@ -1418,7 +1418,7 @@ class NetworkUtils(
         share: Boolean,
         shareSpeedHeading: Boolean = false,
         shareSnailTrail: Boolean = false,
-    ): NetworkResult<Unit, NetworkError> {
+    ): NetworkResult<Unit, NetworkingError> {
         return safePost(
             endpoint = "/users/sharelocation",
             body = LocationShareRequest(friendId, share, shareSpeedHeading, shareSnailTrail)
@@ -1434,7 +1434,7 @@ class NetworkUtils(
     )
 
     /** Per-friend toggle: may this friend wake us (play an alarm on our devices). */
-    suspend fun setWakePermission(friendId: String, allowWake: Boolean): NetworkResult<Unit, NetworkError> {
+    suspend fun setWakePermission(friendId: String, allowWake: Boolean): NetworkResult<Unit, NetworkingError> {
         return safePost(
             endpoint = "/users/setwakepermission",
             body = WakePermissionRequest(friendId, allowWake)
@@ -1447,7 +1447,7 @@ class NetworkUtils(
     )
 
     /** Master switch: while off nobody can wake us, whatever the per-friend toggles say. */
-    suspend fun setWakeGlobal(enabled: Boolean): NetworkResult<Unit, NetworkError> {
+    suspend fun setWakeGlobal(enabled: Boolean): NetworkResult<Unit, NetworkingError> {
         return safePost(
             endpoint = "/users/setwakeglobal",
             body = WakeGlobalRequest(enabled)
@@ -1481,7 +1481,7 @@ class NetworkUtils(
     )
 
     /** Wake a friend or a group - plays an alarm on every consenting Android device. */
-    suspend fun sendWake(targetId: String, isGroup: Boolean, reason: String): NetworkResult<WakeResponse, NetworkError> {
+    suspend fun sendWake(targetId: String, isGroup: Boolean, reason: String): NetworkResult<WakeResponse, NetworkingError> {
         return safePost(
             endpoint = "/wake/send",
             body = WakeRequest(targetId, isGroup, reason)
@@ -1490,18 +1490,18 @@ class NetworkUtils(
 
     // ─── Games ────────────────────────────────────────────────────────────────
 
-    suspend fun getGameHighscores(gameId: String, difficulty: String, period: String): NetworkResult<HighscoresResponse, NetworkError> {
+    suspend fun getGameHighscores(gameId: String, difficulty: String, period: String): NetworkResult<HighscoresResponse, NetworkingError> {
         return safeGet(endpoint = "/games/highscores?gameid=$gameId&difficulty=$difficulty&period=$period")
     }
 
     /** Cross-game leaderboard: percentile points summed over every board the user played. */
-    suspend fun getGlobalRanking(period: String): NetworkResult<GlobalRankingResponse, NetworkError> {
+    suspend fun getGlobalRanking(period: String): NetworkResult<GlobalRankingResponse, NetworkingError> {
         return safeGet(endpoint = "/games/globalranking?period=$period")
     }
 
     suspend fun submitGameScore(
         request: SubmitGameScoreRequest,
-    ): NetworkResult<GameScoreResponse, NetworkError> {
+    ): NetworkResult<GameScoreResponse, NetworkingError> {
         return safePost(
             endpoint = "/games/upsert",
             body = request)
@@ -1509,7 +1509,7 @@ class NetworkUtils(
 
     // ─── Recap ────────────────────────────────────────────────────────────────
 
-    suspend fun getRecap(year: Int? = null): NetworkResult<RecapResponse, NetworkError> {
+    suspend fun getRecap(year: Int? = null): NetworkResult<RecapResponse, NetworkingError> {
         val endpoint = if (year != null) "/recap?year=$year" else "/recap"
         return safeGet(endpoint)
     }

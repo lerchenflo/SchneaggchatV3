@@ -144,10 +144,6 @@ class EmailVerifiedCheckViewModel(
 
     init {
 
-        viewModelScope.launch {
-            SnackbarManager.showMessage(getString(Res.string.email_check_check_emails_snackbar), showTime = 6000)
-        }
-
         applicationScope.launch {
             appRepository.dataSync(reason = "emailVerifiedCheckInit")
         }
@@ -186,6 +182,11 @@ class EmailVerifiedCheckViewModel(
                         // ChatSelector reached - safe from here on for a pending notification
                         // tap to navigate to its chat.
                         AppLifecycleManager.notifyStartupRoutingDone()
+                    }
+
+
+                    if (user != null && user.emailVerifiedAt == null) {
+                        SnackbarManager.showMessage(getString(Res.string.email_check_check_emails_snackbar), showTime = 6000)
                     }
 
                     _state.update { cstate ->
