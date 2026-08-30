@@ -34,13 +34,14 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Italienisch als Sprache
 - Schneaggmap-Kompass: Livekompass mit Richtungs- und Entfernungsanzeige für Freunde
 - Neue Nachrichten über Benachrichtigungen direkt im Chat anzeigen
+- Events: Woche und Monat Kalenderansicht mit Geburtstagen
 
 #### Bugfixes
 - Chat-Nachrichten: Zeilenumbrüche im Markdown-Modus behoben
 - Schneaggmap: Suche verbessert
 - Event Farbe auf der Map repariert
 - Event bearbeiten/erstellen Bug behoben
-- iOS Tastatur-Anzeige unter Chat-Eingabe behoben
+- iOS Tastatur-Verhalten und Anzeige unter Chat-Eingabe behoben
 - Schneaggmap: Überlappende Marker-Icons bei Orten mit mehreren Typen behoben
 
 ### 3.0.16

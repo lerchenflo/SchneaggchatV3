@@ -14,6 +14,9 @@ import androidx.compose.material.icons.filled.SportsBar
 import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material.icons.filled.Terrain
 import androidx.compose.material.icons.filled.Work
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
@@ -71,6 +74,18 @@ fun EventType.icon(): ImageVector = when (this) {
     BEER -> Icons.Default.SportsBar
     HORSE_RIDING -> Icons.Default.Pets
     WORK -> Icons.Default.Work
+}
+
+/**
+ * Calendar-view dot color. Cycles through the theme's three accent roles - not a decodable
+ * per-type legend, just "something is on this day" (types repeat a color every 3rd entry). The
+ * `error` role is deliberately excluded so a dot never reads as an error state.
+ */
+@Composable
+fun EventType.color(): Color = when (this.ordinal % 3) {
+    0 -> MaterialTheme.colorScheme.primary
+    1 -> MaterialTheme.colorScheme.secondary
+    else -> MaterialTheme.colorScheme.tertiary
 }
 
 fun EventType.labelRes(): StringResource = when (this) {

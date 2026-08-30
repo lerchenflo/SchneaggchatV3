@@ -31,15 +31,16 @@ fun DateChip(
 @Composable
 fun DateChip(
     text: String,
+    highlighted: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Text(
         text = text,
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .background(if (highlighted) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant)
             .padding(horizontal = 12.dp, vertical = 6.dp),
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        color = if (highlighted) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
         style = MaterialTheme.typography.labelMedium
     )
 }

@@ -8,8 +8,9 @@ import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 
 fun MainViewController() = ComposeUIViewController(
     configure = {
-        // The app handles the keyboard via imePadding(); without this, UIKit additionally
-        // shifts the whole view up, leaving a gray strip below the chat input on some devices.
+        // IOSKEYBOARDFIX: the app handles the keyboard itself via WindowInsets.ime
+        // (contentWindowInsets on the root Scaffold in App.kt); DoNothing stops Compose's
+        // own OffsetToFocusedRect from *also* panning the whole scene up on focus change.
         onFocusBehavior = OnFocusBehavior.DoNothing
         initKoin()
         NotificationManager.initialize()
