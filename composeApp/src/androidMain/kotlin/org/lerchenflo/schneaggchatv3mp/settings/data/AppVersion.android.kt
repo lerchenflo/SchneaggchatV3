@@ -1,6 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.settings.data
 
 import android.content.Context
+import android.os.Build
+import android.provider.Settings
 
 actual class AppVersion(
     private val context: Context
@@ -29,5 +31,18 @@ actual class AppVersion(
 
     actual fun isIOS(): Boolean {
         return false
+    }
+
+    actual fun getDeviceType(): DEVICETYPE {
+        return DEVICETYPE.ANDROID
+    }
+
+    actual fun getDeviceName(): String {
+        val bluetoothName = Settings.Secure.getString(context.contentResolver, "bluetooth_name")
+        if (!bluetoothName.isNullOrBlank()) return bluetoothName
+
+        val model = Build.MODEL
+        val manufacturer = Build.MANUFACTURER
+        return if (model.startsWith(manufacturer, ignoreCase = true)) model else "$manufacturer $model"
     }
 }

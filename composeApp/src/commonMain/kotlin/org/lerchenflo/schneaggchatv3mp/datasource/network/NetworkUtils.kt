@@ -52,6 +52,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
+import org.lerchenflo.schneaggchatv3mp.settings.data.DEVICETYPE
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText.StringResourceText
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -66,7 +68,8 @@ class NetworkUtils(
     private val httpClient: HttpClient,
     private val authHttpClient: HttpClient, //For auth without the bearer
     private val preferenceManager: Preferencemanager,
-    private val loggingRepository: LoggingRepository
+    private val loggingRepository: LoggingRepository,
+    private val appVersion: AppVersion
 ) {
 
 
@@ -316,13 +319,17 @@ class NetworkUtils(
     @Serializable
     data class LoginRequest(
         val username: String,
-        val password: String
+        val password: String,
+        val deviceName: String,
+        val deviceType: DEVICETYPE
     )
+
+
 
     suspend fun login(username: String, password: String): NetworkResult<TokenPair, NetworkingError> {
         return safeAuthPost<LoginRequest, TokenPair>(
             endpoint = "/auth/login",
-            body = LoginRequest(username = username, password = password)
+            body = LoginRequest(username = username, password = password, deviceName = appVersion.getDeviceName(), deviceType = appVersion.getDeviceType())
         )
     }
 
@@ -391,13 +398,15 @@ class NetworkUtils(
 
     @Serializable
     data class RefreshRequest(
-        val refreshToken: String
+        val refreshToken: String,
+        val deviceName: String,
+        val deviceType: DEVICETYPE
     )
 
     suspend fun refresh(refreshToken: String): NetworkResult<TokenPair, NetworkingError> {
         return safeAuthPost<RefreshRequest, TokenPair>(
             endpoint = "/auth/refresh",
-            body = RefreshRequest(refreshToken = refreshToken)
+            body = RefreshRequest(refreshToken = refreshToken, deviceName = appVersion.getDeviceName(), deviceType = appVersion.getDeviceType())
         )
     }
 

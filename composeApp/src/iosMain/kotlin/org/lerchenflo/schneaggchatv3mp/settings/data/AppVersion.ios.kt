@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.settings.data
 
 import platform.Foundation.NSBundle
+import platform.UIKit.UIDevice
 
 actual class AppVersion {
     actual fun getVersionName(): String {
@@ -27,5 +28,13 @@ actual class AppVersion {
 
     actual fun isIOS(): Boolean {
         return true
+    }
+
+    actual fun getDeviceType(): DEVICETYPE {
+        return DEVICETYPE.IOS
+    }
+
+    actual fun getDeviceName(): String {
+        return UIDevice.currentDevice.name
     }
 }
