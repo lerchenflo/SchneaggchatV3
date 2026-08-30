@@ -40,6 +40,8 @@
     <string name="email_check_verified">Check email verification</string>
     <string name="email_check_problem">Having trouble? Get help</string>
     <string name="email_check_loading_data">Loading your account data ...</string>
+    <string name="email_check_check_emails_snackbar">Verification email has been sent. Please also check your spam folder. This may take up to 2 min</string>
+
 
 
 
@@ -350,6 +352,7 @@
     <string name="group_delete_delay_one_week">1 week after the event</string>
     <string name="event_created_by">Created by %1$s</string>
     <string name="event_join">Join</string>
+    <string name="event_add_to_calendar">Add to calendar</string>
     <string name="event_invite_header">%1$s wants to %2$s at %3$s</string>
     <string name="event_invited_users">Invited</string>
     <string name="event_invite_friends">Invite friends</string>
@@ -700,6 +703,8 @@
     <string name="poll_option_delete">Delete option</string>
     <string name="poll_option_delete_confirm_title">Delete this option?</string>
     <string name="poll_option_delete_confirm_text">"%1$s" and its votes will be removed. This cannot be undone.</string>
+
+    <string name="poll_cannot_vote_on_unsent">You can not vote on an unsent poll</string>
 
 
 

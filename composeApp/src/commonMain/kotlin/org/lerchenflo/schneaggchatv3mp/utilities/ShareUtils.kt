@@ -17,4 +17,7 @@ expect class ShareUtils {
     //Open the phone dialer, pre-filled with the given number
     fun openPhoneDialer(phoneNumber: String)
 
+    //Open the device's calendar app with a new event pre-filled, ready for the user to confirm
+    fun addEventToCalendar(title: String, description: String = "", location: String = "", startDateMillis: Long, endDateMillis: Long?)
+
 }

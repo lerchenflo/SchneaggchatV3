@@ -107,9 +107,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
@@ -187,7 +186,7 @@ class AppRepository(
         data class ErrorEvent (
             val errorCode: Int? = null,
             val errorMessage: String? = null,
-            val error: RequestError? = null,
+            val error: NetworkingError? = null,
             val errorMessageUiText: UiText? = null,
             val duration: Long = 5000L
         ){
@@ -276,7 +275,7 @@ class AppRepository(
 
     suspend fun sendEmailVerify() : Boolean{
         return when (val result = networkUtils.sendEmailVerify()) {
-            is NetworkResult.Error<RequestError> -> {
+            is NetworkResult.Error<NetworkingError> -> {
                 println("Send email verify: Error occured: ${result.error}")
                 sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
                 false
@@ -1309,10 +1308,10 @@ class AppRepository(
                 // Only a genuine 401 means wrong credentials - rate limiting, server errors and
                 // being offline are not the user's fault and shouldn't be reported as such.
                 val messageRes = when (result.error) {
-                    is NetworkError.TooManyRequests -> Res.string.error_login_too_many_requests
-                    is NetworkError.NoInternet,
-                    is NetworkError.RequestTimeout -> Res.string.offline
-                    is NetworkError.ServerError -> Res.string.error_login_server_error
+                    is NetworkingError.TooManyRequests -> Res.string.error_login_too_many_requests
+                    is NetworkingError.NoInternetConnection,
+                    is NetworkingError.NetworkTimeout -> Res.string.offline
+                    is NetworkingError.ServerError -> Res.string.error_login_server_error
                     else -> Res.string.error_invalid_credentials
                 }
 
@@ -1556,7 +1555,7 @@ class AppRepository(
      */
     suspend fun getAvailableUsers(searchTerm: String) : List<NewFriendsUserResponse> {
         return when (val response = networkUtils.getAvailableUsers(searchTerm)) {
-            is NetworkResult.Error<RequestError> -> {
+            is NetworkResult.Error<NetworkingError> -> {
                 sendErrorSuspend(
                     ErrorChannel.ErrorEvent(
                         error = response.error
@@ -1876,13 +1875,21 @@ class AppRepository(
             }
 
             when (serverrequest){
-                is NetworkResult.Error<*> -> {
+                is NetworkResult.Error<NetworkingError> -> {
+
+                    val error = serverrequest.error
+                    if (error !is NetworkingError.NetworkTimeout) {
+                        if (error is NetworkingError.BadRequest) { //Message was not accepted by the server, delete locals
+                            database.messageDao().deleteMessageDtoByPk(localpkintern)
+                        }
+                    }
+
                     println("Message senden error: ${serverrequest.error}")
 
                     when (content) {
                         is ImageContent -> {
                             pictureManager.savePictureToStorage(content.image, "unsent_" + localpkintern + PICTURE_FILE_NAME)
-
+                            //ignore unsent audio or image, this should not happen anyway
                         }
 
                         is AudioContent -> {
@@ -2278,7 +2285,7 @@ class AppRepository(
             )
 
             when (request) {
-                is NetworkResult.Error<RequestError> ->  {
+                is NetworkResult.Error<NetworkingError> ->  {
                     val existing = messageRepository.getMessageById(message.localPK)
                     if (existing != null) {
                         messageRepository.upsertMessage(existing.copy(
@@ -2313,7 +2320,7 @@ class AppRepository(
         )
 
         when (request) {
-            is NetworkResult.Error<RequestError> ->  {
+            is NetworkResult.Error<NetworkingError> ->  {
                 sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
             }
             is NetworkResult.Success<*> -> {
@@ -2351,7 +2358,7 @@ class AppRepository(
         )
 
         when (request) {
-            is NetworkResult.Error<RequestError> ->  {
+            is NetworkResult.Error<NetworkingError> ->  {
                 sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
             }
             is NetworkResult.Success<MessageResponse> -> {
@@ -2373,7 +2380,7 @@ class AppRepository(
         )
 
         when (request) {
-            is NetworkResult.Error<RequestError> -> {
+            is NetworkResult.Error<NetworkingError> -> {
                 sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
             }
             is NetworkResult.Success<MessageResponse> -> {
@@ -2681,7 +2688,7 @@ class AppRepository(
         targetId: String,
         isGroup: Boolean,
         reason: String,
-    ): NetworkResult<NetworkUtils.WakeResponse, NetworkError> {
+    ): NetworkResult<NetworkUtils.WakeResponse, NetworkingError> {
         return networkUtils.sendWake(targetId, isGroup, reason)
     }
 

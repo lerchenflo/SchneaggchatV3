@@ -4,8 +4,12 @@ import java.awt.Desktop
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
 import java.awt.datatransfer.StringSelection
+import java.io.File
 import java.net.URI
 import java.net.URLEncoder
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 actual class ShareUtils {
     actual fun shareString(string: String) {
@@ -82,4 +86,41 @@ actual class ShareUtils {
             println("Failed to open phone dialer: ${e.message}")
         }
     }
+
+    actual fun addEventToCalendar(title: String, description: String, location: String, startDateMillis: Long, endDateMillis: Long?) {
+        try {
+            val formatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'").withZone(ZoneOffset.UTC)
+            val start = formatter.format(Instant.ofEpochMilli(startDateMillis))
+            val end = formatter.format(Instant.ofEpochMilli(endDateMillis ?: (startDateMillis + 3_600_000L)))
+
+            val icsContent = buildString {
+                appendLine("BEGIN:VCALENDAR")
+                appendLine("VERSION:2.0")
+                appendLine("BEGIN:VEVENT")
+                appendLine("SUMMARY:${icsEscape(title)}")
+                if (description.isNotEmpty()) appendLine("DESCRIPTION:${icsEscape(description)}")
+                if (location.isNotEmpty()) appendLine("LOCATION:${icsEscape(location)}")
+                appendLine("DTSTART:$start")
+                appendLine("DTEND:$end")
+                appendLine("END:VEVENT")
+                appendLine("END:VCALENDAR")
+            }
+
+            val file = File.createTempFile("event", ".ics")
+            file.writeText(icsContent)
+            file.deleteOnExit()
+
+            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                Desktop.getDesktop().open(file)
+            } else {
+                println("No app available to open calendar file: ${file.absolutePath}")
+            }
+        } catch (e: Exception) {
+            println("Failed to add event to calendar: ${e.message}")
+        }
+    }
+}
+
+private fun icsEscape(text: String): String {
+    return text.replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,").replace("\n", "\\n")
 }

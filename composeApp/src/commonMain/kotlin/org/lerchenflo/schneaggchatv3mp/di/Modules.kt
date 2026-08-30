@@ -84,7 +84,7 @@ val sharedmodule = module{
 
     //Network utils must be created before HttpClients to avoid circular dependency
     single<NetworkUtils> {
-        NetworkUtils(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get())
+        NetworkUtils(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get(), get())
     }
 
     // AUTHENTICATED / NOT_AUTHENTICATED HttpClients are platform-specific (they need a concrete
@@ -189,6 +189,7 @@ val sharedmodule = module{
             groupRepository = get(),
             preferenceManager = get(),
             pictureManager = get(),
+            applicationScope = get(),
             initialEntryId = initialEntryId,
             initialEntry = initialEntry
         )

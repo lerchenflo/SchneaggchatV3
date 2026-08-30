@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -31,6 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
@@ -38,14 +41,17 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
 import org.lerchenflo.schneaggchatv3mp.events.domain.labelRes
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
+import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
+import schneaggchatv3mp.composeapp.generated.resources.event_add_to_calendar
 import schneaggchatv3mp.composeapp.generated.resources.event_closes_with_date
 import schneaggchatv3mp.composeapp.generated.resources.event_invite_header
 import schneaggchatv3mp.composeapp.generated.resources.event_invited_users
 import schneaggchatv3mp.composeapp.generated.resources.event_join
 import schneaggchatv3mp.composeapp.generated.resources.event_no_group
+import schneaggchatv3mp.composeapp.generated.resources.open_chat
 import kotlin.time.Clock
 
 // Popup for a guest looking at someone else's event — everything here is read-only, so an
@@ -55,6 +61,8 @@ fun EventJoinPopup(
     event: Event,
     onDismiss: () -> Unit,
     onJoin: (String) -> Unit,
+    onOpenGroupChat: (String) -> Unit,
+    isJoined: Boolean = false,
     isJoining: Boolean = false,
     friendsById: Map<String, User> = emptyMap(),
     modifier: Modifier = Modifier
@@ -191,21 +199,32 @@ fun EventJoinPopup(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Big centered join button, small cancel underneath - no group means nothing to join
+            // Big centered join/open-chat button, small cancel underneath - no group means nothing to join
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 if (event.groupId != null) {
-                    NormalButton(
-                        text = stringResource(Res.string.event_join),
-                        onClick = { onJoin(event.id) },
-                        primary = true,
-                        isLoading = isJoining,
-                        modifier = Modifier
-                            .fillMaxWidth(0.75f)
-                            .height(52.dp)
-                    )
+                    if (isJoined) {
+                        NormalButton(
+                            text = stringResource(Res.string.open_chat),
+                            onClick = { onOpenGroupChat(event.groupId) },
+                            primary = true,
+                            modifier = Modifier
+                                .fillMaxWidth(0.75f)
+                                .height(52.dp)
+                        )
+                    } else {
+                        NormalButton(
+                            text = stringResource(Res.string.event_join),
+                            onClick = { onJoin(event.id) },
+                            primary = true,
+                            isLoading = isJoining,
+                            modifier = Modifier
+                                .fillMaxWidth(0.75f)
+                                .height(52.dp)
+                        )
+                    }
                 } else {
                     Text(
                         text = stringResource(Res.string.event_no_group),
@@ -213,6 +232,33 @@ fun EventJoinPopup(
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                val shareUtils = koinInject<ShareUtils>()
+                NormalButton(
+                    text = stringResource(Res.string.event_add_to_calendar),
+                    onClick = {
+                        shareUtils.addEventToCalendar(
+                            title = event.title,
+                            description = event.description,
+                            location = event.location?.let { "${it.lat},${it.long}" } ?: "",
+                            startDateMillis = event.startDate,
+                            endDateMillis = event.closeDate
+                        )
+                    },
+                    primary = false,
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.CalendarMonth,
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth(0.75f)
+                        .height(52.dp)
+                )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -252,7 +298,8 @@ private fun EventJoinPopupPreview() {
                 creatorName = "Flo"
             ),
             onDismiss = { },
-            onJoin = { }
+            onJoin = { },
+            onOpenGroupChat = { }
         )
     }
 }

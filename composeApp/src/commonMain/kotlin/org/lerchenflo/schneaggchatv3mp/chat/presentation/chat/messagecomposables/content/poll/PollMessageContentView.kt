@@ -81,6 +81,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.rememberComboAnnotationSources
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.resolveComboAnnotationsToPlainText
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToDuration
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
@@ -91,6 +92,7 @@ import schneaggchatv3mp.composeapp.generated.resources.poll_answer_label
 import schneaggchatv3mp.composeapp.generated.resources.poll_answer_placeholder
 import schneaggchatv3mp.composeapp.generated.resources.poll_answer_summary
 import schneaggchatv3mp.composeapp.generated.resources.poll_answers_count
+import schneaggchatv3mp.composeapp.generated.resources.poll_cannot_vote_on_unsent
 import schneaggchatv3mp.composeapp.generated.resources.poll_closed
 import schneaggchatv3mp.composeapp.generated.resources.poll_customoption_info
 import schneaggchatv3mp.composeapp.generated.resources.poll_deleteoptions_info
@@ -202,6 +204,10 @@ fun PollMessageContentView(
         }
 
 
+
+
+        val cannot_vote_on_unsent_message_text = stringResource(Res.string.poll_cannot_vote_on_unsent)
+
         poll.voteOptions.forEach { option ->
             PollMessageOptionView(
                 option = option,
@@ -211,13 +217,17 @@ fun PollMessageContentView(
                 voterIds = option.getVoterIdsForOption(),
                 full = poll.optionIsFull(option, ownId),
                 onOptionSelected = {
-                    onAction(
-                        MessageAction.VotePoll(
-                            messageId = message.id!!,
-                            optionId = option.id,
-                            checked = it
+                    if (message.id != null) {
+                        onAction(
+                            MessageAction.VotePoll(
+                                messageId = message.id!!,
+                                optionId = option.id,
+                                checked = it
+                            )
                         )
-                    )
+                    } else {
+                        SnackbarManager.showMessage(cannot_vote_on_unsent_message_text)
+                    }
                 },
                 ownId = ownId,
                 useMD = useMD,
@@ -541,34 +551,25 @@ fun PollMessageOptionView(
                 modifier = Modifier.fillMaxWidth()
             ) {
 
-                Box(
-                    modifier = Modifier
-                        .weight(1f, fill = false)
-                        .heightIn(max = 120.dp)
-                        .clipToBounds()
-                ) {
-                    if (option.custom) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                val locModifier = Modifier
+                    .weight(1f)
+                    .heightIn(max = 120.dp)
+                    .clipToBounds()
 
-                            Icon(
-                                imageVector = Icons.Default.PersonAdd,
-                                contentDescription = "Custom user answer",
-                                modifier = Modifier.size(24.dp),
-                                tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                if (option.custom) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = locModifier
+                    ) {
 
-                            ComboText(
-                                text = option.text,
-                                useMD = useMD,
-                                textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 4,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    } else {
+                        Icon(
+                            imageVector = Icons.Default.PersonAdd,
+                            contentDescription = "Custom user answer",
+                            modifier = Modifier.size(24.dp),
+                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
                         ComboText(
                             text = option.text,
                             useMD = useMD,
@@ -577,6 +578,15 @@ fun PollMessageOptionView(
                             overflow = TextOverflow.Ellipsis
                         )
                     }
+                } else {
+                    ComboText(
+                        text = option.text,
+                        useMD = useMD,
+                        textColor = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 4,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = locModifier
+                    )
                 }
 
                 //Voting-only info - meaningless on a plain list, so all hidden when showCheckbox is false
@@ -638,6 +648,8 @@ fun PollMessageOptionView(
                 }
 
                 if (canDelete) {
+                    Spacer(modifier = Modifier.width(8.dp))
+
                     IconButton(
                         onClick = {
                             //Skip the confirm dialog when nobody voted - nothing is lost
@@ -648,7 +660,7 @@ fun PollMessageOptionView(
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = stringResource(Res.string.poll_option_delete),
-                            tint = if (myMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = MaterialTheme.colorScheme.error
                         )
                     }
                 }
