@@ -1,8 +1,11 @@
 package org.lerchenflo.schneaggchatv3mp.events.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -28,11 +31,17 @@ import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.events.presentation.birthdaysOn
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventEditPopup
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventJoinPopup
+import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsCalendarDayDetailSheet
+import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsMonthView
+import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsViewModeSwitch
+import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsWeekView
 import org.lerchenflo.schneaggchatv3mp.sharedUi.DateChip
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.utilities.rememberToday
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.events_empty
 import schneaggchatv3mp.composeapp.generated.resources.events_screen_title
@@ -81,57 +90,121 @@ fun EventsScreen(
     ) { innerPadding ->
         SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying stale
         val ownId = SessionCache.requireLoggedIn()?.userId
+        val today = rememberToday()
 
-        if (state.events.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stringResource(Res.string.events_empty),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                state.eventDayGroups.forEach { group ->
-                    stickyHeader(key = group.dayId) { _ ->
-                        // Full-width opaque band so list content doesn't shine through
-                        // while the header is pinned.
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            EventsViewModeSwitch(
+                selected = state.viewMode,
+                onSelect = { onAction(EventsAction.OnViewModeChange(it)) },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+
+            when (state.viewMode) {
+                EventsViewMode.LIST -> {
+                    if (state.events.isEmpty()) {
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.background)
-                                .padding(vertical = 4.dp),
+                                .fillMaxSize()
+                                .padding(16.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            DateChip(group.dateMillis)
+                            Text(
+                                text = stringResource(Res.string.events_empty),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            state.eventDayGroups.forEach { group ->
+                                stickyHeader(key = group.dayId) { _ ->
+                                    // Full-width opaque band so list content doesn't shine through
+                                    // while the header is pinned.
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(MaterialTheme.colorScheme.background)
+                                            .padding(vertical = 4.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        DateChip(group.dateMillis)
+                                    }
+                                }
+                                items(
+                                    items = group.events,
+                                    key = { it.id }
+                                ) { event ->
+                                    val creatorFriend = state.friendsById[event.creatorId]
+                                    EventItem(
+                                        event = event,
+                                        creatorProfilePictureUrl = creatorFriend?.profilePictureUrl,
+                                        isOwnEvent = event.creatorId == ownId,
+                                        onClick = { onAction(EventsAction.OnEventClick(event.id)) }
+                                    )
+                                }
+                            }
                         }
                     }
-                    items(
-                        items = group.events,
-                        key = { it.id }
-                    ) { event ->
-                        val creatorFriend = state.friendsById[event.creatorId]
-                        EventItem(
-                            event = event,
-                            creatorProfilePictureUrl = creatorFriend?.profilePictureUrl,
-                            isOwnEvent = event.creatorId == ownId,
-                            onClick = { onAction(EventsAction.OnEventClick(event.id)) }
-                        )
-                    }
+                }
+
+                EventsViewMode.WEEK -> {
+                    EventsWeekView(
+                        anchorDate = state.calendarAnchorDate,
+                        today = today,
+                        eventsByDate = state.eventsByDate,
+                        birthdaysByMonthDay = state.birthdaysByMonthDay,
+                        friendsById = state.friendsById,
+                        ownId = ownId,
+                        onNavigate = { forward -> onAction(EventsAction.OnCalendarNavigate(forward)) },
+                        onJumpToToday = { onAction(EventsAction.OnCalendarJumpToToday) },
+                        onEventClick = { onAction(EventsAction.OnEventClick(it)) },
+                        onBirthdayClick = { onAction(EventsAction.OnBirthdayClick(it)) },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    )
+                }
+
+                EventsViewMode.MONTH -> {
+                    EventsMonthView(
+                        anchorDate = state.calendarAnchorDate,
+                        eventsByDate = state.eventsByDate,
+                        birthdaysByMonthDay = state.birthdaysByMonthDay,
+                        today = today,
+                        onNavigate = { forward -> onAction(EventsAction.OnCalendarNavigate(forward)) },
+                        onJumpToToday = { onAction(EventsAction.OnCalendarJumpToToday) },
+                        onDayClick = { onAction(EventsAction.OnCalendarDayClick(it)) },
+                        modifier = Modifier
+                            .verticalScroll(rememberScrollState())
+                            .padding(16.dp)
+                    )
                 }
             }
+        }
+
+        state.selectedCalendarDay?.let { selectedDay ->
+            EventsCalendarDayDetailSheet(
+                date = selectedDay,
+                events = state.eventsByDate[selectedDay].orEmpty(),
+                birthdays = birthdaysOn(state.birthdaysByMonthDay, selectedDay),
+                friendsById = state.friendsById,
+                ownId = ownId,
+                onDismiss = { onAction(EventsAction.OnCalendarDayDetailDismiss) },
+                onEventClick = {
+                    onAction(EventsAction.OnCalendarDayDetailDismiss)
+                    onAction(EventsAction.OnEventClick(it))
+                },
+                onBirthdayClick = { onAction(EventsAction.OnBirthdayClick(it)) }
+            )
         }
 
         // ownId is null until autologin finishes. Rendering then would pick the popup by comparing

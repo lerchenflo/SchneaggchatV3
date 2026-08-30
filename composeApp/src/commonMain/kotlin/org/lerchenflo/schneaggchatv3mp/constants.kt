@@ -23,6 +23,7 @@ val GITHUB_LATEST_RELEASE_API_URL = "https://api.github.com/repos/lerchenflo/Sch
 val GITHUB_LATEST_RELEASE_URL = "https://github.com/lerchenflo/SchneaggchatV3/releases/latest"
 
 val PLAYSTORE_TESTER_URI = "https://play.google.com/apps/testing/org.lerchenflo.schneaggchatv3mp"
+val APPSTORE_TESTER_URI = "https://testflight.apple.com/join/XkUjnst6"
 
 var USERPROFILEPICTURE_FILE_NAME = ".upb"
 

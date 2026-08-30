@@ -1,7 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.chat.presentation.chat
 
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -10,8 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.compose.viewmodel.koinViewModel
@@ -21,6 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.uielements.ChatInputBar
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.uielements.ChatMessageList
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.uielements.ChatTopBar
+import org.lerchenflo.schneaggchatv3mp.sharedUi.clearFocusOnTap
 import org.lerchenflo.schneaggchatv3mp.utilities.PlaybackProgress
 
 @Composable
@@ -50,8 +49,6 @@ fun ChatScreen(
     modifier: Modifier = Modifier
         .fillMaxSize()
 ){
-    val focusManager = LocalFocusManager.current
-
     //Leave chat when not logged in
     SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
@@ -63,10 +60,13 @@ fun ChatScreen(
     }
 
     Scaffold(
-        modifier = modifier
-            .pointerInput(Unit) {
-                detectTapGestures { focusManager.clearFocus() } // only pointer taps
-            },
+        modifier = modifier.clearFocusOnTap(),
+        // IOSKEYBOARDFIX: the root Scaffold in App.kt already applies systemBars + ime as
+        // contentWindowInsets, so this nested Scaffold must not re-derive its own systemBars
+        // inset (that used to double-count the bottom inset, which the old code below worked
+        // around by only taking calculateTopPadding()). This Scaffold now only contributes the
+        // top bar's height.
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             // Obere Zeile (Backbutton, profilbild, name, ...)
             ChatTopBar(
@@ -77,11 +77,10 @@ fun ChatScreen(
             )
         },
     ) {innerPadding ->
-        // The innerPadding contains the height of the topBar
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = innerPadding.calculateTopPadding())
+                .padding(innerPadding) // IOSKEYBOARDFIX: was only calculateTopPadding()
         ) {
 
             // Messages

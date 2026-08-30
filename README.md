@@ -21,22 +21,28 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 ### 3.0.17
 
+##### Highlights
+- Schneaggmap-Kompass
+
 #### Features
 - Chat-Nachrichtenliste: Sticky Date Chip beim Scrollen
 - Events: Nach Tagen gruppiert mit Sticky Header
 - Chat-Nachrichtenliste: Zu neuen Nachrichten springen Pfeil
 - Umfragen: Option Checkboxen anzeigen & Option löschen
 - Geburtstagsliste
+- Beta Tests für iOS
 - Italienisch als Sprache
 - Schneaggmap-Kompass: Livekompass mit Richtungs- und Entfernungsanzeige für Freunde
 - Neue Nachrichten über Benachrichtigungen direkt im Chat anzeigen
+- Events: Woche und Monat Kalenderansicht mit Geburtstagen
 
 #### Bugfixes
 - Chat-Nachrichten: Zeilenumbrüche im Markdown-Modus behoben
 - Schneaggmap: Suche verbessert
 - Event Farbe auf der Map repariert
 - Event bearbeiten/erstellen Bug behoben
-- iOS Tastatur-Anzeige unter Chat-Eingabe behoben
+- iOS Tastatur-Verhalten und Anzeige unter Chat-Eingabe behoben
+- Schneaggmap: Überlappende Marker-Icons bei Orten mit mehreren Typen behoben
 
 ### 3.0.16
 

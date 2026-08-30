@@ -151,6 +151,16 @@ fun mergeProfilePictureWithStatusText(
     return result
 }
 
+private fun DrawScope.drawCenteredImage(image: ImageBitmap, center: Offset, size: Float) {
+    drawImage(
+        image = image,
+        srcOffset = IntOffset.Zero,
+        srcSize = IntSize(image.width, image.height),
+        dstOffset = IntOffset((center.x - size / 2f).roundToInt(), (center.y - size / 2f).roundToInt()),
+        dstSize = IntSize(size.roundToInt(), size.roundToInt()),
+    )
+}
+
 /**
  * Composites [profilePictures] into a ring around a translucent [backgroundColor] disc, with a
  * [beerIcon] between each adjacent pair of avatars - a "Hock" (group hangout) marker for several
@@ -182,16 +192,6 @@ fun mergeClusterAvatarsIcon(
         config = ImageBitmapConfig.Argb8888,
         hasAlpha = true,
     )
-
-    fun DrawScope.drawCenteredImage(image: ImageBitmap, center: Offset, size: Float) {
-        drawImage(
-            image = image,
-            srcOffset = IntOffset.Zero,
-            srcSize = IntSize(image.width, image.height),
-            dstOffset = IntOffset((center.x - size / 2f).roundToInt(), (center.y - size / 2f).roundToInt()),
-            dstSize = IntSize(size.roundToInt(), size.roundToInt()),
-        )
-    }
 
     val count = profilePictures.size
     val countText = count.toString()
@@ -256,6 +256,60 @@ fun mergeClusterAvatarsIcon(
                     center.y - countLayout.size.height / 2f,
                 ),
             )
+        }
+    }
+
+    return result
+}
+
+/**
+ * Composites [icons] into a ring around a translucent [backgroundColor] disc - a single marker
+ * for a map entry that matches 2+ location types, so it renders as one combined icon instead of
+ * one full-size icon per type stacked on the same coordinate. [iconSize] is the diameter of each
+ * icon; the ring radius scales off of it.
+ */
+fun mergeLocationTypeIcons(
+    icons: List<ImageBitmap>,
+    backgroundColor: Color,
+    density: Density,
+    iconSize: Dp = 22.dp,
+): ImageBitmap {
+    val iconSizePx = with(density) { iconSize.toPx() }
+    val borderWidthPx = with(density) { 2.dp.toPx() }
+    val ringRadiusPx = iconSizePx * 0.6f
+
+    val canvasRadiusPx = ringRadiusPx + iconSizePx / 2f + borderWidthPx
+    val canvasSizePx = canvasRadiusPx * 2f
+
+    val result = ImageBitmap(
+        width = canvasSizePx.roundToInt().coerceAtLeast(1),
+        height = canvasSizePx.roundToInt().coerceAtLeast(1),
+        config = ImageBitmapConfig.Argb8888,
+        hasAlpha = true,
+    )
+
+    val count = icons.size
+
+    CanvasDrawScope().draw(
+        density = density,
+        layoutDirection = LayoutDirection.Ltr,
+        canvas = Canvas(result),
+        size = Size(canvasSizePx, canvasSizePx),
+    ) {
+        val center = Offset(canvasRadiusPx, canvasRadiusPx)
+
+        drawCircle(color = backgroundColor, radius = canvasRadiusPx, center = center)
+
+        if (count > 0) {
+            val angleStep = (2 * PI / count).toFloat()
+            icons.forEachIndexed { index, icon ->
+                val angle = index * angleStep
+                val iconCenter = Offset(
+                    center.x + ringRadiusPx * cos(angle),
+                    center.y + ringRadiusPx * sin(angle),
+                )
+                drawCenteredImage(icon, iconCenter, iconSizePx)
+            }
         }
     }
 

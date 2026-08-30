@@ -96,6 +96,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.MapZo
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.ShownLocationsDropdown
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.UserInfoCard
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.mergeClusterAvatarsIcon
+import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.mergeLocationTypeIcons
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.mergeProfilePictureWithStatusText
 import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
@@ -160,7 +161,7 @@ private const val USER_CLUSTER_RADIUS_DP = 40.0
 private const val ZOOM_SNAP_RADIUS_DP = 64.0
 private const val EARTH_RADIUS_METERS = 6371000.0
 
-private data class UserMarkerIcon(val bitmap: ImageBitmap, val size: DpSize)
+private data class MarkerIcon(val bitmap: ImageBitmap, val size: DpSize)
 
 private data class UserMarkerData(val username: String, val statusText: String, val isOnline: Boolean, val speed: Double?, val heading: Double?)
 
@@ -794,11 +795,18 @@ private fun SchneaggmapMapContent(
         }
     }
 
+    //Decoded bitmaps of the same icons, needed to composite a merged marker for entries that
+    //match 2+ location types (see multiTypeEntries below). imageResource() caches by resource
+    //id internally, so re-calling it here on every recomposition is cheap.
+    val typeIconBitmaps: Map<LocationType, ImageBitmap> = entries.associateWith { type ->
+        imageResource(type.drawableRes())
+    }
+
     //Resolve user profile pictures off the composition (file read + bitmap decode), keyed by
     //path so a changed profile picture re-resolves but unrelated state changes don't. Each
     //bitmap has the user's last-online status baked in underneath the picture, so the size
     //varies per user (the status pill width depends on the text) and is tracked alongside it.
-    var userIcons by remember { mutableStateOf<Map<String, UserMarkerIcon>>(emptyMap()) }
+    var userIcons by remember { mutableStateOf<Map<String, MarkerIcon>>(emptyMap()) }
 
     //Raw, undecorated profile pictures (no status pill) kept alongside userIcons so merged
     //cluster icons can composite them without re-reading the file from disk.
@@ -816,6 +824,10 @@ private fun SchneaggmapMapContent(
     //background as the "table", a beer for the center/decorations, and a generic person icon for
     //cluster members whose profile picture hasn't loaded (so the ring still shows every member).
     val clusterBackgroundColor = pillColor.copy(alpha = 0.85f)
+
+    //Merged multi-type location marker background - much more transparent than the user cluster
+    //one above, since it's just a backdrop for a couple of small icons, not a "table".
+    val mergedLocationBackgroundColor = pillColor.copy(alpha = 0.35f)
     val clusterCountBackgroundColor = MaterialTheme.colorScheme.primary
     val clusterCountTextColor = MaterialTheme.colorScheme.onPrimary
     val beerIcon = imageResource(Res.drawable.icon_beer)
@@ -882,7 +894,7 @@ private fun SchneaggmapMapContent(
                 val markerSize = with(density) {
                     DpSize(mergedBitmap.width.toDp(), mergedBitmap.height.toDp())
                 }
-                user.id to UserMarkerIcon(bitmap = mergedBitmap, size = markerSize)
+                user.id to MarkerIcon(bitmap = mergedBitmap, size = markerSize)
             }.getOrNull()
         }.toMap()
         rawAvatarBitmaps = rawBitmaps
@@ -940,7 +952,7 @@ private fun SchneaggmapMapContent(
         bitmap
     }
 
-    val clusterIcons: Map<String, UserMarkerIcon> = remember(
+    val clusterIcons: Map<String, MarkerIcon> = remember(
         userClusters, rawAvatarBitmaps, clusterBackgroundColor, beerIcon, defaultAvatarBitmap, textMeasurer, clusterCountBackgroundColor, clusterCountTextColor
     ) {
 
@@ -964,7 +976,7 @@ private fun SchneaggmapMapContent(
                 countTextColor = clusterCountTextColor,
             )
             val size = with(density) { DpSize(bitmap.width.toDp(), bitmap.height.toDp()) }
-            clusterKey(cluster) to UserMarkerIcon(bitmap = bitmap, size = size)
+            clusterKey(cluster) to MarkerIcon(bitmap = bitmap, size = size)
         }
     }
 
@@ -997,16 +1009,36 @@ private fun SchneaggmapMapContent(
 
             val enabledTypeKeysMap = state.enabledTypes
 
+            //Entries that match 2+ currently enabled types get a single merged-icon marker
+            //(rendered further below) instead of one full icon per type stacked on the same
+            //coordinate, so they're excluded from the per-type layers here.
+            val multiTypeEntries = remember(state.entries, enabledTypeKeysMap) {
+                state.entries.filter { entry ->
+                    entry.locationData
+                        .map { it.locationtype }
+                        .distinct()
+                        .count { it in enabledTypeKeysMap } >= 2
+                }
+            }
+            val multiTypeEntryIds = remember(multiTypeEntries) { multiTypeEntries.map { it.id }.toSet() }
+
+            //Precomputed once per entries/multi-type change instead of re-filtering all entries
+            //for every one of the ~30 location types on every recomposition.
+            val entriesByType = remember(state.entries, multiTypeEntryIds) {
+                entries.associateWith { type ->
+                    state.entries.filter { entry ->
+                        entry.id !in multiTypeEntryIds &&
+                            entry.locationData.any { it.locationtype == type }
+                    }
+                }
+            }
+
             entries.forEach { type ->
 
                 //Skip if not enabled on map
                 if (!enabledTypeKeysMap.contains(type)) return@forEach
 
-                val entriesForType = state.entries.filter { entry ->
-                    entry.locationData.any { locationData ->
-                        locationData.locationtype == type
-                    }
-                }
+                val entriesForType = entriesByType[type].orEmpty()
                 if (entriesForType.isEmpty()) return@forEach
 
 
@@ -1066,6 +1098,71 @@ private fun SchneaggmapMapContent(
                         iconImage = image(painterResource(iconRes), size = DpSize(33.dp, 33.dp)),
                         iconAllowOverlap = const(!state.useClustering)
                     )
+                }
+            }
+
+            //Multi-type entries: one marker per entry with a composited icon combining every
+            //enabled type it belongs to (see mergeLocationTypeIcons), instead of stacking a full
+            //icon per type on the same coordinate. Not clustered - these are rare compared to
+            //single-type entries, so native per-type clustering above is left untouched.
+            val entryMergedIcons: Map<String, MarkerIcon> = remember(
+                multiTypeEntries, typeIconBitmaps, mergedLocationBackgroundColor, density
+            ) {
+                multiTypeEntries.associate { entry ->
+                    val icons = entry.locationData
+                        .map { it.locationtype }
+                        .distinct()
+                        .filter { it in enabledTypeKeysMap }
+                        .sortedBy { it.ordinal }
+                        .mapNotNull { typeIconBitmaps[it] }
+                    val bitmap = mergeLocationTypeIcons(
+                        icons = icons,
+                        backgroundColor = mergedLocationBackgroundColor,
+                        density = density,
+                    )
+                    val size = with(density) { DpSize(bitmap.width.toDp(), bitmap.height.toDp()) }
+                    entry.id to MarkerIcon(bitmap = bitmap, size = size)
+                }
+            }
+
+            multiTypeEntries.forEach { entry ->
+                key(entry.id) {
+                    safeAdd(layerId = "entry-${entry.id}") {
+                        val mapLocationSource = rememberGeoJsonSource(
+                            data = GeoJsonData.Features(
+                                FeatureCollection(
+                                    features = listOf(
+                                        Feature(
+                                            geometry = Point(
+                                                coordinates = Position(
+                                                    longitude = entry.coordinates.long,
+                                                    latitude = entry.coordinates.lat,
+                                                )
+                                            ),
+                                            properties = buildJsonObject {},
+                                            id = JsonPrimitive(entry.id)
+                                        )
+                                    )
+                                )
+                            )
+                        )
+
+                        val markerIcon = entryMergedIcons[entry.id]
+                        if (markerIcon != null) {
+                            SymbolLayer(
+                                id = "entry-${entry.id}",
+                                source = mapLocationSource,
+                                onClick = { clickedItems ->
+                                    if (clickedItems.isNotEmpty()) {
+                                        onAction(SchneaggmapAction.OnEntryClick(clickedItems.first().id!!.content))
+                                        ClickResult.Consume
+                                    } else ClickResult.Pass
+                                },
+                                iconImage = image(BitmapPainter(markerIcon.bitmap), size = markerIcon.size),
+                                iconAllowOverlap = const(true)
+                            )
+                        }
+                    }
                 }
             }
 

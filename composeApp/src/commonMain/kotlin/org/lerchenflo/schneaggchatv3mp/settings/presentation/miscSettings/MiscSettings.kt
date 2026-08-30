@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.APPSTORE_TESTER_URI
 import org.lerchenflo.schneaggchatv3mp.PLAYSTORE_TESTER_URI
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
@@ -115,19 +116,16 @@ fun MiscSettings(
 
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-            //Show beta test uri only on android
-            if (currentAppVersion.isAndroid()) {
-                val localUriHandler = LocalUriHandler.current
+            val localUriHandler = LocalUriHandler.current
 
-                SettingsOption(
-                    icon = Icons.Default.Science,
-                    text = stringResource(Res.string.become_beta_tester),
-                    subtext = stringResource(Res.string.become_beta_tester_desc),
-                    onClick = { localUriHandler.openUri(PLAYSTORE_TESTER_URI) }
-                )
+            SettingsOption(
+                icon = Icons.Default.Science,
+                text = stringResource(Res.string.become_beta_tester),
+                subtext = stringResource(Res.string.become_beta_tester_desc),
+                onClick = { localUriHandler.openUri(if (currentAppVersion.isAndroid() ) PLAYSTORE_TESTER_URI else APPSTORE_TESTER_URI) }
+            )
 
-                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-            }
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
             SettingsDivider(
                 title = stringResource(Res.string.misc_group_diagnostics)

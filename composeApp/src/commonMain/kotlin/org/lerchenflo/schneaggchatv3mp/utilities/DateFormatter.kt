@@ -3,6 +3,12 @@
 package org.lerchenflo.schneaggchatv3mp.utilities
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -13,11 +19,33 @@ import kotlinx.datetime.daysUntil
 import kotlinx.datetime.format
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlinx.datetime.format.byUnicodePattern
+import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.minus
 import kotlinx.datetime.number
+import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.month_april
+import schneaggchatv3mp.composeapp.generated.resources.month_august
+import schneaggchatv3mp.composeapp.generated.resources.month_december
+import schneaggchatv3mp.composeapp.generated.resources.month_february
+import schneaggchatv3mp.composeapp.generated.resources.month_january
+import schneaggchatv3mp.composeapp.generated.resources.month_july
+import schneaggchatv3mp.composeapp.generated.resources.month_june
+import schneaggchatv3mp.composeapp.generated.resources.month_march
+import schneaggchatv3mp.composeapp.generated.resources.month_may
+import schneaggchatv3mp.composeapp.generated.resources.month_november
+import schneaggchatv3mp.composeapp.generated.resources.month_october
+import schneaggchatv3mp.composeapp.generated.resources.month_september
+import schneaggchatv3mp.composeapp.generated.resources.weekday_friday_short
+import schneaggchatv3mp.composeapp.generated.resources.weekday_monday_short
+import schneaggchatv3mp.composeapp.generated.resources.weekday_saturday_short
+import schneaggchatv3mp.composeapp.generated.resources.weekday_sunday_short
+import schneaggchatv3mp.composeapp.generated.resources.weekday_thursday_short
+import schneaggchatv3mp.composeapp.generated.resources.weekday_tuesday_short
+import schneaggchatv3mp.composeapp.generated.resources.weekday_wednesday_short
 import schneaggchatv3mp.composeapp.generated.resources.yesterday
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -246,3 +274,91 @@ fun ageOnNextBirthday(birthDate: String?): Int? {
 
 private fun isLeapYear(year: Int): Boolean =
     (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
+
+/** [millis] as a [LocalDate] in the device's current time zone. */
+fun millisToLocalDate(millis: Long): LocalDate {
+    return kotlin.time.Instant.fromEpochMilliseconds(millis)
+        .toLocalDateTime(TimeZone.currentSystemDefault()).date
+}
+
+/** Monday of the ISO week containing [date]. */
+fun startOfWeek(date: LocalDate): LocalDate {
+    return date.minus(DatePeriod(days = date.dayOfWeek.isoDayNumber - 1))
+}
+
+@OptIn(FormatStringsInDatetimeFormats::class)
+fun LocalDate.toFormattedString(format: String = "dd.MM.yyyy"): String {
+    val formatter = LocalDate.Format { byUnicodePattern(format) }
+    return this.format(formatter)
+}
+
+/** ISO month number (1-12) to its localized full name resource. */
+fun monthNameResource(month: Int): StringResource = when (month) {
+    1 -> Res.string.month_january
+    2 -> Res.string.month_february
+    3 -> Res.string.month_march
+    4 -> Res.string.month_april
+    5 -> Res.string.month_may
+    6 -> Res.string.month_june
+    7 -> Res.string.month_july
+    8 -> Res.string.month_august
+    9 -> Res.string.month_september
+    10 -> Res.string.month_october
+    11 -> Res.string.month_november
+    else -> Res.string.month_december
+}
+
+/** [kotlinx.datetime.DayOfWeek] to its localized 2-letter abbreviation resource. */
+fun weekdayShortResource(dayOfWeek: kotlinx.datetime.DayOfWeek): StringResource = when (dayOfWeek.isoDayNumber) {
+    1 -> Res.string.weekday_monday_short
+    2 -> Res.string.weekday_tuesday_short
+    3 -> Res.string.weekday_wednesday_short
+    4 -> Res.string.weekday_thursday_short
+    5 -> Res.string.weekday_friday_short
+    6 -> Res.string.weekday_saturday_short
+    else -> Res.string.weekday_sunday_short
+}
+
+/** Today's date, recomputed when the day rolls over past local midnight. */
+@Composable
+fun rememberToday(): LocalDate {
+    val tz = TimeZone.currentSystemDefault()
+    var today by remember { mutableStateOf(Clock.System.now().toLocalDateTime(tz).date) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            val now = Clock.System.now()
+            today = now.toLocalDateTime(tz).date
+            val nextMidnight = today.plus(DatePeriod(days = 1)).atStartOfDayIn(tz)
+            delay((nextMidnight - now).inWholeMilliseconds.coerceAtLeast(0L) + 1000L)
+        }
+    }
+
+    return today
+}
+
+/** month * 100 + day - a yearly-recurring key for a birthday, independent of year. */
+fun LocalDate.monthDayKey(): Int = month.number * 100 + day
+
+/**
+ * Birthday keys that fall on [date]: its own key, plus 229 when [date] is 28 Feb in a non-leap
+ * year - same 29-Feb rule as [isBirthdayToday].
+ */
+fun birthdayKeysFor(date: LocalDate): List<Int> {
+    val keys = mutableListOf(date.monthDayKey())
+    if (date.month == Month(2) && date.day == 28 && !isLeapYear(date.year)) {
+        keys.add(229)
+    }
+    return keys
+}
+
+/**
+ * Age turned on [date] by someone born in [birthYear], or null when [birthYear] is missing or
+ * implausible (before 1900, or yields an age outside 1..130). Mirrors the guard in
+ * [ageOnNextBirthday] but for an arbitrary [date] instead of the next upcoming occurrence.
+ */
+fun ageOnDate(birthYear: Int?, date: LocalDate): Int? {
+    if (birthYear == null || birthYear < 1900) return null
+    val age = date.year - birthYear
+    return age.takeIf { it in 1..130 }
+}

@@ -20,7 +20,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
@@ -31,23 +30,12 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
 import org.lerchenflo.schneaggchatv3mp.utilities.iso8601DateFormatter
+import org.lerchenflo.schneaggchatv3mp.utilities.monthNameResource
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.birthday_in_days
 import schneaggchatv3mp.composeapp.generated.resources.birthday_tomorrow
 import schneaggchatv3mp.composeapp.generated.resources.birthday_turns_age
 import schneaggchatv3mp.composeapp.generated.resources.birthdays
-import schneaggchatv3mp.composeapp.generated.resources.month_april
-import schneaggchatv3mp.composeapp.generated.resources.month_august
-import schneaggchatv3mp.composeapp.generated.resources.month_december
-import schneaggchatv3mp.composeapp.generated.resources.month_february
-import schneaggchatv3mp.composeapp.generated.resources.month_january
-import schneaggchatv3mp.composeapp.generated.resources.month_july
-import schneaggchatv3mp.composeapp.generated.resources.month_june
-import schneaggchatv3mp.composeapp.generated.resources.month_march
-import schneaggchatv3mp.composeapp.generated.resources.month_may
-import schneaggchatv3mp.composeapp.generated.resources.month_november
-import schneaggchatv3mp.composeapp.generated.resources.month_october
-import schneaggchatv3mp.composeapp.generated.resources.month_september
 import schneaggchatv3mp.composeapp.generated.resources.no_birthdays
 import schneaggchatv3mp.composeapp.generated.resources.today
 import schneaggchatv3mp.composeapp.generated.resources.you_with_brackets
@@ -124,21 +112,6 @@ private fun MonthHeader(month: Int, modifier: Modifier = Modifier) {
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     )
-}
-
-private fun monthNameResource(month: Int): StringResource = when (month) {
-    1 -> Res.string.month_january
-    2 -> Res.string.month_february
-    3 -> Res.string.month_march
-    4 -> Res.string.month_april
-    5 -> Res.string.month_may
-    6 -> Res.string.month_june
-    7 -> Res.string.month_july
-    8 -> Res.string.month_august
-    9 -> Res.string.month_september
-    10 -> Res.string.month_october
-    11 -> Res.string.month_november
-    else -> Res.string.month_december
 }
 
 @Composable
