@@ -217,6 +217,13 @@ class EventsViewModel(
                 }
             }
 
+            is EventsAction.OnOpenGroupChat -> {
+                viewModelScope.launch {
+                    _state.update { it.copy(selectedEvent = null) }
+                    navigator.navigate(Route.Chat(chatId = action.groupId, isGroup = true))
+                }
+            }
+
             is EventsAction.OnDeleteEvent -> {
                 viewModelScope.launch {
                     val success = appRepository.detachEvent(

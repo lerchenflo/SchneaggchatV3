@@ -223,10 +223,16 @@ fun EventsScreen(
                     isMobile = state.isMobile,
                 )
             } else {
+                val isJoined = selectedEvent.groupId != null &&
+                    state.groups.firstOrNull { it.id == selectedEvent.groupId }
+                        ?.members?.any { it.userId == ownId } == true
+
                 EventJoinPopup(
                     event = selectedEvent,
                     onDismiss = { onAction(EventsAction.OnEventPopupDismiss) },
                     onJoin = { onAction(EventsAction.OnJoinEvent(it)) },
+                    onOpenGroupChat = { onAction(EventsAction.OnOpenGroupChat(it)) },
+                    isJoined = isJoined,
                     isJoining = state.isJoiningEvent,
                     friendsById = state.friendsById
                 )

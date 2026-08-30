@@ -30,6 +30,10 @@
     <string>We need your location to show it on the map</string>
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
     <string>We need your location to provide location-based features even when the app is in the background.</string>
+    <key>NSCalendarsUsageDescription</key>
+    <string>We need access to your calendar to add events.</string>
+    <key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+    <string>We need access to your calendar to add events.</string>
     <key>LSApplicationQueriesSchemes</key>
     <array>
         <string>comgooglemaps</string>

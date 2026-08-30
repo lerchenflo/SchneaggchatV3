@@ -4,9 +4,17 @@ import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGRectMake
+import platform.EventKit.EKEntityTypeEvent
+import platform.EventKit.EKEvent
+import platform.EventKit.EKEventEditViewAction
+import platform.EventKit.EKEventEditViewController
+import platform.EventKit.EKEventEditViewDelegateProtocol
+import platform.EventKit.EKEventStore
+import platform.Foundation.NSDate
 import platform.Foundation.NSString
 import platform.Foundation.NSURL
 import platform.Foundation.create
+import platform.Foundation.dateWithTimeIntervalSince1970
 import platform.UIKit.UIActivityViewController
 import platform.UIKit.UIAlertAction
 import platform.UIKit.UIAlertActionStyleDefault
@@ -18,8 +26,27 @@ import platform.UIKit.UIViewController
 import platform.UIKit.UIWindow
 import platform.UIKit.UIWindowScene
 import platform.UIKit.popoverPresentationController
+import platform.darwin.NSObject
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
+
+// EKEventEditViewController only keeps a weak reference to its delegate, so this delegate
+// instance must be kept alive from outside for as long as the editor is on screen.
+private class EventEditDelegate(
+    private val onFinished: () -> Unit
+) : NSObject(), EKEventEditViewDelegateProtocol {
+    override fun eventEditViewController(
+        controller: EKEventEditViewController,
+        didCompleteWithAction: EKEventEditViewAction
+    ) {
+        controller.dismissViewControllerAnimated(true, completion = null)
+        onFinished()
+    }
+}
 
 actual class ShareUtils {
+
+    private var activeEventEditDelegate: EventEditDelegate? = null
 
     /**
      * Gets the root view controller using the modern connectedScenes API (iOS 13+),
@@ -167,6 +194,45 @@ actual class ShareUtils {
                 )
             )
             topVC?.presentViewController(alert, animated = true, completion = null)
+        }
+    }
+
+    actual fun addEventToCalendar(title: String, description: String, location: String, startDateMillis: Long, endDateMillis: Long?) {
+        val eventStore = EKEventStore()
+        eventStore.requestAccessToEntityType(EKEntityTypeEvent) { granted, _ ->
+            dispatch_async(dispatch_get_main_queue()) {
+                val topVC = getTopViewController()
+                if (!granted) {
+                    val alert = UIAlertController.alertControllerWithTitle(
+                        title = "No Calendar Access",
+                        message = "Please allow calendar access in Settings to add this event.",
+                        preferredStyle = UIAlertControllerStyleAlert
+                    )
+                    alert.addAction(
+                        UIAlertAction.actionWithTitle("OK", style = UIAlertActionStyleDefault, handler = null)
+                    )
+                    topVC?.presentViewController(alert, animated = true, completion = null)
+                    return@dispatch_async
+                }
+
+                val event = EKEvent.eventWithEventStore(eventStore)
+                event.title = title
+                event.notes = description.ifEmpty { null }
+                event.location = location.ifEmpty { null }
+                event.startDate = NSDate.dateWithTimeIntervalSince1970(startDateMillis / 1000.0)
+                event.endDate = NSDate.dateWithTimeIntervalSince1970((endDateMillis ?: (startDateMillis + 3_600_000L)) / 1000.0)
+                event.calendar = eventStore.defaultCalendarForNewEvents
+
+                val editViewController = EKEventEditViewController()
+                editViewController.eventStore = eventStore
+                editViewController.event = event
+
+                val delegate = EventEditDelegate { activeEventEditDelegate = null }
+                activeEventEditDelegate = delegate
+                editViewController.editViewDelegate = delegate
+
+                topVC?.presentViewController(editViewController, animated = true, completion = null)
+            }
         }
     }
 }

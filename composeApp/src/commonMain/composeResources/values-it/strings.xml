@@ -350,6 +350,7 @@
     <string name="group_delete_delay_one_week">1 settimana dopo l'evento</string>
     <string name="event_created_by">Creato da %1$s</string>
     <string name="event_join">Partecipa</string>
+    <string name="event_add_to_calendar">Aggiungi al calendario</string>
     <string name="event_invite_header">%1$s vuole %2$s al %3$s</string>
     <string name="event_invited_users">Invitati</string>
     <string name="event_invite_friends">Invita amici</string>
