@@ -22,7 +22,9 @@ import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
+import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.email_check_check_emails_snackbar
 import schneaggchatv3mp.composeapp.generated.resources.support_email_verification_body
 import schneaggchatv3mp.composeapp.generated.resources.support_email_verification_subject
 import kotlin.time.Clock
@@ -141,6 +143,10 @@ class EmailVerifiedCheckViewModel(
     var reroutingToChatselector = false
 
     init {
+
+        viewModelScope.launch {
+            SnackbarManager.showMessage(getString(Res.string.email_check_check_emails_snackbar), showTime = 6000)
+        }
 
         applicationScope.launch {
             appRepository.dataSync(reason = "emailVerifiedCheckInit")

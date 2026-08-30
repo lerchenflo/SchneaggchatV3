@@ -40,6 +40,8 @@
     <string name="email_check_verified">Check email verification</string>
     <string name="email_check_problem">Having trouble? Get help</string>
     <string name="email_check_loading_data">Loading your account data ...</string>
+    <string name="email_check_check_emails_snackbar">Verification email has been sent. Please also check your spam folder. This may take up to 2 min</string>
+
 
 
 
