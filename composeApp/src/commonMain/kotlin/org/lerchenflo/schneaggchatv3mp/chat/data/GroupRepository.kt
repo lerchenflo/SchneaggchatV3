@@ -18,21 +18,15 @@ class GroupRepository(
     /**
      * Upsert group and fully replace its members (same pattern as Message + Readers)
      */
-    @Transaction
     suspend fun upsertGroup(group: Group) {
         val groupWithMembersDto = group.toDto()
 
-        database.groupDao().upsertGroup(groupWithMembersDto.group)
-
-        database.groupDao().deleteMembersForGroup(groupWithMembersDto.group.id)
-
-        if (groupWithMembersDto.members.isNotEmpty()) {
-            database.groupDao().upsertMembers(
-                groupWithMembersDto.members.map {
-                    it.copy(groupId = groupWithMembersDto.group.id)
-                }
-            )
-        }
+        database.groupDao().upsertGroupWithMembers(
+            groupWithMembersDto.group,
+            groupWithMembersDto.members.map {
+                it.copy(groupId = groupWithMembersDto.group.id)
+            }
+        )
     }
 
     @Transaction

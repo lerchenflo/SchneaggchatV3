@@ -206,6 +206,16 @@ interface GroupDao {
     @Query("DELETE FROM group_members WHERE groupId = :groupId")
     suspend fun deleteMembersForGroup(groupId: String)
 
+    // Atomic so a concurrent upsert for the same group (e.g. socket GroupChange during a sync) can't interleave delete+insert and leave duplicate member rows.
+    @Transaction
+    suspend fun upsertGroupWithMembers(group: GroupDto, members: List<GroupMemberDto>) {
+        upsertGroup(group)
+        deleteMembersForGroup(group.id)
+        if (members.isNotEmpty()) {
+            upsertMembers(members)
+        }
+    }
+
     @Query("SELECT * FROM `groups` WHERE id = :groupid")
     suspend fun getGroupById(groupid: String?): GroupDto?
 
