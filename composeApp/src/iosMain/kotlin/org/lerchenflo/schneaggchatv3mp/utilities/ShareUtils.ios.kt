@@ -4,12 +4,12 @@ import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGRectMake
-import platform.EventKit.EKEntityTypeEvent
+import platform.EventKit.EKEntityType
 import platform.EventKit.EKEvent
-import platform.EventKit.EKEventEditViewAction
-import platform.EventKit.EKEventEditViewController
-import platform.EventKit.EKEventEditViewDelegateProtocol
 import platform.EventKit.EKEventStore
+import platform.EventKitUI.EKEventEditViewAction
+import platform.EventKitUI.EKEventEditViewController
+import platform.EventKitUI.EKEventEditViewDelegateProtocol
 import platform.Foundation.NSDate
 import platform.Foundation.NSString
 import platform.Foundation.NSURL
@@ -199,7 +199,7 @@ actual class ShareUtils {
 
     actual fun addEventToCalendar(title: String, description: String, location: String, startDateMillis: Long, endDateMillis: Long?) {
         val eventStore = EKEventStore()
-        eventStore.requestAccessToEntityType(EKEntityTypeEvent) { granted, _ ->
+        eventStore.requestAccessToEntityType(EKEntityType.EKEntityTypeEvent) { granted, _ ->
             dispatch_async(dispatch_get_main_queue()) {
                 val topVC = getTopViewController()
                 if (!granted) {
