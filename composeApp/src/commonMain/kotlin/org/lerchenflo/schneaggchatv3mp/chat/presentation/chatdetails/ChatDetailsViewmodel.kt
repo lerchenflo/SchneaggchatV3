@@ -334,9 +334,14 @@ class ChatDetailsViewmodel(
         }
     }
 
-    fun deleteConnectedEvent(eventId: String) {
+    fun detachConnectedEvent(eventId: String, deleteGroup: Boolean, deleteEvent: Boolean) {
         viewModelScope.launch {
-            val success = appRepository.deleteEvent(eventId)
+            val success = appRepository.detachEvent(
+                eventId = eventId,
+                groupId = chatId,
+                deleteGroup = deleteGroup,
+                deleteEvent = deleteEvent,
+            )
             if (!success) {
                 SnackbarManager.showMessage(getString(Res.string.event_delete_failed))
             }

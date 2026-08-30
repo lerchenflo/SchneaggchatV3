@@ -1,1 +1,2 @@
 - [SchneaggchatV3 String Resources](project_overview.md) — English strings.xml location, key naming patterns, feature organization, and Compose Resources workflow
+- [Events Birthdays Calendar Feature](events_birthdays_audit_2026-08-30.md) — 5 keys extracted and verified for calendar navigation, empty states, and birthday label

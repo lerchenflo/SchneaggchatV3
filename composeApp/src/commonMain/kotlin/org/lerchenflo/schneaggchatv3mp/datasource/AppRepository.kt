@@ -698,7 +698,7 @@ class AppRepository(
         type: EventType,
         title: String,
         description: String,
-        groupId: String,
+        createGroup: Boolean,
         location: LatLong?,
         startDate: Long,
         closeDate: Long?,
@@ -714,7 +714,6 @@ class AppRepository(
                 type = type,
                 title = title,
                 description = description,
-                groupId = groupId,
                 location = location,
                 startDate = startDate,
                 closeDate = closeDate,
@@ -722,6 +721,7 @@ class AppRepository(
                 visibility = visibility,
                 maxUsers = maxUsers,
                 groupDeleteDelay = groupDeleteDelay,
+                createGroup = createGroup,
             ),
             profilePic = profilePic,
         )
@@ -776,17 +776,20 @@ class AppRepository(
     }
 
     /**
-     * Deletes an event. Optionally also deletes its connected group chat.
-     * [groupId] only matters when [deleteConnectedGroup] is true - the local group delete here is
-     * just an optimistic fast path, the server's own group deletion + notifyGroupUpdate / group
-     * sync converge on the same result regardless.
+     * Breaks the event <-> group link. Both flags false detaches only - the event and its group
+     * both survive, and the local DB catches up via the `eventchange` WS broadcast. [groupId] only
+     * matters when [deleteGroup] is true - the local group delete here is just an optimistic fast
+     * path, the server's own group deletion + notifyGroupUpdate / group sync converge on the same
+     * result regardless.
      */
-    suspend fun deleteEvent(eventId: String, groupId: String? = null, deleteConnectedGroup: Boolean = false): Boolean {
-        return when (networkUtils.deleteEvent(eventId, deleteConnectedGroup)) {
+    suspend fun detachEvent(eventId: String, groupId: String? = null, deleteGroup: Boolean = false, deleteEvent: Boolean = false): Boolean {
+        return when (networkUtils.detachEvent(eventId, deleteGroup, deleteEvent)) {
             is NetworkResult.Error<*> -> false
             is NetworkResult.Success<*> -> {
-                eventRepository.deleteEvent(eventId)
-                if (deleteConnectedGroup && groupId != null) {
+                if (deleteEvent) {
+                    eventRepository.deleteEvent(eventId)
+                }
+                if (deleteGroup && groupId != null) {
                     groupRepository.deleteGroup(groupId)
                 }
                 true

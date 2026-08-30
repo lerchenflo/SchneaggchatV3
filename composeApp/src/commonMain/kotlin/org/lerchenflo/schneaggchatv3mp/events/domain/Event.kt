@@ -15,7 +15,7 @@ data class Event(
     val title: String,
     val description: String,
 
-    val groupId: String, //Group connected to this event
+    val groupId: String?, //Group connected to this event, null = event without a group chat
     val location: LatLong?, //Optional Location
     val startDate: Long,
     val closeDate: Long?,
@@ -53,7 +53,7 @@ fun newEvent(creatorId: String, location: LatLong? = null): Event {
         type = EventType.OTHER,
         title = "",
         description = "",
-        groupId = "",
+        groupId = null,
         location = location,
         startDate = defaultStartDate,
         closeDate = null,

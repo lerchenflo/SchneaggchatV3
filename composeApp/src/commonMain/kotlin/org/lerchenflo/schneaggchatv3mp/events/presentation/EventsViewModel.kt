@@ -35,6 +35,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.millisToLocalDate
 import org.lerchenflo.schneaggchatv3mp.utilities.monthDayKey
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.event_and_group_created
+import schneaggchatv3mp.composeapp.generated.resources.event_created
 import schneaggchatv3mp.composeapp.generated.resources.event_delete_failed
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
@@ -145,7 +146,7 @@ class EventsViewModel(
                         type = event.type,
                         title = event.title,
                         description = event.description,
-                        groupId = "",
+                        createGroup = action.createGroup,
                         location = event.location,
                         startDate = event.startDate,
                         closeDate = event.closeDate,
@@ -158,7 +159,12 @@ class EventsViewModel(
 
                     //Newly created event
                     if (eventid == null) {
-                        SnackbarManager.showMessage(getString(Res.string.event_and_group_created))
+                        SnackbarManager.showMessage(
+                            getString(
+                                if (action.createGroup) Res.string.event_and_group_created
+                                else Res.string.event_created
+                            )
+                        )
                     }
 
                     _state.update {
@@ -206,10 +212,11 @@ class EventsViewModel(
 
             is EventsAction.OnDeleteEvent -> {
                 viewModelScope.launch {
-                    val success = appRepository.deleteEvent(
+                    val success = appRepository.detachEvent(
                         eventId = action.event.id,
                         groupId = action.event.groupId,
-                        deleteConnectedGroup = action.deleteGroup,
+                        deleteGroup = action.deleteGroup,
+                        deleteEvent = action.deleteEvent,
                     )
                     if (!success) {
                         SnackbarManager.showMessage(getString(Res.string.event_delete_failed))
