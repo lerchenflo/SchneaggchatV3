@@ -193,8 +193,7 @@ fun EventEditPopup(
     ) {
         Column(
             modifier = modifier
-                .fillMaxWidth(0.95f)
-                .fillMaxHeight(0.9f)
+                .fillMaxSize()
                 .clip(RoundedCornerShape(28.dp))
                 .background(MaterialTheme.colorScheme.background)
                 .verticalScroll(rememberScrollState())
