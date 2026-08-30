@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalTime::class)
+@file:OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
 
 package org.lerchenflo.schneaggchatv3mp.datasource
 
@@ -156,6 +156,8 @@ import schneaggchatv3mp.composeapp.generated.resources.usersync
 import kotlin.collections.map
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 //Message search in the chat selector: how much the user has to type before the message table is
 //scanned, and how many hits are kept so a common word cannot build a list of thousands of rows.
@@ -1693,14 +1695,27 @@ class AppRepository(
 
     /**
      * @param localpk Local pk, only pass if already in db
+     * @param clientMessageId Send idempotency key of an already-queued message. REQUIRED when
+     * [localpk] is non-zero (a resend) - reusing the row's original key is the entire mechanism
+     * that lets the server recognize a retry; silently minting a new one here for a resend would
+     * defeat it. Never pass this for a brand-new message - one is minted below.
      *
      */
-    suspend fun sendMessage(ownId: String, messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long = 0){
+    suspend fun sendMessage(ownId: String, messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long = 0, clientMessageId: String? = null){
 
         sendMessageLock.withLock {
             var localpkintern = localpk
 
             val senddate = getCurrentTimeMillisString()
+            val clientMessageIdIntern = if (localpkintern != 0L) { //Already upserted to db
+                requireNotNull(clientMessageId) {
+                    "Resending an already-queued message (localPK=$localpkintern) must reuse its stored clientMessageId"
+                }
+            } else {
+                //Generate random uuid per message for server side checking, pass when sending.
+                //Randomuuid because localpk will be reset on db drop, invisible despawned messages when multi device user
+                Uuid.random().toString()
+            }
 
             //Interne message macha die ned alles hot
             val messageDto = when(content) {
@@ -1742,7 +1757,8 @@ class AppRepository(
                         answerId = answerid,
                         sent = false,
                         myMessage = true,
-                        readByMe = true
+                        readByMe = true,
+                        clientMessageId = clientMessageIdIntern
                     )
                 }
                 is TextContent -> {
@@ -1760,7 +1776,8 @@ class AppRepository(
                         answerId = answerid,
                         sent = false,
                         myMessage = true,
-                        readByMe = true
+                        readByMe = true,
+                        clientMessageId = clientMessageIdIntern
                     )
                 }
 
@@ -1780,7 +1797,8 @@ class AppRepository(
                         answerId = answerid,
                         sent = false,
                         myMessage = true,
-                        readByMe = true
+                        readByMe = true,
+                        clientMessageId = clientMessageIdIntern
                     )
                 }
 
@@ -1800,7 +1818,8 @@ class AppRepository(
                         answerId = answerid,
                         sent = false,
                         myMessage = true,
-                        readByMe = true
+                        readByMe = true,
+                        clientMessageId = clientMessageIdIntern
                     )
                 }
             }
@@ -1819,7 +1838,8 @@ class AppRepository(
                         empfaenger = empfaenger,
                         gruppe = gruppe,
                         content = content.poll,
-                        answerid = answerid
+                        answerid = answerid,
+                        clientMessageId = clientMessageIdIntern
                     )
                 }
                 is TextContent -> {
@@ -1828,7 +1848,8 @@ class AppRepository(
                         empfaenger = empfaenger,
                         gruppe = gruppe,
                         content = content.message,
-                        answerid = answerid
+                        answerid = answerid,
+                        clientMessageId = clientMessageIdIntern
                     )
                 }
 
@@ -1838,7 +1859,8 @@ class AppRepository(
                         gruppe = gruppe,
                         image = content.image,
                         text = content.text,
-                        answerid = answerid
+                        answerid = answerid,
+                        clientMessageId = clientMessageIdIntern
                     )
                 }
 
@@ -1847,7 +1869,8 @@ class AppRepository(
                         empfaenger = empfaenger,
                         gruppe = gruppe,
                         audio = content.audio,
-                        answerid = answerid
+                        answerid = answerid,
+                        clientMessageId = clientMessageIdIntern
                     )
                 }
             }
@@ -2024,7 +2047,8 @@ class AppRepository(
                     answerid = m.answerId,
                     localpk = m.localPK,
                     messageId = null,
-                    ownId = ownId
+                    ownId = ownId,
+                    clientMessageId = m.clientMessageId
                 )
 
 
