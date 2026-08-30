@@ -703,6 +703,8 @@
     <string name="poll_option_delete_confirm_title">Delete this option?</string>
     <string name="poll_option_delete_confirm_text">"%1$s" and its votes will be removed. This cannot be undone.</string>
 
+    <string name="poll_cannot_vote_on_unsent">You can not vote on an unsent poll</string>
+
 
 
 

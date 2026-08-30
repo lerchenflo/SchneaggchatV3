@@ -17,6 +17,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.getString
+import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
@@ -48,6 +49,7 @@ class EventsViewModel(
     private val groupRepository: GroupRepository,
     private val preferenceManager: Preferencemanager,
     private val pictureManager: PictureManager,
+    private val applicationScope: ApplicationScope,
 
     private val initialEntryId: String? = null,
     private val initialEntry: Event? = null
@@ -200,7 +202,9 @@ class EventsViewModel(
                         )
 
                         if (groupId != null) {
-                            appRepository.dataSync("Started after joining event to get messages")
+                            applicationScope.launch { //Launch in app scope to run while navigating away
+                                appRepository.dataSync("Started after joining event to get messages")
+                            }
                             _state.update { it.copy(selectedEvent = null) }
                             navigator.navigate(Route.Chat(chatId = groupId, isGroup = true))
                         }

@@ -189,6 +189,7 @@ val sharedmodule = module{
             groupRepository = get(),
             preferenceManager = get(),
             pictureManager = get(),
+            applicationScope = get(),
             initialEntryId = initialEntryId,
             initialEntry = initialEntry
         )
