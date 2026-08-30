@@ -66,6 +66,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventDeleteDialog
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.QuotedText
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.DeleteButton
@@ -88,7 +89,6 @@ import schneaggchatv3mp.composeapp.generated.resources.camera
 import schneaggchatv3mp.composeapp.generated.resources.change_group_name
 import schneaggchatv3mp.composeapp.generated.resources.change_nickname
 import schneaggchatv3mp.composeapp.generated.resources.choose_image_source
-import schneaggchatv3mp.composeapp.generated.resources.confirm_delete_event
 import schneaggchatv3mp.composeapp.generated.resources.confirm_delete_group_timer
 import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_friend
@@ -467,13 +467,15 @@ fun ChatDetails(
                         ?.profilePictureUrl
 
                     if (showDeleteEventConfirmation) {
-                        ConfirmationDialog(
-                            message = stringResource(Res.string.confirm_delete_event),
-                            onConfirm = {
-                                chatdetailsViewmodel.deleteConnectedEvent(event.id)
-                            },
-                            onDismiss = {
-                                showDeleteEventConfirmation = false
+                        EventDeleteDialog(
+                            hasGroup = true, // this card only shows for an event with a group - this one
+                            onDismiss = { showDeleteEventConfirmation = false },
+                            onConfirm = { deleteGroup, deleteEvent ->
+                                chatdetailsViewmodel.detachConnectedEvent(
+                                    eventId = event.id,
+                                    deleteGroup = deleteGroup,
+                                    deleteEvent = deleteEvent,
+                                )
                             }
                         )
                     }

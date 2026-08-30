@@ -57,7 +57,8 @@ data class Message(
     var senderColor: Int = 0,
     var readers : List<MessageReader>,
     var reactions: List<Reaction> = emptyList(),
-    var version: Long = 0L
+    var version: Long = 0L,
+    var clientMessageId: String? = null,
 ) {
     fun isPicture(): Boolean = msgType == MessageType.IMAGE
     fun isAudio(): Boolean = msgType == MessageType.AUDIO
@@ -159,6 +160,7 @@ fun MessageWithReadersDto.toMessage(): Message = Message(
     },
     reactions = this.messageDto.reactions,
     version = this.messageDto.version,
+    clientMessageId = this.messageDto.clientMessageId,
 )
 
 /** Domain -> DTO */
@@ -182,7 +184,8 @@ fun Message.toDto(): MessageWithReadersDto = MessageWithReadersDto(
         myMessage = this.myMessage,
         readByMe = this.readByMe,
         reactions = this.reactions,
-        version = this.version
+        version = this.version,
+        clientMessageId = this.clientMessageId,
     ),
     readers = this.readers.map { reader ->
         reader.toDto()

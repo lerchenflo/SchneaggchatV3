@@ -45,6 +45,7 @@ import schneaggchatv3mp.composeapp.generated.resources.event_closes_with_date
 import schneaggchatv3mp.composeapp.generated.resources.event_invite_header
 import schneaggchatv3mp.composeapp.generated.resources.event_invited_users
 import schneaggchatv3mp.composeapp.generated.resources.event_join
+import schneaggchatv3mp.composeapp.generated.resources.event_no_group
 import kotlin.time.Clock
 
 // Popup for a guest looking at someone else's event — everything here is read-only, so an
@@ -190,20 +191,28 @@ fun EventJoinPopup(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Big centered join button, small cancel underneath
+            // Big centered join button, small cancel underneath - no group means nothing to join
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                NormalButton(
-                    text = stringResource(Res.string.event_join),
-                    onClick = { onJoin(event.id) },
-                    primary = true,
-                    isLoading = isJoining,
-                    modifier = Modifier
-                        .fillMaxWidth(0.75f)
-                        .height(52.dp)
-                )
+                if (event.groupId != null) {
+                    NormalButton(
+                        text = stringResource(Res.string.event_join),
+                        onClick = { onJoin(event.id) },
+                        primary = true,
+                        isLoading = isJoining,
+                        modifier = Modifier
+                            .fillMaxWidth(0.75f)
+                            .height(52.dp)
+                    )
+                } else {
+                    Text(
+                        text = stringResource(Res.string.event_no_group),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -231,7 +240,7 @@ private fun EventJoinPopupPreview() {
                 type = EventType.OTHER,
                 title = "Lets go shopping",
                 description = "bla bla bla",
-                groupId = "",
+                groupId = null,
                 location = null,
                 startDate = Clock.System.now().toEpochMilliseconds(),
                 closeDate = null,

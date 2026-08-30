@@ -8,6 +8,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import dev.darkokoa.datetimewheelpicker.core.format.DateFormatter
+import dev.darkokoa.datetimewheelpicker.core.format.DateOrder
+import dev.darkokoa.datetimewheelpicker.core.format.MonthDisplayStyle
+import dev.darkokoa.datetimewheelpicker.core.format.dateFormatter
 import kotlinx.coroutines.delay
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -111,6 +115,15 @@ fun iso8601DateFormatter(
     }
 
 }
+
+/** WheelDatePicker [DateFormatter] rendering day/month/year zero-padded numerals in dd.MM.yyyy order. */
+fun germanNumericDateFormatter(): DateFormatter = dateFormatter(
+    dateOrder = DateOrder.DMY,
+    monthDisplayStyle = MonthDisplayStyle.NUMERIC,
+    formatDay = { it.toString().padStart(2, '0') },
+    formatMonth = { month, _ -> month.number.toString().padStart(2, '0') },
+    formatYear = { it.toString() }
+)
 
 @OptIn(ExperimentalTime::class)
 fun millisToDuration(

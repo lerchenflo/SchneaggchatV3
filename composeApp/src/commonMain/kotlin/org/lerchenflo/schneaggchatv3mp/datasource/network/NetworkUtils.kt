@@ -108,6 +108,11 @@ class NetworkUtils(
             SessionCache.updateOnline(true)
 
             if (response.status.isSuccess()) {
+                // response.body() deserializes inside this try - a socket drop or serialization
+                // failure while reading a successful reply lands in a catch below and comes back
+                // as an Error, even though the server already committed the write. Send calls
+                // rely on the clientMessageId idempotency key (see AppRepository.sendMessage) to
+                // make the inevitable retry safe rather than trying to avoid this case here.
                 NetworkResult.Success(response.body())
             } else {
                 NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
@@ -987,6 +992,7 @@ class NetworkUtils(
         val msgType: MessageType,
         val content: String,
         val answerId: String?,
+        val clientMessageId: String,
     )
 
     @Serializable
@@ -997,7 +1003,8 @@ class NetworkUtils(
         val groupMessage: Boolean,
         val msgType: MessageType,
         val content: String,
-        val answerId: String?
+        val answerId: String?,
+        val clientMessageId: String,
     )
     @Serializable
     data class AudioMessageRequest(
@@ -1007,7 +1014,8 @@ class NetworkUtils(
         val groupMessage: Boolean,
         val msgType: MessageType,
         //val content: String,
-        val answerId: String?
+        val answerId: String?,
+        val clientMessageId: String,
     )
 
     @Serializable
@@ -1016,7 +1024,8 @@ class NetworkUtils(
         val groupMessage: Boolean,
         val msgType: MessageType,
         val answerId: String?,
-        val poll: PollCreateRequest
+        val poll: PollCreateRequest,
+        val clientMessageId: String,
     )
 
     @Serializable
@@ -1121,7 +1130,7 @@ class NetworkUtils(
         val reactedAt: Long = 0L,
     )
 
-    suspend fun sendTextMessageToServer(messageId: String?, empfaenger: String, gruppe: Boolean, content: String, answerid: String?) : NetworkResult<MessageResponse, NetworkError> {
+    suspend fun sendTextMessageToServer(messageId: String?, empfaenger: String, gruppe: Boolean, content: String, answerid: String?, clientMessageId: String) : NetworkResult<MessageResponse, NetworkError> {
         val messageRequest = MessageRequest(
             messageId = messageId,
             receiverId = empfaenger,
@@ -1129,6 +1138,7 @@ class NetworkUtils(
             msgType = MessageType.TEXT,
             content = content,
             answerId = answerid,
+            clientMessageId = clientMessageId,
         )
 
         println("MessageRequest: $messageRequest")
@@ -1144,7 +1154,8 @@ class NetworkUtils(
         gruppe: Boolean,
         image: ByteArray,
         text: String,
-        answerid: String?
+        answerid: String?,
+        clientMessageId: String
     ): NetworkResult<MessageResponse, NetworkError> {
 
         val messageRequest = ImageMessageRequest(
@@ -1154,6 +1165,7 @@ class NetworkUtils(
             msgType = MessageType.IMAGE,
             content = text,
             answerId = answerid,
+            clientMessageId = clientMessageId,
         )
 
         return safePostMultipart(
@@ -1182,7 +1194,8 @@ class NetworkUtils(
         empfaenger: String,
         gruppe: Boolean,
         audio: ByteArray,
-        answerid: String?
+        answerid: String?,
+        clientMessageId: String
     ): NetworkResult<MessageResponse, NetworkError> {
 
         val messageRequest = AudioMessageRequest(
@@ -1191,6 +1204,7 @@ class NetworkUtils(
             groupMessage = gruppe,
             msgType = MessageType.AUDIO,
             answerId = answerid,
+            clientMessageId = clientMessageId,
         )
 
         return safePostMultipart(
@@ -1216,13 +1230,14 @@ class NetworkUtils(
     }
 
 
-    suspend fun sendPollMessageToServer(empfaenger: String, gruppe: Boolean, content: PollCreateRequest, answerid: String?) : NetworkResult<MessageResponse, NetworkError> {
+    suspend fun sendPollMessageToServer(empfaenger: String, gruppe: Boolean, content: PollCreateRequest, answerid: String?, clientMessageId: String) : NetworkResult<MessageResponse, NetworkError> {
         val pollRequest = PollMessageRequest(
             receiverId = empfaenger,
             groupMessage = gruppe,
             msgType = MessageType.POLL,
             answerId = answerid,
-            poll = content
+            poll = content,
+            clientMessageId = clientMessageId,
         )
 
         println("PollMessageRequest: $pollRequest")
@@ -1381,8 +1396,8 @@ class NetworkUtils(
         )
     }
 
-    suspend fun deleteEvent(eventId: String, deleteConnectedGroup: Boolean = false): NetworkResult<Unit, NetworkError> {
-        return safeDelete(endpoint = "/events/delete?eventid=$eventId&deleteconnectedgroup=$deleteConnectedGroup")
+    suspend fun detachEvent(eventId: String, deleteGroup: Boolean = false, deleteEvent: Boolean = false): NetworkResult<Unit, NetworkError> {
+        return safeDelete(endpoint = "/events/delete?eventid=$eventId&deletegroup=$deleteGroup&deleteevent=$deleteEvent")
     }
 
     // Location data itself is now pushed/pulled over the WebSocket (see SocketConnectionMessage:

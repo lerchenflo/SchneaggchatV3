@@ -49,13 +49,13 @@ sealed interface EventsAction {
 
     data object OnEventPopupDismiss: EventsAction
 
-    data class OnSaveEvent(val event: Event, val typeIcon: ImageBitmap?): EventsAction
+    data class OnSaveEvent(val event: Event, val typeIcon: ImageBitmap?, val createGroup: Boolean): EventsAction
 
     data class OnJoinEvent(val eventId: String): EventsAction
 
     data class OnPickLocationClick(val currentEventState: Event): EventsAction
 
-    data class OnDeleteEvent(val event: Event, val deleteGroup: Boolean): EventsAction
+    data class OnDeleteEvent(val event: Event, val deleteGroup: Boolean, val deleteEvent: Boolean): EventsAction
 
     data class OnViewModeChange(val mode: EventsViewMode): EventsAction
 

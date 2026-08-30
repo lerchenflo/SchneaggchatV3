@@ -222,12 +222,6 @@ fun UserInfoCard(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                NormalButton(
-                    text = stringResource(Res.string.cancel),
-                    onClick = onDismiss,
-                    primary = false
-                )
-
                 location?.let { userLocation ->
                     val shareUtils = koinInject<ShareUtils>()
                     NormalButton(

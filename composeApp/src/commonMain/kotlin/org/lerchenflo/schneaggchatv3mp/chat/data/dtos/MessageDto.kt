@@ -60,6 +60,11 @@ data class MessageDto(
 
     var version: Long = 0L,
 
+    // Send idempotency key, generated once when the message is first queued and reused on
+    // every retry (offline resend, lost response) so the server can dedup a retried send
+    // instead of creating a second message. Never set on a message we received.
+    var clientMessageId: String? = null,
+
     ) {
     @Ignore
     var senderAsString: String = ""

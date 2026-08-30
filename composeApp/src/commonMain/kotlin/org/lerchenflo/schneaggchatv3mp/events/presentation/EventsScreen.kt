@@ -214,12 +214,12 @@ fun EventsScreen(
             if (selectedEvent.creatorId == ownId) {
                 EventEditPopup(
                     event = selectedEvent,
-                    onSave = { event, typeIcon -> onAction(EventsAction.OnSaveEvent(event, typeIcon)) },
+                    onSave = { event, typeIcon, createGroup -> onAction(EventsAction.OnSaveEvent(event, typeIcon, createGroup)) },
                     onDismiss = { onAction(EventsAction.OnEventPopupDismiss) },
                     friendsById = state.friendsById,
                     groups = state.groups,
                     onPickLocation = { onAction(EventsAction.OnPickLocationClick(it)) },
-                    onDelete = { deleteGroup -> onAction(EventsAction.OnDeleteEvent(event = selectedEvent, deleteGroup = deleteGroup)) },
+                    onDelete = { deleteGroup, deleteEvent -> onAction(EventsAction.OnDeleteEvent(event = selectedEvent, deleteGroup = deleteGroup, deleteEvent = deleteEvent)) },
                     isMobile = state.isMobile,
                 )
             } else {

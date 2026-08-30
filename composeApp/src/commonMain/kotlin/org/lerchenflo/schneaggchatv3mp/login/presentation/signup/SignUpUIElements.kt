@@ -27,6 +27,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.utilities.germanNumericDateFormatter
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.create_account
@@ -117,6 +118,7 @@ fun BirthdatePickerPopup(
                 startDate = selectedDate,
                 minDate = LocalDate(1900, 1, 1),
                 maxDate = endOfCurrentYear,
+                dateFormatter = germanNumericDateFormatter(),
                 rowCount = 5,
                 textColor = MaterialTheme.colorScheme.onSurface,
                 selectorProperties = WheelPickerDefaults.selectorProperties(

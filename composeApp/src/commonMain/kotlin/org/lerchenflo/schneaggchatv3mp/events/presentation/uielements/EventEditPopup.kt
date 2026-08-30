@@ -82,9 +82,8 @@ import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.delete_event
 import schneaggchatv3mp.composeapp.generated.resources.error_event_max_users_invalid
 import schneaggchatv3mp.composeapp.generated.resources.error_event_title_must_not_be_empty
-import schneaggchatv3mp.composeapp.generated.resources.event_delete_only
-import schneaggchatv3mp.composeapp.generated.resources.event_delete_warning_message
-import schneaggchatv3mp.composeapp.generated.resources.event_delete_with_group
+import schneaggchatv3mp.composeapp.generated.resources.event_create_group_info
+import schneaggchatv3mp.composeapp.generated.resources.event_create_group_label
 import schneaggchatv3mp.composeapp.generated.resources.event_description_label
 import schneaggchatv3mp.composeapp.generated.resources.event_group_delete_label
 import schneaggchatv3mp.composeapp.generated.resources.event_has_end_time
@@ -116,12 +115,12 @@ private const val EVENT_MAX_USERS_LIMIT = 1000
 @Composable
 fun EventEditPopup(
     event: Event,
-    onSave: (Event, ImageBitmap?) -> Unit,
+    onSave: (Event, ImageBitmap?, createGroup: Boolean) -> Unit,
     onDismiss: () -> Unit,
     friendsById: Map<String, User> = emptyMap(),
     groups: List<Group> = emptyList(),
     onPickLocation: (Event) -> Unit = {},
-    onDelete: (deleteGroup: Boolean) -> Unit = {},
+    onDelete: (deleteGroup: Boolean, deleteEvent: Boolean) -> Unit = { _, _ -> },
     isMobile: Boolean = true,
     modifier: Modifier = Modifier
 ) {
@@ -138,6 +137,11 @@ fun EventEditPopup(
     // overwrite a group picture the members may have set manually since.
     val isNewEvent = event.id == ""
     val typeIconBitmap = if (isNewEvent) rememberEventTypeIconBitmap(currentEvent.type) else null
+
+    // Only shown while the event has no group yet. Defaults to on for a brand-new event (matches
+    // the previous always-create-a-group behavior) and off for an existing event that was
+    // detached from its group - re-adding one is then an explicit choice.
+    var createGroup by remember(event) { mutableStateOf(isNewEvent) }
 
     // Separate toggle state so we can flip "has end date" off without losing the picker's
     // last-set value if the user re-enables it (avoids re-deriving a default every toggle)
@@ -189,8 +193,7 @@ fun EventEditPopup(
     ) {
         Column(
             modifier = modifier
-                .fillMaxWidth(0.95f)
-                .fillMaxHeight(0.9f)
+                .fillMaxSize()
                 .clip(RoundedCornerShape(28.dp))
                 .background(MaterialTheme.colorScheme.background)
                 .verticalScroll(rememberScrollState())
@@ -420,62 +423,80 @@ fun EventEditPopup(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Group auto-delete delay (how long after start/end the connected group chat gets deleted)
-            Text(
-                text = stringResource(Res.string.event_group_delete_label),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyMedium
-            )
+            // Only offered while there is no group yet - an existing group can't be removed here,
+            // only detached via the delete dialog.
+            if (currentEvent.groupId == null) {
+                SettingsSwitch(
+                    modifier = Modifier.fillMaxWidth(),
+                    titletext = stringResource(Res.string.event_create_group_label),
+                    infotext = stringResource(Res.string.event_create_group_info),
+                    switchchecked = createGroup,
+                    onSwitchChange = { createGroup = it },
+                    icon = null
+                )
 
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Box {
-                OutlinedButton(
-                    onClick = { groupDeleteDelayDropdownExpanded = true },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Schedule,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(currentEvent.groupDeleteDelay.labelRes()),
-                        modifier = Modifier.weight(1f)
-                    )
-                    Icon(
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-
-                DropdownMenu(
-                    expanded = groupDeleteDelayDropdownExpanded,
-                    onDismissRequest = { groupDeleteDelayDropdownExpanded = false }
-                ) {
-                    GroupDeleteDelay.entries.forEach { entry ->
-                        val isSelected = entry == currentEvent.groupDeleteDelay
-                        val tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = stringResource(entry.labelRes()),
-                                    color = tint,
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            },
-                            onClick = {
-                                currentEvent = currentEvent.copy(groupDeleteDelay = entry)
-                                groupDeleteDelayDropdownExpanded = false
-                            }
-                        )
-                    }
-                }
+                Spacer(modifier = Modifier.height(12.dp))
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            // Group auto-delete delay (how long after start/end the connected group chat gets deleted)
+            // - meaningless without a group, so hidden unless one exists or is about to be created.
+            if (createGroup || currentEvent.groupId != null) {
+                Text(
+                    text = stringResource(Res.string.event_group_delete_label),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Box {
+                    OutlinedButton(
+                        onClick = { groupDeleteDelayDropdownExpanded = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Schedule,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(currentEvent.groupDeleteDelay.labelRes()),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = groupDeleteDelayDropdownExpanded,
+                        onDismissRequest = { groupDeleteDelayDropdownExpanded = false }
+                    ) {
+                        GroupDeleteDelay.entries.forEach { entry ->
+                            val isSelected = entry == currentEvent.groupDeleteDelay
+                            val tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = stringResource(entry.labelRes()),
+                                        color = tint,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                },
+                                onClick = {
+                                    currentEvent = currentEvent.copy(groupDeleteDelay = entry)
+                                    groupDeleteDelayDropdownExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+            }
 
             // Max participants (optional cap on how many people can join)
             SettingsSwitch(
@@ -637,7 +658,7 @@ fun EventEditPopup(
                         maxUsersError = maxUsersInvalid
 
                         if (!titleError && !maxUsersInvalid) {
-                            onSave(currentEvent, typeIconBitmap)
+                            onSave(currentEvent, typeIconBitmap, createGroup)
                         }
                     },
                     primary = false,
@@ -647,28 +668,11 @@ fun EventEditPopup(
         }
     }
 
-    // Delete confirmation - three-way choice, so the extra actions live inside confirmButton
-    // instead of the shared two-button ConfirmationDialog composable.
     if (showDeleteWarning) {
-        AlertDialog(
-            onDismissRequest = { showDeleteWarning = false },
-            title = { Text(text = stringResource(Res.string.delete_event)) },
-            text = { Text(text = stringResource(Res.string.event_delete_warning_message)) },
-            confirmButton = {
-                Column {
-                    TextButton(onClick = { showDeleteWarning = false; onDelete(false) }) {
-                        Text(text = stringResource(Res.string.event_delete_only))
-                    }
-                    TextButton(onClick = { showDeleteWarning = false; onDelete(true) }) {
-                        Text(text = stringResource(Res.string.event_delete_with_group))
-                    }
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteWarning = false }) {
-                    Text(text = stringResource(Res.string.cancel))
-                }
-            }
+        EventDeleteDialog(
+            hasGroup = currentEvent.groupId != null,
+            onDismiss = { showDeleteWarning = false },
+            onConfirm = { deleteGroup, deleteEvent -> onDelete(deleteGroup, deleteEvent) }
         )
     }
 
@@ -887,7 +891,7 @@ private fun EventEditPopupPreview() {
                 type = EventType.OTHER,
                 title = "Lets go shopping",
                 description = "bla bla bla",
-                groupId = "",
+                groupId = null,
                 location = null,
                 startDate = Clock.System.now().toEpochMilliseconds(),
                 closeDate = null,
@@ -898,7 +902,7 @@ private fun EventEditPopupPreview() {
                 updatedBy = "awdawd",
                 creatorName = "Flo"
             ),
-            onSave = { _, _ -> },
+            onSave = { _, _, _ -> },
             onDismiss = { }
         )
     }
