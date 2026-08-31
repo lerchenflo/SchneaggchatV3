@@ -27,8 +27,6 @@ import kotlinx.io.IOException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
-import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
@@ -73,12 +71,6 @@ class NetworkUtils(
 ) {
 
 
-    private fun setOffline() {
-        if (AppLifecycleManager.isAppInForeground) {
-            SessionCache.updateOnline(false)
-        }
-    }
-
     // Base methods that return HttpResponse
     private suspend inline fun <reified T> get(endpoint: String): HttpResponse {
         return httpClient.get(preferenceManager.buildServerUrl(endpoint))
@@ -107,7 +99,6 @@ class NetworkUtils(
     ): NetworkResult<R, NetworkingError> {
         return try {
             val response = block()
-            SessionCache.updateOnline(true)
 
             if (response.status.isSuccess()) {
                 // response.body() deserializes inside this try - a socket drop or serialization
@@ -120,22 +111,18 @@ class NetworkUtils(
                 NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
             }
         } catch (e: UnresolvedAddressException) {
-            println("Going offline: DNS resolution failed - ${e.message}")
-            setOffline()
+            println("DNS resolution failed - ${e.message}")
             NetworkResult.Error(NetworkingError.NoInternetConnection)
         } catch (e: ConnectTimeoutException) {
-            println("Going offline: Connection timeout - ${e.message}")
-            setOffline()
+            println("Connection timeout - ${e.message}")
             NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: HttpRequestTimeoutException) {
-            println("Going offline: HTTP request timeout - ${e.message}")
-            setOffline()
+            println("HTTP request timeout - ${e.message}")
             NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: IOException) {
             // Covers SocketTimeoutException, UnknownHostException, etc. on JVM/Android
-            //println("Going offline: IO exception - ${e.message}")
+            //println("IO exception - ${e.message}")
             //e.printStackTrace()
-            setOffline()
             NetworkResult.Error(NetworkingError.NoInternetConnection)
         } catch (e: SerializationException) {
             println("Serialization error (staying online): ${e.message}")
@@ -149,8 +136,7 @@ class NetworkUtils(
             val isNetworkingError = isNetworkException(e)
             println("Is network connection error: $isNetworkingError: ${e.message}")
             if (isNetworkingError) {
-                println("Going offline: Platform network exception - ${e.message}")
-                setOffline()
+                println("Platform network exception - ${e.message}")
                 NetworkResult.Error(NetworkingError.NoInternetConnection)
             } else {
                 println("Unknown exception (staying online): ${e.message}")
@@ -379,7 +365,6 @@ class NetworkUtils(
         } catch (e: SerializationException) {
             NetworkResult.Error(NetworkingError.SerializationError())
         } catch (e: IOException) { // This catches UnknownHostException too
-            setOffline()
             NetworkResult.Error(NetworkingError.NoInternetConnection)
         }catch (e: Exception) {
             currentCoroutineContext().ensureActive()
@@ -695,21 +680,16 @@ class NetworkUtils(
                 NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
             }
         } catch (e: UnresolvedAddressException) {
-            setOffline()
             NetworkResult.Error(NetworkingError.NoInternetConnection)
         } catch (e: HttpRequestTimeoutException) {
-            setOffline()
             NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: SocketTimeoutException) {
-            setOffline()
             NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: ConnectTimeoutException) {
-            setOffline()
             NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: SerializationException) {
             NetworkResult.Error(NetworkingError.SerializationError(message = e.message))
         } catch (e: IOException) {
-            setOffline()
             NetworkResult.Error(NetworkingError.NoInternetConnection)
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
@@ -862,7 +842,6 @@ class NetworkUtils(
         } catch (e: SerializationException) {
             NetworkResult.Error(NetworkingError.SerializationError())
         } catch (e: IOException) { // This catches UnknownHostException too
-            setOffline()
             NetworkResult.Error(NetworkingError.NoInternetConnection)
         }catch (e: Exception) {
             currentCoroutineContext().ensureActive()
@@ -903,21 +882,16 @@ class NetworkUtils(
                 NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
             }
         } catch (e: UnresolvedAddressException) {
-            setOffline()
             NetworkResult.Error(NetworkingError.NoInternetConnection)
         } catch (e: HttpRequestTimeoutException) {
-            setOffline()
             NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: SocketTimeoutException) {
-            setOffline()
             NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: ConnectTimeoutException) {
-            setOffline()
             NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: SerializationException) {
             NetworkResult.Error(NetworkingError.SerializationError(message = e.message))
         } catch (e: IOException) {
-            setOffline()
             NetworkResult.Error(NetworkingError.NoInternetConnection)
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()

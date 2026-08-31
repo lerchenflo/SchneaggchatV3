@@ -9,9 +9,10 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.chat.data.GroupRepository
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToUiText
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onSuccess
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.games.domain.BetaTesterRowUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.EmojiCountUi
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameRecapUi
@@ -40,7 +41,6 @@ import schneaggchatv3mp.composeapp.generated.resources.month_may
 import schneaggchatv3mp.composeapp.generated.resources.month_november
 import schneaggchatv3mp.composeapp.generated.resources.month_october
 import schneaggchatv3mp.composeapp.generated.resources.month_september
-import schneaggchatv3mp.composeapp.generated.resources.recap_load_failed
 import schneaggchatv3mp.composeapp.generated.resources.recap_type_audio
 import schneaggchatv3mp.composeapp.generated.resources.recap_type_image
 import schneaggchatv3mp.composeapp.generated.resources.recap_type_poll
@@ -80,17 +80,15 @@ class RecapViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             networkUtils.getRecap()
+                .trackConnectivity()
                 .onSuccess { response ->
                     _state.update { it.copy(isLoading = false, recap = response.toRecapUi()) }
                 }
                 .onError { error ->
-                    val message = error.message ?: errorCodeToMessage(error.errorCode)
+                    val uiText = error.message?.takeIf { it.isNotBlank() }?.let { UiText.DynamicString(it) }
+                        ?: errorCodeToUiText(error.errorCode)
                     _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = if (message.isNotBlank()) UiText.DynamicString(message)
-                            else UiText.StringResourceText(Res.string.recap_load_failed)
-                        )
+                        it.copy(isLoading = false, error = uiText)
                     }
                 }
         }

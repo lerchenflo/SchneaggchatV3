@@ -7,6 +7,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.asEmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.map
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.domain.GlobalRankingEntry
@@ -24,7 +25,7 @@ class GameHighscoreRepository(
         difficulty: GameDifficulty,
         period: LeaderboardPeriod = LeaderboardPeriod.ALL_TIME,
     ): NetworkResult<List<HighscoreEntry>, NetworkingError> {
-        return networkUtils.getGameHighscores(game.name, difficulty.name, period.name).map { response ->
+        return networkUtils.getGameHighscores(game.name, difficulty.name, period.name).trackConnectivity().map { response ->
             response.entries.map { it.toHighscoreEntry() }
         }
     }
@@ -33,7 +34,7 @@ class GameHighscoreRepository(
     suspend fun getGlobalRanking(
         period: LeaderboardPeriod = LeaderboardPeriod.ALL_TIME,
     ): NetworkResult<List<GlobalRankingEntry>, NetworkingError> {
-        return networkUtils.getGlobalRanking(period.name).map { response ->
+        return networkUtils.getGlobalRanking(period.name).trackConnectivity().map { response ->
             response.entries.map { it.toGlobalRankingEntry() }
         }
     }
@@ -54,6 +55,6 @@ class GameHighscoreRepository(
                 score = score,
                 timeMillis = timeMillis,
             )
-        ).asEmptyDataResult()
+        ).trackConnectivity().asEmptyDataResult()
     }
 }

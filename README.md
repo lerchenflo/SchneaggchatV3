@@ -44,7 +44,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - iOS Tastatur-Verhalten und Anzeige unter Chat-Eingabe behoben
 - Schneaggmap: Überlappende Marker-Icons bei Orten mit mehreren Typen behoben
 - Umfragen: App - Crash bei ungeschickten Umfragen behoben, UI verbessert
-- Gruppenmitglieder doppelt anzeigen 
+- Gruppenmitglieder doppelt anzeigen
 
 ### 3.0.16
 
