@@ -802,6 +802,20 @@
     <string name="games_schneaggahus_title">Schneaggahus</string>
     <string name="games_schneaggahus_instructions">Schneaggs crawl out of the spawn point and follow the tracks. Tap the switches to change where the tracks lead and guide every Schneagg to the house of its color.\n\nEach correct delivery scores points — after 3 Schneaggs end up in a wrong house, the game is over. Spawns get faster the longer you survive!</string>
 
+    <!-- Games: Crossword -->
+    <string name="games_crossword_title">Crossword</string>
+    <string name="games_crossword_instructions">Solve the daily crossword! Tap a cell to select it, tap again to switch between across and down, then type with the keyboard below. The English puzzle comes from the public NYT archive, the German one is generated fresh every day. Everyone gets the same puzzle on the same day.</string>
+    <string name="games_crossword_language_question">Choose your puzzle language</string>
+    <string name="games_crossword_language_english">English (NYT archive)</string>
+    <string name="games_crossword_language_german">German</string>
+    <string name="games_crossword_load_failed">The daily puzzle could not be loaded. Check your internet connection and try again.</string>
+    <string name="games_crossword_retry">Retry</string>
+    <string name="games_crossword_check">Check answers</string>
+    <string name="games_crossword_restart">Restart</string>
+    <string name="games_crossword_solved">Solved in %1$s!</string>
+    <string name="games_crossword_previous_clue">Previous clue</string>
+    <string name="games_crossword_next_clue">Next clue</string>
+
     <!-- Games: Grid Rush -->
     <string name="games_daily_section">Daily challenge (%1$s)</string>
     <string name="games_gridrush_title">Grid Rush</string>

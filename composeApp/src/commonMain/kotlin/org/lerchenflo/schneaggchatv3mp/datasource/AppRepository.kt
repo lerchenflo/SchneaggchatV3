@@ -2803,6 +2803,11 @@ class AppRepository(
         networkUtils.updateSettings(UserSettingsRequest(pinnedChats = preferencemanager.getPinnedChats())).trackConnectivity()
     }
 
+    suspend fun setLastContributePopupShown(epochMillis: Long) {
+        preferencemanager.saveLastContributePopupShown(epochMillis)
+        networkUtils.updateSettings(UserSettingsRequest(lastContributePopupShown = epochMillis))
+    }
+
     /*
 
 

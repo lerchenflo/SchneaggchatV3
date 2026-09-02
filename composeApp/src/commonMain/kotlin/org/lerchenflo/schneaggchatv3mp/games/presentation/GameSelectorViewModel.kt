@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.games.presentation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Abc
 import androidx.compose.material.icons.filled.AdsClick
 import androidx.compose.material.icons.filled.Blind
 import androidx.compose.material.icons.filled.GraphicEq
@@ -18,6 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_2048_title
 import schneaggchatv3mp.composeapp.generated.resources.games_coinflip_title
+import schneaggchatv3mp.composeapp.generated.resources.games_crossword_title
 import schneaggchatv3mp.composeapp.generated.resources.games_dartcounter_title
 import schneaggchatv3mp.composeapp.generated.resources.games_fingerpicker_title
 import schneaggchatv3mp.composeapp.generated.resources.games_gridrush_title
@@ -68,6 +70,14 @@ class GameSelectorViewModel : ViewModel() {
             route = Route.GridRush,
             inDev = GameId.GRIDRUSH.indev,
             gameId = GameId.GRIDRUSH,
+            daily = true
+        ),
+        GameScreenElement(
+            title = Res.string.games_crossword_title,
+            icon = Icons.Default.Abc,
+            route = Route.Crossword,
+            inDev = GameId.CROSSWORD.indev,
+            gameId = GameId.CROSSWORD,
             daily = true
         ),
         GameScreenElement(

@@ -25,11 +25,13 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.games.data.CrosswordRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.GameHighscoreRepository
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerRepository
 import org.lerchenflo.schneaggchatv3mp.games.presentation.PlayerSelector.PlayerSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameSelectorViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipViewModel
+import org.lerchenflo.schneaggchatv3mp.games.presentation.crossword.CrosswordViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounterViewModel
@@ -107,6 +109,8 @@ val sharedmodule = module{
     singleOf(::EventRepository)
     singleOf(::GameHighscoreRepository)
     singleOf(::PlayerRepository)
+    // External puzzle archive fetch — no app auth, plain client
+    single { CrosswordRepository(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED))) }
 
 
     // Socket Connection Manager
@@ -224,6 +228,8 @@ val sharedmodule = module{
     viewModelOf(::OddOneOutViewmodel)
 
     viewModelOf(::StanislausViewModel)
+
+    viewModelOf(::CrosswordViewmodel)
 
     viewModelOf(::PlayerSelectorViewModel)
     viewModelOf(::RecapViewModel)
