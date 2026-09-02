@@ -219,12 +219,15 @@ fun Chatauswahlscreen(
             val lastShown = preferencemanager.getLastContributePopupShown()
 
             when {
-                // First launch: seed the timestamp so the popup is due in two weeks, not now
-                lastShown == null -> preferencemanager.saveLastContributePopupShown(now)
+                // Never seeded on any device yet: seed the timestamp so the popup is due
+                // one interval from now, not immediately. Normally already set server-side
+                // (at registration, or by the migration for older accounts) and picked up by
+                // the next sync — this only covers that sync not having landed yet.
+                lastShown == 0L -> appRepository.setLastContributePopupShown(now)
 
                 now - lastShown >= CONTRIBUTE_POPUP_INTERVAL_MILLIS -> {
                     contributePopupShown = true
-                    preferencemanager.saveLastContributePopupShown(now)
+                    appRepository.setLastContributePopupShown(now)
                 }
             }
         }

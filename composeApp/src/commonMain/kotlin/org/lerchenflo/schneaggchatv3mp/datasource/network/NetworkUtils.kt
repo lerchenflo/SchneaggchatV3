@@ -587,6 +587,10 @@ class NetworkUtils(
         val pinnedChats: List<PinnedChat> = emptyList(),
 
         val developerSettings: Boolean = false,
+
+        // Epoch millis of the last time the contribute popup was shown on any device.
+        // 0 means never seeded - the server backfills this at registration and via migration.
+        val lastContributePopupShown: Long = 0L,
     )
 
     /**
@@ -604,6 +608,7 @@ class NetworkUtils(
         val mapStyle: String? = null,
         val pinnedChats: List<PinnedChat>? = null,
         val developerSettings: Boolean? = null,
+        val lastContributePopupShown: Long? = null,
     )
 
     suspend fun updateSettings(request: UserSettingsRequest): NetworkResult<Unit, NetworkingError> {

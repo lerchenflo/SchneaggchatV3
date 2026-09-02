@@ -254,11 +254,13 @@ class Preferencemanager(
     }
 
     /**
-     * Null when nothing has been stored yet. The caller seeds the timestamp in that
-     * case so the popup only appears one interval later, never right on first launch.
+     * 0 when nothing has been stored yet - the server seeds this at registration and via
+     * migration, and this local value is overwritten by [applySyncedSettings] on the next sync.
+     * The caller treats 0 defensively as "seed now" in case that sync hasn't landed yet, so the
+     * popup only appears one interval later, never right on first launch.
      */
-    suspend fun getLastContributePopupShown(): Long? {
-        return prefs.data.first()[PrefsKeys.LAST_CONTRIBUTE_POPUP_SHOWN]
+    suspend fun getLastContributePopupShown(): Long {
+        return prefs.data.first()[PrefsKeys.LAST_CONTRIBUTE_POPUP_SHOWN] ?: 0L
     }
 
     // Onboarding Seen
@@ -350,6 +352,7 @@ class Preferencemanager(
             it[PrefsKeys.MAP_STYLE] = mapStyle.ordinal
             it[PrefsKeys.PINNED_CHATS] = json.encodeToString(settings.pinnedChats)
             it[PrefsKeys.DEVELOPER_SETTINGS] = settings.developerSettings
+            it[PrefsKeys.LAST_CONTRIBUTE_POPUP_SHOWN] = settings.lastContributePopupShown
         }
     }
 
