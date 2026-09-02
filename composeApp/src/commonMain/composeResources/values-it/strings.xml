@@ -783,6 +783,20 @@
     <string name="games_schneaggahus_title">Schneaggahus</string>
     <string name="games_schneaggahus_instructions">Gli Schneagg strisciano fuori dal punto di partenza e seguono i binari. Tocca gli scambi per cambiare dove portano i binari e guida ogni Schneagg fino alla casa del suo colore.\n\nOgni consegna corretta assegna punti — dopo 3 Schneagg finiti nella casa sbagliata, la partita finisce. Le nascite diventano più veloci più a lungo sopravvivi!</string>
 
+    <!-- Games: Crossword -->
+    <string name="games_crossword_title">Cruciverba</string>
+    <string name="games_crossword_instructions">Risolvi il cruciverba del giorno! Tocca una casella per selezionarla, tocca di nuovo per passare da orizzontale a verticale e scrivi con la tastiera qui sotto. Il cruciverba inglese viene dall'archivio pubblico del NYT, quello tedesco viene generato ogni giorno. Tutti ricevono lo stesso cruciverba nello stesso giorno.</string>
+    <string name="games_crossword_language_question">Scegli la lingua del cruciverba</string>
+    <string name="games_crossword_language_english">Inglese (archivio NYT)</string>
+    <string name="games_crossword_language_german">Tedesco</string>
+    <string name="games_crossword_load_failed">Impossibile caricare il cruciverba del giorno. Controlla la connessione a internet e riprova.</string>
+    <string name="games_crossword_retry">Riprova</string>
+    <string name="games_crossword_check">Controlla risposte</string>
+    <string name="games_crossword_restart">Ricomincia</string>
+    <string name="games_crossword_solved">Risolto in %1$s!</string>
+    <string name="games_crossword_previous_clue">Definizione precedente</string>
+    <string name="games_crossword_next_clue">Definizione successiva</string>
+
     <!-- Games: Grid Rush -->
     <string name="games_daily_section">Sfida giornaliera (%1$s)</string>
     <string name="games_gridrush_title">Grid Rush</string>

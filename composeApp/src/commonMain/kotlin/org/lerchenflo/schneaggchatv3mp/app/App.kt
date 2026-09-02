@@ -74,6 +74,7 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.coinflip.CoinFlipScree
 import org.lerchenflo.schneaggchatv3mp.games.presentation.dartcounter.DartCounter
 import org.lerchenflo.schneaggchatv3mp.games.presentation.fingerpicker.FingerPickerScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.game2048.Game2048ScreenRoot
+import org.lerchenflo.schneaggchatv3mp.games.presentation.crossword.CrosswordScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
@@ -806,6 +807,12 @@ fun App() {
 
                                     entry<Route.Stanislaus> {
                                         StanislausScreenRoot(
+                                            onBackClick = { scope.launch { navigator.navigateBack() } }
+                                        )
+                                    }
+
+                                    entry<Route.Crossword> {
+                                        CrosswordScreenRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }

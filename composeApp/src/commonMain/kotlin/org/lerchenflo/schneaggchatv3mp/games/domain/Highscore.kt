@@ -17,6 +17,7 @@ enum class GameId(val daily: Boolean = false, val indev: Boolean = false) {
     ODDONEOUT,
     GAME_2048,
     STANISLAUS(indev = true),
+    CROSSWORD(daily = true),
 }
 
 /**
