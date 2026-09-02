@@ -40,6 +40,8 @@
     <string name="email_check_verified">Check email verification</string>
     <string name="email_check_problem">Having trouble? Get help</string>
     <string name="email_check_loading_data">Loading your account data ...</string>
+    <string name="email_check_check_emails_snackbar">Verification email has been sent. Please also check your spam folder. This may take up to 2 min</string>
+
 
 
 
@@ -200,18 +202,24 @@
     <string name="group_expires_in">Expires in: %1$s</string>
     <string name="group_expired">Expired</string>
     <string name="delete_group_timer">Delete group timer</string>
-    <string name="confirm_delete_group_timer">Remove this group\'s expiry date? It will no longer auto-expire.</string>
+    <string name="confirm_delete_group_timer">Remove this group's expiry date? It will no longer auto-expire.</string>
     <string name="delete_event">Delete event</string>
-    <string name="confirm_delete_event">Delete this event? The group will be detached from it and will remain, but the event itself will be permanently deleted.</string>
     <string name="event_delete_failed">❌ Failed to delete event</string>
-    <string name="event_delete_warning_message">Deleting this event cannot be undone. Do you also want to delete the connected group chat?</string>
+    <string name="event_delete_warning_message">Choose what happens to the event and its group chat. Unlinking keeps both, deleting removes only what you choose.</string>
+    <string name="event_delete_confirm_no_group_message">Delete this event? This cannot be undone.</string>
+    <string name="event_delete_detach_only">Unlink only (keep event &amp; group)</string>
     <string name="event_delete_only">Delete event</string>
+    <string name="event_delete_group_only">Delete group only</string>
     <string name="event_delete_with_group">Delete event + group</string>
     <string name="event_max_users_label">Limit participants</string>
     <string name="event_max_users_info">Set how many people can join this event. Leave off for no limit.</string>
     <string name="event_max_users_hint">e.g. 20</string>
     <string name="error_event_max_users_invalid">Enter a number between 1 and 1000</string>
     <string name="event_and_group_created">Event and group created!</string>
+    <string name="event_created">Event created!</string>
+    <string name="event_create_group_label">Create group chat</string>
+    <string name="event_create_group_info">A group chat lets invited people chat and coordinate. You can add one later if you skip it now.</string>
+    <string name="event_no_group">This event has no group chat</string>
     <string name="user_description">user description</string>
     <string name="leave_group">leave group</string>
     <string name="add_users_to_group">add users</string>
@@ -311,6 +319,21 @@
     <string name="new_event_noti_title">%1$s created a new event</string>
     <string name="events_screen_title">events</string>
     <string name="events_empty">No events yet. Create one yourself!</string>
+    <string name="events_view_list">List</string>
+    <string name="events_view_week">Week</string>
+    <string name="events_view_month">Month</string>
+    <string name="weekday_monday_short">Mon</string>
+    <string name="weekday_tuesday_short">Tue</string>
+    <string name="weekday_wednesday_short">Wed</string>
+    <string name="weekday_thursday_short">Thu</string>
+    <string name="weekday_friday_short">Fri</string>
+    <string name="weekday_saturday_short">Sat</string>
+    <string name="weekday_sunday_short">Sun</string>
+    <string name="events_calendar_previous_period">Previous</string>
+    <string name="events_calendar_next_period">Next</string>
+    <string name="events_week_empty">No events this week</string>
+    <string name="events_month_empty">No events this month</string>
+    <string name="birthday_label">Birthday</string>
     <string name="event_starts_in">Starts in: %1$s</string>
     <string name="event_started">Started</string>
     <string name="event_ended">Ended</string>
@@ -329,6 +352,7 @@
     <string name="group_delete_delay_one_week">1 week after the event</string>
     <string name="event_created_by">Created by %1$s</string>
     <string name="event_join">Join</string>
+    <string name="event_add_to_calendar">Add to calendar</string>
     <string name="event_invite_header">%1$s wants to %2$s at %3$s</string>
     <string name="event_invited_users">Invited</string>
     <string name="event_invite_friends">Invite friends</string>
@@ -678,7 +702,9 @@
 
     <string name="poll_option_delete">Delete option</string>
     <string name="poll_option_delete_confirm_title">Delete this option?</string>
-    <string name="poll_option_delete_confirm_text">\"%1$s\" and its votes will be removed. This cannot be undone.</string>
+    <string name="poll_option_delete_confirm_text">"%1$s" and its votes will be removed. This cannot be undone.</string>
+
+    <string name="poll_cannot_vote_on_unsent">You can not vote on an unsent poll</string>
 
 
 
@@ -801,7 +827,7 @@
 
     <!-- Games: Stanislaus -->
     <string name="games_stanislaus_title">Stanislaus and the Fish</string>
-    <string name="games_stanislaus_instructions">Light bends when it crosses from water into air, so the fish is never quite where it looks like it is!\n\nDrag from Stanislaus to aim the spear, then release to throw. The spear flies in a perfectly straight line — if you aim at the fish you see, you\'ll miss. Aim deeper and further out to actually hit it.\n\nCatch as many fish as you can before time runs out. A hit deep in the water scores extra, misses cost you time, and fish far out on the pond hide behind the mirror-like glare of the surface.</string>
+    <string name="games_stanislaus_instructions">Light bends when it crosses from water into air, so the fish is never quite where it looks like it is!\n\nDrag from Stanislaus to aim the spear, then release to throw. The spear flies in a perfectly straight line — if you aim at the fish you see, you'll miss. Aim deeper and further out to actually hit it.\n\nCatch as many fish as you can before time runs out. A hit deep in the water scores extra, misses cost you time, and fish far out on the pond hide behind the mirror-like glare of the surface.</string>
     <string name="games_stanislaus_caught">Caught!</string>
     <string name="games_stanislaus_missed">Missed!</string>
     <string name="games_stanislaus_streak">Streak: %1$d</string>

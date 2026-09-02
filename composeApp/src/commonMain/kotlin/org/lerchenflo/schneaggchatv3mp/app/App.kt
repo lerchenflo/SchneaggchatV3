@@ -1,13 +1,18 @@
 package org.lerchenflo.schneaggchatv3mp.app
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -488,11 +493,24 @@ fun App() {
 
         CompositionLocalProvider(LocalTapTargetController provides tourController) {
 
-            Box() {
+            Box(
+                // IOSKEYBOARDFIX: without an explicit background here, the root Scaffold's
+                // Surface is the only thing painting the window - and it shrinks with the
+                // keyboard (see contentWindowInsets below), briefly exposing the bare iOS
+                // host view (plain white/black) as a gray-looking band under the keyboard.
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+            ) {
                 Scaffold(
                     modifier = Modifier
-                        .clearFocusOnTap()
-                        .imePadding(),
+                        .fillMaxSize()
+                        .clearFocusOnTap(),
+                    // IOSKEYBOARDFIX: moved imePadding() off the Scaffold's own modifier and
+                    // into contentWindowInsets, so the Scaffold's Surface always covers the
+                    // full window and only its *content* padding grows for the keyboard -
+                    // instead of the whole Surface shrinking and exposing what's behind it.
+                    contentWindowInsets = WindowInsets.systemBars.union(WindowInsets.ime),
                     bottomBar = {
 
                         if (navigationState.showNavBar) {

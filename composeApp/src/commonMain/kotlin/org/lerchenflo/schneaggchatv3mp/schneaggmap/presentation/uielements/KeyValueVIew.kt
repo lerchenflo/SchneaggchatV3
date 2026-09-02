@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, FormatStringsInDatetimeFormats::class)
 
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements
 
@@ -43,7 +43,9 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.number
+import kotlinx.datetime.format
+import kotlinx.datetime.format.FormatStringsInDatetimeFormats
+import kotlinx.datetime.format.byUnicodePattern
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
@@ -55,6 +57,7 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.DoubleV
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.IntValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.AttributeValue.StringValue
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.labelRes
+import org.lerchenflo.schneaggchatv3mp.utilities.germanNumericDateFormatter
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -218,11 +221,8 @@ fun KeyValueView(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = "${selectedDate.year.toString().padStart(4, '0')}-" +
-                                "${selectedDate.month.number.toString().padStart(2, '0')}-" +
-                                "${selectedDate.day.toString().padStart(2, '0')}  " +
-                                "${selectedTime.hour.toString().padStart(2, '0')}:" +
-                                selectedTime.minute.toString().padStart(2, '0')
+                        text = LocalDateTime(date = selectedDate, time = selectedTime)
+                            .format(LocalDateTime.Format { byUnicodePattern("HH:mm dd.MM.yyyy") })
                     )
                 }
 
@@ -263,6 +263,7 @@ fun KeyValueView(
                                     startDate = dialogDate,
                                     minDate = LocalDate(1900, 1, 1),
                                     maxDate = endOfCurrentYear,
+                                    dateFormatter = germanNumericDateFormatter(),
                                     rowCount = 5,
                                     textColor = MaterialTheme.colorScheme.onSurface,
                                     selectorProperties = WheelPickerDefaults.selectorProperties(

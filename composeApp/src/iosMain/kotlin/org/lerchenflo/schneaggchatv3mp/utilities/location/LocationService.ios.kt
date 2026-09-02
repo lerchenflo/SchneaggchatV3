@@ -9,6 +9,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import platform.CoreLocation.CLAuthorizationStatus
+import platform.CoreLocation.CLHeading
 import platform.CoreLocation.CLLocation
 import platform.CoreLocation.CLLocationManager
 import platform.CoreLocation.CLLocationManagerDelegateProtocol
@@ -17,6 +18,8 @@ import platform.CoreLocation.kCLAuthorizationStatusAuthorizedWhenInUse
 import platform.CoreLocation.kCLAuthorizationStatusDenied
 import platform.CoreLocation.kCLAuthorizationStatusNotDetermined
 import platform.CoreLocation.kCLAuthorizationStatusRestricted
+import platform.CoreLocation.kCLDistanceFilterNone
+import platform.CoreLocation.kCLLocationAccuracyBest
 import platform.CoreLocation.kCLLocationAccuracyNearestTenMeters
 import platform.Foundation.NSError
 import platform.Foundation.timeIntervalSince1970
@@ -27,9 +30,13 @@ import kotlin.math.roundToInt
 @OptIn(ExperimentalForeignApi::class)
 actual class LocationService {
 
-    actual fun getLocationFlow(): Flow<DeviceLocation?> = callbackFlow {
+    actual fun getLocationFlow(fastUpdates: Boolean): Flow<DeviceLocation?> = callbackFlow {
         val manager = CLLocationManager()
 
+        // CLLocationManager.delegate is a weak reference on the Objective-C side, so the
+        // delegate object needs its own strong Kotlin reference that stays alive for the
+        // whole flow lifetime (i.e. referenced again inside awaitClose) - otherwise the GC
+        // can collect it mid-flow and updates silently stop arriving.
         val delegate = object : NSObject(), CLLocationManagerDelegateProtocol {
             override fun locationManager(
                 manager: CLLocationManager,
@@ -46,8 +53,8 @@ actual class LocationService {
         }
 
         manager.delegate = delegate
-        manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-        manager.distanceFilter = 20.0
+        manager.desiredAccuracy = if (fastUpdates) kCLLocationAccuracyBest else kCLLocationAccuracyNearestTenMeters
+        manager.distanceFilter = if (fastUpdates) kCLDistanceFilterNone else 20.0
         manager.startUpdatingLocation()
 
         // Emit cached location immediately so the flow isn't empty at start
@@ -58,6 +65,42 @@ actual class LocationService {
         awaitClose {
             manager.stopUpdatingLocation()
             manager.delegate = null
+            delegate.retainUntilHere()
+        }
+    }
+
+    actual fun getHeadingFlow(): Flow<Float?> = callbackFlow {
+        if (!CLLocationManager.headingAvailable()) {
+            trySend(null)
+            close()
+            return@callbackFlow
+        }
+
+        val manager = CLLocationManager()
+
+        // Same weak-delegate retention concern as getLocationFlow above.
+        val delegate = object : NSObject(), CLLocationManagerDelegateProtocol {
+            override fun locationManager(manager: CLLocationManager, didUpdateHeading: CLHeading) {
+                // trueHeading is negative when it can't be determined (no GPS fix for
+                // declination) - fall back to the magnetic heading in that case.
+                val heading = didUpdateHeading.trueHeading.takeIf { it >= 0.0 }
+                    ?: didUpdateHeading.magneticHeading.takeIf { it >= 0.0 }
+                heading?.let { trySend(((it.toFloat()) % 360f + 360f) % 360f) }
+            }
+
+            // Suppress the system figure-8 calibration overlay - while it's shown, heading
+            // updates can appear to stall from the app's point of view.
+            override fun locationManagerShouldDisplayHeadingCalibration(manager: CLLocationManager): Boolean = false
+        }
+
+        manager.delegate = delegate
+        manager.headingFilter = 2.0
+        manager.startUpdatingHeading()
+
+        awaitClose {
+            manager.stopUpdatingHeading()
+            manager.delegate = null
+            delegate.retainUntilHere()
         }
     }
 
@@ -94,6 +137,10 @@ actual class LocationService {
         else -> PermissionState.NOT_DETERMINED
     }
 }
+
+// No-op call whose only purpose is to keep a strong Kotlin reference to the receiver reachable
+// after a suspension point, so it survives in the coroutine's continuation.
+private fun Any.retainUntilHere() = Unit
 
 @OptIn(ExperimentalForeignApi::class)
 private fun CLLocation.toDeviceLocation(): DeviceLocation = DeviceLocation(

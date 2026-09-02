@@ -9,7 +9,6 @@ import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.utilities.compass.CompassService
 import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
 
 class FriendCompassViewModel(
@@ -17,7 +16,6 @@ class FriendCompassViewModel(
     private val navigator: Navigator,
     appRepository: AppRepository,
     locationService: LocationService,
-    compassService: CompassService,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(FriendCompassState(targetUserId = targetUserId))
@@ -37,7 +35,9 @@ class FriendCompassViewModel(
         }
 
         viewModelScope.launch {
-            locationService.getLocationFlow().collect { fix ->
+            // fastUpdates: the compass recomputes friend bearings on every tiny movement, so
+            // the default distance-filtered updates are too coarse and make it feel broken.
+            locationService.getLocationFlow(fastUpdates = true).collect { fix ->
                 fix?.let { deviceLocation ->
                     _state.update { it.copy(ownLocation = deviceLocation.coordinates) }
                 }
@@ -45,7 +45,7 @@ class FriendCompassViewModel(
         }
 
         viewModelScope.launch {
-            compassService.getAzimuthFlow().collect { azimuth ->
+            locationService.getHeadingFlow().collect { azimuth ->
                 _state.update { it.copy(azimuthDegrees = azimuth) }
             }
         }

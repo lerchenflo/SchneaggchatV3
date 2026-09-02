@@ -8,6 +8,7 @@ import android.content.Intent.ACTION_SEND
 import android.content.Intent.EXTRA_TEXT
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.net.Uri
+import android.provider.CalendarContract
 import androidx.core.net.toUri
 
 actual class ShareUtils(private val context: Context) {
@@ -89,6 +90,22 @@ actual class ShareUtils(private val context: Context) {
             context.startActivity(intent)
         } catch (e: Exception) {
             println("No dialer app available on this device: ${e.message}")
+        }
+    }
+
+    actual fun addEventToCalendar(title: String, description: String, location: String, startDateMillis: Long, endDateMillis: Long?) {
+        val intent = Intent(Intent.ACTION_INSERT, CalendarContract.Events.CONTENT_URI).apply {
+            putExtra(CalendarContract.Events.TITLE, title)
+            putExtra(CalendarContract.Events.DESCRIPTION, description)
+            putExtra(CalendarContract.Events.EVENT_LOCATION, location)
+            putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startDateMillis)
+            putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endDateMillis ?: startDateMillis)
+            addFlags(FLAG_ACTIVITY_NEW_TASK)
+        }
+        try {
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            println("No calendar app available on this device: ${e.message}")
         }
     }
 }

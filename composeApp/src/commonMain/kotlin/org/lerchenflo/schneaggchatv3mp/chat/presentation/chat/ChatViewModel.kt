@@ -297,7 +297,7 @@ class ChatViewModel(
 
     private fun onImagesSelected(results: List<GalleryPhotoResult>) {
 
-        CoroutineScope(Dispatchers.Default).launch {
+        viewModelScope.launch {
             val byteArrays = results.map { it.loadBytes() }
             val downscaledImages = byteArrays.map {
                 pictureManager.downscaleImage(it)

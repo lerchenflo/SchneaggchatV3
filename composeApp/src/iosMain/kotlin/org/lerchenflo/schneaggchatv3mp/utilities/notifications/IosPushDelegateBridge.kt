@@ -28,7 +28,34 @@ class IosPushDelegateBridge {
             runCatching {
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
                 if (SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)) {
-                    KoinPlatform.getKoin().get<AppRepository>().messageIdSync()
+                    val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                    // A foreground push never reaches the NSE queue, so upsert directly here
+                    // before the sync below - mirrors AppFirebaseMessagingService on Android.
+                    (PayloadDecoder.decode(data) as? DecodedNotification.Message)?.let {
+                        appRepository.applyPushMessage(it)
+                    }
+                    appRepository.messageIdSync()
+                }
+            }
+        }
+    }
+
+    /**
+     * Applies every message queued by the Notification Service Extension while the app was not
+     * running Kotlin (background/killed push), then clears the queue. Call on app activation
+     * (cold start and foreground) so a background push is visible the moment the chat opens.
+     */
+    fun drainPendingPushMessages() {
+        CoroutineScope(Dispatchers.IO).launch {
+            runCatching {
+                val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
+                if (SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)) {
+                    val appRepository = KoinPlatform.getKoin().get<AppRepository>()
+                    SharedNotificationDefaults.takePendingPushMessages().forEach { raw ->
+                        (PayloadDecoder.decode(raw) as? DecodedNotification.Message)?.let {
+                            appRepository.applyPushMessage(it)
+                        }
+                    }
                 }
             }
         }

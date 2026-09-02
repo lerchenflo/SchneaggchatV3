@@ -38,8 +38,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.chat.domain.toChatListItem
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ErrorMessage
@@ -183,7 +183,7 @@ class ChatDetailsViewmodel(
                     //The server rejects waking a non-friend outright rather than reporting it
                     //as an outcome, so it arrives here as a 403.
                     SnackbarManager.showMessage(
-                        if (result.error is NetworkError.Forbidden) getString(Res.string.wake_not_friends)
+                        if (result.error is NetworkingError.Forbidden) getString(Res.string.wake_not_friends)
                         else "You are not Friends with this User or other error (401)"
                     )
                     return@launch
@@ -334,9 +334,14 @@ class ChatDetailsViewmodel(
         }
     }
 
-    fun deleteConnectedEvent(eventId: String) {
+    fun detachConnectedEvent(eventId: String, deleteGroup: Boolean, deleteEvent: Boolean) {
         viewModelScope.launch {
-            val success = appRepository.deleteEvent(eventId)
+            val success = appRepository.detachEvent(
+                eventId = eventId,
+                groupId = chatId,
+                deleteGroup = deleteGroup,
+                deleteEvent = deleteEvent,
+            )
             if (!success) {
                 SnackbarManager.showMessage(getString(Res.string.event_delete_failed))
             }

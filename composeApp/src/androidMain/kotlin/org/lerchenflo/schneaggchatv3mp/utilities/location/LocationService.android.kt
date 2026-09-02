@@ -2,6 +2,10 @@ package org.lerchenflo.schneaggchatv3mp.utilities.location
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.location.Location
 import android.os.Looper
 import com.google.android.gms.location.LocationCallback
@@ -15,6 +19,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
+import kotlin.math.PI
 import kotlin.math.roundToInt
 
 actual class LocationService(private val context: Context) {
@@ -24,7 +29,7 @@ actual class LocationService(private val context: Context) {
     }
 
     @SuppressLint("MissingPermission")
-    actual fun getLocationFlow(): Flow<DeviceLocation?> {
+    actual fun getLocationFlow(fastUpdates: Boolean): Flow<DeviceLocation?> {
         val permManager = PermissionManager(context)
 
         // Build a callbackFlow so we can use the FusedLocation callback API
@@ -38,9 +43,9 @@ actual class LocationService(private val context: Context) {
 
             val request = LocationRequest.Builder(
                 Priority.PRIORITY_HIGH_ACCURACY,   // or keep BALANCED if battery matters more
-                5_000L
+                if (fastUpdates) 1_000L else 5_000L
             )
-                .setMinUpdateDistanceMeters(20f)
+                .setMinUpdateDistanceMeters(if (fastUpdates) 0f else 20f)
                 .build()
 
             // emit cached location immediately so the flow isn't empty at start
@@ -61,6 +66,37 @@ actual class LocationService(private val context: Context) {
             awaitClose {
                 fusedClient.removeLocationUpdates(callback)
             }
+        }
+    }
+
+    actual fun getHeadingFlow(): Flow<Float?> = callbackFlow {
+        val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+
+        if (rotationSensor == null) {
+            trySend(null)
+            close()
+            return@callbackFlow
+        }
+
+        val rotationMatrix = FloatArray(9)
+        val orientation = FloatArray(3)
+
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+                SensorManager.getOrientation(rotationMatrix, orientation)
+                val azimuthDegrees = (orientation[0] * 180f / PI.toFloat() + 360f) % 360f
+                trySend(azimuthDegrees)
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+        }
+
+        sensorManager.registerListener(listener, rotationSensor, SensorManager.SENSOR_DELAY_UI)
+
+        awaitClose {
+            sensorManager.unregisterListener(listener)
         }
     }
 

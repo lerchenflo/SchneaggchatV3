@@ -3,8 +3,8 @@ package org.lerchenflo.schneaggchatv3mp.games.data
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.SubmitGameScoreRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.EmptyResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.asEmptyDataResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.map
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameDifficulty
@@ -23,7 +23,7 @@ class GameHighscoreRepository(
         game: GameId,
         difficulty: GameDifficulty,
         period: LeaderboardPeriod = LeaderboardPeriod.ALL_TIME,
-    ): NetworkResult<List<HighscoreEntry>, NetworkError> {
+    ): NetworkResult<List<HighscoreEntry>, NetworkingError> {
         return networkUtils.getGameHighscores(game.name, difficulty.name, period.name).map { response ->
             response.entries.map { it.toHighscoreEntry() }
         }
@@ -32,7 +32,7 @@ class GameHighscoreRepository(
     /** Cross-game leaderboard over all games and difficulties. */
     suspend fun getGlobalRanking(
         period: LeaderboardPeriod = LeaderboardPeriod.ALL_TIME,
-    ): NetworkResult<List<GlobalRankingEntry>, NetworkError> {
+    ): NetworkResult<List<GlobalRankingEntry>, NetworkingError> {
         return networkUtils.getGlobalRanking(period.name).map { response ->
             response.entries.map { it.toGlobalRankingEntry() }
         }
@@ -43,7 +43,7 @@ class GameHighscoreRepository(
         difficulty: GameDifficulty,
         score: Long,
         timeMillis: Long,
-    ): EmptyResult<NetworkError> {
+    ): EmptyResult<NetworkingError> {
         // In-dev games have no real leaderboard yet - don't pollute it with test scores.
         if (game.indev) return NetworkResult.Success(Unit)
 

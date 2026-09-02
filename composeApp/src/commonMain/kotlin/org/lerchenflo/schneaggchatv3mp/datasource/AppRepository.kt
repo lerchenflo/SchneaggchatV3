@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalTime::class)
+@file:OptIn(ExperimentalTime::class, ExperimentalUuidApi::class)
 
 package org.lerchenflo.schneaggchatv3mp.datasource
 
@@ -107,9 +107,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toMapEntry
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.toPollMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.util.RequestError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
@@ -134,8 +133,11 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import org.lerchenflo.schneaggchatv3mp.utilities.UiText
 import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
+import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
+import org.lerchenflo.schneaggchatv3mp.utilities.CryptoUtil
+import org.lerchenflo.schneaggchatv3mp.utilities.notifications.DecodedNotification
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
@@ -153,6 +155,8 @@ import schneaggchatv3mp.composeapp.generated.resources.usersync
 import kotlin.collections.map
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 //Message search in the chat selector: how much the user has to type before the message table is
 //scanned, and how many hits are kept so a common word cannot build a list of thousands of rows.
@@ -182,7 +186,7 @@ class AppRepository(
         data class ErrorEvent (
             val errorCode: Int? = null,
             val errorMessage: String? = null,
-            val error: RequestError? = null,
+            val error: NetworkingError? = null,
             val errorMessageUiText: UiText? = null,
             val duration: Long = 5000L
         ){
@@ -271,7 +275,7 @@ class AppRepository(
 
     suspend fun sendEmailVerify() : Boolean{
         return when (val result = networkUtils.sendEmailVerify()) {
-            is NetworkResult.Error<RequestError> -> {
+            is NetworkResult.Error<NetworkingError> -> {
                 println("Send email verify: Error occured: ${result.error}")
                 sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
                 false
@@ -695,7 +699,7 @@ class AppRepository(
         type: EventType,
         title: String,
         description: String,
-        groupId: String,
+        createGroup: Boolean,
         location: LatLong?,
         startDate: Long,
         closeDate: Long?,
@@ -711,7 +715,6 @@ class AppRepository(
                 type = type,
                 title = title,
                 description = description,
-                groupId = groupId,
                 location = location,
                 startDate = startDate,
                 closeDate = closeDate,
@@ -719,6 +722,7 @@ class AppRepository(
                 visibility = visibility,
                 maxUsers = maxUsers,
                 groupDeleteDelay = groupDeleteDelay,
+                createGroup = createGroup,
             ),
             profilePic = profilePic,
         )
@@ -773,17 +777,20 @@ class AppRepository(
     }
 
     /**
-     * Deletes an event. Optionally also deletes its connected group chat.
-     * [groupId] only matters when [deleteConnectedGroup] is true - the local group delete here is
-     * just an optimistic fast path, the server's own group deletion + notifyGroupUpdate / group
-     * sync converge on the same result regardless.
+     * Breaks the event <-> group link. Both flags false detaches only - the event and its group
+     * both survive, and the local DB catches up via the `eventchange` WS broadcast. [groupId] only
+     * matters when [deleteGroup] is true - the local group delete here is just an optimistic fast
+     * path, the server's own group deletion + notifyGroupUpdate / group sync converge on the same
+     * result regardless.
      */
-    suspend fun deleteEvent(eventId: String, groupId: String? = null, deleteConnectedGroup: Boolean = false): Boolean {
-        return when (networkUtils.deleteEvent(eventId, deleteConnectedGroup)) {
+    suspend fun detachEvent(eventId: String, groupId: String? = null, deleteGroup: Boolean = false, deleteEvent: Boolean = false): Boolean {
+        return when (networkUtils.detachEvent(eventId, deleteGroup, deleteEvent)) {
             is NetworkResult.Error<*> -> false
             is NetworkResult.Success<*> -> {
-                eventRepository.deleteEvent(eventId)
-                if (deleteConnectedGroup && groupId != null) {
+                if (deleteEvent) {
+                    eventRepository.deleteEvent(eventId)
+                }
+                if (deleteGroup && groupId != null) {
                     groupRepository.deleteGroup(groupId)
                 }
                 true
@@ -1301,10 +1308,10 @@ class AppRepository(
                 // Only a genuine 401 means wrong credentials - rate limiting, server errors and
                 // being offline are not the user's fault and shouldn't be reported as such.
                 val messageRes = when (result.error) {
-                    is NetworkError.TooManyRequests -> Res.string.error_login_too_many_requests
-                    is NetworkError.NoInternet,
-                    is NetworkError.RequestTimeout -> Res.string.offline
-                    is NetworkError.ServerError -> Res.string.error_login_server_error
+                    is NetworkingError.TooManyRequests -> Res.string.error_login_too_many_requests
+                    is NetworkingError.NoInternetConnection,
+                    is NetworkingError.NetworkTimeout -> Res.string.offline
+                    is NetworkingError.ServerError -> Res.string.error_login_server_error
                     else -> Res.string.error_invalid_credentials
                 }
 
@@ -1548,7 +1555,7 @@ class AppRepository(
      */
     suspend fun getAvailableUsers(searchTerm: String) : List<NewFriendsUserResponse> {
         return when (val response = networkUtils.getAvailableUsers(searchTerm)) {
-            is NetworkResult.Error<RequestError> -> {
+            is NetworkResult.Error<NetworkingError> -> {
                 sendErrorSuspend(
                     ErrorChannel.ErrorEvent(
                         error = response.error
@@ -1687,14 +1694,27 @@ class AppRepository(
 
     /**
      * @param localpk Local pk, only pass if already in db
+     * @param clientMessageId Send idempotency key of an already-queued message. REQUIRED when
+     * [localpk] is non-zero (a resend) - reusing the row's original key is the entire mechanism
+     * that lets the server recognize a retry; silently minting a new one here for a resend would
+     * defeat it. Never pass this for a brand-new message - one is minted below.
      *
      */
-    suspend fun sendMessage(ownId: String, messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long = 0){
+    suspend fun sendMessage(ownId: String, messageId: String?, empfaenger: String, gruppe: Boolean, content: MessageContent, answerid: String?, localpk: Long = 0, clientMessageId: String? = null){
 
         sendMessageLock.withLock {
             var localpkintern = localpk
 
             val senddate = getCurrentTimeMillisString()
+            val clientMessageIdIntern = if (localpkintern != 0L) { //Already upserted to db
+                requireNotNull(clientMessageId) {
+                    "Resending an already-queued message (localPK=$localpkintern) must reuse its stored clientMessageId"
+                }
+            } else {
+                //Generate random uuid per message for server side checking, pass when sending.
+                //Randomuuid because localpk will be reset on db drop, invisible despawned messages when multi device user
+                Uuid.random().toString()
+            }
 
             //Interne message macha die ned alles hot
             val messageDto = when(content) {
@@ -1736,7 +1756,8 @@ class AppRepository(
                         answerId = answerid,
                         sent = false,
                         myMessage = true,
-                        readByMe = true
+                        readByMe = true,
+                        clientMessageId = clientMessageIdIntern
                     )
                 }
                 is TextContent -> {
@@ -1754,7 +1775,8 @@ class AppRepository(
                         answerId = answerid,
                         sent = false,
                         myMessage = true,
-                        readByMe = true
+                        readByMe = true,
+                        clientMessageId = clientMessageIdIntern
                     )
                 }
 
@@ -1774,7 +1796,8 @@ class AppRepository(
                         answerId = answerid,
                         sent = false,
                         myMessage = true,
-                        readByMe = true
+                        readByMe = true,
+                        clientMessageId = clientMessageIdIntern
                     )
                 }
 
@@ -1794,7 +1817,8 @@ class AppRepository(
                         answerId = answerid,
                         sent = false,
                         myMessage = true,
-                        readByMe = true
+                        readByMe = true,
+                        clientMessageId = clientMessageIdIntern
                     )
                 }
             }
@@ -1813,7 +1837,8 @@ class AppRepository(
                         empfaenger = empfaenger,
                         gruppe = gruppe,
                         content = content.poll,
-                        answerid = answerid
+                        answerid = answerid,
+                        clientMessageId = clientMessageIdIntern
                     )
                 }
                 is TextContent -> {
@@ -1822,7 +1847,8 @@ class AppRepository(
                         empfaenger = empfaenger,
                         gruppe = gruppe,
                         content = content.message,
-                        answerid = answerid
+                        answerid = answerid,
+                        clientMessageId = clientMessageIdIntern
                     )
                 }
 
@@ -1832,7 +1858,8 @@ class AppRepository(
                         gruppe = gruppe,
                         image = content.image,
                         text = content.text,
-                        answerid = answerid
+                        answerid = answerid,
+                        clientMessageId = clientMessageIdIntern
                     )
                 }
 
@@ -1841,19 +1868,28 @@ class AppRepository(
                         empfaenger = empfaenger,
                         gruppe = gruppe,
                         audio = content.audio,
-                        answerid = answerid
+                        answerid = answerid,
+                        clientMessageId = clientMessageIdIntern
                     )
                 }
             }
 
             when (serverrequest){
-                is NetworkResult.Error<*> -> {
+                is NetworkResult.Error<NetworkingError> -> {
+
+                    val error = serverrequest.error
+                    if (error !is NetworkingError.NetworkTimeout) {
+                        if (error is NetworkingError.BadRequest) { //Message was not accepted by the server, delete locals
+                            database.messageDao().deleteMessageDtoByPk(localpkintern)
+                        }
+                    }
+
                     println("Message senden error: ${serverrequest.error}")
 
                     when (content) {
                         is ImageContent -> {
                             pictureManager.savePictureToStorage(content.image, "unsent_" + localpkintern + PICTURE_FILE_NAME)
-
+                            //ignore unsent audio or image, this should not happen anyway
                         }
 
                         is AudioContent -> {
@@ -2018,7 +2054,8 @@ class AppRepository(
                     answerid = m.answerId,
                     localpk = m.localPK,
                     messageId = null,
-                    ownId = ownId
+                    ownId = ownId,
+                    clientMessageId = m.clientMessageId
                 )
 
 
@@ -2115,6 +2152,73 @@ class AppRepository(
         }
     }
 
+    /**
+     * Instantly upserts a message delivered via push notification (FCM/APNs) into Room, so a
+     * chat opened before the next sync already shows it. Never overwrites an existing row and
+     * never advances the sync cursor (version stays 0, the same trick [messageIdSync] and the
+     * socket handler rely on) - the caller is still expected to follow up with [messageIdSync],
+     * which replaces this provisional row with the authoritative one (readers, reactions,
+     * real version).
+     */
+    suspend fun applyPushMessage(decoded: DecodedNotification.Message) {
+        if (SessionCache.requireLoggedIn()?.userId == null) return
+        val encryptionKey = preferencemanager.getEncryptionKey().ifEmpty { return }
+
+        if (decoded.reaction) {
+            applyPushReaction(decoded, encryptionKey)
+            return
+        }
+
+        // Only TEXT pushes carry enough content for a useful provisional row - IMAGE/AUDIO/POLL
+        // wait for the real sync + media fetch instead of flashing an empty bubble.
+        if (decoded.messageType != MessageType.TEXT) return
+
+        // Never overwrite an already-synced or socket-delivered row.
+        if (messageRepository.getMessageById(decoded.msgId) != null) return
+
+        val content = runCatching { CryptoUtil.decrypt(decoded.encodedContent, encryptionKey) }
+            .getOrNull() ?: return
+
+        val sendDate = (decoded.sendDate.takeIf { it > 0L } ?: getCurrentTimeMillisLong()).toString()
+
+        messageRepository.upsertMessage(
+            Message(
+                id = decoded.msgId,
+                msgType = MessageType.TEXT,
+                content = content,
+                senderId = decoded.senderId,
+                // Group chat is identified by groupId, not the push's receiverId (the
+                // recipient user) - see NotificationContentResolver.resolveMessage.
+                receiverId = if (decoded.groupMessage) decoded.groupId else decoded.receiverId,
+                groupMessage = decoded.groupMessage,
+                answerId = decoded.answerId.ifBlank { null },
+                sendDate = sendDate,
+                changeDate = sendDate,
+                sent = true,
+                myMessage = false,
+                readByMe = false,
+                readers = emptyList(),
+                reactions = emptyList(),
+                version = 0L,
+            )
+        )
+    }
+
+    /** Applies a reaction push to an already-local message. Never creates a new row. */
+    private suspend fun applyPushReaction(decoded: DecodedNotification.Message, encryptionKey: String) {
+        val existing = messageRepository.getMessageById(decoded.msgId) ?: return
+
+        val emoji = runCatching { CryptoUtil.decrypt(decoded.encodedContent, encryptionKey) }
+            .getOrNull()?.takeIf { it.isNotBlank() } ?: return
+
+        messageRepository.upsertMessage(
+            existing.copy(
+                reactions = existing.reactions.filterNot { it.userId == decoded.senderId } +
+                    Reaction(userId = decoded.senderId, content = emoji, reactedAt = getCurrentTimeMillisLong())
+            )
+        )
+    }
+
     suspend fun getPicturesForMessageIds(ids: List<String>){
         ids.forEach { messageId ->
             val savefilename = messageId + PICTURE_FILE_NAME
@@ -2181,7 +2285,7 @@ class AppRepository(
             )
 
             when (request) {
-                is NetworkResult.Error<RequestError> ->  {
+                is NetworkResult.Error<NetworkingError> ->  {
                     val existing = messageRepository.getMessageById(message.localPK)
                     if (existing != null) {
                         messageRepository.upsertMessage(existing.copy(
@@ -2216,7 +2320,7 @@ class AppRepository(
         )
 
         when (request) {
-            is NetworkResult.Error<RequestError> ->  {
+            is NetworkResult.Error<NetworkingError> ->  {
                 sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
             }
             is NetworkResult.Success<*> -> {
@@ -2254,7 +2358,7 @@ class AppRepository(
         )
 
         when (request) {
-            is NetworkResult.Error<RequestError> ->  {
+            is NetworkResult.Error<NetworkingError> ->  {
                 sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
             }
             is NetworkResult.Success<MessageResponse> -> {
@@ -2276,7 +2380,7 @@ class AppRepository(
         )
 
         when (request) {
-            is NetworkResult.Error<RequestError> -> {
+            is NetworkResult.Error<NetworkingError> -> {
                 sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
             }
             is NetworkResult.Success<MessageResponse> -> {
@@ -2584,7 +2688,7 @@ class AppRepository(
         targetId: String,
         isGroup: Boolean,
         reason: String,
-    ): NetworkResult<NetworkUtils.WakeResponse, NetworkError> {
+    ): NetworkResult<NetworkUtils.WakeResponse, NetworkingError> {
         return networkUtils.sendWake(targetId, isGroup, reason)
     }
 

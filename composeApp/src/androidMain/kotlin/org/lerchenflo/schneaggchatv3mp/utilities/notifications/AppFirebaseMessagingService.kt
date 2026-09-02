@@ -58,7 +58,9 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
                 if (decoded is DecodedNotification.Message) {
                     val appRepository = KoinPlatform.getKoin().get<AppRepository>()
                     if (SessionCache.loginIfValid(tokens = prefs.getTokens(), developer = false)) {
-                        appRepository.messageIdSync()
+                        // Instantly upsert a provisional row so an already-open (or now-opened)
+                        // chat shows the message before the sync below completes.
+                        appRepository.applyPushMessage(decoded)
                     }
                 }
             }.onFailure { e ->
