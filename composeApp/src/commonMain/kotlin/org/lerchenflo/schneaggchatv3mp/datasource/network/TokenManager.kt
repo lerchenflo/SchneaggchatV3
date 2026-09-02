@@ -24,6 +24,7 @@ import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
@@ -143,7 +144,7 @@ class TokenManager(
         return try {
             val networkUtils = KoinPlatform.getKoin().get<NetworkUtils>()
 
-            when (val result = networkUtils.refresh(refreshToken)) {
+            when (val result = networkUtils.refresh(refreshToken).trackConnectivity()) {
                 is NetworkResult.Error -> {
                     val error = result.error
                     if (error is NetworkingError.Unauthorized) {

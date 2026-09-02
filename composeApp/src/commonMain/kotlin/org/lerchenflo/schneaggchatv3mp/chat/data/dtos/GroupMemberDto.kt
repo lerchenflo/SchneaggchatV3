@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
     indices = [
         Index(value = ["groupId"]),
         Index(value = ["userId"]),
+        Index(value = ["groupId", "userId"], unique = true),
     ]
 )
 data class GroupMemberDto(

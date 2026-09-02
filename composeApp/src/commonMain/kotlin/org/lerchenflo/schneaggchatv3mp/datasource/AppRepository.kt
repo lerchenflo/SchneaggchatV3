@@ -31,6 +31,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 import org.koin.core.qualifier.named
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
@@ -110,6 +111,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectio
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
@@ -143,6 +145,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.error_access_expired
 import schneaggchatv3mp.composeapp.generated.resources.error_invalid_credentials
 import schneaggchatv3mp.composeapp.generated.resources.error_login_server_error
+import schneaggchatv3mp.composeapp.generated.resources.error_code_format
 import schneaggchatv3mp.composeapp.generated.resources.error_login_too_many_requests
 import schneaggchatv3mp.composeapp.generated.resources.eventssync
 import schneaggchatv3mp.composeapp.generated.resources.groupsync
@@ -191,32 +194,15 @@ class AppRepository(
             val duration: Long = 5000L
         ){
             @Composable
-            fun toStringComposable(): String {
-                var finalstr = ""
-
-                if (errorCode != null){
-                    finalstr += "Errorcode: ${errorCode} ${errorCodeToMessage(errorCode)}\n"
+            fun toStringComposable(): String = buildString {
+                val code = errorCode ?: error?.errorCode
+                if (code != null) {
+                    appendLine(stringResource(Res.string.error_code_format, code.toString(), errorCodeToMessage(code)))
                 }
 
-                if (error != null) {
-                    finalstr += "Errorcode: ${error.errorCode} ${errorCodeToMessage(errorCode)}\n"
-
-                    // Add error message from RequestError
-                    if (error.message != null){
-                        finalstr += "${error.message}\n"
-                    }
-                }
-
-                // Add errormessage if provided
-                if (errorMessage != null)
-                    finalstr += "${errorMessage}\n"
-
-                // Add UI text if provided
-                if (errorMessageUiText != null)
-                    finalstr += "${errorMessageUiText.asString()}\n"
-
-
-                return finalstr
+                error?.message?.let { appendLine(it) }
+                errorMessage?.let { appendLine(it) }
+                errorMessageUiText?.let { appendLine(it.asString()) }
             }
         }
 
@@ -270,11 +256,11 @@ class AppRepository(
 
         val android = appVersion.isAndroid()
         //println("Sending notification token to server... Android: $android")
-        networkUtils.setNotificationToken(token, android)
+        networkUtils.setNotificationToken(token, android).trackConnectivity()
     }
 
     suspend fun sendEmailVerify() : Boolean{
-        return when (val result = networkUtils.sendEmailVerify()) {
+        return when (val result = networkUtils.sendEmailVerify().trackConnectivity()) {
             is NetworkResult.Error<NetworkingError> -> {
                 println("Send email verify: Error occured: ${result.error}")
                 sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
@@ -320,7 +306,7 @@ class AppRepository(
      */
     suspend fun testServer(serverUrl: String = BASE_SERVER_URL) : Boolean {
         println("Testing server: $serverUrl")
-        return when(networkUtils.testServer(serverUrl)){
+        return when(networkUtils.testServer(serverUrl).trackConnectivity()){
             is NetworkResult.Error<*> -> false
             is NetworkResult.Success<*> -> true
         }
@@ -605,9 +591,9 @@ class AppRepository(
             val response = networkUtils.mapSync(
                 entries = localEntries.map { IdTimeStamp(it.id, it.updatedAt) },
                 page = currentPage,
-            )
+            ).trackConnectivity()
             when (response) {
-                is NetworkResult.Error<*> -> { println("Map entry sync error: ${response.error}"); break }
+                is NetworkResult.Error<*> -> { loggingRepository.logWarning("Map entry sync error: ${response.error}"); break }
                 is NetworkResult.Success -> {
                     //println("Map sync success, upserting ${response.data.updatedEntries} entrys")
                     response.data.updatedEntries.forEach { mapRepository.upsertMapEntry(it.toMapEntry()) }
@@ -643,7 +629,7 @@ class AppRepository(
                 coordinates = LatLong(lat = lat, long = lon),
                 locationData = locationData,
             )
-        )
+        ).trackConnectivity()
 
 
         when (result) {
@@ -657,8 +643,11 @@ class AppRepository(
     }
 
     suspend fun deleteMapEntry(entryId: String) : Boolean {
-        return when (networkUtils.deleteMapEntry(entryId)) {
-            is NetworkResult.Error<*> -> false
+        return when (val result = networkUtils.deleteMapEntry(entryId).trackConnectivity()) {
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                false
+            }
             is NetworkResult.Success<*> -> {
                 mapRepository.deleteMapEntry(entryId)
                 true
@@ -678,9 +667,9 @@ class AppRepository(
             val response = networkUtils.eventSync(
                 entries = localEntries.map { IdTimeStamp(it.id, it.updatedAt) },
                 page = currentPage,
-            )
+            ).trackConnectivity()
             when (response) {
-                is NetworkResult.Error<*> -> { println("Event sync error: ${response.error}"); break }
+                is NetworkResult.Error<*> -> { loggingRepository.logWarning("Event sync error: ${response.error}"); break }
                 is NetworkResult.Success -> {
                     response.data.updatedEvents.forEach { eventRepository.upsertEvent(it.toEvent()) }
                     response.data.deletedEvents.forEach { eventRepository.deleteEvent(it) }
@@ -725,7 +714,7 @@ class AppRepository(
                 createGroup = createGroup,
             ),
             profilePic = profilePic,
-        )
+        ).trackConnectivity()
 
         when (result) {
             is NetworkResult.Error<*> -> {
@@ -742,7 +731,7 @@ class AppRepository(
      * @return The id of the group belonging to the event
      */
     suspend fun joinEvent(eventId: String): String? {
-        return when (val response = networkUtils.joinEvent(eventId)) {
+        return when (val response = networkUtils.joinEvent(eventId).trackConnectivity()) {
             is NetworkResult.Error<*> -> {
                 sendErrorSuspend(ErrorChannel.ErrorEvent(error = response.error))
                 null
@@ -784,8 +773,11 @@ class AppRepository(
      * result regardless.
      */
     suspend fun detachEvent(eventId: String, groupId: String? = null, deleteGroup: Boolean = false, deleteEvent: Boolean = false): Boolean {
-        return when (networkUtils.detachEvent(eventId, deleteGroup, deleteEvent)) {
-            is NetworkResult.Error<*> -> false
+        return when (val result = networkUtils.detachEvent(eventId, deleteGroup, deleteEvent).trackConnectivity()) {
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                false
+            }
             is NetworkResult.Success<*> -> {
                 if (deleteEvent) {
                     eventRepository.deleteEvent(eventId)
@@ -1301,7 +1293,7 @@ class AppRepository(
             preferencemanager.saveServerUrl(BASE_SERVER_URL_TEST)
         }
 
-        when(val result = networkUtils.login(username.trim(), password)){
+        when(val result = networkUtils.login(username.trim(), password).trackConnectivity()){
             is NetworkResult.Error<*> -> {
                 println("Error: ${result.error}")
 
@@ -1350,7 +1342,7 @@ class AppRepository(
         language: String? = null,
         onResult: (Boolean) -> Unit
     ) {
-        when(val response = networkUtils.register(username, password, email, birthdate, profilePic, phoneNumber, language)){
+        when(val response = networkUtils.register(username, password, email, birthdate, profilePic, phoneNumber, language).trackConnectivity()){
             is NetworkResult.Error -> {
                 println("Error: ${response.error}")
 
@@ -1387,13 +1379,13 @@ class AppRepository(
 
         val localusers = userRepository.getuserchangeid()
 
-        val userSyncResponse = networkUtils.userIdSync(localusers.map { (id, changedate) -> IdTimeStamp(id, changedate) })
+        val userSyncResponse = networkUtils.userIdSync(localusers.map { (id, changedate) -> IdTimeStamp(id, changedate) }).trackConnectivity()
 
         val profilePicsToGet = emptyList<String>().toMutableList()
 
         when (userSyncResponse) {
             is NetworkResult.Error<*> -> {
-                println("userid sync error: ${userSyncResponse.error}")
+                loggingRepository.logWarning("userid sync error: ${userSyncResponse.error}")
             }
             is NetworkResult.Success<UserSyncResponse> -> {
                 //println("Userid sync response: ${userSyncResponse.data.toString()}")
@@ -1537,8 +1529,8 @@ class AppRepository(
     suspend fun getProfilePicturesForUserIds(userIds: List<String>){
         userIds.forEach { userId ->
             val savefilename = userId + USERPROFILEPICTURE_FILE_NAME
-            when (val picture = networkUtils.getProfilePicForUserId(userId)) {
-                is NetworkResult.Error<*> -> {println("Profilepic error for userid $userId")}
+            when (val picture = networkUtils.getProfilePicForUserId(userId).trackConnectivity()) {
+                is NetworkResult.Error<*> -> {loggingRepository.logWarning("Profilepic error for userid $userId")}
                 is NetworkResult.Success<ByteArray> -> {
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
 
@@ -1554,7 +1546,7 @@ class AppRepository(
      * @param searchTerm the searchterm which the user entered
      */
     suspend fun getAvailableUsers(searchTerm: String) : List<NewFriendsUserResponse> {
-        return when (val response = networkUtils.getAvailableUsers(searchTerm)) {
+        return when (val response = networkUtils.getAvailableUsers(searchTerm).trackConnectivity()) {
             is NetworkResult.Error<NetworkingError> -> {
                 sendErrorSuspend(
                     ErrorChannel.ErrorEvent(
@@ -1574,8 +1566,11 @@ class AppRepository(
      * Send or accept friend request from / to an userid
      */
     suspend fun sendFriendRequest(friendId: String) : Boolean {
-        when (val success = networkUtils.sendFriendRequest(friendId)){
-            is NetworkResult.Error<*> -> return false
+        when (val success = networkUtils.sendFriendRequest(friendId).trackConnectivity()){
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                return false
+            }
             is NetworkResult.Success<*> -> {
                 dataSync(reason = "friendRequestSent")
                 return true
@@ -1587,8 +1582,11 @@ class AppRepository(
      * deny a friendrequest from an userid / cancel an outgoing friend request to an userid
      */
     suspend fun denyFriendRequest(friendId: String) : Boolean {
-        when (val success = networkUtils.denyFriendRequest(friendId)){
-            is NetworkResult.Error<*> -> return false
+        when (val success = networkUtils.denyFriendRequest(friendId).trackConnectivity()){
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                return false
+            }
             is NetworkResult.Success<*> -> {
                 dataSync(reason = "friendRequestDenied")
                 return true
@@ -1598,8 +1596,11 @@ class AppRepository(
 
 
     suspend fun removeFriend(friendId: String) : Boolean {
-        when (val success = networkUtils.removeFriend(friendId)){
-            is NetworkResult.Error<*> -> return false
+        when (val success = networkUtils.removeFriend(friendId).trackConnectivity()){
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                return false
+            }
             is NetworkResult.Success<*> -> {
                 dataSync(reason = "friendRemoved")
                 return true
@@ -1609,8 +1610,11 @@ class AppRepository(
 
 
     suspend fun changeUsername(newUsername: String) : Boolean {
-        when (val success = networkUtils.changeUsername(newUsername)){
-            is NetworkResult.Error<*> -> return false
+        when (val success = networkUtils.changeUsername(newUsername).trackConnectivity()){
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                return false
+            }
             is NetworkResult.Success<*> -> {
                 dataSync(reason = "usernameChanged")
                 return true
@@ -1620,8 +1624,11 @@ class AppRepository(
 
 
     suspend fun changePassword(oldPassword: String, newPassword: String) : Boolean {
-        when (val success = networkUtils.changePassword(oldPassword, newPassword)){
-            is NetworkResult.Error<*> -> return false
+        when (val success = networkUtils.changePassword(oldPassword, newPassword).trackConnectivity()){
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                return false
+            }
             is NetworkResult.Success<*> -> {
                 return true
             }
@@ -1630,8 +1637,11 @@ class AppRepository(
 
 
     suspend fun changeProfilePic(newPic: ByteArray) : Boolean {
-        when (val success = networkUtils.changeProfilePic(newPic)){
-            is NetworkResult.Error<*> -> return false
+        when (val success = networkUtils.changeProfilePic(newPic).trackConnectivity()){
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                return false
+            }
             is NetworkResult.Success<*> -> {
                 dataSync(reason = "profilePicChanged")
                 return true
@@ -1660,8 +1670,11 @@ class AppRepository(
             newBirthDate = newBirthDate,
             newNickName = newNickName,
             newPhoneNumber = newPhoneNumber,
-        )){
-            is NetworkResult.Error<*> -> false
+        ).trackConnectivity()){
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                false
+            }
             is NetworkResult.Success<*> -> {
                 //dataSync()
                 true
@@ -1872,7 +1885,7 @@ class AppRepository(
                         clientMessageId = clientMessageIdIntern
                     )
                 }
-            }
+            }.trackConnectivity()
 
             when (serverrequest){
                 is NetworkResult.Error<NetworkingError> -> {
@@ -1885,6 +1898,7 @@ class AppRepository(
                     }
 
                     println("Message senden error: ${serverrequest.error}")
+                    sendErrorSuspend(ErrorChannel.ErrorEvent(error = error))
 
                     when (content) {
                         is ImageContent -> {
@@ -2088,11 +2102,11 @@ class AppRepository(
 
         while (moreMessages) {
 
-            val messageSyncResponse = networkUtils.messageSync(since = since)
+            val messageSyncResponse = networkUtils.messageSync(since = since).trackConnectivity()
 
             when (messageSyncResponse) {
                 is NetworkResult.Error<*> -> {
-                    println("messageid sync error")
+                    loggingRepository.logWarning("messageid sync error: ${messageSyncResponse.error}")
                     break // Stop on error, never advance past a batch we failed to fetch
                 }
 
@@ -2223,8 +2237,8 @@ class AppRepository(
         ids.forEach { messageId ->
             val savefilename = messageId + PICTURE_FILE_NAME
 
-            when (val picture = networkUtils.getImageForImageMessage(messageId)) {
-                is NetworkResult.Error<*> -> {println("Picture error for messageid $messageId")}
+            when (val picture = networkUtils.getImageForImageMessage(messageId).trackConnectivity()) {
+                is NetworkResult.Error<*> -> {loggingRepository.logWarning("Picture error for messageid $messageId")}
                 is NetworkResult.Success<ByteArray> -> {
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
 
@@ -2239,8 +2253,8 @@ class AppRepository(
             val savefilename = messageId + VOICEMSG_FILE_NAME
             //println("Fetching Audio for messageid $messageId")
 
-            when (val audio = networkUtils.getAudioForAudioMessage(messageId)) {
-                is NetworkResult.Error<*> -> {println("Audio error for messageid $messageId")}
+            when (val audio = networkUtils.getAudioForAudioMessage(messageId).trackConnectivity()) {
+                is NetworkResult.Error<*> -> {loggingRepository.logWarning("Audio error for messageid $messageId")}
                 is NetworkResult.Success<ByteArray> -> {
                     val filepath = audioManager.saveAudioToStorage(audio.data, savefilename)
                     //println("Audio saved to $filepath")
@@ -2262,7 +2276,7 @@ class AppRepository(
             timestamp = timestamp
         )
 
-        networkUtils.setMessagesRead(chatid, gruppe, timestamp.toLong())
+        networkUtils.setMessagesRead(chatid, gruppe, timestamp.toLong()).trackConnectivity()
     }
 
 
@@ -2282,7 +2296,7 @@ class AppRepository(
             val request = networkUtils.editMessage(
                 messageId = message.id!!,
                 newContent = newContent
-            )
+            ).trackConnectivity()
 
             when (request) {
                 is NetworkResult.Error<NetworkingError> ->  {
@@ -2293,7 +2307,7 @@ class AppRepository(
                             sent = false
                         ))
                     }
-                    //sendErrorSuspend(ErrorEvent(error = request.error))
+                    sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
                 }
                 is NetworkResult.Success<MessageResponse> -> {
                     val existing = messageRepository.getMessageById(request.data.messageId)
@@ -2317,7 +2331,7 @@ class AppRepository(
     suspend fun deleteMessage(messageId: String){
         val request = networkUtils.deleteMessage(
             messageId = messageId
-        )
+        ).trackConnectivity()
 
         when (request) {
             is NetworkResult.Error<NetworkingError> ->  {
@@ -2331,7 +2345,7 @@ class AppRepository(
     }
 
     suspend fun reactToMessage(messageId: String, content: String) {
-        val  request = networkUtils.reactToMessage(messageId = messageId, content = content)
+        val  request = networkUtils.reactToMessage(messageId = messageId, content = content).trackConnectivity()
         when (request) {
             is NetworkResult.Error -> sendErrorSuspend(ErrorChannel.ErrorEvent(error = request.error))
             is NetworkResult.Success -> {
@@ -2355,7 +2369,7 @@ class AppRepository(
     suspend fun votePoll(ownId: String, pollVoteRequest: PollVoteRequest) {
         val request = networkUtils.votePoll(
             pollVoteRequest
-        )
+        ).trackConnectivity()
 
         when (request) {
             is NetworkResult.Error<NetworkingError> ->  {
@@ -2377,7 +2391,7 @@ class AppRepository(
     suspend fun deletePollOption(ownId: String, messageId: String, optionId: String) {
         val request = networkUtils.deletePollOption(
             PollOptionDeleteRequest(messageId = messageId, optionId = optionId)
-        )
+        ).trackConnectivity()
 
         when (request) {
             is NetworkResult.Error<NetworkingError> -> {
@@ -2421,7 +2435,7 @@ class AppRepository(
             description = description,
             memberIds = memberIds,
             profilePicBytes = profilePic
-        )
+        ).trackConnectivity()
 
         return when (response){
             is NetworkResult.Error<*> -> {
@@ -2477,13 +2491,13 @@ class AppRepository(
             groupIds = localgroups.map {
                 IdTimeStamp(it.id, it.updatedAt)
             }
-        )
+        ).trackConnectivity()
 
         var deletedGroupIds: List<String> = emptyList()
 
         when (groupSyncResponse) {
             is NetworkResult.Error<*> -> {
-                println("groupid sync error")
+                loggingRepository.logWarning("groupid sync error: ${groupSyncResponse.error}")
             }
 
             is NetworkResult.Success<GroupSyncResponse> -> {
@@ -2537,8 +2551,8 @@ class AppRepository(
     suspend fun getProfilePicturesForGroupIds(groupIds: List<String>){
         groupIds.forEach { groupId ->
             val savefilename = groupId + GROUPPROFILEPICTURE_FILE_NAME
-            when (val picture = networkUtils.getProfilePicForGroupId(groupId)) {
-                is NetworkResult.Error<*> -> {println("Profilepic error for groupid $groupId")}
+            when (val picture = networkUtils.getProfilePicForGroupId(groupId).trackConnectivity()) {
+                is NetworkResult.Error<*> -> {loggingRepository.logWarning("Profilepic error for groupid $groupId")}
                 is NetworkResult.Success<ByteArray> -> {
                     val filepath = pictureManager.savePictureToStorage(picture.data, savefilename)
 
@@ -2550,8 +2564,11 @@ class AppRepository(
 
 
     suspend fun changeGroupProfilePic(groupId: String, newPic: ByteArray) : Boolean {
-        when (val success = networkUtils.changeGroupProfilePic(newPic, groupId)){
-            is NetworkResult.Error<*> -> return false
+        when (val success = networkUtils.changeGroupProfilePic(newPic, groupId).trackConnectivity()){
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                return false
+            }
             is NetworkResult.Success<*> -> {
                 dataSync(reason = "groupProfilePicChanged")
                 return true
@@ -2560,8 +2577,11 @@ class AppRepository(
     }
 
     suspend fun changeGroupDescription(groupId: String, newDescription: String) : Boolean {
-        when (val success = networkUtils.changeGroupDescription(newDescription, groupId)){
-            is NetworkResult.Error<*> -> return false
+        when (val success = networkUtils.changeGroupDescription(newDescription, groupId).trackConnectivity()){
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                return false
+            }
             is NetworkResult.Success<*> -> {
                 dataSync(reason = "groupDescriptionChanged")
                 return true
@@ -2570,8 +2590,11 @@ class AppRepository(
     }
 
     suspend fun changeGroupName(groupId: String, newName: String) : Boolean {
-        when (val success = networkUtils.changeGroupName(newName, groupId)){
-            is NetworkResult.Error<*> -> return false
+        when (val success = networkUtils.changeGroupName(newName, groupId).trackConnectivity()){
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                return false
+            }
             is NetworkResult.Success<*> -> {
                 dataSync(reason = "groupNameChanged")
                 return true
@@ -2584,8 +2607,11 @@ class AppRepository(
             action = action,
             memberId = memberId,
             groupId = groupId
-        )){
-            is NetworkResult.Error<*> -> return false
+        ).trackConnectivity()){
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                return false
+            }
             is NetworkResult.Success<*> -> {
                 dataSync(reason = "groupMembersChanged")
                 return true
@@ -2595,8 +2621,11 @@ class AppRepository(
 
     /** Pass null for [expiresAt] to clear the expiry (group never auto-expires). */
     suspend fun changeGroupExpiry(groupId: String, expiresAt: Long?) : Boolean {
-        when (val success = networkUtils.changeGroupExpiry(groupId, expiresAt)){
-            is NetworkResult.Error<*> -> return false
+        when (val success = networkUtils.changeGroupExpiry(groupId, expiresAt).trackConnectivity()){
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = success.error))
+                return false
+            }
             is NetworkResult.Success<*> -> {
                 dataSync(reason = "groupExpiryChanged")
                 return true
@@ -2616,8 +2645,11 @@ class AppRepository(
         shareSpeedHeading: Boolean = false,
         snailTrail: Boolean = false,
     ): Boolean {
-        return when (networkUtils.shareLocation(friendId, share, shareSpeedHeading, snailTrail)) {
-            is NetworkResult.Error<*> -> false
+        return when (val result = networkUtils.shareLocation(friendId, share, shareSpeedHeading, snailTrail).trackConnectivity()) {
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                false
+            }
             is NetworkResult.Success<*> -> {
                 // Optimistically reflect the new value locally so UI updates immediately;
                 // the next /users/sync or UserChange socket push reconciles the authoritative value.
@@ -2651,8 +2683,11 @@ class AppRepository(
      * [UserDto.wakeupEnabled] - on our own row that same column is the master switch instead.
      */
     suspend fun setWakePermission(friendId: String, allowWake: Boolean): Boolean {
-        return when (networkUtils.setWakePermission(friendId, allowWake)) {
-            is NetworkResult.Error<*> -> false
+        return when (val result = networkUtils.setWakePermission(friendId, allowWake).trackConnectivity()) {
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                false
+            }
             is NetworkResult.Success<*> -> {
                 // Optimistic local write, reconciled by the next /users/sync or UserChange push.
                 userRepository.getUserById(friendId)?.let { friend ->
@@ -2665,8 +2700,11 @@ class AppRepository(
 
     /** Master switch: while off nobody can wake us, whatever the per-friend toggles say. */
     suspend fun setWakeGlobal(enabled: Boolean): Boolean {
-        return when (networkUtils.setWakeGlobal(enabled)) {
-            is NetworkResult.Error<*> -> false
+        return when (val result = networkUtils.setWakeGlobal(enabled).trackConnectivity()) {
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                false
+            }
             is NetworkResult.Success<*> -> {
                 SessionCache.requireLoggedIn()?.userId?.let { ownId ->
                     userRepository.getUserById(ownId)?.let { own ->
@@ -2689,7 +2727,7 @@ class AppRepository(
         isGroup: Boolean,
         reason: String,
     ): NetworkResult<NetworkUtils.WakeResponse, NetworkingError> {
-        return networkUtils.sendWake(targetId, isGroup, reason)
+        return networkUtils.sendWake(targetId, isGroup, reason).trackConnectivity()
     }
 
     // ─── Personal settings (theme, language, pinned chats, ...) ────────────────
@@ -2717,42 +2755,42 @@ class AppRepository(
 
     suspend fun setUseMd(value: Boolean) {
         preferencemanager.saveUseMd(value)
-        networkUtils.updateSettings(UserSettingsRequest(mdFormat = value))
+        networkUtils.updateSettings(UserSettingsRequest(mdFormat = value)).trackConnectivity()
     }
 
     suspend fun setDevSettings(value: Boolean) {
         preferencemanager.saveDevSettings(value)
-        networkUtils.updateSettings(UserSettingsRequest(developerSettings = value))
+        networkUtils.updateSettings(UserSettingsRequest(developerSettings = value)).trackConnectivity()
     }
 
     suspend fun setHighlightTodaysMessageTimestamp(value: Boolean) {
         preferencemanager.saveHighlightTodaysMessageTimestamp(value)
-        networkUtils.updateSettings(UserSettingsRequest(highlightTodaysMessageTimestamp = value))
+        networkUtils.updateSettings(UserSettingsRequest(highlightTodaysMessageTimestamp = value)).trackConnectivity()
     }
 
     suspend fun setThemeSetting(theme: ThemeSetting) {
         preferencemanager.saveThemeSetting(theme)
-        networkUtils.updateSettings(UserSettingsRequest(theme = theme.name))
+        networkUtils.updateSettings(UserSettingsRequest(theme = theme.name)).trackConnectivity()
     }
 
     suspend fun setLanguageSetting(language: LanguageSetting) {
         languageService.applyLanguage(language)
-        networkUtils.updateSettings(UserSettingsRequest(language = language.name))
+        networkUtils.updateSettings(UserSettingsRequest(language = language.name)).trackConnectivity()
     }
 
     suspend fun setMergeMapLocations(value: Boolean) {
         preferencemanager.saveMergeMapLocations(value)
-        networkUtils.updateSettings(UserSettingsRequest(mergeMapLocations = value))
+        networkUtils.updateSettings(UserSettingsRequest(mergeMapLocations = value)).trackConnectivity()
     }
 
     suspend fun setMergeMapUsers(value: Boolean) {
         preferencemanager.saveMergeMapUsers(value)
-        networkUtils.updateSettings(UserSettingsRequest(mergeMapUsers = value))
+        networkUtils.updateSettings(UserSettingsRequest(mergeMapUsers = value)).trackConnectivity()
     }
 
     suspend fun setMapStyleSetting(style: MapStyleSetting) {
         preferencemanager.saveMapStyleSetting(style)
-        networkUtils.updateSettings(UserSettingsRequest(mapStyle = style.name))
+        networkUtils.updateSettings(UserSettingsRequest(mapStyle = style.name)).trackConnectivity()
     }
 
     /** Pins or unpins a chat locally, then pushes the whole resulting list (server stores it wholesale). */
@@ -2762,7 +2800,7 @@ class AppRepository(
         } else {
             preferencemanager.removePinnedChat(chatId)
         }
-        networkUtils.updateSettings(UserSettingsRequest(pinnedChats = preferencemanager.getPinnedChats()))
+        networkUtils.updateSettings(UserSettingsRequest(pinnedChats = preferencemanager.getPinnedChats())).trackConnectivity()
     }
 
     suspend fun setLastContributePopupShown(epochMillis: Long) {
