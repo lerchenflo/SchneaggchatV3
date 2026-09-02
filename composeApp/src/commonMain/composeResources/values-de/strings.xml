@@ -751,6 +751,20 @@
     <string name="games_schneaggahus_title">Schneaggahus</string>
     <string name="games_schneaggahus_instructions">Schneagga krabbeln aus dem Startpunkt und folgen den Gleisen. Tippe auf die Weichen, um die Gleise umzuleiten, und lenke jeden Schneagg zum Haus seiner Farbe.\n\nJede richtige Zustellung bringt Punkte — sobald 3 Schneagga im falschen Haus gelandet sind, ist das Spiel vorbei. Je länger du überlebst, desto schneller kommen neue Schneagga!</string>
 
+    <!-- Games: Crossword -->
+    <string name="games_crossword_title">Kreuzworträtsel</string>
+    <string name="games_crossword_instructions">Löse das tägliche Kreuzworträtsel! Tippe auf ein Feld, um es auszuwählen, tippe erneut, um zwischen waagrecht und senkrecht zu wechseln, und schreibe mit der Tastatur unten. Das englische Rätsel stammt aus dem öffentlichen NYT-Archiv, das deutsche wird jeden Tag neu generiert. Alle bekommen am selben Tag dasselbe Rätsel.</string>
+    <string name="games_crossword_language_question">Wähle deine Rätselsprache</string>
+    <string name="games_crossword_language_english">Englisch (NYT-Archiv)</string>
+    <string name="games_crossword_language_german">Deutsch</string>
+    <string name="games_crossword_load_failed">Das tägliche Rätsel konnte nicht geladen werden. Prüfe deine Internetverbindung und versuche es erneut.</string>
+    <string name="games_crossword_retry">Erneut versuchen</string>
+    <string name="games_crossword_check">Antworten prüfen</string>
+    <string name="games_crossword_restart">Neu starten</string>
+    <string name="games_crossword_solved">Gelöst in %1$s!</string>
+    <string name="games_crossword_previous_clue">Vorherige Frage</string>
+    <string name="games_crossword_next_clue">Nächste Frage</string>
+
     <!-- Games: Grid Rush -->
     <string name="games_daily_section">Tägliche Challenge (%1$s)</string>
     <string name="games_gridrush_title">Grid Rush</string>
