@@ -9,7 +9,6 @@ import io.ktor.client.request.delete
 import io.ktor.client.request.forms.FormBuilder
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
-import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
@@ -131,6 +130,10 @@ class NetworkUtils(
             println("Going offline: HTTP request timeout - ${e.message}")
             setOffline()
             NetworkResult.Error(NetworkingError.NetworkTimeout())
+        } catch (e: SocketTimeoutException) {
+            println("Going offline: Socket timeout - ${e.message}")
+            setOffline()
+            NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: IOException) {
             // Covers SocketTimeoutException, UnknownHostException, etc. on JVM/Android
             //println("Going offline: IO exception - ${e.message}")
@@ -213,13 +216,25 @@ class NetworkUtils(
 
     private suspend inline fun <reified R> safePostMultipart(
         endpoint: String,
+        client: HttpClient = httpClient,
         crossinline parts: FormBuilder.() -> Unit
     ): NetworkResult<R, NetworkingError> {
         return safeCall {
-            httpClient.post(preferenceManager.buildServerUrl(endpoint)) {
+            client.post(preferenceManager.buildServerUrl(endpoint)) {
                 setBody(MultiPartFormDataContent(formData { parts() }))
             }
         }
+    }
+
+    private fun FormBuilder.appendProfilePic(
+        bytes: ByteArray,
+        fileName: String = "profile.jpg",
+        contentType: String = "image/jpeg"
+    ) {
+        append("profilepic", bytes, Headers.build {
+            append(HttpHeaders.ContentType, contentType)
+            append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+        })
     }
 
     private suspend inline fun <reified T, reified R> safePut(
@@ -343,49 +358,23 @@ class NetworkUtils(
         language: String? = null,
         fileName: String = "profile.jpg"
     ): NetworkResult<Unit, NetworkingError> {
-        return try {
-            val response = authHttpClient.submitFormWithBinaryData(
-                url = preferenceManager.buildServerUrl("/auth/register"),
-                formData = formData {
-                    append("username", username)
-                    append("password", password)
-                    append("email", email)
-                    append("birthDate", birthDate)
-                    if (!phoneNumber.isNullOrBlank()) {
-                        append("phoneNumber", phoneNumber)
-                    }
-                    if (!language.isNullOrBlank()) {
-                        append("language", language)
-                    }
-                    append("profilepic", profilePicBytes, Headers.build {
-                        append(HttpHeaders.ContentType, "image/jpeg")
-                        append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
-                    })
+        return safePostMultipart(
+            endpoint = "/auth/register",
+            client = authHttpClient,
+            parts = {
+                append("username", username)
+                append("password", password)
+                append("email", email)
+                append("birthDate", birthDate)
+                if (!phoneNumber.isNullOrBlank()) {
+                    append("phoneNumber", phoneNumber)
                 }
-            )
-
-            if (response.status.isSuccess()) {
-                NetworkResult.Success(Unit)
-            } else {
-                println("Create response body: ${response.body<String>()}")
-                NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
+                if (!language.isNullOrBlank()) {
+                    append("language", language)
+                }
+                appendProfilePic(profilePicBytes, fileName)
             }
-        } catch (e: UnresolvedAddressException) {
-            NetworkResult.Error(NetworkingError.NoInternetConnection)
-        } catch (e: HttpRequestTimeoutException) {
-            NetworkResult.Error(NetworkingError.NetworkTimeout())
-        } catch (e: SocketTimeoutException) {
-            NetworkResult.Error(NetworkingError.NetworkTimeout())
-        } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkingError.SerializationError())
-        } catch (e: IOException) { // This catches UnknownHostException too
-            setOffline()
-            NetworkResult.Error(NetworkingError.NoInternetConnection)
-        }catch (e: Exception) {
-            currentCoroutineContext().ensureActive()
-            loggingRepository.logWarning("NetworkUtils register failed: ${e.message}")
-            NetworkResult.Error(NetworkingError.Unknown(message = e.message))
-        }
+        )
     }
 
     suspend fun sendEmailVerify(): NetworkResult<Unit, NetworkingError> {
@@ -682,45 +671,11 @@ class NetworkUtils(
         )
     }
 
-    suspend fun changeProfilePic(newProfilePic: ByteArray, fileName: String = "profile.jpg"): NetworkResult<Any, NetworkingError> {
-        return try {
-            val response = httpClient.submitFormWithBinaryData(
-                url = preferenceManager.buildServerUrl("/users/setprofilepic"),
-                formData = formData {
-                    append("profilepic", newProfilePic, Headers.build {
-                        append(HttpHeaders.ContentType, "image/jpeg")
-                        append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
-                    })
-                }
-            )
-
-            if (response.status.isSuccess()) {
-                NetworkResult.Success(Unit)
-            } else {
-                NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
-            }
-        } catch (e: UnresolvedAddressException) {
-            setOffline()
-            NetworkResult.Error(NetworkingError.NoInternetConnection)
-        } catch (e: HttpRequestTimeoutException) {
-            setOffline()
-            NetworkResult.Error(NetworkingError.NetworkTimeout())
-        } catch (e: SocketTimeoutException) {
-            setOffline()
-            NetworkResult.Error(NetworkingError.NetworkTimeout())
-        } catch (e: ConnectTimeoutException) {
-            setOffline()
-            NetworkResult.Error(NetworkingError.NetworkTimeout())
-        } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkingError.SerializationError(message = e.message))
-        } catch (e: IOException) {
-            setOffline()
-            NetworkResult.Error(NetworkingError.NoInternetConnection)
-        } catch (e: Exception) {
-            currentCoroutineContext().ensureActive()
-            loggingRepository.logWarning("NetworkUtils changeProfilePic failed: ${e.message}")
-            NetworkResult.Error(NetworkingError.Unknown(message = e.message))
-        }
+    suspend fun changeProfilePic(newProfilePic: ByteArray, fileName: String = "profile.jpg"): NetworkResult<Unit, NetworkingError> {
+        return safePostMultipart(
+            endpoint = "/users/setprofilepic",
+            parts = { appendProfilePic(newProfilePic, fileName) }
+        )
     }
 
     @Serializable
@@ -837,43 +792,15 @@ class NetworkUtils(
         memberIds: List<String>, //Userids
         profilePicBytes: ByteArray,
     ): NetworkResult<GroupResponse, NetworkingError> {
-        val fileName = "image.png"
-        return try {
-            val response = httpClient.submitFormWithBinaryData(
-                url = preferenceManager.buildServerUrl("/groups/create"),
-                formData = formData {
-                    append("name", name)
-                    append("description", description)
-                    append("memberlist", memberIds.joinToString(","))
-                    append("profilepic", profilePicBytes, Headers.build {
-                        append(HttpHeaders.ContentType, "image/jpeg")
-                        append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
-                    })
-                }
-            )
-            println("Response string: ${response.body<String>()}")
-
-            if (response.status.isSuccess()) {
-                NetworkResult.Success(response.body())
-            } else {
-                NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
+        return safePostMultipart(
+            endpoint = "/groups/create",
+            parts = {
+                append("name", name)
+                append("description", description)
+                append("memberlist", memberIds.joinToString(","))
+                appendProfilePic(profilePicBytes, fileName = "image.png")
             }
-        } catch (e: UnresolvedAddressException) {
-            NetworkResult.Error(NetworkingError.NoInternetConnection)
-        } catch (e: HttpRequestTimeoutException) {
-            NetworkResult.Error(NetworkingError.NetworkTimeout())
-        } catch (e: SocketTimeoutException) {
-            NetworkResult.Error(NetworkingError.NetworkTimeout())
-        } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkingError.SerializationError())
-        } catch (e: IOException) { // This catches UnknownHostException too
-            setOffline()
-            NetworkResult.Error(NetworkingError.NoInternetConnection)
-        }catch (e: Exception) {
-            currentCoroutineContext().ensureActive()
-            loggingRepository.logWarning("NetworkUtils createGroup failed: ${e.message}")
-            NetworkResult.Error(NetworkingError.Unknown(message = e.message))
-        }
+        )
     }
 
     @Serializable
@@ -890,45 +817,11 @@ class NetworkUtils(
     }
 
 
-    suspend fun changeGroupProfilePic(newProfilePic: ByteArray, groupId: String, fileName: String = "profile.jpg"): NetworkResult<Any, NetworkingError> {
-        return try {
-            val response = httpClient.submitFormWithBinaryData(
-                url = preferenceManager.buildServerUrl("/groups/setprofilepic?groupid=$groupId"),
-                formData = formData {
-                    append("profilepic", newProfilePic, Headers.build {
-                        append(HttpHeaders.ContentType, "image/jpeg")
-                        append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
-                    })
-                }
-            )
-
-            if (response.status.isSuccess()) {
-                NetworkResult.Success(Unit)
-            } else {
-                NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
-            }
-        } catch (e: UnresolvedAddressException) {
-            setOffline()
-            NetworkResult.Error(NetworkingError.NoInternetConnection)
-        } catch (e: HttpRequestTimeoutException) {
-            setOffline()
-            NetworkResult.Error(NetworkingError.NetworkTimeout())
-        } catch (e: SocketTimeoutException) {
-            setOffline()
-            NetworkResult.Error(NetworkingError.NetworkTimeout())
-        } catch (e: ConnectTimeoutException) {
-            setOffline()
-            NetworkResult.Error(NetworkingError.NetworkTimeout())
-        } catch (e: SerializationException) {
-            NetworkResult.Error(NetworkingError.SerializationError(message = e.message))
-        } catch (e: IOException) {
-            setOffline()
-            NetworkResult.Error(NetworkingError.NoInternetConnection)
-        } catch (e: Exception) {
-            currentCoroutineContext().ensureActive()
-            loggingRepository.logWarning("NetworkUtils changeGroupProfilePic failed: ${e.message}")
-            NetworkResult.Error(NetworkingError.Unknown(message = e.message))
-        }
+    suspend fun changeGroupProfilePic(newProfilePic: ByteArray, groupId: String, fileName: String = "profile.jpg"): NetworkResult<Unit, NetworkingError> {
+        return safePostMultipart(
+            endpoint = "/groups/setprofilepic?groupid=$groupId",
+            parts = { appendProfilePic(newProfilePic, fileName) }
+        )
     }
 
     suspend fun changeGroupDescription(newDescription: String, groupId: String) : NetworkResult<Any, NetworkingError> {
@@ -1386,14 +1279,7 @@ class NetworkUtils(
                     }
                 )
                 profilePic?.let {
-                    append(
-                        key = "profilepic",
-                        value = it,
-                        headers = Headers.build {
-                            append(HttpHeaders.ContentType, "image/png")
-                            append(HttpHeaders.ContentDisposition, "filename=\"eventtype.png\"")
-                        }
-                    )
+                    appendProfilePic(it, fileName = "eventtype.png", contentType = "image/png")
                 }
             }
         )
