@@ -40,6 +40,8 @@
     <string name="email_check_verified">Email - Verifizierung überprüfen</string>
     <string name="email_check_problem">Es funktioniert nicht</string>
     <string name="email_check_loading_data">Accountdaten werden geladen ...</string>
+    <string name="email_check_check_emails_snackbar">Bestätigungsmail wurde gesendet. Bitte auch den Spam-Ordner prüfen. Dies kann bis zu 2 Min dauern</string>
+
 
 
 
@@ -375,6 +377,7 @@
     <string name="map_create_choice_title">Was möchtest du hier erstellen?</string>
     <string name="map_create_choice_entry">Karteneintrag</string>
     <string name="map_create_choice_event">Event</string>
+    <string name="map_create_choice_open_in_maps">In Karten-App öffnen</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Essen</string>
     <string name="event_type_beer">Bier</string>
@@ -501,6 +504,7 @@
     <string name="german_language">Deutsch (Deutschland)</string>
     <string name="english_language">Englisch</string>
     <string name="vori_language">Vori</string>
+    <string name="italian_language">Italienisch</string>
     <string name="language">Sprache</string>
     <string name="language_sel_desc">Wähle die Sprache deiner App</string>
 
@@ -658,6 +662,12 @@
     <string name="poll_settings_limitperentry_info">Lege fest, wie viele Nutzer maximal für einen Eintrag stimmen können</string>
     <string name="poll_option_maxvoters_withcount">Max. %1$s Nutzer für diesen Eintrag</string>
 
+    <string name="poll_settings_showcheckboxes">Checkboxen anzeigen</string>
+    <string name="poll_settings_showcheckboxes_info">Wenn deaktiviert, wird die Umfrage als einfache Liste ohne Abstimmung angezeigt - nützlich für geteilte Listen wie eine Einkaufsliste</string>
+
+    <string name="poll_settings_allowdeleteoptions">Löschen von Optionen erlauben</string>
+    <string name="poll_settings_allowdeleteoptions_info">Erlaubt dem Umfrageersteller, jede Option zu löschen, und jedem Nutzer, die von ihm selbst erstellten Optionen zu löschen</string>
+
     <string name="poll_visibility_title">Sichtbarkeit: %1$s</string>
 
     <string name="poll_visibility_public">Öffentlich (Jeder sieht wer wo abgestimmt hat)</string>
@@ -700,6 +710,15 @@
     <string name="poll_option_claimed_count">%1$s/%2$s</string>
     <string name="poll_option_full">voll</string>
     <string name="poll_haslimitedentries_info">Manche Einträge haben eine begrenzte Anzahl an Stimmen</string>
+
+    <string name="poll_listmode_info">Dies ist eine einfache Liste - keine Abstimmung</string>
+    <string name="poll_deleteoptions_info">Der Ersteller kann jede Option löschen, und Nutzer können die von ihnen erstellten Optionen löschen</string>
+
+    <string name="poll_option_delete">Option löschen</string>
+    <string name="poll_option_delete_confirm_title">Diese Option löschen?</string>
+    <string name="poll_option_delete_confirm_text">"%1$s" und die zugehörigen Stimmen werden entfernt. Dies kann nicht rückgängig gemacht werden.</string>
+
+    <string name="poll_cannot_vote_on_unsent">Du kannst nicht für eine unversendete Umfrage abstimmen</string>
 
 
 
@@ -1363,4 +1382,5 @@
     <string name="system_wake_sent_reason">%1$s hat dich geweckt: %2$s</string>
     <string name="system_unknown_event">Chat aktualisiert</string>
 
-</resources>
+
+    <string name="confirm_delete_event">Dieses Event löschen? Die Gruppe wird getrennt und nicht gelöscht, aber das Event wird gelöscht.</string></resources>

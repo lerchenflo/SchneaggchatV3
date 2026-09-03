@@ -120,7 +120,6 @@ class NetworkUtils(
             NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: SocketTimeoutException) {
             println("Going offline: Socket timeout - ${e.message}")
-            setOffline()
             NetworkResult.Error(NetworkingError.NetworkTimeout())
         } catch (e: IOException) {
             // Covers SocketTimeoutException, UnknownHostException, etc. on JVM/Android

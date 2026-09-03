@@ -40,6 +40,8 @@
     <string name="email_check_verified">Email - Verifizierung überprüfa</string>
     <string name="email_check_problem">Es tuat ned</string>
     <string name="email_check_loading_data">Account wird glada ...</string>
+    <string name="email_check_check_emails_snackbar">Bestätigungsemail gschickt. Bitte ou da Spam-Ordner prüfa. Es kann bis zu 2 Min go</string>
+
 
 
 
@@ -62,6 +64,18 @@
     <string name="acc_not_exist">Dean Account gits ned</string>
     <string name="offline">Dine App erreicht da Server ned</string>
     <string name="unknown_error">Irgend an Fehler isch uftreatta</string>
+    <string name="network_error_bad_request">Ungültige Afrog</string>
+    <string name="network_error_unauthorized">Zugriff verweigert (ungültige Anmeldedata)</string>
+    <string name="network_error_forbidden">Ned erlaubt</string>
+    <string name="network_error_not_found">Ressource ned gfunda</string>
+    <string name="network_error_timeout">Zeitüberschreitung bei da Afrog</string>
+    <string name="network_error_conflict">Konflikt (Ressource gits scho oda ungültiger Zustand)</string>
+    <string name="network_error_payload_too_large">Daten z groß</string>
+    <string name="network_error_too_many_requests">Z viele Afroga (Limit überschritta)</string>
+    <string name="network_error_server">Serverfehler (internes Serverproblem)</string>
+    <string name="network_error_no_internet">Kua Internetverbindung</string>
+    <string name="network_error_serialization">Serialisierungsfehler</string>
+    <string name="error_code_format">Fehlercode: %1$s %2$s</string>
     <string name="birthdateerror">Es git a problem mit dinam Geburtstag</string>
     <string name="acc_locked">Din Account isch aktuell gsperrt</string>
     <string name="password_wrong">Des Passwort isch falsch</string>
@@ -141,6 +155,12 @@
 
     <string name="birthdate">Geburtsdatum</string>
 
+    <string name="birthdays">Geburtstäg</string>
+    <string name="birthday_tomorrow">morn</string>
+    <string name="birthday_in_days">in %1$d Täg</string>
+    <string name="birthday_turns_age">wird %1$d</string>
+    <string name="no_birthdays">Kuana vo dina Freunde hot a Geburtsdatum gsetzt</string>
+
     <string name="no_description">Kua Beschreibung</string>
     <string name="remove_friend">Freund entferna</string>
     <string name="save">Speichra</string>
@@ -156,6 +176,7 @@
     <string name="camera">Kamera</string>
     <string name="gallery">Gallerie</string>
     <string name="choose_image_source">Bildquelle uswähla</string>
+    <string name="image_picker_error">Fehler: %1$s</string>
 
     <string name="new_chat">Neuer Chat</string>
     <string name="new_group">Gruppe erstella</string>
@@ -195,16 +216,22 @@
     <string name="delete_group_timer">Gruppentimer löscha</string>
     <string name="confirm_delete_group_timer">Ablaufdatum vo derra Gruppe entferna? Sie louft denn num automatisch ab.</string>
     <string name="delete_event">Event löscha</string>
-    <string name="confirm_delete_event">Des Event löscha? Die Gruppe wird davo trennt und blibt bestoh, aber s Event sealb wird endgültig glöscht.</string>
     <string name="event_delete_failed">❌ Event hot ned glöscht werra künna</string>
     <string name="event_delete_warning_message">Wenn du a Event löschesch kann des ned rückgängig gmacht werra. Magsch du o die verbundene Gruppe löscha?</string>
+    <string name="event_delete_confirm_no_group_message">Des Event löscha? Es kann num rückgängig gmacht werra.</string>
+    <string name="event_delete_detach_only">Nur trenna (Event &amp; Gruppe blieband)</string>
     <string name="event_delete_only">Event löscha</string>
+    <string name="event_delete_group_only">Nur Gruppe löscha</string>
     <string name="event_delete_with_group">Event + Gruppe löscha</string>
     <string name="event_max_users_label">Teilnehmer begrenza</string>
     <string name="event_max_users_info">Leg fest, wie viele Persona dam Event beitreata künnand. Deaktiviert für kua Beschränkung.</string>
     <string name="event_max_users_hint">z.B. 20</string>
     <string name="error_event_max_users_invalid">Gib a Zahl zwüschat 1 und 1000 i</string>
     <string name="event_and_group_created">Event und Gruppe erstellt!</string>
+    <string name="event_created">Event erstellt!</string>
+    <string name="event_create_group_label">Gruppenchat erstella</string>
+    <string name="event_create_group_info">Da Gruppenchat machts möglich, dass igladene Persona mitanand chatten künnand. Du kannschan später no dazuatua fallsas da andersch überlegsch.</string>
+    <string name="event_no_group">Des Event hot kuan Gruppenchat</string>
     <string name="user_description">Userbeschreibung</string>
     <string name="leave_group">Abhaua</string>
     <string name="add_users_to_group">Mitglied hinzufüga</string>
@@ -304,6 +331,21 @@
     <string name="new_event_noti_title">%1$s hot a neus Event erstellt</string>
     <string name="events_screen_title">Events</string>
     <string name="events_empty">No kua Events. Erstell seal uans!</string>
+    <string name="events_view_list">Liste</string>
+    <string name="events_view_week">Wocha</string>
+    <string name="events_view_month">Monat</string>
+    <string name="weekday_monday_short">Mo</string>
+    <string name="weekday_tuesday_short">Di</string>
+    <string name="weekday_wednesday_short">Mi</string>
+    <string name="weekday_thursday_short">Do</string>
+    <string name="weekday_friday_short">Fr</string>
+    <string name="weekday_saturday_short">Sa</string>
+    <string name="weekday_sunday_short">So</string>
+    <string name="events_calendar_previous_period">Zruck</string>
+    <string name="events_calendar_next_period">Witta</string>
+    <string name="events_week_empty">Kua Events dia Wocha</string>
+    <string name="events_month_empty">Kua Events dean Monat</string>
+    <string name="birthday_label">Geburtstag</string>
     <string name="event_starts_in">Startet in: %1$s</string>
     <string name="event_started">Gstartet</string>
     <string name="event_ended">Beendet</string>
@@ -322,6 +364,7 @@
     <string name="group_delete_delay_one_week">1 Wocha nocham Event</string>
     <string name="event_created_by">Erstellt vo %1$s</string>
     <string name="event_join">Beitreata</string>
+    <string name="event_add_to_calendar">Zum Kalender hinzufüga</string>
     <string name="event_invite_header">%1$s möcht %2$s am %3$s</string>
     <string name="event_invited_users">Iglada</string>
     <string name="event_invite_friends">Freunde ilada</string>
@@ -334,6 +377,7 @@
     <string name="map_create_choice_title">Was magsch du do erstella?</string>
     <string name="map_create_choice_entry">Ort</string>
     <string name="map_create_choice_event">Event</string>
+    <string name="map_create_choice_open_in_maps">In Maps öffna</string>
     <string name="event_type_sport">Sport</string>
     <string name="event_type_food">Eeassa</string>
     <string name="event_type_beer">Bier</string>
@@ -460,6 +504,7 @@
     <string name="german_language">Dütsch</string>
     <string name="english_language">Englisch</string>
     <string name="vori_language">S einzig wahre</string>
+    <string name="italian_language">Italienisch</string>
     <string name="language">Sproch</string>
     <string name="language_sel_desc">Was für a Sproch söll dine App hia</string>
 
@@ -615,6 +660,12 @@
     <string name="poll_settings_limitperentry_info">Leg fest, wie viele User maximal für uan Eintrag stimma künnand</string>
     <string name="poll_option_maxvoters_withcount">Maxi. %1$s Nutzer für dean Eintrag</string>
 
+    <string name="poll_settings_showcheckboxes">Checkboxa azoaga</string>
+    <string name="poll_settings_showcheckboxes_info">Wenn usgschalta, wird die Umfrog als einfache Liste ohne Abstimmung azoagr - nützlich für geteilte Lista wie a Einkaufsliste</string>
+
+    <string name="poll_settings_allowdeleteoptions">Löscha vo Optiona erlauba</string>
+    <string name="poll_settings_allowdeleteoptions_info">Erlaubt dir, jede Option zum löscha, und jedem Nutzer sine eigana Optiona zum löscha.</string>
+
     <string name="poll_visibility_title">Sichtbarkeit: %1$s</string>
 
     <string name="poll_visibility_public">Öffentlich (Jeder siaht wo wer abgstimmt hot)</string>
@@ -657,6 +708,15 @@
     <string name="poll_option_claimed_count">%1$s/%2$s</string>
     <string name="poll_option_full">voll</string>
     <string name="poll_haslimitedentries_info">Manche Einträg hond a begrente Anzahl an Stimma</string>
+
+    <string name="poll_listmode_info">Des isch a einfache Liste - kua Abstimmung</string>
+    <string name="poll_deleteoptions_info">Da Ersteller ka jede Option löscha, und Nutzer künnand alle vo eana erstellte Optiona löscha</string>
+
+    <string name="poll_option_delete">Option löscha</string>
+    <string name="poll_option_delete_confirm_title">Dia Option löscha?</string>
+    <string name="poll_option_delete_confirm_text">"%1$s" und die zughöriga Stimma werrand entfernt. Des kann ned rückgängig gmacht werra.</string>
+
+    <string name="poll_cannot_vote_on_unsent">Du kannsch ned für a unversendete Umfrog abstimma</string>
 
 
 
@@ -741,6 +801,20 @@
     <!-- Games: Schneaggahus -->
     <string name="games_schneaggahus_title">Schneaggahus</string>
     <string name="games_schneaggahus_instructions">Schneagga krabbeln us am Startpunkt und folgen dam Weag. Tipp uf die Weichen, um die Gleise umleiten, und lenke jeden Schneagg zu sinem Hus.\n\nJede richtige Zustellung bringt Punkte — sobald 3 Schneagga im falscha Hus glandet sind, ischas Spiel vorbei. Je länger du überleabsch, desto schneller kumman neue Schneagga!</string>
+
+    <!-- Games: Crossword -->
+    <string name="games_crossword_title">Krützworträtsel</string>
+    <string name="games_crossword_instructions">Lös des tägliche Kreuzworträtsel! Tipp uf a Feald, um s auszunwähla, tipp erneut, um zwüscha waagrecht und senkrecht zum weachsla, und schrieb mit der Tastatur unten. Des englische Rätsel stammt us am öffentlicha NYT-Archiv, des dütsche wird jeden Tag neu generiert. Alle kriagand am glicha Tag s gliche Rätsel.</string>
+    <string name="games_crossword_language_question">Wähl dine Rätselsproch</string>
+    <string name="games_crossword_language_english">Englisch (NYT-Archiv)</string>
+    <string name="games_crossword_language_german">Dütsch</string>
+    <string name="games_crossword_load_failed">Des tägliche Rätsel hot ned glada werra künna. Bitte prüf dine Internetverbindung und versuachs nomml.</string>
+    <string name="games_crossword_retry">Nomml versuacha</string>
+    <string name="games_crossword_check">Antworta prüfa</string>
+    <string name="games_crossword_restart">Neu starta</string>
+    <string name="games_crossword_solved">Glöst in %1$s!</string>
+    <string name="games_crossword_previous_clue">Vorherige Frog</string>
+    <string name="games_crossword_next_clue">Nächste Frog</string>
 
     <!-- Games: Grid Rush -->
     <string name="games_daily_section">Tägliche Challenge (%1$s)</string>
@@ -932,6 +1006,21 @@ Mealds, egal wie klenn.</string>
     <string name="schneaggmap_user_online">Online</string>
     <string name="schneaggmap_entry_last_changed_label">Zuletzt gändert</string>
     <string name="schneaggmap_entry_last_changed_by">Zuletzt gändert vo %1$s am %2$s</string>
+
+    <!-- Friend compass -->
+    <string name="friend_compass_title">Freundekompass</string>
+    <string name="friend_compass_button">Kompass</string>
+    <string name="friend_compass_waiting_gps">Warta uf GPS-Position...</string>
+    <string name="friend_compass_no_sensor">Kuan Kompasssensor verfügbar – Norda isch oba</string>
+    <string name="friend_compass_no_friends">Kua Freunde mit aktuellem Standort</string>
+    <string name="direction_n">N</string>
+    <string name="direction_ne">NO</string>
+    <string name="direction_e">O</string>
+    <string name="direction_se">SO</string>
+    <string name="direction_s">S</string>
+    <string name="direction_sw">SW</string>
+    <string name="direction_w">W</string>
+    <string name="direction_nw">NW</string>
 
     <!-- Game highscores -->
     <string name="highscores_title">Highscores</string>
@@ -1292,4 +1381,5 @@ Mealds, egal wie klenn.</string>
     <string name="system_wake_sent_reason">%1$s hot di gweckt: %2$s</string>
     <string name="system_unknown_event">Chat aktualisiert</string>
 
-</resources>
+
+    <string name="confirm_delete_event">Des Event löscha? Die Gruppe wird davo trennt und blibt bestoh, aber s Event sealb wird endgültig glöscht.</string></resources>

@@ -1380,4 +1380,5 @@
     <string name="system_wake_sent_reason">%1$s woke you up: %2$s</string>
     <string name="system_unknown_event">Chat updated</string>
 
-</resources>
+
+    <string name="confirm_delete_event">Delete this Event? The group will be seperated and not deleted, but the event will be deleted.</string></resources>
