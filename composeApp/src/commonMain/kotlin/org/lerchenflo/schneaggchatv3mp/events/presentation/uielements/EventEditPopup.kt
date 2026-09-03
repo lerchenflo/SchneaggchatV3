@@ -101,6 +101,7 @@ import schneaggchatv3mp.composeapp.generated.resources.latlong
 import schneaggchatv3mp.composeapp.generated.resources.ok
 import schneaggchatv3mp.composeapp.generated.resources.save
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
 //Keep in sync with the server-side limit in ValidationUtils.validateEventTitle (schneaggchatv3server)
@@ -712,7 +713,7 @@ fun EventEditPopup(
                     modifier = Modifier.fillMaxWidth(),
                     rowCount = 3,
                     startDateTime = tempStartDateTime,
-                    minDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
+                    minDateTime = (Clock.System.now() + 5.minutes).toLocalDateTime(TimeZone.currentSystemDefault()),
                     textColor = MaterialTheme.colorScheme.onSurface,
                     selectorProperties = WheelPickerDefaults.selectorProperties(
                         enabled = true,
