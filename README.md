@@ -46,6 +46,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Schneaggmap: Überlappende Marker-Icons bei Orten mit mehreren Typen behoben
 - Umfragen: App - Crash bei ungeschickten Umfragen behoben, UI verbessert
 - Gruppenmitglieder doppelt anzeigen
+- Sprachnachrichten: Audio-Routing für Bluetooth-Geräte behoben (AirPods, Auto, Lautsprecher)
 
 ### 3.0.16
 

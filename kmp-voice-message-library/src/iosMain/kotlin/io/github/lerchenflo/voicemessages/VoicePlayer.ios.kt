@@ -9,9 +9,10 @@ import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
 import platform.AVFAudio.AVAudioPlayer
 import platform.AVFAudio.AVAudioSession
-import platform.AVFAudio.AVAudioSessionCategoryPlayAndRecord
-import platform.AVFAudio.AVAudioSessionCategoryOptionDefaultToSpeaker
+import platform.AVFAudio.AVAudioSessionCategoryOptionAllowBluetoothA2DP
+import platform.AVFAudio.AVAudioSessionCategoryPlayback
 import platform.AVFAudio.AVAudioSessionModeDefault
+import platform.AVFAudio.AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation
 import platform.AVFAudio.setActive
 import platform.Foundation.NSError
 import platform.Foundation.NSURL
@@ -35,16 +36,16 @@ actual class VoicePlayer actual constructor() {
         val url = NSURL.fileURLWithPath(filePath)
 
         memScoped {
-            // Use PlayAndRecord category to allow seamless transitions between
-            // recording and playback without audio session conflicts.
             val session = AVAudioSession.sharedInstance()
 
             val sessionErrorVar = alloc<ObjCObjectVar<NSError?>>()
-            // Use DefaultToSpeaker option to route playback to speaker instead of earpiece
+            // Playback-only category so the session follows the user's selected
+            // output route (Bluetooth A2DP, AirPlay, wired, CarPlay) instead of
+            // forcing the built-in speaker.
             session.setCategory(
-                AVAudioSessionCategoryPlayAndRecord,
+                AVAudioSessionCategoryPlayback,
                 AVAudioSessionModeDefault,
-                AVAudioSessionCategoryOptionDefaultToSpeaker,
+                AVAudioSessionCategoryOptionAllowBluetoothA2DP,
                 sessionErrorVar.ptr
             )
             val sessionError = sessionErrorVar.value
@@ -86,7 +87,17 @@ actual class VoicePlayer actual constructor() {
     }
 
     actual fun resume() {
-        player?.takeIf { !it.isPlaying() }?.play()
+        val current = player?.takeIf { !it.isPlaying() } ?: return
+
+        memScoped {
+            val session = AVAudioSession.sharedInstance()
+            val sessionActiveErrorVar = alloc<ObjCObjectVar<NSError?>>()
+            session.setActive(true, error = sessionActiveErrorVar.ptr)
+            // Ignore activation errors here - play() below will surface a real
+            // failure if the session truly can't be used.
+        }
+
+        current.play()
     }
 
     actual fun seekTo(positionMs: Long) {
@@ -97,11 +108,14 @@ actual class VoicePlayer actual constructor() {
         player?.stop()
         player = null
 
-        // Deactivate the audio session to allow recording to take over
         memScoped {
             val session = AVAudioSession.sharedInstance()
             val errorVar = alloc<ObjCObjectVar<NSError?>>()
-            session.setActive(false, error = errorVar.ptr)
+            session.setActive(
+                false,
+                withOptions = AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation,
+                error = errorVar.ptr
+            )
             // Ignore errors - session might not be active
         }
     }
