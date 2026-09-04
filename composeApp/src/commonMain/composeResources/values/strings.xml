@@ -557,6 +557,15 @@
     <string name="dartcounter_please_add_players_first">Please add players first</string>
     <string name="dartcounter_cancel">Cancel</string>
     <string name="dartcounter_stop_game_confirmation_message">Are you sure you want to stop the current game? All progress will be lost.</string>
+    <string name="dartcounter_checkout_title">Checkout</string>
+    <string name="dartcounter_darts_left_format">%1$d darts left</string>
+    <string name="dartcounter_checkout_alt_format">Alt:</string>
+    <string name="dartcounter_no_checkout">No checkout</string>
+    <string name="dartcounter_segment_double_format">D%1$d</string>
+    <string name="dartcounter_segment_triple_format">T%1$d</string>
+    <string name="dartcounter_segment_bull">Bull</string>
+    <string name="dartcounter_darts_format">%1$d darts</string>
+    <string name="dartcounter_turn_total_format">= %1$d</string>
 
     <!-- Games: Undercover -->
     <string name="undercover_title">Undercover</string>
