@@ -12,7 +12,10 @@ import kotlinx.cinterop.value
 import platform.AVFAudio.AVAudioQualityLow
 import platform.AVFAudio.AVAudioRecorder
 import platform.AVFAudio.AVAudioSession
+import platform.AVFAudio.AVAudioSessionCategoryOptionAllowBluetooth
 import platform.AVFAudio.AVAudioSessionCategoryRecord
+import platform.AVFAudio.AVAudioSessionModeDefault
+import platform.AVFAudio.AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation
 import platform.AVFAudio.AVEncoderAudioQualityKey
 import platform.AVFAudio.AVFormatIDKey
 import platform.AVFAudio.AVNumberOfChannelsKey
@@ -39,7 +42,14 @@ actual class VoiceRecorder actual constructor() {
             val session = AVAudioSession.sharedInstance()
 
             val categoryErrorVar = alloc<ObjCObjectVar<NSError?>>()
-            session.setCategory(AVAudioSessionCategoryRecord, error = categoryErrorVar.ptr)
+            // AllowBluetooth so a connected Bluetooth headset's mic is used
+            // instead of always falling back to the built-in mic.
+            session.setCategory(
+                AVAudioSessionCategoryRecord,
+                AVAudioSessionModeDefault,
+                AVAudioSessionCategoryOptionAllowBluetooth,
+                categoryErrorVar.ptr
+            )
             val categoryError = categoryErrorVar.value
             if (categoryError != null) {
                 throw IllegalStateException(
@@ -98,7 +108,11 @@ actual class VoiceRecorder actual constructor() {
         memScoped {
             val session = AVAudioSession.sharedInstance()
             val errorVar = alloc<ObjCObjectVar<NSError?>>()
-            session.setActive(false, error = errorVar.ptr)
+            session.setActive(
+                false,
+                withOptions = AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation,
+                error = errorVar.ptr
+            )
             // Ignore errors - session might not be active
         }
     }

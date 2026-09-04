@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import org.lerchenflo.schneaggchatv3mp.games.domain.dartcounter.DartSegment
 
 class DartCounterViewModel() : ViewModel() {
     enum class OutMode {
@@ -179,10 +180,9 @@ class DartCounterViewModel() : ViewModel() {
                 }
                 
                 // Apply the throw
-                val actualScore = dartThrow.actualScore
+                currentPlayer.totalDartsThrown++
                 if (subtractScore(dartThrow.score, dartThrow.isDouble, dartThrow.isTriple)) {
                     currentTurnDarts.add(dartThrow)
-                    currentPlayer.totalDartsThrown++
                     throwCount++
                 } else {
                     // Bust occurred
@@ -245,6 +245,9 @@ class DartCounterViewModel() : ViewModel() {
     
     var throwCount by mutableStateOf(0)
         private set
+
+    val dartsLeft: Int get() = if (gameStarted) 3 - throwCount else 0
+
     var showStopGameDialog by mutableStateOf(false)
         private set
     var gameStarted by mutableStateOf(false)
@@ -312,21 +315,23 @@ class DartCounterViewModel() : ViewModel() {
         selectedOutMode = mode
     }
     
-    fun throwDart(score: Int, isDouble: Boolean = false, isTriple: Boolean = false) {
+    fun throwDart(segment: DartSegment) {
         gameManager?.let { game ->
-            val currentPlayer = game.getCurrentPlayer()
-            val actualScore = if (isTriple) score * 3 else if (isDouble) score * 2 else score
-            
+            val score = segment.base
+            val isDouble = segment.isDouble
+            val isTriple = segment.isTriple
+            val actualScore = segment.points
+
+            // Track darts thrown for current player, including busts
+            game.getCurrentPlayer().totalDartsThrown++
+
             if (game.subtractScore(score, isDouble, isTriple)) {
                 // Track this dart
                 game.addDartToTurn(score, isDouble, isTriple, actualScore)
-                
+
                 currentThrow += actualScore
                 throwCount++
-                
-                // Track darts thrown for current player
-                game.getCurrentPlayer().totalDartsThrown++
-                
+
                 if (throwCount >= 3) {
                     if (!game.gameOver) {
                         game.completeTurn()
