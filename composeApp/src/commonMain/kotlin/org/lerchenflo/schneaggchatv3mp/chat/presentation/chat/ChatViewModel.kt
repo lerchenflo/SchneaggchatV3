@@ -130,10 +130,7 @@ class ChatViewModel(
 
             ChatAction.OnStartRecording -> startRecording()
             ChatAction.OnStopRecording -> stopRecording()
-            ChatAction.OnDiscardRecording -> {
-                stopRecording()
-                updateSendContent(TextContent(TextFieldValue("")))
-            }
+            ChatAction.OnDiscardRecording -> discardRecording()
 
             is ChatAction.OnMessageAction -> onMessageAction(action.action)
         }
@@ -538,13 +535,17 @@ class ChatViewModel(
         }
     }
 
+    private fun stopRecorder() {
+        recordingTickerJob?.cancel()
+        recordingTickerJob = null
+        voiceRecorder?.stop()
+        voiceRecorder = null
+    }
+
     private fun stopRecording() {
         viewModelScope.launch {
             try {
-                recordingTickerJob?.cancel()
-                recordingTickerJob = null
-                voiceRecorder?.stop()
-                voiceRecorder = null
+                stopRecorder()
                 (state.value.sendContent as? SendMessageContent.AudioContent)?.let { audio ->
                     // Measure the actual recorded duration from the file instead of trusting the
                     // ticker's elapsed time, which can drift slightly from the real audio length.
@@ -559,6 +560,30 @@ class ChatViewModel(
             } catch (e: Exception) {
                 loggingRepository.logWarning("Failed to stop recording: ${e.message}")
                 e.printStackTrace()
+            }
+        }
+    }
+
+    private fun discardRecording() {
+        viewModelScope.launch {
+            // Read the recording before clearing the input: stopRecording() must not be reused
+            // here, its duration measurement suspends and would restore the discarded bar.
+            val discarded = state.value.sendContent as? SendMessageContent.AudioContent
+            try {
+                stopRecorder()
+            } catch (e: Exception) {
+                loggingRepository.logWarning("Failed to stop recording: ${e.message}")
+                e.printStackTrace()
+            }
+
+            updateSendContent(TextContent(TextFieldValue("")))
+
+            discarded?.let { audio ->
+                try {
+                    audioManager.deleteAudio(audio.audioPath.substringAfterLast('/'))
+                } catch (e: Exception) {
+                    loggingRepository.logWarning("Failed to delete discarded recording: ${e.message}")
+                }
             }
         }
     }
