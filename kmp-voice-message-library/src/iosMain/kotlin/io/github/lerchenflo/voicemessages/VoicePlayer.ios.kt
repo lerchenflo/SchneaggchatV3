@@ -9,9 +9,7 @@ import kotlinx.cinterop.ptr
 import kotlinx.cinterop.value
 import platform.AVFAudio.AVAudioPlayer
 import platform.AVFAudio.AVAudioSession
-import platform.AVFAudio.AVAudioSessionCategoryOptionAllowBluetoothA2DP
 import platform.AVFAudio.AVAudioSessionCategoryPlayback
-import platform.AVFAudio.AVAudioSessionModeDefault
 import platform.AVFAudio.AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation
 import platform.AVFAudio.setActive
 import platform.Foundation.NSError
@@ -32,38 +30,12 @@ actual class VoicePlayer actual constructor() {
         get() = player?.isPlaying() ?: false
 
     actual fun play(filePath: String) {
-        stop()
+        releasePlayer()
+        activatePlaybackSession()
+
         val url = NSURL.fileURLWithPath(filePath)
 
         memScoped {
-            val session = AVAudioSession.sharedInstance()
-
-            val sessionErrorVar = alloc<ObjCObjectVar<NSError?>>()
-            // Playback-only category so the session follows the user's selected
-            // output route (Bluetooth A2DP, AirPlay, wired, CarPlay) instead of
-            // forcing the built-in speaker.
-            session.setCategory(
-                AVAudioSessionCategoryPlayback,
-                AVAudioSessionModeDefault,
-                AVAudioSessionCategoryOptionAllowBluetoothA2DP,
-                sessionErrorVar.ptr
-            )
-            val sessionError = sessionErrorVar.value
-            if (sessionError != null) {
-                throw IllegalStateException(
-                    "Failed to set AVAudioSession category for playback: ${sessionError.localizedDescription}"
-                )
-            }
-
-            val sessionActiveErrorVar = alloc<ObjCObjectVar<NSError?>>()
-            session.setActive(true, error = sessionActiveErrorVar.ptr)
-            val sessionActiveError = sessionActiveErrorVar.value
-            if (sessionActiveError != null) {
-                throw IllegalStateException(
-                    "Failed to activate AVAudioSession for playback: ${sessionActiveError.localizedDescription}"
-                )
-            }
-
             val playerErrorVar = alloc<ObjCObjectVar<NSError?>>()
             val avPlayer = AVAudioPlayer(contentsOfURL = url, error = playerErrorVar.ptr)
             val playerError = playerErrorVar.value
@@ -89,13 +61,9 @@ actual class VoicePlayer actual constructor() {
     actual fun resume() {
         val current = player?.takeIf { !it.isPlaying() } ?: return
 
-        memScoped {
-            val session = AVAudioSession.sharedInstance()
-            val sessionActiveErrorVar = alloc<ObjCObjectVar<NSError?>>()
-            session.setActive(true, error = sessionActiveErrorVar.ptr)
-            // Ignore activation errors here - play() below will surface a real
-            // failure if the session truly can't be used.
-        }
+        // The category is process-wide: a recording started since the last play() left the
+        // session on Record, which would make this resume silent.
+        activatePlaybackSession()
 
         current.play()
     }
@@ -105,9 +73,42 @@ actual class VoicePlayer actual constructor() {
     }
 
     actual fun stop() {
+        releasePlayer()
+        deactivateSession()
+    }
+
+    private fun releasePlayer() {
         player?.stop()
         player = null
+    }
 
+    private fun activatePlaybackSession() {
+        memScoped {
+            val session = AVAudioSession.sharedInstance()
+
+            val categoryErrorVar = alloc<ObjCObjectVar<NSError?>>()
+            // Playback-only category so the session follows the user's selected output route
+            // (Bluetooth, AirPlay, wired, CarPlay) instead of forcing the built-in speaker.
+            session.setCategory(AVAudioSessionCategoryPlayback, error = categoryErrorVar.ptr)
+            val categoryError = categoryErrorVar.value
+            if (categoryError != null) {
+                throw IllegalStateException(
+                    "Failed to set AVAudioSession category for playback: ${categoryError.localizedDescription}"
+                )
+            }
+
+            val activeErrorVar = alloc<ObjCObjectVar<NSError?>>()
+            session.setActive(true, error = activeErrorVar.ptr)
+            val activeError = activeErrorVar.value
+            if (activeError != null) {
+                throw IllegalStateException(
+                    "Failed to activate AVAudioSession for playback: ${activeError.localizedDescription}"
+                )
+            }
+        }
+    }
+
+    private fun deactivateSession() {
         memScoped {
             val session = AVAudioSession.sharedInstance()
             val errorVar = alloc<ObjCObjectVar<NSError?>>()

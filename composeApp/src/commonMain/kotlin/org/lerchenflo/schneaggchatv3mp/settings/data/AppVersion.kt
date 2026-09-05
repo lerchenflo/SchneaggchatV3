@@ -20,5 +20,6 @@ expect class AppVersion {
 enum class DEVICETYPE {
     ANDROID,
     IOS,
-    DESKTOP;
+    DESKTOP,
+    WEB;
 }

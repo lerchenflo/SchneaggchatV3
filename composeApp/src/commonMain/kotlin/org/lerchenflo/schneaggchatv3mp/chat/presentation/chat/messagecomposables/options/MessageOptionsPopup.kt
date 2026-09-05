@@ -51,7 +51,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.ReaderUi
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SenderInfo
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.content.MessageContent
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
-import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
+import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.add
 import schneaggchatv3mp.composeapp.generated.resources.cancel
@@ -438,7 +438,7 @@ fun MessageDetailsDialog(
                         val sendMillis = message.getSendDateAsLong()
                         if (sendMillis > 0L) {
                             Text(
-                                text = stringResource(Res.string.sent_at, millisToTimeDateOrYesterday(sendMillis)),
+                                text = stringResource(Res.string.sent_at, millisToString(sendMillis)),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -496,7 +496,7 @@ fun MessageDetailsDialog(
                                             )
                                             if (reaction.reactedAt > 0L) {
                                                 Text(
-                                                    text = stringResource(Res.string.reacted_at, millisToTimeDateOrYesterday(reaction.reactedAt)),
+                                                    text = stringResource(Res.string.reacted_at, millisToString(reaction.reactedAt)),
                                                     style = MaterialTheme.typography.bodySmall,
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                                 )

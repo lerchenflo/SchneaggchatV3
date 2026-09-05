@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.settings.data
 
 import java.net.InetAddress
+import java.net.NetworkInterface
 
 actual class AppVersion {
     actual fun getVersionName(): String {
@@ -32,10 +33,25 @@ actual class AppVersion {
     }
 
     actual fun getDeviceName(): String {
-        return try {
+        val hostname = try {
             InetAddress.getLocalHost().hostName
         } catch (e: Exception) {
             "Desktop"
+        }
+
+        return "$hostname - macAddress: ${getMacAddress()}"
+    }
+
+    private fun getMacAddress(): String {
+        return try {
+            NetworkInterface.getNetworkInterfaces().asSequence()
+                .filterNot { it.isLoopback || it.isVirtual }
+                .mapNotNull { it.hardwareAddress }
+                .firstOrNull { it.isNotEmpty() }
+                ?.joinToString(":") { "%02X".format(it) }
+                ?: "unknown"
+        } catch (e: Exception) {
+            "unknown"
         }
     }
 }

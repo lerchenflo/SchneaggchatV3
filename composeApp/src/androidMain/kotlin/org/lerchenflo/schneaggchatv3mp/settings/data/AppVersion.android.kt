@@ -39,10 +39,15 @@ actual class AppVersion(
 
     actual fun getDeviceName(): String {
         val bluetoothName = Settings.Secure.getString(context.contentResolver, "bluetooth_name")
-        if (!bluetoothName.isNullOrBlank()) return bluetoothName
+        val name = if (!bluetoothName.isNullOrBlank()) {
+            bluetoothName
+        } else {
+            val model = Build.MODEL
+            val manufacturer = Build.MANUFACTURER
+            if (model.startsWith(manufacturer, ignoreCase = true)) model else "$manufacturer $model"
+        }
 
-        val model = Build.MODEL
-        val manufacturer = Build.MANUFACTURER
-        return if (model.startsWith(manufacturer, ignoreCase = true)) model else "$manufacturer $model"
+        val androidId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID) ?: "unknown"
+        return "$name - androidId: $androidId"
     }
 }

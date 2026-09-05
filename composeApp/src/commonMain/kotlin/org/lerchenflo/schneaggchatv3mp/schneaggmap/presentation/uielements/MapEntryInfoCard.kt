@@ -20,7 +20,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -67,6 +66,7 @@ import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.delete
 import schneaggchatv3mp.composeapp.generated.resources.latlong
 import schneaggchatv3mp.composeapp.generated.resources.location_belongs_to_type
+import schneaggchatv3mp.composeapp.generated.resources.open_location_in_maps
 import schneaggchatv3mp.composeapp.generated.resources.save
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_delete
 import schneaggchatv3mp.composeapp.generated.resources.schneaggmap_entry_description
@@ -159,25 +159,9 @@ fun MapEntryInfoCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                val shareUtils = koinInject<ShareUtils>()
-                IconButton(
-                    onClick = {
-                        shareUtils.openLocationInMaps(
-                            currentEntry.coordinates.lat,
-                            currentEntry.coordinates.long,
-                            currentEntry.name
-                        )
-                    }
-                ) {
-                    Icon(
-                        Icons.Default.Map,
-                        contentDescription = null
-                    )
-                }
-
                 val changed = entry != currentEntry
 
-                //Move cancel button to the right, if something changed to the left (primary action always on the right)
+                //Delete on the far left, only shown when nothing has been edited yet
                 if (!changed) {
 
                     var showDeleteConfirmationPopup by remember { mutableStateOf(false) }
@@ -218,8 +202,23 @@ fun MapEntryInfoCard(
                             }
                         )
                     }
+                }
 
+                val shareUtils = koinInject<ShareUtils>()
+                NormalButton(
+                    text = stringResource(Res.string.open_location_in_maps),
+                    onClick = {
+                        shareUtils.openLocationInMaps(
+                            currentEntry.coordinates.lat,
+                            currentEntry.coordinates.long,
+                            currentEntry.name
+                        )
+                    },
+                    primary = false
+                )
 
+                //Move cancel button to the right, if something changed to the left (primary action always on the right)
+                if (!changed) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
 
