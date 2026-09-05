@@ -30,22 +30,30 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.RefreshResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
+import kotlin.concurrent.Volatile
 import kotlin.math.min
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Socket connection manager for real-time communication
  * Integrates with existing Ktor HTTP client infrastructure
+ *
+ * @param keepAliveInBackground true on desktop: the socket is the only notification channel
+ * there, so it is held (and re-established after drops) whether the window is focused, unfocused
+ * or minimized. false on mobile: the socket only lives while the app is in the foreground, so the
+ * server falls back to FCM/APNs the moment the app leaves it.
  */
 class SocketConnectionManager(
     private val httpClient: HttpClient,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val keepAliveInBackground: Boolean,
 ) {
 
     enum class ConnectionState {
@@ -85,6 +93,15 @@ class SocketConnectionManager(
 
     private var connectJob: Job? = null
     private var reconnectJob: Job? = null
+
+    /**
+     * Set by [close], cleared by [connect]. The Ktor session's teardown reports back through
+     * onClose/onError asynchronously, after [close] has already returned; this flag keeps those
+     * callbacks from scheduling a reconnect for a socket that was shut down on purpose (logout,
+     * app leaving the foreground on mobile).
+     */
+    @Volatile
+    private var intentionallyClosed = false
 
     private var lastServerUrl: String? = null
     private var lastOnError: ((Throwable) -> Unit)? = null
@@ -137,6 +154,11 @@ class SocketConnectionManager(
                 return@withLock true
             }
 
+            // Mobile must never hold a socket outside the foreground (push delivery depends on
+            // it): a connect that lost the race against a background transition ends here.
+            if (!shouldHoldConnection()) return@withLock false
+
+            intentionallyClosed = false
             _connectionState.value = ConnectionState.Connecting
 
             try {
@@ -207,17 +229,31 @@ class SocketConnectionManager(
     }
 
     /**
-     * Close current connection
+     * Close the current connection and stop any pending reconnect. Runs under [connectMutex] so it
+     * is atomic against a [connect] that is mid-flight: no socket can be established after this
+     * returned (previously possible when the app went to background right after a resume, which
+     * left a live socket behind in the background and kept push notifications from arriving).
      */
     suspend fun close() {
-        reconnectJob?.cancel()
-        reconnectJob = null
-        connectJob?.cancel()
-        connectJob = null
+        connectMutex.withLock {
+            intentionallyClosed = true
 
-        currentConnection?.close()
-        currentConnection = null
-        setConnectionState(ConnectionState.Disconnected)
+            reconnectJob?.cancel()
+            reconnectJob = null
+
+            // Graceful close first, so the server receives a proper close frame and marks this
+            // user offline immediately instead of only noticing the dropped TCP connection later.
+            // Bounded: on a dead network the frame can never be flushed and this must not hang.
+            withTimeoutOrNull(1_000.milliseconds) {
+                currentConnection?.close()
+            }
+            currentConnection = null
+
+            connectJob?.cancel()
+            connectJob = null
+
+            setConnectionState(ConnectionState.Disconnected)
+        }
     }
 
     /**
@@ -225,13 +261,24 @@ class SocketConnectionManager(
      */
     fun isConnectedNow(): Boolean = _connectionState.value == ConnectionState.Connected
 
+    /**
+     * True while the backoff loop owns reconnection. Callers polling the connection state must not
+     * race it with their own [connect] calls, or every backoff delay collapses to their poll rate.
+     */
+    fun isReconnectPending(): Boolean = reconnectJob?.isActive == true
+
+    /** Desktop holds the socket regardless of window state; mobile only while in the foreground. */
+    private fun shouldHoldConnection(): Boolean =
+        keepAliveInBackground || AppLifecycleManager.isAppInForeground
+
     private fun scheduleReconnectIfPossible() {
         val url = lastServerUrl ?: return
         val onError = lastOnError ?: return
         val onClose = lastOnClose ?: return
 
+        if (intentionallyClosed) return
         if (reconnectJob?.isActive == true) return
-        if (!AppLifecycleManager.isAppInForeground) return
+        if (!shouldHoldConnection()) return
 
         reconnectJob = scope.launch {
             var attempt = 0
@@ -239,7 +286,7 @@ class SocketConnectionManager(
                 val delayMs = min(30_000L, 1_000L * (1L shl min(attempt, 5)))
                 attempt++
                 delay(delayMs.milliseconds)
-                if (!AppLifecycleManager.isAppInForeground) break
+                if (intentionallyClosed || !shouldHoldConnection()) break
                 connect(url, onError, onClose)
             }
         }

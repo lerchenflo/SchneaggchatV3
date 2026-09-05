@@ -11,6 +11,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.database.androidAppDatabaseBuilder
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
+import org.lerchenflo.schneaggchatv3mp.datasource.network.SOCKET_PING_INTERVAL_MS
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createSocketHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
@@ -20,6 +21,7 @@ import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
+import java.util.concurrent.TimeUnit
 
 val androidUserDatabaseModule = module {
     single<RoomDatabase.Builder<AppDatabase>> { androidAppDatabaseBuilder(androidContext()) }
@@ -42,7 +44,13 @@ val androidHttpAuthModule = module {
 }
 
 val androidSocketHttpModule = module {
-    single<HttpClient>(named(HTTPCLIENTTYPE.SOCKET)) { createSocketHttpClient(OkHttp.create()) }
+    single<HttpClient>(named(HTTPCLIENTTYPE.SOCKET)) {
+        createSocketHttpClient(OkHttp.create {
+            // The OkHttp engine ignores the WebSockets plugin's pingIntervalMillis; without this
+            // a dead socket is never noticed. See SOCKET_PING_INTERVAL_MS.
+            config { pingInterval(SOCKET_PING_INTERVAL_MS, TimeUnit.MILLISECONDS) }
+        })
+    }
 }
 
 

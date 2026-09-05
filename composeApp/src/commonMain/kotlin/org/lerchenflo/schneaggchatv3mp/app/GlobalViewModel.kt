@@ -139,7 +139,9 @@ class GlobalViewModel(
             while (true) {
 
                 if (SessionCache.isOnline()) {
-                    if (!socketConnectionManager.isConnectedNow()) {
+                    // After a drop the manager's own backoff loop owns reconnection; only step in
+                    // when nothing is pending (first connect, or after that loop gave up).
+                    if (!socketConnectionManager.isConnectedNow() && !socketConnectionManager.isReconnectPending()) {
 
                         if (appVersion.isDesktop()) { //On desktop always try to hold the socket connection for notifications
                             startSocketConnection()
@@ -169,8 +171,16 @@ class GlobalViewModel(
         }
 
         viewModelScope.launch {
-            AppLifecycleManager.appBackgroundedEvent.collectLatest {
-                socketConnectionManager.close()
+            // Plain collect (not collectLatest): a close in progress must never be cancelled by
+            // a follow-up lifecycle event, or the socket could survive into the background.
+            AppLifecycleManager.appBackgroundedEvent.collect {
+                // Mobile: drop the socket the moment the app leaves the foreground (home, app
+                // switch, screen lock), so the server switches this user to FCM/APNs delivery.
+                // Desktop: the socket is the only notification channel, so it stays up while the
+                // window is minimized; the manager reconnects it on its own if it drops.
+                if (!appVersion.isDesktop()) {
+                    socketConnectionManager.close()
+                }
                 stopLocationTracking()
             }
         }
