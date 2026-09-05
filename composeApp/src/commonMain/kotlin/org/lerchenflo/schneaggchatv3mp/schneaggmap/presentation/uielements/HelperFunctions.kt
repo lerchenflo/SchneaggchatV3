@@ -58,8 +58,8 @@ fun MapIcon(
     content: @Composable (BoxScope.() -> Unit),
 ) {
     // 1. Project the geographic position to screen pixels
-    val dpOffset = remember(targetPosition, cameraState.position, cameraState.position.zoom, cameraState.position.bearing, cameraState.position.tilt) {
-        cameraState.projection?.screenLocationFromPosition(targetPosition)
+    val dpOffset = remember(targetPosition, cameraState.viewport) {
+        cameraState.screenLocationFromPosition(targetPosition)
     }
 
     // If projection isn't ready, don't render anything
