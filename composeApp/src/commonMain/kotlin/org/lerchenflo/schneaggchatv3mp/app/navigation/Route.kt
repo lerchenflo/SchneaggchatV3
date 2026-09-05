@@ -34,8 +34,16 @@ sealed interface Route : NavKey {
     @Serializable
     data object Birthdays: Route
 
+    // openRequestId makes every deep link into the map a distinct NavKey. Without it, opening the
+    // same entry (or picking a location for the same event) twice produces a route equal to the one
+    // already in the map tab's backstack, so the NavEntry and its ViewModel are reused and the
+    // popup/camera focus - which only runs on ViewModel creation - never fires again.
     @Serializable
-    data class Schneaggmap(val initialEntryId: String? = null, val currentlyEditedEvent: Event? = null): Route
+    data class Schneaggmap(
+        val initialEntryId: String? = null,
+        val currentlyEditedEvent: Event? = null,
+        val openRequestId: Long = 0L
+    ): Route
 
     @Serializable
     data class FriendCompass(val targetUserId: String? = null): Route
