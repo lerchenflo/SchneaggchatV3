@@ -6,7 +6,7 @@ import platform.Foundation.NSUserDefaults
 /**
  * NSUserDefaults backed by the shared App Group container.
  * Used by the main app to publish credentials/preferences that the
- * Notification Service Extension needs to localize and decrypt incoming pushes.
+ * Notification Service Extension needs to localize incoming pushes.
  *
  * The same App Group identifier is already used by the Share Extension; the
  * notification extension's entitlements must list it too.
@@ -17,7 +17,8 @@ object SharedNotificationDefaults {
         "group.org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtension"
 
     const val KEY_LANGUAGE_ISO = "shared_language_iso"
-    const val KEY_ENCRYPTION_KEY = "shared_encryption_key"
+    // Pre-E2E push decryption key. No longer written; kept only so old installs can purge it.
+    private const val LEGACY_KEY_ENCRYPTION_KEY = "shared_encryption_key"
 
     // Written by the Swift Notification Service Extension (a separate process that never
     // touches Kotlin/Room) so a background push can still queue a message for the main app to
@@ -34,20 +35,15 @@ object SharedNotificationDefaults {
         }
     }
 
-    fun setEncryptionKey(key: String?) {
+    /** Removes the shared push key that versions before the E2E switch published for the extension. */
+    fun purgeLegacyEncryptionKey() {
         defaults?.let {
-            if (key.isNullOrEmpty()) {
-                it.removeObjectForKey(KEY_ENCRYPTION_KEY)
-            } else {
-                it.setObject(key, KEY_ENCRYPTION_KEY)
-            }
+            it.removeObjectForKey(LEGACY_KEY_ENCRYPTION_KEY)
             it.synchronize()
         }
     }
 
     fun getLanguageIso(): String? = defaults?.stringForKey(KEY_LANGUAGE_ISO)
-
-    fun getEncryptionKey(): String? = defaults?.stringForKey(KEY_ENCRYPTION_KEY)
 
     /** Reads and clears the queue the NSE has written, so each queued push is applied exactly once. */
     fun takePendingPushMessages(): List<Map<String, String>> {
