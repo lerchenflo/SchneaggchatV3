@@ -41,7 +41,7 @@ data class SchneaggmapState(
     val showUsers: Boolean = true,
 
     val eventsWithLocation: List<Event> = emptyList(),
-    val showEvents: Boolean = true,
+    val showEvents: Boolean = false,
 
     val mapStyle: MapStyleSetting = MapStyleSetting.LIBERTY,
     val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl,

@@ -20,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalUriHandler
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -141,9 +140,6 @@ fun MiscSettings(
                 }
             )
             if (showLogsDialog) {
-
-                val clipboard = LocalClipboard.current.nativeClipboard
-
                 LogsDialog(
                     logs = miscSettingsViewModel.logs,
                     onDismiss = {
@@ -155,7 +151,7 @@ fun MiscSettings(
                     onCopyAllLogs = { filteredLogs ->
                         val formattedLogs = miscSettingsViewModel.formatAllLogs(filteredLogs)
                         val shareUtils = KoinPlatform.getKoin().get<ShareUtils>()
-                        shareUtils.copyToClipboard(formattedLogs, clipboard)
+                        shareUtils.copyToClipboard(formattedLogs)
                     }
                 )
             }

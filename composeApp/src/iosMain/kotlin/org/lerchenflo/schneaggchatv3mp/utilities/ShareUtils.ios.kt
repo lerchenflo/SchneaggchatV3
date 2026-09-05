@@ -149,9 +149,8 @@ actual class ShareUtils {
         }
     }
     
-    actual fun copyToClipboard(text: String, clipboard: Any) {
-        val pasteboard = UIPasteboard.generalPasteboard
-        pasteboard.string = text
+    actual fun copyToClipboard(text: String) {
+        UIPasteboard.generalPasteboard.string = text
     }
 
     actual fun openLocationInMaps(lat: Double, long: Double, label: String) {

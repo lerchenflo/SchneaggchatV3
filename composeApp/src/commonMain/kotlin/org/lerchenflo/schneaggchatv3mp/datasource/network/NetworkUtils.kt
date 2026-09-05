@@ -313,7 +313,6 @@ class NetworkUtils(
     data class TokenPair(
         val accessToken: String,
         val refreshToken: String,
-        val encryptionKey: String? = null
     )
 
     @Serializable
@@ -709,7 +708,7 @@ class NetworkUtils(
             val groupMessage: Boolean,
             val messageType: MessageType,
             val groupName: String,
-            val encodedContent: String
+            val content: String
         ) : NotificationResponse
 
         //Response for a friend request notification

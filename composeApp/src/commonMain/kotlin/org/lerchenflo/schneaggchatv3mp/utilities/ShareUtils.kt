@@ -9,7 +9,7 @@ expect class ShareUtils {
     fun openMailClient(recipient: String, subject: String = "", body: String = "")
 
     //Copy text to clipboard
-    fun copyToClipboard(text: String, clipboard: Any)
+    fun copyToClipboard(text: String)
 
     //Open a lat/long location in the device's maps app
     fun openLocationInMaps(lat: Double, long: Double, label: String = "")

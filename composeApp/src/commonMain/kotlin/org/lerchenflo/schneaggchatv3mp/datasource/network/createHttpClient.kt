@@ -102,6 +102,18 @@ fun createHttpClient(
 }
 
 
+/**
+ * Interval between WebSocket keepalive pings sent by the client. Detects a silently dead socket
+ * (network switch, laptop sleep, tunnel) within roughly one interval instead of never - without
+ * pings the connection state stays "Connected" while nothing flows, and no reconnect happens.
+ *
+ * Only the Darwin engine (iOS) honours the WebSockets plugin's pingIntervalMillis. The OkHttp
+ * engine (Android, desktop) ignores it and only pings when the interval is set on the OkHttp
+ * client itself, so the OkHttp-based socket modules pass this same value to
+ * OkHttp.create { config { pingInterval(...) } }.
+ */
+const val SOCKET_PING_INTERVAL_MS = 20_000L
+
 fun createSocketHttpClient(engine: HttpClientEngine): HttpClient {
     return HttpClient(engine) {
         install(Logging) {
@@ -114,7 +126,7 @@ fun createSocketHttpClient(engine: HttpClientEngine): HttpClient {
             json(json = AppJson.instance)
         }
         install(WebSockets) {
-            pingIntervalMillis = 3_000
+            pingIntervalMillis = SOCKET_PING_INTERVAL_MS
         }
         install(HttpTimeout) {
             requestTimeoutMillis = 30000

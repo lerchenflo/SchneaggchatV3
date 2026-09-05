@@ -56,6 +56,7 @@ import org.lerchenflo.schneaggchatv3mp.roadmap.presentation.RoadmapViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.MapRepository
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapViewModel
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.friendcompass.FriendCompassViewModel
+import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.settings.data.SettingsRepository
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SettingsViewModel
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.SharedSettingsViewmodel
@@ -117,7 +118,9 @@ val sharedmodule = module{
     single<SocketConnectionManager> {
         SocketConnectionManager(
             httpClient = get(named(HTTPCLIENTTYPE.SOCKET)),
-            tokenManager = get()
+            tokenManager = get(),
+            // Desktop has no push channel: the socket must survive minimize/unfocus there.
+            keepAliveInBackground = get<AppVersion>().isDesktop(),
         )
     }
 

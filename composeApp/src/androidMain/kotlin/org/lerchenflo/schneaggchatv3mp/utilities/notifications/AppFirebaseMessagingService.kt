@@ -43,8 +43,7 @@ class AppFirebaseMessagingService : FirebaseMessagingService() {
                 val notifier = KoinPlatform.getKoin().get<Notifier>()
                 val prefs = KoinPlatform.getKoin().get<Preferencemanager>()
 
-                val encryptionKey = prefs.getEncryptionKey().ifEmpty { null }
-                val content = resolveLocalizedContent(decoded, encryptionKey) ?: return@launch
+                val content = resolveLocalizedContent(decoded) ?: return@launch
 
                 val suppressNotification = AppLifecycleManager.isAppInForeground
                     && decoded is DecodedNotification.Message //Suppress only messages
