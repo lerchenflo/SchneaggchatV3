@@ -9,7 +9,6 @@ import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.House
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MonetizationOn
-import androidx.compose.material.icons.filled.Phishing
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.TouchApp
@@ -27,7 +26,6 @@ import schneaggchatv3mp.composeapp.generated.resources.games_morse_title
 import schneaggchatv3mp.composeapp.generated.resources.games_oddoneout_title
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggahus_title
 import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
-import schneaggchatv3mp.composeapp.generated.resources.games_stanislaus_title
 import schneaggchatv3mp.composeapp.generated.resources.games_tetris_title
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
 import schneaggchatv3mp.composeapp.generated.resources.games_yahtzee_title
@@ -93,13 +91,6 @@ class GameSelectorViewModel : ViewModel() {
             route = Route.Game2048,
             inDev = GameId.GAME_2048.indev,
             gameId = GameId.GAME_2048
-        ),
-        GameScreenElement(
-            title = Res.string.games_stanislaus_title,
-            icon = Icons.Default.Phishing,
-            route = Route.Stanislaus,
-            inDev = GameId.STANISLAUS.indev,
-            gameId = GameId.STANISLAUS
         ),
         GameScreenElement(
             title = Res.string.games_coinflip_title,

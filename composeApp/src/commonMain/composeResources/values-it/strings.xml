@@ -840,16 +840,6 @@
     <string name="games_2048_instructions">Scorri (su, giù, sinistra, destra) o usa i tasti freccia per spostare le caselle. Quando due caselle con lo stesso numero si toccano, si uniscono in una!\n\nUnisci i numeri e raggiungi la casella 2048 per vincere, e continua per il punteggio più alto! La griglia si riduce man mano che la difficoltà aumenta.</string>
     <string name="games_2048_reached">★ 2048 raggiunto! ★</string>
 
-    <!-- Games: Stanislaus -->
-    <string name="games_stanislaus_title">Stanislaus e il pesce</string>
-    <string name="games_stanislaus_instructions">La luce si piega quando passa dall'acqua all'aria, quindi il pesce non è mai esattamente dove sembra essere!\n\nTrascina da Stanislaus per mirare con l'arpione, poi rilascia per lanciare. L'arpione vola in linea perfettamente retta — se miri al pesce che vedi, lo mancherai. Mira più in profondità e più lontano per colpirlo davvero.\n\nCattura più pesci possibile prima che il tempo scada. Un colpo in profondità nell'acqua vale punti extra, i colpi mancati ti costano tempo, e i pesci lontani nello stagno si nascondono dietro il riflesso della superficie.</string>
-    <string name="games_stanislaus_caught">Preso!</string>
-    <string name="games_stanislaus_missed">Mancato!</string>
-    <string name="games_stanislaus_streak">Serie: %1$d</string>
-    <string name="games_stanislaus_label_apparent">Dove sembrava essere</string>
-    <string name="games_stanislaus_label_real">Dove era realmente</string>
-    <string name="games_stanislaus_glare_hint">Troppo lontano — il riflesso lo nasconde</string>
-    <string name="games_stanislaus_sprite_description">Stanislaus</string>
 
     <!-- Recap -->
     <string name="recap_your_year">Il tuo anno</string>

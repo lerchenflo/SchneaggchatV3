@@ -133,9 +133,6 @@ sealed interface Route : NavKey {
     data object Game2048: Route
 
     @Serializable
-    data object Stanislaus: Route
-
-    @Serializable
     data object Crossword: Route
 
 }

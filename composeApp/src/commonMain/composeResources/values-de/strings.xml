@@ -848,16 +848,6 @@
     <string name="games_2048_instructions">Wische (nach oben, unten, links, rechts) oder benutze die Pfeiltasten, um die Kacheln zu bewegen. Wenn sich zwei Kacheln mit derselben Zahl berühren, verschmelzen sie zu einer!\n\nKombiniere die Zahlen und erreiche die 2048-Kachel, um zu gewinnen, und spiele weiter für den Highscore! Das Spielfeld wird mit steigendem Schwierigkeitsgrad kleiner.</string>
     <string name="games_2048_reached">★ 2048 erreicht! ★</string>
 
-    <!-- Games: Stanislaus -->
-    <string name="games_stanislaus_title">Stanislaus und der Fisch</string>
-    <string name="games_stanislaus_instructions">Licht bricht sich beim Übergang von Wasser zu Luft, deshalb ist der Fisch nie ganz dort, wo er zu sein scheint!\n\nZieh von Stanislaus weg, um den Speer zu zielen, und lass los, um zu werfen. Der Speer fliegt in einer perfekt geraden Linie — wenn du auf den Fisch zielst, den du siehst, wirst du danebenwerfen. Ziel tiefer und weiter hinaus, um ihn wirklich zu treffen.\n\nFange so viele Fische wie möglich, bevor die Zeit abläuft. Ein Treffer tief im Wasser gibt Extrapunkte, Fehlwürfe kosten dich Zeit, und Fische weit draußen im Teich verstecken sich hinter der spiegelnden Blendung der Oberfläche.</string>
-    <string name="games_stanislaus_caught">Gefangen!</string>
-    <string name="games_stanislaus_missed">Verfehlt!</string>
-    <string name="games_stanislaus_streak">Serie: %1$d</string>
-    <string name="games_stanislaus_label_apparent">Wo er zu sein schien</string>
-    <string name="games_stanislaus_label_real">Wo er wirklich war</string>
-    <string name="games_stanislaus_glare_hint">Zu weit draußen — die Spiegelung versteckt ihn</string>
-    <string name="games_stanislaus_sprite_description">Stanislaus</string>
 
     <!-- Recap -->
     <string name="recap_your_year">Dein Jahr</string>

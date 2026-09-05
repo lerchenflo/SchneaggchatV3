@@ -39,7 +39,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.morse.MorseViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.gridrush.GridRushViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.oddoneout.OddOneOutViewmodel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.SchneaggaHusViewmodel
-import org.lerchenflo.schneaggchatv3mp.games.presentation.stanislaus.StanislausViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.recap.RecapViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerstackViewModel
@@ -229,8 +228,6 @@ val sharedmodule = module{
     viewModelOf(::GridRushViewmodel)
 
     viewModelOf(::OddOneOutViewmodel)
-
-    viewModelOf(::StanislausViewModel)
 
     viewModelOf(::CrosswordViewmodel)
 
