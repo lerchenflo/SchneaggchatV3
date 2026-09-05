@@ -42,12 +42,14 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.lerchenflo.schneaggchatv3mp.games.domain.GameId
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameHud
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameOverOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GamePauseOverlay
 import org.lerchenflo.schneaggchatv3mp.games.presentation.GameStartOverlay
 import org.lerchenflo.schneaggchatv3mp.sharedUi.core.ActivityTitle
+import org.lerchenflo.schneaggchatv3mp.utilities.AudioManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.games_morse_clear
 import schneaggchatv3mp.composeapp.generated.resources.games_morse_instructions
@@ -313,7 +315,18 @@ private fun HistoryRow(history: List<Char>) {
 }
 
 @Composable
-private fun PressButton(onDot: () -> Unit, onDash: () -> Unit) {
+private fun PressButton(
+    onDot: () -> Unit,
+    onDash: () -> Unit,
+    audioManager: AudioManager = koinInject()
+) {
+    // Prepared up front so the first press beeps without setup delay, released again on leave -
+    // that also stops a tone still running from a press the screen change interrupted.
+    DisposableEffect(audioManager) {
+        audioManager.prepareBeep()
+        onDispose { audioManager.releaseBeep() }
+    }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -322,7 +335,12 @@ private fun PressButton(onDot: () -> Unit, onDash: () -> Unit) {
                 detectTapGestures(
                     onPress = { _ ->
                         val mark = TimeSource.Monotonic.markNow()
-                        val released = tryAwaitRelease()
+                        audioManager.startBeep()
+                        val released = try {
+                            tryAwaitRelease()
+                        } finally {
+                            audioManager.stopBeep()
+                        }
                         if (released) {
                             val elapsed = mark.elapsedNow()
                             if (elapsed < DASH_THRESHOLD_MS.milliseconds) {
