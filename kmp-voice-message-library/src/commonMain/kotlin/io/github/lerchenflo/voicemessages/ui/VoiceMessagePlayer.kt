@@ -76,8 +76,7 @@ fun VoiceMessagePlayer(
                     player.pause()
                     isPlaying = false
                 } else {
-                    player.play(filePath)
-                    isPlaying = true
+                    isPlaying = runCatching { player.play(filePath) }.isSuccess
                 }
             },
         ) {
