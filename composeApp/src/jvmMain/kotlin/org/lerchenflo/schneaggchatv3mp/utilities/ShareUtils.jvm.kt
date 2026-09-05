@@ -56,9 +56,9 @@ actual class ShareUtils {
         }
     }
     
-    actual fun copyToClipboard(text: String, clipboard: Any) {
-        val selection = java.awt.Toolkit.getDefaultToolkit().systemClipboard
-        selection.setContents(java.awt.datatransfer.StringSelection(text), null)
+    actual fun copyToClipboard(text: String) {
+        val systemClipboard = java.awt.Toolkit.getDefaultToolkit().systemClipboard
+        systemClipboard.setContents(java.awt.datatransfer.StringSelection(text), null)
     }
 
     actual fun openLocationInMaps(lat: Double, long: Double, label: String) {
