@@ -56,10 +56,9 @@ actual class ShareUtils(private val context: Context) {
         }
     }
     
-    actual fun copyToClipboard(text: String, clipboard: Any) {
-        val manager = clipboard as ClipboardManager
-        val clip = ClipData.newPlainText("text", text)
-        manager.setPrimaryClip(clip)
+    actual fun copyToClipboard(text: String) {
+        val manager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        manager.setPrimaryClip(ClipData.newPlainText("text", text))
     }
 
     actual fun openLocationInMaps(lat: Double, long: Double, label: String) {

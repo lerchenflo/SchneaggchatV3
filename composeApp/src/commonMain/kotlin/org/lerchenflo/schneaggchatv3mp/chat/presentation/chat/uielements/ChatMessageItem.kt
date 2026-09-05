@@ -9,7 +9,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboard
 import kotlinx.coroutines.flow.StateFlow
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageDisplayItem
@@ -40,7 +39,6 @@ fun ChatMessageItem(
     onAction: (MessageAction) -> Unit,
 ) {
     val message = item.message
-    val clipboard = LocalClipboard.current.nativeClipboard
 
     var showMessageOptionPopup by remember { mutableStateOf(false) }
 
@@ -77,7 +75,7 @@ fun ChatMessageItem(
             onDismissRequest = { showMessageOptionPopup = false },
             onReply = { onAction(MessageAction.ReplyToMessage(message, item.sender)) },
             onCopy = {
-                copyToClipboard(message.content, clipboard)
+                copyToClipboard(message.content)
                 showMessageOptionPopup = false
             },
             onDelete = {

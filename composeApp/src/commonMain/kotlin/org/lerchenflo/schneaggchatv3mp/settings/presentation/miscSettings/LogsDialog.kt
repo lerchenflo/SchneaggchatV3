@@ -39,7 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -203,8 +202,6 @@ fun LogsDialog(
 
 @Composable
 private fun LogEntryItem(log: LogEntry) {
-    val clipboard = LocalClipboard.current.nativeClipboard
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -267,7 +264,7 @@ private fun LogEntryItem(log: LogEntry) {
             IconButton(
                 onClick = {
                     val shareUtils = KoinPlatform.getKoin().get<ShareUtils>()
-                    shareUtils.copyToClipboard(log.message, clipboard)
+                    shareUtils.copyToClipboard(log.message)
 
                 },
                 modifier = Modifier.size(32.dp)

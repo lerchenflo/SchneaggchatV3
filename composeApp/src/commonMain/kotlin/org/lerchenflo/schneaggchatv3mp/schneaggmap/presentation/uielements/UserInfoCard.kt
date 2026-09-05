@@ -37,7 +37,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -103,7 +102,6 @@ fun UserInfoCard(
             val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
 
             location?.let { userLocation ->
-                val clipboard = LocalClipboard.current.nativeClipboard
                 val latText = userLocation.lat.toString().take(8)
                 val longText = userLocation.long.toString().take(8)
 
@@ -113,10 +111,7 @@ fun UserInfoCard(
                     color = onSurfaceVariant,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth().clickable {
-                        copyToClipboard(
-                            text = "$latText, $longText",
-                            clipboard = clipboard
-                        )
+                        copyToClipboard(text = "$latText, $longText")
                     }
                 )
             }

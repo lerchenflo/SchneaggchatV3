@@ -40,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.stevdza_san.swipeable.Swipeable
@@ -319,17 +318,11 @@ fun CoordinateView(
             .fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
-
-        val clipboard = LocalClipboard.current.nativeClipboard
-
         if (trailing == null) {
             Text(
                 text = stringResource(Res.string.latlong, coordinates.lat.toString().take(8), coordinates.long.toString().take(8)),
                 modifier = Modifier.clickable {
-                    copyToClipboard(
-                        text = coordinates.lat.toString().take(8) + ", " + coordinates.long.toString().take(8),
-                        clipboard = clipboard
-                    )
+                    copyToClipboard(text = coordinates.lat.toString().take(8) + ", " + coordinates.long.toString().take(8))
                 }
             )
         } else {
@@ -337,10 +330,7 @@ fun CoordinateView(
                 Text(
                     text = stringResource(Res.string.latlong, coordinates.lat.toString().take(8), coordinates.long.toString().take(8)),
                     modifier = Modifier.clickable {
-                        copyToClipboard(
-                            text = coordinates.lat.toString().take(8) + ", " + coordinates.long.toString().take(8),
-                            clipboard = clipboard
-                        )
+                        copyToClipboard(text = coordinates.lat.toString().take(8) + ", " + coordinates.long.toString().take(8))
                     }
                 )
                 trailing()
