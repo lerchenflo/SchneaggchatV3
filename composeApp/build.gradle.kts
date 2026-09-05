@@ -133,6 +133,9 @@ kotlin {
             //map render backend
             runtimeOnly(libs.maplibre.compose.runtime.vulkan.android)
 
+            //EXIF orientation of picked images
+            implementation(libs.androidx.exifinterface)
+
         }
 
 

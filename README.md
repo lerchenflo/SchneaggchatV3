@@ -50,6 +50,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Sprachnachrichten: Audio-Routing für Bluetooth-Geräte behoben (AirPods, Auto, Lautsprecher)
 - Dartcounter: Funktion und UI verbessert
 - Undercover-Spiel: Spielerliste bleibt nach einer Runde erhalten
+- Bilder werden nicht mehr um 90° rotiert angezeigt
 
 ### 3.0.16
 

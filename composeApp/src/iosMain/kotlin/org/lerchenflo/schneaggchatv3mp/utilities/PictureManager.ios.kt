@@ -35,6 +35,7 @@ import platform.UIKit.UIGraphicsEndImageContext
 import platform.UIKit.UIGraphicsGetImageFromCurrentImageContext
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
+import platform.UIKit.UIImageOrientation
 import platform.UIKit.UIImageWriteToSavedPhotosAlbum
 import platform.posix.memcpy
 
@@ -141,15 +142,21 @@ actual class PictureManager {
         imageBytes: ByteArray,
         targetSizeBytes: Int
     ): ByteArray = withContext(Dispatchers.Default) {
-        // If original is already small enough, return it
-        if (imageBytes.size <= targetSizeBytes) {
+        val nsData = imageBytes.toNSData()
+        val decodedImage = UIImage.imageWithData(nsData)
+            ?: throw IllegalArgumentException("Invalid image data")
+
+        val isUpright = decodedImage.imageOrientation == UIImageOrientation.UIImageOrientationUp
+
+        // A rotated image has to be re-encoded even when it is small enough already: the
+        // orientation only lives in the metadata, and every later step (upload, server PNG
+        // conversion) drops it, leaving the picture sideways.
+        if (imageBytes.size <= targetSizeBytes && isUpright) {
             println("iOS: Image already under target (${imageBytes.size} <= $targetSizeBytes), returning original")
             return@withContext imageBytes
         }
 
-        val nsData = imageBytes.toNSData()
-        var uiImage = UIImage.imageWithData(nsData)
-            ?: throw IllegalArgumentException("Invalid image data")
+        var uiImage = if (isUpright) decodedImage else redrawUpright(decodedImage)
 
         // Calculate compression ratio needed: target / current
         val compressionRatio = targetSizeBytes.toFloat() / imageBytes.size
@@ -284,4 +291,20 @@ actual class PictureManager {
                 ?.bytes
                 ?: throw RuntimeException("Failed to encode ImageBitmap to PNG")
         }
+}
+
+/**
+ * Draws the image into a fresh context so its orientation ends up baked into the pixels
+ * instead of only living in the metadata.
+ */
+private fun redrawUpright(image: UIImage): UIImage {
+    val width = image.size.useContents { width }
+    val height = image.size.useContents { height }
+
+    UIGraphicsBeginImageContextWithOptions(CGSizeMake(width, height), false, image.scale)
+    image.drawInRect(CGRectMake(0.0, 0.0, width, height))
+    val uprightImage = UIGraphicsGetImageFromCurrentImageContext()
+    UIGraphicsEndImageContext()
+
+    return uprightImage ?: image
 }

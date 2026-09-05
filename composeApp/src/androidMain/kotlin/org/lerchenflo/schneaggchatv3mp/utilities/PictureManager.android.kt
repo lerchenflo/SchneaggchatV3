@@ -4,18 +4,21 @@ import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.core.graphics.scale
+import androidx.exifinterface.media.ExifInterface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okio.ByteString.Companion.decodeBase64
 import org.lerchenflo.schneaggchatv3mp.GROUPPROFILEPICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.PICTURE_FILE_NAME
 import org.lerchenflo.schneaggchatv3mp.USERPROFILEPICTURE_FILE_NAME
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -88,13 +91,18 @@ actual class PictureManager(private val context: Context) {
         imageBytes: ByteArray,
         targetSizeBytes: Int,
     ): ByteArray = withContext(Dispatchers.IO) {
-        // If original is already small enough, return it
-        if (imageBytes.size <= targetSizeBytes) {
+        val orientation = readExifOrientation(imageBytes)
+
+        // A rotated image has to be re-encoded even when it is small enough already: the
+        // orientation is only an EXIF tag, and every later step (upload, server PNG conversion)
+        // drops it, leaving the picture sideways.
+        if (imageBytes.size <= targetSizeBytes && orientation == ExifInterface.ORIENTATION_NORMAL) {
             Log.d("Android downscale", "Image already under target (${imageBytes.size} <= $targetSizeBytes), returning original")
             return@withContext imageBytes
         }
 
         var bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+            ?.let { applyExifOrientation(it, orientation) }
             ?: throw IllegalArgumentException("Invalid image data")
 
         var quality = 90
@@ -228,4 +236,33 @@ actual class PictureManager(private val context: Context) {
             bitmap.asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, outputStream)
             outputStream.toByteArray()
         }
+}
+
+private fun readExifOrientation(imageBytes: ByteArray): Int =
+    runCatching {
+        ExifInterface(ByteArrayInputStream(imageBytes))
+            .getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+    }.getOrDefault(ExifInterface.ORIENTATION_NORMAL)
+
+private fun applyExifOrientation(bitmap: Bitmap, orientation: Int): Bitmap {
+    val matrix = Matrix()
+    when (orientation) {
+        ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+        ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+        ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+        ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.postScale(-1f, 1f)
+        ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.postScale(1f, -1f)
+        ExifInterface.ORIENTATION_TRANSPOSE -> {
+            matrix.postRotate(90f)
+            matrix.postScale(-1f, 1f)
+        }
+        ExifInterface.ORIENTATION_TRANSVERSE -> {
+            matrix.postRotate(270f)
+            matrix.postScale(-1f, 1f)
+        }
+        else -> return bitmap
+    }
+
+    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        .also { if (it != bitmap) bitmap.recycle() }
 }

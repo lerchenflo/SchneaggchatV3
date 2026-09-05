@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.ismoy.imagepickerkmp.config.CropConfig
 import io.github.ismoy.imagepickerkmp.config.GalleryConfig
+import io.github.ismoy.imagepickerkmp.picker.CompressionLevel
 import io.github.ismoy.imagepickerkmp.picker.GalleryPhotoResult
 import io.github.ismoy.imagepickerkmp.picker.ImagePickerKMPConfig
 import io.github.ismoy.imagepickerkmp.picker.ImagePickerResult
@@ -53,7 +54,12 @@ fun ImageSourcePickerDialog(
             galleryConfig = GalleryConfig(
                 allowMultiple = true,
                 mimeTypes = listOf(MimeType.IMAGE_ALL),
-                includeExif = true
+                includeExif = true,
+                // Without a compression level the picker hands back the raw gallery uri and
+                // loadBytes() re-encodes it without ever applying the EXIF orientation, so
+                // rotated photos arrive sideways. Setting one makes the picker bake the
+                // orientation into the pixels first.
+                compressionLevel = CompressionLevel.LOW
             )
         )
     )
