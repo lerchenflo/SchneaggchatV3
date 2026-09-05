@@ -14,12 +14,12 @@ composeBom = "2026.06.01" #Check for popup crashes when updating
 androidx-activity = "1.13.0"
 androidx-lifecycle = "2.11.0"
 coilComposeVersion = "3.5.0"
-componentsResources = "1.11.1"
+componentsResources = "1.12.0"
 composeHotReload = "1.2.0"
-composeMultiplatform = "1.11.1"
+composeMultiplatform = "1.12.0"
 coreSplashscreen = "1.2.0"
 encoding = "2.6.0"
-foundation = "1.11.1"
+foundation = "1.12.0"
 githubImagepickerkmp = "1.1.5"
 
 moko = "0.20.1"
@@ -33,7 +33,7 @@ kotlinxIo = "0.9.1"
 materialIconsExtended = "1.7.3"
 room = "2.8.4"
 
-runtime = "1.11.1"
+runtime = "1.12.0"
 sqlite = "2.7.0"
 datetime-wheel-picker = "1.4.0"
 
@@ -48,7 +48,7 @@ mikepenz-markdown = "0.44.0"
 firebase-messaging-version = "24.1.2"
 google-services = "4.5.0"
 play-services-location = "21.4.0"
-uiToolingPreview = "1.11.1"
+uiToolingPreview = "1.12.0"
 
 cmpNavigation3 = "1.1.1"
 appUpdateKtx = "2.1.0"
@@ -62,7 +62,7 @@ material = "1.14.0"
 ksafe = "3.0.0"
 
 #Schneaggmap
-map = "0.14.0"
+map = "0.15.0"
 
 swipeableKmp = "1.0.7"
 reorderable = "3.1.0"
@@ -73,6 +73,12 @@ jetlime = "4.3.0"
 #Schneaggmap
 maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "map" }
 maplibre-compose-material3 = { module = "org.maplibre.compose:maplibre-compose-material3", version.ref = "map" }
+maplibre-compose-runtime-vulkan-android = { module = "org.maplibre.compose:maplibre-compose-runtime-vulkan-android", version.ref = "map" }
+maplibre-compose-runtime-vulkan-linux-x64 = { module = "org.maplibre.compose:maplibre-compose-runtime-vulkan-linux-x64", version.ref = "map" }
+maplibre-compose-runtime-vulkan-linux-arm64 = { module = "org.maplibre.compose:maplibre-compose-runtime-vulkan-linux-arm64", version.ref = "map" }
+maplibre-compose-runtime-vulkan-windows-x64 = { module = "org.maplibre.compose:maplibre-compose-runtime-vulkan-windows-x64", version.ref = "map" }
+maplibre-compose-runtime-vulkan-windows-arm64 = { module = "org.maplibre.compose:maplibre-compose-runtime-vulkan-windows-arm64", version.ref = "map" }
+maplibre-compose-runtime-metal-macos-arm64 = { module = "org.maplibre.compose:maplibre-compose-runtime-metal-macos-arm64", version.ref = "map" }
 
 swipeable-kmp = { module = "com.stevdza-san:swipeable-kmp", version.ref = "swipeableKmp" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }

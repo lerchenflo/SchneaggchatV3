@@ -42,7 +42,7 @@ val TOP_LEVEL_DESTINATIONS = mapOf<NavKey, NavigationBarItemTemplate>(
         title = Res.string.navbar_map,
         selectedIcon = Icons.Filled.Map,
         unselectedIcon = Icons.Outlined.Map,
-        mobileOnly = true
+        mobileOnly = false
     ),
     Route.ChatSelector to NavigationBarItemTemplate(
         id = "bottombar_chatselector_button",

@@ -18,26 +18,15 @@ plugins {
 }
 
 
-fun detectTarget(): String {
-    val hostOs = when (val os = System.getProperty("os.name").lowercase()) {
-        "mac os x" -> "macos"
-        else -> os.split(" ").first()
-    }
-    val hostArch = when (val arch = System.getProperty("os.arch").lowercase()) {
-        "x86_64" -> "amd64"
-        "arm64" -> "aarch64"
-        else -> arch
-    }
-    val renderer = when (hostOs) {
-        "macos" -> "metal"
-        else -> "opengl"
-    }
-    return "${hostOs}-${hostArch}-${renderer}"
-}
+//Maplibre ships one desktop render runtime per operating system and CPU architecture, and only the
+//one matching the machine that runs the app can be loaded.
+val desktopHostIsMac = System.getProperty("os.name").lowercase().startsWith("mac")
+val desktopHostIsWindows = System.getProperty("os.name").lowercase().startsWith("windows")
+val desktopHostIsArm64 = System.getProperty("os.arch").lowercase() in setOf("aarch64", "arm64")
 
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 
     targets.all {
         compilations.all {
@@ -52,8 +41,8 @@ kotlin {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 kotlin {
@@ -86,7 +75,7 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
 
-
+        /*
         //Maplibre map export for ios
         iosTarget.swiftPackageConfig(cinteropName = "spmMaplibre") {
             dependency {
@@ -99,6 +88,8 @@ kotlin {
 
             }
         }
+
+         */
 
 
 
@@ -138,6 +129,9 @@ kotlin {
 
             // Location (FusedLocationProviderClient)
             implementation(libs.play.services.location)
+
+            //map render backend
+            runtimeOnly(libs.maplibre.compose.runtime.vulkan.android)
 
         }
 
@@ -251,6 +245,17 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.okhttp)
 
+            //map render backend for the host this build runs on
+            runtimeOnly(
+                when {
+                    desktopHostIsMac -> libs.maplibre.compose.runtime.metal.macos.arm64
+                    desktopHostIsWindows && desktopHostIsArm64 -> libs.maplibre.compose.runtime.vulkan.windows.arm64
+                    desktopHostIsWindows -> libs.maplibre.compose.runtime.vulkan.windows.x64
+                    desktopHostIsArm64 -> libs.maplibre.compose.runtime.vulkan.linux.arm64
+                    else -> libs.maplibre.compose.runtime.vulkan.linux.x64
+                }
+            )
+
         }
     }
 
@@ -282,6 +287,9 @@ val desktopVersion = "3.0.17"
 compose.desktop {
     application {
         mainClass = "org.lerchenflo.schneaggchatv3mp.MainKt"
+
+        //The maplibre desktop bindings reach native code through the FFM API
+        jvmArgs += "--enable-native-access=ALL-UNNAMED"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)

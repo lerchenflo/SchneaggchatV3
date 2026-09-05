@@ -36,7 +36,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -111,16 +110,17 @@ import org.maplibre.compose.expressions.value.LineJoin
 import org.maplibre.compose.layers.CircleLayer
 import org.maplibre.compose.layers.LineLayer
 import org.maplibre.compose.layers.SymbolLayer
-import org.maplibre.compose.location.DesiredAccuracy
 import org.maplibre.compose.location.Location
+import org.maplibre.compose.location.LocationAccuracy
+import org.maplibre.compose.location.LocationRequest
 import org.maplibre.compose.location.rememberDefaultLocationProvider
-import org.maplibre.compose.location.rememberNullLocationProvider
-import org.maplibre.compose.map.MapOptions
+import org.maplibre.compose.location.rememberLocationState
 import org.maplibre.compose.map.MaplibreMap
-import org.maplibre.compose.map.OrnamentOptions
 import org.maplibre.compose.material3.DisappearingCompassButton
 import org.maplibre.compose.material3.DisappearingScaleBar
 import org.maplibre.compose.material3.ExpandingAttributionButton
+import org.maplibre.compose.material3.Material3
+import org.maplibre.compose.overlay.MapOverlay
 import org.maplibre.compose.sources.GeoJsonData
 import org.maplibre.compose.sources.GeoJsonOptions
 import org.maplibre.compose.sources.rememberGeoJsonSource
@@ -160,6 +160,11 @@ private const val USER_CLUSTER_RADIUS_DP = 40.0
 
 private const val ZOOM_SNAP_RADIUS_DP = 64.0
 private const val EARTH_RADIUS_METERS = 6371000.0
+
+//The camera only knows its scale once the map has reported a viewport; until then everything that
+//converts dp to meters falls back to zero, which reads as "no snapping, no clustering yet".
+private val CameraState.metersPerDpAtTarget: Double
+    get() = viewport?.metersPerDpAtTarget ?: 0.0
 
 private data class MarkerIcon(val bitmap: ImageBitmap, val size: DpSize)
 
@@ -268,12 +273,15 @@ fun SchneaggmapScreen(
 
     //Own position, resolved once here (not in SchneaggmapMapContent) so we don't open a second,
     //redundant GPS subscription just to also show the speed readout below.
-    val locationProvider = if (state.locationPermissionGranted) {
-        rememberDefaultLocationProvider(desiredAccuracy = DesiredAccuracy.Highest)
-    } else {
-        rememberNullLocationProvider()
-    }
-    val ownLocation by locationProvider.location.collectAsState()
+    //The provider reads the platform permission when it is created and afterwards only on activity
+    //resume, so it is recreated whenever our own permission state flips to pick the grant up.
+    val locationProvider = key(state.locationPermissionGranted) { rememberDefaultLocationProvider() }
+    val locationState = rememberLocationState(
+        enabled = state.locationPermissionGranted,
+        provider = locationProvider,
+        request = LocationRequest(accuracy = LocationAccuracy.BestForNavigation),
+    )
+    val ownLocation = locationState.location
 
 
 
@@ -334,7 +342,7 @@ fun SchneaggmapScreen(
             cameraState.animateTo(CameraPosition(target = position, zoom = OWN_LOCATION_CLICK_ZOOM))
         }
 
-        snapshotFlow { ownLocation }
+        snapshotFlow { locationState.location }
             .collect { location ->
                 location?.position?.value?.let { position ->
                     cameraState.animateTo(cameraState.position.copy(target = position))
@@ -986,9 +994,9 @@ private fun SchneaggmapMapContent(
         baseStyle = BaseStyle.Uri(state.mapStyleUrl),
         cameraState = cameraState,
         styleState = styleState,
-        options = MapOptions(
-            ornamentOptions = OrnamentOptions.AllDisabled
-        ),
+        //Scale bar, compass and attribution are drawn by SchneaggmapScreen itself, positioned
+        //around the rest of the map chrome.
+        overlay = MapOverlay.None,
         onMapClick = { position, _ ->
             onAction(SchneaggmapAction.OnMapClick(LatLong(position.latitude, position.longitude), longClick = false))
 
