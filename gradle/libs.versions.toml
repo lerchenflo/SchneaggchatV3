@@ -1,30 +1,30 @@
 [versions]
-agp = "9.3.2"
+agp = "9.4.0"
 
 
 # ATTENTION WHEN UPDATING
 kotlinx-datetime = "0.8.0" #Check for voice message crash when updating
 material3 = "1.11.0-alpha07" #Test for ios input crashes when updating (IRLinkage error crash when clicking on any textfield)
 cryptographyProviderOptimal = "0.6.0" #update same as material3
-composeBom = "2026.06.01" #Check for popup crashes when updating
+composeBom = "2026.08.00" #Check for popup crashes when updating
 
 
 
 
 androidx-activity = "1.13.0"
 androidx-lifecycle = "2.11.0"
-coilComposeVersion = "3.5.0"
+coilComposeVersion = "3.6.2"
 componentsResources = "1.12.0"
 composeHotReload = "1.2.0"
 composeMultiplatform = "1.12.0"
 coreSplashscreen = "1.2.0"
 encoding = "2.6.0"
 foundation = "1.12.0"
-githubImagepickerkmp = "1.1.5"
+githubImagepickerkmp = "1.1.7"
 
 moko = "0.20.1"
 
-jwtKt = "1.3.1"
+jwtKt = "1.3.2"
 kotlin = "2.4.10"
 ksp = "2.3.9"
 
@@ -44,7 +44,7 @@ ktor = "3.5.2"
 adaptive = "1.2.0"
 datastore = "1.2.1"
 
-mikepenz-markdown = "0.44.0"
+mikepenz-markdown = "0.45.0"
 firebase-messaging-version = "24.1.2"
 google-services = "4.5.0"
 play-services-location = "21.4.0"
@@ -59,7 +59,7 @@ espressoCore = "3.7.0"
 appcompat = "1.8.0"
 material = "1.14.0"
 
-ksafe = "3.0.0"
+ksafe = "3.1.0"
 
 #Schneaggmap
 map = "0.15.0"
