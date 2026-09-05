@@ -36,6 +36,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Kreuzworträtsel-Daily-Challenge
 - Neue Nachrichten über Benachrichtigungen direkt im Chat anzeigen
 - Events: Woche und Monat Kalenderansicht mit Geburtstagen, zum Kalender hinzufügen
+- Morse-Spiel: Hörbarer Piepton beim Tastendruck
 
 #### Bugfixes
 - Chat-Nachrichten: Zeilenumbrüche im Markdown-Modus behoben
@@ -48,6 +49,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Gruppenmitglieder doppelt anzeigen
 - Sprachnachrichten: Audio-Routing für Bluetooth-Geräte behoben (AirPods, Auto, Lautsprecher)
 - Dartcounter: Funktion und UI verbessert
+- Undercover-Spiel: Spielerliste bleibt nach einer Runde erhalten
 
 ### 3.0.16
 

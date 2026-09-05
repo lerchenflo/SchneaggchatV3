@@ -380,6 +380,7 @@ class UndercoverViewModel(
     fun resetGame() {
         cancelAutoHide()
         state = UiState(
+            setupPlayers = state.setupPlayers,
             setupMrWhiteCount = state.setupMrWhiteCount,
             setupUndercoverCount = state.setupUndercoverCount,
             autoHideEnabled = state.autoHideEnabled,
