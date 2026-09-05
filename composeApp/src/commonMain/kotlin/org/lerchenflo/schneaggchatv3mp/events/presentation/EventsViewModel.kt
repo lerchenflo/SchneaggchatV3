@@ -187,7 +187,13 @@ class EventsViewModel(
                             selectedEvent = null
                         )
                     }
-                    navigator.navigate(Route.Schneaggmap(currentlyEditedEvent = passedEvent), navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true))
+                    navigator.navigate(
+                        Route.Schneaggmap(
+                            currentlyEditedEvent = passedEvent,
+                            openRequestId = Clock.System.now().toEpochMilliseconds()
+                        ),
+                        navigationOptions = Navigator.NavigationOptions(exitPreviousScreen = true)
+                    )
                 }
             }
 

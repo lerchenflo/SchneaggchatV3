@@ -18,8 +18,6 @@ sealed interface EmailVerifiedCheckAction {
     data class OnChangeEmailText(val text: String) : EmailVerifiedCheckAction
     data object OnChangeEmailDismiss: EmailVerifiedCheckAction
 
-    data object OnRequestSupportClick: EmailVerifiedCheckAction
-
     data object OnResendEmailClick : EmailVerifiedCheckAction
     data object OnLogoutClick : EmailVerifiedCheckAction
     data object OnCheckVerificationClick : EmailVerifiedCheckAction

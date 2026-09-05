@@ -33,6 +33,7 @@ import schneaggchatv3mp.composeapp.generated.resources.unknown_event
 import schneaggchatv3mp.composeapp.generated.resources.unknown_game
 import schneaggchatv3mp.composeapp.generated.resources.unknown_location
 import schneaggchatv3mp.composeapp.generated.resources.unknown_user
+import kotlin.time.Clock
 
 /**
  * Default [ComboAnnotationSource]s, self-contained: names are looked up through the injected
@@ -118,7 +119,14 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
                 names = locationNames,
                 unresolvedName = unknownLocation,
                 onClick = { entryId ->
-                    scope.launch { navigator.navigate(Route.Schneaggmap(initialEntryId = entryId)) }
+                    scope.launch {
+                        navigator.navigate(
+                            Route.Schneaggmap(
+                                initialEntryId = entryId,
+                                openRequestId = Clock.System.now().toEpochMilliseconds()
+                            )
+                        )
+                    }
                 }
             ),
             ComboAnnotationSource(

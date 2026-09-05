@@ -14,19 +14,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getString
-import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
-import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.email_check_check_emails_snackbar
-import schneaggchatv3mp.composeapp.generated.resources.support_email_verification_body
-import schneaggchatv3mp.composeapp.generated.resources.support_email_verification_subject
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -36,7 +32,6 @@ import kotlin.time.Instant
 class EmailVerifiedCheckViewModel(
     private val appRepository: AppRepository,
     private val navigator: Navigator,
-    private val shareUtils: ShareUtils,
     private val applicationScope: ApplicationScope
 ) : ViewModel() {
 
@@ -53,20 +48,6 @@ class EmailVerifiedCheckViewModel(
             EmailVerifiedCheckAction.OnChangeEmailDismiss -> showEmailDialog(false)
             is EmailVerifiedCheckAction.OnChangeEmailText -> changeEmail(newEmail = action.text)
             EmailVerifiedCheckAction.OnChangeEmailStart -> showEmailDialog(true)
-            EmailVerifiedCheckAction.OnRequestSupportClick -> sendSupportEmail()
-        }
-    }
-
-
-    private fun sendSupportEmail() {
-        viewModelScope.launch {
-            val subject = getString(Res.string.support_email_verification_subject)
-            val body = getString(Res.string.support_email_verification_body)
-            shareUtils.openMailClient(
-                recipient = SUPPORT_EMAIL,
-                subject = subject,
-                body = body
-            )
         }
     }
 

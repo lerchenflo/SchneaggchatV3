@@ -1,10 +1,8 @@
 package org.lerchenflo.schneaggchatv3mp.login.presentation.emailverifiedcheck
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material3.ButtonDefaults
@@ -29,10 +26,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -42,16 +40,13 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.mp.KoinPlatform
-import org.lerchenflo.schneaggchatv3mp.app.GlobalViewModel
+import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.getFaqUrl
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.ChangeDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.NormalButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.emailProviderWarning
@@ -76,12 +71,17 @@ fun EmailVerifiedCheckScreenRoot() {
     val viewModel: EmailVerifiedCheckViewModel = koinViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    val uriHandler = LocalUriHandler.current
+    val preferencemanager = koinInject<Preferencemanager>()
+    val serverUrl by preferencemanager.getServerUrlFlow().collectAsState(initial = BASE_SERVER_URL)
+
     if (state.userData == null || (state.userData != null && state.userData!!.emailVerifiedAt != null)) {
         EmailCheckLoadingIndicator()
     } else{
         EmailNotVerifiedScreen(
             state = state,
-            onAction = viewModel::onAction
+            onAction = viewModel::onAction,
+            onOpenFaq = { uriHandler.openUri(getFaqUrl(serverUrl)) }
         )
     }
 }
@@ -117,7 +117,8 @@ fun EmailCheckLoadingIndicator() {
 @Composable
 fun EmailNotVerifiedScreen(
     state: EmailVerifiedCheckState,
-    onAction: (EmailVerifiedCheckAction) -> Unit
+    onAction: (EmailVerifiedCheckAction) -> Unit,
+    onOpenFaq: () -> Unit
 ) {
 
     val smallSpacer = 12.dp
@@ -298,9 +299,7 @@ fun EmailNotVerifiedScreen(
         Spacer(modifier = Modifier.height(4.dp))
 
         TextButton(
-            onClick = {
-                onAction(EmailVerifiedCheckAction.OnRequestSupportClick)
-            }
+            onClick = onOpenFaq
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.HelpOutline,
@@ -329,7 +328,8 @@ private fun EmailnotverifiedPreview() {
                 currentEmail = "Defaultemail@gmail.com",
                 canResendEmail = true
             ),
-            onAction = {  }
+            onAction = {  },
+            onOpenFaq = {  }
         )
     }
 }

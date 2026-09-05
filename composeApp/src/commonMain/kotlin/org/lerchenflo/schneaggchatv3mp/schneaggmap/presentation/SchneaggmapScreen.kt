@@ -545,6 +545,9 @@ fun SchneaggmapScreen(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
+
+                var attributionExpanded by remember { mutableStateOf(false) }
+
                 Box(
                     modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
@@ -555,7 +558,6 @@ fun SchneaggmapScreen(
                         modifier = Modifier.align(Alignment.CenterStart)
                     ) {
                         // Legally required OSM/OpenFreeMap copyright notice.
-                        var attributionExpanded by remember { mutableStateOf(false) }
                         ExpandingAttributionButton(
                             expanded = attributionExpanded,
                             onClick = { attributionExpanded = !attributionExpanded },
@@ -600,25 +602,29 @@ fun SchneaggmapScreen(
                     }
 
 
-                    // Right: Snail trails toggle
-                    Card(
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .tapTarget("schneaggmap_snailtrail_switch")
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)
+                    if (!attributionExpanded) { //Only show if attribution not shown, otherwise would overlay
+
+                        // Right: Snail trails toggle
+
+                        Card(
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .tapTarget("schneaggmap_snailtrail_switch")
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Polyline,
-                                contentDescription = null,
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Switch(
-                                checked = state.showSnailTrails,
-                                onCheckedChange = { onAction(SchneaggmapAction.ToggleSnailTrails) },
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Polyline,
+                                    contentDescription = null,
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Switch(
+                                    checked = state.showSnailTrails,
+                                    onCheckedChange = { onAction(SchneaggmapAction.ToggleSnailTrails) },
+                                )
+                            }
                         }
                     }
                 }
