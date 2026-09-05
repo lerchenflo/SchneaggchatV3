@@ -9,7 +9,8 @@ sealed interface DecodedNotification {
         val groupMessage: Boolean,
         val messageType: MessageType,
         val groupName: String,
-        val encodedContent: String,
+        //Message text for TEXT messages, the emoji for reactions. Plaintext.
+        val content: String,
         val senderId: String,
         val receiverId: String,
         val reaction: Boolean = false,
@@ -74,7 +75,7 @@ object PayloadDecoder {
                 messageType = runCatching { MessageType.valueOf(data["messageType"] ?: "") }
                     .getOrDefault(MessageType.TEXT),
                 groupMessage = data["groupMessage"]?.toBoolean() ?: false,
-                encodedContent = data["encodedContent"] ?: "",
+                content = data["content"] ?: "",
                 senderId = data["senderId"] ?: "",
                 receiverId = data["receiverId"] ?: "",
                 reaction = data["reaction"]?.toBoolean() ?: false,

@@ -2,7 +2,6 @@ import UserNotifications
 
 private let appGroupId = "group.org.lerchenflo.schneaggchatv3mp.SchneaggchatV3mp.SchneaggchatShareExtension"
 private let languageKey = "shared_language_iso"
-private let encryptionKeyKey = "shared_encryption_key"
 // Must match SharedNotificationDefaults.KEY_PENDING_PUSH_MESSAGES on the Kotlin side.
 private let pendingPushMessagesKey = "pending_push_messages"
 private let maxPendingPushMessages = 100
@@ -31,7 +30,6 @@ class NotificationService: UNNotificationServiceExtension {
 
         let defaults = UserDefaults(suiteName: appGroupId)
         let language = defaults?.string(forKey: languageKey)
-        let encryptionKey = defaults?.string(forKey: encryptionKeyKey)
 
         // Queue the raw payload for the main app to upsert into Room next time it activates -
         // a background push never reaches Kotlin otherwise, since this extension is a separate
@@ -46,7 +44,7 @@ class NotificationService: UNNotificationServiceExtension {
             return
         }
 
-        let resolved = resolve(decoded: decoded, language: language, encryptionKey: encryptionKey)
+        let resolved = resolve(decoded: decoded, language: language)
         if let title = resolved.title { bestAttemptContent.title = title }
         if let body  = resolved.body  { bestAttemptContent.body  = body }
         contentHandler(bestAttemptContent)
@@ -86,11 +84,10 @@ class NotificationService: UNNotificationServiceExtension {
 
     private func resolve(
         decoded: DecodedNotification,
-        language: String?,
-        encryptionKey: String?
+        language: String?
     ) -> (title: String?, body: String?) {
         switch decoded {
-        case let .message(_, senderName, groupName, messageType, groupMessage, encodedContent, reaction):
+        case let .message(_, senderName, groupName, messageType, groupMessage, content, reaction):
             if reaction {
                 let typeKey: NotificationStringKey
                 switch messageType {
@@ -101,15 +98,7 @@ class NotificationService: UNNotificationServiceExtension {
                 }
                 let typeWord = NotificationStrings.get(typeKey, language: language)
                 let reactionTitle = NotificationStrings.get(.newMessageReaction, language: language, senderName, typeWord)
-                let reactionBody: String
-                if let key = encryptionKey, !key.isEmpty,
-                   let plaintext = NotificationCrypto.decrypt(base64Ciphertext: encodedContent, key: key),
-                   !plaintext.isEmpty {
-                    reactionBody = plaintext
-                } else {
-                    reactionBody = ""
-                }
-                return (reactionTitle, reactionBody)
+                return (reactionTitle, content)
             }
 
             let title: String
@@ -121,13 +110,8 @@ class NotificationService: UNNotificationServiceExtension {
             let body: String
             switch messageType {
             case .TEXT:
-                if let key = encryptionKey, !key.isEmpty,
-                   let plaintext = NotificationCrypto.decrypt(base64Ciphertext: encodedContent, key: key),
-                   !plaintext.isEmpty {
-                    body = plaintext
-                } else {
-                    body = NotificationStrings.get(.youHaveNewMessages, language: language)
-                }
+                // Empty when the push came from a server that predates the plaintext `content` field.
+                body = content.isEmpty ? NotificationStrings.get(.youHaveNewMessages, language: language) : content
             case .IMAGE:
                 body = NotificationStrings.get(.image, language: language)
             case .AUDIO:

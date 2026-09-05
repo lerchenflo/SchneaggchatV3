@@ -138,7 +138,6 @@ import org.lerchenflo.schneaggchatv3mp.utilities.getAudioBytes
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisLong
 import org.lerchenflo.schneaggchatv3mp.utilities.getCurrentTimeMillisString
 import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
-import org.lerchenflo.schneaggchatv3mp.utilities.CryptoUtil
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.DecodedNotification
 import org.lerchenflo.schneaggchatv3mp.utilities.notifications.Notifier
 import schneaggchatv3mp.composeapp.generated.resources.Res
@@ -2176,10 +2175,9 @@ class AppRepository(
      */
     suspend fun applyPushMessage(decoded: DecodedNotification.Message) {
         if (SessionCache.requireLoggedIn()?.userId == null) return
-        val encryptionKey = preferencemanager.getEncryptionKey().ifEmpty { return }
 
         if (decoded.reaction) {
-            applyPushReaction(decoded, encryptionKey)
+            applyPushReaction(decoded)
             return
         }
 
@@ -2190,8 +2188,8 @@ class AppRepository(
         // Never overwrite an already-synced or socket-delivered row.
         if (messageRepository.getMessageById(decoded.msgId) != null) return
 
-        val content = runCatching { CryptoUtil.decrypt(decoded.encodedContent, encryptionKey) }
-            .getOrNull() ?: return
+        // Blank when the push came from a server that predates the plaintext `content` field.
+        val content = decoded.content.ifBlank { return }
 
         val sendDate = (decoded.sendDate.takeIf { it > 0L } ?: getCurrentTimeMillisLong()).toString()
 
@@ -2219,11 +2217,10 @@ class AppRepository(
     }
 
     /** Applies a reaction push to an already-local message. Never creates a new row. */
-    private suspend fun applyPushReaction(decoded: DecodedNotification.Message, encryptionKey: String) {
+    private suspend fun applyPushReaction(decoded: DecodedNotification.Message) {
         val existing = messageRepository.getMessageById(decoded.msgId) ?: return
 
-        val emoji = runCatching { CryptoUtil.decrypt(decoded.encodedContent, encryptionKey) }
-            .getOrNull()?.takeIf { it.isNotBlank() } ?: return
+        val emoji = decoded.content.ifBlank { return }
 
         messageRepository.upsertMessage(
             existing.copy(

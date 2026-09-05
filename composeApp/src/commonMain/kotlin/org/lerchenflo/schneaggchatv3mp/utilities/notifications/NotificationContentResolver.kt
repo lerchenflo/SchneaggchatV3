@@ -3,7 +3,6 @@ package org.lerchenflo.schneaggchatv3mp.utilities.notifications
 import org.jetbrains.compose.resources.getString
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
-import org.lerchenflo.schneaggchatv3mp.utilities.CryptoUtil
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.audio
@@ -25,9 +24,8 @@ import kotlin.math.absoluteValue
 
 suspend fun resolveLocalizedContent(
     decoded: DecodedNotification,
-    encryptionKey: String?,
 ): NotificationContent? = when (decoded) {
-    is DecodedNotification.Message       -> resolveMessage(decoded, encryptionKey)
+    is DecodedNotification.Message       -> resolveMessage(decoded)
     is DecodedNotification.FriendRequest -> resolveFriendRequest(decoded)
     is DecodedNotification.System        -> resolveSystem(decoded)
     is DecodedNotification.Birthday      -> resolveBirthday(decoded)
@@ -39,26 +37,20 @@ suspend fun resolveLocalizedContent(
 
 private suspend fun resolveMessage(
     decoded: DecodedNotification.Message,
-    encryptionKey: String?,
 ): NotificationContent? {
-    if (decoded.reaction) return resolveReaction(decoded, encryptionKey)
+    if (decoded.reaction) return resolveReaction(decoded)
 
     // Server-authored SYSTEM messages (group renamed, member added, wake sent, ...) never push -
     // this branch is currently unreachable, but keep it honest in case that ever changes.
     if (decoded.messageType == MessageType.SYSTEM) return null
 
-    val body = if (!encryptionKey.isNullOrEmpty()) {
-        runCatching {
-            when (decoded.messageType) {
-                MessageType.TEXT  -> CryptoUtil.decrypt(decoded.encodedContent, encryptionKey)
-                MessageType.IMAGE -> getString(Res.string.image)
-                MessageType.AUDIO -> getString(Res.string.audio)
-                MessageType.POLL  -> getString(Res.string.poll)
-                MessageType.SYSTEM -> getString(Res.string.you_have_new_messages)
-            }
-        }.getOrElse { getString(Res.string.you_have_new_messages) }
-    } else {
-        getString(Res.string.you_have_new_messages)
+    val body = when (decoded.messageType) {
+        //Blank when the push came from a server that predates the plaintext `content` field.
+        MessageType.TEXT  -> decoded.content.ifBlank { getString(Res.string.you_have_new_messages) }
+        MessageType.IMAGE -> getString(Res.string.image)
+        MessageType.AUDIO -> getString(Res.string.audio)
+        MessageType.POLL  -> getString(Res.string.poll)
+        MessageType.SYSTEM -> getString(Res.string.you_have_new_messages)
     }
 
     val msg = Message(
@@ -82,13 +74,8 @@ private suspend fun resolveMessage(
 
 private suspend fun resolveReaction(
     decoded: DecodedNotification.Message,
-    encryptionKey: String?,
 ): NotificationContent {
-    val reactionEmoji = if (!encryptionKey.isNullOrEmpty()) {
-        runCatching { CryptoUtil.decrypt(decoded.encodedContent, encryptionKey) }.getOrDefault("")
-    } else {
-        ""
-    }
+    val reactionEmoji = decoded.content
 
     val typeWord = getString(
         when (decoded.messageType) {

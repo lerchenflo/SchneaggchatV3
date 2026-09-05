@@ -16,7 +16,6 @@ import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.utilities.notifications.NotificationCredentialsMirror
 
 class Preferencemanager(
     private val prefs: DataStore<Preferences>,
@@ -33,7 +32,6 @@ class Preferencemanager(
     enum class SecureKey(val key: String) {
         ACCESS_TOKEN("access_token"),
         REFRESH_TOKEN("refresh_token"),
-        ENCRYPTION_KEY("encryption_key"),
         OWN_ID("own_id");
 
         companion object {
@@ -41,9 +39,8 @@ class Preferencemanager(
         }
     }
 
-    suspend fun getEncryptionKey(): String {
-        return securePrefs.get(SecureKey.ENCRYPTION_KEY.key, "")
-    }
+    // Key under which the pre-E2E push decryption key used to live. Only referenced to purge it.
+    private val legacyEncryptionKey = "encryption_key"
 
     suspend fun saveTokens(tokenPair: NetworkUtils.TokenPair) {
         try {
@@ -53,13 +50,9 @@ class Preferencemanager(
             //loggingRepository.logDebug("Secure storage: Saving refresh token")
             securePrefs.put(SecureKey.REFRESH_TOKEN.key, tokenPair.refreshToken)
             
-            tokenPair.encryptionKey?.let { encryptionKey ->
-                //loggingRepository.logDebug("Secure storage: Saving encryption key")
-                securePrefs.put(SecureKey.ENCRYPTION_KEY.key, encryptionKey)
-                NotificationCredentialsMirror.setEncryptionKey(encryptionKey)
-            } ?: run {
-                //loggingRepository.logDebug("Secure storage: No encryption key to save")
-            }
+            // Installs from before push encryption was removed still hold the old shared key.
+            // Drop it on the next login/refresh so nothing derived from the server secret lingers.
+            securePrefs.delete(legacyEncryptionKey)
 
             //loggingRepository.logInfo("Secure storage: All tokens saved successfully")
         } catch (e: Exception) {
@@ -71,12 +64,10 @@ class Preferencemanager(
     suspend fun getTokens(): NetworkUtils.TokenPair {
         val accessToken = securePrefs.get(SecureKey.ACCESS_TOKEN.key, "")
         val refreshToken = securePrefs.get(SecureKey.REFRESH_TOKEN.key, "")
-        val encryptionKey = securePrefs.get(SecureKey.ENCRYPTION_KEY.key, "").takeIf { it.isNotEmpty() }
 
         return NetworkUtils.TokenPair(
             accessToken = accessToken,
             refreshToken = refreshToken,
-            encryptionKey = encryptionKey
         )
     }
 
@@ -90,11 +81,11 @@ class Preferencemanager(
 
 
     suspend fun clearAll() {
-        // Clear secure storage (tokens, encryption key, ownId)
+        // Clear secure storage (tokens, ownId)
         SecureKey.entries.forEach { secureKey ->
             securePrefs.delete(secureKey.key)
         }
-        NotificationCredentialsMirror.setEncryptionKey(null)
+        securePrefs.delete(legacyEncryptionKey)
 
         // Clear all DataStore preferences
         val serverUrl = getServerUrl() // save before clearing
