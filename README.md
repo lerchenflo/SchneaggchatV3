@@ -42,6 +42,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Contribute-Popup überarbeitet: Nicht mehr schließbar, drei Optionen (Bug/Feature melden, Spenden, Später)
 
 #### Bugfixes
+- Chat-Auswahl lädt beim App-Start schneller (optimierte Datenbankabfragen und Profilbilder-Caching)
 - Chat-Nachrichten: Zeilenumbrüche im Markdown-Modus behoben
 - Schneaggmap: Suche verbessert
 - Event Farbe auf der Map repariert

@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.setupImageLoader
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogType
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import java.io.PrintWriter
@@ -12,6 +13,8 @@ import java.io.StringWriter
 
 fun startKoinAndroid(androidContext: Context) {
     if (KoinPlatform.getKoinOrNull() == null) {
+        setupImageLoader()
+
         startKoin {
             //androidLogger(Level.DEBUG) // Enable Koin logging
             androidContext(androidContext)

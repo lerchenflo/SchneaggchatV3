@@ -10,6 +10,7 @@ import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.ChatAggregateDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.GroupMemberDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
@@ -85,6 +86,46 @@ interface MessageDao {
     @Query("SELECT * FROM messages WHERE id = :id")
     suspend fun getMessageDtoById(id: String): MessageDto?
 
+    @Query("SELECT * FROM messages WHERE id IN (:ids)")
+    suspend fun getMessageDtosByIds(ids: List<String>): List<MessageDto>
+
+    @Upsert
+    suspend fun upsertReaders(readers: List<MessageReaderDto>): List<Long>
+
+    @Query("DELETE FROM message_readers WHERE messageId IN (:messageIds)")
+    suspend fun deleteReadersForMessages(messageIds: List<String>)
+
+    /**
+     * Upserts a whole sync page in one transaction, so Room's invalidation tracker fires once for
+     * the page instead of once per message - every fire re-runs the chat selector's query chain.
+     */
+    @Transaction
+    suspend fun upsertMessagesWithReaders(messages: List<MessageWithReadersDto>) {
+        val readersByMessageId = mutableMapOf<String, List<MessageReaderDto>>()
+
+        messages.forEach { message ->
+            val upsertedId = upsertMessageDto(message.messageDto).id
+            if (upsertedId != null && message.readers.isNotEmpty()) {
+                readersByMessageId[upsertedId] = message.readers.map { it.copy(messageId = upsertedId) }
+            }
+        }
+
+        if (readersByMessageId.isNotEmpty()) {
+            deleteReadersForMessages(readersByMessageId.keys.toList())
+            upsertReaders(readersByMessageId.values.flatten())
+        }
+    }
+
+    /** Batch counterpart of [deleteMessageDtoById], readers included, in one transaction. */
+    @Transaction
+    suspend fun deleteMessagesByIds(ids: List<String>) {
+        deleteReadersForMessages(ids)
+        deleteMessageDtosByIds(ids)
+    }
+
+    @Query("DELETE FROM messages WHERE id IN (:ids)")
+    suspend fun deleteMessageDtosByIds(ids: List<String>)
+
     @Transaction
     suspend fun upsertMessageDto(messageDto: MessageDto): MessageDto {
         val existing = getMessageDtoById(messageDto.id.orEmpty())
@@ -108,6 +149,62 @@ interface MessageDao {
     @Transaction
     @Query("SELECT * FROM messages")
     fun getAllMessagesWithReadersFlow(): Flow<List<MessageWithReadersDto>>
+
+    /**
+     * Per-chat unread and unsent counters for the chat selector, aggregated in SQL.
+     *
+     * The chat a message belongs to is the group for group messages and whichever participant is
+     * not [ownId] for direct messages - [getLastMessagePerChatFlow] partitions by the exact same
+     * expression, so both queries key their rows identically.
+     *
+     * Unread mirrors the rule of [getUnreadChatCountFlow]: my own messages are read by definition
+     * and SYSTEM lines never raise a badge.
+     */
+    @Query("""
+        SELECT
+            CASE
+                WHEN groupMessage = 1 THEN receiverId
+                WHEN senderId = :ownId THEN receiverId
+                ELSE senderId
+            END AS chatId,
+            groupMessage AS isGroup,
+            SUM(CASE WHEN myMessage = 0 AND readByMe = 0 AND msgType != :systemType THEN 1 ELSE 0 END) AS unreadCount,
+            SUM(CASE WHEN sent = 0 THEN 1 ELSE 0 END) AS unsentCount
+        FROM messages
+        GROUP BY chatId, isGroup
+    """)
+    fun getChatAggregatesFlow(
+        ownId: String,
+        systemType: String = MessageType.SYSTEM.name,
+    ): Flow<List<ChatAggregateDto>>
+
+    /**
+     * The newest message of every chat - one row per chat instead of the whole message table.
+     * Readers are deliberately not joined: the chat selector preview never reads them.
+     *
+     * The inner query leans on SQLite's bare-column rule: when a grouped query selects MAX() of one
+     * column, the other selected columns are taken from the very row that MAX matched, so localPK
+     * is the newest message's own primary key.
+     *
+     * sendDate is epoch millis stored as TEXT, so it has to be compared numerically - comparing it
+     * as text would rank "9999" above "10000".
+     */
+    @Query("""
+        SELECT * FROM messages WHERE localPK IN (
+            SELECT localPK FROM (
+                SELECT localPK, MAX(CAST(sendDate AS INTEGER)) AS lastSendDate
+                FROM messages
+                GROUP BY
+                    CASE
+                        WHEN groupMessage = 1 THEN receiverId
+                        WHEN senderId = :ownId THEN receiverId
+                        ELSE senderId
+                    END,
+                    groupMessage
+            )
+        )
+    """)
+    fun getLastMessagePerChatFlow(ownId: String): Flow<List<MessageDto>>
 
     @Transaction
     @Query("SELECT * FROM messages WHERE (senderId = :userId OR receiverId = :userId) AND groupMessage = :gruppe ORDER BY sendDate DESC")
@@ -160,7 +257,7 @@ interface MessageDao {
      * Number of chats holding at least one unread message, for the chat tab's nav bar badge - chats,
      * not messages, so ten unread lines in one group count once.
      *
-     * Mirrors the per-chat unread rule of [org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.getChatSelectorFlow]:
+     * Mirrors the per-chat unread rule of [getChatAggregatesFlow]:
      * my own messages are read by definition and SYSTEM lines never raise a badge. The EXISTS
      * clauses keep the count to the chats the selector actually lists, so messages left behind by a
      * removed friend or a group that is gone can not light a badge the user has no way to clear.

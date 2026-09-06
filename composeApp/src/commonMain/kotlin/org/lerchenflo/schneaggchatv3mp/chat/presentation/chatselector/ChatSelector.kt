@@ -94,6 +94,7 @@ import org.lerchenflo.schneaggchatv3mp.sharedUi.buttons.UserButton
 import org.lerchenflo.schneaggchatv3mp.sharedUi.loading.RoundLoadingIndicator
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureBigDialog
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.rememberProfilePicturePlaceholder
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ChangelogPopup
 import org.lerchenflo.schneaggchatv3mp.sharedUi.popups.ContributePopup
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
@@ -685,6 +686,10 @@ fun Chatauswahlscreen(
 
                 val tapTargetController = LocalTapTargetController.current
 
+                //Resolved once for the whole list instead of per row - inside a row it would be
+                //decoded during measure, on the main thread.
+                val profilePicturePlaceholder = rememberProfilePicturePlaceholder()
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize(),
@@ -799,7 +804,8 @@ fun Chatauswahlscreen(
                             },
                             showPin = true,
                             highlightTodaysTimestamp = highlightTodaysTimestamp,
-                            ownId = ownId
+                            ownId = ownId,
+                            profilePicturePlaceholder = profilePicturePlaceholder
 
                         )
                         HorizontalDivider(
