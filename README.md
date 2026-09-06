@@ -39,6 +39,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Morse-Spiel: Hörbarer Piepton beim Tastendruck
 - Events: Beigetretene / Abgelehnte User anzeigen
 - Bottom Nav: Badge Icons
+- Contribute-Popup überarbeitet: Nicht mehr schließbar, drei Optionen (Bug/Feature melden, Spenden, Später)
 
 #### Bugfixes
 - Chat-Nachrichten: Zeilenumbrüche im Markdown-Modus behoben

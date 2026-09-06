@@ -80,6 +80,7 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.GITHUB_LATEST_RELEASE_URL
 import org.lerchenflo.schneaggchatv3mp.SUPPORT_EMAIL
+import org.lerchenflo.schneaggchatv3mp.getDonationsUrl
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.LocalTapTargetController
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
@@ -871,6 +872,11 @@ fun Chatauswahlscreen(
                 onOpenReportForm = {
                     contributePopupShown = false
                     bugReportDialogShown = true
+                },
+                onOpenDonationPage = {
+                    contributePopupShown = false
+                    val serverUrl = runBlocking { preferencemanager.getServerUrl() }
+                    uriHandler.openUri(getDonationsUrl(serverUrl))
                 }
             )
         }
