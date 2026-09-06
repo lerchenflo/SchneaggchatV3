@@ -62,15 +62,9 @@ actual class ShareUtils {
     }
 
     actual fun openLocationInMaps(lat: Double, long: Double, label: String) {
-        try {
-            val url = "https://www.google.com/maps/search/?api=1&query=$lat,$long"
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI(url))
-            } else {
-                println("No browser available to open location: $url")
-            }
-        } catch (e: Exception) {
-            println("Failed to open location in maps: ${e.message}")
+        val url = "https://www.google.com/maps/search/?api=1&query=$lat,$long"
+        if (!openUri(url)) {
+            println("[ShareUtils.jvm] No handler available to open location: $url")
         }
     }
 
@@ -123,4 +117,36 @@ actual class ShareUtils {
 
 private fun icsEscape(text: String): String {
     return text.replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,").replace("\n", "\\n")
+}
+
+private val osName: String = System.getProperty("os.name")?.lowercase().orEmpty()
+
+/**
+ * Opens [uri] with the OS's default handler. On Linux java.awt.Desktop reports
+ * [Desktop.Action.BROWSE] as unsupported unless the JDK finds gio/gvfs desktop integration, so
+ * the AWT path silently does nothing there - hence the native launcher fallback.
+ */
+private fun openUri(uri: String): Boolean {
+    if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+        try {
+            Desktop.getDesktop().browse(URI(uri))
+            return true
+        } catch (e: Exception) {
+            println("[ShareUtils.jvm] Desktop.browse failed: ${e.message}")
+        }
+    }
+
+    val launcher = when {
+        osName.contains("win") -> listOf("rundll32", "url.dll,FileProtocolHandler", uri)
+        osName.contains("mac") -> listOf("open", uri)
+        else -> listOf("xdg-open", uri)
+    }
+
+    return try {
+        ProcessBuilder(launcher).start()
+        true
+    } catch (e: Exception) {
+        println("[ShareUtils.jvm] ${launcher.first()} fallback failed: ${e.message}")
+        false
+    }
 }
