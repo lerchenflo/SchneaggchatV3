@@ -27,7 +27,10 @@ data class NavigationBarItemTemplate(
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector,
     val mobileOnly: Boolean = false,
-    val showOnlyWhenSelected: Boolean = false
+    val showOnlyWhenSelected: Boolean = false,
+
+    val badgeCount: Int? = null,
+    val hasNews: Boolean = false
 )
 
 val TOP_LEVEL_DESTINATIONS = mapOf<NavKey, NavigationBarItemTemplate>(

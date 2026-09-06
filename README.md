@@ -37,6 +37,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Neue Nachrichten über Benachrichtigungen direkt im Chat anzeigen
 - Events: Woche und Monat Kalenderansicht mit Geburtstagen, zum Kalender hinzufügen
 - Morse-Spiel: Hörbarer Piepton beim Tastendruck
+- Events: "Neu"-Badge
 
 #### Bugfixes
 - Chat-Nachrichten: Zeilenumbrüche im Markdown-Modus behoben

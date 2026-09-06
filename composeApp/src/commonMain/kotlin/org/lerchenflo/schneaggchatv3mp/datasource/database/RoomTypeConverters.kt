@@ -5,6 +5,7 @@ import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollMessage
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Reaction
 import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipation
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
@@ -56,6 +57,20 @@ class RoomTypeConverters {
         return json.decodeFromString(kotlinx.serialization.builtins.ListSerializer(Reaction.serializer()), reactionsString)
     }
 
+
+    @TypeConverter
+    fun fromEventParticipationList(participations: List<EventParticipation>): String {
+        return json.encodeToString(kotlinx.serialization.builtins.ListSerializer(EventParticipation.serializer()), participations)
+    }
+
+    @TypeConverter
+    fun toEventParticipationList(participationsString: String): List<EventParticipation> {
+        // Tolerate a stale/malformed column - an event whose responses fail to decode should render
+        // with none, not crash the events list.
+        return runCatching {
+            json.decodeFromString(kotlinx.serialization.builtins.ListSerializer(EventParticipation.serializer()), participationsString)
+        }.getOrDefault(emptyList())
+    }
 
     @TypeConverter
     fun locationDataToString(data: LocationData): String =

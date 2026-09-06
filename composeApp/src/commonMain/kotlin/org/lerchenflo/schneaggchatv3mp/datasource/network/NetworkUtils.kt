@@ -35,6 +35,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GithubIssueDto
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.GlobalRankingResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.HighscoresResponse
+import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventParticipationRequest
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataClasses.EventSyncResponse
@@ -1277,6 +1279,19 @@ class NetworkUtils(
             body = EventJoinRequest(
                 eventId = eventId
             ),
+        )
+    }
+
+    suspend fun setEventParticipation(
+        eventId: String,
+        status: EventParticipationStatus,
+    ): NetworkResult<EventResponse, NetworkingError> {
+        return safePost(
+            endpoint = "/events/participation",
+            body = EventParticipationRequest(
+                eventId = eventId,
+                status = status,
+            )
         )
     }
 

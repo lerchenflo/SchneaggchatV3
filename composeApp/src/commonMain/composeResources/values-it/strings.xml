@@ -1375,4 +1375,15 @@
 
     <string name="confirm_delete_event">Eliminare questo evento? Il gruppo verrà separato e non eliminato, ma l'evento verrà eliminato.</string>
 
+    <string name="event_new_badge">Nuovo</string>
+    <string name="event_accept">Ci sarò</string>
+    <string name="event_not_interested">Non mi interessa</string>
+    <string name="event_you_are_going">Parteciperai</string>
+    <string name="event_going_count">%1$d partecipanti</string>
+    <string name="event_participation_accepted">Partecipa</string>
+    <string name="event_participation_seen">Visto</string>
+    <string name="event_participation_dismissed">Non interessato</string>
+    <string name="event_participation_count">%1$s (%2$d)</string>
+    <string name="event_participation_at">%1$s, %2$s</string>
+    <string name="event_participation_failed">Impossibile salvare la tua risposta</string>
 </resources>

@@ -21,6 +21,8 @@ data class EventsState(
     val eventDayGroups: List<EventDayGroup> = emptyList(),
     val eventsByDate: Map<LocalDate, List<Event>> = emptyMap(),
     val selectedEvent: Event? = null,
+    val ownUserId: String? = null,
+    val unseenEventCount: Int = 0,
     val friendsById: Map<String, User> = emptyMap(),
     val groups: List<Group> = emptyList(),
     val isJoiningEvent: Boolean = false,
@@ -52,6 +54,11 @@ sealed interface EventsAction {
     data class OnSaveEvent(val event: Event, val typeIcon: ImageBitmap?, val createGroup: Boolean): EventsAction
 
     data class OnJoinEvent(val eventId: String): EventsAction
+
+    /** Accepts an event that has no group to join - a group event is accepted by joining it. */
+    data class OnAcceptEvent(val eventId: String): EventsAction
+
+    data class OnDismissEvent(val eventId: String): EventsAction
 
     data class OnOpenGroupChat(val groupId: String): EventsAction
 

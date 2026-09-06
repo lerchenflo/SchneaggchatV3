@@ -21,13 +21,15 @@ fun EventUserAvatar(
     userId: String,
     friendsById: Map<String, User>,
     size: Dp,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    contentDescription: String? = null
 ) {
     val pictureUrl = friendsById[userId]?.profilePictureUrl
 
     if (!pictureUrl.isNullOrBlank()) {
         ProfilePictureView(
             filepath = pictureUrl,
+            contentDescription = contentDescription,
             modifier = modifier
                 .size(size)
                 .clip(CircleShape)
@@ -35,7 +37,7 @@ fun EventUserAvatar(
     } else {
         Image(
             painter = painterResource(Res.drawable.icon_nutzer),
-            contentDescription = null,
+            contentDescription = contentDescription,
             modifier = modifier
                 .size(size)
                 .clip(CircleShape)

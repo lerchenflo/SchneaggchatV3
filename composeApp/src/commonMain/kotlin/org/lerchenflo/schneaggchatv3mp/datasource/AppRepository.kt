@@ -119,6 +119,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
 import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
@@ -726,6 +727,24 @@ class AppRepository(
     }
 
     /**
+     * Records how the current user responded to an event (opened it, accepted or dismissed it).
+     * The server answers with the full event, so the local row is fresh before the matching
+     * EventChange push even arrives.
+     */
+    suspend fun setEventParticipation(eventId: String, status: EventParticipationStatus): Boolean {
+        return when (val result = networkUtils.setEventParticipation(eventId, status).trackConnectivity()) {
+            is NetworkResult.Error<*> -> {
+                sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                false
+            }
+            is NetworkResult.Success<EventResponse> -> {
+                eventRepository.upsertEvent(result.data.toEvent())
+                true
+            }
+        }
+    }
+
+    /**
      * Joins the event, upserts the group belonging to the event and returns the group id
      * @return The id of the group belonging to the event
      */
@@ -736,6 +755,11 @@ class AppRepository(
                 null
             }
             is NetworkResult.Success<EventJoinResponse> -> {
+                // The joiner is not necessarily in the event's push audience (a stranger joining a
+                // public event is neither invited nor a friend of the creator), so their own
+                // ACCEPTED would otherwise only land on the next full sync
+                response.data.event?.let { eventRepository.upsertEvent(it.toEvent()) }
+
                 val groupResponse = response.data.groupResponse
 
                 groupRepository.upsertGroup(Group(

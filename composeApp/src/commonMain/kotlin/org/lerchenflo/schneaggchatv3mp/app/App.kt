@@ -40,7 +40,7 @@ import org.jetbrains.compose.resources.getString
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
-import org.lerchenflo.schneaggchatv3mp.app.navigation.BottomAppBarSwipable
+import org.lerchenflo.schneaggchatv3mp.app.navigation.BottomAppBar
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.ObserveAsEvents
@@ -513,7 +513,7 @@ fun App() {
                     bottomBar = {
 
                         if (navigationState.showNavBar) {
-                            BottomAppBarSwipable(
+                            BottomAppBar(
                                 selectedKey = navigationState.topLevelRoute,
                                 onSelectKey = {
                                     scope.launch {

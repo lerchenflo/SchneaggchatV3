@@ -1382,4 +1382,16 @@
     <string name="system_unknown_event">Chat aktualisiert</string>
 
 
-    <string name="confirm_delete_event">Dieses Event löschen? Die Gruppe wird getrennt und nicht gelöscht, aber das Event wird gelöscht.</string></resources>
+    <string name="confirm_delete_event">Dieses Event löschen? Die Gruppe wird getrennt und nicht gelöscht, aber das Event wird gelöscht.</string>
+    <string name="event_new_badge">Neu</string>
+    <string name="event_accept">Ich komme</string>
+    <string name="event_not_interested">Kein Interesse</string>
+    <string name="event_you_are_going">Du bist dabei</string>
+    <string name="event_going_count">%1$d dabei</string>
+    <string name="event_participation_accepted">Dabei</string>
+    <string name="event_participation_seen">Gesehen</string>
+    <string name="event_participation_dismissed">Kein Interesse</string>
+    <string name="event_participation_count">%1$s (%2$d)</string>
+    <string name="event_participation_at">%1$s, %2$s</string>
+    <string name="event_participation_failed">Deine Antwort konnte nicht gespeichert werden</string>
+</resources>

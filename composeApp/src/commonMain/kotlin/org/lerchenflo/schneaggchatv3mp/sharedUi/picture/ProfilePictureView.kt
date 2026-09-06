@@ -18,12 +18,13 @@ fun ProfilePictureView(
     modifier: Modifier = Modifier
         .size(40.dp)
         .padding(end = 8.dp)
-        .clip(CircleShape)
+        .clip(CircleShape),
+    contentDescription: String? = "Profile picture"
 ) {
 
     AsyncImage(
         model = filepath,
-        contentDescription = "Profile picture",
+        contentDescription = contentDescription,
         error = painterResource(Res.drawable.icon_nutzer),
         modifier = modifier.clip(CircleShape)
     )

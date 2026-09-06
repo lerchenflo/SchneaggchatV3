@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.app.navigation
 
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
@@ -24,7 +26,7 @@ fun getVisibleTopLevelDestinations(
 }
 
 @Composable
-fun BottomAppBarSwipable(
+fun BottomAppBar(
     selectedKey: NavKey,
     onSelectKey: (NavKey) -> Unit,
     mobile: Boolean,
@@ -51,10 +53,22 @@ fun BottomAppBarSwipable(
                     onSelectKey(key)
                 },
                 icon = {
-                    Icon(
-                        imageVector = if (selected) data.selectedIcon else data.unselectedIcon,
-                        contentDescription = null
-                    )
+                    BadgedBox(
+                        badge = {
+                            if (data.badgeCount != null) {
+                                Badge {
+                                    Text(text = data.badgeCount.toString())
+                                }
+                            } else if (data.hasNews) {
+                                Badge()
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (selected) data.selectedIcon else data.unselectedIcon,
+                            contentDescription = null
+                        )
+                    }
                 },
                 label = {
                     Text(

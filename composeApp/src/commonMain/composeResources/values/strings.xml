@@ -1380,4 +1380,16 @@
     <string name="system_unknown_event">Chat updated</string>
 
 
-    <string name="confirm_delete_event">Delete this Event? The group will be seperated and not deleted, but the event will be deleted.</string></resources>
+    <string name="confirm_delete_event">Delete this Event? The group will be seperated and not deleted, but the event will be deleted.</string>
+    <string name="event_new_badge">New</string>
+    <string name="event_accept">I'm coming</string>
+    <string name="event_not_interested">Not interested</string>
+    <string name="event_you_are_going">You're going</string>
+    <string name="event_going_count">%1$d going</string>
+    <string name="event_participation_accepted">Going</string>
+    <string name="event_participation_seen">Seen</string>
+    <string name="event_participation_dismissed">Not interested</string>
+    <string name="event_participation_count">%1$s (%2$d)</string>
+    <string name="event_participation_at">%1$s, %2$s</string>
+    <string name="event_participation_failed">Could not save your answer</string>
+</resources>
