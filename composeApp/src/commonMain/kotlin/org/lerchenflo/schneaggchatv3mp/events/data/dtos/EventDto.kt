@@ -1,6 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.events.data.dtos
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipation
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
@@ -8,7 +9,10 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 
-@Entity(tableName = "events")
+@Entity(
+    tableName = "events",
+    indices = [Index(value = ["groupId"])]
+)
 data class EventDto(
     @PrimaryKey val id: String,
     val creatorId: String,

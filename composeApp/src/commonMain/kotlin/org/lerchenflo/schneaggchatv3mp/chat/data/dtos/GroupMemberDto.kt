@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 @Entity(
     tableName = "group_members",
     indices = [
-        Index(value = ["groupId"]),
+        // A standalone groupId index would duplicate the unique index's leading column.
         Index(value = ["userId"]),
         Index(value = ["groupId", "userId"], unique = true),
     ]
