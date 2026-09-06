@@ -557,6 +557,15 @@
     <string name="dartcounter_please_add_players_first">Füg zersch paar Spieler hinzu</string>
     <string name="dartcounter_cancel">Abbrechen</string>
     <string name="dartcounter_stop_game_confirmation_message">Bisch da sicha?</string>
+    <string name="dartcounter_checkout_title">Checkout</string>
+    <string name="dartcounter_darts_left_format">%1$d Darts übrig</string>
+    <string name="dartcounter_checkout_alt_format">Alt.:</string>
+    <string name="dartcounter_no_checkout">Kuan Checkout</string>
+    <string name="dartcounter_segment_double_format">D%1$d</string>
+    <string name="dartcounter_segment_triple_format">T%1$d</string>
+    <string name="dartcounter_segment_bull">Bull</string>
+    <string name="dartcounter_darts_format">%1$d Darts</string>
+    <string name="dartcounter_turn_total_format">= %1$d</string>
 
     <!-- Games: Undercover -->
     <string name="undercover_title">Undercover</string>
@@ -961,6 +970,12 @@ Mealds, egal wie klenn.</string>
     <string name="contribute_feature_title">Fehlt dir a Feature?</string>
     <string name="contribute_feature_hint">Säg was du dir wünschas, viele Features hond als Wunsch agfanga oder sind us andra Apps kopiert worra.</string>
     <string name="contribute_open_form">Fehler mealda oder Feature vorschlaga</string>
+    <string name="contribute_donate_title">Mit Geald unterstütza</string>
+    <string name="contribute_donate_text">Dia App isch gratis, hot kua Werbung und verkoft dine Daten ned. Trotzdem kostet se echtes Geald:</string>
+    <string name="contribute_donate_mac">An Mac: Dia iOS-Version kann nur uf nam Mac bout und veröffentlicht werra.</string>
+    <string name="contribute_donate_apple">Apple-Entwicklerlizenz; rund 100€ im Joar, sunsch verschwindat dia App für iOS User usam App Store.</string>
+    <string name="contribute_donate_note">Spenda isch freiwillig und flüst genau in dia Kosta. Die App bliebt aber so oder so gratis.</string>
+    <string name="contribute_donate_action">Spendensitta uftua</string>
     <string name="contribute_later">Eventuell später</string>
 
     <!-- Roadmap -->
@@ -1372,4 +1387,16 @@ Mealds, egal wie klenn.</string>
     <string name="system_unknown_event">Chat aktualisiert</string>
 
 
-    <string name="confirm_delete_event">Des Event löscha? Die Gruppe wird davo trennt und blibt bestoh, aber s Event sealb wird endgültig glöscht.</string></resources>
+    <string name="confirm_delete_event">Des Event löscha? Die Gruppe wird davo trennt und blibt bestoh, aber s Event sealb wird endgültig glöscht.</string>
+    <string name="event_new_badge">Neu</string>
+    <string name="event_accept">I kumm</string>
+    <string name="event_not_interested">Kua Interesse</string>
+    <string name="event_you_are_going">Du bisch dabei</string>
+    <string name="event_going_count">%1$d dabei</string>
+    <string name="event_participation_accepted">Dabei</string>
+    <string name="event_participation_seen">Gseaha</string>
+    <string name="event_participation_dismissed">Kua Interesse</string>
+    <string name="event_participation_count">%1$s (%2$d)</string>
+    <string name="event_participation_at">%1$s, %2$s</string>
+    <string name="event_participation_failed">Dine Antwort hot ned gspeichert werra künna</string>
+</resources>
