@@ -1,7 +1,5 @@
 
-import io.github.frankois944.spmForKmp.swiftPackageConfig
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import java.net.URI
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -285,7 +283,7 @@ kotlin {
 
 
 //Add version info to desktop builds
-val desktopVersion = "3.0.17"
+val desktopVersion = "3.0.18"
 
 compose.desktop {
     application {
