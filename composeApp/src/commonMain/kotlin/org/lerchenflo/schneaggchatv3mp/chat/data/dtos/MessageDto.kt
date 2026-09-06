@@ -16,9 +16,19 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.SystemEventMessage
     tableName = "messages",
     indices = [
         Index(value = ["id"], unique = true),
-        Index(value = ["groupMessage", "sent", "readByMe"]),
-        Index(value = ["senderId"]),
-        Index(value = ["receiverId"]),
+        // Both arms of the "(senderId = :id OR receiverId = :id) AND groupMessage = :group" chat
+        // lookup, so SQLite's OR-optimization can seek each arm instead of scanning.
+        Index(value = ["senderId", "groupMessage"]),
+        Index(value = ["receiverId", "groupMessage"]),
+        // Covers MessageDao.getChatAggregatesFlow, getLastMessagePerChatFlow and
+        // getUnreadChatCountFlow completely: all three re-run on every message change and would
+        // otherwise scan whole rows including content/poll/reaction payloads. The leading three
+        // columns are exactly getUnreadChatCountFlow's equalities, and receiverId follows them so
+        // its group-message arm groups without a sort.
+        Index(value = ["readByMe", "groupMessage", "myMessage", "receiverId", "senderId", "msgType", "sent", "sendDate"]),
+        Index(value = ["sent"]),
+        // MAX(version) on every sync, an index seek instead of a table scan.
+        Index(value = ["version"]),
     ]
 )
 data class MessageDto(

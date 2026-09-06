@@ -23,6 +23,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 ##### Highlights
 - Schneaggmap-Kompass
+- Bottom Nav Badges
+- Events: Beigetretene User anzeigen
 
 #### Features
 - Chat-Nachrichtenliste: Sticky Date Chip beim Scrollen
@@ -35,11 +37,11 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Schneaggmap-Kompass: Livekompass mit Richtungs- und Entfernungsanzeige für Freunde
 - Kreuzworträtsel-Daily-Challenge
 - Neue Nachrichten über Benachrichtigungen direkt im Chat anzeigen
+- Doppelte Nachrichten fix
 - Events: Woche und Monat Kalenderansicht mit Geburtstagen, zum Kalender hinzufügen
 - Morse-Spiel: Hörbarer Piepton beim Tastendruck
 - Events: Beigetretene / Abgelehnte User anzeigen
 - Bottom Nav: Badge Icons
-- Contribute-Popup überarbeitet: Nicht mehr schließbar, drei Optionen (Bug/Feature melden, Spenden, Später)
 
 #### Bugfixes
 - Chat-Auswahl lädt beim App-Start schneller (optimierte Datenbankabfragen und Profilbilder-Caching)
@@ -54,7 +56,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Sprachnachrichten: Audio-Routing für Bluetooth-Geräte behoben (AirPods, Auto, Lautsprecher)
 - Dartcounter: Funktion und UI verbessert
 - Undercover-Spiel: Spielerliste bleibt nach einer Runde erhalten
-- Bilder werden nicht mehr um 90° rotiert angezeigt
+- Bilder rotiert anzeigen fix
 
 ### 3.0.16
 

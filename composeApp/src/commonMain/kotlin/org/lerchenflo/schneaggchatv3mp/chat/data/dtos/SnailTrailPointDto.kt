@@ -10,7 +10,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 @Entity(
     tableName = "snail_trail_points",
-    indices = [Index(value = ["userId"])]
+    // locationTime trails userId so the per-user trail queries read in ORDER BY order.
+    indices = [Index(value = ["userId", "locationTime"])]
 )
 data class SnailTrailPointDto(
     @PrimaryKey(autoGenerate = true)
