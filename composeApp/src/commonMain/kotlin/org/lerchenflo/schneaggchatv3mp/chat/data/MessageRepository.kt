@@ -3,6 +3,8 @@ package org.lerchenflo.schneaggchatv3mp.chat.data
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.ChatAggregateDto
+import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.MessageReaderDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.Message
@@ -11,6 +13,9 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.toMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.IdChangeDate
 
+/** Keeps `IN (:ids)` queries well under SQLite's bound-parameter limit. */
+private const val SQL_ID_CHUNK_SIZE = 500
+
 class MessageRepository(
     private val database: AppDatabase,
 ) {
@@ -18,6 +23,30 @@ class MessageRepository(
     suspend fun upsertMessage(message: Message){
         val messageWithReadersDto = message.toDto()
         upsertMessageWithReaders(messageWithReadersDto)
+    }
+
+    /**
+     * Upsert a whole batch of messages in one transaction. Preferred over looping [upsertMessage]
+     * whenever more than one message lands at once (sync pages) - one transaction means one
+     * invalidation instead of one per message.
+     */
+    suspend fun upsertMessages(messages: List<Message>) {
+        messages.chunked(SQL_ID_CHUNK_SIZE).forEach { chunk ->
+            database.messageDao().upsertMessagesWithReaders(chunk.map { it.toDto() })
+        }
+    }
+
+    /** Batch counterpart of [deleteMessage], readers included, in one transaction per chunk. */
+    suspend fun deleteMessages(ids: List<String>) {
+        ids.chunked(SQL_ID_CHUNK_SIZE).forEach { chunk ->
+            database.messageDao().deleteMessagesByIds(chunk)
+        }
+    }
+
+    suspend fun getMessageDtosByIds(ids: List<String>): List<MessageDto> {
+        return ids.chunked(SQL_ID_CHUNK_SIZE).flatMap { chunk ->
+            database.messageDao().getMessageDtosByIds(chunk)
+        }
     }
 
     suspend fun deleteMessage(id: String){
@@ -136,6 +165,16 @@ class MessageRepository(
             }
         }
     }
+
+    /** Per-chat unread/unsent counters, aggregated in SQL. */
+    fun getChatAggregatesFlow(ownId: String): Flow<List<ChatAggregateDto>> =
+        database.messageDao().getChatAggregatesFlow(ownId)
+
+    /** The newest message of every chat, one row per chat, without readers. */
+    fun getLastMessagePerChatFlow(ownId: String): Flow<List<Message>> =
+        database.messageDao().getLastMessagePerChatFlow(ownId).map { dtos ->
+            dtos.map { it.toMessage() }
+        }
 
     @Transaction
     suspend fun getmessagechangeid(): List<IdChangeDate>{

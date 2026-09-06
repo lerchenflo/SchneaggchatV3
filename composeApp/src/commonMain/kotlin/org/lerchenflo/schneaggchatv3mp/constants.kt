@@ -16,6 +16,8 @@ fun getPasswordResetUrl(baseUrl: String) = "$baseUrl/reset_password.html"
 
 fun getFaqUrl(baseUrl: String) = "$baseUrl/faq.html"
 
+fun getDonationsUrl(baseUrl: String) = "$baseUrl/donations.html"
+
 var URL_INSTAGRAM = "https://www.instagram.com/schneaggchat?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
 
 val GITHUB_URL = "https://raw.githubusercontent.com/lerchenflo/SchneaggchatV3"

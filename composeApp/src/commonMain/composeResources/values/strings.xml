@@ -963,12 +963,18 @@
 
     <!-- Contribute Popup -->
     <string name="contribute_title">Help shape Schneaggchat</string>
-    <string name="contribute_message">This app only gets better if you speak up. Nothing improves on its own — if something bugs you or you're missing a feature, let us know!</string>
+    <string name="contribute_message">This app only gets better if you speak up — and it only stays alive if someone covers the costs. Pick one of the three options below to continue.</string>
     <string name="contribute_bug_title">Found a bug?</string>
     <string name="contribute_bug_hint">Something crashing, broken or just feeling off? Report it, no matter how small.</string>
     <string name="contribute_feature_title">Missing a feature?</string>
     <string name="contribute_feature_hint">Tell us what you would like to see — many features started as a user request or got copied from other apps.</string>
     <string name="contribute_open_form">Report a bug or request a feature</string>
+    <string name="contribute_donate_title">Support with money</string>
+    <string name="contribute_donate_text">The app is free, has no ads and never sells your data. Keeping it alive still costs real money:</string>
+    <string name="contribute_donate_mac">A Mac: the iOS version can only be built and released on Apple hardware.</string>
+    <string name="contribute_donate_apple">Apple developer license: around 100 € every year, otherwise the iOS app disappears from the App Store.</string>
+    <string name="contribute_donate_note">Donating is voluntary and goes straight into these costs. The app stays free either way.</string>
+    <string name="contribute_donate_action">Open the donation page</string>
     <string name="contribute_later">Maybe later</string>
 
     <!-- Roadmap -->

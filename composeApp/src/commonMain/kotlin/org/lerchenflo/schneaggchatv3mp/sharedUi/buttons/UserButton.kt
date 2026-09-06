@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
@@ -42,6 +43,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chat.messagecomposables.systemEventText
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.rememberProfilePicturePlaceholder
 import org.lerchenflo.schneaggchatv3mp.sharedUi.text.ComboText
 import org.lerchenflo.schneaggchatv3mp.utilities.isBirthdayToday
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
@@ -81,6 +83,7 @@ fun UserButton(
     onClickText: () -> Unit = {},  // Add click for name ...
     onLongClickText: () -> Unit = {}, // Add long click for name ...
     onClickImage: () -> Unit = {},  // Add click for image (profilepicture)
+    profilePicturePlaceholder: Painter = rememberProfilePicturePlaceholder(),
     modifier: Modifier = Modifier
 ) {
     var modifierGes = modifier
@@ -108,7 +111,8 @@ fun UserButton(
             Box {
                 ProfilePictureView(
                     filepath = chat.profilePictureUrl,
-                    modifier = modifierImage
+                    modifier = modifierImage,
+                    placeholder = profilePicturePlaceholder
                 )
 
                 // Live "online right now" presence dot - only shown when the friend is

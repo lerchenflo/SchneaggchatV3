@@ -16,9 +16,12 @@ import org.lerchenflo.schneaggchatv3mp.di.desktopShareUtilsModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopSocketHttpModule
 import org.lerchenflo.schneaggchatv3mp.di.desktopVersionModule
 import org.lerchenflo.schneaggchatv3mp.di.sharedmodule
+import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.setupImageLoader
 
 fun onAppStart() {
     if (KoinPlatform.getKoinOrNull() == null) {
+        setupImageLoader()
+
         startKoin {
             modules(desktopAppDatabaseModule, sharedmodule)
 

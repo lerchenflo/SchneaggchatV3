@@ -965,12 +965,18 @@
 
     <!-- Contribute Popup -->
     <string name="contribute_title">Gestalte Schneaggchat mit</string>
-    <string name="contribute_message">Diese App wird nur besser, wenn du dich meldest. Von allein verbessert sich nicht alles — wenn dich etwas stört oder dir ein Feature fehlt, sag Bescheid!</string>
+    <string name="contribute_message">Diese App wird nur besser, wenn du dich meldest — und sie lebt nur weiter, wenn jemand die Kosten trägt. Wähle unten eine der drei Möglichkeiten aus.</string>
     <string name="contribute_bug_title">Fehler gefunden?</string>
     <string name="contribute_bug_hint">Stürzt etwas ab, ist kaputt oder fühlt sich einfach falsch an? Melde es, egal wie klein.</string>
     <string name="contribute_feature_title">Fehlt dir ein Feature?</string>
     <string name="contribute_feature_hint">Sag, was du dir wünschst — viele Features haben als Wunsch angefangen oder wurden aus anderen Apps kopiert.</string>
     <string name="contribute_open_form">Fehler melden oder Feature vorschlagen</string>
+    <string name="contribute_donate_title">Mit Geld unterstützen</string>
+    <string name="contribute_donate_text">Die App ist gratis, hat keine Werbung und verkauft deine Daten nie. Trotzdem kostet sie echtes Geld:</string>
+    <string name="contribute_donate_mac">Ein Mac: Die iOS-Version kann nur auf Apple-Hardware gebaut und veröffentlicht werden.</string>
+    <string name="contribute_donate_apple">Apple-Entwicklerlizenz: rund 100 € pro Jahr, sonst verschwindet die iOS-App aus dem App Store.</string>
+    <string name="contribute_donate_note">Spenden ist freiwillig und fließt genau in diese Kosten. Die App bleibt so oder so gratis.</string>
+    <string name="contribute_donate_action">Spendenseite öffnen</string>
     <string name="contribute_later">Vielleicht später</string>
 
     <!-- Roadmap -->

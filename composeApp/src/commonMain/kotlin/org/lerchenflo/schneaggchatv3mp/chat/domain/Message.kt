@@ -133,34 +133,42 @@ data class Message(
 }
 
 
-fun MessageWithReadersDto.toMessage(): Message = Message(
-    localPK = this.messageDto.localPK,
-    id = this.messageDto.id,
-    msgType = this.messageDto.msgType,
-    content = this.messageDto.content,
-    poll = this.messageDto.poll,
-    systemEvent = this.messageDto.systemEvent,
-    pictureUrl = this.messageDto.pictureUrl,
-    audioPath = this.messageDto.audioPath,
-    senderId = this.messageDto.senderId,
-    receiverId = this.messageDto.receiverId,
-    sendDate = this.messageDto.sendDate,
-    changeDate = this.messageDto.updatedAt,
-    deleted = this.messageDto.deleted,
-    groupMessage = this.messageDto.groupMessage,
-    answerId = this.messageDto.answerId,
-    sent = this.messageDto.sent,
-    senderAsString = this.messageDto.senderAsString,
-    minimizeMessage = this.messageDto.minimizeMessage,
-    senderColor = this.messageDto.senderColor,
-    myMessage = this.messageDto.myMessage,
-    readByMe = this.messageDto.readByMe,
+fun MessageWithReadersDto.toMessage(): Message = this.messageDto.toMessage(
     readers = this.readers.map { readerDto ->
         readerDto.toMessageReader()
-    },
-    reactions = this.messageDto.reactions,
-    version = this.messageDto.version,
-    clientMessageId = this.messageDto.clientMessageId,
+    }
+)
+
+/**
+ * DTO -> domain. [readers] defaults to empty for callers that read a message without its relation,
+ * e.g. the chat selector's last message preview.
+ */
+fun MessageDto.toMessage(readers: List<MessageReader> = emptyList()): Message = Message(
+    localPK = this.localPK,
+    id = this.id,
+    msgType = this.msgType,
+    content = this.content,
+    poll = this.poll,
+    systemEvent = this.systemEvent,
+    pictureUrl = this.pictureUrl,
+    audioPath = this.audioPath,
+    senderId = this.senderId,
+    receiverId = this.receiverId,
+    sendDate = this.sendDate,
+    changeDate = this.updatedAt,
+    deleted = this.deleted,
+    groupMessage = this.groupMessage,
+    answerId = this.answerId,
+    sent = this.sent,
+    senderAsString = this.senderAsString,
+    minimizeMessage = this.minimizeMessage,
+    senderColor = this.senderColor,
+    myMessage = this.myMessage,
+    readByMe = this.readByMe,
+    readers = readers,
+    reactions = this.reactions,
+    version = this.version,
+    clientMessageId = this.clientMessageId,
 )
 
 /** Domain -> DTO */

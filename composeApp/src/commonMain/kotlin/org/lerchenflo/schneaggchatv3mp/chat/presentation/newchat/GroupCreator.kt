@@ -184,9 +184,13 @@ private fun GroupCreatorScreen(
 
                         Spacer(modifier = Modifier.height(4.dp))
 
+                        val profilePicBitmap = remember(state.profilepic) {
+                            state.profilepic?.decodeToImageBitmap()
+                        }
+
                         Box(modifier = Modifier.size(200.dp)) {
                             Image(
-                                painter = if (state.profilepic != null) BitmapPainter(state.profilepic.decodeToImageBitmap()) else painterResource(Res.drawable.icon_nutzer),
+                                painter = if (profilePicBitmap != null) BitmapPainter(profilePicBitmap) else painterResource(Res.drawable.icon_nutzer),
                                 contentDescription = stringResource(Res.string.profile_picture),
                                 modifier = Modifier
                                     .fillMaxSize()

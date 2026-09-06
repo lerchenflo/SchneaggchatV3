@@ -985,6 +985,81 @@ class AppRepository(
     fun getUnreadChatCountFlow(): Flow<Int> = messageRepository.getUnreadChatCountFlow()
 
     /**
+     * Every chat of the logged in user, unfiltered and sorted, for the chat selector.
+     *
+     * Counters and last-message previews come straight out of SQL ([MessageRepository.getChatAggregatesFlow],
+     * [MessageRepository.getLastMessagePerChatFlow]) - one row per chat instead of the whole
+     * message table, so nothing here scales with the number of messages.
+     *
+     * Search and filter are deliberately not part of this flow: they run on the emitted list via
+     * [applySearchAndFilter], so typing never re-subscribes to the database.
+     */
+    fun getChatListFlow(userId: String): Flow<List<ChatListItem>> {
+        val aggregatesFlow = messageRepository.getChatAggregatesFlow(userId)
+        val lastMessagesFlow = messageRepository.getLastMessagePerChatFlow(userId)
+        val usersFlow = userRepository.getAllUsersFlow()
+        val groupsFlow = groupRepository.getAllGroupswithMembersFlow()
+        val pinnedFlow = preferencemanager.getPinnedChatsFlow()
+
+        return combine(
+            aggregatesFlow,
+            lastMessagesFlow,
+            usersFlow,
+            groupsFlow,
+            pinnedFlow
+        ) { aggregates, lastMessages, users, groups, pinnedList ->
+
+            val userIdMap = users.associateBy { it.id }
+            val pinnedMap = pinnedList.associate { it.chatId to it.pinTimePoint }
+            val aggregateMap = aggregates.associateBy { it.chatId to it.isGroup }
+            val lastMessageMap = lastMessages.associateBy { it.chatKey(userId) }
+
+            val userItems = users
+                .asSequence()
+                .filter { it.id != userId }
+                .filter { it.friendshipStatus == FriendshipStatus.ACCEPTED }
+                .map { user ->
+                    val aggregate = aggregateMap[user.id to false]
+                    val last = lastMessageMap[user.id to false]?.let { message ->
+                        message.copy(
+                            senderAsString = userIdMap[message.senderId]?.name ?: message.senderAsString
+                        )
+                    }
+
+                    user.toChatListItem(
+                        unreadCount = aggregate?.unreadCount ?: 0,
+                        unsentCount = aggregate?.unsentCount ?: 0,
+                        lastMessage = last,
+                        pinned = pinnedMap[user.id] ?: 0L
+                    )
+                }
+                .toList()
+
+            val groupItems = groups
+                .asSequence()
+                .map { group ->
+                    val aggregate = aggregateMap[group.id to true]
+                    val last = lastMessageMap[group.id to true]?.let { message ->
+                        message.copy(
+                            senderAsString = userIdMap[message.senderId]?.name ?: "Unknown"
+                        )
+                    }
+
+                    group.toChatListItem(
+                        unreadCount = aggregate?.unreadCount ?: 0,
+                        unsentCount = aggregate?.unsentCount ?: 0,
+                        lastMessage = last,
+                        pinned = pinnedMap[group.id] ?: 0L
+                    )
+                }
+                .toList()
+
+            (userItems + groupItems).sortedForChatSelector()
+
+        }.flowOn(Dispatchers.Default)
+    }
+
+    /**
      * Get main screen available items as flow
      */
     fun getChatSelectorFlow(
@@ -992,149 +1067,9 @@ class AppRepository(
         userId: String,
         filter: ChatFilter = ChatFilter.NONE
     ): Flow<List<ChatListItem>> {
-        val messagesFlow = messageRepository.getAllMessages()
-        val usersFlow = userRepository.getAllUsersFlow()
-        val groupsFlow = groupRepository.getAllGroupswithMembersFlow()
-        val pinnedFlow = preferencemanager.getPinnedChatsFlow()
-
-        return combine(messagesFlow, usersFlow, groupsFlow, pinnedFlow) { messages, users, groups, pinnedList ->
-
-            val loweredSearch = searchTerm.trim().lowercase()
-
-            // PRE-PROCESS: Build message indexes for O(1) lookup
-            val messagesByUser = mutableMapOf<String, MutableList<Message>>()
-            val messagesByGroup = mutableMapOf<String, MutableList<Message>>()
-            val userIdMap = users.associateBy { it.id }
-            val pinnedMap = pinnedList.associate { it.chatId to it.pinTimePoint }
-
-            // Single pass through messages to build indexes
-            messages.forEach { msg ->
-                if (msg.isGroupMessage()) {
-                    messagesByGroup.getOrPut(msg.receiverId) { mutableListOf() }.add(msg)
-                } else {
-                    val senderId = msg.senderId
-                    val receiverId = msg.receiverId
-
-                    if (senderId != userId) {
-                        messagesByUser.getOrPut(senderId) { mutableListOf() }.add(msg)
-                    }
-                    if (receiverId != userId) {
-                        messagesByUser.getOrPut(receiverId) { mutableListOf() }.add(msg)
-                    }
-                }
-            }
-
-            // Process users - CREATE NEW IMMUTABLE OBJECTS
-            val userItems = users
-                .asSequence()
-                .filter { it.id != userId }
-                .filter { it.friendshipStatus == FriendshipStatus.ACCEPTED }
-                .filter { loweredSearch.isEmpty() || it.name.lowercase().contains(loweredSearch) || it.nickName?.lowercase()?.contains(loweredSearch) == true }
-                .map { user ->
-                    val userMessages = messagesByUser[user.id] ?: emptyList()
-
-                    // Find last message
-                    val last = userMessages.maxByOrNull { it.getSendDateAsLong() }?.apply {
-                        this.senderAsString =
-                            userIdMap[this.senderId]?.name ?: this.senderAsString
-                    }
-
-                    // Count in single pass - my messages are automatically read
-                    var unreadCount = 0
-                    var unsentCount = 0
-                    userMessages.forEach { message ->
-                        // Only count as unread if it's NOT my message and NOT read by me.
-                        // SYSTEM messages arrive pre-read from the server, but exclude them
-                        // explicitly too - a system event line should never raise a badge.
-                        if (!message.myMessage && !message.readByMe && message.msgType != MessageType.SYSTEM) {
-                            unreadCount++
-                        }
-                        if (!message.sent) unsentCount++
-                    }
-
-                    user.toChatListItem(
-                        unreadCount = unreadCount,
-                        unsentCount = unsentCount,
-                        lastMessage = last,
-                        pinned = pinnedMap[user.id] ?: 0L
-                    )
-                }
-                .toList()
-
-            // Process groups - CREATE NEW IMMUTABLE OBJECTS
-            val groupItems = groups
-                .asSequence()
-                .filter { loweredSearch.isEmpty() || it.name.lowercase().contains(loweredSearch) }
-                .map { gwm ->
-                    val groupMessages = messagesByGroup[gwm.id] ?: emptyList()
-
-                    val last = groupMessages.maxByOrNull { it.getSendDateAsLong() }?.apply {
-                        this.senderAsString =
-                            userIdMap[this.senderId]?.name ?: "Unknown"
-                    }
-
-                    // Count in single pass - my messages are automatically read
-                    var unreadCount = 0
-                    var unsentCount = 0
-                    groupMessages.forEach { message ->
-                        // Only count as unread if it's NOT my message and NOT read by me.
-                        // SYSTEM messages arrive pre-read from the server, but exclude them
-                        // explicitly too - a system event line should never raise a badge.
-                        if (!message.myMessage && !message.readByMe && message.msgType != MessageType.SYSTEM) {
-                            unreadCount++
-                        }
-                        if (!message.sent) unsentCount++
-                    }
-
-                    gwm.toChatListItem(
-                        unreadCount = unreadCount,
-                        unsentCount = unsentCount,
-                        lastMessage = last,
-                        pinned = pinnedMap[gwm.id] ?: 0L
-                    )
-                }
-                .toList()
-
-            // Apply filter and sort once
-            val allItems = userItems + groupItems
-            val filtered = when (filter) {
-                ChatFilter.NONE -> allItems
-                ChatFilter.UNREAD -> allItems.filter { it.unreadMessageCount > 0 }
-                ChatFilter.GROUPS -> allItems.filter { it.isGroup }
-                ChatFilter.PERSONS -> allItems.filter { !it.isGroup }
-            }
-
-            //filtered.sortedByDescending { it.lastMessage?.getSendDateAsLong() ?: 0L }
-            filtered.sortedWith { a, b ->
-                val aPinned = a.pinned > 0L
-                val bPinned = b.pinned > 0L
-                val aBirthday = isBirthdayToday(a.birthDate)
-                val bBirthday = isBirthdayToday(b.birthDate)
-                when {
-                    // Tier 1: Both pinned -> newest pin first
-                    aPinned && bPinned -> b.pinned.compareTo(a.pinned)
-                    aPinned -> -1
-                    bPinned -> 1
-
-                    // Tier 2: Birthday today (users only) -> under pinned
-                    aBirthday && bBirthday -> {
-                        val timeA = a.lastMessage?.getSendDateAsLong() ?: 0L
-                        val timeB = b.lastMessage?.getSendDateAsLong() ?: 0L
-                        timeB.compareTo(timeA)
-                    }
-                    aBirthday -> -1
-                    bBirthday -> 1
-
-                    // Tier 3: Sort by last message date
-                    else -> {
-                        val timeA = a.lastMessage?.getSendDateAsLong() ?: 0L
-                        val timeB = b.lastMessage?.getSendDateAsLong() ?: 0L
-                        timeB.compareTo(timeA)
-                    }
-                }
-            }
-
-        }.flowOn(Dispatchers.Default)
+        return getChatListFlow(userId).map { chats ->
+            chats.applySearchAndFilter(searchTerm, filter)
+        }
     }
 
 
@@ -2144,13 +2079,18 @@ class AppRepository(
                     // Deletions can now arrive on any page, not just page 0. Apply them
                     // before the updates below so a crash mid-batch never leaves MAX(version)
                     // ahead of what was actually committed.
-                    deletedMessages.forEach { id ->
-                        messageRepository.deleteMessage(id)
-                    }
+                    messageRepository.deleteMessages(deletedMessages)
 
-                    updatedMessages.sortedBy { it.version }.forEach { messageResponse ->
-                        val existing = database.messageDao().getMessageDtoById(messageResponse.messageId)
-                        messageRepository.upsertMessage(
+                    // The whole page goes in as one batch: every separate write would invalidate
+                    // the message table again and re-run the chat selector's query chain.
+                    val sortedUpdates = updatedMessages.sortedBy { it.version }
+                    val existingById = messageRepository
+                        .getMessageDtosByIds(sortedUpdates.map { it.messageId })
+                        .associateBy { it.id }
+
+                    messageRepository.upsertMessages(
+                        sortedUpdates.map { messageResponse ->
+                            val existing = existingById[messageResponse.messageId]
                             messageResponse.toDomainMessage(
                                 ownId = ownId,
                                 existingLocalPK = existing?.localPK ?: 0L,
@@ -2158,7 +2098,10 @@ class AppRepository(
                                 existingAudioPath = existing?.audioPath,
                                 version = messageResponse.version
                             )
-                        )
+                        }
+                    )
+
+                    sortedUpdates.forEach { messageResponse ->
                         when (messageResponse.msgType) {
                             MessageType.IMAGE -> imagesToGet += messageResponse.messageId
                             MessageType.AUDIO -> audiosToGet += messageResponse.messageId
@@ -2888,4 +2831,70 @@ class AppRepository(
      */
 
 
+}
+
+/**
+ * Which chat a message belongs to: the group for group messages, the other participant for direct
+ * ones. Mirrors the PARTITION BY of MessageDao.getLastMessagePerChatFlow so both sides key alike.
+ */
+private fun Message.chatKey(ownId: String): Pair<String, Boolean> = when {
+    groupMessage -> receiverId to true
+    senderId == ownId -> receiverId to false
+    else -> senderId to false
+}
+
+/**
+ * Chat selector order: pinned chats first (newest pin on top), then today's birthdays, then
+ * everything else by last message. Birthdays are resolved once per item instead of inside the
+ * comparator, which would re-parse the date and re-read the clock on every comparison.
+ */
+private fun List<ChatListItem>.sortedForChatSelector(): List<ChatListItem> =
+    map { ChatSortKey(chat = it, birthdayToday = isBirthdayToday(it.birthDate)) }
+        .sortedWith { a, b ->
+            val aPinned = a.chat.pinned > 0L
+            val bPinned = b.chat.pinned > 0L
+            when {
+                aPinned && bPinned -> b.chat.pinned.compareTo(a.chat.pinned)
+                aPinned -> -1
+                bPinned -> 1
+
+                a.birthdayToday && !b.birthdayToday -> -1
+                b.birthdayToday && !a.birthdayToday -> 1
+
+                else -> {
+                    val timeA = a.chat.lastMessage?.getSendDateAsLong() ?: 0L
+                    val timeB = b.chat.lastMessage?.getSendDateAsLong() ?: 0L
+                    timeB.compareTo(timeA)
+                }
+            }
+        }
+        .map { it.chat }
+
+private class ChatSortKey(val chat: ChatListItem, val birthdayToday: Boolean)
+
+/**
+ * Search and filter an already built chat list. Runs in memory so typing in the chat selector never
+ * re-subscribes to the database.
+ */
+fun List<ChatListItem>.applySearchAndFilter(
+    searchTerm: String,
+    filter: ChatFilter
+): List<ChatListItem> {
+    val loweredSearch = searchTerm.trim().lowercase()
+
+    return asSequence()
+        .filter {
+            loweredSearch.isEmpty()
+                    || it.name.lowercase().contains(loweredSearch)
+                    || it.nickName?.lowercase()?.contains(loweredSearch) == true
+        }
+        .filter {
+            when (filter) {
+                ChatFilter.NONE -> true
+                ChatFilter.UNREAD -> it.unreadMessageCount > 0
+                ChatFilter.GROUPS -> it.isGroup
+                ChatFilter.PERSONS -> !it.isGroup
+            }
+        }
+        .toList()
 }

@@ -15,7 +15,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -38,6 +37,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.ChatListItem
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageSearchResult
 import org.lerchenflo.schneaggchatv3mp.chat.domain.getTagName
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
+import org.lerchenflo.schneaggchatv3mp.datasource.applySearchAndFilter
 import org.lerchenflo.schneaggchatv3mp.utilities.ChangelogEntry
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
@@ -231,30 +231,38 @@ class ChatSelectorViewModel(
 
 
 
+    //The unfiltered chat list. Started eagerly so the query is already running while the screen is
+    //still being composed, and kept subscribed for the ViewModel's lifetime so coming back from a
+    //chat never pays for it again.
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val chatSelectorFlow: Flow<List<ChatListItem>> = combine(
-        _searchTerm,
-        _filter,
-        SessionCache.authState
-
-    ) { term, filter, authState -> Triple(term, filter, authState) }
-        .flatMapLatest { (term, filter, authState) ->
+    private val allChats: StateFlow<List<ChatListItem>> = SessionCache.authState
+        .flatMapLatest { authState ->
             val loggedIn = authState as? SessionCache.AuthState.LoggedIn
                 ?: return@flatMapLatest flowOf(emptyList())
 
-            appRepository.getChatSelectorFlow(
-                searchTerm = term,
-                userId = loggedIn.userId,
-                filter = filter
-            )
+            appRepository.getChatListFlow(userId = loggedIn.userId)
         }
         .flowOn(Dispatchers.Default)
-
-    val chatSelectorState: StateFlow<List<ChatListItem>> = chatSelectorFlow
         .distinctUntilChanged()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
+            started = SharingStarted.Eagerly,
+            initialValue = emptyList()
+        )
+
+    //Search and filter run on the already loaded list, so a keystroke never touches the database.
+    val chatSelectorState: StateFlow<List<ChatListItem>> = combine(
+        allChats,
+        _searchTerm,
+        _filter
+    ) { chats, term, filter ->
+        chats.applySearchAndFilter(searchTerm = term, filter = filter)
+    }
+        .flowOn(Dispatchers.Default)
+        .distinctUntilChanged()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
             initialValue = emptyList()
         )
 
