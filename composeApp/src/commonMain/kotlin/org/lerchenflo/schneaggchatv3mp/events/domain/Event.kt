@@ -45,6 +45,13 @@ data class Event(
      */
 }
 
+/**
+ * True once the event is over: past its close date, or - when it has none - past its start.
+ * Only past events are dropped from the nav bar badge; they stay in the local database forever, so
+ * without this a single never-opened old event would keep the badge lit for good.
+ */
+fun Event.hasEnded(nowMillis: Long): Boolean = (closeDate ?: startDate) <= nowMillis
+
 /** Builds a blank [Event] with the app's default field values, ready to hand to the event edit popup. */
 fun newEvent(creatorId: String, location: LatLong? = null): Event {
     val now = Clock.System.now().toEpochMilliseconds()

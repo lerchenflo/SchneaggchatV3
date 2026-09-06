@@ -111,7 +111,6 @@ class EventsViewModel(
     }.combine(ownUserIdFlow) { currentState, ownUserId ->
         currentState.copy(
             ownUserId = ownUserId,
-            unseenEventCount = ownUserId?.let { id -> currentState.events.count { it.isUnseenBy(id) } } ?: 0,
             // The open sheet has to follow the live row, or its participation list and the own
             // status inside it go stale the moment anyone responds. The creator's copy is only
             // topped up with the live participations - the rest of it carries the edit popup's

@@ -22,7 +22,6 @@ data class EventsState(
     val eventsByDate: Map<LocalDate, List<Event>> = emptyMap(),
     val selectedEvent: Event? = null,
     val ownUserId: String? = null,
-    val unseenEventCount: Int = 0,
     val friendsById: Map<String, User> = emptyMap(),
     val groups: List<Group> = emptyList(),
     val isJoiningEvent: Boolean = false,

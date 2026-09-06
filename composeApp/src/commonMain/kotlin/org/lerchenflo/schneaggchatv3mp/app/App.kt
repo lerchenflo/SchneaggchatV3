@@ -513,6 +513,10 @@ fun App() {
                     bottomBar = {
 
                         if (navigationState.showNavBar) {
+                            // Read inside the bottomBar slot so a changing badge recomposes the bar
+                            // alone, not the whole app.
+                            val badgeCounts by globalViewModel.navigationBadgeCounts.collectAsStateWithLifecycle()
+
                             BottomAppBar(
                                 selectedKey = navigationState.topLevelRoute,
                                 onSelectKey = {
@@ -522,6 +526,7 @@ fun App() {
                                 },
                                 mobile = appRepository.appVersion.isMobile(),
                                 developer = isDeveloper,
+                                badgeCounts = badgeCounts,
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }

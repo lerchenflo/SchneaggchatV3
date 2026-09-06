@@ -981,6 +981,9 @@ class AppRepository(
     }
 
 
+    /** Chats with unread messages, for the chat tab's nav bar badge. */
+    fun getUnreadChatCountFlow(): Flow<Int> = messageRepository.getUnreadChatCountFlow()
+
     /**
      * Get main screen available items as flow
      */

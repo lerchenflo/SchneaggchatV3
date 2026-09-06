@@ -31,6 +31,7 @@ fun BottomAppBar(
     onSelectKey: (NavKey) -> Unit,
     mobile: Boolean,
     developer: Boolean,
+    badgeCounts: NavigationBadgeCounts,
     modifier: Modifier = Modifier
 ) {
     val visibleDestinations = getVisibleTopLevelDestinations(
@@ -46,6 +47,8 @@ fun BottomAppBar(
             val data = TOP_LEVEL_DESTINATIONS[key] ?: return@forEach
             val selected = key == selectedKey || key::class == selectedKey::class
 
+            val badgeCount = data.badgeCount(badgeCounts)
+
             NavigationBarItem(
                 modifier = Modifier.tapTarget(data.id),
                 selected = selected,
@@ -55,9 +58,9 @@ fun BottomAppBar(
                 icon = {
                     BadgedBox(
                         badge = {
-                            if (data.badgeCount != null) {
+                            if (badgeCount > 0) {
                                 Badge {
-                                    Text(text = data.badgeCount.toString())
+                                    Text(text = (badgeCount.toString()))
                                 }
                             } else if (data.hasNews) {
                                 Badge()

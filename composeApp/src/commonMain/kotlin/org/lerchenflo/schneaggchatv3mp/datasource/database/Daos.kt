@@ -19,6 +19,7 @@ import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.UserDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.GroupWithMembersDto
 import org.lerchenflo.schneaggchatv3mp.chat.data.dtos.relations.MessageWithReadersDto
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
+import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.events.data.dtos.EventDto
 import org.lerchenflo.schneaggchatv3mp.games.data.PlayerEntity
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.data.dtos.MapEntryDto
@@ -154,6 +155,33 @@ interface MessageDao {
 
     @Query("INSERT OR REPLACE INTO message_readers (messageId, readerID, readDate) SELECT m.id, :ownId, :timestamp FROM messages m WHERE (m.senderId = :userId OR m.receiverId = :userId) AND m.groupMessage = :gruppe AND m.readByMe = 0 AND m.id != ''")
     suspend fun addMessageReadersForChat(userId: String, gruppe: Boolean, ownId: String, timestamp: String)
+
+    /**
+     * Number of chats holding at least one unread message, for the chat tab's nav bar badge - chats,
+     * not messages, so ten unread lines in one group count once.
+     *
+     * Mirrors the per-chat unread rule of [org.lerchenflo.schneaggchatv3mp.datasource.AppRepository.getChatSelectorFlow]:
+     * my own messages are read by definition and SYSTEM lines never raise a badge. The EXISTS
+     * clauses keep the count to the chats the selector actually lists, so messages left behind by a
+     * removed friend or a group that is gone can not light a badge the user has no way to clear.
+     */
+    @Query("""
+        SELECT COUNT(*) FROM (
+            SELECT m.receiverId FROM messages m
+            WHERE m.groupMessage = 1 AND m.myMessage = 0 AND m.readByMe = 0 AND m.msgType != :systemType
+              AND EXISTS (SELECT 1 FROM groups g WHERE g.id = m.receiverId)
+            GROUP BY m.receiverId
+            UNION ALL
+            SELECT m.senderId FROM messages m
+            WHERE m.groupMessage = 0 AND m.myMessage = 0 AND m.readByMe = 0 AND m.msgType != :systemType
+              AND EXISTS (SELECT 1 FROM users u WHERE u.id = m.senderId AND u.frienshipStatus = :acceptedFriendship)
+            GROUP BY m.senderId
+        )
+    """)
+    fun getUnreadChatCountFlow(
+        systemType: String = MessageType.SYSTEM.name,
+        acceptedFriendship: String = NetworkUtils.FriendshipStatus.ACCEPTED.name,
+    ): Flow<Int>
 /* Will not work since sendDate is a string
     @Transaction
     @Query("SELECT * FROM messages WHERE (sendDate > :time)")
