@@ -20,6 +20,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,40 +46,44 @@ fun ImageAttachmentRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         images.forEach { imageBytes ->
-            Box(
-                modifier = Modifier
-                    .size(80.dp) // fixed thumbnail size
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outline,
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
-            ) {
-                Image(
-                    painter = BitmapPainter(imageBytes.decodeToImageBitmap()),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-                // Close button per image
+            key(imageBytes) {
+                val thumbnail = remember(imageBytes) { imageBytes.decodeToImageBitmap() }
+
                 Box(
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(2.dp)
-                        .size(20.dp)
-                        .clip(CircleShape)
+                        .size(80.dp) // fixed thumbnail size
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outline,
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .clip(RoundedCornerShape(12.dp))
                         .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
-                        .clickable { onRemoveImage(imageBytes) },
-                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
+                    Image(
+                        painter = BitmapPainter(thumbnail),
                         contentDescription = null,
-                        modifier = Modifier.size(14.dp),
-                        tint = MaterialTheme.colorScheme.onSurface
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
+                    // Close button per image
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(2.dp)
+                            .size(20.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                            .clickable { onRemoveImage(imageBytes) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
         }

@@ -265,9 +265,13 @@ fun SignUpScreen(
                                 style = MaterialTheme.typography.headlineSmall
                             )
 
+                            val profilePicBitmap = remember(state.profilePic) {
+                                state.profilePic?.decodeToImageBitmap()
+                            }
+
                             Box(modifier = Modifier.size(200.dp)) {
                                 Image(
-                                    painter = if (state.profilePic != null) BitmapPainter(state.profilePic.decodeToImageBitmap()) else painterResource(Res.drawable.icon_nutzer),
+                                    painter = if (profilePicBitmap != null) BitmapPainter(profilePicBitmap) else painterResource(Res.drawable.icon_nutzer),
                                     contentDescription = stringResource(Res.string.profile_picture),
                                     modifier = Modifier
                                         .fillMaxSize()

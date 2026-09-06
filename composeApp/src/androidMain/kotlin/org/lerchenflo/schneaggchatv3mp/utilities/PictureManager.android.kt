@@ -101,7 +101,7 @@ actual class PictureManager(private val context: Context) {
             return@withContext imageBytes
         }
 
-        var bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+        var bitmap = decodeSampledBitmap(imageBytes)
             ?.let { applyExifOrientation(it, orientation) }
             ?: throw IllegalArgumentException("Invalid image data")
 
@@ -236,6 +236,26 @@ actual class PictureManager(private val context: Context) {
             bitmap.asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, outputStream)
             outputStream.toByteArray()
         }
+}
+
+private const val MAX_DECODE_DIMENSION_PX = 2048
+
+private fun decodeSampledBitmap(imageBytes: ByteArray): Bitmap? {
+    val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, boundsOptions)
+
+    val decodeOptions = BitmapFactory.Options().apply {
+        inSampleSize = calculateInSampleSize(boundsOptions.outWidth, boundsOptions.outHeight)
+    }
+    return BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, decodeOptions)
+}
+
+private fun calculateInSampleSize(width: Int, height: Int): Int {
+    var sampleSize = 1
+    while (width / sampleSize > MAX_DECODE_DIMENSION_PX || height / sampleSize > MAX_DECODE_DIMENSION_PX) {
+        sampleSize *= 2
+    }
+    return sampleSize
 }
 
 private fun readExifOrientation(imageBytes: ByteArray): Int =
