@@ -47,6 +47,7 @@ import io.github.ismoy.imagepickerkmp.config.CropConfig
 import io.github.ismoy.imagepickerkmp.config.GalleryConfig
 import io.github.ismoy.imagepickerkmp.picker.ImagePickerKMPConfig
 import io.github.ismoy.imagepickerkmp.picker.ImagePickerResult
+import io.github.ismoy.imagepickerkmp.picker.CompressionLevel
 import io.github.ismoy.imagepickerkmp.picker.MimeType
 import io.github.ismoy.imagepickerkmp.picker.rememberImagePickerKMP
 import kotlinx.datetime.LocalDate
@@ -127,7 +128,10 @@ fun UserSettings(
             galleryConfig = GalleryConfig(
                 allowMultiple = false,
                 mimeTypes = listOf(MimeType.IMAGE_ALL),
-                includeExif = false
+                includeExif = false,
+                // Makes the picker apply the EXIF orientation to the pixels, otherwise
+                // rotated photos are cropped and uploaded sideways.
+                compressionLevel = CompressionLevel.LOW
             )
         )
     )

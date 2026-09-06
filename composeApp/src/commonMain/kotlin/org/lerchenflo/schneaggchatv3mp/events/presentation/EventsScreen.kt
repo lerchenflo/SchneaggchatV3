@@ -28,9 +28,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
-import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.events.domain.goingUserIds
+import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
+import org.lerchenflo.schneaggchatv3mp.events.domain.statusOf
 import org.lerchenflo.schneaggchatv3mp.events.presentation.birthdaysOn
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventEditPopup
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
@@ -88,8 +90,7 @@ fun EventsScreen(
             }
         }
     ) { innerPadding ->
-        SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying stale
-        val ownId = SessionCache.requireLoggedIn()?.userId
+        val ownId = state.ownUserId
         val today = rememberToday()
 
         Column(
@@ -148,7 +149,10 @@ fun EventsScreen(
                                         event = event,
                                         creatorProfilePictureUrl = creatorFriend?.profilePictureUrl,
                                         isOwnEvent = event.creatorId == ownId,
-                                        onClick = { onAction(EventsAction.OnEventClick(event.id)) }
+                                        onClick = { onAction(EventsAction.OnEventClick(event.id)) },
+                                        ownStatus = ownId?.let { event.statusOf(it) },
+                                        isUnseen = ownId != null && event.isUnseenBy(ownId),
+                                        goingCount = event.goingUserIds().size
                                     )
                                 }
                             }
@@ -209,7 +213,7 @@ fun EventsScreen(
 
         // ownId is null until autologin finishes. Rendering then would pick the popup by comparing
         // against null and open the read-only join sheet for the user's own event, so wait for the
-        // id instead of guessing - the reactive read above recomposes us once it arrives.
+        // id instead of guessing - state carries it as soon as it arrives.
         state.selectedEvent?.takeIf { ownId != null }?.let { selectedEvent ->
             if (selectedEvent.creatorId == ownId) {
                 EventEditPopup(
@@ -232,6 +236,9 @@ fun EventsScreen(
                     onDismiss = { onAction(EventsAction.OnEventPopupDismiss) },
                     onJoin = { onAction(EventsAction.OnJoinEvent(it)) },
                     onOpenGroupChat = { onAction(EventsAction.OnOpenGroupChat(it)) },
+                    onAccept = { onAction(EventsAction.OnAcceptEvent(it)) },
+                    onDismissEvent = { onAction(EventsAction.OnDismissEvent(it)) },
+                    ownStatus = ownId?.let { selectedEvent.statusOf(it) },
                     isJoined = isJoined,
                     isJoining = state.isJoiningEvent,
                     friendsById = state.friendsById

@@ -88,8 +88,12 @@ actual class PictureManager {
         imageBytes: ByteArray,
         targetSizeBytes: Int
     ): ByteArray {
-        // If original is already small enough, return it
-        if (imageBytes.size <= targetSizeBytes) {
+        val orientation = readJpegExifOrientation(imageBytes)
+
+        // A rotated image has to be re-encoded even when it is small enough already: the
+        // orientation is only an EXIF tag, and every later step (upload, server PNG conversion)
+        // drops it, leaving the picture sideways.
+        if (imageBytes.size <= targetSizeBytes && orientation == EXIF_ORIENTATION_NORMAL) {
             println("Desktop: Image already under target (${imageBytes.size} <= $targetSizeBytes), returning original")
             return imageBytes
         }
@@ -107,6 +111,8 @@ actual class PictureManager {
         } else {
             originalImage
         }
+
+        bufferedImage = applyExifOrientation(bufferedImage, orientation)
 
         val writer: ImageWriter = ImageIO.getImageWritersByFormatName("jpeg").next()
         val writeParam = writer.defaultWriteParam

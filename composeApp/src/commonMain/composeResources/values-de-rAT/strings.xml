@@ -837,16 +837,6 @@
     <string name="games_2048_instructions">Wüscha oda mit Pfeiltasta ummadrucka. Wenn sich zwoa Fealda mit da glicha Zahl berührand, werrand se zu uana großa. Mehr groß mehr Punkte</string>
     <string name="games_2048_reached">★ 2048 erreicht! ★</string>
 
-    <!-- Games: Stanislaus -->
-    <string name="games_stanislaus_title">Stanislaus siaht da Fisch ned</string>
-    <string name="games_stanislaus_instructions"/>
-    <string name="games_stanislaus_caught"/>
-    <string name="games_stanislaus_missed"/>
-    <string name="games_stanislaus_streak"/>
-    <string name="games_stanislaus_label_apparent"/>
-    <string name="games_stanislaus_label_real"/>
-    <string name="games_stanislaus_glare_hint"/>
-    <string name="games_stanislaus_sprite_description">Stanislaus</string>
 
     <!-- Recap -->
     <string name="recap_your_year">Din Joar</string>

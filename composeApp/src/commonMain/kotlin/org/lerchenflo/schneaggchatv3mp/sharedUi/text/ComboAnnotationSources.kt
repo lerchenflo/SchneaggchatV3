@@ -24,7 +24,6 @@ import schneaggchatv3mp.composeapp.generated.resources.games_morse_title
 import schneaggchatv3mp.composeapp.generated.resources.games_oddoneout_title
 import schneaggchatv3mp.composeapp.generated.resources.games_schneaggahus_title
 import schneaggchatv3mp.composeapp.generated.resources.games_stack_tower
-import schneaggchatv3mp.composeapp.generated.resources.games_stanislaus_title
 import schneaggchatv3mp.composeapp.generated.resources.games_2048_title
 import schneaggchatv3mp.composeapp.generated.resources.games_tetris_title
 import schneaggchatv3mp.composeapp.generated.resources.games_undercover_title
@@ -85,12 +84,11 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
     val gameUndercoverTitle = stringResource(Res.string.games_undercover_title)
     val gameYatziTitle = stringResource(Res.string.games_yahtzee_title)
     val game2048Title = stringResource(Res.string.games_2048_title)
-    val gameStanislausTitle = stringResource(Res.string.games_stanislaus_title)
 
     val gameNames = remember(
         gameTetrisTitle, gameTowerstackTitle, gameMorseTitle, gameSchneaggaHusTitle,
         gameGridRushTitle, gameOddOneOutTitle, gameCoinFlipTitle, gameFingerPickerTitle,
-        gameDartCounterTitle, gameUndercoverTitle, gameYatziTitle, game2048Title, gameStanislausTitle
+        gameDartCounterTitle, gameUndercoverTitle, gameYatziTitle, game2048Title
     ) {
         mapOf(
             "tetris" to gameTetrisTitle,
@@ -105,7 +103,6 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
             "undercover" to gameUndercoverTitle,
             "yatzi" to gameYatziTitle,
             "2048" to game2048Title,
-            "stanislaus" to gameStanislausTitle,
         )
     }
 
@@ -165,7 +162,6 @@ fun rememberComboAnnotationSources(): List<ComboAnnotationSource> {
                         "undercover" -> Route.Undercover
                         "yatzi" -> Route.Yatzi
                         "2048" -> Route.Game2048
-                        "stanislaus" -> Route.Stanislaus
                         else -> Route.GamesSelector
                     }
                     scope.launch { navigator.navigate(route) }

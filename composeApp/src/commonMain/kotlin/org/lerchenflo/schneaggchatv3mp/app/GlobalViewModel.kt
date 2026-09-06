@@ -5,13 +5,18 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationBadgeCounts
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -19,18 +24,24 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.AppJson
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionMessage
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
+import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
+import org.lerchenflo.schneaggchatv3mp.events.domain.hasEnded
+import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
 import org.lerchenflo.schneaggchatv3mp.utilities.IncomingDataManager
 import org.lerchenflo.schneaggchatv3mp.utilities.NotificationManager
 import org.lerchenflo.schneaggchatv3mp.utilities.PermissionState
 import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GlobalViewModel(
     private val appRepository: AppRepository,
+    private val eventRepository: EventRepository,
     private val preferenceManager: Preferencemanager,
     private val socketConnectionManager: SocketConnectionManager,
     private val navigator: Navigator,
@@ -41,6 +52,41 @@ class GlobalViewModel(
 
     /** Guards the app-resume handler so overlapping resume events are dropped instead of queued. */
     private var appResumeJob: Job? = null
+
+    // Events fall out of the badge as they end, which no database write announces - so the count
+    // is re-evaluated on a slow tick as well as on every data change. A minute is far below the
+    // resolution anyone reads a badge at, and each tick only re-counts an in-memory list.
+    private val badgeClock = flow {
+        while (true) {
+            emit(Clock.System.now().toEpochMilliseconds())
+            delay(1.minutes)
+        }
+    }
+
+    /** Unread/unseen counts behind the bottom navigation bar's badges. */
+    val navigationBadgeCounts: StateFlow<NavigationBadgeCounts> = combine(
+        SessionCache.authState,
+        appRepository.getUnreadChatCountFlow(),
+        eventRepository.getAllEventsFlow(),
+        badgeClock,
+    ) { authState, unreadChats, events, nowMillis ->
+        // Logged out there is nobody to count for, and the local database still holds the previous
+        // session's rows until it is cleared - badging those would leak them into the login screen.
+        val ownUserId = (authState as? SessionCache.AuthState.LoggedIn)?.userId
+
+        if (ownUserId == null) {
+            NavigationBadgeCounts()
+        } else {
+            NavigationBadgeCounts(
+                unreadChats = unreadChats,
+                unseenEvents = events.count { it.isUnseenBy(ownUserId) && !it.hasEnded(nowMillis) }
+            )
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = NavigationBadgeCounts()
+    )
 
     init {
 

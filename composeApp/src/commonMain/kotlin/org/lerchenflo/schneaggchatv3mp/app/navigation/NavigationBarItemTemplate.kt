@@ -27,7 +27,11 @@ data class NavigationBarItemTemplate(
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector,
     val mobileOnly: Boolean = false,
-    val showOnlyWhenSelected: Boolean = false
+    val showOnlyWhenSelected: Boolean = false,
+
+    /** Picks this destination's badge number out of the live counts, 0 = no badge. */
+    val badgeCount: (NavigationBadgeCounts) -> Int = { 0 },
+    val hasNews: Boolean = false
 )
 
 val TOP_LEVEL_DESTINATIONS = mapOf<NavKey, NavigationBarItemTemplate>(
@@ -36,6 +40,7 @@ val TOP_LEVEL_DESTINATIONS = mapOf<NavKey, NavigationBarItemTemplate>(
         title = Res.string.navbar_events,
         selectedIcon = Icons.Filled.Event,
         unselectedIcon = Icons.Outlined.Event,
+        badgeCount = { it.unseenEvents },
     ),
     Route.Schneaggmap() to NavigationBarItemTemplate(
         id = "bottombar_map_button",
@@ -49,6 +54,7 @@ val TOP_LEVEL_DESTINATIONS = mapOf<NavKey, NavigationBarItemTemplate>(
         title = Res.string.navbar_chats,
         selectedIcon = Icons.AutoMirrored.Filled.Chat,
         unselectedIcon = Icons.AutoMirrored.Outlined.Chat,
+        badgeCount = { it.unreadChats },
     ),
     Route.GamesSelector to NavigationBarItemTemplate(
         id = "bottombar_games_button",

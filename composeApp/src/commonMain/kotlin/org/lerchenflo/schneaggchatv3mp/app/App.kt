@@ -40,7 +40,7 @@ import org.jetbrains.compose.resources.getString
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
-import org.lerchenflo.schneaggchatv3mp.app.navigation.BottomAppBarSwipable
+import org.lerchenflo.schneaggchatv3mp.app.navigation.BottomAppBar
 import org.lerchenflo.schneaggchatv3mp.app.navigation.NavigationAction
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.ObserveAsEvents
@@ -84,7 +84,6 @@ import org.lerchenflo.schneaggchatv3mp.games.presentation.schneaggahus.Schneagga
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisScreen
 import org.lerchenflo.schneaggchatv3mp.games.presentation.tetris.TetrisViewModel
 import org.lerchenflo.schneaggchatv3mp.games.presentation.towerstack.TowerStackScreen
-import org.lerchenflo.schneaggchatv3mp.games.presentation.stanislaus.StanislausScreenRoot
 import org.lerchenflo.schneaggchatv3mp.games.presentation.undercover.Undercover
 import org.lerchenflo.schneaggchatv3mp.games.presentation.yatzi.YatziScreenRoot
 import org.lerchenflo.schneaggchatv3mp.login.presentation.autologincredchecker.AutoLoginCredCheckerRoot
@@ -514,7 +513,11 @@ fun App() {
                     bottomBar = {
 
                         if (navigationState.showNavBar) {
-                            BottomAppBarSwipable(
+                            // Read inside the bottomBar slot so a changing badge recomposes the bar
+                            // alone, not the whole app.
+                            val badgeCounts by globalViewModel.navigationBadgeCounts.collectAsStateWithLifecycle()
+
+                            BottomAppBar(
                                 selectedKey = navigationState.topLevelRoute,
                                 onSelectKey = {
                                     scope.launch {
@@ -523,6 +526,7 @@ fun App() {
                                 },
                                 mobile = appRepository.appVersion.isMobile(),
                                 developer = isDeveloper,
+                                badgeCounts = badgeCounts,
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
@@ -801,12 +805,6 @@ fun App() {
 
                                     entry<Route.Game2048> {
                                         Game2048ScreenRoot(
-                                            onBackClick = { scope.launch { navigator.navigateBack() } }
-                                        )
-                                    }
-
-                                    entry<Route.Stanislaus> {
-                                        StanislausScreenRoot(
                                             onBackClick = { scope.launch { navigator.navigateBack() } }
                                         )
                                     }

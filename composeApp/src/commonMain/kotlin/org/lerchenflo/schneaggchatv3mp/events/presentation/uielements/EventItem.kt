@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -27,18 +28,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.events.domain.icon
 import org.lerchenflo.schneaggchatv3mp.events.domain.labelRes
 import org.lerchenflo.schneaggchatv3mp.sharedUi.picture.ProfilePictureView
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToString
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.event_ended
+import schneaggchatv3mp.composeapp.generated.resources.event_going_count
+import schneaggchatv3mp.composeapp.generated.resources.event_new_badge
 import schneaggchatv3mp.composeapp.generated.resources.event_started
 import schneaggchatv3mp.composeapp.generated.resources.event_starts_in
 import kotlin.time.Clock
@@ -50,11 +55,16 @@ fun EventItem(
     creatorProfilePictureUrl: String?,
     isOwnEvent: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    ownStatus: EventParticipationStatus? = null,
+    isUnseen: Boolean = false,
+    goingCount: Int = 0
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
+            // Dismissed events stay in the list but step back visually
+            .alpha(if (ownStatus == EventParticipationStatus.DISMISSED) DISMISSED_CARD_ALPHA else 1f)
             .clickable(onClick = onClick),
         colors = if (isOwnEvent) {
             CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
@@ -106,6 +116,29 @@ fun EventItem(
                         modifier = Modifier.weight(1f)
                     )
 
+                    if (isUnseen) {
+                        Badge(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.event_new_badge),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+
+                    if (ownStatus == EventParticipationStatus.ACCEPTED) {
+                        Icon(
+                            imageVector = ownStatus.icon(),
+                            contentDescription = stringResource(ownStatus.labelRes()),
+                            tint = if (isOwnEvent) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+
                     Icon(
                         imageVector = event.visibility.icon(),
                         contentDescription = stringResource(event.visibility.labelRes()),
@@ -136,13 +169,25 @@ fun EventItem(
 
                 val secondaryTextColor = if (isOwnEvent) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
 
-                Text(
-                    text = millisToString(event.startDate, "dd.MM.yyyy HH:mm"),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = secondaryTextColor,
-                    maxLines = 1,
-                    softWrap = false
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = millisToString(event.startDate, "dd.MM.yyyy HH:mm"),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = secondaryTextColor,
+                        maxLines = 1,
+                        softWrap = false
+                    )
+                    if (goingCount > 0) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(Res.string.event_going_count, goingCount),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = secondaryTextColor,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    }
+                }
                 EventStartCountdownTimer(
                     startDate = event.startDate,
                     closeDate = event.closeDate,
@@ -152,6 +197,8 @@ fun EventItem(
         }
     }
 }
+
+private const val DISMISSED_CARD_ALPHA = 0.5f
 
 @Composable
 private fun EventStartCountdownTimer(

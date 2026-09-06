@@ -1,5 +1,7 @@
 package org.lerchenflo.schneaggchatv3mp.app.navigation
 
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
@@ -24,11 +26,12 @@ fun getVisibleTopLevelDestinations(
 }
 
 @Composable
-fun BottomAppBarSwipable(
+fun BottomAppBar(
     selectedKey: NavKey,
     onSelectKey: (NavKey) -> Unit,
     mobile: Boolean,
     developer: Boolean,
+    badgeCounts: NavigationBadgeCounts,
     modifier: Modifier = Modifier
 ) {
     val visibleDestinations = getVisibleTopLevelDestinations(
@@ -44,6 +47,8 @@ fun BottomAppBarSwipable(
             val data = TOP_LEVEL_DESTINATIONS[key] ?: return@forEach
             val selected = key == selectedKey || key::class == selectedKey::class
 
+            val badgeCount = data.badgeCount(badgeCounts)
+
             NavigationBarItem(
                 modifier = Modifier.tapTarget(data.id),
                 selected = selected,
@@ -51,10 +56,22 @@ fun BottomAppBarSwipable(
                     onSelectKey(key)
                 },
                 icon = {
-                    Icon(
-                        imageVector = if (selected) data.selectedIcon else data.unselectedIcon,
-                        contentDescription = null
-                    )
+                    BadgedBox(
+                        badge = {
+                            if (badgeCount > 0) {
+                                Badge {
+                                    Text(text = (badgeCount.toString()))
+                                }
+                            } else if (data.hasNews) {
+                                Badge()
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (selected) data.selectedIcon else data.unselectedIcon,
+                            contentDescription = null
+                        )
+                    }
                 },
                 label = {
                     Text(

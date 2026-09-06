@@ -125,6 +125,9 @@ class MessageRepository(
         }
     }
 
+    /** Chats with at least one unread message, counted in SQL for the nav bar badge. */
+    fun getUnreadChatCountFlow(): Flow<Int> = database.messageDao().getUnreadChatCountFlow()
+
     @Transaction
     fun getAllMessages(): Flow<List<Message>>{
         return database.messageDao().getAllMessagesWithReadersFlow().map { messageWithReadersDtos ->

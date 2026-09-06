@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -608,27 +606,20 @@ fun EventEditPopup(
 
             if (currentEvent.invitedUsers.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = stringResource(Res.string.event_invited_users),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                EventUserAvatarRow(
+                    label = stringResource(Res.string.event_invited_users),
+                    userIds = currentEvent.invitedUsers,
+                    friendsById = friendsById
                 )
-                Spacer(modifier = Modifier.height(6.dp))
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(currentEvent.invitedUsers, key = { it }) { userId ->
-                        EventUserAvatar(
-                            userId = userId,
-                            friendsById = friendsById,
-                            size = 40.dp
-                        )
-                    }
-                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
+
+            // Read-only: the creator sees how everyone responded, but never answers their own event
+            EventParticipationOverview(
+                event = event,
+                friendsById = friendsById
+            )
 
             HorizontalDivider(thickness = 2.dp)
 

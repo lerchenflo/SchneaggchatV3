@@ -150,7 +150,6 @@ private val gameRoutes: Set<KClass<out NavKey>> = setOf(
     Route.CoinFlip::class,
     Route.FingerPicker::class,
     Route.Game2048::class,
-    Route.Stanislaus::class,
     Route.Crossword::class
 )
 
@@ -203,7 +202,6 @@ val backStackConfiguration = SavedStateConfiguration {
             subclass(Route.CoinFlip::class, Route.CoinFlip.serializer())
             subclass(Route.FingerPicker::class, Route.FingerPicker.serializer())
             subclass(Route.Game2048::class, Route.Game2048.serializer())
-            subclass(Route.Stanislaus::class, Route.Stanislaus.serializer())
             subclass(Route.Crossword::class, Route.Crossword.serializer())
 
 

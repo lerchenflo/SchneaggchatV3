@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -32,6 +33,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
+import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
 import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
 import org.lerchenflo.schneaggchatv3mp.utilities.PictureManager
 import org.lerchenflo.schneaggchatv3mp.utilities.SnackbarManager
@@ -41,6 +44,7 @@ import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.event_and_group_created
 import schneaggchatv3mp.composeapp.generated.resources.event_created
 import schneaggchatv3mp.composeapp.generated.resources.event_delete_failed
+import schneaggchatv3mp.composeapp.generated.resources.event_participation_failed
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -64,6 +68,10 @@ class EventsViewModel(
         (auth as? SessionCache.AuthState.LoggedIn)
             ?.let { appRepository.getUserByIdFlow(it.userId) }
             ?: flowOf(null)
+    }
+
+    private val ownUserIdFlow = SessionCache.authState.map {
+        (it as? SessionCache.AuthState.LoggedIn)?.userId
     }
 
     private val _state = MutableStateFlow(EventsState(isMobile = appRepository.appVersion.isMobile(), selectedEvent = initialEntry))
@@ -100,6 +108,22 @@ class EventsViewModel(
         currentState.copy(
             birthdaysByMonthDay = buildBirthdaysByMonthDay(currentState.friendsById.values, ownUser)
         )
+    }.combine(ownUserIdFlow) { currentState, ownUserId ->
+        currentState.copy(
+            ownUserId = ownUserId,
+            // The open sheet has to follow the live row, or its participation list and the own
+            // status inside it go stale the moment anyone responds. The creator's copy is only
+            // topped up with the live participations - the rest of it carries the edit popup's
+            // unsaved edits and the map-pick draft, which a live row would throw away.
+            selectedEvent = currentState.selectedEvent?.let { selected ->
+                val live = currentState.events.firstOrNull { it.id == selected.id }
+                when {
+                    live == null -> selected
+                    selected.creatorId == ownUserId -> selected.copy(participations = live.participations)
+                    else -> live
+                }
+            }
+        )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -115,6 +139,29 @@ class EventsViewModel(
                         it.copy(
                             selectedEvent = clickedEvent
                         )
+                    }
+                }
+                // Opening the event is what marks it seen. Fire-and-forget: the server ignores a
+                // repeated SEEN, so a failed call just retries the next time the sheet opens.
+                val ownId = state.value.ownUserId
+                if (clickedEvent != null && ownId != null && clickedEvent.isUnseenBy(ownId)) {
+                    viewModelScope.launch {
+                        appRepository.setEventParticipation(clickedEvent.id, EventParticipationStatus.SEEN)
+                    }
+                }
+            }
+
+            is EventsAction.OnAcceptEvent -> {
+                viewModelScope.launch {
+                    // Sheet stays open so the user sees themselves appear in the going list
+                    setParticipation(action.eventId, EventParticipationStatus.ACCEPTED)
+                }
+            }
+
+            is EventsAction.OnDismissEvent -> {
+                viewModelScope.launch {
+                    if (setParticipation(action.eventId, EventParticipationStatus.DISMISSED)) {
+                        _state.update { it.copy(selectedEvent = null) }
                     }
                 }
             }
@@ -284,6 +331,14 @@ class EventsViewModel(
         }
     }
 
+
+    private suspend fun setParticipation(eventId: String, status: EventParticipationStatus): Boolean {
+        val success = appRepository.setEventParticipation(eventId, status)
+        if (!success) {
+            SnackbarManager.showMessage(getString(Res.string.event_participation_failed))
+        }
+        return success
+    }
 
     init {
         viewModelScope.launch {

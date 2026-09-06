@@ -2,6 +2,7 @@ package org.lerchenflo.schneaggchatv3mp.events.data.dtos
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipation
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventVisibility
 import org.lerchenflo.schneaggchatv3mp.events.domain.GroupDeleteDelay
@@ -19,6 +20,7 @@ data class EventDto(
     val startDate: Long,
     val closeDate: Long?,
     val invitedUsers: List<String>,
+    val participations: List<EventParticipation>,
     val visibility: EventVisibility,
     val maxUsers: Int? = null,
     val groupDeleteDelay: GroupDeleteDelay,

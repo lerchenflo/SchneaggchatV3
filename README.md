@@ -37,6 +37,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Neue Nachrichten über Benachrichtigungen direkt im Chat anzeigen
 - Events: Woche und Monat Kalenderansicht mit Geburtstagen, zum Kalender hinzufügen
 - Morse-Spiel: Hörbarer Piepton beim Tastendruck
+- Events: Beigetretene / Abgelehnte User anzeigen
+- Bottom Nav: Badge Icons
 
 #### Bugfixes
 - Chat-Nachrichten: Zeilenumbrüche im Markdown-Modus behoben
@@ -50,6 +52,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 - Sprachnachrichten: Audio-Routing für Bluetooth-Geräte behoben (AirPods, Auto, Lautsprecher)
 - Dartcounter: Funktion und UI verbessert
 - Undercover-Spiel: Spielerliste bleibt nach einer Runde erhalten
+- Bilder werden nicht mehr um 90° rotiert angezeigt
 
 ### 3.0.16
 
