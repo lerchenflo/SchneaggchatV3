@@ -697,7 +697,7 @@ class AppRepository(
         maxUsers: Int?,
         groupDeleteDelay: GroupDeleteDelay,
         profilePic: ByteArray? = null,
-    ) {
+    ): Boolean {
         val result = networkUtils.upsertEvent(
             EventRequest(
                 eventId = eventId,
@@ -716,12 +716,14 @@ class AppRepository(
             profilePic = profilePic,
         ).trackConnectivity()
 
-        when (result) {
+        return when (result) {
             is NetworkResult.Error<*> -> {
                 sendErrorSuspend(ErrorChannel.ErrorEvent(error = result.error))
+                false
             }
             is NetworkResult.Success<EventResponse> -> {
                 eventRepository.upsertEvent(result.data.toEvent())
+                true
             }
         }
     }
