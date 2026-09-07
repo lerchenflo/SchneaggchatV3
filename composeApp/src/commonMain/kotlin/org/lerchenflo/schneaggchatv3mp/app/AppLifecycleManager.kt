@@ -27,6 +27,34 @@ object AppLifecycleManager {
     // the snapshot was taken".
     private val _isAppInForeground = MutableStateFlow(false)
 
+    // Whether an Android Auto car session is currently active - set from SchneaggmapCarSession's
+    // ON_START/ON_STOP. A car session has no Activity lifecycle of its own, but the socket and
+    // own-location-sharing gates below need to treat it the same as the phone being foregrounded,
+    // otherwise the phone going to sleep in a pocket would drop the socket and stale out friend
+    // positions on the car display.
+    private val _isCarSessionActive = MutableStateFlow(false)
+    val isCarSessionActive: StateFlow<Boolean> = _isCarSessionActive.asStateFlow()
+
+    /** True while either the phone app or an Android Auto car session is active - use this (not [isAppInForeground]) for gates that should also stay open while only the car is in use. */
+    val isAppOrCarActive: Boolean
+        get() = isAppInForeground || _isCarSessionActive.value
+
+    fun setCarSessionActive(active: Boolean) {
+        _isCarSessionActive.value = active
+        if (isAppInForeground) return //Phone already owns resume/background handling
+
+        if (active) {
+            //Kick the same "resume" path the phone uses (socket connect + sync) when the car
+            //starts, since the phone itself isn't doing it.
+            notifyAppResumed()
+        } else {
+            //Car was the only reason anything was active - tear down the same way backgrounding
+            //the phone would (appBackgroundedEvent's collector checks isCarSessionActive, which
+            //is already false by this point, so it will actually close things).
+            notifyAppBackgrounded()
+        }
+    }
+
     private val _appResumedEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     private val _appBackgroundedEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 

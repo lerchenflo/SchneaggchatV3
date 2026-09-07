@@ -450,6 +450,9 @@
     <string name="no_friends_found_search">Friend not found?</string>
     <string name="no_friends">no friends</string>
 
+    <string name="car_friends_title">Friends</string>
+    <string name="car_back">Back</string>
+
     <string name="message_delete_info">Do you really want to delete this message?</string>
     <string name="chat_message_image">message image</string>
     <string name="chat_remove_image">remove image</string>

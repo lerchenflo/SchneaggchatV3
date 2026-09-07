@@ -26,10 +26,12 @@ suspend fun Message.toNotificationContent(fallbackGroupName: String? = null): No
         // messages entirely (see SocketConnectionMessage.kt). Kept exhaustive for the compiler.
         MessageType.SYSTEM -> getString(Res.string.you_have_new_messages)
     }
-    val notifId = id?.hashCode()?.absoluteValue ?: 0
-
     //Group messages live under the receiver (the group), single messages under the sender
     val chatId = if (groupMessage) receiverId else senderId
+
+    //Keyed by chat, not by message, so multiple messages from the same chat coalesce into one
+    //updating MessagingStyle notification instead of stacking a separate one per message.
+    val notifId = chatId.hashCode().absoluteValue
 
     return NotificationContent(
         id = notifId,
@@ -37,5 +39,9 @@ suspend fun Message.toNotificationContent(fallbackGroupName: String? = null): No
         body = body,
         chatId = chatId.ifBlank { null },
         groupChat = groupMessage,
+        senderId = senderId.ifBlank { null },
+        senderName = senderAsString,
+        timestampMillis = getSendDateAsLong(),
+        groupName = fallbackGroupName,
     )
 }

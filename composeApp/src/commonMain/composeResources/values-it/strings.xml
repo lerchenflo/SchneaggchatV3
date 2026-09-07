@@ -449,6 +449,9 @@
     <string name="no_friends_found_search">Amico non trovato?</string>
     <string name="no_friends">nessun amico</string>
 
+    <string name="car_friends_title">Amici</string>
+    <string name="car_back">Indietro</string>
+
     <string name="message_delete_info">Vuoi davvero eliminare questo messaggio?</string>
     <string name="chat_message_image">immagine del messaggio</string>
     <string name="chat_remove_image">rimuovi immagine</string>

@@ -450,6 +450,9 @@
     <string name="no_friends_found_search">Freund nicht gefunden?</string>
     <string name="no_friends">Keine Freunde</string>
 
+    <string name="car_friends_title">Freunde</string>
+    <string name="car_back">Zurück</string>
+
     <string name="message_delete_info">Willst du diese Nachricht wirklich löschen?</string>
     <string name="chat_message_image">Nachrichtenbild</string>
     <string name="chat_remove_image">Bild entfernen</string>

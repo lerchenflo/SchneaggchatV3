@@ -157,15 +157,9 @@ class ChatViewModel(
 
         val userId = SessionCache.requireLoggedIn()?.userId ?: return
 
-        CoroutineScope(Dispatchers.IO).launch {
-            val messageIds = state.value.displayItems
-                .filterIsInstance<MessageDisplayItem.MessageItem>()
-                .filter { item -> !item.message.readByMe }
-                .mapNotNull { it.message.id }
-                .map { NotificationManager.NotiId.HexString(it).asInt }
-
-            NotificationManager.removeMessageNotifications(messageIds)
-        }
+        //One notification per chat (keyed by chatId, see Message.toNotificationContent), so a
+        //single cancel by chatId clears it - no need to enumerate individual message ids.
+        NotificationManager.removeMessageNotifications(listOf(NotificationManager.NotiId.HexString(chatId).asInt))
 
         CoroutineScope(Dispatchers.IO).launch {
             appRepository.setAllChatMessagesRead(

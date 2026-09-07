@@ -19,6 +19,12 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 # Changelog
 
+### 3.0.18
+
+#### Features
+- Android Auto: Schneaggmap mit Freundesstandorten und Events auf dem Autobildschirm anzeigen
+- Android Auto: Chatnachrichten über Benachrichtigungen mit Voice-Reply und Markieren-als-gelesen Funktion
+
 ### 3.0.17
 
 ##### Highlights
