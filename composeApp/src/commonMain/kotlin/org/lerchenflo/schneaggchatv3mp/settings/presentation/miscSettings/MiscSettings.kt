@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.app.logging.formatAllLogs
 import org.lerchenflo.schneaggchatv3mp.APPSTORE_TESTER_URI
 import org.lerchenflo.schneaggchatv3mp.PLAYSTORE_TESTER_URI
 import org.lerchenflo.schneaggchatv3mp.chat.presentation.chatdetails.ConfirmationDialog
@@ -149,7 +150,7 @@ fun MiscSettings(
                         miscSettingsViewModel.onClearLogs()
                     },
                     onCopyAllLogs = { filteredLogs ->
-                        val formattedLogs = miscSettingsViewModel.formatAllLogs(filteredLogs)
+                        val formattedLogs = formatAllLogs(filteredLogs)
                         val shareUtils = KoinPlatform.getKoin().get<ShareUtils>()
                         shareUtils.copyToClipboard(formattedLogs)
                     }
