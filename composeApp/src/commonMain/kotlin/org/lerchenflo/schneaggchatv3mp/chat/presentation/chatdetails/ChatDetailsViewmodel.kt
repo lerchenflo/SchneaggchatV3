@@ -451,9 +451,13 @@ class ChatDetailsViewmodel(
         }
     }
 
-    fun decoupleGroupExpiry(){
+    /**
+     * Set, move or clear (null) the group's delete timer. Admins only - the server rejects anyone
+     * else, and the UI only offers it to admins.
+     */
+    fun setGroupExpiry(expiresAt: Long?) {
         viewModelScope.launch {
-            appRepository.changeGroupExpiry(chatId, null)
+            appRepository.changeGroupExpiry(chatId, expiresAt)
         }
     }
 

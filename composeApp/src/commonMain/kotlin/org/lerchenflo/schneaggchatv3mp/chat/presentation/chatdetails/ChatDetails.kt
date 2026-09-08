@@ -37,6 +37,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.BorderStroke
+import dev.darkokoa.datetimewheelpicker.WheelDateTimePicker
+import dev.darkokoa.datetimewheelpicker.core.WheelPickerDefaults
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Instant
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.minutes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -95,6 +106,12 @@ import schneaggchatv3mp.composeapp.generated.resources.confirm_leave_group
 import schneaggchatv3mp.composeapp.generated.resources.confirm_remove_friend
 import schneaggchatv3mp.composeapp.generated.resources.delete_event
 import schneaggchatv3mp.composeapp.generated.resources.delete_group_timer
+import schneaggchatv3mp.composeapp.generated.resources.set_group_timer
+import schneaggchatv3mp.composeapp.generated.resources.change_group_timer
+import schneaggchatv3mp.composeapp.generated.resources.group_timer_picker_title
+import schneaggchatv3mp.composeapp.generated.resources.group_timer_picker_info
+import schneaggchatv3mp.composeapp.generated.resources.ok
+import schneaggchatv3mp.composeapp.generated.resources.cancel
 import schneaggchatv3mp.composeapp.generated.resources.description_info_group
 import schneaggchatv3mp.composeapp.generated.resources.description_info_user
 import schneaggchatv3mp.composeapp.generated.resources.enter_nickname
@@ -134,10 +151,13 @@ fun ChatDetails(
 
     SessionCache.authStateValue // reactive read: recompose once autologin finishes instead of staying blank
     val ownId = SessionCache.requireLoggedIn()?.userId ?: return
+    val iAmAdmin =
+        (selectedChat as? ChatDetailsState.GroupDetails)?.members?.find { it.groupMember.userId == ownId }?.groupMember?.admin == true
 
     var profilePictureDialogShown by remember { mutableStateOf(false) }
     var showLeaveGroupConfirmation by remember { mutableStateOf(false) }
     var showDecoupleExpiryConfirmation by remember { mutableStateOf(false) }
+    var showExpiryPicker by remember { mutableStateOf(false) }
     var showRemoveFriendConfirmation by remember { mutableStateOf(false) }
     var showDeleteEventConfirmation by remember { mutableStateOf(false) }
 
@@ -506,16 +526,31 @@ fun ChatDetails(
                 }
             }
 
-            // Expiry date only for group chats that have one (e.g. event groups)
+            // Delete timer of a group chat. Every member sees the countdown; only admins can set,
+            // move or clear it - the server enforces the same rule on /groups/setexpiry, so a
+            // non-admin must not get a button that can only fail.
             if (isGroup) {
-                (selectedChat as? ChatDetailsState.GroupDetails)?.group?.expiresAt?.let { expiresAt ->
+                val groupExpiresAt = (selectedChat as? ChatDetailsState.GroupDetails)?.group?.expiresAt
+
+                if (showExpiryPicker) {
+                    GroupExpiryPickerDialog(
+                        initialExpiresAt = groupExpiresAt,
+                        onConfirm = { newExpiresAt ->
+                            chatdetailsViewmodel.setGroupExpiry(newExpiresAt)
+                            showExpiryPicker = false
+                        },
+                        onDismiss = { showExpiryPicker = false }
+                    )
+                }
+
+                if (groupExpiresAt != null) {
                     HorizontalDivider()
 
                     if (showDecoupleExpiryConfirmation) {
                         ConfirmationDialog(
                             message = stringResource(Res.string.confirm_delete_group_timer),
                             onConfirm = {
-                                chatdetailsViewmodel.decoupleGroupExpiry()
+                                chatdetailsViewmodel.setGroupExpiry(null)
                             },
                             onDismiss = {
                                 showDecoupleExpiryConfirmation = false
@@ -525,13 +560,13 @@ fun ChatDetails(
 
                     ListItem(
                         headlineContent = {
-                            GroupExpiryCountdownText(expiresAt = expiresAt)
+                            GroupExpiryCountdownText(expiresAt = groupExpiresAt)
                         },
                         supportingContent = {
                             Text(
                                 text = stringResource(
                                     Res.string.group_expires_at,
-                                    millisToString(expiresAt, format = "dd.MM.yyyy HH:mm")
+                                    millisToString(groupExpiresAt, format = "dd.MM.yyyy HH:mm")
                                 ),
                                 style = MaterialTheme.typography.bodySmall
                             )
@@ -545,9 +580,23 @@ fun ChatDetails(
                         }
                     )
 
-                    DeleteButton(
-                        text = stringResource(Res.string.delete_group_timer),
-                        onClick = { showDecoupleExpiryConfirmation = true },
+                    if (iAmAdmin) {
+                        NormalButton(
+                            text = stringResource(Res.string.change_group_timer),
+                            onClick = { showExpiryPicker = true },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        DeleteButton(
+                            text = stringResource(Res.string.delete_group_timer),
+                            onClick = { showDecoupleExpiryConfirmation = true },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                } else if (iAmAdmin) {
+                    HorizontalDivider()
+                    NormalButton(
+                        text = stringResource(Res.string.set_group_timer),
+                        onClick = { showExpiryPicker = true },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -630,9 +679,6 @@ fun ChatDetails(
 
 
             if (isGroup) {
-
-                val iAmAdmin =
-                    (selectedChat as? ChatDetailsState.GroupDetails)?.members?.find { it.groupMember.userId == ownId }?.groupMember?.admin == true
 
                 if (iAmAdmin) {
                     // add partypeople
@@ -859,5 +905,69 @@ private fun GroupExpiryCountdownText(
         text = text,
         style = MaterialTheme.typography.bodyLarge,
         modifier = modifier
+    )
+}
+
+/**
+ * Wheel picker for a group's delete timer. Seeded with the current timer, or one day from now for
+ * a group that has none (or whose timer already passed); the earliest pick is a few minutes ahead,
+ * matching the server's "expiry must be in the future" rule so the request can't fail on that.
+ */
+@Composable
+private fun GroupExpiryPickerDialog(
+    initialExpiresAt: Long?,
+    onConfirm: (Long) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val timeZone = TimeZone.currentSystemDefault()
+    val earliest = Clock.System.now() + 5.minutes
+    var pickedDateTime by remember {
+        val seed = initialExpiresAt
+            ?.let { Instant.fromEpochMilliseconds(it) }
+            ?.takeIf { it > earliest }
+            ?: (Clock.System.now() + 1.days)
+        mutableStateOf(seed.toLocalDateTime(timeZone))
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(Res.string.group_timer_picker_title)) },
+        confirmButton = {
+            TextButton(onClick = {
+                onConfirm(pickedDateTime.toInstant(timeZone).toEpochMilliseconds())
+            }) {
+                Text(stringResource(Res.string.ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(Res.string.cancel))
+            }
+        },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = stringResource(Res.string.group_timer_picker_info),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                WheelDateTimePicker(
+                    modifier = Modifier.fillMaxWidth(),
+                    rowCount = 3,
+                    startDateTime = pickedDateTime,
+                    minDateTime = earliest.toLocalDateTime(timeZone),
+                    textColor = MaterialTheme.colorScheme.onSurface,
+                    selectorProperties = WheelPickerDefaults.selectorProperties(
+                        enabled = true,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                    ),
+                    onSnappedDateTime = { snapped: LocalDateTime ->
+                        pickedDateTime = snapped
+                    }
+                )
+            }
+        }
     )
 }
