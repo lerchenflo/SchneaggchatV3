@@ -37,6 +37,7 @@ import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.RefreshResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
+import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import kotlin.concurrent.Volatile
 import kotlin.math.min
 import kotlin.time.Duration.Companion.milliseconds
@@ -162,8 +163,15 @@ class SocketConnectionManager(
             _connectionState.value = ConnectionState.Connecting
 
             try {
-                reconnectJob?.cancel()
-                reconnectJob = null
+                // The retry loop in scheduleReconnectIfPossible() calls this from inside
+                // reconnectJob: cancelling that job here would kill the coroutine driving the
+                // backoff, so every retry would start over at the shortest delay and hammer the
+                // server (and its rate limiter) once a second. Only a caller from outside the
+                // loop supersedes it.
+                if (reconnectJob !== currentCoroutineContext()[Job]) {
+                    reconnectJob?.cancel()
+                    reconnectJob = null
+                }
 
                 currentConnection?.close()
                 currentConnection = null
@@ -314,6 +322,18 @@ private class SocketConnection(
             connectWithToken(tokens?.accessToken)
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
+
+            // A handshake fails for plenty of reasons that have nothing to do with the token -
+            // server down, no route, rate limited, dead wifi. Refreshing on those turned every
+            // single reconnect attempt into a POST /auth/refresh; only a token that is actually
+            // spent can be fixed by refreshing it.
+            if (JwtUtils.getTokenValidRemainingMinutes(tokens?.accessToken.orEmpty()) > 0) {
+                _isActive.value = false
+                onConnectionStateChanged(false)
+                onError(e)
+                return
+            }
+
             // Only retry the connection if the refresh actually produced new tokens. A
             // Retryable/Invalidated result means the old token is still what we have - retrying
             // with it would just fail again; let the caller's backoff loop try later instead.

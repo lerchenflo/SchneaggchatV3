@@ -349,30 +349,51 @@ private fun CrosswordContent(
     }
 }
 
+/** Leading spaces so IME deletions stay observable while the grid is still empty. */
+private const val INPUT_DELETION_BUFFER = 16
+
+/** Rewriting the field races a fast typist's next keystroke, so it only happens rarely. */
+private const val INPUT_MAX_LENGTH = 256
+
+private fun emptyInputField() = TextFieldValue(
+    text = " ".repeat(INPUT_DELETION_BUFFER),
+    selection = TextRange(INPUT_DELETION_BUFFER)
+)
+
 /**
  * Invisible 1dp text field that owns the focus while playing: it opens the
  * soft keyboard on mobile and receives hardware key events on desktop.
  * Letters arrive through onValueChange (works with any IME), while backspace
  * and enter are intercepted as key events so they also work when the field
  * text is empty.
+ *
+ * The field keeps whatever the IME produced and only the diff against the
+ * previous text is turned into actions. Writing a corrected value back on every
+ * keystroke would restart the IME input session and drop letters still in
+ * flight, which is what fast typing used to lose.
  */
 @Composable
 private fun CrosswordInputField(
     focusRequester: FocusRequester,
     onAction: (CrosswordAction) -> Unit,
 ) {
-    // A single sentinel space keeps the cursor at position 1 so deletions are observable
-    var fieldValue by remember { mutableStateOf(TextFieldValue(" ", selection = TextRange(1))) }
+    var fieldValue by remember { mutableStateOf(emptyInputField()) }
+    var processedText by remember { mutableStateOf(fieldValue.text) }
 
     BasicTextField(
         value = fieldValue,
         onValueChange = { newValue ->
-            val typed = newValue.text.drop(1)
-            typed.forEach { char ->
+            val text = newValue.text
+            val keptLength = text.commonPrefixWith(processedText).length
+
+            repeat(processedText.length - keptLength) { onAction(CrosswordAction.Backspace) }
+            text.substring(keptLength).forEach { char ->
                 if (char.isLetter()) onAction(CrosswordAction.KeyPressed(char.uppercaseChar()))
             }
-            if (newValue.text.isEmpty()) onAction(CrosswordAction.Backspace)
-            fieldValue = TextFieldValue(" ", selection = TextRange(1))
+
+            val bufferExhausted = text.length < INPUT_DELETION_BUFFER / 2
+            fieldValue = if (bufferExhausted || text.length > INPUT_MAX_LENGTH) emptyInputField() else newValue
+            processedText = fieldValue.text
         },
         keyboardOptions = KeyboardOptions(
             capitalization = KeyboardCapitalization.Characters,
