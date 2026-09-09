@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.qualifier.named
@@ -111,6 +112,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectio
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.errorCodeToMessage
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.onError
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.trackConnectivity
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
@@ -157,6 +159,7 @@ import schneaggchatv3mp.composeapp.generated.resources.offline
 import schneaggchatv3mp.composeapp.generated.resources.usersync
 import kotlin.collections.map
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -165,6 +168,9 @@ import kotlin.uuid.Uuid
 //scanned, and how many hits are kept so a common word cannot build a list of thousands of rows.
 private const val MESSAGE_SEARCH_MIN_TERM_LENGTH = 2
 private const val MESSAGE_SEARCH_RESULT_LIMIT = 50
+
+//How long a logout waits for the server to drop the session before continuing to log out locally.
+private val LOGOUT_SERVER_CALL_TIMEOUT = 5.seconds
 
 class AppRepository(
     private val database: AppDatabase,
@@ -285,7 +291,37 @@ class AppRepository(
         SessionCache.logout() //Remove saved credentials from cache, but not from storage
     }
 
+    /**
+     * Ends the session on the server before the client forgets the refresh token, so the token is
+     * actually dead instead of staying valid until it expires. Best effort: a logout must succeed
+     * offline too, the session then only dies with its expiry.
+     *
+     * The device's push token goes along, otherwise the server keeps sending notifications for the
+     * account this device just left.
+     *
+     * Bounded by [LOGOUT_SERVER_CALL_TIMEOUT] - the HTTP client would otherwise let the user wait
+     * up to its 30 s request timeout on a bad network before the local logout even starts. The
+     * server side call is idempotent, so a cancelled attempt that still lands is harmless.
+     */
+    private suspend fun endServerSession() {
+        val refreshToken = preferencemanager.getTokens().refreshToken
+        if (refreshToken.isBlank() || !JwtUtils.isTokenDateValid(refreshToken)) return
+
+        val finished = withTimeoutOrNull(LOGOUT_SERVER_CALL_TIMEOUT) {
+            networkUtils.logout(
+                refreshToken = refreshToken,
+                notificationToken = KoinPlatform.getKoin().get<Notifier>().getToken(),
+                isAndroid = appVersion.isAndroid(),
+            ).trackConnectivity()
+                .onError { loggingRepository.logWarning("Logout: server session not ended (${it.errorCode}): ${it.message}") }
+        }
+
+        if (finished == null) loggingRepository.logWarning("Logout: server session not ended (timeout)")
+    }
+
     suspend fun logout(){
+        endServerSession() // kill the session server side while the refresh token is still known
+
         deleteAllAppData() // delete all app data when logging out
 
         //Clear access tokens
