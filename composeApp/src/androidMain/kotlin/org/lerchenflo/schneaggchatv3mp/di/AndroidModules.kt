@@ -12,6 +12,7 @@ import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.database.androidAppDatabaseBuilder
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.SOCKET_PING_INTERVAL_MS
+import org.lerchenflo.schneaggchatv3mp.datasource.network.createAuthenticatedHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createSocketHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
@@ -28,18 +29,15 @@ val androidUserDatabaseModule = module {
 }
 
 val androidHttpModule = module {
-    single<HttpClient>(named(HTTPCLIENTTYPE.AUTHENTICATED)) {createHttpClient(
+    single<HttpClient>(named(HTTPCLIENTTYPE.AUTHENTICATED)) {createAuthenticatedHttpClient(
         engine = OkHttp.create(),
-        tokenManager = get(),
-        useAuth = true,
+        authSession = get(),
     )}
 }
 
 val androidHttpAuthModule = module {
     single<HttpClient>(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)) { createHttpClient(
         engine = OkHttp.create(),
-        tokenManager = get(),
-        useAuth = false
     ) }
 }
 

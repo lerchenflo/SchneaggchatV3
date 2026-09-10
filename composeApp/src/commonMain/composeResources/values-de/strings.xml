@@ -127,6 +127,7 @@
 
     <string name="error_access_not_permitted">Deine gespeicherte Sitzung ist ungültig. Bitte logge dich erneut ein.</string>
     <string name="error_access_expired">Deine gespeicherte Sitzung abgelaufen. Bitte logge dich erneut ein.</string>
+    <string name="error_server_unreachable">Dieser Server ist nicht erreichbar. Prüfe die Server-URL in den Einstellungen.</string>
     <string name="error_invalid_credentials">Die von dir eingegebenen Daten sind falsch</string>
     <string name="error_login_too_many_requests">Zu viele Anmeldeversuche. Bitte warte einen Moment und versuche es erneut.</string>
     <string name="error_login_server_error">Der Server hatte ein Problem. Bitte versuche es später erneut.</string>

@@ -126,6 +126,7 @@
 
     <string name="error_access_not_permitted">La tua sessione salvata non è più valida. Effettua di nuovo l'accesso.</string>
     <string name="error_access_expired">La tua sessione salvata è scaduta dopo 30 giorni. Effettua di nuovo l'accesso</string>
+    <string name="error_server_unreachable">Impossibile raggiungere questo server. Controlla l'URL del server nelle impostazioni.</string>
     <string name="error_invalid_credentials">Hai inserito credenziali errate</string>
     <string name="error_login_too_many_requests">Troppi tentativi di accesso. Attendi un momento e riprova.</string>
     <string name="error_login_server_error">Il server ha riscontrato un problema. Riprova più tardi.</string>

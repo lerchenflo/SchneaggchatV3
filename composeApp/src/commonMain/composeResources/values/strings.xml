@@ -127,6 +127,7 @@
 
     <string name="error_access_not_permitted">Your saved session was invalidated. Please login again.</string>
     <string name="error_access_expired">Your saved session expired after 30 days. Please login again</string>
+    <string name="error_server_unreachable">Cannot reach this server. Check the server URL in the settings.</string>
     <string name="error_invalid_credentials">You entered wrong credentials</string>
     <string name="error_login_too_many_requests">Too many login attempts. Please wait a moment and try again.</string>
     <string name="error_login_server_error">The server ran into a problem. Please try again later.</string>

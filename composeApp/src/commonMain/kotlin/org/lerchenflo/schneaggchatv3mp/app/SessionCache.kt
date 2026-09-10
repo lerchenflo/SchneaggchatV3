@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 
@@ -48,7 +47,7 @@ object SessionCache {
 
     fun login(tokens: NetworkUtils.TokenPair, developer: Boolean = false) {
         val state = AuthState.LoggedIn(
-            userId = JwtUtils.getUserIdFromToken(tokens.accessToken),
+            userId = userIdOf(tokens),
             tokens = tokens,
             developer = developer
         )
@@ -74,7 +73,7 @@ object SessionCache {
     }
 
     fun updateTokens(newTokens: NetworkUtils.TokenPair) {
-        val userId = JwtUtils.getUserIdFromToken(newTokens.accessToken)
+        val userId = userIdOf(newTokens)
         _authState.update { currentState ->
             when (currentState) {
                 is AuthState.LoggedIn -> currentState.copy(
@@ -112,18 +111,19 @@ object SessionCache {
 
 
     // --------------------- helpers ---------------------
-    fun requireLoggedIn(): AuthState.LoggedIn? {
-        val loggedIn = _authState.value as? AuthState.LoggedIn
-        if (loggedIn == null) {
-            println("user not logged in, sending login request")
-            // trySend is fine here: the channel is BUFFERED, and this must not block whatever
-            // (possibly main) thread called requireLoggedIn().
-            AppRepository.ActionChannel.trySendAction(AppRepository.ActionChannel.ActionEvent.Login)
-        }
-        return loggedIn
-    }
+    /**
+     * Pure read. Re-establishing a session from storage is `AuthSessionManager.ensureSession()`'s
+     * job - a read must never drive the session state machine (it used to raise a Login action
+     * here, which together with the 5 s connectivity loop produced a refresh storm).
+     */
+    fun requireLoggedIn(): AuthState.LoggedIn? = _authState.value as? AuthState.LoggedIn
 
     fun isLoggedIn(): Boolean = _authState.value is AuthState.LoggedIn
+
+    // Both tokens carry the same subject; the refresh token is the fallback for a truncated
+    // access token so a session never ends up as LoggedIn(userId = "").
+    private fun userIdOf(tokens: NetworkUtils.TokenPair): String =
+        JwtUtils.getUserIdFromToken(tokens.accessToken).ifBlank { JwtUtils.getUserIdFromToken(tokens.refreshToken) }
 
 
 

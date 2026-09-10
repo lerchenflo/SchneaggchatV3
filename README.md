@@ -22,6 +22,8 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ### 3.0.18
 
 #### Bugfixes
+- Anmeldung: Token-Aktualisierung blockiert Anfragen nicht mehr
+- Verbindung: Fehlermeldung bei nicht erreichbarem Server
 - Kreuzworträtsel: Buchstaben beim schnellen Tippen gehen nicht mehr verloren
 
 ### 3.0.17

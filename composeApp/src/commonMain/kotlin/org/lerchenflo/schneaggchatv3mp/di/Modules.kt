@@ -22,7 +22,19 @@ import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.database.CreateAppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
-import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
+import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
+import org.lerchenflo.schneaggchatv3mp.app.SessionCache
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AppAuthEventSink
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthClock
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthEventSink
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthLog
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthRefreshApi
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthSessionManager
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthSessionStore
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.KtorAuthRefreshApi
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.LoggingAuthLog
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.PreferenceAuthSessionStore
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.SystemAuthClock
 import org.lerchenflo.schneaggchatv3mp.datasource.network.socket.SocketConnectionManager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.games.data.CrosswordRepository
@@ -82,9 +94,27 @@ val sharedmodule = module{
     //Database
     single <AppDatabase> { CreateAppDatabase(get()).getDatabase() }
 
-    singleOf(::TokenManager)
+    // Session layer (see plans/AUTH_SESSION_REBUILD_PLAN.md). Construction order matters and is
+    // cycle-free: the refresh API only needs the NOT_AUTHENTICATED client, the AUTHENTICATED
+    // client needs the manager, NetworkUtils needs both clients.
+    single<AuthSessionStore> { PreferenceAuthSessionStore(get()) }
+    single<AuthRefreshApi> { KtorAuthRefreshApi(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get(), get()) }
+    single<AuthEventSink> { AppAuthEventSink() }
+    single<AuthClock> { SystemAuthClock }
+    single<AuthLog> { LoggingAuthLog(get()) }
+    single {
+        AuthSessionManager(
+            store = get(),
+            api = get(),
+            sink = get(),
+            clock = get(),
+            log = get(),
+            scope = get<ApplicationScope>(),
+            onlineFlow = SessionCache.onlineFlow,
+            appResumedEvents = AppLifecycleManager.appResumedEvent,
+        )
+    }
 
-    //Network utils must be created before HttpClients to avoid circular dependency
     single<NetworkUtils> {
         NetworkUtils(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get(), get())
     }
@@ -98,7 +128,7 @@ val sharedmodule = module{
 
     //Repository
     single {
-        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
+        AppRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get())
     }
     singleOf(::SettingsRepository)
     singleOf(::GroupRepository)
@@ -117,7 +147,7 @@ val sharedmodule = module{
     single<SocketConnectionManager> {
         SocketConnectionManager(
             httpClient = get(named(HTTPCLIENTTYPE.SOCKET)),
-            tokenManager = get(),
+            authSession = get(),
             // Desktop has no push channel: the socket must survive minimize/unfocus there.
             keepAliveInBackground = get<AppVersion>().isDesktop(),
         )

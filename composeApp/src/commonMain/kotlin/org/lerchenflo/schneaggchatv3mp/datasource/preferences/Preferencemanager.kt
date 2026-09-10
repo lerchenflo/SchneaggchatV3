@@ -80,12 +80,21 @@ class Preferencemanager(
     }
 
 
-    suspend fun clearAll() {
-        // Clear secure storage (tokens, ownId)
+    /**
+     * Drops the session credentials (tokens, own id) and nothing else. Logout calls this first,
+     * before the server-side session kill and the data wipe, so a throw anywhere later can never
+     * leave a usable session on disk (see AUTH_SESSION_REBUILD_PLAN R11).
+     */
+    suspend fun clearTokens() {
         SecureKey.entries.forEach { secureKey ->
             securePrefs.delete(secureKey.key)
         }
         securePrefs.delete(legacyEncryptionKey)
+    }
+
+    suspend fun clearAll() {
+        // Clear secure storage (tokens, ownId)
+        clearTokens()
 
         // Clear all DataStore preferences
         val serverUrl = getServerUrl() // save before clearing

@@ -198,12 +198,10 @@ class GlobalViewModel(
                         }
                     }
 
-                    if (SessionCache.isLoggedIn()) {
-                        SessionCache.requireLoggedIn()?.userId?.let {
-                            appRepository.sendOfflineMessages(it)
-                        }
-                    } else {
-                        AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.Login)
+                    // Session (re)establishment is owned by AuthSessionManager's own scheduler;
+                    // raising a Login action from here every 5 s is what produced the refresh storm.
+                    SessionCache.requireLoggedIn()?.userId?.let {
+                        appRepository.sendOfflineMessages(it)
                     }
 
                 } else {

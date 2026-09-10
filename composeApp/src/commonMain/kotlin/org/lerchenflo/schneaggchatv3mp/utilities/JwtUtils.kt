@@ -18,28 +18,30 @@ object JwtUtils {
         }.getOrDefault("")
     }
 
-    fun isTokenDateValid(token: String) : Boolean {
-        if (token.isBlank()) return false
+    /**
+     * The token's `exp` claim as epoch millis, or null when the token is blank, malformed or has
+     * no `exp` at all. Callers decide what "now" is, so expiry can be evaluated against an
+     * injected clock (see `AuthSessionManager`) instead of `Clock.System`.
+     */
+    fun expiresAtEpochMillis(token: String): Long? {
+        if (token.isBlank()) return null
         return runCatching {
-            val jwt = JWT.from(token)
-            val now = Clock.System.now()
-            val exp = jwt.expiresAt
-
-            exp != null && exp.toEpochMilliseconds() > now.toEpochMilliseconds()
-        }.getOrDefault(false)
+            JWT.from(token).expiresAt?.toEpochMilliseconds()
+        }.getOrNull()
     }
+
+    /** True when the token parses and its `exp` lies after [nowEpochMillis]. Missing `exp` counts as expired. */
+    fun isValidAt(token: String, nowEpochMillis: Long): Boolean {
+        val exp = expiresAtEpochMillis(token) ?: return false
+        return exp > nowEpochMillis
+    }
+
+    fun isTokenDateValid(token: String) : Boolean =
+        isValidAt(token, Clock.System.now().toEpochMilliseconds())
 
     fun getTokenValidRemainingMinutes(token: String) : Long {
-        if (token.isBlank()) return 0
-
-        return runCatching {
-            val jwt = JWT.from(token)
-            val exp = jwt.expiresAt ?: return@runCatching 0L
-            val now = Clock.System.now()
-
-            val remainingMillis = exp.toEpochMilliseconds() - now.toEpochMilliseconds()
-            remainingMillis / 1000 / 60
-        }.getOrDefault(0L)
+        val exp = expiresAtEpochMillis(token) ?: return 0L
+        val remainingMillis = exp - Clock.System.now().toEpochMilliseconds()
+        return remainingMillis / 1000 / 60
     }
 }
-

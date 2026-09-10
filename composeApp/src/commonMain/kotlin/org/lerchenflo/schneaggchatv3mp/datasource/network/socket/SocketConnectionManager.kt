@@ -35,8 +35,10 @@ import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.app.AppLifecycleManager
 import org.lerchenflo.schneaggchatv3mp.app.SessionCache
 import org.lerchenflo.schneaggchatv3mp.chat.data.UserRepository
-import org.lerchenflo.schneaggchatv3mp.datasource.network.RefreshResult
-import org.lerchenflo.schneaggchatv3mp.datasource.network.TokenManager
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthSessionManager
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.RefreshOutcome
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.RefreshReason
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.SocketAuthGuard
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import kotlin.concurrent.Volatile
 import kotlin.math.min
@@ -53,9 +55,16 @@ import kotlin.time.Duration.Companion.milliseconds
  */
 class SocketConnectionManager(
     private val httpClient: HttpClient,
-    private val tokenManager: TokenManager,
+    private val authSession: AuthSessionManager,
     private val keepAliveInBackground: Boolean,
 ) {
+
+    /**
+     * Counts consecutive handshake failures across connection attempts, so a token the server
+     * rejects (but the client still considers valid) is refreshed on the second failure instead
+     * of never. Only touched from the serialised connect/reconnect path.
+     */
+    private val authGuard = SocketAuthGuard()
 
     enum class ConnectionState {
         Disconnected,
@@ -179,7 +188,8 @@ class SocketConnectionManager(
                 val connection = SocketConnection(
                     httpClient = httpClient,
                     serverUrl = serverUrl,
-                    tokenManager = tokenManager,
+                    authSession = authSession,
+                    authGuard = authGuard,
                     onMessage = {
                         scope.launch {
                             handleSocketConnectionMessage(
@@ -307,7 +317,8 @@ class SocketConnectionManager(
 private class SocketConnection(
     private val httpClient: HttpClient,
     val serverUrl: String,
-    private val tokenManager: TokenManager,
+    private val authSession: AuthSessionManager,
+    private val authGuard: SocketAuthGuard,
     private val onMessage: (String) -> Unit,
     private val onError: (Throwable) -> Unit,
     private val onClose: () -> Unit,
@@ -317,45 +328,49 @@ private class SocketConnection(
     private val _isActive = MutableStateFlow(false)
 
     suspend fun connect() {
-        val tokens = tokenManager.loadBearerTokens()
+        val tokens = authSession.currentTokens()
         try {
             connectWithToken(tokens?.accessToken)
         } catch (e: Exception) {
             currentCoroutineContext().ensureActive()
 
             // A handshake fails for plenty of reasons that have nothing to do with the token -
-            // server down, no route, rate limited, dead wifi. Refreshing on those turned every
-            // single reconnect attempt into a POST /auth/refresh; only a token that is actually
-            // spent can be fixed by refreshing it.
-            if (JwtUtils.getTokenValidRemainingMinutes(tokens?.accessToken.orEmpty()) > 0) {
-                _isActive.value = false
-                onConnectionStateChanged(false)
-                onError(e)
+            // server down, no route, rate limited, dead wifi. Refreshing on every one of them
+            // turned each reconnect attempt into a POST /auth/refresh. The guard asks for a
+            // refresh when the client can see the token is expired, or from the second
+            // consecutive failure on (a token the server rejects while the local clock still
+            // considers it valid: clock skew, secret rotation, revocation).
+            val expiredLocally = !JwtUtils.isTokenDateValid(tokens?.accessToken.orEmpty())
+            if (!authGuard.onHandshakeFailed(expiredLocally)) {
+                fail(e)
                 return
             }
 
-            // Only retry the connection if the refresh actually produced new tokens. A
-            // Retryable/Invalidated result means the old token is still what we have - retrying
-            // with it would just fail again; let the caller's backoff loop try later instead.
-            when (tokenManager.refreshTokens(tokens?.refreshToken)) {
-                RefreshResult.Success -> {
-                    val freshTokens = tokenManager.loadBearerTokens()
+            // Only retry the connection if the refresh actually produced a usable pair. Any other
+            // outcome means the token we have is still what we have - retrying with it would just
+            // fail again; the caller's backoff loop tries later. The manager's own backoff makes
+            // this cheap while it is armed: it answers from cache without a network call.
+            when (authSession.refresh(RefreshReason.SocketHandshake, presentedRefreshToken = tokens?.refreshToken)) {
+                RefreshOutcome.Success -> {
+                    val freshTokens = authSession.currentTokens()
                     try {
                         connectWithToken(freshTokens?.accessToken)
                     } catch (retryEx: Exception) {
                         currentCoroutineContext().ensureActive()
-                        _isActive.value = false
-                        onConnectionStateChanged(false)
-                        onError(retryEx)
+                        fail(retryEx)
                     }
                 }
-                is RefreshResult.Retryable, RefreshResult.Invalidated -> {
-                    _isActive.value = false
-                    onConnectionStateChanged(false)
-                    onError(e)
-                }
+                is RefreshOutcome.Retryable,
+                is RefreshOutcome.Broken,
+                is RefreshOutcome.Invalidated -> fail(e)
             }
         }
+    }
+
+    private fun fail(cause: Throwable) {
+        _isActive.value = false
+        onConnectionStateChanged(false)
+        onError(cause)
     }
 
     private suspend fun connectWithToken(accessToken: String?) {
@@ -366,6 +381,7 @@ private class SocketConnection(
             }
         ) {
             session = this
+            authGuard.onHandshakeSucceeded()
             _isActive.value = true
             onConnectionStateChanged(true)
             //println("SocketConnection: connected to $serverUrl")

@@ -3,8 +3,6 @@
 package org.lerchenflo.schneaggchatv3mp.datasource
 
 import androidx.compose.runtime.Composable
-import io.ktor.client.HttpClient
-import io.ktor.client.plugins.auth.clearAuthTokens
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.NonCancellable
@@ -33,7 +31,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
-import org.koin.core.qualifier.named
 import org.koin.mp.KoinPlatform
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL_TEST
@@ -95,6 +92,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollOptio
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteOptionCreateRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.PollVoteRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.TokenPair
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthSessionManager
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.SessionCheck
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSettingsRequest
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils.UserSyncResponse
@@ -119,7 +118,6 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.ThemeSetting
-import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventType
@@ -188,6 +186,7 @@ class AppRepository(
     private val mapRepository: MapRepository,
     private val eventRepository: EventRepository,
     private val languageService: LanguageService,
+    private val authSessionManager: AuthSessionManager,
 ) {
     //Errorchannel for global error events (Show in every screen)
     object ErrorChannel {
@@ -230,7 +229,7 @@ class AppRepository(
     object ActionChannel {
 
         sealed interface ActionEvent {
-            data object Login : ActionEvent
+            /** Raised by AppAuthEventSink when the session died while it was active: toast, wipe, navigate to Login. */
             data object AuthInvalidated : ActionEvent
         }
 
@@ -303,9 +302,8 @@ class AppRepository(
      * up to its 30 s request timeout on a bad network before the local logout even starts. The
      * server side call is idempotent, so a cancelled attempt that still lands is harmless.
      */
-    private suspend fun endServerSession() {
-        val refreshToken = preferencemanager.getTokens().refreshToken
-        if (refreshToken.isBlank() || !JwtUtils.isTokenDateValid(refreshToken)) return
+    private suspend fun endServerSession(refreshToken: String?) {
+        if (refreshToken.isNullOrBlank() || !JwtUtils.isTokenDateValid(refreshToken)) return
 
         val finished = withTimeoutOrNull(LOGOUT_SERVER_CALL_TIMEOUT) {
             networkUtils.logout(
@@ -319,17 +317,30 @@ class AppRepository(
         if (finished == null) loggingRepository.logWarning("Logout: server session not ended (timeout)")
     }
 
+    /**
+     * Logout order (AUTH_SESSION_REBUILD_PLAN R11): credentials first, everything else after.
+     * The refresh token is read into a local before it is cleared so the server-side session can
+     * still be ended best-effort; a throw anywhere after step 2 can no longer leave a session on
+     * disk that the next start would silently pick up again.
+     */
     suspend fun logout(){
-        endServerSession() // kill the session server side while the refresh token is still known
+        val refreshToken = authSessionManager.currentTokens()?.refreshToken
+
+        try {
+            authSessionManager.clearSession() // mirror + durable credentials + generation, before anything can fail
+        } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
+            loggingRepository.logError("Logout: clearing the session threw (${e.message}); continuing with the wipe")
+        } finally {
+            SessionCache.logout() //Remove cached credentials (Userid)
+        }
+
+        endServerSession(refreshToken) // best effort, bounded; the token is already gone locally
 
         deleteAllAppData() // delete all app data when logging out
 
-        //Clear access tokens
+        preferencemanager.clearAll() //Delete all app data to force login again (retries the token delete too)
 
-        preferencemanager.clearAll() //Delete all app data to force login again
-        KoinPlatform.getKoin().get<HttpClient>(qualifier = named(HTTPCLIENTTYPE.AUTHENTICATED)).clearAuthTokens() //Remove cached access tokens
-
-        SessionCache.logout() //Remove cached credentials (Userid)
         KoinPlatform.getKoin().get<Notifier>().removeToken() //Remove notification token
 
         KoinPlatform.getKoin().get<SocketConnectionManager>().close() //Close socket connection
@@ -1201,30 +1212,16 @@ class AppRepository(
 
 
     /**
-     * Suspend version of onNewTokenPair that persists tokens synchronously.
-     * Use this from refresh flows where we must ensure tokens are written before returning.
+     * Seeds the session after a password login or registration. Persists the pair (throws if
+     * that fails, so the login reports failure) and updates every derived view through the
+     * session manager - the only writer of token storage.
      */
     suspend fun onNewTokenPair(tokenPair: TokenPair){
-        //loggingRepository.logDebug("Token save started: Processing new token pair")
-        
         try {
-            //Parse the token to get the user id
-            //loggingRepository.logDebug("Token save: Extracting user ID from refresh token")
-            val userid = JwtUtils.getUserIdFromToken(tokenPair.refreshToken)
-            //loggingRepository.logInfo("Token save: User ID extracted: $userid")
-
-            //loggingRepository.logDebug("Token save: Saving tokens to secure storage")
-            preferencemanager.saveTokens(tokenPair)
-            
-            //loggingRepository.logDebug("Token save: Saving user ID to preferences")
-            preferencemanager.saveOWNID(userid)
-
-            //loggingRepository.logDebug("Token save: Updating session cache")
-            SessionCache.updateTokens(tokenPair)
+            authSessionManager.onLoggedIn(tokenPair)
             SessionCache.updateOnline(true)
-            
-            //loggingRepository.logInfo("Token save completed successfully: Session cache updated")
         } catch (e: Exception) {
+            currentCoroutineContext().ensureActive()
             loggingRepository.logError("Token save failed: ${e.message}")
             throw e // Re-throw to maintain existing error handling behavior
         }
@@ -1244,8 +1241,11 @@ class AppRepository(
         val tokens = preferencemanager.getTokens()
 
         val tokensNotEmpty = tokens.accessToken.isNotEmpty() && tokens.refreshToken.isNotEmpty()
-        val tokenDateValid =
-            JwtUtils.isTokenDateValid(tokens.refreshToken) //is the refreshtoken still valid? If not, user needs to login again
+
+        // Classifies the stored pair without a network call: a valid refresh token hydrates
+        // SessionCache (and schedules a refresh if the access token is stale), an expired or
+        // unreadable one is cleared so nothing can retry against it.
+        val tokenDateValid = authSessionManager.ensureSession() is SessionCheck.Active
 
         //Token is expired, send errormessage
         if (!tokenDateValid && tokensNotEmpty){
