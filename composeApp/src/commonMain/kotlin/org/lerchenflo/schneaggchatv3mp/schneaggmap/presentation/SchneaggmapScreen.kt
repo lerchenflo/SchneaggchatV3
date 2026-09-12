@@ -101,33 +101,29 @@ import org.lerchenflo.schneaggchatv3mp.utilities.battery.BatteryService
 import org.lerchenflo.schneaggchatv3mp.utilities.millisToTimeDateOrYesterday
 import org.maplibre.compose.camera.CameraMoveReason
 import org.maplibre.compose.camera.CameraPosition
-import org.maplibre.compose.camera.CameraState
-import org.maplibre.compose.camera.rememberCameraState
 import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.image
 import org.maplibre.compose.expressions.value.LineCap
 import org.maplibre.compose.expressions.value.LineJoin
+import org.maplibre.compose.interaction.ClickResult
+import org.maplibre.compose.interaction.MapInteractions
 import org.maplibre.compose.layers.CircleLayer
 import org.maplibre.compose.layers.LineLayer
 import org.maplibre.compose.layers.SymbolLayer
-import org.maplibre.compose.location.Location
 import org.maplibre.compose.location.LocationAccuracy
+import org.maplibre.compose.location.LocationMeasurement
 import org.maplibre.compose.location.LocationRequest
 import org.maplibre.compose.location.rememberDefaultLocationProvider
 import org.maplibre.compose.location.rememberLocationState
+import org.maplibre.compose.map.MapState
 import org.maplibre.compose.map.MaplibreMap
+import org.maplibre.compose.map.rememberMapState
 import org.maplibre.compose.material3.DisappearingCompassButton
 import org.maplibre.compose.material3.DisappearingScaleBar
 import org.maplibre.compose.material3.ExpandingAttributionButton
-import org.maplibre.compose.material3.Material3
 import org.maplibre.compose.overlay.MapOverlay
-import org.maplibre.compose.sources.GeoJsonData
-import org.maplibre.compose.sources.GeoJsonOptions
-import org.maplibre.compose.sources.rememberGeoJsonSource
+import org.maplibre.compose.overlay.include
 import org.maplibre.compose.style.BaseStyle
-import org.maplibre.compose.style.StyleState
-import org.maplibre.compose.style.rememberStyleState
-import org.maplibre.compose.util.ClickResult
 import org.maplibre.spatialk.geojson.Feature
 import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.LineString
@@ -163,7 +159,7 @@ private const val EARTH_RADIUS_METERS = 6371000.0
 
 //The camera only knows its scale once the map has reported a viewport; until then everything that
 //converts dp to meters falls back to zero, which reads as "no snapping, no clustering yet".
-private val CameraState.metersPerDpAtTarget: Double
+private val MapState.metersPerDpAtTarget: Double
     get() = viewport?.metersPerDpAtTarget ?: 0.0
 
 private data class MarkerIcon(val bitmap: ImageBitmap, val size: DpSize)
@@ -262,13 +258,13 @@ fun SchneaggmapScreen(
     onAction: (SchneaggmapAction) -> Unit = {},
 ) {
 
-    val cameraState = rememberCameraState(
-        firstPosition = CameraPosition(
+    val mapState = rememberMapState(
+        baseStyle = BaseStyle.Uri(state.mapStyleUrl),
+        initialCameraPosition = CameraPosition(
             target = Position(9.92, 47.32),
             zoom = 7.0,
         )
     )
-    val styleState = rememberStyleState()
     val scope = rememberCoroutineScope()
 
     //Own position, resolved once here (not in SchneaggmapMapContent) so we don't open a second,
@@ -281,7 +277,7 @@ fun SchneaggmapScreen(
         provider = locationProvider,
         request = LocationRequest(accuracy = LocationAccuracy.BestForNavigation),
     )
-    val ownLocation = locationState.location
+    val ownLocation = locationState.lastLocation
 
 
 
@@ -292,7 +288,7 @@ fun SchneaggmapScreen(
             state.usersWithLocation.forEach { user ->
                 user.location?.let { loc -> add(Position(longitude = loc.long, latitude = loc.lat)) }
             }
-            ownLocation?.position?.value?.let { add(it) }
+            ownLocation?.position?.let { add(it) }
         }
     }
 
@@ -300,10 +296,10 @@ fun SchneaggmapScreen(
     //the user has no reason to expect the map to jump there.
     var hasAutoCentered by remember { mutableStateOf(false) }
     LaunchedEffect(ownLocation, state.ownLocationShared) {
-        val position = ownLocation?.position?.value
+        val position = ownLocation?.position
         if (!hasAutoCentered && state.ownLocationShared && position != null) {
             hasAutoCentered = true
-            cameraState.animateTo(CameraPosition(target = position, zoom = OWN_LOCATION_START_ZOOM))
+            mapState.animateCameraPosition(CameraPosition(target = position, zoom = OWN_LOCATION_START_ZOOM))
         }
     }
 
@@ -312,7 +308,7 @@ fun SchneaggmapScreen(
     LaunchedEffect(state.focusEntryTarget) {
         state.focusEntryTarget?.let { target ->
             hasAutoCentered = true
-            cameraState.animateTo(
+            mapState.animateCameraPosition(
                 CameraPosition(
                     target = Position(longitude = target.long, latitude = target.lat),
                     zoom = ENTRY_FOCUS_ZOOM
@@ -326,7 +322,7 @@ fun SchneaggmapScreen(
     //pans/zooms the map - any GESTURE-driven camera move is treated as "I don't want to follow".
     var isFollowingLocation by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        snapshotFlow { cameraState.moveReason }
+        snapshotFlow { mapState.cameraMoveReason }
             .collect { reason ->
                 if (reason == CameraMoveReason.GESTURE) {
                     isFollowingLocation = false
@@ -338,14 +334,14 @@ fun SchneaggmapScreen(
 
         //Zoom in once when following starts, then keep re-centering on the latest location
         //at whatever zoom the user leaves it at.
-        ownLocation?.position?.value?.let { position ->
-            cameraState.animateTo(CameraPosition(target = position, zoom = OWN_LOCATION_CLICK_ZOOM))
+        ownLocation?.position?.let { position ->
+            mapState.animateCameraPosition(CameraPosition(target = position, zoom = OWN_LOCATION_CLICK_ZOOM))
         }
 
-        snapshotFlow { locationState.location }
+        snapshotFlow { locationState.lastLocation }
             .collect { location ->
-                location?.position?.value?.let { position ->
-                    cameraState.animateTo(cameraState.position.copy(target = position))
+                location?.position?.let { position ->
+                    mapState.animateCameraPosition(mapState.cameraPosition.copy(target = position))
                 }
             }
     }
@@ -353,8 +349,8 @@ fun SchneaggmapScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         SchneaggmapMapContent(
             state = state,
-            cameraState = cameraState,
-            styleState = styleState,
+            cameraState = mapState,
+            styleState = mapState.style,
             ownLocation = ownLocation,
             onAction = onAction
         )
@@ -363,8 +359,8 @@ fun SchneaggmapScreen(
         if (state.pickLocationMode) {
             LocationPickOverlay(
                 cameraTarget = LatLong(
-                    lat = cameraState.position.target.latitude,
-                    long = cameraState.position.target.longitude
+                    lat = mapState.cameraPosition.target.latitude,
+                    long = mapState.cameraPosition.target.longitude
                 ),
                 onConfirm = { onAction(SchneaggmapAction.OnConfirmLocationPick(it)) },
                 onCancel = { onAction(SchneaggmapAction.OnCancelLocationPick) },
@@ -458,10 +454,10 @@ fun SchneaggmapScreen(
         // Right edge: vertical zoom scrollbar, centered between the top and bottom rows so it
         // never collides with the filter dropdown above or the snail-trail toggle below.
         MapZoomSlider(
-            zoom = cameraState.position.zoom,
+            zoom = mapState.cameraPosition.zoom,
             onZoomChange = { newZoom ->
-                val currentTarget = cameraState.position.target
-                val snapRadiusMeters = ZOOM_SNAP_RADIUS_DP * cameraState.metersPerDpAtTarget
+                val currentTarget = mapState.cameraPosition.target
+                val snapRadiusMeters = ZOOM_SNAP_RADIUS_DP * mapState.metersPerDpAtTarget
 
                 //If a user is sitting near the current screen center, zoom onto them (like Snap Map);
                 //otherwise just zoom in/out around the current map center.
@@ -478,7 +474,8 @@ fun SchneaggmapScreen(
                     ) <= snapRadiusMeters
                 }
 
-                cameraState.position = cameraState.position.copy(
+                //TODO WHAT HERE
+                mapState.cameraPosition = mapState.cameraPosition.copy(
                     target = snapTarget ?: currentTarget,
                     zoom = newZoom
                 )
@@ -532,7 +529,7 @@ fun SchneaggmapScreen(
                             val loc = user.location ?: return@FriendLocationsPreview
                             isFollowingLocation = false
                             scope.launch {
-                                cameraState.animateTo(
+                                mapState.animateCameraPosition(
                                     CameraPosition(
                                         target = Position(longitude = loc.long, latitude = loc.lat),
                                         zoom = OWN_LOCATION_CLICK_ZOOM
@@ -561,28 +558,28 @@ fun SchneaggmapScreen(
                         ExpandingAttributionButton(
                             expanded = attributionExpanded,
                             onClick = { attributionExpanded = !attributionExpanded },
-                            styleState = styleState,
+                            styleState = mapState.style,
                             contentAlignment = Alignment.BottomStart,
                         )
 
                         DisappearingScaleBar(
-                            metersPerDp = cameraState.metersPerDpAtTarget,
+                            metersPerDp = mapState.metersPerDpAtTarget,
                             color = MaterialTheme.colorScheme.background,
-                            zoom = cameraState.position.zoom
+                            zoom = mapState.cameraPosition.zoom
                         )
                         
                     }
 
                     //compass
                     DisappearingCompassButton(
-                        cameraState = cameraState,
+                        cameraState = mapState.cameraPosition,
                         size = 32.dp
                     )
 
                     //Round speed indicator
-                    ownLocation?.speed?.let { speed ->
-                        if (speed.distancePerSecond.inMeters > 3) {
-                            val speedKmh = (speed.distancePerSecond.inMeters * 3.6).roundToInt()
+                    ownLocation?.distancePerSecond?.let { speed ->
+                        if (speed.inMeters > 3) {
+                            val speedKmh = (speed.inMeters * 3.6).roundToInt()
                             Box(
                                 modifier = Modifier
                                     .align(Alignment.TopCenter)
@@ -660,12 +657,12 @@ fun SchneaggmapScreen(
                     user.copy(
                         location = ownLocation?.let { location ->
                             UserLocation(
-                                lat = location.position.value.latitude,
-                                long = location.position.value.longitude,
+                                lat = location.position.latitude,
+                                long = location.position.longitude,
                                 date = Clock.System.now().toEpochMilliseconds(),
-                                speed = location.speed?.distancePerSecond?.inMeters,
-                                heading = location.course?.value?.let { bearing -> (bearing - Bearing.North).inDegrees },
-                                altitude = location.position.value.altitude,
+                                speed = location.distancePerSecond?.inMeters,
+                                heading = location.course?.let { bearing -> (bearing - Bearing.North).inDegrees },
+                                altitude = location.position.altitude,
                                 batteryLevel = batteryService.getBatteryLevel(),
                             )
                         }
@@ -677,7 +674,7 @@ fun SchneaggmapScreen(
                 UserInfoCard(
                     user = displayUser,
                     isOnline = isOwnUser || user.id in state.onlineFriendIds,
-                    ownLocation = ownLocation?.position?.value?.let { position ->
+                    ownLocation = ownLocation?.position?.let { position ->
                         LatLong(lat = position.latitude, long = position.longitude)
                     },
                     onDismiss = {
@@ -792,9 +789,8 @@ private fun LocationPickOverlay(
 @Composable
 private fun SchneaggmapMapContent(
     state: SchneaggmapState,
-    cameraState: CameraState,
-    styleState: StyleState,
-    ownLocation: Location?,
+    mapState: MapState,
+    ownLocation: LocationMeasurement?,
     onAction: (SchneaggmapAction) -> Unit
 ) {
 
@@ -852,12 +848,12 @@ private fun SchneaggmapMapContent(
         state.ownUser?.copy(
             location = ownLocation?.let { location ->
                 UserLocation(
-                    lat = location.position.value.latitude,
-                    long = location.position.value.longitude,
+                    lat = location.position.latitude,
+                    long = location.position.longitude,
                     date = Clock.System.now().toEpochMilliseconds(),
-                    speed = location.speed?.distancePerSecond?.inMeters,
-                    heading = location.course?.value?.let { bearing -> (bearing - Bearing.North).inDegrees },
-                    altitude = location.position.value.altitude,
+                    speed = location.distancePerSecond?.inMeters,
+                    heading = location.course?.let { bearing -> (bearing - Bearing.North).inDegrees },
+                    altitude = location.position.altitude,
                     batteryLevel = batteryService.getBatteryLevel(),
                 )
             }
@@ -917,7 +913,7 @@ private fun SchneaggmapMapContent(
     //Merge nearby friends into a single marker once they're closer together on screen than
     //USER_CLUSTER_RADIUS_DP - converted to meters via the camera's current scale, then quantized
     //so a continuous pinch/pan gesture doesn't re-cluster (and churn the GL layers) every frame.
-    val rawClusterRadiusMeters = USER_CLUSTER_RADIUS_DP * cameraState.metersPerDpAtTarget
+    val rawClusterRadiusMeters = USER_CLUSTER_RADIUS_DP * mapState.metersPerDpAtTarget
     val clusterRadiusMeters = (rawClusterRadiusMeters / 5.0).roundToInt() * 5.0
     val userClusters = remember(allUsersWithLocation, clusterRadiusMeters, state.mergeUsers) {
         if (state.mergeUsers) {
@@ -997,21 +993,31 @@ private fun SchneaggmapMapContent(
 
     MaplibreMap(
         modifier = Modifier.fillMaxSize(),
-        baseStyle = BaseStyle.Uri(state.mapStyleUrl),
-        cameraState = cameraState,
-        styleState = styleState,
+        state = mapState,
         //Scale bar, compass and attribution are drawn by SchneaggmapScreen itself, positioned
         //around the rest of the map chrome.
-        overlay = MapOverlay.None,
-        onMapClick = { position, _ ->
-            onAction(SchneaggmapAction.OnMapClick(LatLong(position.latitude, position.longitude), longClick = false))
+        overlay = { include(MapOverlay.None) },
+        interactions = MapInteractions {
+            callbacks {
+                click {
+                    onUnhandled { event ->
+                        event.position?.let { position ->
+                            onAction(SchneaggmapAction.OnMapClick(LatLong(position.latitude, position.longitude), longClick = false))
+                        }
 
-            ClickResult.Pass
-        },
-        onMapLongClick = { position, _ ->
-            onAction(SchneaggmapAction.OnMapClick(LatLong(position.latitude, position.longitude), longClick = true))
+                        ClickResult.Pass
+                    }
+                }
+                longClick {
+                    onEvent { event ->
+                        event.position?.let { position ->
+                            onAction(SchneaggmapAction.OnMapClick(LatLong(position.latitude, position.longitude), longClick = true))
+                        }
 
-            ClickResult.Consume
+                        ClickResult.Consume
+                    }
+                }
+            }
         }
     ) {
 
