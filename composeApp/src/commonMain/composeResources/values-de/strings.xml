@@ -215,6 +215,10 @@
     <string name="group_expired">Abgelaufen</string>
     <string name="delete_group_timer">Gruppentimer löschen</string>
     <string name="confirm_delete_group_timer">Ablaufdatum dieser Gruppe entfernen? Sie läuft dann nicht mehr automatisch ab.</string>
+    <string name="set_group_timer">Löschtimer festlegen</string>
+    <string name="change_group_timer">Löschtimer ändern</string>
+    <string name="group_timer_picker_title">Gruppe löschen am</string>
+    <string name="group_timer_picker_info">Zu diesem Zeitpunkt werden der Gruppenchat und alle Nachrichten für alle gelöscht. Nur Admins können den Timer ändern.</string>
     <string name="delete_event">Event löschen</string>
     <string name="event_delete_failed">❌ Event konnte nicht gelöscht werden</string>
     <string name="event_delete_warning_message">Wähle, was mit dem Event und seinem Gruppenchat passieren soll. Trennen behält beides, Löschen entfernt nur das Ausgewählte.</string>

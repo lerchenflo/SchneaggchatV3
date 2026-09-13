@@ -215,6 +215,10 @@
     <string name="group_expired">Abgloufa</string>
     <string name="delete_group_timer">Gruppentimer löscha</string>
     <string name="confirm_delete_group_timer">Ablaufdatum vo derra Gruppe entferna? Sie louft denn num automatisch ab.</string>
+    <string name="set_group_timer">Ablaufdatum festlega</string>
+    <string name="change_group_timer">Ablaufdatum ändra</string>
+    <string name="group_timer_picker_title">Gruppe löscha am</string>
+    <string name="group_timer_picker_info">Zu deam Zitpunkt wird da Gruppenchat und alle Nochrichta für alle glöscht. Nur Admins künnand dean Timer ändra.</string>
     <string name="delete_event">Event löscha</string>
     <string name="event_delete_failed">❌ Event hot ned glöscht werra künna</string>
     <string name="event_delete_warning_message">Wenn du a Event löschesch kann des ned rückgängig gmacht werra. Magsch du o die verbundene Gruppe löscha?</string>
@@ -332,7 +336,8 @@
     <string name="events_screen_title">Events</string>
     <string name="events_empty">No kua Events. Erstell seal uans!</string>
     <string name="events_view_list">Liste</string>
-    <string name="events_view_week">Wocha</string>
+    <string name="events_view_day">Tag</string>
+    <string name="events_view_upcoming">Bald amol</string>
     <string name="events_view_month">Monat</string>
     <string name="weekday_monday_short">Mo</string>
     <string name="weekday_tuesday_short">Di</string>
@@ -343,7 +348,8 @@
     <string name="weekday_sunday_short">So</string>
     <string name="events_calendar_previous_period">Zruck</string>
     <string name="events_calendar_next_period">Witta</string>
-    <string name="events_week_empty">Kua Events dia Wocha</string>
+    <string name="events_day_empty">Kua Events an deam Tag</string>
+    <string name="events_upcoming_empty">Kua baldige Events</string>
     <string name="events_month_empty">Kua Events dean Monat</string>
     <string name="birthday_label">Geburtstag</string>
     <string name="event_starts_in">Startet in: %1$s</string>
@@ -449,6 +455,13 @@
     <string name="pending_friend_requests">%1$s usstehende Freundschaftsanfroga</string>
     <string name="no_friends_found_search">Freund ned gefunda?</string>
     <string name="no_friends">Keine Freunde</string>
+
+    <string name="car_nothing_nearby">Nix in da Nöhe</string>
+    <string name="car_back">Zruck</string>
+    <string name="car_filters_title">Filter</string>
+    <string name="car_filter_locations">Standorte</string>
+    <string name="car_filter_radar">Radars</string>
+    <string name="car_radar_added">Radar igfügt</string>
 
     <string name="message_delete_info">Willsch du dia Nachricht wirklich löscha?</string>
     <string name="chat_message_image">Nochrichtabild</string>
