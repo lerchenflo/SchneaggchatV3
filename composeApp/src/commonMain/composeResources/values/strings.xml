@@ -454,6 +454,13 @@
     <string name="no_friends_found_search">Friend not found?</string>
     <string name="no_friends">no friends</string>
 
+    <string name="car_nothing_nearby">Nothing nearby</string>
+    <string name="car_back">Back</string>
+    <string name="car_filters_title">Filters</string>
+    <string name="car_filter_locations">Locations</string>
+    <string name="car_filter_radar">Radar locations</string>
+    <string name="car_radar_added">Radar added</string>
+
     <string name="message_delete_info">Do you really want to delete this message?</string>
     <string name="chat_message_image">message image</string>
     <string name="chat_remove_image">remove image</string>

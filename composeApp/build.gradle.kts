@@ -134,6 +134,14 @@ kotlin {
             //EXIF orientation of picked images
             implementation(libs.androidx.exifinterface)
 
+            //Android Auto
+            implementation(libs.androidx.car.app)
+            //Hosting a ComposeView in the car's Presentation (CarMapSurfaceRenderer) needs the
+            //ViewTree*Owner setters, which aren't reliably pulled in transitively here
+            implementation(libs.androidx.lifecycle.runtime)
+            implementation(libs.androidx.lifecycle.viewmodel)
+            implementation(libs.androidx.savedstate)
+
         }
 
 

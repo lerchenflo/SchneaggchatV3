@@ -228,7 +228,7 @@ Also trigger the same "resume" path the phone uses when the car session starts (
 ## Out of scope (later)
 
 - Chat notifications on the car display: needs `NotificationCompat.MessagingStyle` + `CarAppExtender` in `Notifier.android.kt`. Small separate feature.
-- Creating/editing map entries or events from the car.
+- Creating/editing map entries or events from the car, beyond the header's one-tap "add radar at current location" action.
 - Search on the car (host `SearchTemplate` exists but only works parked).
 - Android Automotive OS (built-in car OS, no phone) – would need a separate APK/flavor and the app running entirely on the car; not planned.
 - Instrument cluster map (navigation category only).

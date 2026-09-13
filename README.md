@@ -21,6 +21,9 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 ### 3.0.18
 
+#### Features
+- Android Auto Support
+
 #### Bugfixes
 - Kreuzworträtsel: Buchstaben beim schnellen Tippen gehen nicht mehr verloren
 

@@ -66,6 +66,7 @@ private suspend fun resolveMessage(
         readByMe = false,
         readers = emptyList(),
         id = decoded.msgId,
+        sendDate = decoded.sendDate.takeIf { it > 0 }?.toString() ?: "",
     )
     return msg.toNotificationContent(
         fallbackGroupName = decoded.groupName.ifEmpty { null }

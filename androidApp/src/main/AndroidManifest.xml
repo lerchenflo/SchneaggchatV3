@@ -13,6 +13,10 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
+    <!-- Android Auto: draw templates + the map surface -->
+    <uses-permission android:name="androidx.car.app.MAP_TEMPLATES" />
+    <uses-permission android:name="androidx.car.app.ACCESS_SURFACE" />
+
     <application
         android:name=".MainApp"
         android:allowBackup="true"
@@ -22,6 +26,13 @@
         android:roundIcon="@mipmap/schneaggchatv3_icon_foreground_light_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.App.Splash">
+
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
+        <meta-data
+            android:name="androidx.car.app.minCarApiLevel"
+            android:value="7" />
         <activity
             android:exported="true"
             android:name=".MainActivity"
@@ -87,6 +98,23 @@
                 <action android:name="org.lerchenflo.schneaggchatv3mp.MARK_AS_READ" />
             </intent-filter>
         </receiver>
+
+        <receiver
+            android:name="org.lerchenflo.schneaggchatv3mp.utilities.notifications.ReplyReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="org.lerchenflo.schneaggchatv3mp.REPLY" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name="org.lerchenflo.schneaggchatv3mp.car.SchneaggmapCarAppService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="androidx.car.app.CarAppService" />
+                <category android:name="androidx.car.app.category.POI" />
+            </intent-filter>
+        </service>
 
     </application>
 
