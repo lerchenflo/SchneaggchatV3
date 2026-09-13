@@ -23,6 +23,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 
 #### Features
 - Events: Gewählte Ansicht bleibt erhalten (Liste, Tag, Woche, Monat)
+- Android Auto Support
 
 #### Bugfixes
 - Anmeldung: Token-Aktualisierung blockiert Anfragen nicht mehr

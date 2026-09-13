@@ -26,20 +26,20 @@ githubImagepickerkmp = "1.1.7"
 moko = "0.20.1"
 
 jwtKt = "1.3.2"
-kotlin = "2.4.10"
+kotlin = "2.4.20"
 ksp = "2.3.9"
 
 kotlinx-coroutines = "1.11.0"
 kotlinxIo = "0.9.1"
 materialIconsExtended = "1.7.3"
-room = "2.8.4"
+room = "2.8.5"
 
 runtime = "1.12.0"
-sqlite = "2.7.0"
+sqlite = "2.7.1"
 datetime-wheel-picker = "1.4.0"
 
 koin-core = "4.2.2"
-koin-plugin = "1.0.1"
+koin-plugin = "1.2.1"
 koin-annotations = "4.2.2"
 ktor = "3.5.2"
 adaptive = "1.2.0"
@@ -60,10 +60,18 @@ espressoCore = "3.7.0"
 appcompat = "1.8.0"
 material = "1.14.0"
 
-ksafe = "3.1.0"
+ksafe = "3.2.0"
 
 #Schneaggmap
-map = "0.15.0"
+map = "0.16.0"
+
+#Android Auto
+androidx-car-app = "1.7.0"
+#ViewTreeLifecycleOwner/ViewTreeViewModelStoreOwner/ViewTreeSavedStateRegistryOwner for hosting a
+#ComposeView in the car's Presentation - not reliably pulled in transitively by the KMP androidMain
+#source set, declared explicitly. Versions matched to what androidx-lifecycle (2.11.0) and the rest
+#of the AndroidX graph already resolve to in this project.
+androidx-savedstate = "1.4.0"
 
 swipeableKmp = "1.0.7"
 reorderable = "3.1.0"
@@ -80,6 +88,12 @@ maplibre-compose-runtime-vulkan-linux-arm64 = { module = "org.maplibre.compose:m
 maplibre-compose-runtime-vulkan-windows-x64 = { module = "org.maplibre.compose:maplibre-compose-runtime-vulkan-windows-x64", version.ref = "map" }
 maplibre-compose-runtime-vulkan-windows-arm64 = { module = "org.maplibre.compose:maplibre-compose-runtime-vulkan-windows-arm64", version.ref = "map" }
 maplibre-compose-runtime-metal-macos-arm64 = { module = "org.maplibre.compose:maplibre-compose-runtime-metal-macos-arm64", version.ref = "map" }
+
+#Android Auto
+androidx-car-app = { module = "androidx.car.app:app", version.ref = "androidx-car-app" }
+androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-android", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-android", version.ref = "androidx-lifecycle" }
+androidx-savedstate = { module = "androidx.savedstate:savedstate-android", version.ref = "androidx-savedstate" }
 
 swipeable-kmp = { module = "com.stevdza-san:swipeable-kmp", version.ref = "swipeableKmp" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }

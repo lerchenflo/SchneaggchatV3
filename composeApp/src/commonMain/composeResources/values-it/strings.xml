@@ -452,6 +452,13 @@
     <string name="no_friends_found_search">Amico non trovato?</string>
     <string name="no_friends">nessun amico</string>
 
+    <string name="car_nothing_nearby">Niente nelle vicinanze</string>
+    <string name="car_back">Indietro</string>
+    <string name="car_filters_title">Filtri</string>
+    <string name="car_filter_locations">Posizioni</string>
+    <string name="car_filter_radar">Postazioni autovelox</string>
+    <string name="car_radar_added">Autovelox aggiunto</string>
+
     <string name="message_delete_info">Vuoi davvero eliminare questo messaggio?</string>
     <string name="chat_message_image">immagine del messaggio</string>
     <string name="chat_remove_image">rimuovi immagine</string>

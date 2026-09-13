@@ -103,14 +103,15 @@ sealed interface ChatDetailsState {
 }
 
 class ChatDetailsViewmodel(
-    val chatId: String,
-    val isGroup: Boolean,
     private val groupRepository: GroupRepository,
     private val navigator: Navigator,
     private val userRepository: UserRepository,
     private val appRepository: AppRepository,
     private val pictureManager: PictureManager,
     private val eventRepository: EventRepository,
+
+    val chatId: String,
+    val isGroup: Boolean,
 ) : ViewModel() {
 
 
