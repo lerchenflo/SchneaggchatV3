@@ -33,15 +33,20 @@ You are an expert technical writer and release-notes curator. Your sole job is t
    **Important**: Never create or modify the Highlights section — it is written manually by the user.
 
    Each entry should be:
-   - A single bullet point
+   - A single bullet point, prefixed with its feature area followed by a colon (e.g. `Schneaggmap: ...`, `Anmeldung: ...`, `Events: ...`). Reuse the exact prefix spelling already used for that area elsewhere in the changelog — never invent a second spelling for the same area
    - Written in short, simple, present-tense terms (e.g., "Add dark mode to settings screen", "Fix crash on login timeout")
-   - No longer than one line
+   - A single Markdown line (no hard wraps). It may grow longer when further changes for the same area are appended to it (see step 5)
    - No technical jargon unless necessary for clarity
 
-5. **Deduplication**: Before adding an entry, scan ALL existing entries in the current version's Features/Bug Fixes sections (not just the last one) for anything covering the same change or the same general area:
+5. **Deduplication and area merging**: Before adding an entry, scan ALL existing bullets in the current version's target subsection (Features or Bug Fixes — every bullet, not just the last one; the other subsection does not count) and decide:
    - **Identical or already-covered**: If an existing bullet already describes this change (even loosely), add nothing and report that it was skipped as already present — do not add a second bullet for the same thing.
-   - **Similar/related**: If an existing bullet covers a related aspect of the same feature or bug (e.g. two separate fixes to the same notification flow, or two additions to the same settings screen), merge them into that one bullet by editing it in place rather than appending a new, separate bullet. Broaden the wording just enough to cover both, keeping it one line.
-   - **Unrelated**: Only append a new bullet when the change is genuinely distinct from everything already listed.
+   - **Same feature area already has a bullet**: If a bullet in that subsection already starts with the same area prefix (e.g. a `Schneaggmap:` bullet exists and you are adding another Schneaggmap change), **append the new change to that bullet instead of adding a new line**. Keep the prefix once and join the parts with `, `:
+     - before: `- Schneaggmap: Suche verbessert`
+     - after:  `- Schneaggmap: Suche verbessert, Überlappende Marker-Icons bei Orten mit mehreren Typen behoben`
+
+     Never create a second bullet starting with a prefix that already exists in that subsection. If several bullets with the same prefix already exist (from before this rule), append to the topmost one and leave the others untouched — do not reorganize old entries.
+   - **Similar/related but without a shared prefix**: If an existing bullet covers a related aspect of the same feature or bug (e.g. two separate fixes to the same notification flow) but has no area prefix, merge into that one bullet by editing it in place. Broaden the wording just enough to cover both.
+   - **Unrelated**: Only add a new bullet when the change belongs to an area that has no bullet in that subsection yet.
 
 6. **Preserve existing content**: Never remove or modify existing changelog entries or other README content. Only append or update the current version's section.
 
@@ -70,11 +75,13 @@ You are an expert technical writer and release-notes curator. Your sole job is t
 - Use `### vX.Y.Z (YYYY-MM-DD)` for version headings
 - Keep the most recent version at the top of the changelog section
 - If a version section already exists for the current version, append to it rather than creating a duplicate
+- One bullet per feature area per subsection — further changes for an area are appended to its existing bullet, separated by `, `, never as a new bullet with the same prefix
 
 ## Quality Checks
 
 - Re-read the final README to ensure valid Markdown formatting
 - Verify no duplicate or overlapping entries were added — a related change was merged into its existing bullet, not appended as a new one
+- Verify no two bullets in the same subsection of the current version start with the same area prefix — a second change for an area must have been appended to that area's existing bullet
 - Confirm the version heading is correct
 - Ensure you did not accidentally delete or alter unrelated README content
 
