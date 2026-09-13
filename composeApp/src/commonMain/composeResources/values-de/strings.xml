@@ -333,6 +333,7 @@
     <string name="events_screen_title">Events</string>
     <string name="events_empty">Noch keine Events. Erstelle selbst eines!</string>
     <string name="events_view_list">Liste</string>
+    <string name="events_view_day">Tag</string>
     <string name="events_view_week">Woche</string>
     <string name="events_view_month">Monat</string>
     <string name="weekday_monday_short">Mo</string>
@@ -344,6 +345,7 @@
     <string name="weekday_sunday_short">So</string>
     <string name="events_calendar_previous_period">Zurück</string>
     <string name="events_calendar_next_period">Weiter</string>
+    <string name="events_day_empty">Keine Events an diesem Tag</string>
     <string name="events_week_empty">Keine Events diese Woche</string>
     <string name="events_month_empty">Keine Events diesen Monat</string>
     <string name="birthday_label">Geburtstag</string>
@@ -939,6 +941,15 @@
     <string name="recap_outro_rank_messages">Nachrichten-Rang</string>
     <string name="recap_outro_rank_errors">Fehler-Rang</string>
     <string name="recap_tap_hint">Tippen, um fortzufahren</string>
+    <string name="recap_close">Rückblick schließen</string>
+    <string name="recap_hold_hint">Halten zum Pausieren · links tippen für zurück</string>
+    <string name="recap_map_leaderboard_title">Top-Kartenbeitragende</string>
+    <string name="recap_map_your_rank">Von allen, die die Schneaggmap gestalten, bist du auf Platz</string>
+    <string name="recap_map_contributions">%1$s Kartenänderungen dieses Jahr</string>
+    <string name="recap_map_not_ranked">Du hast die Karte dieses Jahr nicht angefasst. Die Schnecken warten.</string>
+    <string name="recap_leaderboard_not_ranked">Keine Nachrichten von dir dieses Jahr. Dann eben nächstes Jahr.</string>
+    <string name="recap_outro_rank_map">Karten-Rang</string>
+    <string name="recap_top_partner_intro">Niemand hat mehr von dir gehört als</string>
 
     <!-- Month names -->
     <string name="month_january">Januar</string>

@@ -16,6 +16,7 @@ import kotlinx.serialization.json.Json
 import org.lerchenflo.schneaggchatv3mp.BASE_SERVER_URL
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.network.NetworkUtils
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
 
 class Preferencemanager(
     private val prefs: DataStore<Preferences>,
@@ -123,6 +124,7 @@ class Preferencemanager(
         val LAST_STARTED_VERSION = stringPreferencesKey("last_started_version")
         val LAST_CONTRIBUTE_POPUP_SHOWN = longPreferencesKey("last_contribute_popup_shown")
         val ONBOARDING_SEEN = booleanPreferencesKey("onboarding_seen")
+        val EVENTS_VIEW_MODE = stringPreferencesKey("events_view_mode")
     }
 
     // Markdown Format
@@ -239,6 +241,17 @@ class Preferencemanager(
     }
 
     fun getMapStyleUrlFlow(): Flow<String> = getMapStyleSettingFlow().map { it.tileUrl }
+
+    // Events tab: last selected list/day/week/month view. Stored by enum name (not ordinal) so
+    // reordering or inserting a view mode later can't silently remap a saved choice.
+    suspend fun saveEventsViewMode(mode: EventsViewMode) {
+        prefs.edit { it[PrefsKeys.EVENTS_VIEW_MODE] = mode.name }
+    }
+
+    fun getEventsViewModeFlow(): Flow<EventsViewMode> = prefs.data.map { prefs ->
+        val saved = prefs[PrefsKeys.EVENTS_VIEW_MODE]
+        EventsViewMode.entries.firstOrNull { it.name == saved } ?: EventsViewMode.WEEK
+    }
 
     suspend fun saveLastStartedVersion(value: String) {
         prefs.edit { it[PrefsKeys.LAST_STARTED_VERSION] = value }

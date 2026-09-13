@@ -150,6 +150,23 @@ data class MapRecapDto(
     val entriesCreatedAllTime: Long,
     val entriesEditedThisYear: Long,
     val entriesEditedAllTime: Long,
+    // Defaulted so a recap from a server without the map leaderboard still deserializes.
+    val leaderboard: MapLeaderboardRecapDto = MapLeaderboardRecapDto(),
+)
+
+@Serializable
+data class MapLeaderboardRowDto(
+    val rank: Int,
+    val userId: String,
+    val username: String,
+    val contributionCount: Long,
+)
+
+@Serializable
+data class MapLeaderboardRecapDto(
+    val top: List<MapLeaderboardRowDto> = emptyList(),
+    val myRank: Int? = null,
+    val myContributionCount: Long = 0,
 )
 
 @Serializable
@@ -224,7 +241,7 @@ data class RecapUi(
 
     val topPartners: List<RecapPartnerUi>,
 
-    val leaderboardTop: List<LeaderboardRowUi>,
+    val leaderboardTop: List<RankedRowUi>,
     val myRank: Int?,
     val myLeaderboardMessageCount: Long,
 
@@ -235,10 +252,13 @@ data class RecapUi(
     val mapEntriesCreated: Long,
     val mapEntriesEdited: Long,
     val mapEntriesCreatedAllTime: Long,
+    val mapLeaderboardTop: List<RankedRowUi>,
+    val myMapRank: Int?,
+    val myMapContributions: Long,
 
     val games: List<GameRecapUi>,
 
-    val betaTesterRows: List<BetaTesterRowUi>,
+    val betaTesterRows: List<RankedRowUi>,
     val myBetaTesterRank: Int?,
     val myExceptionCount: Long,
 
@@ -282,10 +302,11 @@ data class RecapPartnerUi(
     val profilePictureFilePath: String,
 )
 
-data class LeaderboardRowUi(
+/** One row of any recap ranking (messages, map changes, exceptions) - [count] is the ranked metric. */
+data class RankedRowUi(
     val rank: Int,
     val username: String,
-    val messageCount: Long,
+    val count: Long,
     val isMe: Boolean,
 )
 
@@ -299,11 +320,4 @@ data class GameRecapUi(
     val difficulty: String,
     val bestScore: Long,
     val rank: Int,
-)
-
-data class BetaTesterRowUi(
-    val rank: Int,
-    val username: String,
-    val exceptionCount: Long,
-    val isMe: Boolean,
 )

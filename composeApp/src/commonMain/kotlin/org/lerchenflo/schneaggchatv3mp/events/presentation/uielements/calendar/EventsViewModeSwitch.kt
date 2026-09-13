@@ -10,8 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
-import org.lerchenflo.schneaggchatv3mp.events.presentation.EventsViewMode
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
 import schneaggchatv3mp.composeapp.generated.resources.Res
+import schneaggchatv3mp.composeapp.generated.resources.events_view_day
 import schneaggchatv3mp.composeapp.generated.resources.events_view_list
 import schneaggchatv3mp.composeapp.generated.resources.events_view_month
 import schneaggchatv3mp.composeapp.generated.resources.events_view_week
@@ -40,6 +41,7 @@ fun EventsViewModeSwitch(
 
 private fun EventsViewMode.labelRes(): StringResource = when (this) {
     EventsViewMode.LIST -> Res.string.events_view_list
+    EventsViewMode.DAY -> Res.string.events_view_day
     EventsViewMode.WEEK -> Res.string.events_view_week
     EventsViewMode.MONTH -> Res.string.events_view_month
 }

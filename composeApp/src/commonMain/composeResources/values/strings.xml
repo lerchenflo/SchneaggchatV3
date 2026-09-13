@@ -337,6 +337,7 @@
     <string name="events_screen_title">events</string>
     <string name="events_empty">No events yet. Create one yourself!</string>
     <string name="events_view_list">List</string>
+    <string name="events_view_day">Day</string>
     <string name="events_view_week">Week</string>
     <string name="events_view_month">Month</string>
     <string name="weekday_monday_short">Mon</string>
@@ -348,6 +349,7 @@
     <string name="weekday_sunday_short">Sun</string>
     <string name="events_calendar_previous_period">Previous</string>
     <string name="events_calendar_next_period">Next</string>
+    <string name="events_day_empty">No events on this day</string>
     <string name="events_week_empty">No events this week</string>
     <string name="events_month_empty">No events this month</string>
     <string name="birthday_label">Birthday</string>
@@ -941,6 +943,15 @@
     <string name="recap_outro_rank_messages">messages rank</string>
     <string name="recap_outro_rank_errors">error rank</string>
     <string name="recap_tap_hint">Tap to continue</string>
+    <string name="recap_close">Close recap</string>
+    <string name="recap_hold_hint">Hold to pause · tap left to go back</string>
+    <string name="recap_map_leaderboard_title">Top map contributors</string>
+    <string name="recap_map_your_rank">Among everyone shaping the Schneaggmap, you rank</string>
+    <string name="recap_map_contributions">%1$s map changes this year</string>
+    <string name="recap_map_not_ranked">You haven't touched the map this year. The snails are waiting.</string>
+    <string name="recap_leaderboard_not_ranked">No messages from you this year. Next year, then.</string>
+    <string name="recap_outro_rank_map">map rank</string>
+    <string name="recap_top_partner_intro">Nobody heard from you more than</string>
 
     <!-- Month names -->
     <string name="month_january">January</string>
