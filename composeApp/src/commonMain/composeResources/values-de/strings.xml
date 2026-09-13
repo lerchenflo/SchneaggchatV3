@@ -127,6 +127,7 @@
 
     <string name="error_access_not_permitted">Deine gespeicherte Sitzung ist ungültig. Bitte logge dich erneut ein.</string>
     <string name="error_access_expired">Deine gespeicherte Sitzung abgelaufen. Bitte logge dich erneut ein.</string>
+    <string name="error_server_unreachable">Dieser Server ist nicht erreichbar.</string>
     <string name="error_invalid_credentials">Die von dir eingegebenen Daten sind falsch</string>
     <string name="error_login_too_many_requests">Zu viele Anmeldeversuche. Bitte warte einen Moment und versuche es erneut.</string>
     <string name="error_login_server_error">Der Server hatte ein Problem. Bitte versuche es später erneut.</string>
@@ -951,6 +952,15 @@
     <string name="recap_outro_rank_messages">Nachrichten-Rang</string>
     <string name="recap_outro_rank_errors">Fehler-Rang</string>
     <string name="recap_tap_hint">Tippen, um fortzufahren</string>
+    <string name="recap_close">Rückblick schließen</string>
+    <string name="recap_hold_hint">Halten zum Pausieren · links tippen für zurück</string>
+    <string name="recap_map_leaderboard_title">Die Karten-Charts.</string>
+    <string name="recap_map_your_rank">Unter allen, die die Schneaggmap gestalten, bist du auf Platz</string>
+    <string name="recap_map_contributions">%1$s Kartenänderungen dieses Jahr</string>
+    <string name="recap_map_not_ranked">Du hast dieses Jahr die Karte nicht angerührt. Die Schnecken warten.</string>
+    <string name="recap_leaderboard_not_ranked">Keine Nachrichten von dir dieses Jahr. Vielleicht nächstes Jahr.</string>
+    <string name="recap_outro_rank_map">Karten-Rang</string>
+    <string name="recap_top_partner_intro">Niemand hat öfter von dir gehört als</string>
 
     <!-- Month names -->
     <string name="month_january">Januar</string>

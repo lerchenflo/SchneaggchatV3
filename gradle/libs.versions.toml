@@ -71,7 +71,7 @@ androidx-car-app = "1.7.0"
 #ComposeView in the car's Presentation - not reliably pulled in transitively by the KMP androidMain
 #source set, declared explicitly. Versions matched to what androidx-lifecycle (2.11.0) and the rest
 #of the AndroidX graph already resolve to in this project.
-androidx-savedstate = "1.4.0"
+androidx-savedstate = "1.5.0"
 
 swipeableKmp = "1.0.7"
 reorderable = "3.1.0"
