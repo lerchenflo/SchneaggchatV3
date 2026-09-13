@@ -55,27 +55,11 @@ private fun getFullStackTrace(throwable: Throwable): String {
     val sw = StringWriter()
     val pw = PrintWriter(sw)
 
-    // Print this throwable
+    // Throwable.printStackTrace already walks the cause chain ("Caused by: ...") and
+    // suppressed exceptions ("Suppressed: ...") on its own - doing it again here duplicated
+    // every cause/suppressed trace, which for deep chains (e.g. a StackOverflowError with
+    // thousands of frames) produced a message large enough to crash the log viewer.
     throwable.printStackTrace(pw)
-
-    // Walk through causes
-    var cause = throwable.cause
-    while (cause != null) {
-        pw.println("Caused by:")
-        cause.printStackTrace(pw)
-        cause = cause.cause
-    }
-
-    // Include suppressed
-    val suppressed = throwable.suppressed
-    if (suppressed.isNotEmpty()) {
-        pw.println("Suppressed exceptions:")
-        for (sup in suppressed) {
-            sup.printStackTrace(pw)
-        }
-    }
-
-
 
     pw.flush()
     return sw.toString()

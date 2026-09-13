@@ -29,6 +29,7 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 #### Bugfixes
 - Anmeldung: Token-Refresh rebuild (5. mol??)
 - Kreuzworträtsel: Buchstaben beim schnellen Tippen gehen nicht mehr verloren
+- Undercover Crash + Logs viewer
 
 
 ### 3.0.17

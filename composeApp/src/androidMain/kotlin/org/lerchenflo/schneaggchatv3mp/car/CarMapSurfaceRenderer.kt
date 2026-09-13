@@ -72,7 +72,7 @@ class CarMapSurfaceRenderer(
     //`mapState` is captured by `content` before it is assigned - safe because `content` isn't
     //invoked until the map actually composes it, by which point the assignment below has run (see
     //the same lateinit pattern in SchneaggmapScreen).
-    lateinit var mapState: MapState
+    var mapState: MapState
         private set
 
     private var virtualDisplay: VirtualDisplay? = null

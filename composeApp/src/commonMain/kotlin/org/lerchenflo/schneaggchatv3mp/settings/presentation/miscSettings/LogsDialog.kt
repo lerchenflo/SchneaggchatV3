@@ -71,10 +71,13 @@ fun LogsDialog(
 
     val listState = rememberLazyListState()
 
-    // Auto-scroll to bottom when new logs arrive
-    LaunchedEffect(logs.size) {
-        if (logs.isNotEmpty()) {
-            listState.animateScrollToItem(logs.size - 1)
+    // Auto-scroll to bottom when new logs arrive. Must target filteredLogs, not the
+    // unfiltered logs list - the LazyColumn below only ever renders filteredLogs, so
+    // scrolling to an index from the larger, unfiltered list could point past the end
+    // of what's actually laid out.
+    LaunchedEffect(filteredLogs.size) {
+        if (filteredLogs.isNotEmpty()) {
+            listState.animateScrollToItem(filteredLogs.size - 1)
         }
     }
 
