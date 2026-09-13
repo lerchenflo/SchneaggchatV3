@@ -1,103 +1,126 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network
 
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.auth.Auth
+import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.statement.request
+import io.ktor.http.HttpHeaders
+import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.AuthSessionManager
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.RefreshOutcome
+import org.lerchenflo.schneaggchatv3mp.datasource.network.auth.RefreshReason
 
-fun createHttpClient(
-    engine: HttpClientEngine,
-    tokenManager: TokenManager,
-    useAuth: Boolean
-) : HttpClient {
-
-
+/**
+ * Client without authentication: login, registration, token refresh, logout, external fetches.
+ * Takes no session dependency on purpose - the session manager's refresh API is built on this
+ * client, so giving it the manager would be a construction cycle.
+ */
+fun createHttpClient(engine: HttpClientEngine): HttpClient {
     return HttpClient(engine) {
-        install(Logging){
-            logger = object : Logger {
-                override fun log(message: String) {
+        installCommon()
+    }
+}
 
-                    //println("KTOR LOG: $message")
+/**
+ * Client for every authenticated endpoint. The bearer provider holds no token copy of its own
+ * (`cacheTokens = false`): every request reads the session manager's in-memory mirror, so a
+ * refresh that happened outside this client (socket handshake, scheduler) is picked up on the
+ * very next request without a 401 round trip, and there is no cache to clear on logout.
+ */
+fun createAuthenticatedHttpClient(
+    engine: HttpClientEngine,
+    authSession: AuthSessionManager,
+): HttpClient {
+    return HttpClient(engine) {
+        installCommon()
+
+        install(WebSockets) {
+            pingIntervalMillis = 3_000
+        }
+
+        install(Auth) {
+            bearer {
+                cacheTokens = false
+
+                loadTokens {
+                    authSession.currentTokens()?.toBearerTokens()
+                }
+
+                refreshTokens {
+                    // The token the failing request actually carried. If the mirror already holds
+                    // a newer pair (rotated by the socket path or another request), the manager
+                    // answers Success without spending a rotation, and the retry uses the mirror.
+                    val sentAccessToken = response.request.headers[HttpHeaders.Authorization]
+                        ?.removePrefix("Bearer ")
+                        ?.trim()
+
+                    val outcome = authSession.refresh(
+                        reason = RefreshReason.Reactive401,
+                        presentedRefreshToken = oldTokens?.refreshToken,
+                        presentedAccessToken = sentAccessToken,
+                    )
+
+                    // Only hand tokens back when a usable pair is in place. Returning the same
+                    // stale tokens after a failed refresh would make Ktor retry with them and
+                    // re-enter this callback on every subsequent request - a refresh storm.
+                    // null: the 401 is returned to the caller and Ktor stops.
+                    when (outcome) {
+                        RefreshOutcome.Success -> authSession.currentTokens()?.toBearerTokens()
+                        is RefreshOutcome.Retryable,
+                        is RefreshOutcome.Broken,
+                        is RefreshOutcome.Invalidated -> null
+                    }
                 }
             }
-            level = LogLevel.NONE
         }
 
+        // R7: any successful authenticated request proves the network works - reset the refresh
+        // backoff so the next 401 is not held back by a stale cooldown.
+        install(authenticatedRequestSucceededHook(authSession))
+    }
+}
 
-        //Json
-        install(ContentNegotiation) {
-            json(
-                json = AppJson.instance
-            )
+private fun NetworkUtils.TokenPair.toBearerTokens() = BearerTokens(accessToken, refreshToken)
+
+private fun authenticatedRequestSucceededHook(authSession: AuthSessionManager) =
+    createClientPlugin("AuthenticatedRequestSucceededHook") {
+        onResponse { response ->
+            if (response.status.isSuccess()) authSession.onAuthenticatedRequestSucceeded()
         }
+    }
 
-        if (useAuth){
-
-            install(WebSockets) {
-                pingIntervalMillis = 3_000
-            }
-
-
-            install(Auth){
-                bearer {
-
-                    loadTokens {
-                        //println("HTTPCLIENT: Loading Tokens...")
-                        val tokens = tokenManager.loadBearerTokens()
-                        tokens
-                    }
-
-                    refreshTokens {
-                        //println("HTTPCLIENT: Automatic token refresh triggered")
-
-                        // Pass the failing refresh token downstream
-                        val oldRefreshToken = this.oldTokens?.refreshToken
-                        val result = tokenManager.refreshTokens(oldRefreshToken)
-
-                        // Only hand fresh tokens back to Ktor if the refresh actually succeeded.
-                        // Returning the (unchanged) stored tokens after a failed refresh is what
-                        // causes Ktor to retry with the same stale token and re-trigger this
-                        // callback on every subsequent request - a refresh storm against a
-                        // rate-limited endpoint. On failure, return null so Ktor stops retrying
-                        // instead of looping.
-                        when (result) {
-                            RefreshResult.Success -> tokenManager.loadBearerTokens()
-                            is RefreshResult.Retryable, RefreshResult.Invalidated -> null
-                        }
-                    }
-
-                }
+private fun HttpClientConfig<*>.installCommon() {
+    install(Logging) {
+        logger = object : Logger {
+            override fun log(message: String) {
+                //println("KTOR LOG: $message")
             }
         }
+        level = LogLevel.NONE
+    }
 
+    //Json
+    install(ContentNegotiation) {
+        json(
+            json = AppJson.instance
+        )
+    }
 
-
-        install(HttpTimeout) {
-            requestTimeoutMillis = 30000
-            connectTimeoutMillis = 10000
-            socketTimeoutMillis = 60000
-        }
-
-        /*
-        install(HttpRequestRetry) {
-            //retryOnServerErrors(maxRetries = 3)
-            retryOnException(maxRetries = 3)
-            exponentialDelay() // 1s, 2s, 4s delays between retries
-
-            modifyRequest { request ->
-                // Optional: log retry attempts
-                println("Retrying request: ${request.url}")
-            }
-        }
-
-         */
+    install(HttpTimeout) {
+        requestTimeoutMillis = 30000
+        connectTimeoutMillis = 10000
+        socketTimeoutMillis = 60000
     }
 }
 
@@ -135,7 +158,3 @@ fun createSocketHttpClient(engine: HttpClientEngine): HttpClient {
         }
     }
 }
-
-
-
-

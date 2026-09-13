@@ -30,6 +30,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.lerchenflo.schneaggchatv3mp.app.onboarding.tapTarget
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
 import org.lerchenflo.schneaggchatv3mp.events.domain.goingUserIds
 import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
 import org.lerchenflo.schneaggchatv3mp.events.domain.statusOf
@@ -37,6 +38,7 @@ import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventEditP
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventJoinPopup
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsCalendarDayDetailSheet
+import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsDayView
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsMonthView
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsViewModeSwitch
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.calendar.EventsUpcomingView
@@ -158,6 +160,24 @@ fun EventsScreen(
                             }
                         }
                     }
+                }
+
+                EventsViewMode.DAY -> {
+                    EventsDayView(
+                        anchorDate = state.calendarAnchorDate,
+                        today = today,
+                        eventsByDate = state.eventsByDate,
+                        birthdaysByMonthDay = state.birthdaysByMonthDay,
+                        friendsById = state.friendsById,
+                        ownId = ownId,
+                        onNavigate = { forward -> onAction(EventsAction.OnCalendarNavigate(forward)) },
+                        onJumpToToday = { onAction(EventsAction.OnCalendarJumpToToday) },
+                        onEventClick = { onAction(EventsAction.OnEventClick(it)) },
+                        onBirthdayClick = { onAction(EventsAction.OnBirthdayClick(it)) },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp)
+                    )
                 }
 
                 EventsViewMode.UPCOMING -> {

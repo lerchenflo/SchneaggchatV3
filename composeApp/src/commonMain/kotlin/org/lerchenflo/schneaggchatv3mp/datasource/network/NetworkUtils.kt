@@ -1,10 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.datasource.network
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.network.sockets.ConnectTimeoutException
-import io.ktor.client.network.sockets.SocketTimeoutException
-import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.request.delete
 import io.ktor.client.request.forms.FormBuilder
 import io.ktor.client.request.forms.MultiPartFormDataContent
@@ -18,14 +14,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
-import io.ktor.http.isSuccess
-import io.ktor.util.network.UnresolvedAddressException
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.ensureActive
-import kotlinx.io.IOException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
 import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.chat.domain.MessageType
 import org.lerchenflo.schneaggchatv3mp.chat.domain.PollVisibility
@@ -49,6 +39,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.network.requestResponseDataCla
 import org.lerchenflo.schneaggchatv3mp.games.domain.RecapResponse
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkResult
 import org.lerchenflo.schneaggchatv3mp.datasource.network.util.NetworkingError
+import org.lerchenflo.schneaggchatv3mp.datasource.network.util.safeNetworkCall
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.PinnedChat
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
@@ -97,90 +88,7 @@ class NetworkUtils(
 
     private suspend inline fun <reified R> safeCall(
         crossinline block: suspend () -> HttpResponse
-    ): NetworkResult<R, NetworkingError> {
-        return try {
-            val response = block()
-
-            if (response.status.isSuccess()) {
-                // response.body() deserializes inside this try - a socket drop or serialization
-                // failure while reading a successful reply lands in a catch below and comes back
-                // as an Error, even though the server already committed the write. Send calls
-                // rely on the clientMessageId idempotency key (see AppRepository.sendMessage) to
-                // make the inevitable retry safe rather than trying to avoid this case here.
-                NetworkResult.Success(response.body())
-            } else {
-                NetworkResult.Error(mapHttpStatusToError(response.status.value, response.body<String>()))
-            }
-        } catch (e: UnresolvedAddressException) {
-            println("DNS resolution failed - ${e.message}")
-            NetworkResult.Error(NetworkingError.NoInternetConnection)
-        } catch (e: ConnectTimeoutException) {
-            println("Connection timeout - ${e.message}")
-            NetworkResult.Error(NetworkingError.NetworkTimeout())
-        } catch (e: HttpRequestTimeoutException) {
-            println("HTTP request timeout - ${e.message}")
-            NetworkResult.Error(NetworkingError.NetworkTimeout())
-        } catch (e: SocketTimeoutException) {
-            println("Going offline: Socket timeout - ${e.message}")
-            NetworkResult.Error(NetworkingError.NetworkTimeout())
-        } catch (e: IOException) {
-            // Covers SocketTimeoutException, UnknownHostException, etc. on JVM/Android
-            //println("IO exception - ${e.message}")
-            //e.printStackTrace()
-            NetworkResult.Error(NetworkingError.NoInternetConnection)
-        } catch (e: SerializationException) {
-            println("Serialization error (staying online): ${e.message}")
-            loggingRepository.logWarning("SerializationException: ${e.message}")
-            NetworkResult.Error(NetworkingError.SerializationError(message = e.message))
-        } catch (e: Exception) {
-            currentCoroutineContext().ensureActive() //Check for cancellation exceptions
-
-            // ✅ Detect platform-specific network errors by message/type name
-            // on iOS, NSURLErrorDomain errors land here as they don't extend IOException
-            val isNetworkingError = isNetworkException(e)
-            println("Is network connection error: $isNetworkingError: ${e.message}")
-            if (isNetworkingError) {
-                println("Platform network exception - ${e.message}")
-                NetworkResult.Error(NetworkingError.NoInternetConnection)
-            } else {
-                println("Unknown exception (staying online): ${e.message}")
-                loggingRepository.logWarning("safeCall failed: ${e.message}")
-                NetworkResult.Error(NetworkingError.Unknown(message = e.message))
-            }
-        }
-    }
-
-    // Inspect exception type name since iOS network errors don't have a common base class
-    private fun isNetworkException(e: Exception): Boolean {
-        val name = e::class.simpleName ?: ""
-        val message = e.message ?: ""
-        // Ktor body-deserialization errors mention class paths containing "network" — exclude them
-        if (message.startsWith("Expected response body")) return false
-        return name.contains("NSURLError", ignoreCase = true)
-                || name.contains("Network", ignoreCase = true)
-                || name.contains("Socket", ignoreCase = true)
-                || name.contains("Connection", ignoreCase = true)
-                || message.contains("network", ignoreCase = true)
-                || message.contains("internet", ignoreCase = true)
-                || message.contains("offline", ignoreCase = true)
-                || message.contains("unreachable", ignoreCase = true)
-    }
-
-    // Helper function to map HTTP status codes to NetworkingError
-    private fun mapHttpStatusToError(statusCode: Int, message: String?): NetworkingError {
-        return when (statusCode) {
-            400 -> NetworkingError.BadRequest(message = message)
-            401 -> NetworkingError.Unauthorized(message = message)
-            403 -> NetworkingError.Forbidden(message = message)
-            404 -> NetworkingError.NotFound(message = message)
-            408 -> NetworkingError.NetworkTimeout(message = message)
-            409 -> NetworkingError.Conflict(message = message)
-            413 -> NetworkingError.PayloadTooLarge(message = message)
-            429 -> NetworkingError.TooManyRequests(message = message)
-            in 500..599 -> NetworkingError.ServerError(message = message)
-            else -> NetworkingError.Unknown(message = message)
-        }
-    }
+    ): NetworkResult<R, NetworkingError> = safeNetworkCall(loggingRepository, block)
 
     // Now all the safe methods use the single safeCall function
     private suspend inline fun <reified T> safeGet(endpoint: String): NetworkResult<T, NetworkingError> {
@@ -370,20 +278,6 @@ class NetworkUtils(
         )
     }
 
-
-    @Serializable
-    data class RefreshRequest(
-        val refreshToken: String,
-        val deviceName: String,
-        val deviceType: DEVICETYPE
-    )
-
-    suspend fun refresh(refreshToken: String): NetworkResult<TokenPair, NetworkingError> {
-        return safeAuthPost<RefreshRequest, TokenPair>(
-            endpoint = "/auth/refresh",
-            body = RefreshRequest(refreshToken = refreshToken, deviceName = appVersion.getDeviceName(), deviceType = appVersion.getDeviceType())
-        )
-    }
 
     @Serializable
     data class LogoutRequest(

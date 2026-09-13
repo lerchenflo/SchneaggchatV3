@@ -34,6 +34,7 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.events.data.EventRepository
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.EventParticipationStatus
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
 import org.lerchenflo.schneaggchatv3mp.events.domain.hasEnded
 import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
 import org.lerchenflo.schneaggchatv3mp.events.domain.newEvent
@@ -109,6 +110,10 @@ class EventsViewModel(
         currentState.copy(
             birthdaysByMonthDay = buildBirthdaysByMonthDay(currentState.friendsById.values, ownUser)
         )
+    }.combine(preferenceManager.getEventsViewModeFlow()) { currentState, viewMode ->
+        // Persisted view mode is the single source of truth - OnViewModeChange only writes the
+        // preference, so the switch survives app restarts and never flickers back to a default.
+        currentState.copy(viewMode = viewMode)
     }.combine(ownUserIdFlow) { currentState, ownUserId ->
         currentState.copy(
             ownUserId = ownUserId,
@@ -310,13 +315,18 @@ class EventsViewModel(
             }
 
             is EventsAction.OnViewModeChange -> {
-                _state.update { it.copy(viewMode = action.mode) }
+                viewModelScope.launch {
+                    preferenceManager.saveEventsViewMode(action.mode)
+                }
             }
 
             is EventsAction.OnCalendarNavigate -> {
+                // viewMode lives in the combined state (from preferences), not in _state.
+                val viewMode = state.value.viewMode
                 _state.update { current ->
                     val step = if (action.forward) 1 else -1
-                    val newAnchor = when (current.viewMode) {
+                    val newAnchor = when (viewMode) {
+                        EventsViewMode.DAY -> current.calendarAnchorDate.plus(DatePeriod(days = step))
                         EventsViewMode.MONTH -> current.calendarAnchorDate.plus(DatePeriod(months = step))
                         EventsViewMode.LIST, EventsViewMode.UPCOMING -> current.calendarAnchorDate
                     }

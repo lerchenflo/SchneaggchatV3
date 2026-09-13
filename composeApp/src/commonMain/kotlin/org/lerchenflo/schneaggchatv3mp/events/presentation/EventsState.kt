@@ -9,11 +9,8 @@ import org.lerchenflo.schneaggchatv3mp.chat.domain.Group
 import org.lerchenflo.schneaggchatv3mp.chat.domain.User
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.MapStyleSetting
 import org.lerchenflo.schneaggchatv3mp.events.domain.Event
+import org.lerchenflo.schneaggchatv3mp.events.domain.EventsViewMode
 import kotlin.time.Clock
-
-enum class EventsViewMode {
-    LIST, UPCOMING, MONTH
-}
 
 @Stable
 data class EventsState(

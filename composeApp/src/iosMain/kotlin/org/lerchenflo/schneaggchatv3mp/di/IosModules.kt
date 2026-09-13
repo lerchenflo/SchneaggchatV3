@@ -10,6 +10,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.database.iosAppDatabaseBuilder
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
+import org.lerchenflo.schneaggchatv3mp.datasource.network.createAuthenticatedHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createSocketHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
@@ -29,8 +30,8 @@ val IosDatabaseModule = module {
 //type is bound across separate module {} blocks in this file (see
 //https://github.com/InsertKoinIO/koin-compiler-plugin/issues/84).
 val IosHttpModule = module {
-    single<HttpClient>(named(HTTPCLIENTTYPE.AUTHENTICATED)) {createHttpClient(Darwin.create(), get(), true)}
-    single<HttpClient>(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)) {createHttpClient(Darwin.create(), get(), false)}
+    single<HttpClient>(named(HTTPCLIENTTYPE.AUTHENTICATED)) { createAuthenticatedHttpClient(Darwin.create(), get()) }
+    single<HttpClient>(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)) { createHttpClient(Darwin.create()) }
     single<HttpClient>(named(HTTPCLIENTTYPE.SOCKET)) { createSocketHttpClient(Darwin.create()) }
 }
 

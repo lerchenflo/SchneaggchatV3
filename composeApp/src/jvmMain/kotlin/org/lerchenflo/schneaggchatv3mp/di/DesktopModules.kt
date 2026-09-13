@@ -11,6 +11,7 @@ import org.koin.dsl.module
 import org.lerchenflo.schneaggchatv3mp.database.desktopAppDatabaseBuilder
 import org.lerchenflo.schneaggchatv3mp.datasource.database.AppDatabase
 import org.lerchenflo.schneaggchatv3mp.datasource.network.SOCKET_PING_INTERVAL_MS
+import org.lerchenflo.schneaggchatv3mp.datasource.network.createAuthenticatedHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createHttpClient
 import org.lerchenflo.schneaggchatv3mp.datasource.network.createSocketHttpClient
 import org.lerchenflo.schneaggchatv3mp.settings.data.AppVersion
@@ -33,8 +34,8 @@ val desktopAppDatabaseModule = module {
 //https://github.com/InsertKoinIO/koin-compiler-plugin/issues/84). Android/JVM tolerate the split,
 //but this is kept unified across platforms for consistency.
 val desktopHttpModule = module {
-    single<HttpClient>(named(HTTPCLIENTTYPE.AUTHENTICATED)) {createHttpClient(OkHttp.create(), get(),true)}
-    single<HttpClient>(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)) {createHttpClient(OkHttp.create(), get(),false)}
+    single<HttpClient>(named(HTTPCLIENTTYPE.AUTHENTICATED)) { createAuthenticatedHttpClient(OkHttp.create(), get()) }
+    single<HttpClient>(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)) { createHttpClient(OkHttp.create()) }
     single<HttpClient>(named(HTTPCLIENTTYPE.SOCKET)) {
         createSocketHttpClient(OkHttp.create {
             // The OkHttp engine ignores the WebSockets plugin's pingIntervalMillis; without this

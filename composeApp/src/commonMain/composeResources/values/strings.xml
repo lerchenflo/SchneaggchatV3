@@ -336,6 +336,7 @@
     <string name="events_screen_title">events</string>
     <string name="events_empty">No events yet. Create one yourself!</string>
     <string name="events_view_list">List</string>
+    <string name="events_view_day">Day</string>
     <string name="events_view_upcoming">Upcoming</string>
     <string name="events_view_month">Month</string>
     <string name="weekday_monday_short">Mon</string>
@@ -347,6 +348,7 @@
     <string name="weekday_sunday_short">Sun</string>
     <string name="events_calendar_previous_period">Previous</string>
     <string name="events_calendar_next_period">Next</string>
+    <string name="events_day_empty">No events on this day</string>
     <string name="events_upcoming_empty">No upcoming events</string>
     <string name="events_month_empty">No events this month</string>
     <string name="birthday_label">Birthday</string>
