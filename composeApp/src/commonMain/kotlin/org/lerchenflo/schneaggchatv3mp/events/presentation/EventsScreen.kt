@@ -33,7 +33,6 @@ import org.lerchenflo.schneaggchatv3mp.events.domain.Event
 import org.lerchenflo.schneaggchatv3mp.events.domain.goingUserIds
 import org.lerchenflo.schneaggchatv3mp.events.domain.isUnseenBy
 import org.lerchenflo.schneaggchatv3mp.events.domain.statusOf
-import org.lerchenflo.schneaggchatv3mp.events.presentation.birthdaysOn
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventEditPopup
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventItem
 import org.lerchenflo.schneaggchatv3mp.events.presentation.uielements.EventJoinPopup
@@ -225,6 +224,7 @@ fun EventsScreen(
                     onPickLocation = { onAction(EventsAction.OnPickLocationClick(it)) },
                     onDelete = { deleteGroup, deleteEvent -> onAction(EventsAction.OnDeleteEvent(event = selectedEvent, deleteGroup = deleteGroup, deleteEvent = deleteEvent)) },
                     isMobile = state.isMobile,
+                    isSaving = state.isSavingEvent,
                 )
             } else {
                 val isJoined = selectedEvent.groupId != null &&

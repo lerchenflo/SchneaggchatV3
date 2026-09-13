@@ -4,8 +4,8 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import org.jetbrains.compose.resources.painterResource
 import org.lerchenflo.schneaggchatv3mp.app.App
-import org.maplibre.compose.desktop.ProvideMapHost
-import org.maplibre.compose.desktop.rememberAwtComposeMapHost
+import org.maplibre.compose.desktop.ProvideMapPresentationHost
+import org.maplibre.compose.desktop.rememberAwtComposeMapPresentationHost
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.schneaggchat_logo_v3
 import java.awt.Dimension
@@ -25,7 +25,7 @@ fun main() = application {
         window.minimumSize = Dimension(400, 400)
 
         //Every AWT window owns its own GPU context, so the map needs this window's host to render
-        ProvideMapHost(host = rememberAwtComposeMapHost(window)) {
+        ProvideMapPresentationHost(host = rememberAwtComposeMapPresentationHost(window)) {
             App()
         }
     }

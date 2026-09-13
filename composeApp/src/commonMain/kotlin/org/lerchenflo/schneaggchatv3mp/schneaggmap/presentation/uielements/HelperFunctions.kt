@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
-import org.maplibre.compose.camera.CameraState
+import org.maplibre.compose.map.MapState
 import org.maplibre.spatialk.geojson.Position
 
 /**
@@ -51,15 +51,15 @@ fun Modifier.absoluteOffsetWithAnchor(
 
 @Composable
 fun MapIcon(
-    cameraState: CameraState,
+    mapState: MapState,
     targetPosition: Position,
     modifier: Modifier = Modifier,
     anchor: Alignment = Alignment.Center,
     content: @Composable (BoxScope.() -> Unit),
 ) {
     // 1. Project the geographic position to screen pixels
-    val dpOffset = remember(targetPosition, cameraState.viewport) {
-        cameraState.screenLocationFromPosition(targetPosition)
+    val dpOffset = remember(targetPosition, mapState.viewport) {
+        mapState.screenLocationFromPosition(targetPosition)
     }
 
     // If projection isn't ready, don't render anything

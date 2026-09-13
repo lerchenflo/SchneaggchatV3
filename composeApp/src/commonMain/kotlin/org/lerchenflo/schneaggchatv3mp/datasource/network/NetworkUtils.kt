@@ -386,6 +386,33 @@ class NetworkUtils(
     }
 
     @Serializable
+    data class LogoutRequest(
+        val refreshToken: String,
+        val notificationToken: String? = null,
+        val isAndroid: Boolean? = null,
+    )
+
+    /**
+     * Ends this device's session on the server. Uses [authHttpClient]: the refresh token in the
+     * body is what identifies the session, so an expired access token must not send this through
+     * the Auth plugin and trigger a token refresh for a session we are about to kill anyway.
+     */
+    suspend fun logout(
+        refreshToken: String,
+        notificationToken: String?,
+        isAndroid: Boolean,
+    ): NetworkResult<Unit, NetworkingError> {
+        return safeAuthPost<LogoutRequest, Unit>(
+            endpoint = "/auth/logout",
+            body = LogoutRequest(
+                refreshToken = refreshToken,
+                notificationToken = notificationToken?.ifBlank { null },
+                isAndroid = if (notificationToken.isNullOrBlank()) null else isAndroid,
+            )
+        )
+    }
+
+    @Serializable
     data class NotificationTokenRequest(
         val token: String,
         val isAndroid: Boolean

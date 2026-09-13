@@ -25,6 +25,7 @@ data class EventsState(
     val friendsById: Map<String, User> = emptyMap(),
     val groups: List<Group> = emptyList(),
     val isJoiningEvent: Boolean = false,
+    val isSavingEvent: Boolean = false,
     val mapStyleUrl: String = MapStyleSetting.LIBERTY.tileUrl,
     val isMobile: Boolean = true,
     val viewMode: EventsViewMode = EventsViewMode.WEEK,

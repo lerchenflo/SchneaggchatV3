@@ -215,6 +215,10 @@
     <string name="group_expired">Expired</string>
     <string name="delete_group_timer">Delete group timer</string>
     <string name="confirm_delete_group_timer">Remove this group's expiry date? It will no longer auto-expire.</string>
+    <string name="set_group_timer">Set delete timer</string>
+    <string name="change_group_timer">Change delete timer</string>
+    <string name="group_timer_picker_title">Delete group at</string>
+    <string name="group_timer_picker_info">At this time the group chat and all its messages are deleted for everyone. Only admins can change the timer.</string>
     <string name="delete_event">Delete event</string>
     <string name="event_delete_failed">❌ Failed to delete event</string>
     <string name="event_delete_warning_message">Choose what happens to the event and its group chat. Unlinking keeps both, deleting removes only what you choose.</string>

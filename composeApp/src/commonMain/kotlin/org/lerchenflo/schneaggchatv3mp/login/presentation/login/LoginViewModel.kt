@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.app.ApplicationScope
+import org.lerchenflo.schneaggchatv3mp.app.logging.LogEntry
+import org.lerchenflo.schneaggchatv3mp.app.logging.LoggingRepository
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Navigator
 import org.lerchenflo.schneaggchatv3mp.app.navigation.Route
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
@@ -21,8 +23,26 @@ class LoginViewModel(
     private val appRepository: AppRepository,
     private val preferenceManager: Preferencemanager,
     private val navigator: Navigator,
-    private val applicationScope: ApplicationScope
+    private val applicationScope: ApplicationScope,
+    private val loggingRepository: LoggingRepository
 ): ViewModel() {
+
+    var logs by mutableStateOf<List<LogEntry>>(emptyList())
+        private set
+
+    init {
+        viewModelScope.launch {
+            loggingRepository.getLogs().collect { loglist ->
+                logs = loglist
+            }
+        }
+    }
+
+    fun onClearLogs() {
+        viewModelScope.launch {
+            loggingRepository.clearLogs()
+        }
+    }
 
 
     var username by mutableStateOf("")

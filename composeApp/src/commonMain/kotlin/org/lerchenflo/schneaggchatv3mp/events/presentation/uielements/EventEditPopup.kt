@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.height
@@ -121,6 +120,7 @@ fun EventEditPopup(
     onPickLocation: (Event) -> Unit = {},
     onDelete: (deleteGroup: Boolean, deleteEvent: Boolean) -> Unit = { _, _ -> },
     isMobile: Boolean = true,
+    isSaving: Boolean = false,
     modifier: Modifier = Modifier
 ) {
 
@@ -653,6 +653,7 @@ fun EventEditPopup(
                             onSave(currentEvent, typeIconBitmap, createGroup)
                         }
                     },
+                    isLoading = isSaving,
                     primary = false,
                     showOutline = true
                 )

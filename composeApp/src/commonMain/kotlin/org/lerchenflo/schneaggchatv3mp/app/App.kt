@@ -374,8 +374,15 @@ fun App() {
                 when (action) {
                     AppRepository.ActionChannel.ActionEvent.Login -> {
                         // Login action handled automatically by HTTP client refresh
-                        val refreshToken = preferenceManager.getTokens().refreshToken
-                        if (refreshToken.isNotBlank()) {
+                        val storedTokens = preferenceManager.getTokens()
+                        val refreshToken = storedTokens.refreshToken
+                        // A stored session that is still valid only has to be put back into
+                        // SessionCache - it needs no network call. Refreshing unconditionally here
+                        // meant every Login action spent a POST /auth/refresh, and the connectivity
+                        // loop raises one every 5 seconds for as long as the cache says logged out:
+                        // that alone kept the server's auth rate limit permanently tripped, which
+                        // in turn kept the session from ever coming back.
+                        if (refreshToken.isNotBlank() && !SessionCache.loginIfValid(storedTokens)) {
                             when (tokenManager.refreshTokens(refreshToken)) {
                                 RefreshResult.Invalidated -> {
                                     AppRepository.ActionChannel.sendActionSuspend(AppRepository.ActionChannel.ActionEvent.AuthInvalidated)

@@ -21,3 +21,8 @@ captures
 !*.xcodeproj/project.xcworkspace/
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
+
+# R8 mapping and Room schema exports
+mapping.txt
+**/mapping.txt
+**/schemas/**/*.json

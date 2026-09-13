@@ -20,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.AlertDialog
@@ -54,16 +55,21 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.mp.KoinPlatform
+import org.lerchenflo.schneaggchatv3mp.app.logging.formatAllLogs
 import org.lerchenflo.schneaggchatv3mp.app.theme.SchneaggchatTheme
 import org.lerchenflo.schneaggchatv3mp.datasource.AppRepository
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.LanguageSetting
 import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.getPasswordResetUrl
+import org.lerchenflo.schneaggchatv3mp.settings.presentation.miscSettings.LogsDialog
 import org.lerchenflo.schneaggchatv3mp.settings.presentation.uiElements.UrlChangeDialog
 import org.lerchenflo.schneaggchatv3mp.utilities.DeviceSizeConfiguration
 import org.lerchenflo.schneaggchatv3mp.utilities.LanguageService
+import org.lerchenflo.schneaggchatv3mp.utilities.ShareUtils
 import schneaggchatv3mp.composeapp.generated.resources.Res
 import schneaggchatv3mp.composeapp.generated.resources.change_server_url
+import schneaggchatv3mp.composeapp.generated.resources.misc_settings_logs
 import schneaggchatv3mp.composeapp.generated.resources.version
 
 @Preview()
@@ -142,6 +148,7 @@ fun LoginScreen(
 
 
         var showUrlChangeDialog by remember {mutableStateOf(false)}
+        var showLogsDialog by remember {mutableStateOf(false)}
 
         //Responsive UI mit scaffold
         Scaffold(
@@ -197,7 +204,25 @@ fun LoginScreen(
                             )
                         },
                         text = {
-                            stringResource(Res.string.change_server_url)
+                            Text(stringResource(Res.string.change_server_url))
+                        }
+                    )
+
+                    FloatingActionButtonMenuItem(
+                        onClick = {
+                            showLogsDialog = true
+                            menuExpanded = false
+                        },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.List,
+                                contentDescription = "show logs",
+                                modifier = Modifier
+                                    .size(48.dp)
+                            )
+                        },
+                        text = {
+                            Text(stringResource(Res.string.misc_settings_logs))
                         }
                     )
                 }
@@ -212,6 +237,17 @@ fun LoginScreen(
                         showUrlChangeDialog = false
                                 },
                     serverUrl = viewModel.serverUrl
+                )
+            }
+
+            if(showLogsDialog){
+                LogsDialog(
+                    logs = viewModel.logs,
+                    onDismiss = {showLogsDialog = false},
+                    onClearLogs = {viewModel.onClearLogs()},
+                    onCopyAllLogs = {filteredLogs ->
+                        KoinPlatform.getKoin().get<ShareUtils>().copyToClipboard(formatAllLogs(filteredLogs))
+                    }
                 )
             }
 

@@ -143,9 +143,6 @@ val sharedmodule = module{
 
     viewModelOf(::ChatSelectorViewModel)
 
-    viewModelOf(::ChatViewModel)
-
-    viewModelOf(::ChatDetailsViewmodel)
 
     viewModelOf(::BirthdaysViewModel)
 
@@ -162,6 +159,40 @@ val sharedmodule = module{
     viewModelOf(::SignUpViewModel)
 
     // Explicit lambda because the nullable initialEntryId can't be resolved by viewModelOf
+
+    viewModel { (chatId: String, isGroup: Boolean) ->
+        ChatViewModel(
+            appRepository = get(),
+            messageRepository = get(),
+            userRepository = get(),
+            groupRepository = get(),
+            settingsRepository = get(),
+            navigator = get(),
+            loggingRepository = get(),
+            pictureManager = get(),
+            permissionsManager = get(),
+            audioManager = get(),
+            applicationScope = get(),
+            chatId = chatId,
+            isGroup = isGroup
+        )
+
+    }
+
+    // Explicit lambda because the runtime chatId/isGroup can't be resolved by viewModelOf
+    viewModel { (chatId: String, isGroup: Boolean) ->
+        ChatDetailsViewmodel(
+            groupRepository = get(),
+            navigator = get(),
+            userRepository = get(),
+            appRepository = get(),
+            pictureManager = get(),
+            eventRepository = get(),
+            chatId = chatId,
+            isGroup = isGroup
+        )
+    }
+
     viewModel { (initialEntryId: String?, currentlyEditedEvent: Event?) ->
         SchneaggmapViewModel(
             navigator = get(),

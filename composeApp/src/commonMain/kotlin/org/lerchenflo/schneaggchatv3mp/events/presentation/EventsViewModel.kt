@@ -190,39 +190,52 @@ class EventsViewModel(
             is EventsAction.OnSaveEvent -> {
                 val event = action.event
                 viewModelScope.launch {
-                    val profilePic = action.typeIcon?.let { pictureManager.encodeImageBitmap(it) }
-                    val eventid = if (event.id == "") null else event.id
+                    // Guard set before the first suspend call, same as OnJoinEvent: a second tap on
+                    // Save while the upload is in flight would create the event twice.
+                    if (_state.value.isSavingEvent) return@launch
+                    _state.update { it.copy(isSavingEvent = true) }
 
-                    appRepository.upsertEvent(
-                        eventId = eventid,
-                        type = event.type,
-                        title = event.title,
-                        description = event.description,
-                        createGroup = action.createGroup,
-                        location = event.location,
-                        startDate = event.startDate,
-                        closeDate = event.closeDate,
-                        invitedUsers = event.invitedUsers,
-                        visibility = event.visibility,
-                        maxUsers = event.maxUsers,
-                        groupDeleteDelay = event.groupDeleteDelay,
-                        profilePic = profilePic,
-                    )
+                    try {
+                        val profilePic = action.typeIcon?.let { pictureManager.encodeImageBitmap(it) }
+                        val eventid = if (event.id == "") null else event.id
 
-                    //Newly created event
-                    if (eventid == null) {
-                        SnackbarManager.showMessage(
-                            getString(
-                                if (action.createGroup) Res.string.event_and_group_created
-                                else Res.string.event_created
+                        val saved = appRepository.upsertEvent(
+                            eventId = eventid,
+                            type = event.type,
+                            title = event.title,
+                            description = event.description,
+                            createGroup = action.createGroup,
+                            location = event.location,
+                            startDate = event.startDate,
+                            closeDate = event.closeDate,
+                            invitedUsers = event.invitedUsers,
+                            visibility = event.visibility,
+                            maxUsers = event.maxUsers,
+                            groupDeleteDelay = event.groupDeleteDelay,
+                            profilePic = profilePic,
+                        )
+
+                        // The error is already on the ErrorChannel. The popup stays open with the
+                        // draft so the user can retry instead of losing everything they typed.
+                        if (!saved) return@launch
+
+                        //Newly created event
+                        if (eventid == null) {
+                            SnackbarManager.showMessage(
+                                getString(
+                                    if (action.createGroup) Res.string.event_and_group_created
+                                    else Res.string.event_created
+                                )
                             )
-                        )
-                    }
+                        }
 
-                    _state.update {
-                        it.copy(
-                            selectedEvent = null
-                        )
+                        _state.update {
+                            it.copy(
+                                selectedEvent = null
+                            )
+                        }
+                    } finally {
+                        _state.update { it.copy(isSavingEvent = false) }
                     }
                 }
             }

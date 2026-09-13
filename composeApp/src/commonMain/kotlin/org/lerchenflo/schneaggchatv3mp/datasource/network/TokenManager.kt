@@ -29,6 +29,8 @@ import org.lerchenflo.schneaggchatv3mp.datasource.preferences.Preferencemanager
 import org.lerchenflo.schneaggchatv3mp.di.HTTPCLIENTTYPE
 import org.lerchenflo.schneaggchatv3mp.utilities.JwtUtils
 import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
@@ -53,8 +55,11 @@ class TokenManager(
     private val preferenceManager: Preferencemanager,
     private val loggingRepository: LoggingRepository,
 ) {
-    /** How long a Retryable failure suppresses further network attempts for the same refresh token. */
+    /** How long the first Retryable failure suppresses further network attempts for the same refresh token. */
     private val retryCooldownDuration = 5.seconds
+
+    /** Ceiling for the doubling in [recordCooldown]. */
+    private val maxRetryCooldownDuration = 5.minutes
 
     /** Refresh proactively once the access token has less than this much validity left. */
     private val proactiveRefreshThresholdMinutes = 2L
@@ -62,6 +67,7 @@ class TokenManager(
     private data class Cooldown(val refreshToken: String, val until: Instant, val error: NetworkingError)
 
     private val refreshMutex = Mutex()
+    private var consecutiveRetryableFailures = 0
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var inFlight: Deferred<RefreshResult>? = null
     private var cooldown: Cooldown? = null
@@ -136,8 +142,21 @@ class TokenManager(
         // doRefresh runs outside the mutex; take it so this write is visible to the
         // cooldown check in refreshTokens(), which reads under the same lock.
         refreshMutex.withLock {
-            cooldown = Cooldown(refreshToken, Clock.System.now() + retryCooldownDuration, error)
+            consecutiveRetryableFailures++
+            cooldown = Cooldown(refreshToken, Clock.System.now() + currentRetryCooldown(), error)
         }
+    }
+
+    /**
+     * Doubles the suppression window per consecutive failure. A fixed 5s window is shorter than the
+     * period of the callers that poll for a session (the connectivity loop retries every 5s), so a
+     * refresh that keeps failing was retried indefinitely at ~12 requests a minute - enough to keep
+     * the server's rate limiter permanently tripped, which then kept the refresh failing. Backing
+     * off lets the limiter refill so the session can actually recover.
+     */
+    private fun currentRetryCooldown(): Duration {
+        val doublings = (consecutiveRetryableFailures - 1).coerceIn(0, 6)
+        return (retryCooldownDuration * (1 shl doublings)).coerceAtMost(maxRetryCooldownDuration)
     }
 
     private suspend fun doRefresh(refreshToken: String): RefreshResult {
@@ -159,6 +178,10 @@ class TokenManager(
                 }
 
                 is NetworkResult.Success -> {
+                    refreshMutex.withLock {
+                        consecutiveRetryableFailures = 0
+                        cooldown = null
+                    }
                     // Persist tokens before returning - the HTTP client caches whatever
                     // loadBearerTokens() returns right after this call completes.
                     withContext(NonCancellable) {

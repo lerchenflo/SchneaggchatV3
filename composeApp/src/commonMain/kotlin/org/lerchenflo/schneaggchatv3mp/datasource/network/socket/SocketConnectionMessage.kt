@@ -200,7 +200,13 @@ suspend fun handleSocketConnectionMessage(ownId: String, message: String) {
                         ?: group?.members?.find { it.userId == message.senderId }?.memberName
                         ?: ""
 
-                    if (OpenChatTracker.isChatOpen(chatId = message.senderId, isGroup = message.groupMessage)){
+                    // Group messages live under the receiver (the group), single messages under the
+                    // sender - the same id ChatScreen registers with OpenChatTracker (and that
+                    // Message.toNotificationContent() uses). Comparing the sender's user id against
+                    // an open group chat never matched, so group messages notified even while that
+                    // group chat was open and focused.
+                    val chatId = if (message.groupMessage) message.receiverId else message.senderId
+                    if (OpenChatTracker.isChatOpen(chatId = chatId, isGroup = message.groupMessage)){
                         if (!AppLifecycleManager.isAppInForeground) {
                             println("Noti in current chat, but app is minimized, showing noti")
                             NotificationManager.showNotification(message, fallbackGroupName = group?.name)
