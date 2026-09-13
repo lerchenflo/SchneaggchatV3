@@ -6,7 +6,7 @@ agp = "9.4.0"
 kotlinx-datetime = "0.8.0" #Check for voice message crash when updating
 material3 = "1.11.0-alpha07" #Test for ios input crashes when updating (IRLinkage error crash when clicking on any textfield)
 cryptographyProviderOptimal = "0.6.0" #update same as material3
-composeBom = "2026.08.00" #Check for popup crashes when updating
+composeBom = "2026.09.00" #Check for popup crashes when updating
 
 
 

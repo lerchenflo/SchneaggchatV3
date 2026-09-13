@@ -20,9 +20,12 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapAction
@@ -31,12 +34,15 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.Schne
 import org.lerchenflo.schneaggchatv3mp.utilities.location.DeviceLocation
 import org.lerchenflo.schneaggchatv3mp.utilities.location.LocationService
 import org.maplibre.compose.camera.CameraPosition
-import org.maplibre.compose.camera.CameraState
 import org.maplibre.compose.location.LocationAccuracy
 import org.maplibre.compose.location.LocationRequest
 import org.maplibre.compose.location.rememberDefaultLocationProvider
 import org.maplibre.compose.location.rememberLocationState
-import org.maplibre.compose.style.rememberStyleState
+import org.maplibre.compose.map.DefaultMapRuntime
+import org.maplibre.compose.map.MapState
+import org.maplibre.compose.map.MaplibreMap
+import org.maplibre.compose.style.BaseStyle
+import org.maplibre.compose.util.MaplibreComposable
 import org.maplibre.spatialk.geojson.Position
 import kotlin.math.ln
 
@@ -51,9 +57,9 @@ private const val MAX_ZOOM = 20.0
  * [ComposeView] on that display, and the existing map-layer composable renders inside it unchanged.
  * This is the documented path for putting Compose UI on a car app's map surface.
  *
- * Owns the [CameraState] itself (outside Compose - see maplibre-compose's `CameraState` class,
- * which has a public constructor unlike `StyleState`) so the map action strip buttons and the
- * gesture callbacks below can drive the camera without reaching into the composition.
+ * Owns the [MapState] itself (outside Compose - created directly through [DefaultMapRuntime]
+ * instead of `rememberMapState`, which requires a composition) so the map action strip buttons and
+ * the gesture callbacks below can drive the camera without reaching into the composition.
  */
 class CarMapSurfaceRenderer(
     private val carContext: CarContext,
@@ -63,9 +69,11 @@ class CarMapSurfaceRenderer(
     private val coroutineScope: CoroutineScope,
 ) : SurfaceCallback {
 
-    val cameraState = CameraState(
-        CameraPosition(target = Position(9.92, 47.32), zoom = DEFAULT_ZOOM)
-    )
+    //`mapState` is captured by `content` before it is assigned - safe because `content` isn't
+    //invoked until the map actually composes it, by which point the assignment below has run (see
+    //the same lateinit pattern in SchneaggmapScreen).
+    lateinit var mapState: MapState
+        private set
 
     private var virtualDisplay: VirtualDisplay? = null
     private var presentation: Presentation? = null
@@ -79,9 +87,28 @@ class CarMapSurfaceRenderer(
     private val lastKnownLocation = MutableStateFlow<DeviceLocation?>(null)
 
     init {
+        mapState = DefaultMapRuntime.instance.createMapState(
+            baseStyle = BaseStyle.Uri(displayState.value.mapStyleUrl),
+            cameraPosition = CameraPosition(target = Position(9.92, 47.32), zoom = DEFAULT_ZOOM),
+        ) {
+            CarMapContent(displayState = displayState, mapState = mapState, onAction = onAction)
+        }
+
         locationService.getLocationFlow(fastUpdates = false)
             .onEach { lastKnownLocation.value = it }
             .launchIn(coroutineScope)
+
+        //Created directly through DefaultMapRuntime rather than rememberMapState, so the base
+        //style isn't auto-declared - the car and phone can independently pick dark/light styles,
+        //so this has to be pushed in manually whenever the resolved style URL actually changes.
+        displayState.map { it.mapStyleUrl }.distinctUntilChanged()
+            .onEach { url -> mapState.style.asMutable?.baseStyle = BaseStyle.Uri(url) }
+            .launchIn(coroutineScope)
+
+        //rememberMapState would close this for us on leaving composition; created directly through
+        //DefaultMapRuntime instead (see the class doc), so it's closed explicitly when the
+        //surrounding screen (and its scope) is destroyed.
+        coroutineScope.coroutineContext[Job]?.invokeOnCompletion { mapState.close() }
     }
 
     override fun onSurfaceAvailable(surfaceContainer: SurfaceContainer) {
@@ -110,11 +137,7 @@ class CarMapSurfaceRenderer(
                     setViewTreeViewModelStoreOwner(owners)
                     setViewTreeSavedStateRegistryOwner(owners)
                     setContent {
-                        CarMapContent(
-                            displayState = displayState,
-                            cameraState = cameraState,
-                            onAction = onAction,
-                        )
+                        CarMapSurface(mapState = mapState)
                     }
                 }
                 setContentView(view)
@@ -136,13 +159,18 @@ class CarMapSurfaceRenderer(
 
     override fun onScroll(distanceX: Float, distanceY: Float) {
         val center = surfaceCenter ?: return
-        val from = cameraState.positionFromScreenLocation(center) ?: return
-        val to = cameraState.positionFromScreenLocation(Offset(center.x + distanceX, center.y + distanceY)) ?: return
-        val current = cameraState.position
-        cameraState.position = current.copy(
-            target = Position(
-                longitude = current.target.longitude + (to.longitude - from.longitude),
-                latitude = current.target.latitude + (to.latitude - from.latitude),
+        val density = Density(surfaceDensity)
+        val from = with(density) { mapState.positionFromScreenLocation(DpOffset(center.x.toDp(), center.y.toDp())) } ?: return
+        val to = with(density) {
+            mapState.positionFromScreenLocation(DpOffset((center.x + distanceX).toDp(), (center.y + distanceY).toDp()))
+        } ?: return
+        val current = mapState.cameraPosition
+        mapState.setCameraPosition(
+            current.copy(
+                target = Position(
+                    longitude = current.target.longitude + (to.longitude - from.longitude),
+                    latitude = current.target.latitude + (to.latitude - from.latitude),
+                )
             )
         )
     }
@@ -154,7 +182,7 @@ class CarMapSurfaceRenderer(
     override fun onClick(x: Float, y: Float) {
         coroutineScope.launch {
             val dpOffset = with(Density(surfaceDensity)) { DpOffset(x.toDp(), y.toDp()) }
-            val features = cameraState.queryRenderedFeatures(dpOffset)
+            val features = mapState.queryRenderedFeatures(dpOffset)
             val clickedId = features.firstOrNull()?.id?.content ?: return@launch
 
             val state = displayState.value
@@ -166,27 +194,37 @@ class CarMapSurfaceRenderer(
     }
 
     fun zoomBy(delta: Double) {
-        val current = cameraState.position
-        cameraState.position = current.copy(zoom = (current.zoom + delta).coerceIn(MIN_ZOOM, MAX_ZOOM))
+        val current = mapState.cameraPosition
+        mapState.setCameraPosition(current.copy(zoom = (current.zoom + delta).coerceIn(MIN_ZOOM, MAX_ZOOM)))
     }
 
     fun recenter() {
         val location = lastKnownLocation.value ?: return
-        cameraState.position = cameraState.position.copy(
-            target = Position(longitude = location.coordinates.long, latitude = location.coordinates.lat),
-            zoom = RECENTER_ZOOM,
+        mapState.setCameraPosition(
+            mapState.cameraPosition.copy(
+                target = Position(longitude = location.coordinates.long, latitude = location.coordinates.lat),
+                zoom = RECENTER_ZOOM,
+            )
         )
     }
 }
 
 @Composable
+private fun CarMapSurface(mapState: MapState) {
+    MaplibreMap(
+        modifier = Modifier.fillMaxSize(),
+        state = mapState,
+    )
+}
+
+@Composable
+@MaplibreComposable
 private fun CarMapContent(
     displayState: StateFlow<SchneaggmapState>,
-    cameraState: CameraState,
+    mapState: MapState,
     onAction: (SchneaggmapAction) -> Unit,
 ) {
     val state by displayState.collectAsState()
-    val styleState = rememberStyleState()
     val locationProvider = rememberDefaultLocationProvider()
     val locationState = rememberLocationState(
         enabled = true,
@@ -196,10 +234,8 @@ private fun CarMapContent(
 
     SchneaggmapLayers(
         state = state,
-        cameraState = cameraState,
-        styleState = styleState,
-        ownLocation = locationState.location,
+        mapState = mapState,
+        ownLocation = locationState.lastLocation,
         onAction = onAction,
-        modifier = Modifier.fillMaxSize(),
     )
 }

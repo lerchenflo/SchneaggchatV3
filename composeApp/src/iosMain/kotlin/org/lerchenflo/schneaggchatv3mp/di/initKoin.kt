@@ -20,8 +20,6 @@ fun initKoin(){
             //Httpclient
             modules(
                 IosHttpModule,
-                IosHttpAuthModule,
-                IosSocketHttpModule,
 
                 IosDatastoreModule,
                 IosKSafeModule,

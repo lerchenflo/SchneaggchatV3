@@ -89,9 +89,9 @@ val sharedmodule = module{
         NetworkUtils(get(named(HTTPCLIENTTYPE.AUTHENTICATED)), get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get(), get())
     }
 
-    // AUTHENTICATED / NOT_AUTHENTICATED HttpClients are platform-specific (they need a concrete
-    // HttpClientEngine) - see androidHttpModule/androidHttpAuthModule, IosHttpModule/IosHttpAuthModule,
-    // desktopHttpModule/desktopHttpAuthModule. Not declared here.
+    // AUTHENTICATED / NOT_AUTHENTICATED / SOCKET HttpClients are platform-specific (they need a
+    // concrete HttpClientEngine) - see androidHttpModule, IosHttpModule, desktopHttpModule. Not
+    // declared here.
 
     singleOf(::Navigator)
 

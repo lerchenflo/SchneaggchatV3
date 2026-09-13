@@ -1,6 +1,6 @@
 package org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation
 
-import org.maplibre.compose.camera.CameraState
+import org.maplibre.compose.map.MapState
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sqrt
@@ -13,7 +13,7 @@ private const val EARTH_RADIUS_METERS = 6371000.0
 
 //The camera only knows its scale once the map has reported a viewport; until then everything that
 //converts dp to meters falls back to zero, which reads as "no snapping, no clustering yet".
-internal val CameraState.metersPerDpAtTarget: Double
+internal val MapState.metersPerDpAtTarget: Double
     get() = viewport?.metersPerDpAtTarget ?: 0.0
 
 //Flat-earth approximation - accurate enough for grouping markers that are at most a few

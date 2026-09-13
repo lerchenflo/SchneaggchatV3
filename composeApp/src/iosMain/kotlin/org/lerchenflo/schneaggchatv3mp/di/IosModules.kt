@@ -24,15 +24,13 @@ val IosDatabaseModule = module {
     single<RoomDatabase.Builder<AppDatabase>> { iosAppDatabaseBuilder() }
 }
 
+//Kept as one module (rather than one per qualifier) - the Koin compiler plugin has generated
+//colliding `dsl_single` klib symbols for Kotlin/Native targets when the same qualifier-annotated
+//type is bound across separate module {} blocks in this file (see
+//https://github.com/InsertKoinIO/koin-compiler-plugin/issues/84).
 val IosHttpModule = module {
     single<HttpClient>(named(HTTPCLIENTTYPE.AUTHENTICATED)) {createHttpClient(Darwin.create(), get(), true)}
-}
-
-val IosHttpAuthModule = module {
     single<HttpClient>(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)) {createHttpClient(Darwin.create(), get(), false)}
-}
-
-val IosSocketHttpModule = module {
     single<HttpClient>(named(HTTPCLIENTTYPE.SOCKET)) { createSocketHttpClient(Darwin.create()) }
 }
 

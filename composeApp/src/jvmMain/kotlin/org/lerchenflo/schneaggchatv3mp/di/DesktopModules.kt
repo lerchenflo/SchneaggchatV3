@@ -27,15 +27,14 @@ val desktopAppDatabaseModule = module {
     single<RoomDatabase.Builder<AppDatabase>> { desktopAppDatabaseBuilder() }
 }
 
+//Kept as one module (rather than one per qualifier) - the Koin compiler plugin has generated
+//colliding `dsl_single` klib symbols on Kotlin/Native targets when the same qualifier-annotated
+//type is bound across separate module {} blocks in the same file (see
+//https://github.com/InsertKoinIO/koin-compiler-plugin/issues/84). Android/JVM tolerate the split,
+//but this is kept unified across platforms for consistency.
 val desktopHttpModule = module {
     single<HttpClient>(named(HTTPCLIENTTYPE.AUTHENTICATED)) {createHttpClient(OkHttp.create(), get(),true)}
-}
-
-val desktopHttpAuthModule = module {
     single<HttpClient>(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)) {createHttpClient(OkHttp.create(), get(),false)}
-}
-
-val desktopSocketHttpModule = module {
     single<HttpClient>(named(HTTPCLIENTTYPE.SOCKET)) {
         createSocketHttpClient(OkHttp.create {
             // The OkHttp engine ignores the WebSockets plugin's pingIntervalMillis; without this

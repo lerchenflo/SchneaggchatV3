@@ -25,8 +25,6 @@ fun startKoinAndroid(androidContext: Context) {
             //Modules für Httpclient
             modules(
                 androidHttpModule,
-                androidHttpAuthModule,
-                androidSocketHttpModule,
 
                 androidDataStoreModule,
                 androidKsafeModule,
