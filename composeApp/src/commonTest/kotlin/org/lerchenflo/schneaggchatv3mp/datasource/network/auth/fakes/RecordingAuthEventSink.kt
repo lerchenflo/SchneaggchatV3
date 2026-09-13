@@ -10,7 +10,11 @@ class RecordingAuthEventSink : AuthEventSink {
     val invalidations = mutableListOf<InvalidationReason>()
     val unreachable = mutableListOf<NetworkingError>()
 
+    /** When set, [onSessionActive] throws - models a derived view that fails to update. */
+    var failOnSessionActive = false
+
     override fun onSessionActive(tokens: TokenPair) {
+        if (failOnSessionActive) throw IllegalStateException("fake sink failure")
         active += tokens
     }
 

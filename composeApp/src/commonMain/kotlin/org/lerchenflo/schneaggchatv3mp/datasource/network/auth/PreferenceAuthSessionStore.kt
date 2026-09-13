@@ -18,6 +18,6 @@ class PreferenceAuthSessionStore(
     }
 
     override suspend fun clear() {
-        preferencemanager.clearTokens()
+        preferencemanager.clearSessionCredentials()
     }
 }

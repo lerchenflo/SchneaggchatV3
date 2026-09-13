@@ -225,4 +225,52 @@ class SessionLifecycleTest {
         advance(2.seconds)
         assertIs<AuthSessionState.Active>(h.manager.state.value)
     }
+
+    @Test
+    fun ensureSessionReentryOnADegradedSessionKeepsStateAndRetryTimer() = runTest {
+        val h = AuthTestHarness(this)
+        val stored = h.storeSession(h.pair(accessValidFor = (-1).minutes))
+        assertIs<SessionCheck.Active>(h.manager.ensureSession())
+        runCurrent()                                        // stale access token: immediate attempt, fails (offline fallback), retry in 2 s
+        assertEquals(1, h.api.calls.size)
+        assertIs<AuthSessionState.Degraded>(h.manager.state.value)
+
+        // "Delete all app data" wipes SessionCache and routes back through here (case 50).
+        assertIs<SessionCheck.Active>(h.manager.ensureSession())
+
+        assertIs<AuthSessionState.Degraded>(h.manager.state.value, "re-hydration does not pretend the session is healthy")
+        assertEquals(listOf(stored, stored), h.sink.active, "the derived views are re-hydrated")
+        assertEquals(1, h.api.calls.size, "no extra attempt into the active cooldown")
+        h.api.enqueueSuccess(h.pair())
+        advance(2.seconds)
+        assertEquals(2, h.api.calls.size, "the original retry timer is still armed")
+        assertIs<AuthSessionState.Active>(h.manager.state.value)
+    }
+
+    @Test
+    fun loginAsAnotherUserDuringAnInFlightRefreshDoesNotHandTheWaiterTheNewSession() = runTest {
+        val h = AuthTestHarness(this)
+        h.storeSession(h.pair(sub = "user-1"))
+        h.manager.ensureSession()
+        val gate = CompletableDeferred<RefreshResult>()
+        h.api.enqueueGate(gate)
+
+        var outcome: RefreshOutcome? = null
+        launch { outcome = h.manager.refresh(RefreshReason.Reactive401) }
+        runCurrent()
+
+        val other = h.pair(sub = "user-2")
+        h.manager.onLoggedIn(other)
+        gate.complete(NetworkResult.Success(h.pair(sub = "user-1")))
+        runCurrent()
+
+        assertEquals(
+            RefreshOutcome.Invalidated(InvalidationReason.LoggedOut), outcome,
+            "user-1's request must not be retried with user-2's token",
+        )
+        assertEquals(other, h.store.stored)
+        assertEquals(other, h.manager.currentTokens())
+        assertEquals(1, h.store.writes, "the superseded refresh never wrote")
+        assertTrue(h.sink.invalidations.isEmpty(), "a login is not a server invalidation")
+    }
 }

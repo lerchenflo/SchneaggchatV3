@@ -13,6 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 /** R7, D2, D9, D10, D11, cases 13, 17, 44, 58. */
@@ -54,10 +55,11 @@ class BackoffTest {
     }
 
     @Test
-    fun capDelayGoesStraightToTheCap() {
+    fun fixedDelayCountsAsAnAttemptWithoutJoiningTheDoubling() {
         val backoff = RefreshBackoff(jitterFraction = 0.0)
-        assertEquals(120.seconds, backoff.capDelay())
+        assertEquals(30.seconds, backoff.fixedDelay(30.seconds))
         assertEquals(1, backoff.attempt)
+        assertEquals(4.seconds, backoff.nextDelay(), "a later retryable failure continues the doubling from there")
     }
 
     // ---------------------------------------------------------------- manager integration
@@ -208,6 +210,21 @@ class BackoffTest {
 
         h.manager.refresh(RefreshReason.Manual)
         assertEquals(2, h.api.calls.size)
+    }
+
+    @Test
+    fun schedulerWaitsForTheWallClockWhenItLagsBehindMonotonicTime() = runTest {
+        val h = activeHarness()
+        h.manager.refresh(RefreshReason.Reactive401)      // fails (offline fallback): retry armed for wall-clock t = 2 s
+        // The wall clock now runs 100 ms behind the monotonic time `delay` is driven by (drift,
+        // an NTP step). The timer wakes at monotonic 2 s while the wall clock still reads 1.9 s.
+        h.clock.lagMillis = 100
+
+        advance(2.seconds)
+        assertEquals(1, h.api.calls.size, "woke early by the wall clock: waits instead of running into its own cooldown")
+        advance(100.milliseconds)
+        assertEquals(2, h.api.calls.size, "fires once the wall clock reaches the instant it was armed for")
+        assertEquals(2_000L, h.callTimesMillis().last(), "by the wall clock the attempt happened exactly at the armed instant")
     }
 
     @Test

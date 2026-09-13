@@ -35,10 +35,14 @@ class RefreshBackoff(
         return if (retryAfter != null && retryAfter > jittered) retryAfter else jittered
     }
 
-    /** Delay for a permanently failing attempt: straight to the cap, still jittered. */
-    fun capDelay(): Duration {
+    /**
+     * Delay for an attempt that does not take part in the doubling (a permanently failing
+     * `Broken` outcome): the given [duration], jittered. Still counts as a failure, so a later
+     * retryable failure continues the doubling from where the streak left off.
+     */
+    fun fixedDelay(duration: Duration): Duration {
         attempt++
-        return jitter(cap)
+        return jitter(duration)
     }
 
     fun reset() {

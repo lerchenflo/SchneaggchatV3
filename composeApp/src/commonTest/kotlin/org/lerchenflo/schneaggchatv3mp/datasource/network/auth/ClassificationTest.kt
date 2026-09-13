@@ -12,7 +12,6 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 /** R6, D3, cases 14, 15, 16, 21, 24, 49, 51. */
@@ -65,7 +64,7 @@ class ClassificationTest {
             assertNotNull(h.store.stored, "$error must keep the credentials")
             assertTrue(h.sink.invalidations.isEmpty())
             val degraded = assertIs<AuthSessionState.Degraded>(h.manager.state.value)
-            assertEquals(h.clock.now() + 2.minutes, degraded.nextAttemptAt, "$error sits at the backoff cap")
+            assertEquals(h.clock.now() + 30.seconds, degraded.nextAttemptAt, "$error retries at the fixed Broken interval")
         }
     }
 
@@ -90,15 +89,15 @@ class ClassificationTest {
         assertIs<RefreshOutcome.Broken>(h.manager.refresh(RefreshReason.Reactive401))
         assertTrue(h.sink.unreachable.isEmpty())
 
-        advance(2.minutes)
+        advance(30.seconds)
         assertEquals(2, h.api.calls.size)
         assertTrue(h.sink.unreachable.isEmpty())
 
-        advance(2.minutes)
+        advance(30.seconds)
         assertEquals(3, h.api.calls.size)
         assertEquals(1, h.sink.unreachable.size, "surfaced after the third permanent failure")
 
-        advance(2.minutes)
+        advance(30.seconds)
         assertEquals(4, h.api.calls.size)
         assertEquals(1, h.sink.unreachable.size, "not repeated within the same streak")
         assertNotNull(h.store.stored, "Broken never clears credentials")
@@ -114,15 +113,15 @@ class ClassificationTest {
         repeat(3) { h.api.enqueueError(NetworkingError.NotFound()) }
 
         h.manager.refresh(RefreshReason.Reactive401)   // broken 1
-        advance(2.minutes)                              // broken 2
-        advance(2.minutes)                              // retryable -> streak reset; backoff attempt is 3 -> 8 s
+        advance(30.seconds)                              // broken 2
+        advance(30.seconds)                              // retryable -> streak reset; two Broken attempts count, so the doubling continues at 8 s
         assertEquals(3, h.api.calls.size)
         assertTrue(h.sink.unreachable.isEmpty())
         advance(8.seconds)                              // broken 1'
-        advance(2.minutes)                              // broken 2'
+        advance(30.seconds)                              // broken 2'
         assertEquals(5, h.api.calls.size)
         assertTrue(h.sink.unreachable.isEmpty(), "the streak restarted after the retryable outcome")
-        advance(2.minutes)                              // broken 3'
+        advance(30.seconds)                              // broken 3'
         assertEquals(6, h.api.calls.size)
         assertEquals(1, h.sink.unreachable.size)
     }

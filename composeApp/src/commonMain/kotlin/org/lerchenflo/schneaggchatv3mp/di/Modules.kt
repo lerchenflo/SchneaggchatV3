@@ -101,7 +101,7 @@ val sharedmodule = module{
     single<AuthRefreshApi> { KtorAuthRefreshApi(get(named(HTTPCLIENTTYPE.NOT_AUTHENTICATED)), get(), get(), get()) }
     single<AuthEventSink> { AppAuthEventSink() }
     single<AuthClock> { SystemAuthClock }
-    single<AuthLog> { LoggingAuthLog(get()) }
+    single<AuthLog> { LoggingAuthLog(get(), get<ApplicationScope>()) }
     single {
         AuthSessionManager(
             store = get(),

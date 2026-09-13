@@ -51,7 +51,11 @@ import kotlin.time.Instant
  * - offline is a state: optional refreshes are not attempted while [onlineFlow] is false, and the
  *   moment it flips back exactly one refresh fires if one is needed (R12);
  * - generation counter: [onLoggedIn] and [clearSession] bump it, so an in-flight refresh started
- *   under an older generation can never overwrite a newer login or undo a logout (cases 7, 8, 30).
+ *   under an older generation can never overwrite a newer login or undo a logout (cases 7, 8, 30);
+ * - nothing escapes into [scope]: the scope has no exception handler, so an uncaught throw in one
+ *   of the manager's own coroutines would take the process down on Android. Logging is wrapped so
+ *   it cannot throw, every launched coroutine is guarded, and a collaborator that throws while a
+ *   refresh commits degrades that refresh to `Retryable` instead of failing every waiter.
  *
  * Every collaborator is injected; nothing here touches Koin, `SessionCache` or wall-clock time.
  */
@@ -60,7 +64,7 @@ class AuthSessionManager(
     private val api: AuthRefreshApi,
     private val sink: AuthEventSink,
     private val clock: AuthClock,
-    private val log: AuthLog,
+    log: AuthLog,
     private val scope: CoroutineScope,
     private val onlineFlow: StateFlow<Boolean>,
     appResumedEvents: Flow<Unit>,
@@ -82,34 +86,78 @@ class AuthSessionManager(
         val hardFloor: Duration = 1.seconds,
         /** A reset trigger (connectivity, foreground) may fire at most one refresh per this window (case 13). */
         val resetTriggerDebounce: Duration = 5.seconds,
+        /**
+         * Retry interval after a `Broken` outcome (wrong server URL, blocking proxy, captive
+         * portal). Such a retry spends no rotation - the server never accepted the request - so
+         * it stays short enough that [brokenThreshold] surfaces the problem to the user within
+         * about a minute and a half rather than after several backoff caps.
+         */
+        val brokenRetry: Duration = 30.seconds,
         /** Consecutive `Broken` outcomes before [AuthEventSink.onServerUnreachable] fires (D3). */
         val brokenThreshold: Int = 3,
         /** Retry delay after a failed token write; short so replay recovery is not delayed (case 27). */
         val storageFailureRetry: Duration = 2.seconds,
     )
 
+    /**
+     * The in-memory copy of the stored pair. The claims the manager consults on every request are
+     * decoded once here, so [currentTokens] never parses a JWT on the request path.
+     */
+    private class Mirror(val tokens: TokenPair) {
+        val subject: String = JwtUtils.getUserIdFromToken(tokens.refreshToken)
+        val accessExpiresAtMillis: Long? = JwtUtils.expiresAtEpochMillis(tokens.accessToken)
+        val refreshExpiresAtMillis: Long? = JwtUtils.expiresAtEpochMillis(tokens.refreshToken)
+    }
+
+    /** Reporting must never throw into the state machine; a failing log line is printed instead. */
+    private class NeverThrowingAuthLog(private val delegate: AuthLog) : AuthLog {
+        override suspend fun debug(message: String) = guard(message) { delegate.debug(message) }
+        override suspend fun info(message: String) = guard(message) { delegate.info(message) }
+        override suspend fun warn(message: String) = guard(message) { delegate.warn(message) }
+        override suspend fun error(message: String) = guard(message) { delegate.error(message) }
+
+        private suspend inline fun guard(message: String, block: () -> Unit) {
+            try {
+                block()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                println("$message (log sink failed: ${e.message})")
+            }
+        }
+    }
+
+    private val log: AuthLog = NeverThrowingAuthLog(log)
+
     private val mutex = Mutex()
 
-    // ---- guarded by mutex (writes); volatile for lock-free reads on the request path ----
-    @Volatile private var mirror: TokenPair? = null
+    // ---- written only under mutex; @Volatile so the lock-free peeks on the request path
+    // (currentTokens / maybeLaunchProactive) never act on a stale value ----
+    @Volatile private var mirror: Mirror? = null
     @Volatile private var mirrorLoaded = false
     @Volatile private var backoffArmed = false
-
-    private var generation = 0
-    private var inFlight: Deferred<RefreshOutcome>? = null
-    private var schedulerJob: Job? = null
-    private var cooldownUntil: Instant? = null
-    private var lastError: NetworkingError? = null
-    private var lastSuccessAt: Instant? = null
-    private var lastResetTriggeredRefreshAt: Instant? = null
-    private var consecutiveBroken = 0
-    private var brokenNotified = false
-    private var attemptCounter = 0
+    @Volatile private var inFlight: Deferred<RefreshOutcome>? = null
+    @Volatile private var cooldownUntil: Instant? = null
+    @Volatile private var lastSuccessAt: Instant? = null
     /**
      * Access token the local clock already considered expired when the server issued it
      * (case 23); no proactive refresh is scheduled for it.
      */
     @Volatile private var proactiveDisabledFor: String? = null
+
+    // ---- guarded by mutex, never read outside it ----
+    private var generation = 0
+    /**
+     * The single retry/proactive timer. Invariant: whenever [cooldownUntil] is set, this job is
+     * armed for exactly that instant. The cooldown gate in [refresh] therefore never has to
+     * re-arm anything, and nothing but the timer itself fires a `Scheduled` attempt.
+     */
+    private var schedulerJob: Job? = null
+    private var lastError: NetworkingError? = null
+    private var lastResetTriggeredRefreshAt: Instant? = null
+    private var consecutiveBroken = 0
+    private var brokenNotified = false
+    private var attemptCounter = 0
     /** True once a session was active in this process; gates [AuthEventSink.onSessionInvalidated]. */
     private var wasActive = false
 
@@ -120,10 +168,14 @@ class AuthSessionManager(
         scope.launch {
             // drop(1): the initial value is not a transition. Every later `true` follows a `false`
             // because StateFlow conflates equal values.
-            onlineFlow.drop(1).filter { it }.collect { onResetTrigger(RefreshReason.ConnectivityRestored) }
+            onlineFlow.drop(1).filter { it }.collect {
+                guarded("connectivity trigger") { onResetTrigger(RefreshReason.ConnectivityRestored) }
+            }
         }
         scope.launch {
-            appResumedEvents.collect { onResetTrigger(RefreshReason.AppResumed) }
+            appResumedEvents.collect {
+                guarded("app resumed trigger") { onResetTrigger(RefreshReason.AppResumed) }
+            }
         }
     }
 
@@ -135,9 +187,9 @@ class AuthSessionManager(
      * expire (R8). This is what Ktor's `loadTokens` calls on every request.
      */
     suspend fun currentTokens(): TokenPair? {
-        val tokens = loadMirror() ?: return null
-        maybeLaunchProactive(tokens)
-        return tokens
+        val current = loadMirror() ?: return null
+        maybeLaunchProactive(current)
+        return current.tokens
     }
 
     /**
@@ -150,7 +202,7 @@ class AuthSessionManager(
         return mutex.withLock {
             val current = mirror ?: return@withLock SessionCheck.NoSession
             val now = clock.now()
-            val refreshExp = JwtUtils.expiresAtEpochMillis(current.refreshToken)
+            val refreshExp = current.refreshExpiresAtMillis
             if (refreshExp == null) {
                 invalidateLocked(InvalidationReason.MalformedToken)
                 return@withLock SessionCheck.Expired
@@ -159,17 +211,26 @@ class AuthSessionManager(
                 invalidateLocked(InvalidationReason.RefreshTokenExpired)
                 return@withLock SessionCheck.Expired
             }
-            val userId = JwtUtils.getUserIdFromToken(current.refreshToken)
+            if (wasActive) {
+                // Already evaluated in this process: "delete all app data" wipes the derived views
+                // and routes back through here (case 50). Only those views need re-hydrating.
+                // State, backoff and the pending timer stay untouched - replacing a Degraded
+                // session's retry timer with an immediate attempt would only run into its own
+                // cooldown and leave nothing armed.
+                sink.onSessionActive(current.tokens)
+                log.debug("AuthSession: derived views re-hydrated (user=${current.subject})")
+                return@withLock SessionCheck.Active(current.subject)
+            }
             wasActive = true
-            _state.value = AuthSessionState.Active(userId)
-            sink.onSessionActive(current)
+            _state.value = AuthSessionState.Active(current.subject)
+            sink.onSessionActive(current.tokens)
             if (accessTokenNeedsRefresh(current, now)) {
                 scheduleLocked(now, RefreshReason.Scheduled)
             } else {
                 scheduleProactiveLocked(current, now)
             }
-            log.info("AuthSession: hydrated from storage (user=$userId)")
-            SessionCheck.Active(userId)
+            log.info("AuthSession: hydrated from storage (user=${current.subject})")
+            SessionCheck.Active(current.subject)
         }
     }
 
@@ -194,21 +255,21 @@ class AuthSessionManager(
                 val error = NetworkingError.Unknown(message = "token storage unreadable")
                 return@withLock null to RefreshOutcome.Retryable(error, config.storageFailureRetry)
             }
-            if (current == null || current.refreshToken.isBlank()) {
+            if (current == null || current.tokens.refreshToken.isBlank()) {
                 return@withLock null to invalidateLocked(InvalidationReason.NoSession)
             }
 
             val presentedRefresh = presentedRefreshToken?.takeIf { it.isNotBlank() }
             val presentedAccess = presentedAccessToken?.takeIf { it.isNotBlank() }
-            if ((presentedRefresh != null && presentedRefresh != current.refreshToken) ||
-                (presentedAccess != null && presentedAccess != current.accessToken)
+            if ((presentedRefresh != null && presentedRefresh != current.tokens.refreshToken) ||
+                (presentedAccess != null && presentedAccess != current.tokens.accessToken)
             ) {
                 log.debug("AuthSession: refresh($reason) answered from mirror, presented token already rotated")
                 return@withLock null to RefreshOutcome.Success
             }
 
             val now = clock.now()
-            val refreshExp = JwtUtils.expiresAtEpochMillis(current.refreshToken)
+            val refreshExp = current.refreshExpiresAtMillis
             if (refreshExp == null) {
                 return@withLock null to invalidateLocked(InvalidationReason.MalformedToken)
             }
@@ -230,6 +291,7 @@ class AuthSessionManager(
 
             cooldownUntil?.let { until ->
                 if (now < until) {
+                    // The timer is armed for `until` (see schedulerJob); nothing to re-arm here.
                     val remaining = until - now
                     log.debug(
                         "AuthSession: refresh($reason) suppressed, backoff active ${remaining.inWholeSeconds} s more"
@@ -271,20 +333,20 @@ class AuthSessionManager(
         require(tokens.refreshToken.isNotBlank()) { "cannot log in with a blank refresh token" }
         mutex.withLock {
             withContext(NonCancellable) { store.write(tokens) }
+            val next = Mirror(tokens)
             generation++
             inFlight = null
-            mirror = tokens
+            mirror = next
             mirrorLoaded = true
             val now = clock.now()
             resetBackoffLocked()
             lastSuccessAt = now
             lastResetTriggeredRefreshAt = null
-            val userId = JwtUtils.getUserIdFromToken(tokens.refreshToken)
             wasActive = true
-            _state.value = AuthSessionState.Active(userId)
+            _state.value = AuthSessionState.Active(next.subject)
+            scheduleProactiveLocked(next, now)
             sink.onSessionActive(tokens)
-            scheduleProactiveLocked(tokens, now)
-            log.info("AuthSession: logged in (user=$userId)")
+            log.info("AuthSession: logged in (user=${next.subject})")
         }
     }
 
@@ -318,7 +380,7 @@ class AuthSessionManager(
      */
     fun onAuthenticatedRequestSucceeded() {
         if (!backoffArmed) return
-        scope.launch {
+        launchGuarded("backoff reset") {
             mutex.withLock {
                 if (!backoffArmed) return@withLock
                 resetBackoffLocked()
@@ -329,7 +391,7 @@ class AuthSessionManager(
 
     // ------------------------------------------------------------------ internals
 
-    private suspend fun loadMirror(): TokenPair? {
+    private suspend fun loadMirror(): Mirror? {
         mirror?.let { return it }
         if (mirrorLoaded) return null
         return mutex.withLock {
@@ -345,47 +407,60 @@ class AuthSessionManager(
                 return@withLock null
             }
             mirrorLoaded = true
-            mirror = read?.takeIf { it.refreshToken.isNotBlank() }
+            mirror = read?.takeIf { it.refreshToken.isNotBlank() }?.let(::Mirror)
             mirror
         }
     }
 
-    private fun accessTokenNeedsRefresh(tokens: TokenPair, now: Instant): Boolean {
-        val exp = JwtUtils.expiresAtEpochMillis(tokens.accessToken) ?: return true
+    private fun accessTokenNeedsRefresh(current: Mirror, now: Instant): Boolean {
+        val exp = current.accessExpiresAtMillis ?: return true
         return exp - now.toEpochMilliseconds() <= config.proactiveThreshold.inWholeMilliseconds
     }
 
-    private fun maybeLaunchProactive(tokens: TokenPair) {
+    private fun maybeLaunchProactive(current: Mirror) {
         if (!onlineFlow.value) return
-        if (tokens.accessToken == proactiveDisabledFor) return
+        if (current.tokens.accessToken == proactiveDisabledFor) return
         val now = clock.now()
-        if (!accessTokenNeedsRefresh(tokens, now)) return
-        // Unlocked peek; refresh() re-checks everything under the lock. This only avoids
-        // launching a coroutine per request while a backoff window or the post-success floor is active.
+        if (!accessTokenNeedsRefresh(current, now)) return
+        // Lock-free peek at volatile state; refresh() re-checks everything under the lock. This
+        // only avoids launching a coroutine per request while a backoff window or the
+        // post-success floor is active.
         cooldownUntil?.let { if (now < it) return }
         lastSuccessAt?.let { if (now - it < config.postSuccessFloor) return }
         if (inFlight?.isActive == true) return
-        scope.launch { refresh(RefreshReason.Proactive) }
+        launchGuarded("proactive refresh") { refresh(RefreshReason.Proactive) }
     }
 
     private suspend fun runRefresh(
-        current: TokenPair,
+        current: Mirror,
         startedUnderGeneration: Int,
         reason: RefreshReason,
         attempt: Int,
     ): RefreshOutcome {
         val result: NetworkResult<TokenPair, NetworkingError>? = try {
-            withTimeoutOrNull(config.refreshTimeout) { api.refresh(current.refreshToken) }
+            withTimeoutOrNull(config.refreshTimeout) { api.refresh(current.tokens.refreshToken) }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             NetworkResult.Error(NetworkingError.Unknown(message = e.message))
         }
-        return mutex.withLock { commitLocked(current, startedUnderGeneration, reason, attempt, result) }
+        return try {
+            mutex.withLock { commitLocked(current, startedUnderGeneration, reason, attempt, result) }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // Only a collaborator can throw here (the store calls are guarded, the log cannot
+            // throw): the sink. Every commit branch has already applied its own state by the time
+            // it reports, so nothing is half done; the waiters get one retryable outcome instead
+            // of an exception each, and the deferred completes normally.
+            val error = NetworkingError.Unknown(message = "commit failed: ${e.message}")
+            log.error("AuthSession: refresh($reason) #$attempt ${error.message}")
+            RefreshOutcome.Retryable(error, config.storageFailureRetry)
+        }
     }
 
     private suspend fun commitLocked(
-        current: TokenPair,
+        current: Mirror,
         startedUnderGeneration: Int,
         reason: RefreshReason,
         attempt: Int,
@@ -394,11 +469,16 @@ class AuthSessionManager(
         if (startedUnderGeneration != generation) {
             // A login or logout happened while this refresh was in flight - its result must not
             // overwrite the newer session (case 7) or undo the logout (case 8).
+            val newer = mirror
             log.info("AuthSession: refresh($reason) #$attempt discarded, session generation changed")
-            return if (mirror != null) {
-                RefreshOutcome.Success
-            } else {
-                RefreshOutcome.Invalidated(InvalidationReason.LoggedOut)
+            return when {
+                // Logged out: nothing to re-read.
+                newer == null -> RefreshOutcome.Invalidated(InvalidationReason.LoggedOut)
+                // The same user logged in again: the waiter re-reads the newer pair.
+                newer.subject == current.subject -> RefreshOutcome.Success
+                // Another user logged in: the waiter's request belonged to the old session and
+                // must not be retried with the new user's token.
+                else -> RefreshOutcome.Invalidated(InvalidationReason.LoggedOut)
             }
         }
 
@@ -434,24 +514,22 @@ class AuthSessionManager(
     }
 
     private suspend fun commitSuccessLocked(
-        current: TokenPair,
+        current: Mirror,
         pair: TokenPair,
         reason: RefreshReason,
         attempt: Int,
         now: Instant,
     ): RefreshOutcome {
-        val newSubject = JwtUtils.getUserIdFromToken(pair.refreshToken)
-        val newRefreshExp = JwtUtils.expiresAtEpochMillis(pair.refreshToken)
+        val next = Mirror(pair)
         val unusable = pair.accessToken.isBlank() || pair.refreshToken.isBlank() ||
-            newSubject.isBlank() || newRefreshExp == null
+            next.subject.isBlank() || next.refreshExpiresAtMillis == null
         if (unusable) {
             // 200 with garbage (empty body survives as blank fields, captive portals as parse failures
             // upstream). Never persist something the next attempt could not use (case 51).
             val error = NetworkingError.SerializationError(message = "refresh returned an unusable token pair")
             return failBroken(error, reason, attempt, now)
         }
-        val currentSubject = JwtUtils.getUserIdFromToken(current.refreshToken)
-        if (currentSubject.isNotBlank() && newSubject != currentSubject) {
+        if (current.subject.isNotBlank() && next.subject != current.subject) {
             log.error("AuthSession: refresh($reason) #$attempt returned tokens for another user")
             return invalidateLocked(InvalidationReason.ForeignSubject)
         }
@@ -473,14 +551,14 @@ class AuthSessionManager(
             return RefreshOutcome.Retryable(error, config.storageFailureRetry)
         }
 
-        mirror = pair
+        mirror = next
         mirrorLoaded = true
         resetBackoffLocked()
         lastSuccessAt = now
         wasActive = true
-        _state.value = AuthSessionState.Active(newSubject)
+        _state.value = AuthSessionState.Active(next.subject)
+        scheduleProactiveLocked(next, now)
         sink.onSessionActive(pair)
-        scheduleProactiveLocked(pair, now)
         log.info("AuthSession: refresh($reason) #$attempt succeeded")
         return RefreshOutcome.Success
     }
@@ -513,7 +591,7 @@ class AuthSessionManager(
         attempt: Int,
         now: Instant,
     ): RefreshOutcome {
-        val delay = backoff.capDelay()
+        val delay = backoff.fixedDelay(config.brokenRetry)
         lastError = error
         cooldownUntil = now + delay
         backoffArmed = true
@@ -571,27 +649,35 @@ class AuthSessionManager(
     /**
      * (Re)arms the single retry/proactive timer. Runs in [scope]; the refresh it fires goes
      * through every gate again.
+     *
+     * The timer fires only once the injected clock has actually reached [at]: `delay` runs on
+     * monotonic time while the gates compare wall-clock instants, and a timer that woke a few
+     * milliseconds early by the wall clock (drift, an NTP step) would be suppressed by the very
+     * cooldown it was armed for, with nothing left to re-arm it.
      */
     private fun scheduleLocked(at: Instant, reason: RefreshReason) {
         schedulerJob?.cancel()
-        schedulerJob = scope.launch {
-            val wait = at - clock.now()
-            if (wait.isPositive()) delay(wait)
+        schedulerJob = launchGuarded("scheduled refresh") {
+            while (true) {
+                val wait = at - clock.now()
+                if (!wait.isPositive()) break
+                delay(wait)
+            }
             refresh(reason)
         }
     }
 
-    private suspend fun scheduleProactiveLocked(tokens: TokenPair, now: Instant) {
+    private suspend fun scheduleProactiveLocked(current: Mirror, now: Instant) {
         schedulerJob?.cancel()
         schedulerJob = null
         proactiveDisabledFor = null
-        val exp = JwtUtils.expiresAtEpochMillis(tokens.accessToken) ?: return
+        val exp = current.accessExpiresAtMillis ?: return
         val expiresAt = Instant.fromEpochMilliseconds(exp)
         if (expiresAt <= now) {
             // The server just issued this token and the local clock already considers it expired:
             // the clock is ahead. Scheduling from it would refresh in a loop; the reactive 401 path
             // still covers real expiry (case 23).
-            proactiveDisabledFor = tokens.accessToken
+            proactiveDisabledFor = current.tokens.accessToken
             log.warn("AuthSession: fresh access token already expired by the local clock, proactive refresh disabled")
             return
         }
@@ -603,10 +689,10 @@ class AuthSessionManager(
     private suspend fun onResetTrigger(reason: RefreshReason) {
         val shouldRefresh = mutex.withLock {
             resetBackoffLocked()
-            val tokens = mirror ?: return@withLock false
+            val current = mirror ?: return@withLock false
             val now = clock.now()
             val degraded = _state.value is AuthSessionState.Degraded
-            if (!degraded && !accessTokenNeedsRefresh(tokens, now)) return@withLock false
+            if (!degraded && !accessTokenNeedsRefresh(current, now)) return@withLock false
             lastResetTriggeredRefreshAt?.let { last ->
                 if (now - last < config.resetTriggerDebounce) return@withLock false
             }
@@ -615,7 +701,21 @@ class AuthSessionManager(
         }
         if (shouldRefresh) {
             log.info("AuthSession: $reason, refreshing")
-            scope.launch { refresh(reason) }
+            launchGuarded("$reason refresh") { refresh(reason) }
+        }
+    }
+
+    /** Fire-and-forget work in [scope] that must not take the scope (and the process) down with it. */
+    private fun launchGuarded(what: String, block: suspend () -> Unit): Job =
+        scope.launch { guarded(what, block) }
+
+    private suspend fun guarded(what: String, block: suspend () -> Unit) {
+        try {
+            block()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            log.error("AuthSession: $what failed: ${e.message}")
         }
     }
 }

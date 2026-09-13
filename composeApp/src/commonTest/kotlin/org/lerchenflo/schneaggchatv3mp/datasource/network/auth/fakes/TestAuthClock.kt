@@ -13,7 +13,13 @@ class TestAuthClock(
     private val baseEpochMillis: Long = BASE_EPOCH_MILLIS,
 ) : AuthClock {
 
-    override fun now(): Instant = Instant.fromEpochMilliseconds(baseEpochMillis + scheduler.currentTime)
+    /**
+     * How far the wall clock this fake represents runs behind the scheduler's monotonic time.
+     * Models drift or an NTP step between the two clocks the manager has to reconcile.
+     */
+    var lagMillis: Long = 0
+
+    override fun now(): Instant = Instant.fromEpochMilliseconds(baseEpochMillis + scheduler.currentTime - lagMillis)
 
     companion object {
         /** 2027-01-15, comfortably after any `exp` a real token would carry when these tests were written. */

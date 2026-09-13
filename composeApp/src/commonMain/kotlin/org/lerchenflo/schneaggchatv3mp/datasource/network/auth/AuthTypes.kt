@@ -26,8 +26,9 @@ sealed interface RefreshOutcome {
 
     /**
      * Permanently failing, but not proof the session is dead: 400, 403, 404, serialization
-     * failure (captive portal, empty body), unknown errors. Retried at the maximum backoff and
-     * surfaced to the user after a few in a row; never clears credentials.
+     * failure (captive portal, empty body), unknown errors. Retried every
+     * `AuthSessionManager.Config.brokenRetry` and surfaced to the user after three in a row;
+     * never clears credentials.
      */
     data class Broken(val error: NetworkingError) : RefreshOutcome
 
@@ -46,7 +47,7 @@ enum class InvalidationReason {
     RejectedByServer,
     /** The server returned a pair for a different user (`sub` mismatch). */
     ForeignSubject,
-    /** Logout cleared the session while a refresh was in flight. */
+    /** Logout cleared the session while a refresh was in flight, or another user logged in meanwhile. */
     LoggedOut,
 }
 

@@ -8,9 +8,19 @@ Scope: client only. No server change is required by this plan; the server contra
 
 ## Status
 
-**Implemented 2026-09-09** on branch `flolapptop` (steps 1-6 of section 9; step 7 deferred per decision 5). 93 tests in `composeApp/src/commonTest/.../datasource/network/auth/` pass via `:composeApp:jvmTest`. Manual verification of step 5 (airplane-mode toggling, laptop sleep, server restart) is still open.
+**Implemented 2026-09-09** on branch `flolapptop` (steps 1-6 of section 9; step 7 deferred per decision 5). 93 tests in `composeApp/src/commonTest/.../datasource/network/auth/` pass via `:composeApp:jvmTest`. Manual verification of step 5 (airplane-mode toggling, laptop sleep, server restart) is still open. **Polished 2026-09-13 (rev 3)**: 103 tests.
 
 ## Revision log
+
+**2026-09-13 (rev 3, review polish).** Findings from a full review of commit `ac776e52`, all fixed with regression tests:
+
+- The retry timer could be lost: `delay` runs on monotonic time, the cooldown gate compares wall-clock instants, so a timer that woke a few milliseconds early by the wall clock was suppressed by its own cooldown with nothing left to re-arm it. The timer now loops until the injected clock has reached the scheduled instant (`BackoffTest.schedulerWaitsForTheWallClockWhenItLagsBehindMonotonicTime`). Invariant documented on `schedulerJob`: whenever `cooldownUntil` is set, the timer is armed for exactly that instant.
+- `ensureSession()` re-entry (the delete-app-data path, case 50) overwrote a `Degraded` state with `Active` and replaced the pending retry with an immediate attempt that ran into the cooldown. Re-entry now only re-hydrates the derived views (`SessionLifecycleTest.ensureSessionReentryOnADegradedSessionKeepsStateAndRetryTimer`).
+- `ApplicationScope` has no `CoroutineExceptionHandler`; a collaborator throwing inside a commit (the persisted log is three Room calls and can throw while `deleteAllAppData` closes the database) failed every waiter and, from a fire-and-forget launch, would have crashed the process. Logging is wrapped so it cannot throw and no longer blocks the lock (`LoggingAuthLog` hands the write to the app scope), every launch is guarded, and a throwing sink degrades the outcome to `Retryable` (`CollaboratorFailureTest`).
+- A login as a *different* user while a refresh was in flight answered the old waiter with `Success`, so Ktor would have retried the old user's request with the new user's token. Now `Invalidated(LoggedOut)` (`SessionLifecycleTest.loginAsAnotherUserDuringAnInFlightRefreshDoesNotHandTheWaiterTheNewSession`).
+- `Broken` retried at the 2 min cap, so the "server unreachable" toast needed ~4 min. Such a retry spends no rotation; it now retries every 30 s (`Config.brokenRetry`, `RefreshBackoff.fixedDelay`) and the toast shows after ~90 s. Decision 3 updated.
+- The request path parsed the access token JWT on every call of `currentTokens()`; the claims are now decoded once per mirror (`Mirror`). The lock-free peeks in `maybeLaunchProactive` read `` fields.
+- `AppRepository` no longer writes `SessionCache.login(...)` next to the sink's hydration; only the developer flag is set (`SessionCache.updateDeveloper`). `Preferencemanager.clearTokens()` renamed to `clearSessionCredentials()` (it also drops the own id and the legacy push key).
 
 **2026-09-09 (rev 2, pre-implementation triple check).** Every file/line claim in sections 1-2 was re-verified against the working tree. Corrections:
 
@@ -155,7 +165,7 @@ Every attempt resolves to exactly one `RefreshOutcome`:
 | `Broken(error)` | permanently failing, not proof the session is dead | `BadRequest`, `Forbidden`, `NotFound`, `Conflict`, `PayloadTooLarge`, `SerializationError` (captive portal, empty body, unparseable token pair), `Unknown` |
 | `Invalidated(reason)` | session is dead; storage and mirror are cleared | `Unauthorized` from `/auth/refresh` (`RejectedByServer`), no stored refresh token (`NoSession`), refresh token expired by its own `exp` or unparseable (`RefreshTokenExpired` / `MalformedToken`), returned pair belongs to a different `sub` (`ForeignSubject`), logout during the in-flight refresh (`LoggedOut`) |
 
-`Broken` handling: backoff at the cap (2 min), and after **3 consecutive** `Broken` outcomes `AuthEventSink.onServerUnreachable(error)` fires once per streak. Credentials are never cleared by `Broken`.
+`Broken` handling: retried every 30 s (`Config.brokenRetry`; no rotation is spent, the server never accepted the request), and after **3 consecutive** `Broken` outcomes `AuthEventSink.onServerUnreachable(error)` fires once per streak. Credentials are never cleared by `Broken`.
 
 ### R7 - Backoff with reset triggers
 Exponential with jitter, capped: base 2 s, factor 2, cap 2 min, jitter +/-25 %. Reset to zero on **all** of:
@@ -220,13 +230,13 @@ AuthRefreshApi        (interface)  suspend refresh(refreshToken): NetworkResult<
 AuthEventSink         (interface)  onSessionActive(tokens), onSessionInvalidated(reason), onServerUnreachable(error)
 AuthClock             (fun interface) now(): Instant
 AuthLog               (interface)  info/warn/error(message)            -- LoggingRepository seam
-RefreshBackoff        (class)      pure: nextDelay(retryAfter?), capDelay(), reset(), attempt
+RefreshBackoff        (class)      pure: nextDelay(retryAfter?), fixedDelay(duration), reset(), attempt
 RetryAfter            (object)     pure: parse retryAfterSeconds out of a TooManyRequests body
 SocketAuthGuard       (class)      pure: handshake failure counting -> shouldRefresh
 AuthSessionManager    (class)      the state machine; the only caller of AuthRefreshApi
 RefreshOutcome / RefreshReason / InvalidationReason / AuthSessionState / SessionCheck   (types)
 
-PreferenceAuthSessionStore   real store  (Preferencemanager: saveTokens + saveOWNID / getTokens / clearTokens)
+PreferenceAuthSessionStore   real store  (Preferencemanager: saveTokens + saveOWNID / getTokens / clearSessionCredentials)
 KtorAuthRefreshApi           real api    (NOT_AUTHENTICATED HttpClient + Preferencemanager.buildServerUrl + AppVersion, via safeNetworkCall)
 AppAuthEventSink             real sink   (SessionCache.updateTokens / SessionCache.logout + ActionChannel.AuthInvalidated / ErrorChannel toast)
 SystemAuthClock              real clock  (Clock.System)
@@ -278,7 +288,7 @@ Cycle 2 (would exist if the R7 "successful request" hook lived in `NetworkUtils`
 - `AppRepository.kt` - `ActionEvent.Login` deleted; `onNewTokenPair` -> `authSessionManager.onLoggedIn`; `loadSavedLoginConfig` -> `ensureSession()`; `logout` reordered (R11); `endServerSession(refreshToken)`.
 - `GlobalViewModel.kt:206` - the `Login` branch is removed; the loop keeps socket reconnect + offline-message flushing.
 - `SessionCache.requireLoggedIn():115` - pure read.
-- `Preferencemanager` - `clearTokens()` (secure keys only).
+- `Preferencemanager` - `clearSessionCredentials()` (secure keys only).
 - `JwtUtils` - `expiresAtEpochMillis(token)` and `isValidAt(token, nowEpochMillis)` so expiry goes through the injected clock.
 - `TokenManager.kt` deleted.
 
@@ -423,7 +433,7 @@ Listed so they are not lost; each is independent and can be done later.
 
 1. **Logout ordering vs. server session kill** (R11) - **adopted**: read the refresh token into a local, clear session + storage, then best-effort `POST /auth/logout` with the local.
 2. **`Broken` outcome UX** (R6, D3) - **adopted (minimal)**: after 3 consecutive `Broken` outcomes the sink raises an `ErrorChannel` toast ("Cannot reach this server. Check the server URL in settings.", new string resource in en/de/it) without logging out. A persistent banner with a deep link into the server-URL setting is a UI follow-up, not part of this plan.
-3. **Backoff constants** - **adopted**: base 2 s, factor 2, cap 2 min, jitter +/-25 %, hard floor 1 s between any two attempts, 60 s post-success floor for non-401 reasons, `Broken` sits at the cap.
+3. **Backoff constants** - **adopted**: base 2 s, factor 2, cap 2 min, jitter +/-25 %, hard floor 1 s between any two attempts, 60 s post-success floor for non-401 reasons, `Broken` retries every 30 s (rev 3; was: at the cap).
 4. **Refresh timeout** (R5) - **adopted**: 12 s.
 5. **Desktop device name** (D6) - **OPEN**, default no change. The MAC suffix already covers the common case; a per-install random id changes the server-side dedup key once on the next login and leaves one stale row per desktop to age out via `expiresAt`. Needs the user's confirmation before touching it.
 6. **The 5 s `GlobalViewModel` loop stays** (D8) - **adopted**: only its `ActionEvent.Login` branch goes.

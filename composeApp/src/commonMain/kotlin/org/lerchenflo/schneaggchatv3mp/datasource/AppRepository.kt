@@ -1263,10 +1263,9 @@ class AppRepository(
         if (credsSaved){
             println("Tokens are saved in local storage, autologin permitted")
 
-            SessionCache.login(
-                tokens = tokens,
-                developer = preferencemanager.getDevSettings()
-            )
+            // ensureSession() already hydrated SessionCache through the session manager's sink;
+            // only the developer flag lives outside the token pair.
+            SessionCache.updateDeveloper(preferencemanager.getDevSettings())
         }
 
         var emailVerified = false
@@ -1320,10 +1319,9 @@ class AppRepository(
                     onNewTokenPair(result.data)
                 }
 
-                SessionCache.login(
-                    tokens = result.data,
-                    developer = preferencemanager.getDevSettings()
-                )
+                // onLoggedIn() hydrated SessionCache through the session manager's sink; only the
+                // developer flag lives outside the token pair.
+                SessionCache.updateDeveloper(preferencemanager.getDevSettings())
 
                 onResult(true)
             }
