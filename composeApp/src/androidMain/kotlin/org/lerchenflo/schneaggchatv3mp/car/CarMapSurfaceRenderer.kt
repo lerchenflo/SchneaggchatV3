@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import org.lerchenflo.schneaggchatv3mp.schneaggmap.domain.LatLong
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapAction
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
 import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.uielements.SchneaggmapLayers
@@ -142,8 +141,8 @@ class CarMapSurfaceRenderer(
         val current = cameraState.position
         cameraState.position = current.copy(
             target = Position(
-                longitude = current.target.longitude + (from.longitude - to.longitude),
-                latitude = current.target.latitude + (from.latitude - to.latitude),
+                longitude = current.target.longitude + (to.longitude - from.longitude),
+                latitude = current.target.latitude + (to.latitude - from.latitude),
             )
         )
     }
@@ -175,13 +174,6 @@ class CarMapSurfaceRenderer(
         val location = lastKnownLocation.value ?: return
         cameraState.position = cameraState.position.copy(
             target = Position(longitude = location.coordinates.long, latitude = location.coordinates.lat),
-            zoom = RECENTER_ZOOM,
-        )
-    }
-
-    fun focusOn(target: LatLong) {
-        cameraState.position = cameraState.position.copy(
-            target = Position(longitude = target.long, latitude = target.lat),
             zoom = RECENTER_ZOOM,
         )
     }

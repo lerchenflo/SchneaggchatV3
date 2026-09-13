@@ -31,9 +31,9 @@ import org.lerchenflo.schneaggchatv3mp.schneaggmap.presentation.SchneaggmapState
  * makes no sense on the car) and without any of the phone-only UI state (dropdowns, search,
  * pick-location mode, dialogs).
  *
- * The car has no type-filter UI, so every [LocationType] is always enabled - the alternative
- * (nothing shown until someone opens a dropdown that doesn't exist on the car) would make the
- * screen useless out of the box.
+ * The car's filter UI ([CarMapFiltersScreen]) is coarser than the phone's per-type dropdown: just
+ * friends, events, "locations" (every [LocationType] except [LocationType.RADAR], toggled as one
+ * group) and radar locations on their own - a full per-type tree wouldn't fit a driving screen.
  */
 class CarMapStateHolder(
     private val mapRepository: MapRepository,
@@ -46,6 +46,8 @@ class CarMapStateHolder(
 
     private val _showUsers = MutableStateFlow(true)
     private val _showEvents = MutableStateFlow(false)
+    private val _showRadar = MutableStateFlow(true)
+    private val _showOtherLocations = MutableStateFlow(true)
     private val _selectedEntryId = MutableStateFlow<String?>(null)
     private val _selectedUserId = MutableStateFlow<String?>(null)
 
@@ -71,17 +73,29 @@ class CarMapStateHolder(
         preferenceManager.getMapStyleSettingFlow(),
     ) { useClustering, mergeUsers, mapStyle -> PrefsData(useClustering, mergeUsers, mapStyle) }
 
-    private data class UiToggles(
+    private data class VisibilityFlags(
         val showUsers: Boolean,
         val showEvents: Boolean,
+        val showRadar: Boolean,
+        val showOtherLocations: Boolean,
+    )
+
+    private val visibilityFlagsFlow: Flow<VisibilityFlags> = combine(
+        _showUsers, _showEvents, _showRadar, _showOtherLocations,
+    ) { showUsers, showEvents, showRadar, showOtherLocations ->
+        VisibilityFlags(showUsers, showEvents, showRadar, showOtherLocations)
+    }
+
+    private data class UiToggles(
+        val flags: VisibilityFlags,
         val selectedEntryId: String?,
         val selectedUserId: String?,
     )
 
     private val uiTogglesFlow: Flow<UiToggles> = combine(
-        _showUsers, _showEvents, _selectedEntryId, _selectedUserId,
-    ) { showUsers, showEvents, entryId, userId ->
-        UiToggles(showUsers, showEvents, entryId, userId)
+        visibilityFlagsFlow, _selectedEntryId, _selectedUserId,
+    ) { flags, entryId, userId ->
+        UiToggles(flags, entryId, userId)
     }
 
     private val baseFlow = combine(
@@ -109,14 +123,16 @@ class CarMapStateHolder(
             entries = base.entries,
             usersWithLocation = usersWithLocation,
             onlineFriendIds = base.onlineFriendIds,
-            enabledTypes = LocationType.entries.toSet(),
+            enabledTypes = LocationType.entries.filterTo(mutableSetOf()) { type ->
+                if (type == LocationType.RADAR) toggles.flags.showRadar else toggles.flags.showOtherLocations
+            },
             ownUser = base.friendData.ownUser,
             ownLocationShared = base.friendData.ownUser?.locationShared ?: false,
             useClustering = base.prefs.useClustering,
             mergeUsers = base.prefs.mergeUsers,
-            showUsers = toggles.showUsers,
+            showUsers = toggles.flags.showUsers,
             eventsWithLocation = base.events.filter { it.location != null },
-            showEvents = toggles.showEvents,
+            showEvents = toggles.flags.showEvents,
             mapStyle = base.prefs.mapStyle,
             mapStyleUrl = base.prefs.mapStyle.tileUrl,
             selectedEntry = base.entries.firstOrNull { it.id == toggles.selectedEntryId },
@@ -141,6 +157,16 @@ class CarMapStateHolder(
 
     fun toggleShowEvents() {
         _showEvents.update { !it }
+    }
+
+    /** Toggles just [LocationType.RADAR], shown separately from [toggleShowOtherLocations] in [CarMapFiltersScreen]. */
+    fun toggleShowRadar() {
+        _showRadar.update { !it }
+    }
+
+    /** Toggles every [LocationType] except [LocationType.RADAR] together, as one "Locations" filter row. */
+    fun toggleShowOtherLocations() {
+        _showOtherLocations.update { !it }
     }
 
     fun clearSelection() {
