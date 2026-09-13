@@ -22,20 +22,14 @@ CMP Multiplatform Chat - App für Android, iOS und Desktop
 ### 3.0.18
 
 #### Features
-- Events: Gewählte Ansicht bleibt erhalten (Liste, Tag, Woche, Monat)
+- Events: Gewählte Ansicht bleibt erhalten, Upcomming Events, Ungelesen Indikator
 - Android Auto Support
-- Events: Woche-Tab zum rollierenden 'Upcoming'-View mit den nächsten 10 Tagen geändert
-- Events: Ungesehene-Event-Indikator im List-Tab hinzugefügt
+
 
 #### Bugfixes
-- Anmeldung: Token-Aktualisierung blockiert Anfragen nicht mehr
-- Verbindung: Fehlermeldung bei nicht erreichbarem Server
+- Anmeldung: Token-Refresh rebuild (5. mol??)
 - Kreuzworträtsel: Buchstaben beim schnellen Tippen gehen nicht mehr verloren
-- Anmeldung: Automatischer Wiederverbindungs-Timer wird bei Systemzeitabweichung nicht mehr gelöscht
-- Anmeldung: Sitzungswiederherstellung überschreibt vorherigen Sitzungszustand nicht mehr
-- Anmeldung: Abstürze während Token-Aktualisierung behoben
-- Anmeldung: Falscher Token bei Benutzerwechsel während Token-Aktualisierung behoben
-- Verbindung: Fehlermeldung bei nicht erreichbarem Server schneller angezeigt (~90 Sekunden)
+
 
 ### 3.0.17
 

@@ -127,6 +127,7 @@
 
     <string name="error_access_not_permitted">Dine gspeicherte Sitzung isch ungültig, logg di nomml i.</string>
     <string name="error_access_expired">Dine gspeicherte Sitzung isch abglofa, logg di nomml i.</string>
+    <string name="error_server_unreachable">Da Server isch ned erreichbar.</string>
     <string name="error_invalid_credentials">Dine Einloggdaten sind falsch</string>
     <string name="error_login_too_many_requests">Zu viele Anmeldeversuche. Bitte wart an Moment und versuachs denn nomml.</string>
     <string name="error_login_server_error">Der Server hot a Problem. Bitte versuachs später nomml.</string>
@@ -949,6 +950,15 @@
     <string name="recap_outro_rank_messages">Nochrichta-Rang</string>
     <string name="recap_outro_rank_errors">Fehler-Rang</string>
     <string name="recap_tap_hint">Tipp zum wittamacha</string>
+    <string name="recap_close">Recap schlüßa</string>
+    <string name="recap_hold_hint">Heba zum Pause macha · links tippa für zruck </string>
+    <string name="recap_map_leaderboard_title">Dia Karta-Charts</string>
+    <string name="recap_map_your_rank">Unter allna, die d Schneaggmap mitgstaltand, bisch du uf Platz</string>
+    <string name="recap_map_contributions">%1$s Kartenänderunga des Joar</string>
+    <string name="recap_map_not_ranked">Du hosch d Karta des Joard ned agrührt. D Schneagga wartand.</string>
+    <string name="recap_leaderboard_not_ranked">Kua Nochrichta vo dir dieses Joar. Viellicht nächstes Joar.</string>
+    <string name="recap_outro_rank_map">Karta-Rang</string>
+    <string name="recap_top_partner_intro">Niemand hot öfter vo dir ghört als</string>
 
     <!-- Month names -->
     <string name="month_january">Jänner</string>
