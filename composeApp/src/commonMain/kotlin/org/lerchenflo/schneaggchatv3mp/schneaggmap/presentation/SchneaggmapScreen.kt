@@ -121,9 +121,12 @@ import org.maplibre.compose.map.rememberMapState
 import org.maplibre.compose.material3.DisappearingCompassButton
 import org.maplibre.compose.material3.DisappearingScaleBar
 import org.maplibre.compose.material3.ExpandingAttributionButton
-import org.maplibre.compose.overlay.MapOverlay
-import org.maplibre.compose.overlay.include
+import org.maplibre.compose.overlay.MapOverlayScope
+import org.maplibre.compose.sources.GeoJsonData
+import org.maplibre.compose.sources.GeoJsonOptions
+import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.style.BaseStyle
+import org.maplibre.compose.util.MaplibreComposable
 import org.maplibre.spatialk.geojson.Feature
 import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.LineString
@@ -258,15 +261,6 @@ fun SchneaggmapScreen(
     onAction: (SchneaggmapAction) -> Unit = {},
 ) {
 
-    val mapState = rememberMapState(
-        baseStyle = BaseStyle.Uri(state.mapStyleUrl),
-        initialCameraPosition = CameraPosition(
-            target = Position(9.92, 47.32),
-            zoom = 7.0,
-        )
-    )
-    val scope = rememberCoroutineScope()
-
     //Own position, resolved once here (not in SchneaggmapMapContent) so we don't open a second,
     //redundant GPS subscription just to also show the speed readout below.
     //The provider reads the platform permission when it is created and afterwards only on activity
@@ -278,6 +272,25 @@ fun SchneaggmapScreen(
         request = LocationRequest(accuracy = LocationAccuracy.BestForNavigation),
     )
     val ownLocation = locationState.lastLocation
+
+    //The map's sources/layers now live on the MapState itself (declared through `content`) instead
+    //of as a trailing lambda on MaplibreMap - the current library attaches map content to the
+    //logical map, not to whatever surface happens to render it. `mapState` is captured by this
+    //closure (not invoked until the map actually composes it), so the forward reference is safe.
+    //`content` isn't invoked until the map actually composes it, by which point `mapState` below is
+    //assigned - `lateinit` (rather than a forward `val` reference, which the compiler can't resolve
+    //through the nested rememberMapState(...) { ... } call) makes that safe.
+    lateinit var mapState: MapState
+    mapState = rememberMapState(
+        baseStyle = BaseStyle.Uri(state.mapStyleUrl),
+        initialCameraPosition = CameraPosition(
+            target = Position(9.92, 47.32),
+            zoom = 7.0,
+        )
+    ) {
+        SchneaggmapMapContent(state = state, mapState = mapState, ownLocation = ownLocation, onAction = onAction)
+    }
+    val scope = rememberCoroutineScope()
 
 
 
@@ -346,13 +359,180 @@ fun SchneaggmapScreen(
             }
     }
 
+    //Compass + attribution now render from inside MaplibreMap's own overlay scope (the new
+    //library API reads the map state implicitly instead of taking cameraState/styleState params),
+    //so this whole bottom chrome column is passed down to SchneaggmapMapContent instead of being
+    //drawn as a sibling on top of it. Positioning (BottomCenter of the full map area) is unchanged.
+    val bottomMapChrome: @Composable MapOverlayScope.() -> Unit = {
+        //Captured once so the MapOverlayScope extensions below (ExpandingAttributionButton,
+        //DisappearingCompassButton) can be called with an explicit receiver from inside the nested
+        //Row/Box further down - Compose's DSL scope markers block resolving them implicitly once a
+        //RowScope/BoxScope becomes the nearer receiver.
+        val overlayScope = this
+        if (!state.pickLocationMode) {
+            //Bottom column
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            ) {
+
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+
+                        //Center to own location button
+                        ownLocation?.let {
+                            SmallFloatingActionButton(
+                                onClick = { isFollowingLocation = true },
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                contentColor = MaterialTheme.colorScheme.onSurface,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.MyLocation,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.secondary
+                                )
+                            }
+                        }
+                    }
+                }
+
+                if (state.usersWithLocation.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    FriendLocationsPreview(
+                        friends = state.usersWithLocation,
+                        onlineFriendIds = state.onlineFriendIds,
+                        onUserClick = { user ->
+                            val loc = user.location ?: return@FriendLocationsPreview
+                            isFollowingLocation = false
+                            scope.launch {
+                                mapState.animateCameraPosition(
+                                    CameraPosition(
+                                        target = Position(longitude = loc.long, latitude = loc.lat),
+                                        zoom = OWN_LOCATION_CLICK_ZOOM
+                                    )
+                                )
+                            }
+                        }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    // Left: Scale bar + attribution
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    ) {
+                        // Legally required OSM/OpenFreeMap copyright notice.
+                        overlayScope.ExpandingAttributionButton(
+                            contentAlignment = Alignment.BottomStart,
+                        )
+
+                        DisappearingScaleBar(
+                            metersPerDp = mapState.metersPerDpAtTarget,
+                            color = MaterialTheme.colorScheme.background,
+                            zoom = mapState.cameraPosition.zoom
+                        )
+
+                    }
+
+                    //compass
+                    overlayScope.DisappearingCompassButton(
+                        size = 32.dp
+                    )
+
+                    //Round speed indicator
+                    ownLocation?.distancePerSecond?.let { speed ->
+                        if (speed.inMeters > 3) {
+                            val speedKmh = (speed.inMeters * 3.6).roundToInt()
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .size(56.dp)
+                                    .background(Color.White, CircleShape)
+                                    .border(width = 4.dp, color = Color.Red, shape = CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "$speedKmh",
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                            }
+                        }
+                    }
+
+                    // Right: Snail trails toggle
+                    Card(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .tapTarget("schneaggmap_snailtrail_switch")
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Polyline,
+                                contentDescription = null,
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Switch(
+                                checked = state.showSnailTrails,
+                                onCheckedChange = { onAction(SchneaggmapAction.ToggleSnailTrails) },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
-        SchneaggmapMapContent(
-            state = state,
-            cameraState = mapState,
-            styleState = mapState.style,
-            ownLocation = ownLocation,
-            onAction = onAction
+        MaplibreMap(
+            modifier = Modifier.fillMaxSize(),
+            state = mapState,
+            //The bottom chrome (FABs, friend preview, scale bar, attribution, compass, snail-trail
+            //toggle) is composed here since it needs this MapOverlayScope receiver to draw the
+            //compass and attribution buttons. The map's sources/layers are declared on `mapState`
+            //itself (see its `content` above), not here.
+            overlay = bottomMapChrome,
+            interactions = MapInteractions {
+                callbacks {
+                    click {
+                        onUnhandled { event ->
+                            event.position?.let { position ->
+                                onAction(SchneaggmapAction.OnMapClick(LatLong(position.latitude, position.longitude), longClick = false))
+                            }
+
+                            ClickResult.Pass
+                        }
+                    }
+                    longClick {
+                        onEvent { event ->
+                            event.position?.let { position ->
+                                onAction(SchneaggmapAction.OnMapClick(LatLong(position.latitude, position.longitude), longClick = true))
+                            }
+
+                            ClickResult.Consume
+                        }
+                    }
+                }
+            }
         )
 
 
@@ -474,10 +654,11 @@ fun SchneaggmapScreen(
                     ) <= snapRadiusMeters
                 }
 
-                //TODO WHAT HERE
-                mapState.cameraPosition = mapState.cameraPosition.copy(
-                    target = snapTarget ?: currentTarget,
-                    zoom = newZoom
+                mapState.setCameraPosition(
+                    mapState.cameraPosition.copy(
+                        target = snapTarget ?: currentTarget,
+                        zoom = newZoom
+                    )
                 )
             },
             modifier = Modifier
@@ -486,148 +667,6 @@ fun SchneaggmapScreen(
         )
 
         if (!state.pickLocationMode) {
-            //Bottom column
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .padding(8.dp)
-            ) {
-
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(2.dp),
-                    ) {
-
-                        //Center to own location button
-                        ownLocation?.let {
-                            SmallFloatingActionButton(
-                                onClick = { isFollowingLocation = true },
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                contentColor = MaterialTheme.colorScheme.onSurface,
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.MyLocation,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.secondary
-                                )
-                            }
-                        }
-                    }
-                }
-
-                if (state.usersWithLocation.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    FriendLocationsPreview(
-                        friends = state.usersWithLocation,
-                        onlineFriendIds = state.onlineFriendIds,
-                        onUserClick = { user ->
-                            val loc = user.location ?: return@FriendLocationsPreview
-                            isFollowingLocation = false
-                            scope.launch {
-                                mapState.animateCameraPosition(
-                                    CameraPosition(
-                                        target = Position(longitude = loc.long, latitude = loc.lat),
-                                        zoom = OWN_LOCATION_CLICK_ZOOM
-                                    )
-                                )
-                            }
-                        }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-
-                var attributionExpanded by remember { mutableStateOf(false) }
-
-                Box(
-                    modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    // Left: Scale bar + attribution
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.align(Alignment.CenterStart)
-                    ) {
-                        // Legally required OSM/OpenFreeMap copyright notice.
-                        ExpandingAttributionButton(
-                            expanded = attributionExpanded,
-                            onClick = { attributionExpanded = !attributionExpanded },
-                            styleState = mapState.style,
-                            contentAlignment = Alignment.BottomStart,
-                        )
-
-                        DisappearingScaleBar(
-                            metersPerDp = mapState.metersPerDpAtTarget,
-                            color = MaterialTheme.colorScheme.background,
-                            zoom = mapState.cameraPosition.zoom
-                        )
-                        
-                    }
-
-                    //compass
-                    DisappearingCompassButton(
-                        cameraState = mapState.cameraPosition,
-                        size = 32.dp
-                    )
-
-                    //Round speed indicator
-                    ownLocation?.distancePerSecond?.let { speed ->
-                        if (speed.inMeters > 3) {
-                            val speedKmh = (speed.inMeters * 3.6).roundToInt()
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.TopCenter)
-                                    .size(56.dp)
-                                    .background(Color.White, CircleShape)
-                                    .border(width = 4.dp, color = Color.Red, shape = CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "$speedKmh",
-                                    color = Color.Black,
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.titleLarge
-                                )
-                            }
-                        }
-                    }
-
-
-                    if (!attributionExpanded) { //Only show if attribution not shown, otherwise would overlay
-
-                        // Right: Snail trails toggle
-
-                        Card(
-                            modifier = Modifier
-                                .align(Alignment.CenterEnd)
-                                .tapTarget("schneaggmap_snailtrail_switch")
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Polyline,
-                                    contentDescription = null,
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Switch(
-                                    checked = state.showSnailTrails,
-                                    onCheckedChange = { onAction(SchneaggmapAction.ToggleSnailTrails) },
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-
             //Popup cards from the bottom
             state.selectedEntry?.let { entry ->
                 MapEntryInfoCard(
@@ -786,12 +825,16 @@ private fun LocationPickOverlay(
     }
 }
 
+//The map's sources/layers, declared as `mapState`'s `content` (see SchneaggmapScreen) rather than
+//as a trailing lambda on MaplibreMap itself - the current library attaches map content to the
+//logical map, not to whatever surface renders it.
 @Composable
+@MaplibreComposable
 private fun SchneaggmapMapContent(
     state: SchneaggmapState,
     mapState: MapState,
     ownLocation: LocationMeasurement?,
-    onAction: (SchneaggmapAction) -> Unit
+    onAction: (SchneaggmapAction) -> Unit,
 ) {
 
     val directionHeadingColor = MaterialTheme.colorScheme.surface
@@ -990,36 +1033,6 @@ private fun SchneaggmapMapContent(
         }
     }
 
-
-    MaplibreMap(
-        modifier = Modifier.fillMaxSize(),
-        state = mapState,
-        //Scale bar, compass and attribution are drawn by SchneaggmapScreen itself, positioned
-        //around the rest of the map chrome.
-        overlay = { include(MapOverlay.None) },
-        interactions = MapInteractions {
-            callbacks {
-                click {
-                    onUnhandled { event ->
-                        event.position?.let { position ->
-                            onAction(SchneaggmapAction.OnMapClick(LatLong(position.latitude, position.longitude), longClick = false))
-                        }
-
-                        ClickResult.Pass
-                    }
-                }
-                longClick {
-                    onEvent { event ->
-                        event.position?.let { position ->
-                            onAction(SchneaggmapAction.OnMapClick(LatLong(position.latitude, position.longitude), longClick = true))
-                        }
-
-                        ClickResult.Consume
-                    }
-                }
-            }
-        }
-    ) {
 
         //println("MapLocations: ${state.entries}")
 
@@ -1249,7 +1262,7 @@ private fun SchneaggmapMapContent(
                     val ownTrailPositions = ownTrail?.map { point ->
                         Position(longitude = point.long, latitude = point.lat)
                     } ?: emptyList()
-                    val ownLivePosition = ownLocation?.position?.value
+                    val ownLivePosition = ownLocation?.position
                     val fullOwnTrailPositions = appendLiveEndIfMoved(ownTrailPositions, ownLivePosition)
                     if (fullOwnTrailPositions.size >= 2) {
                         safeAdd(layerId = "snailtrail-$ownId") {
@@ -1355,10 +1368,10 @@ private fun SchneaggmapMapContent(
                                     source = clusterSource,
                                     onClick = {
                                         scope.launch {
-                                            cameraState.animateTo(
-                                                cameraState.position.copy(
+                                            mapState.animateCameraPosition(
+                                                mapState.cameraPosition.copy(
                                                     target = cluster.centroid,
-                                                    zoom = cameraState.position.zoom + 2,
+                                                    zoom = mapState.cameraPosition.zoom + 2,
                                                 )
                                             )
                                         }
@@ -1424,7 +1437,7 @@ private fun SchneaggmapMapContent(
             val ownLocationSource = rememberGeoJsonSource(
                 data = GeoJsonData.Features(
                     FeatureCollection(features = listOf(Feature(
-                        geometry = Point(coordinates = location.position.value),
+                        geometry = Point(coordinates = location.position),
                         properties = buildJsonObject {
                             put("type", JsonPrimitive("self"))
                         },
@@ -1436,9 +1449,9 @@ private fun SchneaggmapMapContent(
             // Once we're moving fast enough to have a reliable heading, show a rotated arrow
             // instead of a plain dot. Both layers always exist to avoid source remove+re-add
             // when heading appears/disappears (CannotAddSourceException).
-            val heading = location.speed
-                ?.takeIf { it.distancePerSecond.inMeters > 3 }
-                ?.let { location.course?.value }
+            val heading = location.distancePerSecond
+                ?.takeIf { it.inMeters > 3 }
+                ?.let { location.course }
 
             val arrowPainter = rememberVectorPainter(Icons.Default.Navigation)
             SymbolLayer(
@@ -1463,7 +1476,5 @@ private fun SchneaggmapMapContent(
                 strokeWidth = const(2.dp)
             )
         }
-    }
-
 }
 

@@ -62,8 +62,6 @@ import schneaggchatv3mp.composeapp.generated.resources.message_too_long
 import kotlin.time.TimeSource
 
 class ChatViewModel(
-    val chatId: String,
-    val isGroup: Boolean,
     private val appRepository: AppRepository,
     private val messageRepository: MessageRepository,
     private val userRepository: UserRepository,
@@ -74,7 +72,10 @@ class ChatViewModel(
     private val pictureManager: PictureManager,
     private val permissionsManager: PermissionManager,
     private val audioManager: AudioManager,
-    private val applicationScope: ApplicationScope
+    private val applicationScope: ApplicationScope,
+
+    val chatId: String,
+    val isGroup: Boolean,
 ): ViewModel() {
 
     companion object {
