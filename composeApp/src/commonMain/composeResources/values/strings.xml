@@ -455,6 +455,7 @@
     <string name="car_filters_title">Filters</string>
     <string name="car_filter_locations">Locations</string>
     <string name="car_filter_radar">Radar locations</string>
+    <string name="car_radar_added">Radar added</string>
 
     <string name="message_delete_info">Do you really want to delete this message?</string>
     <string name="chat_message_image">message image</string>
